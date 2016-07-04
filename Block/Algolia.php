@@ -11,7 +11,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\View\Element\Template;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
 
-class Algolia extends Template
+class Algolia extends Template implements \Magento\Framework\Data\CollectionDataSourceInterface
 {
     protected $config;
     protected $catalogSearchHelper;

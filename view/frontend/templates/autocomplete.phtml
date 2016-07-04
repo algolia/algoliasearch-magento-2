@@ -16,20 +16,25 @@ $placeholder = __('Search for products, categories, ...');
 
 /** Render form with autocomplete input **/
 if ($config->isDefaultSelector()): ?>
-    <form id="search_mini_form" action="<?php echo $catalogSearchHelper->getResultUrl() ?>" method="get">
-        <div id="algolia-searchbox">
-            <label for="search"><?php echo __('Search:') ?></label>
-            <input id="search" type="text" name="<?php echo $catalogSearchHelper->getQueryParamName() ?>" class="input-text algolia-search-input" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="<?php echo $placeholder; ?>" />
-            <img class="clear-query-autocomplete" src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::algoliasearch/cross.png'); ?>" />
-            <svg id="algolia-glass" xmlns="http://www.w3.org/2000/svg" class="magnifying-glass" width="24" height="24" viewBox="0 0 128 128" >
-                <g transform="scale(4)">
-                    <path stroke-width="3" d="M19.5 19.582l9.438 9.438"></path>
-                    <circle stroke-width="3" cx="12" cy="12" r="10.5" fill="none"></circle>
-                    <path d="M23.646 20.354l-3.293 3.293c-.195.195-.195.512 0 .707l7.293 7.293c.195.195.512.195.707 0l3.293-3.293c.195-.195.195-.512 0-.707l-7.293-7.293c-.195-.195-.512-.195-.707 0z" ></path>
-                </g>
-            </svg>
-        </div>
-    </form>
+<div class="block block-search">
+    <div class="block block-title"><strong>Search</strong></div>
+    <div class="block block-content">
+        <form id="search_mini_form" action="<?php echo $catalogSearchHelper->getResultUrl() ?>" method="get">
+            <div id="algolia-searchbox">
+                <label for="search"><?php echo __('Search:') ?></label>
+                <input id="search" type="text" name="<?php echo $catalogSearchHelper->getQueryParamName() ?>" class="input-text algolia-search-input" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="<?php echo $placeholder; ?>" />
+                <img class="clear-query-autocomplete" src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::cross.png'); ?>" />
+                <svg id="algolia-glass" xmlns="http://www.w3.org/2000/svg" class="magnifying-glass" width="24" height="24" viewBox="0 0 128 128" >
+                    <g transform="scale(4)">
+                        <path stroke-width="3" d="M19.5 19.582l9.438 9.438"></path>
+                        <circle stroke-width="3" cx="12" cy="12" r="10.5" fill="none"></circle>
+                        <path d="M23.646 20.354l-3.293 3.293c-.195.195-.195.512 0 .707l7.293 7.293c.195.195.512.195.707 0l3.293-3.293c.195-.195.195-.512 0-.707l-7.293-7.293c-.195-.195-.512-.195-.707 0z" ></path>
+                    </g>
+                </svg>
+            </div>
+        </form>
+    </div>
+</div>
 <?php endif; ?>
 
 <!-- Product hit template -->
@@ -169,7 +174,7 @@ if ($config->isDefaultSelector()): ?>
 <script type="text/javascript">
     //<![CDATA[
 
-    document.addEventListener("DOMContentLoaded", function(event) {
+    requirejs(['algoliaBundle'], function(algoliaBundle) {
         algoliaBundle.$(function ($) {
 
             /** We have nothing to do here if autocomplete is disabled **/

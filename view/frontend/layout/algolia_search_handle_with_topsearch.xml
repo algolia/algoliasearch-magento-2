@@ -1,13 +1,12 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceBlock name="top.search">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Algolia_AlgoliaSearch::internals/templateloader.phtml</argument>
-            </action>
-            <action method="setTemplateContext">
-                <argument name="templateContext" xsi:type="object">Algolia\AlgoliaSearch\Block\Algolia</argument>
-            </action>
-        </referenceBlock>
+        <remove name="topSearch"></remove>
+        <referenceContainer name="header-wrapper">
+            <block class="Algolia\AlgoliaSearch\Block\Algolia" name="top.search" as="topSearch" template="Algolia_AlgoliaSearch::internals/templateloader.phtml">
+                <block class="Algolia\AlgoliaSearch\Block\Algolia" template="Algolia_AlgoliaSearch::instantsearch.phtml" as="algolia-instantsearch" name="algolia-instantsearch"/>
+                <block class="Algolia\AlgoliaSearch\Block\Algolia" template="Algolia_AlgoliaSearch::autocomplete.phtml" as="algolia-autocomplete" name="algolia-autocomplete"/>
+            </block>
+        </referenceContainer>
     </body>
 </page>

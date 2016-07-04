@@ -330,6 +330,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="show_cats_not_included_in_navigation" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show categories that are not included in the navigation menu</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If set to Yes, Algolia will display all categories in both the autocomplete menu and instant search page ignoring the setting: "Include in navigation menu". Default value: No
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_images" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">

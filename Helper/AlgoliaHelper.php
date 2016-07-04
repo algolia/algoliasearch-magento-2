@@ -72,6 +72,11 @@ class AlgoliaHelper
         $this->client->moveIndex($index_name_tmp, $index_name);
     }
 
+    public function generateSearchSecuredApiKey($key, $params = [])
+    {
+        return $this->client->generateSecuredApiKey($key, $params);
+    }
+
     public function mergeSettings($index_name, $settings)
     {
         $onlineSettings = [];

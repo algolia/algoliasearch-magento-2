@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Magento\Framework\Locale\Currency;
+use Magento\Directory\Model\Currency as DirCurrency;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -42,6 +43,7 @@ class ConfigHelper
     const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
     const INDEX_PRODUCT_COUNT = 'algoliasearch_categories/categories/index_product_count';
     const CATEGORY_CUSTOM_RANKING = 'algoliasearch_categories/categories/custom_ranking_category_attributes';
+    const SHOW_CATS_NOT_INCLUDED_IN_NAVIGATION = 'algoliasearch_categories/categories/show_cats_not_included_in_navigation';
 
     const IS_ACTIVE = 'algoliasearch_queue/queue/active';
     const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
@@ -66,16 +68,29 @@ class ConfigHelper
     protected $objectManager;
     protected $currency;
     protected $storeManager;
+    protected $dirCurrency;
 
     public function __construct(\Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
                                 \Magento\Framework\ObjectManagerInterface $objectManager,
                                 StoreManagerInterface $storeManager,
-                                Currency $currency
+                                Currency $currency,
+                                DirCurrency $dirCurrency
     ) {
         $this->objectManager = $objectManager;
         $this->configInterface = $configInterface;
         $this->currency = $currency;
         $this->storeManager = $storeManager;
+        $this->dirCurrency = $dirCurrency;
+    }
+
+    public function showCatsNotIncludedInNavigation($storeId = null)
+    {
+        return $this->configInterface->getValue(self::SHOW_CATS_NOT_INCLUDED_IN_NAVIGATION, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getExtensionVersion()
+    {
+        return "1.0";
     }
 
     public function isDefaultSelector($storeId = null)
@@ -416,5 +431,46 @@ class ConfigHelper
         $popularQueries = $suggestion_helper->getPopularQueries($storeId);
 
         return $popularQueries;
+    }
+
+    public function getAttributesToRetrieve($group_id)
+    {
+        if (false === $this->isCustomerGroupsEnabled()) {
+            return [];
+        }
+
+        $attributes = [];
+        foreach ($this->getProductAdditionalAttributes() as $attribute) {
+            if ($attribute['attribute'] !== 'price') {
+                $attributes[] = $attribute['attribute'];
+            }
+        }
+
+        $attributes = array_merge($attributes, [
+            'objectID',
+            'name',
+            'url',
+            'visibility_search',
+            'visibility_catalog',
+            'categories',
+            'categories_without_path',
+            'thumbnail_url',
+            'image_url',
+            'in_stock',
+            'type_id',
+        ]);
+
+        $currencies = $this->dirCurrency->getConfigAllowCurrencies();
+
+        foreach ($currencies as $currency) {
+            $attributes[] = 'price.'.$currency.'.default';
+            $attributes[] = 'price.'.$currency.'.default_formated';
+            $attributes[] = 'price.'.$currency.'.group_'.$group_id;
+            $attributes[] = 'price.'.$currency.'.group_'.$group_id.'_formated';
+            $attributes[] = 'price.'.$currency.'.special_from_date';
+            $attributes[] = 'price.'.$currency.'.special_to_date';
+        }
+
+        return ['attributesToRetrieve' => $attributes];
     }
 }

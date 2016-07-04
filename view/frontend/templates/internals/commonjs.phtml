@@ -5,7 +5,7 @@ $config = $block->getConfigHelper();
 
 $catalogSearchHelper = $block->getCatalogSearchHelper();
 
-$product_helper = $block->getConfigHelper();
+$product_helper = $block->getProductHelper();
 
 $algolia_helper = $block->getAlgoliaHelper();
 
@@ -91,7 +91,7 @@ if ($config->isInstantEnabled() && $isSearchPage) {
 ?>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function(event) {
+    requirejs(['algoliaBundle'], function(algoliaBundle) {
         algoliaBundle.$(function ($) {
             window.algoliaConfig = {
                 instant: {

@@ -99,5 +99,7 @@ RUN sed -i 's/name="login\[username\]"/name="login[username]" value="admin"/g' /
 
 RUN sed -i 's/MaterializationStrategy\\Copy/MaterializationStrategy\\Symlink/g' /var/www/htdocs/app/etc/di.xml
 
+RUN bin/magento deploy:mode:set developer
+
 EXPOSE 80
 CMD start.sh

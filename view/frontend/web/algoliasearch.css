@@ -687,7 +687,7 @@ a.ais-current-refined-values--link:hover
 
 #algolia-searchbox svg.magnifying-glass, #algolia-autocomplete-container svg.magnifying-glass {
   position: absolute;
-  top: 5px;
+  top: 23px;
   right: 6px;
   fill: #54A5CD;
   stroke: #54A5CD;

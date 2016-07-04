@@ -23,19 +23,6 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
 
     if ($category && $category->getDisplayMode() !== 'PAGE') {
         $category->getUrlInstance()->setStore($block->getStoreId());
-
-        if ($category->getDisplayMode() == 'PRODUCTS_AND_PAGE') {
-            $page = $category->getLandingPage();
-            $cms_block = Mage::getModel('cms/block')->load($page);
-
-            $description = $category->getDescription();
-            $content = $this->getLayout()->createBlock('cms/block')->setBlockId($page)->toHtml();
-
-            if ($category->getImageUrl()) {
-                $imgHtml = '<p class="category-image"><img src="'.$category->getImageUrl().'" alt="'.$this->escapeHtml($category->getName()).'" title="'.$this->escapeHtml($category->getName()).'" /></p>';
-                $imgHtml = $this->helper('catalog/output')->categoryAttribute($category, $imgHtml, 'image');
-            }
-        }
     }
 }
 
@@ -104,7 +91,7 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
                                                autocorrect="off" autocapitalize="off"/>
 
                                         <img class="clear-query-instant"
-                                             src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::algoliasearch/cross.png'); ?>"/>
+                                             src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::cross.png'); ?>"/>
                                     </div>
                                 </div>
                             </div>
@@ -184,10 +171,10 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
 
                         {{#isAddToCartEnabled}}
                         {{#in_stock}}
-                        <form action="<?php echo Mage::getBaseUrl(); ?>/checkout/cart/add/product/{{objectID}}"
+                        <form action="<?php echo $block->getBaseUrl(); ?>/checkout/cart/add/product/{{objectID}}"
                               method="post">
                             <input type="hidden" name="form_key"
-                                   value="<?php echo Mage::getSingleton('core/session')->getFormKey(); ?>"/>
+                                   value="<?php echo $block->getFormKey(); ?>"/>
                             <input type="hidden" name="qty" value="1">
                             <button type="submit"><?php echo __('Add to Cart'); ?></button>
                         </form>
@@ -220,7 +207,7 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
 <!-- Current refinements template -->
 <script type="text/template" id="current-refinements-template">
     <div class="cross-wrapper">
-        <img src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::algoliasearch/cross.png'); ?>"/>
+        <img src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::cross.png'); ?>"/>
     </div>
     <div class="current-refinement-wrapper">
         {{#label}}
@@ -237,7 +224,7 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
 <script type="text/javascript">
     //<![CDATA[
 
-    document.addEventListener("DOMContentLoaded", function (event) {
+    requirejs(['algoliaBundle'], function(algoliaBundle) {
         algoliaBundle.$(function ($) {
 
             /** We have nothing to do here if instantsearch is not enabled **/
@@ -513,7 +500,7 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
                     hierarchicalMenuParams.templates.item = '' +
                         '<div class="ais-hierearchical-link-wrapper">' +
                         '<a class="{{cssClasses.link}}" href="{{url}}">{{name}}' +
-                        '{{#isRefined}}<img class="cross-circle" src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::algoliasearch/cross-circle.png'); ?>"/>{{/isRefined}}' +
+                        '{{#isRefined}}<img class="cross-circle" src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::cross-circle.png'); ?>"/>{{/isRefined}}' +
                         '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span></a>' +
                         '</div>';
 

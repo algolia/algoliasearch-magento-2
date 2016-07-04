@@ -1,51 +1,85 @@
 <?php
-/**
- * Copyright © 2015 Magento. All rights reserved.
- * See COPYING.txt for license details.
- */
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Model\Queue;
+use Magento;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Indexer\SaveHandler\Batch;
 
-class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
+class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Framework\Mview\ActionInterface
 {
     private $storeManager;
-    protected $productHelper;
-    protected $algoliaHelper;
-    protected $batch;
-    protected $fullAction;
+    private $productHelper;
+    private $algoliaHelper;
+    private $fullAction;
+    private $configHelper;
+    private $queue;
 
     public function __construct(StoreManagerInterface $storeManager,
                                 ProductHelper $productHelper,
                                 Data $helper,
-                                Batch $batch,
-                                AlgoliaHelper $algoliaHelper)
+                                AlgoliaHelper $algoliaHelper,
+                                ConfigHelper $configHelper,
+                                Queue $queue)
     {
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
         $this->productHelper = $productHelper;
         $this->algoliaHelper = $algoliaHelper;
-        $this->batch = $batch;
+        $this->configHelper = $configHelper;
+        $this->queue = $queue;
     }
 
-    public function execute($ids)
+    public function execute($productIds)
     {
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($ids !== null) {
-                $indexName = $this->productHelper->getIndexName($storeId);
-                $this->algoliaHelper->deleteObjects($ids, $indexName);
-            } else {
-                $this->fullAction->saveConfigurationToAlgolia($storeId);
+            if (is_array($productIds) && count($productIds) > 0) {
+                $this->queue->addToQueue($this->fullAction, 'rebuildStoreProductIndex', ['store_id' => $storeId, 'product_ids' => $productIds], count($productIds));
+                
+                return;
             }
 
-            $this->fullAction->rebuildStoreProductIndex($storeId, $ids);
+            $useTmpIndex = $this->configHelper->isQueueActive($storeId);
+
+            $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $useTmpIndex);
+            $size = $collection->getSize();
+
+            if (!empty($productIds)) {
+                $size = max(count($productIds), $size);
+            }
+
+            $productsPerPage = $this->configHelper->getNumberOfElementByPage();
+            $pages = ceil($size / $productsPerPage);
+
+            $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', [
+                'store_id' => $storeId,
+                'useTmpIndex' => $useTmpIndex,
+            ]);
+
+            for ($i = 1; $i <= $pages; $i++) {
+                $data = [
+                    'store_id' => $storeId,
+                    'product_ids' => $productIds,
+                    'page' => $i,
+                    'page_size' => $productsPerPage,
+                    'useTmpIndex' => $useTmpIndex,
+                ];
+
+                $this->queue->addToQueue($this->fullAction, 'rebuildProductIndex', $data, $productsPerPage);
+            }
+
+            if ($useTmpIndex) {
+                $this->queue->addToQueue($this->algoliaHelper, 'moveIndex', [
+                    'tmpIndexName' => $this->productHelper->getIndexName($storeId, true),
+                    'indexName' => $this->productHelper->getIndexName($storeId, false),
+                ]);
+            }
         }
     }
 

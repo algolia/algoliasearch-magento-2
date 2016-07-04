@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Magento\Catalog\Model\Product;
 use Magento\Framework\DataObject;
 
 class ProductHelper extends BaseHelper
@@ -104,6 +105,7 @@ class ProductHelper extends BaseHelper
         $products = $products->addFinalPrice()
             ->addAttributeToSelect('special_from_date')
             ->addAttributeToSelect('special_to_date')
+            ->addAttributeToSelect('visibility')
             ->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
 
         $additionalAttr = $this->getAdditionalAttributes($storeId);
@@ -131,7 +133,7 @@ class ProductHelper extends BaseHelper
         return $this->config->getProductAdditionalAttributes($storeId);
     }
 
-    public function setSettings($storeId)
+    public function setSettings($storeId, $useTmpIndex = false)
     {
         $attributesToIndex = [];
         $unretrievableAttributes = [];
@@ -240,7 +242,7 @@ class ProductHelper extends BaseHelper
                 }
             }
 
-            $this->algoliaHelper->setSettings($this->getIndexName($storeId), ['slaves' => $slaves]);
+            $this->algoliaHelper->setSettings($this->getIndexName($storeId, $useTmpIndex), ['slaves' => $slaves]);
 
             foreach ($sorting_indices as $values) {
                 if ($this->config->isCustomerGroupsEnabled($storeId)) {
@@ -484,7 +486,7 @@ class ProductHelper extends BaseHelper
         return $selected_categories;
     }
 
-    public function getObject(\Magento\Catalog\Model\Product $product)
+    public function getObject(Product $product)
     {
         $type = $product->getTypeId();
         $this->logger->start('CREATE RECORD '.$product->getId().' '.$this->logger->getStoreName($product->getStoreId()));
@@ -682,7 +684,7 @@ class ProductHelper extends BaseHelper
 
                         $all_sub_products_out_of_stock = true;
 
-                        /** @var \Magento\Catalog\Model\Product $sub_product */
+                        /** @var Product $sub_product */
                         foreach ($sub_products as $sub_product) {
                             $isInStock = (int) $this->stockRegistry->getStockItem($sub_product->getId())->getIsInStock();
 

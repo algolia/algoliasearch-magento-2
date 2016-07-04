@@ -1,51 +1,48 @@
 <?php
-/**
- * Copyright © 2015 Magento. All rights reserved.
- * See COPYING.txt for license details.
- */
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
+use Algolia\AlgoliaSearch\Model\Queue;
+use Magento;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Indexer\SaveHandler\Batch;
 
-class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
+class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Framework\Mview\ActionInterface
 {
     private $storeManager;
-    protected $categoryHelper;
-    protected $algoliaHelper;
-    protected $batch;
-    protected $fullAction;
+    private $categoryHelper;
+    private $algoliaHelper;
+    private $fullAction;
+    private $queue;
 
     public function __construct(StoreManagerInterface $storeManager,
                                 CategoryHelper $categoryHelper,
                                 Data $helper,
-                                Batch $batch,
-                                AlgoliaHelper $algoliaHelper)
+                                AlgoliaHelper $algoliaHelper,
+                                Queue $queue)
     {
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
         $this->categoryHelper = $categoryHelper;
         $this->algoliaHelper = $algoliaHelper;
-        $this->batch = $batch;
+        $this->queue = $queue;
     }
 
-    public function execute($ids)
+    public function execute($categoryIds)
     {
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($ids !== null) {
+            if ($categoryIds !== null) {
                 $indexName = $this->categoryHelper->getIndexName($storeId);
-                $this->algoliaHelper->deleteObjects($ids, $indexName);
+                $this->queue->addToQueue($this->algoliaHelper, 'deleteObjects', ['category_ids' => $categoryIds, 'index_name' => $indexName], count($categoryIds));
             } else {
-                $this->fullAction->saveConfigurationToAlgolia($storeId);
+                $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
             }
 
-            $this->fullAction->rebuildStoreCategoryIndex($storeId, $ids);
+            $this->queue->addToQueue($this->fullAction, 'rebuildStoreCategoryIndex', ['store_id' => $storeId, 'category_ids' => $categoryIds], count($categoryIds));
         }
     }
 

@@ -371,6 +371,42 @@
                 </field>
             </group>
         </section>
+        <section id="algoliasearch_queue" translate="label" type="text" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Indexing Queue / Cron</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="queue" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="active" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Queue Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br />
+                            <br>
+                            To schedule the run you need to add this in your crontab:<br>
+                            */5 * * * * php -f /absolute/path/to/magento/shell/indexer.php -- -reindex algolia_queue_runner
+                            <br><br>
+                            <span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Number of jobs to run each time the cron is run</label>
+                    <comment>
+                        <![CDATA[
+                            Number of jobs to run each time the cron is run. Default value is 10.
+                            <br><br>
+                            <span class="algolia-config-warning">&#9888;</span> Each time the cron runs it will process ("Max number of element per indexing job" * "Number of jobs to run each time the cron is run")
+                            products.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
         <section id="algoliasearch_advanced" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Advanced</label>
             <tab>algolia</tab>

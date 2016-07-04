@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Block;
 
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Magento\Customer\Model\Session;
@@ -20,6 +21,7 @@ class Algolia extends Template
     protected $registry;
     protected $productHelper;
     protected $currency;
+    protected $algoliaHelper;
 
     protected $priceKey;
 
@@ -31,6 +33,7 @@ class Algolia extends Template
         ProductHelper $productHelper,
         Currency $currency,
         Registry $registry,
+        AlgoliaHelper $algoliaHelper,
         array $data = []
     ) {
         $this->config = $config;
@@ -39,6 +42,7 @@ class Algolia extends Template
         $this->productHelper = $productHelper;
         $this->currency = $currency;
         $this->registry = $registry;
+        $this->algoliaHelper = $algoliaHelper;
 
         parent::__construct($context, $data);
     }
@@ -58,6 +62,11 @@ class Algolia extends Template
         return $this->catalogSearchHelper;
     }
 
+    public function getAlgoliaHelper()
+    {
+        return $this->algoliaHelper;
+    }
+
     public function getCurrencySymbol()
     {
         return $this->currency->getCurrency($this->getCurrencyCode())->getSymbol();
@@ -65,6 +74,11 @@ class Algolia extends Template
     public function getCurrencyCode()
     {
         return $this->_storeManager->getStore()->getCurrentCurrencyCode();
+    }
+
+    public function getGroupId()
+    {
+        return $this->customerSession->getCustomer()->getGroupId();
     }
 
     public function getPriceKey()

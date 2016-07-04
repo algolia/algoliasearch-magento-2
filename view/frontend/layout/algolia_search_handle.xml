@@ -6,11 +6,10 @@
     </head>
     <body>
         <referenceBlock name="head.additional">
-            <block class="Magento\Framework\View\Element\Template" name="algolia.polyfill" template="Algolia_AlgoliaSearch::polyfill.phtml"/>
-            <block class="Algolia\AlgoliaSearch\Block\Algolia" name="algolia.common.script" template="Algolia_AlgoliaSearch::common-script.phtml"/>
+            <block class="Algolia\AlgoliaSearch\Block\Algolia" name="algolia.internals.commonjs" template="Algolia_AlgoliaSearch::internals/commonjs.phtml"/>
         </referenceBlock>
         <referenceBlock name="main.content">
-            <block class="Magento\Framework\View\Element\Template" before="-" name="algolia.beforecontent" template="Algolia_AlgoliaSearch::beforecontent.phtml"/>
+            <block class="Algolia\AlgoliaSearch\Block\Algolia" before="-" name="algolia.internals.beforecontent" template="Algolia_AlgoliaSearch::internals/beforecontent.phtml"/>
         </referenceBlock>
     </body>
 </page>

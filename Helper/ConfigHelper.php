@@ -42,6 +42,7 @@ class ConfigHelper
     const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     const RESULTS_LIMIT = 'algoliasearch_products/products/results_limit';
     const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_products/products/show_suggestions_on_no_result_page';
+    const INDEX_OUT_OF_STOCK_OPTIONS = 'algoliasearch_products/products/index_out_of_stock_options';
 
     const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
     const INDEX_PRODUCT_COUNT = 'algoliasearch_categories/categories/index_product_count';
@@ -91,6 +92,11 @@ class ConfigHelper
         $this->storeManager = $storeManager;
         $this->dirCurrency = $dirCurrency;
         $this->directoryList = $directoryList;
+    }
+
+    public function indexOutOfStockOptions($storeId = null)
+    {
+        return $this->configInterface->getValue(self::INDEX_OUT_OF_STOCK_OPTIONS, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function showCatsNotIncludedInNavigation($storeId = null)

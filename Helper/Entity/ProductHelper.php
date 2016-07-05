@@ -718,7 +718,7 @@ class ProductHelper extends BaseHelper
                         foreach ($sub_products as $sub_product) {
                             $isInStock = (int) $this->stockRegistry->getStockItem($sub_product->getId())->getIsInStock();
 
-                            if ($isInStock == false) {
+                            if ($isInStock == false && $this->config->indexOutOfStockOptions($product->getStoreId()) == false) {
                                 continue;
                             }
 

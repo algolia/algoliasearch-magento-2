@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Magento;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Framework\Mview\ActionInterface
@@ -18,13 +19,15 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
     private $fullAction;
     private $configHelper;
     private $queue;
+    private $messageManager;
 
     public function __construct(StoreManagerInterface $storeManager,
                                 ProductHelper $productHelper,
                                 Data $helper,
                                 AlgoliaHelper $algoliaHelper,
                                 ConfigHelper $configHelper,
-                                Queue $queue)
+                                Queue $queue,
+                                ManagerInterface $messageManager)
     {
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
@@ -32,10 +35,25 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
         $this->algoliaHelper = $algoliaHelper;
         $this->configHelper = $configHelper;
         $this->queue = $queue;
+        $this->messageManager = $messageManager;
     }
 
     public function execute($productIds)
     {
+        if (!$this->configHelper->getApplicationID() || !$this->configHelper->getAPIKey() || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+
+            if (php_sapi_name() === 'cli') {
+                echo $errorMessage."\n";
+
+                return;
+            }
+
+            $this->messageManager->addErrorMessage($errorMessage);
+
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {

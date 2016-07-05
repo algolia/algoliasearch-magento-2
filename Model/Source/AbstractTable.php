@@ -74,6 +74,10 @@ abstract class AbstractTable extends AbstractFieldArray
                 $column['class'] = $columnData['class'];
             }
 
+            if (isset($columnData['style'])) {
+                $column['style'] = $columnData['style'];
+            }
+
             $this->addColumn($columnId, $column);
         }
 

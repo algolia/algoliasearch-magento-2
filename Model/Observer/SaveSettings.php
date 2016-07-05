@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model\Observer;
 
 use Algolia\AlgoliaSearch\Helper\Data;
+use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -17,7 +18,7 @@ class SaveSettings implements ObserverInterface
         $this->helper = $helper;
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
         foreach ($this->storeManager->getStores() as $store) {
             if ($store->getIsActive()) {

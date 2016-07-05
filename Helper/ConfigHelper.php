@@ -2,6 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Magento;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Locale\Currency;
 use Magento\Directory\Model\Currency as DirCurrency;
 use Magento\Store\Model\ScopeInterface;
@@ -52,6 +55,10 @@ class ConfigHelper
     const XML_PATH_IMAGE_HEIGHT = 'algoliasearch_image/image/height';
     const XML_PATH_IMAGE_TYPE = 'algoliasearch_image/image/type';
 
+    const SYNONYMS = 'algoliasearch_synonyms/synonyms_group/synonyms';
+    const ONEWAY_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/oneway_synonyms';
+    const SYNONYMS_FILE = 'algoliasearch_synonyms/synonyms_group/synonyms_file';
+
     const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/advanced/number_of_element_by_page';
     const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
     const PARTIAL_UPDATES = 'algoliasearch_advanced/advanced/partial_update';
@@ -64,23 +71,26 @@ class ConfigHelper
 
     protected $_productTypeMap = [];
 
-    protected $configInterface;
-    protected $objectManager;
-    protected $currency;
-    protected $storeManager;
-    protected $dirCurrency;
+    private $configInterface;
+    private $objectManager;
+    private $currency;
+    private $storeManager;
+    private $dirCurrency;
+    private $directoryList;
 
-    public function __construct(\Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
-                                \Magento\Framework\ObjectManagerInterface $objectManager,
+    public function __construct(Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
+                                Magento\Framework\ObjectManagerInterface $objectManager,
                                 StoreManagerInterface $storeManager,
                                 Currency $currency,
-                                DirCurrency $dirCurrency
-    ) {
+                                DirCurrency $dirCurrency,
+                                DirectoryList $directoryList)
+    {
         $this->objectManager = $objectManager;
         $this->configInterface = $configInterface;
         $this->currency = $currency;
         $this->storeManager = $storeManager;
         $this->dirCurrency = $dirCurrency;
+        $this->directoryList = $directoryList;
     }
 
     public function showCatsNotIncludedInNavigation($storeId = null)
@@ -472,5 +482,40 @@ class ConfigHelper
         }
 
         return ['attributesToRetrieve' => $attributes];
+    }
+
+    public function getSynonyms($storeId = null)
+    {
+        $synonyms = unserialize($this->configInterface->getValue(self::SYNONYMS, ScopeInterface::SCOPE_STORE, $storeId));
+
+        if (is_array($synonyms)) {
+            return $synonyms;
+        }
+
+        return [];
+    }
+
+    public function getOnewaySynonyms($storeId = null)
+    {
+        $onewaySynonyms = unserialize($this->configInterface->getValue(self::ONEWAY_SYNONYMS, ScopeInterface::SCOPE_STORE, $storeId));
+
+        if (is_array($onewaySynonyms)) {
+            return $onewaySynonyms;
+        }
+
+        return [];
+    }
+
+    public function getSynonymsFile($storeId = null)
+    {
+        $filename = $this->configInterface->getValue(self::SYNONYMS_FILE, ScopeInterface::SCOPE_STORE, $storeId);
+
+        if (!$filename) {
+            return null;
+        }
+
+        $baseDirectory = $this->directoryList->getPath(DirectoryList::MEDIA);
+
+        return $baseDirectory.'/algoliasearch_admin_config_uploads/'.$filename;
     }
 }

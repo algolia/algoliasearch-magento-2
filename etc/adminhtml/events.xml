@@ -24,4 +24,7 @@
     <event name="admin_system_config_changed_section_algoliasearch_products">
         <observer name="algoliasearch_products_saved" instance="Algolia\AlgoliaSearch\Model\Observer\SaveSettings" />
     </event>
+    <event name="admin_system_config_changed_section_algoliasearch_synonyms">
+        <observer name="algoliasearch_products_saved" instance="Algolia\AlgoliaSearch\Model\Observer\SaveSettings" />
+    </event>
 </config>

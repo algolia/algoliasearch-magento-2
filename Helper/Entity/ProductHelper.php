@@ -133,7 +133,7 @@ class ProductHelper extends BaseHelper
         return $this->config->getProductAdditionalAttributes($storeId);
     }
 
-    public function setSettings($storeId, $useTmpIndex = false)
+    public function setSettings($storeId, $saveToTmpIndicesToo = false)
     {
         $attributesToIndex = [];
         $unretrievableAttributes = [];
@@ -211,6 +211,9 @@ class ProductHelper extends BaseHelper
         $mergeSettings = $this->algoliaHelper->mergeSettings($this->getIndexName($storeId), $indexSettings);
 
         $this->algoliaHelper->setSettings($this->getIndexName($storeId), $mergeSettings);
+        if ($saveToTmpIndicesToo === true) {
+            $this->algoliaHelper->setSettings($this->getIndexName($storeId, true), $mergeSettings);
+        }
 
         /*
          * Handle Slaves
@@ -242,7 +245,7 @@ class ProductHelper extends BaseHelper
                 }
             }
 
-            $this->algoliaHelper->setSettings($this->getIndexName($storeId, $useTmpIndex), ['slaves' => $slaves]);
+            $this->algoliaHelper->setSettings($this->getIndexName($storeId), ['slaves' => $slaves]);
 
             foreach ($sorting_indices as $values) {
                 if ($this->config->isCustomerGroupsEnabled($storeId)) {
@@ -274,6 +277,33 @@ class ProductHelper extends BaseHelper
                 }
             }
         }
+
+        if ($synonymsFile = $this->config->getSynonymsFile($storeId)) {
+            $synonymsToSet = json_decode(file_get_contents($synonymsFile));
+        } else {
+            $synonymsToSet = [];
+
+            $synonyms = $this->config->getSynonyms($storeId);
+            foreach ($synonyms as $objectID => $synonym) {
+                $synonymsToSet[] = [
+                    'objectID' => $objectID,
+                    'type' => 'synonym',
+                    'synonyms' => $this->explodeSynomyms($synonym['synonyms']),
+                ];
+            }
+
+            $onewaySynonyms = $this->config->getOnewaySynonyms($storeId);
+            foreach ($onewaySynonyms as $objectID => $onewaySynonym) {
+                $synonymsToSet[] = [
+                    'objectID' => $objectID,
+                    'type' => 'oneWaySynonym',
+                    'input' => $onewaySynonym['input'],
+                    'synonyms' => $this->explodeSynomyms($onewaySynonym['synonyms']),
+                ];
+            }
+        }
+
+        $this->algoliaHelper->setSynonyms($this->getIndexName($storeId, $saveToTmpIndicesToo), $synonymsToSet);
     }
 
     protected function getFields($store)
@@ -759,5 +789,10 @@ class ProductHelper extends BaseHelper
         $this->logger->stop('CREATE RECORD '.$product->getId().' '.$this->logger->getStoreName($product->getStoreId()));
 
         return $customData;
+    }
+
+    private function explodeSynomyms($synonyms)
+    {
+        return array_map('trim', explode(',', $synonyms));
     }
 }

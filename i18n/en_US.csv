@@ -1,0 +1,649 @@
+label,label
+"Base Image","Base Image"
+"Small Image","Small Image"
+Thumbnail,Thumbnail
+None,None
+AllOptional,AllOptional
+LastWords,LastWords
+FirstWords,FirstWords
+"Search for products, categories, ...","Search for products, categories, ..."
+Search,Search
+Search:,Search:
+in,in
+Categories,Categories
+Products,Products
+"Search by","Search by"
+Refine,Refine
+"Current search","Current search"
+"Search for products","Search for products"
+"SORT BY","SORT BY"
+"Add to Cart","Add to Cart"
+result,result
+"results found","results found"
+seconds,seconds
+Relevance,Relevance
+"No products for query","No products for query"
+"You can try one of the popular search queries","You can try one of the popular search queries"
+or,or
+"See all products","See all products"
+"Selected Filters","Selected Filters"
+"Clear all","Clear all"
+"Previous page","Previous page"
+"Next page","Next page"
+to,to
+Go,Go
+"No results","No results"
+"See products in","See products in"
+"All departments","All departments"
+"or in","or in"
+"
+                
+                    Algolia Search 2.0.alpha
+                
+            ","
+                
+                    Algolia Search 2.0.alpha
+                
+            "
+"Credentials and Setup","Credentials and Setup"
+"Enable Indexing","Enable Indexing"
+"
+                        
+                            If set to No, Algolia extension will simply be disabled.
+                        
+                    ","
+                        
+                            If set to No, Algolia extension will simply be disabled.
+                        
+                    "
+"Enable Search","Enable Search"
+"
+                        
+                            If set to No, search will be done by Algolia but renderered by Magento
+                        
+                    ","
+                        
+                            If set to No, search will be done by Algolia but renderered by Magento
+                        
+                    "
+"Enable Logging","Enable Logging"
+"
+                        
+                            NOTICE: Debug logging generates a significant amount of data and can affect performance of indexing
+                        
+                    ","
+                        
+                            NOTICE: Debug logging generates a significant amount of data and can affect performance of indexing
+                        
+                    "
+"Application ID","Application ID"
+"
+                        
+                            Your Application ID, which can be found in the Credentials section of your Algolia account.
+                        
+                    ","
+                        
+                            Your Application ID, which can be found in the Credentials section of your Algolia account.
+                        
+                    "
+"Search-only (public) API key","Search-only (public) API key"
+"
+                        
+                            A search-only API key (will be included in the public JavaScript code)
+                        
+                    ","
+                        
+                            A search-only API key (will be included in the public JavaScript code)
+                        
+                    "
+"Admin API key","Admin API key"
+"
+                        
+                            Your administration API key (kept private)
+                        
+                    ","
+                        
+                            Your administration API key (kept private)
+                        
+                    "
+"Index Name Prefix","Index Name Prefix"
+"
+                        
+                            If configured, all indices created by the Algolia search extension will be prefixed by this value.
+                        
+                    ","
+                        
+                            If configured, all indices created by the Algolia search extension will be prefixed by this value.
+                        
+                    "
+"Enable Auto-completion Menu","Enable Auto-completion Menu"
+"
+                        
+                            If set to Yes, the seach box will display a search-as-you-type drop-down menu. It requires your theme to expose a <code>top.search</code> and <code>content</code> block.
+                        
+                    ","
+                        
+                            If set to Yes, the seach box will display a search-as-you-type drop-down menu. It requires your theme to expose a <code>top.search</code> and <code>content</code> block.
+                        
+                    "
+"Enable Instant Search Results Page","Enable Instant Search Results Page"
+"
+                        
+                            If set to Yes, the products inside the results pages will be searchable the refined results updated as-you-type. It requires your theme to expose a <code>top.search</code> and <code>content</code> block.
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Enabling instant search can potentially break your design, some work will be required to have a good integration into your theme
+                            products.
+                        
+                    ","
+                        
+                            If set to Yes, the products inside the results pages will be searchable the refined results updated as-you-type. It requires your theme to expose a <code>top.search</code> and <code>content</code> block.
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Enabling instant search can potentially break your design, some work will be required to have a good integration into your theme
+                            products.
+                        
+                    "
+Autocomplete,Autocomplete
+"Number of products","Number of products"
+"
+                        
+                            The number of products (>=1) suggested in the autocomplete dropdown. Default value is 6
+                        
+                    ","
+                        
+                            The number of products (>=1) suggested in the autocomplete dropdown. Default value is 6
+                        
+                    "
+"Number of categories","Number of categories"
+"
+                        
+                            The number of categories (>=1) suggested in the autocomplete dropdown. Default value is 2
+                        
+                    ","
+                        
+                            The number of categories (>=1) suggested in the autocomplete dropdown. Default value is 2
+                        
+                    "
+"Number of queries","Number of queries"
+"
+                        
+                            The number of queries suggestions (0 to disabled it) suggested in the autocomplete dropdown. Default value is 0
+                        
+                    ","
+                        
+                            The number of queries suggestions (0 to disabled it) suggested in the autocomplete dropdown. Default value is 0
+                        
+                    "
+"Min query popularity","Min query popularity"
+"
+                        
+                            The min number of times a query has been performed in order to be suggested. Default value is 1000.
+                        
+                    ","
+                        
+                            The min number of times a query has been performed in order to be suggested. Default value is 1000.
+                        
+                    "
+"Min number of products per query","Min number of products per query"
+"
+                        
+                            The min number of results a query needs to return to be suggested. Default value is 2. <br /n>
+                        
+                    ","
+                        
+                            The min number of results a query needs to return to be suggested. Default value is 2. <br /n>
+                        
+                    "
+"Additional Sections","Additional Sections"
+"
+                        
+                            Configure here the additional auto-completion menu sections you want include in the dropdown menu (Ex. Suggestions, Pages, Manufacturer, Colors).<br /><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> All attributes used here must have been initially included in the <strong>Attributes Configuration</strong> panel and configured as a facet in the <strong>Instant Search Results Page Configuration</strong> panel to be able to refine on the specific attribute.
+                        
+                    ","
+                        
+                            Configure here the additional auto-completion menu sections you want include in the dropdown menu (Ex. Suggestions, Pages, Manufacturer, Colors).<br /><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> All attributes used here must have been initially included in the <strong>Attributes Configuration</strong> panel and configured as a facet in the <strong>Instant Search Results Page Configuration</strong> panel to be able to refine on the specific attribute.
+                        
+                    "
+"Excluded Pages","Excluded Pages"
+"
+                        
+                            Configure here the pages you don't want to search in.<br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
+                        
+                    ","
+                        
+                            Configure here the pages you don't want to search in.<br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
+                        
+                    "
+"Render template directives","Render template directives"
+"
+                        
+                                For CMS pages, template directives (e.g. <code>{{block type=""core/template"" ...}}</code>) will be processed by default. Set this to ""No"" if you don't want to have template content indexed.<br><br>
+                                <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
+                                
+                    ","
+                        
+                                For CMS pages, template directives (e.g. <code>{{block type=""core/template"" ...}}</code>) will be processed by default. Set this to ""No"" if you don't want to have template content indexed.<br><br>
+                                <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
+                                
+                    "
+"Instant Search Results Page","Instant Search Results Page"
+"DOM Selector","DOM Selector"
+"
+                        
+                            The DOM selector used to inject the results using JavaScript.
+                        
+                    ","
+                        
+                            The DOM selector used to inject the results using JavaScript.
+                        
+                    "
+Facets,Facets
+"
+                        
+                            Configure here the filtering options you want to display on your search results page.
+                            Choose Disjunctive to allow the selection of different values of a facet (e.g. hotels with 4 OR 5 stars).
+                            Choose Conjunctive to allow the selection of only one value of a facet (e.g. only ""Size M"").
+                        
+                    ","
+                        
+                            Configure here the filtering options you want to display on your search results page.
+                            Choose Disjunctive to allow the selection of different values of a facet (e.g. hotels with 4 OR 5 stars).
+                            Choose Conjunctive to allow the selection of only one value of a facet (e.g. only ""Size M"").
+                        
+                    "
+"Number of values per facet","Number of values per facet"
+"
+                        
+                            The number of values each facet can display. Default value is 10.
+                        
+                    ","
+                        
+                            The number of values each facet can display. Default value is 10.
+                        
+                    "
+Sorts,Sorts
+"
+                        
+                            Configure here the different sorting options you want to offer.
+                            <br /><br />
+                            The extension will create :<br />
+                            - 1 index/store<br />
+                            - 1 index/store/sort<br /><br />
+                            Which means that for an instance with:<br />
+                            - 2 stores (2 languages for example)<br />
+                            - 100 products<br />
+                            - 2 sorts on price (asc, desc)<br />
+                            - 2 sorts on date (asc, desc)<br /><br />
+                            You have 100 * 2 + 100 * 4 * 2 = 1000 product records
+                            You can reduce the number of records by removing some sort
+                        
+                    ","
+                        
+                            Configure here the different sorting options you want to offer.
+                            <br /><br />
+                            The extension will create :<br />
+                            - 1 index/store<br />
+                            - 1 index/store/sort<br /><br />
+                            Which means that for an instance with:<br />
+                            - 2 stores (2 languages for example)<br />
+                            - 100 products<br />
+                            - 2 sorts on price (asc, desc)<br />
+                            - 2 sorts on date (asc, desc)<br /><br />
+                            You have 100 * 2 + 100 * 4 * 2 = 1000 product records
+                            You can reduce the number of records by removing some sort
+                        
+                    "
+"Replace categories page","Replace categories page"
+"
+                        
+                            Choose here if you want the default Magento category pages to be replaced by an instant-search
+                            results page when a category is selected either in the menu of categories or in the drop-down menu.
+                        
+                    ","
+                        
+                            Choose here if you want the default Magento category pages to be replaced by an instant-search
+                            results page when a category is selected either in the menu of categories or in the drop-down menu.
+                        
+                    "
+"
+                        
+                            Choose here if you want to add an ""add to cart"" button in the template.
+                        
+                    ","
+                        
+                            Choose here if you want to add an ""add to cart"" button in the template.
+                        
+                    "
+"Number of products per page in the instant result page","Number of products per page in the instant result page"
+"
+                        
+                            The number of products displayed on the instant search results page. Default value is 9.
+                        
+                    ","
+                        
+                            The number of products displayed on the instant search results page. Default value is 9.
+                        
+                    "
+Attributes,Attributes
+"
+                        
+                            Choose here the product attributes your users can search on, the ones you want to use as filters and sorts options and the ones required to display the search results.<br><br>
+                             The order of the searchable attributes matters: a query matching the first searchable attribute of a product will put this product before the others in the results. Chose ""Ordered"" if you want the position of the matching word(s) inside the attribute to matter. A match at the beginning of an attribute will be considered more important: for the query ""iPhone"", ""iPhone 5s"" will be ranked before ""case for iPhone"".<br />
+                            <br><span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
+                        
+                    ","
+                        
+                            Choose here the product attributes your users can search on, the ones you want to use as filters and sorts options and the ones required to display the search results.<br><br>
+                             The order of the searchable attributes matters: a query matching the first searchable attribute of a product will put this product before the others in the results. Chose ""Ordered"" if you want the position of the matching word(s) inside the attribute to matter. A match at the beginning of an attribute will be considered more important: for the query ""iPhone"", ""iPhone 5s"" will be ranked before ""case for iPhone"".<br />
+                            <br><span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
+                        
+                    "
+Ranking,Ranking
+"
+                        
+                            Configure here the attributes that reflect the popularity of your product (number of orders, number of likes, number of views, ...).<br />
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> All attributes used here must have been initially included in the Attributes configuration panel.
+                        
+                    ","
+                        
+                            Configure here the attributes that reflect the popularity of your product (number of orders, number of likes, number of views, ...).<br />
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> All attributes used here must have been initially included in the Attributes configuration panel.
+                        
+                    "
+"Show most popular queries suggestions when there are no results","Show most popular queries suggestions when there are no results"
+"
+                        
+                            Choose here if you want to show most popular queries suggestions when there are no results/
+                        
+                    ","
+                        
+                            Choose here if you want to show most popular queries suggestions when there are no results/
+                        
+                    "
+"Index out of stock options for configurable products","Index out of stock options for configurable products"
+"
+                        
+                            Choose here if you want to index out of stock options for configurable products
+                        
+                    ","
+                        
+                            Choose here if you want to index out of stock options for configurable products
+                        
+                    "
+"
+                        
+                        Configure here the category attributes your users can search on. The order of these attributes matters: the higher in the list, the more important to rank the results.<br />
+                        
+                    ","
+                        
+                        Configure here the category attributes your users can search on. The order of these attributes matters: the higher in the list, the more important to rank the results.<br />
+                        
+                    "
+"
+                        
+                            Choose here the attributes that reflect the popularity of your categories (number of products, total number of sales of the category,etc.).<br />
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> All attributes used here must have been included before in the ""Attributes"" configuration.
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
+                        
+                    ","
+                        
+                            Choose here the attributes that reflect the popularity of your categories (number of products, total number of sales of the category,etc.).<br />
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> All attributes used here must have been included before in the ""Attributes"" configuration.
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
+                        
+                    "
+"Show categories that are not included in the navigation menu","Show categories that are not included in the navigation menu"
+"
+                        
+                            If set to Yes, Algolia will display all categories in both the autocomplete menu and instant search page ignoring the setting: ""Include in navigation menu"". Default value: No
+                        
+                    ","
+                        
+                            If set to Yes, Algolia will display all categories in both the autocomplete menu and instant search page ignoring the setting: ""Include in navigation menu"". Default value: No
+                        
+                    "
+Images,Images
+Width,Width
+Height,Height
+"
+                        
+                            You can specify the size of the images used at the Search Results Page.<br />
+                            If your images are already present in some size, eg. 265x265, Algolia's index job may not have to resize those, potentially saving time and resources.
+                        
+                    ","
+                        
+                            You can specify the size of the images used at the Search Results Page.<br />
+                            If your images are already present in some size, eg. 265x265, Algolia's index job may not have to resize those, potentially saving time and resources.
+                        
+                    "
+Type,Type
+"
+                        
+                            The image used at the Search Results Page.
+                        
+                    ","
+                        
+                            The image used at the Search Results Page.
+                        
+                    "
+"Indexing Queue / Cron","Indexing Queue / Cron"
+"Queue Enabled","Queue Enabled"
+"
+                        
+                            If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br />
+                            <br>
+                            To schedule the run you need to add this in your crontab:<br>
+                            <code>*/5 * * * * php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code>
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
+                        
+                    ","
+                        
+                            If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br />
+                            <br>
+                            To schedule the run you need to add this in your crontab:<br>
+                            <code>*/5 * * * * php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code>
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
+                        
+                    "
+"Number of jobs to run each time the cron is run","Number of jobs to run each time the cron is run"
+"
+                        
+                            Number of jobs to run each time the cron is run. Default value is 10.
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Each time the cron runs it will process (""Max number of element per indexing job"" * ""Number of jobs to run each time the cron is run"")
+                            products.
+                        
+                    ","
+                        
+                            Number of jobs to run each time the cron is run. Default value is 10.
+                            <br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span> Each time the cron runs it will process (""Max number of element per indexing job"" * ""Number of jobs to run each time the cron is run"")
+                            products.
+                        
+                    "
+Synonyms,Synonyms
+"
+                        
+                            Synonyms are defined by a comma-separated list of words that should be considered equivalent by the Algolia engine.<br>
+                            For instance: <code>tv, television, tv set</code><br>
+                            Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.<br>
+                            Documentation: <a href=""https://www.algolia.com/doc/synonyms#synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#synonyms</a>
+                        
+                    ","
+                        
+                            Synonyms are defined by a comma-separated list of words that should be considered equivalent by the Algolia engine.<br>
+                            For instance: <code>tv, television, tv set</code><br>
+                            Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.<br>
+                            Documentation: <a href=""https://www.algolia.com/doc/synonyms#synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#synonyms</a>
+                        
+                    "
+"
+                        
+                        One-way synonyms allow you to define alternative words for a search term, which are not synonyms to each others.<br>
+                        Let’s take an example: when a user searches for “tablet”, you want him to be able to find iPads and Galaxy Note tablets alike, but you might not want Android tablets to show up when he searches for “iPad”.<br>
+                        To do this, you’d define a one-way synonyms set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.<br>
+                        Documentation: <a href=""https://www.algolia.com/doc/synonyms#one-way-synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#one-way-synonyms</a>
+                        <br>
+                        <br>
+                        Algolia offers more synonymys’ types - placeholders and alternative corrections. These types can be managed directly from your <a href=""https://www.algolia.com/dashboard"" target=""_blank"">Algolia’s dashboard</a>.
+                        Any changes you will make to placeholders and alternative corrections in Algolia’s dashboard won’t be overriden.
+                        
+                    ","
+                        
+                        One-way synonyms allow you to define alternative words for a search term, which are not synonyms to each others.<br>
+                        Let’s take an example: when a user searches for “tablet”, you want him to be able to find iPads and Galaxy Note tablets alike, but you might not want Android tablets to show up when he searches for “iPad”.<br>
+                        To do this, you’d define a one-way synonyms set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.<br>
+                        Documentation: <a href=""https://www.algolia.com/doc/synonyms#one-way-synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#one-way-synonyms</a>
+                        <br>
+                        <br>
+                        Algolia offers more synonymys’ types - placeholders and alternative corrections. These types can be managed directly from your <a href=""https://www.algolia.com/dashboard"" target=""_blank"">Algolia’s dashboard</a>.
+                        Any changes you will make to placeholders and alternative corrections in Algolia’s dashboard won’t be overriden.
+                        
+                    "
+"Synonyms File","Synonyms File"
+"
+                        
+                            If you have large amount of synonyms (appr. more than hundred), you don't have to fill it into inputs above and you can upload a JSON file with synonyms instead.
+                            The documentation with the file structure can be found <a href=""https://www.algolia.com/doc/relevance/synonyms#synonyms"" target=""_blank"">here</a>.<br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span>
+                            When you upload a JSON file, all the synonyms settings from above will be ignored and only synonyms from the JSON file will be pushed to Algolia.
+                        
+                    ","
+                        
+                            If you have large amount of synonyms (appr. more than hundred), you don't have to fill it into inputs above and you can upload a JSON file with synonyms instead.
+                            The documentation with the file structure can be found <a href=""https://www.algolia.com/doc/relevance/synonyms#synonyms"" target=""_blank"">here</a>.<br><br>
+                            <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span>
+                            When you upload a JSON file, all the synonyms settings from above will be ignored and only synonyms from the JSON file will be pushed to Algolia.
+                        
+                    "
+Advanced,Advanced
+"Max number of element per indexing job","Max number of element per indexing job"
+"
+                        
+                            The max number of element by indexing job. Default value is 100.
+                        
+                    ","
+                        
+                            The max number of element by indexing job. Default value is 100.
+                        
+                    "
+"Remove Words If No Result","Remove Words If No Result"
+"
+                        Optional property to avoid empty result pages.<br/>
+                             By default, Algolia performs ""AND"" queries, which can lead to no results pages when queries are too long or too detailed. To avoid this, you can select among the following options:<br/>
+                             <b>LastWords</b>: when a query does not return any result, the last word will be considered as optional and the query will be automatically performed again (the process is repeated with the n-1 word, n-2 word, ... until there is results).<br/>
+                             <b>FirstWords</b>: when a query does not return any result, the first word will be considered as optional and the query will be automatically performed again (the process is repeated with the second word, third word, ... until there is results).<br/>
+                             <b>allOptional</b>: when a query does not return any result, all words will be optional.<br/>
+                             None: No specific processing is done when a query does not return any result. <br/>
+                    ","
+                        Optional property to avoid empty result pages.<br/>
+                             By default, Algolia performs ""AND"" queries, which can lead to no results pages when queries are too long or too detailed. To avoid this, you can select among the following options:<br/>
+                             <b>LastWords</b>: when a query does not return any result, the last word will be considered as optional and the query will be automatically performed again (the process is repeated with the n-1 word, n-2 word, ... until there is results).<br/>
+                             <b>FirstWords</b>: when a query does not return any result, the first word will be considered as optional and the query will be automatically performed again (the process is repeated with the second word, third word, ... until there is results).<br/>
+                             <b>allOptional</b>: when a query does not return any result, all words will be optional.<br/>
+                             None: No specific processing is done when a query does not return any result. <br/>
+                    "
+"Partial Updates","Partial Updates"
+"
+                        
+                            If enabled, all add/update operations will use <code>partialUpdateObjects</code> instead of <code>addObjects</code>. You should enable this option if you update some attributes of your records from an external source in addition to Magento to avoid any overriding.
+                        
+                    ","
+                        
+                            If enabled, all add/update operations will use <code>partialUpdateObjects</code> instead of <code>addObjects</code>. You should enable this option if you update some attributes of your records from an external source in addition to Magento to avoid any overriding.
+                        
+                    "
+"Customer Groups","Customer Groups"
+"
+                        
+                            If enabled, the extension will take into account your customer groups and display the price of the logged-in group instead of the default price.<br />Enabling this option creates an index per customer group.
+                        
+                    ","
+                        
+                            If enabled, the extension will take into account your customer groups and display the price of the logged-in group instead of the default price.<br />Enabling this option creates an index per customer group.
+                        
+                    "
+"Make SEO request","Make SEO request"
+"
+                        
+                            Choose if a query to Algolia is done by the backend for SEO when instant search is enabled
+                        
+                    ","
+                        
+                            Choose if a query to Algolia is done by the backend for SEO when instant search is enabled
+                        
+                    "
+"Remove branding logo","Remove branding logo"
+"
+                        
+                            Choose here if the algolia logo is added to the drop-down template.
+                        
+                    ","
+                        
+                            Choose here if the algolia logo is added to the drop-down template.
+                        
+                    "
+"Search input DOM Selector","Search input DOM Selector"
+"
+                        
+                            If you don't have the top.search block you can specify the selector of your search input here to use it. Default value is .algolia-search-input
+                        
+                    ","
+                        
+                            If you don't have the top.search block you can specify the selector of your search input here to use it. Default value is .algolia-search-input
+                        
+                    "
+"Update product on category products update","Update product on category products update"
+"
+                        
+                            This feature enables the extension to automatically update the product index when a product is added to or removed from a category via the ""Catalog > Categories"" menu.
+                            By default the feature is turned on.
+                        
+                    ","
+                        
+                            This feature enables the extension to automatically update the product index when a product is added to or removed from a category via the ""Catalog > Categories"" menu.
+                            By default the feature is turned on.
+                        
+                    "
+"Algolia Search Products","Algolia Search Products"
+"
+            Rebuild products index.
+        ","
+            Rebuild products index.
+        "
+"Algolia Search Categories","Algolia Search Categories"
+"
+            Rebuild categories index.
+        ","
+            Rebuild categories index.
+        "
+"Algolia Search Pages","Algolia Search Pages"
+"
+            Rebuild pages index.
+        ","
+            Rebuild pages index.
+        "
+"Algolia Search Suggestions","Algolia Search Suggestions"
+"
+            Rebuild suggestion index.
+        ","
+            Rebuild suggestion index.
+        "
+"
+            Rebuild additional sections index.
+        ","
+            Rebuild additional sections index.
+        "
+"Algolia Search Queue Runner","Algolia Search Queue Runner"
+"
+            Processes the indexing queue if enabled. This allows to run jobs in the indexing queues.
+        ","
+            Processes the indexing queue if enabled. This allows to run jobs in the indexing queues.
+        "

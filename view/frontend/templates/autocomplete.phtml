@@ -17,7 +17,7 @@ $placeholder = __('Search for products, categories, ...');
 /** Render form with autocomplete input **/
 if ($config->isDefaultSelector()): ?>
 <div class="block block-search">
-    <div class="block block-title"><strong>Search</strong></div>
+    <div class="block block-title"><strong><?php echo __('Search'); ?></strong></div>
     <div class="block block-content">
         <form id="search_mini_form" action="<?php echo $catalogSearchHelper->getResultUrl() ?>" method="get">
             <div id="algolia-searchbox">

@@ -123,7 +123,7 @@ if ($config->isInstantEnabled() && $isSearchPage) {
                 maxValuesPerFacet: <?php echo (int) $config->getMaxValuesPerFacet(); ?>,
                 autofocus: true,
                 request: {
-                    query:<?php echo json_encode(array("value" => html_entity_decode($query))); ?>.value,
+                    query: <?php echo json_encode(array("value" => html_entity_decode($query))); ?>.value,
                     refinement_key: '<?php echo $refinement_key; ?>',
                     refinement_value: '<?php echo $refinement_value; ?>',
                     path: '<?php echo $path; ?>'

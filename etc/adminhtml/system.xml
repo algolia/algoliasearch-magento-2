@@ -176,6 +176,16 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="render_template_directives" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Render template directives</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                                For CMS pages, template directives (e.g. <code>{{block type="core/template" ...}}</code>) will be processed by default. Set this to "No" if you don't want to have template content indexed.<br><br>
+                                <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
+                                ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_instant" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">

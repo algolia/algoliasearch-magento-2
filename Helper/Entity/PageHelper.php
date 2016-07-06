@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Magento\Cms\Model\Page;
+
 class PageHelper extends BaseHelper
 {
     protected function getIndexNameSuffix()
@@ -31,6 +33,7 @@ class PageHelper extends BaseHelper
 
         $pages = [];
 
+        /** @var Page $page */
         foreach ($magento_pages as $page) {
             if (in_array($page->getIdentifier(), $excluded_pages)) {
                 continue;
@@ -47,9 +50,14 @@ class PageHelper extends BaseHelper
                 continue;
             }
 
+            $content = $page->getContent();
+            if ($this->config->getRenderTemplateDirectives()) {
+                $content = $this->filterProvider->getPageFilter()->filter($content);
+            }
+
             $page_obj['objectID'] = $page->getId();
             $page_obj['url'] = $this->getStoreUrl($storeId)->getUrl(null, ['_direct' => $page->getIdentifier()]);
-            $page_obj['content'] = $this->strip($page->getContent());
+            $page_obj['content'] = $this->strip($content);
 
             $pages[] = $page_obj;
         }

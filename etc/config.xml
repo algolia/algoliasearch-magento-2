@@ -24,6 +24,7 @@
                 <min_number_of_results>2</min_number_of_results>
                 <sections>a:1:{s:18:"_1459261980310_310";a:3:{s:4:"name";s:5:"pages";s:5:"label";s:5:"Pages";s:11:"hitsPerPage";s:1:"2";}}</sections>
                 <excluded_pages></excluded_pages>
+                <render_template_directives>1</render_template_directives>
             </autocomplete>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>

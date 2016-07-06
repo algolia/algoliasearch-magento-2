@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Helper\Logger;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
+use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Directory\Model\Currency;
 use Magento\Directory\Helper\Data as CurrencyDirectory;
 use Magento\Directory\Model\Currency as CurrencyHelper;
@@ -41,6 +42,7 @@ abstract class BaseHelper
     protected $currencyDirectory;
     protected $catalogHelper;
     protected $queryResource;
+    protected $filterProvider;
 
     protected $storeUrls;
 
@@ -61,7 +63,8 @@ abstract class BaseHelper
                                 ObjectManagerInterface $objectManager,
                                 CatalogHelper $catalogHelper,
                                 ResourceConnection $queryResource,
-                                Currency $currencyManager)
+                                Currency $currencyManager,
+                                FilterProvider $filterProvider)
     {
         $this->eavConfig = $eavConfig;
         $this->config = $configHelper;
@@ -80,6 +83,7 @@ abstract class BaseHelper
         $this->objectManager = $objectManager;
         $this->catalogHelper = $catalogHelper;
         $this->queryResource = $queryResource;
+        $this->filterProvider = $filterProvider;
     }
 
     public function getBaseIndexName($storeId = null)

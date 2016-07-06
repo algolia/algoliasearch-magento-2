@@ -24,6 +24,7 @@ class CategoryObserver
     ) {
         $categoryResource->addCommitCallback(function () use ($category) {
             if (!$this->indexer->isScheduled()) {
+                Category::$affectedProductIds = (array) $category->getAffectedProductIds();
                 $this->indexer->reindexRow($category->getId());
             }
         });
@@ -38,6 +39,7 @@ class CategoryObserver
     ) {
         $categoryResource->addCommitCallback(function () use ($category) {
             if (!$this->indexer->isScheduled()) {
+                Category::$affectedProductIds = (array) $category->getAffectedProductIds();
                 $this->indexer->reindexRow($category->getId());
             }
         });

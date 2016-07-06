@@ -73,6 +73,7 @@
                 <make_seo_request>0</make_seo_request>
                 <remove_branding>0</remove_branding>
                 <autocomplete_selector>.algolia-search-input</autocomplete_selector>
+                <index_product_on_category_products_update>1</index_product_on_category_products_update>
             </advanced>
         </algoliasearch_advanced>
     </default>

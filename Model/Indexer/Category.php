@@ -21,6 +21,8 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
     private $configHelper;
     private $messageManager;
 
+    public static $affectedProductIds = [];
+
     public function __construct(StoreManagerInterface $storeManager,
                                 CategoryHelper $categoryHelper,
                                 Data $helper,
@@ -55,6 +57,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
         }
 
         $storeIds = array_keys($this->storeManager->getStores());
+        $affectedProductsCount = count(self::$affectedProductIds);
 
         foreach ($storeIds as $storeId) {
             if ($categoryIds !== null) {
@@ -65,6 +68,10 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
             }
 
             $this->queue->addToQueue($this->fullAction, 'rebuildStoreCategoryIndex', ['store_id' => $storeId, 'category_ids' => $categoryIds], count($categoryIds));
+
+            if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
+                $this->queue->addToQueue($this->fullAction, 'rebuildStoreProductIndex', ['store_id' => $storeId, 'product_ids' => self::$affectedProductIds], $affectedProductsCount);
+            }
         }
     }
 

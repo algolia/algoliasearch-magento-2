@@ -67,6 +67,7 @@ class ConfigHelper
     const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
     const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
     const AUTOCOMPLETE_SELECTOR = 'algoliasearch_advanced/advanced/autocomplete_selector';
+    const INDEX_PRODUCT_ON_CATEGORY_PRODUCTS_UPDATE = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
 
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
@@ -117,6 +118,11 @@ class ConfigHelper
     public function getAutocompleteSelector($storeId = null)
     {
         return $this->configInterface->getValue(self::AUTOCOMPLETE_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function indexProductOnCategoryProductsUpdate($storeId = null)
+    {
+        return $this->configInterface->getValue(self::INDEX_PRODUCT_ON_CATEGORY_PRODUCTS_UPDATE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getNumberOfQueriesSuggestions($storeId = null)

@@ -84,6 +84,11 @@ class Data
         $this->algoliaHelper->deleteIndex($this->categoryHelper->getIndexName($storeId));
     }
 
+    public function deleteObjects($ids, $indexName)
+    {
+        $this->algoliaHelper->deleteObjects($ids, $indexName);
+    }
+
     public function saveConfigurationToAlgolia($storeId, $useTmpIndex = false)
     {
         $this->algoliaHelper->resetCredentialsFromConfig();
@@ -301,6 +306,11 @@ class Data
         }
 
         $this->moveStoreSuggestionIndex($storeId);
+    }
+
+    public function moveIndex($tmpIndexName, $indexName)
+    {
+        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
     }
 
     public function moveStoreSuggestionIndex($storeId)

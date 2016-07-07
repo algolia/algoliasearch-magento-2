@@ -8,11 +8,13 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use AlgoliaSearch\Version;
+use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Search\Model\Query;
 use Magento\Store\Model\App\Emulation;
 
 class Data
@@ -155,38 +157,6 @@ class Data
         }
 
         return $data;
-    }
-
-    public function removeProducts($ids, $store_id = null)
-    {
-        $store_ids = Algolia_Algoliasearch_Helper_Entity_Helper::getStores($store_id);
-
-        foreach ($store_ids as $store_id) {
-            if ($this->configHelper->isEnabledBackend($store_id) === false) {
-                $this->logger->log('INDEXING IS DISABLED FOR '.$this->logger->getStoreName($store_id));
-                continue;
-            }
-
-            $index_name = $this->productHelper->getIndexName($store_id);
-
-            $this->algoliaHelper->deleteObjects($ids, $index_name);
-        }
-    }
-
-    public function removeCategories($ids, $store_id = null)
-    {
-        $store_ids = Algolia_Algoliasearch_Helper_Entity_Helper::getStores($store_id);
-
-        foreach ($store_ids as $store_id) {
-            if ($this->configHelper->isEnabledBackend($store_id) === false) {
-                $this->logger->log('INDEXING IS DISABLED FOR '.$this->logger->getStoreName($store_id));
-                continue;
-            }
-
-            $index_name = $this->categoryHelper->getIndexName($store_id);
-
-            $this->algoliaHelper->deleteObjects($ids, $index_name);
-        }
     }
 
     public function rebuildStoreAdditionalSectionsIndex($storeId)
@@ -383,6 +353,7 @@ class Data
             return;
         }
 
+        /** @var \Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection $collection */
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
@@ -391,7 +362,7 @@ class Data
 
         $indexData = [];
 
-        /** @var $suggestion Mage_Catalog_Model_Category */
+        /** @var Query $suggestion */
         foreach ($collection as $suggestion) {
             $suggestion->setStoreId($storeId);
 
@@ -422,6 +393,7 @@ class Data
             return;
         }
 
+        /** @var \Magento\Catalog\Model\ResourceModel\Category\Flat\Collection $collection */
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
@@ -430,7 +402,7 @@ class Data
 
         $indexData = [];
 
-        /** @var $category Mage_Catalog_Model_Category */
+        /** @var Category $category */
         foreach ($collection as $category) {
             if (!$this->categoryHelper->isCategoryActive($category->getId(), $storeId)) {
                 continue;

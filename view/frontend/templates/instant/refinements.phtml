@@ -1,0 +1,15 @@
+<script type="text/template" id="current-refinements-template">
+    <div class="cross-wrapper">
+        <img src="<?php echo $block->getViewFileUrl("Algolia_AlgoliaSearch::cross.png"); ?>" />
+    </div>
+    <div class="current-refinement-wrapper">
+        {{#label}}
+        <span class="current-refinement-label">{{label}}{{^operator}}:{{/operator}}</span>
+        {{/label}}
+        {{#operator}}
+        {{{displayOperator}}}
+        {{/operator}}
+        {{#exclude}}-{{/exclude}}
+        <span class="current-refinement-name">{{name}}</span>
+    </div>
+</script>

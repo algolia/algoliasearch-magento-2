@@ -1,0 +1,14 @@
+<!-- Page hit template -->
+<script type="text/template" id="autocomplete_pages_template">
+    <a class="algoliasearch-autocomplete-hit" href="{{url}}">
+        <div class="info-without-thumb">
+            {{{_highlightResult.name.value}}}
+            {{#content}}
+            <div class="details">
+                {{{content}}}
+            </div>
+            {{/content}}
+        </div>
+        <div class="clearfix"></div>
+    </a>
+</script>

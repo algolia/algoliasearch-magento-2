@@ -1,0 +1,42 @@
+<?php
+    /** @var \Algolia\AlgoliaSearch\Block\Algolia $block */
+    $price_key = $block->getPriceKey();
+?>
+<!-- Product hit template -->
+<script type="text/template" id="autocomplete_products_template">
+    <a class="algoliasearch-autocomplete-hit" href="{{url}}">
+        {{#thumbnail_url}}
+        <div class="thumb"><img src="{{thumbnail_url}}" /></div>
+        {{/thumbnail_url}}
+
+        <div class="info">
+            {{{_highlightResult.name.value}}}
+
+            <div class="algoliasearch-autocomplete-category">
+                {{#categories_without_path}}
+                <?php echo __('in'); ?> {{{categories_without_path}}}
+                {{/categories_without_path}}
+
+                {{#_highlightResult.color}}
+                {{#_highlightResult.color.value}}
+                <span>
+                   {{#categories_without_path}} | {{/categories_without_path}} Color:  {{{_highlightResult.color.value}}}
+                </span>
+                {{/_highlightResult.color.value}}
+                {{/_highlightResult.color}}
+            </div>
+
+            <div class="algoliasearch-autocomplete-price">
+                    <span class="after_special {{#price<?php echo $price_key; ?>_original_formated}}promotion{{/price<?php echo $price_key; ?>_original_formated}}">
+                        {{price<?php echo $price_key; ?>_formated}}
+                    </span>
+
+                {{#price<?php echo $price_key; ?>_original_formated}}
+                    <span class="before_special">
+                        {{price<?php echo $price_key; ?>_original_formated}}
+                    </span>
+                {{/price<?php echo $price_key; ?>_original_formated}}
+            </div>
+        </div>
+    </a>
+</script>

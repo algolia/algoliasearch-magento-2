@@ -1,0 +1,74 @@
+<?php /** @var \Algolia\AlgoliaSearch\Block\Instant\Wrapper $block */?>
+<!-- Wrapping template -->
+<script type="text/template" id="instant_wrapper_template">
+    {{#findAutocomplete}}
+    <div id="algolia-autocomplete-container"></div>
+    {{/findAutocomplete}}
+    <div id="algolia_instant_selector" class="<?php echo $block->hasFacets() ? ' with-facets' : '' ?>">
+        <div class="row">
+            <div class="col-md-3" id="algolia-left-container">
+                <div id="refine-toggle" class="visible-xs visible-sm">+ <?php echo __('Refine'); ?></div>
+                <div class="hidden-xs hidden-sm" id="instant-search-facets-container">
+                    <div id="current-refinements"></div>
+                </div>
+            </div>
+
+            <div class="col-md-9" id="algolia-right-container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div>
+                            {{#second_bar}}
+                            <div id="instant-search-bar-container">
+                                <div id="instant-search-box">
+                                    <div class="instant-search-bar-label">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="magnifying-glass" width="24" height="24" viewBox="0 0 128 128">
+                                            <g transform="scale(4)">
+                                                <path stroke-width="3" d="M19.5 19.582l9.438 9.438"></path>
+                                                <circle stroke-width="3" cx="12" cy="12" r="10.5" fill="none"></circle>
+                                                <path d="M23.646 20.354l-3.293 3.293c-.195.195-.195.512 0 .707l7.293 7.293c.195.195.512.195.707 0l3.293-3.293c.195-.195.195-.512 0-.707l-7.293-7.293c-.195-.195-.512-.195-.707 0z"></path>
+                                            </g>
+                                        </svg>
+                                        <span><?php echo __('Current search') ?></span>
+                                    </div>
+                                    <div class="instant-search-bar-wrapper">
+                                        <label for="instant-search-bar">
+                                            <?php echo __('Search :'); ?>
+                                        </label>
+
+                                        <input placeholder="<?php echo __('Search for products'); ?>" id="instant-search-bar" type="text" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" />
+
+                                        <img class="clear-query-instant" src="<?php echo $block->getViewFileUrl('Algolia_AlgoliaSearch::cross.png'); ?>" />
+                                    </div>
+                                </div>
+                            </div>
+                            {{/second_bar}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div>
+                        <div class="hits">
+                            <div class="infos">
+                                <div class="pull-left" id="algolia-stats"></div>
+                                <div class="pull-right">
+                                    <div class="sort-by-label pull-left">
+                                        <?php echo __('SORT BY'); ?>
+                                    </div>
+                                    <div class="pull-left" id="algolia-sorts"></div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div id="instant-search-results-container"></div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="text-center">
+                    <div id="instant-search-pagination-container"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</script>

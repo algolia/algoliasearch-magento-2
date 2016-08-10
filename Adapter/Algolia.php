@@ -136,15 +136,17 @@ class Algolia implements AdapterInterface
             }
 
             $getDocumentMethod = 'getDocument21';
+            $storeDocumentsMethod = 'storeApiDocuments';
             if (version_compare($this->config->getMagentoVersion(), '2.1.0', '<') === true) {
                 $getDocumentMethod = 'getDocument20';
+                $storeDocumentsMethod = 'storeDocuments';
             }
 
             $apiDocuments = array_map(function ($document) use ($getDocumentMethod) {
                 return $this->{$getDocumentMethod}($document);
             }, $documents);
 
-            $table = $temporaryStorage->storeApiDocuments($apiDocuments);
+            $table = $temporaryStorage->{$storeDocumentsMethod}($apiDocuments);
         }
 
         $aggregations = $this->aggregationBuilder->build($request, $table);

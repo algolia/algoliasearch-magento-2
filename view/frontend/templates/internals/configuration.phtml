@@ -1,0 +1,172 @@
+<?php
+/** @var \Algolia\AlgoliaSearch\Block\Algolia $block */
+
+$config = $block->getConfigHelper();
+
+$catalogSearchHelper = $block->getCatalogSearchHelper();
+
+$productHelper = $block->getProductHelper();
+
+$algoliaHelper = $block->getAlgoliaHelper();
+
+$baseUrl = rtrim($block->getBaseUrl(), '/');
+
+$isSearchPage = false;
+$isCategoryPage = false;
+
+$currencyCode = $block->getCurrencyCode();
+$currencySymbol = $block->getCurrencySymbol();
+
+$customerGroupId = $block->getGroupId();
+
+$priceKey = $block->getPriceKey();
+
+$allDepartments = "All departments";
+
+$query = '';
+$refinementKey = '';
+$refinementValue = '';
+$path = '';
+
+/**
+ * Handle category replacement
+ */
+if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRequest()->getControllerName() == 'category') {
+    $category = $block->getCurrentCategory();
+
+    if ($category && $category->getDisplayMode() !== 'PAGE') {
+        $category->getUrlInstance()->setStore($block->getStoreId());
+
+        foreach ($category->getPathIds() as $treeCategoryId) {
+            if ($path != '') {
+                $path .= ' /// ';
+            }
+
+            $path .= $productHelper->getCategoryName($treeCategoryId, $block->getStoreId());
+        }
+
+        $indexName = $productHelper->getIndexName($block->getStoreId());
+        $category_url = $category->getUrl($category);
+        $isSearchPage = true;
+        $isCategoryPage = true;
+    }
+}
+
+/**
+ * Handle search
+ */
+if ($config->isInstantEnabled()) {
+    $pageIdentifier = $block->getRequest()->getFullActionName();
+
+    if ($pageIdentifier === 'catalogsearch_result_index') {
+        $query = $catalogSearchHelper->getEscapedQueryText();
+
+        if ($query == '__empty__') {
+            $query = '';
+        }
+
+        $product_helper = $block->getProductHelper();
+
+        $refinementKey = $block->getRequest()->getParam('refinement_key');
+
+        if ($refinementKey !== null) {
+            $refinementValue = $query;
+            $query = "";
+        }
+        else {
+            $refinementKey = "";
+        }
+
+        $isSearchPage = true;
+    }
+}
+
+// Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
+if ($config->isInstantEnabled() && $isSearchPage) {
+    echo '
+    <script>
+        document.write(\'<style type="text/css"> ' . $config->getInstantSelector() . '{display:none}</style>\');
+    </script>';
+}
+
+$algoliaJsConfig = [
+    'instant' => [
+        'enabled' => $config->isInstantEnabled(),
+        'selector' => $config->getInstantSelector(),
+        'isAddToCartEnabled' => $config->isAddToCartEnable(),
+    ],
+    'autocomplete' => [
+        'enabled' => $config->isAutoCompleteEnabled(),
+        'selector' => $config->getAutocompleteSelector(),
+        'sections' => $config->getAutocompleteSections(),
+        'nbOfProductsSuggestions' => $config->getNumberOfProductsSuggestions(),
+        'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
+        'nbOfQueriesSuggestions' => $config->getNumberOfQueriesSuggestions(),
+    ],
+    'extensionVersion' => $config->getExtensionVersion(),
+    'applicationId' => $config->getApplicationID(),
+    'indexName' => $productHelper->getBaseIndexName(),
+    'apiKey' => $algoliaHelper->generateSearchSecuredApiKey($config->getSearchOnlyAPIKey(), $config->getAttributesToRetrieve($customerGroupId)),
+    'facets' => $config->getFacets(),
+    'hitsPerPage' => (int) $config->getNumberOfProductResults(),
+    'sortingIndices' => array_values($config->getSortingIndices()),
+    'isSearchPage' => $isSearchPage,
+    'isCategoryPage' => $isCategoryPage,
+    'removeBranding' => (bool) $config->isRemoveBranding(),
+    'priceKey' => $priceKey,
+    'currencyCode' => $currencyCode,
+    'currencySymbol' => $currencySymbol,
+    'maxValuesPerFacet' => (int) $config->getMaxValuesPerFacet(),
+    'autofocus' => true,
+    'request' => [
+        'query' => html_entity_decode($query),
+        'refinementKey' => $refinementKey,
+        'refinementValue' => $refinementValue,
+        'path' => $path,
+    ],
+    'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
+    'showSuggestionsOnNoResultsPage' => $config->showSuggestionsOnNoResultsPage(),
+    'baseUrl' => $baseUrl,
+    'popularQueries' => $config->getPopularQueries(),
+    'urls' => [
+        'logo' => $block->getViewFileUrl('Algolia_AlgoliaSearch::images/algolia-logo.png'),
+    ],
+    'translations' => [
+        'to' => __('to'),
+        'or' => __('or'),
+        'go' => __('Go'),
+        'popularQueries' => __('You can try one of the popular search queries'),
+        'seeAll' => __('See all products'),
+        'allDepartments' => __('All departments'),
+        'seeIn' => __('See products in'),
+        'orIn' => __('or in'),
+        'noProducts' => __('No products for query'),
+        'noResults' => __('No results'),
+        'refine' => __('Refine'),
+        'selectedFilters' => __('Selected Filters'),
+        'clearAll' => __('Clear all'),
+        'previousPage' => __('Previous page'),
+        'nextPage' => __('Next page'),
+        'searchFor' => __('Search for products'),
+        'relevance' => __('Relevance'),
+        'categories' => __('Categories'),
+        'products' => __('Products'),
+        'searchBy' => __('Search by'),
+    ],
+];
+
+?>
+
+<script>
+    window.algoliaConfig = <?php echo json_encode($algoliaJsConfig); ?>;
+</script>
+
+<!--[if lte IE 9]>
+<script>
+    document.addEventListener("DOMContentLoaded", function(e) {
+        algoliaBundle.$(function ($) {
+            window.algoliaConfig.autofocus = false;
+        });
+    });
+</script>
+<![endif]-->

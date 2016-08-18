@@ -1,15 +1,37 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
-        <script src="Algolia_AlgoliaSearch::algoliaBundle.min.js"/>
-        <css src="Algolia_AlgoliaSearch::algoliasearch.css" />
+        <script src="Algolia_AlgoliaSearch::internals/algoliaBundle.min.js"/>
+        <script src="Algolia_AlgoliaSearch::internals/common.js"/>
+
+        <script src="Algolia_AlgoliaSearch::instantsearch.js"/>
+        <script src="Algolia_AlgoliaSearch::autocomplete.js"/>
+
+        <css src="Algolia_AlgoliaSearch::internals/algoliasearch.css" />
     </head>
     <body>
         <referenceBlock name="head.additional">
-            <block class="Algolia\AlgoliaSearch\Block\Algolia" name="algolia.internals.commonjs" template="Algolia_AlgoliaSearch::internals/commonjs.phtml"/>
+            <block class="Algolia\AlgoliaSearch\Block\Algolia" name="algolia.internals.configuration" template="Algolia_AlgoliaSearch::internals/configuration.phtml"/>
         </referenceBlock>
         <referenceBlock name="main.content">
             <block class="Magento\Framework\View\Element\Template" before="-" name="algolia.beforecontent" template="Algolia_AlgoliaSearch::internals/beforecontent.phtml"/>
+        </referenceBlock>
+
+        <referenceBlock name="footer">
+            <!-- Multi-category Autocomplete templates -->
+            <block class="Algolia\AlgoliaSearch\Block\Algolia" name="algolia.autocomplete.product" template="Algolia_AlgoliaSearch::autocomplete/product.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.autocomplete.category" template="Algolia_AlgoliaSearch::autocomplete/category.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.autocomplete.page" template="Algolia_AlgoliaSearch::autocomplete/page.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.autocomplete.attribute" template="Algolia_AlgoliaSearch::autocomplete/attribute.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.autocomplete.suggestion" template="Algolia_AlgoliaSearch::autocomplete/suggestion.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.autocomplete.menu" template="Algolia_AlgoliaSearch::autocomplete/menu.phtml"/>
+
+            <!-- Instant search results page templates -->
+            <block class="Algolia\AlgoliaSearch\Block\Instant\Wrapper" name="algolia.instant.wrapper" template="Algolia_AlgoliaSearch::instant/wrapper.phtml"/>
+            <block class="Algolia\AlgoliaSearch\Block\Instant\Hit" name="algolia.instant.hit" template="Algolia_AlgoliaSearch::instant/hit.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.instant.stats" template="Algolia_AlgoliaSearch::instant/stats.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.instant.facet" template="Algolia_AlgoliaSearch::instant/facet.phtml"/>
+            <block class="Magento\Framework\View\Element\Template" name="algolia.instant.refinements" template="Algolia_AlgoliaSearch::instant/refinements.phtml"/>
         </referenceBlock>
     </body>
 </page>

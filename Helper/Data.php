@@ -390,7 +390,7 @@ class Data
             return;
         }
 
-        /** @var \Magento\Catalog\Model\ResourceModel\Category\Flat\Collection $collection */
+        /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $collection */
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();

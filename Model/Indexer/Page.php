@@ -56,7 +56,12 @@ class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framewo
             return;
         }
 
-        $storeIds = array_keys($this->storeManager->getStores());
+        $stores = array_filter($this->storeManager->getStores(), function ($store) {
+            return $store->isActive();
+        });
+        $storeIds = array_map(function ($store) {
+            return $store->getId();
+        }, $stores);
 
         foreach ($storeIds as $storeId) {
             $this->queue->addToQueue($this->fullAction, 'rebuildStorePageIndex', ['store_id' => $storeId], 1);

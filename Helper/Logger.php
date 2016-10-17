@@ -9,8 +9,8 @@ class Logger
 {
     protected $enabled;
     protected $config;
-    protected $timers = array();
-    protected $stores = array();
+    protected $timers = [];
+    protected $stores = [];
     /**
      * @var LoggerInterface
      */
@@ -21,8 +21,9 @@ class Logger
         $this->config = $configHelper;
         $this->enabled = $this->config->isLoggingEnabled();
 
-        foreach ($storeManager->getStores() as $store)
+        foreach ($storeManager->getStores() as $store) {
             $this->stores[$store->getId()] = $store->getName();
+        }
         $this->logger = $logger;
     }
 
@@ -33,32 +34,36 @@ class Logger
 
     public function getStoreName($storeId)
     {
-        if ($storeId === null)
+        if ($storeId === null) {
             return 'undefined store';
+        }
 
         return $storeId . ' (' . $this->stores[$storeId] . ')';
     }
 
     public function start($action)
     {
-        if ($this->enabled == false)
+        if ($this->enabled == false) {
             return;
+        }
 
         $this->log('');
         $this->log('');
-        $this->log('>>>>> BEGIN '.$action);
+        $this->log('>>>>> BEGIN ' . $action);
         $this->timers[$action] = microtime(true);
     }
 
     public function stop($action)
     {
-        if ($this->enabled == false)
+        if ($this->enabled == false) {
             return;
+        }
 
-        if (false === isset($this->timers[$action]))
-            throw new Exception("Algolia Logger => non existing action");
+        if (false === isset($this->timers[$action])) {
+            throw new \Exception('Algolia Logger => non existing action');
+        }
 
-        $this->log('<<<<< END ' .$action. ' (' . $this->formatTime($this->timers[$action], microtime(true)) . ')');
+        $this->log('<<<<< END ' . $action . ' (' . $this->formatTime($this->timers[$action], microtime(true)) . ')');
     }
 
     public function log($message)
@@ -70,6 +75,6 @@ class Logger
 
     protected function formatTime($begin, $end)
     {
-        return ($end - $begin).'sec';
+        return ($end - $begin) . 'sec';
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Model\Source;
 
-use Magento\Framework\DataObject;
-
 /**
  * Algolia custom sort order field
  */
@@ -15,7 +13,7 @@ class Sorts extends AbstractTable
 
         return [
             'attribute' => [
-                'label' => 'Attribute',
+                'label'  => 'Attribute',
                 'values' => function () use ($productHelper) {
                     $options = [];
 
@@ -24,18 +22,18 @@ class Sorts extends AbstractTable
                     }
 
                     return $options;
-                }
+                },
             ],
             'sort' => [
-                'label' => 'Sort',
+                'label'  => 'Sort',
                 'values' => [
-                    'asc'   => 'Ascending',
-                    'desc'  => 'Descending'
-                ]
+                    'asc'  => 'Ascending',
+                    'desc' => 'Descending',
+                ],
             ],
             'label' => [
-                'label' => 'Label'
-            ]
+                'label' => 'Label',
+            ],
         ];
     }
 }

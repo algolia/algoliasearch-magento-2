@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Model\Source;
 
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\DataObject;
 
 class CustomPages extends AbstractTable
 {
@@ -14,18 +13,18 @@ class CustomPages extends AbstractTable
 
         return [
             'attribute' => [
-                'label' => 'Attribute',
+                'label'  => 'Page',
                 'values' => function () use ($pageCollection) {
                     $options = [];
                     $magento_pages = $pageCollection->addFieldToFilter('is_active', 1);
 
-                    foreach ($magento_pages as $page){
+                    foreach ($magento_pages as $page) {
                         $options[$page->getData('identifier')] = $page->getData('identifier');
                     }
 
                     return $options;
-                }
-            ]
+                },
+            ],
         ];
     }
 }

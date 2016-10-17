@@ -12,7 +12,7 @@
         <tab id="algolia" translate="label" sortOrder="10">
             <label>
                 <![CDATA[
-                    Algolia Search 2.0.alpha
+                    Algolia Search
                 ]]>
             </label>
         </tab>
@@ -97,7 +97,7 @@
                         <![CDATA[
                             If set to Yes, the products inside the results pages will be searchable the refined results updated as-you-type. It requires your theme to expose a <code>top.search</code> and <code>content</code> block.
                             <br><br>
-                            <span style="font-size: 30px; color: #D83900">&#9888;</span> Enabling instant search can potentially break your design, some work will be required to have a good integration into your theme
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Enabling instant search can potentially break your design, some work will be required to have a good integration into your theme
                             products.
                         ]]>
                     </comment>
@@ -161,7 +161,7 @@
                     <comment>
                         <![CDATA[
                             Configure here the additional auto-completion menu sections you want include in the dropdown menu (Ex. Suggestions, Pages, Manufacturer, Colors).<br /><br>
-                            <span style="color: #D83900">&#9888;</span> All attributes used here must have been initially included in the <strong>Attributes Configuration</strong> panel and configured as a facet in the <strong>Instant Search Results Page Configuration</strong> panel to be able to refine on the specific attribute.
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> All attributes used here must have been initially included in the <strong>Attributes Configuration</strong> panel and configured as a facet in the <strong>Instant Search Results Page Configuration</strong> panel to be able to refine on the specific attribute.
                         ]]>
                     </comment>
                 </field>
@@ -172,8 +172,18 @@
                     <comment>
                         <![CDATA[
                             Configure here the pages you don't want to search in.<br><br>
-                            <span style="font-size: 20px; color: #D83900">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
                         ]]>
+                    </comment>
+                </field>
+                <field id="render_template_directives" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Render template directives</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                                For CMS pages, template directives (e.g. <code>{{block type="core/template" ...}}</code>) will be processed by default. Set this to "No" if you don't want to have template content indexed.<br><br>
+                                <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Do not forget to trigger the Algolia Search indexers whenever you modify those settings.
+                                ]]>
                     </comment>
                 </field>
             </group>
@@ -276,7 +286,7 @@
                         <![CDATA[
                             Choose here the product attributes your users can search on, the ones you want to use as filters and sorts options and the ones required to display the search results.<br><br>
                              The order of the searchable attributes matters: a query matching the first searchable attribute of a product will put this product before the others in the results. Chose "Ordered" if you want the position of the matching word(s) inside the attribute to matter. A match at the beginning of an attribute will be considered more important: for the query "iPhone", "iPhone 5s" will be ranked before "case for iPhone".<br />
-                            <br><span style="font-size: 20px; color: #D83900">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
+                            <br><span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
                         ]]>
                     </comment>
                 </field>
@@ -287,7 +297,7 @@
                     <comment>
                         <![CDATA[
                             Configure here the attributes that reflect the popularity of your product (number of orders, number of likes, number of views, ...).<br />
-                            <span style="color: #D83900">&#9888;</span> All attributes used here must have been initially included in the Attributes configuration panel.
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> All attributes used here must have been initially included in the Attributes configuration panel.
                         ]]>
                     </comment>
                 </field>
@@ -297,6 +307,15 @@
                     <comment>
                         <![CDATA[
                             Choose here if you want to show most popular queries suggestions when there are no results/
+                        ]]>
+                    </comment>
+                </field>
+                <field id="index_out_of_stock_options" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Index out of stock options for configurable products</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Choose here if you want to index out of stock options for configurable products
                         ]]>
                     </comment>
                 </field>
@@ -324,9 +343,18 @@
                     <comment>
                         <![CDATA[
                             Choose here the attributes that reflect the popularity of your categories (number of products, total number of sales of the category,etc.).<br />
-                            <span style="color: #D83900">&#9888;</span> All attributes used here must have been included before in the "Attributes" configuration.
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> All attributes used here must have been included before in the "Attributes" configuration.
                             <br><br>
-                            <span style="font-size: 24px; color: #D83900">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Do not forget to reindex your Algolia Search index after you've modified this panel.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="show_cats_not_included_in_navigation" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show categories that are not included in the navigation menu</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If set to Yes, Algolia will display all categories in both the autocomplete menu and instant search page ignoring the setting: "Include in navigation menu". Default value: No
                         ]]>
                     </comment>
                 </field>
@@ -357,6 +385,106 @@
                     <comment>
                         <![CDATA[
                             The image used at the Search Results Page.
+                        ]]>
+                    </comment>
+                </field>
+            </group>
+        </section>
+        <section id="algoliasearch_queue" translate="label" type="text" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Indexing Queue / Cron</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="queue" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="active" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Queue Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br />
+                            <br>
+                            To schedule the run you need to add this in your crontab:<br>
+                            <code>*/5 * * * * php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code>
+                            <br><br>
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Number of jobs to run each time the cron is run</label>
+                    <comment>
+                        <![CDATA[
+                            Number of jobs to run each time the cron is run. Default value is 10.
+                            <br><br>
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span> Each time the cron runs it will process ("Max number of element per indexing job" * "Number of jobs to run each time the cron is run")
+                            products.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+        <section id="algoliasearch_synonyms" translate="label" type="text" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Synonyms</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="synonyms_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment>
+                    <![CDATA[
+                    <table>
+                        <tr>
+                            <td>Synonyms documentation:</td>
+                            <td><a target="_blank" href="https://www.algolia.com/doc/synonyms">https://www.algolia.com/doc/synonyms</a></td>
+                        </tr>
+                    </table>
+                    <br>
+                    <hr>
+                    <br>
+                ]]>
+                </comment>
+                <field id="synonyms" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Synonyms</label>
+                    <frontend_model>Algolia\AlgoliaSearch\Model\Source\Synonyms</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>
+                        <![CDATA[
+                            Synonyms are defined by a comma-separated list of words that should be considered equivalent by the Algolia engine.<br>
+                            For instance: <code>tv, television, tv set</code><br>
+                            Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.<br>
+                            Documentation: <a href="https://www.algolia.com/doc/synonyms#synonyms" target="_blank">https://www.algolia.com/doc/synonyms#synonyms</a>
+                        ]]>
+                    </comment>
+                </field>
+                <field id="oneway_synonyms" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Synonyms</label>
+                    <frontend_model>Algolia\AlgoliaSearch\Model\Source\OnewaySynonyms</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>
+                        <![CDATA[
+                        One-way synonyms allow you to define alternative words for a search term, which are not synonyms to each others.<br>
+                        Let’s take an example: when a user searches for “tablet”, you want him to be able to find iPads and Galaxy Note tablets alike, but you might not want Android tablets to show up when he searches for “iPad”.<br>
+                        To do this, you’d define a one-way synonyms set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.<br>
+                        Documentation: <a href="https://www.algolia.com/doc/synonyms#one-way-synonyms" target="_blank">https://www.algolia.com/doc/synonyms#one-way-synonyms</a>
+                        <br>
+                        <br>
+                        Algolia offers more synonymys’ types - placeholders and alternative corrections. These types can be managed directly from your <a href="https://www.algolia.com/dashboard" target="_blank">Algolia’s dashboard</a>.
+                        Any changes you will make to placeholders and alternative corrections in Algolia’s dashboard won’t be overriden.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="synonyms_file" translate="label comment" type="file" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Synonyms File</label>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Source\SynonymsFile</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">algoliasearch_admin_config_uploads</upload_dir>
+                    <base_url type="media" scope_info="1">algoliasearch_admin_config_uploads</base_url>
+                    <comment>
+                        <![CDATA[
+                            If you have large amount of synonyms (appr. more than hundred), you don't have to fill it into inputs above and you can upload a JSON file with synonyms instead.
+                            The documentation with the file structure can be found <a href="https://www.algolia.com/doc/relevance/synonyms#synonyms" target="_blank">here</a>.<br><br>
+                            <span style="font-size: 30px; color: #D83900; position: relative; top: 6px;">&#9888;</span>
+                            When you upload a JSON file, all the synonyms settings from above will be ignored and only synonyms from the JSON file will be pushed to Algolia.
                         ]]>
                     </comment>
                 </field>
@@ -429,6 +557,16 @@
                     <comment>
                         <![CDATA[
                             If you don't have the top.search block you can specify the selector of your search input here to use it. Default value is .algolia-search-input
+                        ]]>
+                    </comment>
+                </field>
+                <field id="index_product_on_category_products_update" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Update product on category products update</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            This feature enables the extension to automatically update the product index when a product is added to or removed from a category via the "Catalog > Categories" menu.
+                            By default the feature is turned on.
                         ]]>
                     </comment>
                 </field>

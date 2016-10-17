@@ -23,7 +23,8 @@
                 <min_popularity>1000</min_popularity>
                 <min_number_of_results>2</min_number_of_results>
                 <sections>a:1:{s:18:"_1459261980310_310";a:3:{s:4:"name";s:5:"pages";s:5:"label";s:5:"Pages";s:11:"hitsPerPage";s:1:"2";}}</sections>
-                <excluded_pages></excluded_pages>
+                <excluded_pages>a:1:{s:18:"_1472030916250_250";a:1:{s:9:"attribute";s:8:"no-route";}}</excluded_pages>
+                <render_template_directives>1</render_template_directives>
             </autocomplete>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>
@@ -48,6 +49,7 @@
             <categories>
                 <category_additional_attributes>a:7:{s:18:"_1427960339954_954";a:4:{s:9:"attribute";s:4:"name";s:10:"searchable";s:1:"1";s:11:"retrievable";s:1:"1";s:5:"order";s:7:"ordered";}s:18:"_1427960354437_437";a:4:{s:9:"attribute";s:4:"path";s:10:"searchable";s:1:"1";s:11:"retrievable";s:1:"1";s:5:"order";s:7:"ordered";}s:18:"_1427961004989_989";a:4:{s:9:"attribute";s:11:"description";s:10:"searchable";s:1:"1";s:11:"retrievable";s:1:"1";s:5:"order";s:9:"unordered";}s:18:"_1427961205511_511";a:4:{s:9:"attribute";s:10:"meta_title";s:10:"searchable";s:1:"1";s:11:"retrievable";s:1:"1";s:5:"order";s:7:"ordered";}s:18:"_1427961216134_134";a:4:{s:9:"attribute";s:13:"meta_keywords";s:10:"searchable";s:1:"1";s:11:"retrievable";s:1:"1";s:5:"order";s:7:"ordered";}s:18:"_1427961216916_916";a:4:{s:9:"attribute";s:16:"meta_description";s:10:"searchable";s:1:"1";s:11:"retrievable";s:1:"1";s:5:"order";s:9:"unordered";}s:18:"_1427977778338_338";a:4:{s:9:"attribute";s:13:"product_count";s:10:"searchable";s:1:"0";s:11:"retrievable";s:1:"1";s:5:"order";s:7:"ordered";}}</category_additional_attributes>
                 <custom_ranking_category_attributes>a:1:{s:18:"_1427961035192_192";a:2:{s:9:"attribute";s:13:"product_count";s:5:"order";s:4:"desc";}}</custom_ranking_category_attributes>
+                <show_cats_not_included_in_navigation>1</show_cats_not_included_in_navigation>
             </categories>
         </algoliasearch_categories>
         <algoliasearch_images>
@@ -57,6 +59,12 @@
                 <type>image</type>
             </image>
         </algoliasearch_images>
+        <algoliasearch_queue>
+            <queue>
+                <active>0</active>
+                <number_of_job_to_run>10</number_of_job_to_run>
+            </queue>
+        </algoliasearch_queue>
         <algoliasearch_advanced>
             <advanced>
                 <number_of_element_by_page>100</number_of_element_by_page>
@@ -66,6 +74,7 @@
                 <make_seo_request>0</make_seo_request>
                 <remove_branding>0</remove_branding>
                 <autocomplete_selector>.algolia-search-input</autocomplete_selector>
+                <index_product_on_category_products_update>1</index_product_on_category_products_update>
             </advanced>
         </algoliasearch_advanced>
     </default>

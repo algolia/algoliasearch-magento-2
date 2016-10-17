@@ -36,4 +36,10 @@
             Rebuild additional sections index.
         </description>
     </indexer>
+    <indexer id="algolia_queue_runner" view_id="algolia_queue_runner" class="Algolia\AlgoliaSearch\Model\Indexer\QueueRunner">
+        <title translate="true">Algolia Search Queue Runner</title>
+        <description translate="true">
+            Processes the indexing queue if enabled. This allows to run jobs in the indexing queues.
+        </description>
+    </indexer>
 </config>

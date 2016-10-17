@@ -2,8 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use Algolia\AlgoliaSearch\Helper\Logger;
-
 class Image extends \Magento\Catalog\Helper\Image
 {
     protected $logger;
@@ -43,6 +41,7 @@ class Image extends \Magento\Catalog\Helper\Image
                 $model->setBaseFile($this->getProduct()->getImage());
             }
         }
+
         return $this;
     }
 }

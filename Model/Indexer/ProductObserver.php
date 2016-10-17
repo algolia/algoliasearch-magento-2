@@ -3,13 +3,13 @@
  * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Magento\Framework\Indexer\IndexerRegistry;
 
 class ProductObserver
 {
-
     private $indexer;
 
     public function __construct(IndexerRegistry $indexerRegistry)
@@ -27,6 +27,7 @@ class ProductObserver
                 $this->indexer->reindexRow($product->getId());
             }
         });
+
         return $proceed($product);
     }
 
@@ -40,6 +41,7 @@ class ProductObserver
                 $this->indexer->reindexRow($product->getId());
             }
         });
+
         return $proceed($product);
     }
 
@@ -54,6 +56,7 @@ class ProductObserver
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));
         }
+
         return $result;
     }
 
@@ -68,6 +71,7 @@ class ProductObserver
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));
         }
+
         return $result;
     }
 }

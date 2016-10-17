@@ -3,13 +3,13 @@
  * Copyright © 2015 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Magento\Framework\Indexer\IndexerRegistry;
 
 class CategoryObserver
 {
-
     private $indexer;
 
     public function __construct(IndexerRegistry $indexerRegistry)
@@ -24,9 +24,11 @@ class CategoryObserver
     ) {
         $categoryResource->addCommitCallback(function () use ($category) {
             if (!$this->indexer->isScheduled()) {
+                Category::$affectedProductIds = (array) $category->getAffectedProductIds();
                 $this->indexer->reindexRow($category->getId());
             }
         });
+
         return $proceed($category);
     }
 
@@ -37,9 +39,11 @@ class CategoryObserver
     ) {
         $categoryResource->addCommitCallback(function () use ($category) {
             if (!$this->indexer->isScheduled()) {
+                Category::$affectedProductIds = (array) $category->getAffectedProductIds();
                 $this->indexer->reindexRow($category->getId());
             }
         });
+
         return $proceed($category);
     }
 
@@ -54,6 +58,7 @@ class CategoryObserver
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($categoryIds));
         }
+
         return $result;
     }
 
@@ -68,6 +73,7 @@ class CategoryObserver
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($categoryIds));
         }
+
         return $result;
     }
 }

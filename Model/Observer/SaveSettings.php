@@ -12,14 +12,13 @@ class SaveSettings implements ObserverInterface
     protected $helper;
     protected $storeManager;
 
-
     public function __construct(StoreManagerInterface $storeManager, Data $helper)
     {
         $this->storeManager = $storeManager;
         $this->helper = $helper;
     }
 
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
         foreach ($this->storeManager->getStores() as $store) {
             if ($store->getIsActive()) {

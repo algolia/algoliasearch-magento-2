@@ -14,7 +14,7 @@ class AdditionalSectionHelper extends BaseHelper
     public function getIndexSettings($storeId)
     {
         return [
-            'attributesToIndex'         => array('value'),
+            'attributesToIndex' => ['value'],
         ];
     }
 
@@ -25,8 +25,8 @@ class AdditionalSectionHelper extends BaseHelper
         /** @var $products \Magento\Catalog\Model\ResourceModel\Product\Collection $productCollection */
         $products = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Product\Collection');
         $products = $products->addStoreFilter($storeId)
-            ->addAttributeToFilter($attributeCode, array('notnull' => true))
-            ->addAttributeToFilter($attributeCode, array('neq' => ''))
+            ->addAttributeToFilter($attributeCode, ['notnull' => true])
+            ->addAttributeToFilter($attributeCode, ['neq' => ''])
             ->addAttributeToSelect($attributeCode);
 
         $usedAttributeValues = array_unique($products->getColumnValues($attributeCode));
@@ -37,24 +37,24 @@ class AdditionalSectionHelper extends BaseHelper
             implode(',', $usedAttributeValues)
         );
 
-        if (! $values || count($values) == 0) {
+        if (!$values || count($values) == 0) {
             $values = array_unique($products->getColumnValues($attributeCode));
         }
 
         if ($values && is_array($values) == false) {
-            $values = array($values);
+            $values = [$values];
         }
 
         $values = array_map(function ($value) use ($section) {
 
-            $record = array(
-                'objectID'  => $value,
-                'value'     => $value
-            );
+            $record = [
+                'objectID' => $value,
+                'value'    => $value,
+            ];
 
             $transport = new DataObject($record);
 
-            $this->eventManager->dispatch('algolia_additional_section_item_index_before', array('section' => $section, 'record' => $transport));
+            $this->eventManager->dispatch('algolia_additional_section_item_index_before', ['section' => $section, 'record' => $transport]);
 
             $record = $transport->getData();
 

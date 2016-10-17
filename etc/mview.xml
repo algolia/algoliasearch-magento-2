@@ -12,6 +12,8 @@
     </view>
     <view id="algolia_additional_sections" class="Algolia\AlgoliaSearch\Model\Indexer\Page" group="indexer">
     </view>
+    <view id="algolia_queue_runner" class="Algolia\AlgoliaSearch\Model\Indexer\QueueRunner" group="indexer">
+    </view>
     <view id="algolia_categories" class="Algolia\AlgoliaSearch\Model\Indexer\Category" group="indexer">
         <subscriptions>
             <table name="catalog_category_entity" entity_column="entity_id" />

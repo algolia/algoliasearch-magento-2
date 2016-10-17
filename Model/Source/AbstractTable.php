@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\Model\Source;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\Producthelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
 use Magento\Framework\DataObject;
@@ -22,7 +22,7 @@ abstract class AbstractTable extends AbstractFieldArray
     abstract protected function getTableData();
 
     public function __construct(Context $context,
-                                Producthelper $producthelper,
+                                ProductHelper $producthelper,
                                 CategoryHelper $categoryHelper,
                                 ConfigHelper $configHelper,
                                 array $data = [])
@@ -45,7 +45,7 @@ abstract class AbstractTable extends AbstractFieldArray
                 $options = $options();
             }
 
-            $extraParams = $columnId === 'attribute' ? 'style="width:160px;"': 'style="width:100px;"';
+            $extraParams = $columnId === 'attribute' ? 'style="width:160px;"' : 'style="width:100px;"';
             $select->setExtraParams($extraParams);
             $select->setOptions($options);
 
@@ -59,12 +59,12 @@ abstract class AbstractTable extends AbstractFieldArray
     {
         $data = $this->getTableData();
 
-        foreach(array_keys($data) as $columnId) {
+        foreach (array_keys($data) as $columnId) {
             $columnData = $data[$columnId];
 
-            $column = array(
+            $column = [
                 'label' => __($columnData['label']),
-            );
+            ];
 
             if (isset($columnData['values'])) {
                 $column['renderer'] = $this->getRenderer($columnId, $columnData);
@@ -72,6 +72,10 @@ abstract class AbstractTable extends AbstractFieldArray
 
             if (isset($columnData['class'])) {
                 $column['class'] = $columnData['class'];
+            }
+
+            if (isset($columnData['style'])) {
+                $column['style'] = $columnData['style'];
             }
 
             $this->addColumn($columnId, $column);

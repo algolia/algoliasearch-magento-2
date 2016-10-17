@@ -8,10 +8,10 @@ class ImageType implements ArrayInterface
 {
     public function toOptionArray()
     {
-        return array(
-            array('value'=>'image',         'label' => __('Base Image')),
-            array('value'=>'small_image',   'label' => __('Small Image')),
-            array('value'=>'thumbnail',     'label' => __('Thumbnail')),
-        );
+        return [
+            ['value' => 'image',         'label' => __('Base Image')],
+            ['value' => 'small_image',   'label' => __('Small Image')],
+            ['value' => 'thumbnail',     'label' => __('Thumbnail')],
+        ];
     }
 }

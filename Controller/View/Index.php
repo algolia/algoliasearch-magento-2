@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Controller\View;
 
-use \Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Action;
 
 class Index extends Action
 {
@@ -15,8 +15,7 @@ class Index extends Action
     public function __construct(\Magento\Framework\App\Action\Context $context,
                                 \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory,
                                 \Magento\Framework\View\Result\PageFactory $resultPageFactory
-    )
-    {
+    ) {
         $this->resultPageFactory = $resultPageFactory;
         parent::__construct($context);
     }

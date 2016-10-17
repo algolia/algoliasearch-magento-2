@@ -1,0 +1,25 @@
+<?php
+/** @var \Algolia\AlgoliaSearch\Block\Algolia $block */
+
+$config = $block->getConfigHelper();
+
+$catalogSearchHelper = $block->getCatalogSearchHelper();
+
+$placeholder = __('Search for products, categories, ...');
+
+/** Render form with autocomplete input **/
+if ($config->isDefaultSelector()): ?>
+<div class="block block-search">
+    <div class="block block-title"><strong><?php echo __('Search'); ?></strong></div>
+    <div class="block block-content">
+        <form id="search_mini_form" action="<?php echo $catalogSearchHelper->getResultUrl() ?>" method="get">
+            <div id="algolia-searchbox">
+                <label for="search"><?php echo __('Search:') ?></label>
+                <input id="search" type="text" name="<?php echo $catalogSearchHelper->getQueryParamName() ?>" class="input-text algolia-search-input" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="<?php echo $placeholder; ?>" />
+                <span class="clear-cross clear-query-autocomplete"></span>
+                <span id="algolia-glass" class="magnifying-glass" width="24" height="24"></span>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>

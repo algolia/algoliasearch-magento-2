@@ -1,37 +1,41 @@
 <?php
-/**
- * Copyright © 2015 Magento. All rights reserved.
- * See COPYING.txt for license details.
- */
+
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
-use Magento\CatalogSearch\Model\ResourceModel\Fulltext as FulltextResource;
-use \Magento\Framework\Search\Request\Config as SearchRequestConfig;
+use Algolia\AlgoliaSearch\Model\Queue;
+use Magento;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Framework\Indexer\SaveHandler\Batch;
 
-class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
+class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framework\Mview\ActionInterface
 {
+    private $fullAction;
     private $storeManager;
-    protected $pageHelper;
-    protected $algoliaHelper;
-    protected $batch;
-    protected $fullAction;
+    private $pageHelper;
+    private $algoliaHelper;
+    private $queue;
+    private $configHelper;
+    private $messageManager;
 
     public function __construct(StoreManagerInterface $storeManager,
                                 PageHelper $pageHelper,
                                 Data $helper,
-                                Batch $batch,
-                                AlgoliaHelper $algoliaHelper)
+                                AlgoliaHelper $algoliaHelper,
+                                Queue $queue,
+                                ConfigHelper $configHelper,
+                                ManagerInterface $messageManager)
     {
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
         $this->pageHelper = $pageHelper;
         $this->algoliaHelper = $algoliaHelper;
-        $this->batch = $batch;
+        $this->queue = $queue;
+        $this->configHelper = $configHelper;
+        $this->messageManager = $messageManager;
     }
 
     public function execute($ids)
@@ -40,10 +44,22 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
 
     public function executeFull()
     {
+        if (!$this->configHelper->getApplicationID() || !$this->configHelper->getAPIKey() || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+
+            if (php_sapi_name() === 'cli') {
+                throw new \Exception($errorMessage);
+            }
+
+            $this->messageManager->addErrorMessage($errorMessage);
+
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            $this->fullAction->rebuildStorePageIndex($storeId);
+            $this->queue->addToQueue($this->fullAction, 'rebuildStorePageIndex', ['store_id' => $storeId], 1);
         }
     }
 

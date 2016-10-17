@@ -10,7 +10,7 @@ class CustomRankingCategory extends AbstractTable
 
         return [
             'attribute' => [
-                'label' => 'Attribute',
+                'label'  => 'Attribute',
                 'values' => function () use ($categoryHelper) {
                     $options = [];
                     $attributes = $categoryHelper->getAdditionalAttributes();
@@ -20,12 +20,12 @@ class CustomRankingCategory extends AbstractTable
                     }
 
                     return $options;
-                }
+                },
             ],
             'order' => [
-                'label' => 'Order',
-                'values' => ['asc' => 'Ascending', 'desc' => 'Descending']
-            ]
+                'label'  => 'Order',
+                'values' => ['asc' => 'Ascending', 'desc' => 'Descending'],
+            ],
         ];
     }
 }

@@ -1,0 +1,20 @@
+<!-- Suggestion hit template -->
+<script type="text/template" id="autocomplete_suggestions_template">
+    <a class="algoliasearch-autocomplete-hit" href="{{url}}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="algolia-glass-suggestion magnifying-glass" width="24" height="24" viewBox="0 0 128 128" >
+            <g transform="scale(2.5)">
+                <path stroke-width="3" d="M19.5 19.582l9.438 9.438"></path>
+                <circle stroke-width="3" cx="12" cy="12" r="10.5" fill="none"></circle>
+                <path d="M23.646 20.354l-3.293 3.293c-.195.195-.195.512 0 .707l7.293 7.293c.195.195.512.195.707 0l3.293-3.293c.195-.195.195-.512 0-.707l-7.293-7.293c-.195-.195-.512-.195-.707 0z" ></path>
+            </g>
+        </svg>
+        <div class="info-without-thumb">
+            {{{_highlightResult.query.value}}}
+
+            {{#category}}
+            <span class="text-muted"><?php echo __('in'); ?></span> <span class="category-tag">{{category}}</span>
+            {{/category}}
+        </div>
+        <div class="clearfix"></div>
+    </a>
+</script>

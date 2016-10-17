@@ -10,7 +10,7 @@ class CustomRankingProduct extends AbstractTable
 
         return [
             'attribute' => [
-                'label' => 'Attribute',
+                'label'  => 'Attribute',
                 'values' => function () use ($productHelper) {
                     $options = [];
                     $attributes = $productHelper->getAdditionalAttributes();
@@ -20,12 +20,12 @@ class CustomRankingProduct extends AbstractTable
                     }
 
                     return $options;
-                }
+                },
             ],
             'order' => [
-                'label' => 'Order',
-                'values' => ['asc' => 'Ascending', 'desc' => 'Descending']
-            ]
+                'label'  => 'Order',
+                'values' => ['asc' => 'Ascending', 'desc' => 'Descending'],
+            ],
         ];
     }
 }

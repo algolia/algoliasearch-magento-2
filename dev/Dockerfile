@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y perl pwgen --no-install-recommends && r
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys A4A9406876FCBD3C456770C88C718D3B5072E1F5
 
 ENV MYSQL_MAJOR 5.6
-ENV MYSQL_VERSION 5.6.29-1debian8
 
 RUN echo "deb http://repo.mysql.com/apt/debian/ jessie mysql-${MYSQL_MAJOR}" > /etc/apt/sources.list.d/mysql.list
 
@@ -22,7 +21,7 @@ RUN { \
 		echo mysql-community-server mysql-community-server/re-root-pass password ''; \
 		echo mysql-community-server mysql-community-server/remove-test-db select false; \
 	} | debconf-set-selections \
-	&& apt-get update && apt-get install -y mysql-server="${MYSQL_VERSION}" && rm -rf /var/lib/apt/lists/* \
+	&& apt-get update && apt-get install -y mysql-server && rm -rf /var/lib/apt/lists/* \
 	&& rm -rf /var/lib/mysql && mkdir -p /var/lib/mysql
 
 # comment out a few problematic configuration values
@@ -77,6 +76,9 @@ RUN sed -i "s|www/html|www/htdocs|g" /etc/apache2/apache2.conf
 
 RUN mv pub/errors/local.xml.sample pub/errors/local.xml
 
+# enable mod_rewrite
+RUN cp /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
+
 # magerun
 RUN cd /var/www/htdocs && wget https://files.magerun.net/n98-magerun2.phar && mv n98-magerun2.phar /usr/bin/n98-magerun2 && chmod -R 777 /usr/bin/n98-magerun2
 
@@ -96,6 +98,8 @@ RUN sed -i 's/name="login\[username\]"/name="login[username]" value="admin"/g' /
 	sed -i 's/<\/form>/<\/form><script>document.addEventListener\("DOMContentLoaded", function\(\) {algoliaAdminBundle.\$\(function \(\$\) \{ \$\("#login-form"\).submit\(\); \}\);\}\);<\/script>/g' /var/www/htdocs/vendor/magento/module-backend/view/adminhtml/templates/admin/login.phtml
 
 RUN sed -i 's/MaterializationStrategy\\Copy/MaterializationStrategy\\Symlink/g' /var/www/htdocs/app/etc/di.xml
+
+RUN bin/magento deploy:mode:set developer
 
 EXPOSE 80
 CMD start.sh

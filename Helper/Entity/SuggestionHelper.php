@@ -13,23 +13,23 @@ class SuggestionHelper extends BaseHelper
 
     public function getIndexSettings($storeId)
     {
-        return array(
-            'attributesToIndex'         => array('query'),
-            'customRanking'             => array('desc(popularity)', 'desc(number_of_results)', 'asc(date)'),
-            'typoTolerance'             => false,
-            'attributesToRetrieve'      => array('query')
-        );
+        return [
+            'attributesToIndex'    => ['query'],
+            'customRanking'        => ['desc(popularity)', 'desc(number_of_results)', 'asc(date)'],
+            'typoTolerance'        => false,
+            'attributesToRetrieve' => ['query'],
+        ];
     }
 
     public function getObject(Query $suggestion)
     {
-        $suggestion_obj = array(
-            'objectID'              => $suggestion->getData('query_id'),
-            'query'                 => $suggestion->getData('query_text'),
-            'number_of_results'     => (int) $suggestion->getData('num_results'),
-            'popularity'            => (int) $suggestion->getData('popularity'),
-            'updated_at'            => (int) strtotime($suggestion->getData('updated_at')),
-        );
+        $suggestion_obj = [
+            'objectID'          => $suggestion->getData('query_id'),
+            'query'             => $suggestion->getData('query_text'),
+            'number_of_results' => (int) $suggestion->getData('num_results'),
+            'popularity'        => (int) $suggestion->getData('popularity'),
+            'updated_at'        => (int) strtotime($suggestion->getData('updated_at')),
+        ];
 
         return $suggestion_obj;
     }
@@ -37,7 +37,7 @@ class SuggestionHelper extends BaseHelper
     public function getPopularQueries($storeId)
     {
         $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
-        $collection->getSelect()->where('num_results >= '.$this->config->getMinNumberOfResults().' AND popularity >= ' . $this->config->getMinPopularity() .' AND query_text != "__empty__"');
+        $collection->getSelect()->where('num_results >= ' . $this->config->getMinNumberOfResults() . ' AND popularity >= ' . $this->config->getMinPopularity() . ' AND query_text != "__empty__"');
         $collection->getSelect()->limit(12);
         $collection->setOrder('popularity', 'DESC');
         $collection->setOrder('num_results', 'DESC');
@@ -49,13 +49,13 @@ class SuggestionHelper extends BaseHelper
 
         $collection->load();
 
-        $suggestions = array();
+        $suggestions = [];
 
         foreach ($collection as $suggestion) {
-            if (strlen($suggestion['query_text']) >= 3)
+            if (strlen($suggestion['query_text']) >= 3) {
                 $suggestions[] = $suggestion['query_text'];
+            }
         }
-
 
         return array_slice($suggestions, 0, 9);
     }
@@ -66,7 +66,7 @@ class SuggestionHelper extends BaseHelper
         $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
         $collection = $collection->addStoreFilter($storeId)->setStoreId($storeId);
 
-        $collection->getSelect()->where('num_results >= '.$this->config->getMinNumberOfResults($storeId).' AND popularity >= ' . $this->config->getMinPopularity($storeId) .' AND query_text != "__empty__"');
+        $collection->getSelect()->where('num_results >= ' . $this->config->getMinNumberOfResults($storeId) . ' AND popularity >= ' . $this->config->getMinPopularity($storeId) . ' AND query_text != "__empty__"');
 
         return $collection;
     }

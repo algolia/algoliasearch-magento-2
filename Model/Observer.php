@@ -1,8 +1,8 @@
 <?php
 
 namespace Algolia\AlgoliaSearch\Model;
+
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Magento\Framework\DataObject;
 use Magento\Framework\Event\ObserverInterface;
 
 /**
@@ -17,19 +17,6 @@ class Observer implements ObserverInterface
     public function __construct(ConfigHelper $configHelper)
     {
         $this->config = $configHelper;
-        /*$this->product_helper       = Mage::helper('algoliasearch/entity_producthelper');
-        $this->category_helper      = Mage::helper('algoliasearch/entity_categoryhelper');
-        $this->suggestion_helper    = Mage::helper('algoliasearch/entity_suggestionhelper');
-
-        $this->helper               = Mage::helper('algoliasearch');*/
-    }
-
-    public function addBundleToAdmin(DataObject $observer)
-    {
-        $req  = Mage::app()->getRequest();
-
-        if (strpos($req->getPathInfo(), 'system_config/edit/section/algoliasearch') !== false)
-            $observer->getLayout()->getUpdate()->addHandle('algolia_bundle_handle');
     }
 
     public function execute(\Magento\Framework\Event\Observer $observer)
@@ -41,8 +28,7 @@ class Observer implements ObserverInterface
 
                     if ($this->config->isDefaultSelector()) {
                         $observer->getLayout()->getUpdate()->addHandle('algolia_search_handle_with_topsearch');
-                    }
-                    else {
+                    } else {
                         $observer->getLayout()->getUpdate()->addHandle('algolia_search_handle_no_topsearch');
                     }
                 }

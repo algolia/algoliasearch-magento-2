@@ -7,6 +7,7 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Logger;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Magento;
 use Magento\Framework\Message\ManagerInterface;
@@ -16,12 +17,14 @@ class QueueRunner implements Magento\Framework\Indexer\ActionInterface, Magento\
     private $configHelper;
     private $queue;
     private $messageManager;
+    private $logger;
 
-    public function __construct(ConfigHelper $configHelper, Queue $queue, ManagerInterface $messageManager)
+    public function __construct(ConfigHelper $configHelper, Queue $queue, ManagerInterface $messageManager, Logger $logger)
     {
         $this->configHelper = $configHelper;
         $this->queue = $queue;
         $this->messageManager = $messageManager;
+        $this->logger = $logger;
     }
 
     public function execute($ids)
@@ -42,7 +45,11 @@ class QueueRunner implements Magento\Framework\Indexer\ActionInterface, Magento\
             return;
         }
 
+        $this->logger->log('Queue cron started');
+
         $this->queue->runCron();
+
+        $this->logger->log('Queue cron finished');
 
         return;
     }

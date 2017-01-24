@@ -63,6 +63,8 @@ class Queue
             $nbJobs = -1;
         }
 
+        $this->logger->log('Number of jobs which should be processed: '.$nbJobs);
+
         $this->run($nbJobs);
     }
 
@@ -100,13 +102,20 @@ class Queue
         }
 
         if (count($jobs) <= 0) {
+            $this->logger->log('No jobs fetched from DB.');
+
             return;
         }
 
         $first_id = $jobs[0]['job_id'];
         $last_id = $jobs[count($jobs) - 1]['job_id'];
 
+        $this->logger->log('ID of the first job: '.$first_id);
+        $this->logger->log('ID of the last job: '.$last_id);
+
         $pid = getmypid();
+
+        $this->logger->log('Current PID: '.$pid);
 
         // Reserve all new jobs since last run
         $this->db->query("UPDATE {$this->db->quoteIdentifier($this->table, true)} SET pid = " . $pid . ' WHERE job_id >= ' . $first_id . " AND job_id <= $last_id");
@@ -115,10 +124,16 @@ class Queue
             $job['data'] = json_decode($job['data'], true);
         }
 
+        $this->logger->log('Number of jobs before merging: '.count($jobs));
+
         $jobs = $this->sortAndMergeJob($jobs);
+
+        $this->logger->log('Number of jobs after merging: '.count($jobs));
 
         // Run all reserved jobs
         foreach ($jobs as $job) {
+            $this->logger->log('Processing job ID: '.$job['job_id']);
+
             try {
                 $model = $this->objectManager->get($job['class']);
 
@@ -128,10 +143,12 @@ class Queue
                 call_user_func_array([$model, $method], $data);
             } catch (\Exception $e) {
                 // Increment retries and log error information
-                $this->logger->log("Queue processing {$job['pid']} [KO]: Mage::getSingleton({$job['class']})->{$job['method']}(" . json_encode($job['data']) . ')');
+                $this->logger->log("Queue processing job ID {$job['job_id']} [KO] !!! Class: {$job['class']}, Method: {$job['method']}, Data: " . json_encode($job['data']));
                 $this->logger->log(date('c') . ' ERROR: ' . get_class($e) . ": '{$e->getMessage()}' in {$e->getFile()}:{$e->getLine()}\n" . "Stack trace:\n" . $e->getTraceAsString());
             }
         }
+
+        $this->logger->log('Deleting all proccesed jobs with PID: '.$pid);
 
         // Delete only when finished to be able to debug the queue if needed
         $where = $this->db->quoteInto('pid = ?', $pid);

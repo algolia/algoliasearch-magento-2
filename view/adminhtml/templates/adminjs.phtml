@@ -1,8 +1,8 @@
 <script>
     document.addEventListener("DOMContentLoaded", function(event) {
         algoliaAdminBundle.$(function ($) {
-            $('.accordion .config .label').css('width', 'auto');
-            $('.accordion .config .value').css('width', 'auto');
+            $('form[action*="algoliasearch"] .accordion .config .label').css('width', 'auto');
+            $('form[action*="algoliasearch"] .accordion .config .value').css('width', 'auto');
 
             var fixHelper = function(e, ui) {
                 ui.children().each(function() {
@@ -12,7 +12,7 @@
             };
 
             setTimeout(function () {
-                $(".admin__control-table tbody").sortable({
+                $('form[action*="algoliasearch"] .admin__control-table tbody').sortable({
                     containment: "parent",
                     items: 'tr',
                     tolerance: 'pointer',
@@ -22,7 +22,7 @@
                     }
                 });
 
-                $('.admin__control-table tbody tr td').css('cursor', 'move');
+                $('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
             }, 1000);
         });
     });

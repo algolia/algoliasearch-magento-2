@@ -2,7 +2,7 @@
   "name": "algolia/algoliasearch-magento-2",
   "description": "Algolia Search integration for Magento 2",
   "type": "magento2-module",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "license": ["MIT"],
   "require": {
     "php": "~5.5.0|~5.6.0|~7.0.0",

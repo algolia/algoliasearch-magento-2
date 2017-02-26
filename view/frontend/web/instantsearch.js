@@ -214,9 +214,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			var name = facet.attribute;
 			
 			if (name === 'categories') {
-				if (algoliaConfig.isCategoryPage) {
-					return;
-				}
 				name = 'categories.level0';
 			}
 			
@@ -283,10 +280,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					'{{#isRefined}}<span class="cross-circle"></span>{{/isRefined}}' +
 					'<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span></a>' +
 					'</div>';
-				
-				if (algoliaConfig.request.path.length > 0) {
-					hierarchicalMenuParams.rootPath = algoliaConfig.request.path;
-				}
 				
 				return algoliaBundle.instantsearch.widgets.hierarchicalMenu(hierarchicalMenuParams);
 			}
@@ -404,6 +397,10 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 			
 			search.start();
+			
+			if (algoliaConfig.request.path.length > 0) {
+				search.helper.toggleRefine('categories.level0', algoliaConfig.request.path).search();
+			}
 			
 			handleInputCrossInstant($(instant_selector));
 			

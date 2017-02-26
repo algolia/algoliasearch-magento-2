@@ -17,7 +17,7 @@
             <block class="Magento\Framework\View\Element\Template" before="-" name="algolia.beforecontent" template="Algolia_AlgoliaSearch::internals/beforecontent.phtml"/>
         </referenceBlock>
 
-        <referenceBlock name="footer">
+        <referenceBlock name="before.body.end">
             <!-- Multi-category Autocomplete templates -->
             <block class="Algolia\AlgoliaSearch\Block\Algolia" name="algolia.autocomplete.product" template="Algolia_AlgoliaSearch::autocomplete/product.phtml"/>
             <block class="Magento\Framework\View\Element\Template" name="algolia.autocomplete.category" template="Algolia_AlgoliaSearch::autocomplete/category.phtml"/>

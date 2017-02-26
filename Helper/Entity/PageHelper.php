@@ -23,7 +23,10 @@ class PageHelper extends BaseHelper
     {
         /** @var \Magento\Cms\Model\Page $pageModel */
         $pageModel = $this->objectManager->create('\Magento\Cms\Model\Page');
-        $magento_pages = $pageModel->getCollection()->addFieldToFilter('is_active', 1);
+
+        $magento_pages = $pageModel->getCollection()
+            ->addStoreFilter($storeId)
+            ->addFieldToFilter('is_active', 1);
 
         $excluded_pages = array_values($this->config->getExcludedPages());
 

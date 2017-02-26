@@ -83,7 +83,7 @@ class Data
         $this->algoliaHelper->deleteIndex($this->categoryHelper->getIndexName($storeId));
     }
 
-    public function deleteObjects($ids, $indexName)
+    public function deleteObjects($storeId, $ids, $indexName)
     {
         $this->algoliaHelper->deleteObjects($ids, $indexName);
     }

@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Model\Queue;
 use Magento;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Framework\Mview\ActionInterface
 {
@@ -20,6 +21,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
     private $queue;
     private $configHelper;
     private $messageManager;
+    private $output;
 
     public static $affectedProductIds = [];
 
@@ -29,7 +31,8 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                                 AlgoliaHelper $algoliaHelper,
                                 Queue $queue,
                                 ConfigHelper $configHelper,
-                                ManagerInterface $messageManager)
+                                ManagerInterface $messageManager,
+                                ConsoleOutput $output)
     {
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
@@ -38,6 +41,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
         $this->queue = $queue;
         $this->configHelper = $configHelper;
         $this->messageManager = $messageManager;
+        $this->output = $output;
     }
 
     public function execute($categoryIds)
@@ -46,7 +50,9 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
             $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 
             if (php_sapi_name() === 'cli') {
-                throw new \Exception($errorMessage);
+                $this->output->writeln($errorMessage);
+
+                return;
             }
 
             $this->messageManager->addErrorMessage($errorMessage);
@@ -60,7 +66,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
         foreach ($storeIds as $storeId) {
             if ($categoryIds !== null) {
                 $indexName = $this->categoryHelper->getIndexName($storeId);
-                $this->queue->addToQueue($this->fullAction, 'deleteObjects', ['category_ids' => $categoryIds, 'index_name' => $indexName], count($categoryIds));
+                $this->queue->addToQueue($this->fullAction, 'deleteObjects', ['store_id' => $storeId, 'category_ids' => $categoryIds, 'index_name' => $indexName], count($categoryIds));
             } else {
                 $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
             }

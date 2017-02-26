@@ -100,7 +100,7 @@ class AlgoliaHelper extends AbstractHelper
         } catch (\Exception $e) {
         }
 
-        $removes = ['slaves'];
+        $removes = ['slaves', 'replicas'];
 
         foreach ($removes as $remove) {
             if (isset($onlineSettings[$remove])) {

@@ -21,7 +21,7 @@
             <label>Credentials and Setup</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="credentials" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="credentials" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <field id="enable_backend" translate="label comment" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Indexing</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -108,7 +108,7 @@
             <label>Autocomplete</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="autocomplete" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="autocomplete" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                 <field id="nb_of_products_suggestions" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of products</label>
@@ -192,7 +192,7 @@
             <label>Instant Search Results Page</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="instant" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="instant" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                 <field id="instant_selector" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>DOM Selector</label>
                     <comment>
@@ -268,7 +268,7 @@
             <label>Products</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="products" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="products" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                 <field id="number_product_results" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of products per page in the instant result page</label>
@@ -325,7 +325,7 @@
             <label>Categories</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="categories" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="categories" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                 <field id="category_additional_attributes" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Attributes</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\SortOrderCategory</frontend_model>
@@ -364,7 +364,7 @@
             <label>Images</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="image" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="image" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <field id="width" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Width</label>
@@ -494,7 +494,7 @@
             <label>Advanced</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="advanced" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="advanced" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <field id="number_of_element_by_page" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Max number of element per indexing job</label>

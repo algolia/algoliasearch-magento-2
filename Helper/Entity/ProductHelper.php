@@ -282,6 +282,8 @@ class ProductHelper extends BaseHelper
                             $this->algoliaHelper->setSettings($this->getIndexName($storeId) . '_' . $values['attribute'] . '_' . $suffix_index_name . '_' . $values['sort'], $mergeSettings);
                         }
                     } else {
+                        $mergeSettings['ranking'] = [$values['sort'] . '(' . $values['attribute'] . ')', 'typo', 'geo', 'words', 'proximity', 'attribute', 'exact', 'custom'];
+
                         $this->algoliaHelper->setSettings($this->getIndexName($storeId) . '_' . $values['attribute'] . '_' . $values['sort'], $mergeSettings);
                     }
                 } else {

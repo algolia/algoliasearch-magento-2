@@ -1,0 +1,32 @@
+dist: trusty
+sudo: required
+
+language: php
+
+php:
+  - 7.0
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+before_install:
+  - mysql -e 'CREATE DATABASE magento20;'
+  - mysql -e 'CREATE DATABASE magento_integration_tests;'
+
+install:
+  - AUTH_DIR=$HOME/.composer/auth.json php dev/bin/createAuthJson.php
+  - composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:2.0.9 magento20
+  - AUTH_DIR=$TRAVIS_BUILD_DIR/magento20/var/composer_home/auth.json php dev/bin/createAuthJson.php
+  - cd magento20
+  - php bin/magento sampledata:deploy
+  - composer require algolia/algoliasearch-magento-2:dev-tests
+  - php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento20 --db-user=root --db-password= --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
+
+script:
+  - mv $TRAVIS_BUILD_DIR/magento20/dev/tests/integration/etc/install-config-mysql.travis.php.dist $TRAVIS_BUILD_DIR/magento20/dev/tests/integration/etc/install-config-mysql.php
+  - cd $TRAVIS_BUILD_DIR/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

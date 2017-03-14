@@ -26,7 +26,7 @@ install:
   - php bin/magento sampledata:deploy
   - composer require algolia/algoliasearch-magento-2:dev-tests
   - php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento20 --db-user=root --db-password= --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
+  - mv $TRAVIS_BUILD_DIR/dev/tests/install-config-mysql.php $TRAVIS_BUILD_DIR/magento20/dev/tests/integration/etc/install-config-mysql.php
 
 script:
-  - mv $TRAVIS_BUILD_DIR/magento20/dev/tests/integration/etc/install-config-mysql.travis.php.dist $TRAVIS_BUILD_DIR/magento20/dev/tests/integration/etc/install-config-mysql.php
   - cd $TRAVIS_BUILD_DIR/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

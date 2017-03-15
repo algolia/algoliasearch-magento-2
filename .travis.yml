@@ -9,6 +9,7 @@ php:
 
 env:
   - MAGENTO_VERSION="2.0.*"
+  - MAGENTO_VERSION="2.1.*"
 
 branches:
   only:
@@ -20,7 +21,6 @@ cache:
 
 before_install:
   - mysql -e 'CREATE DATABASE magento20;'
-  - mysql -e 'CREATE DATABASE magento_integration_tests;'
 
 install:
   # create auth.json to be able to install Magento store
@@ -37,7 +37,7 @@ install:
   - cd $HOME/magento20
   - php bin/magento sampledata:deploy
 
-  # install Algolia extension
+  # install the Algolia extension
   - composer require algolia/algoliasearch-magento-2
 
   # override the Algolia extension with the cloned one

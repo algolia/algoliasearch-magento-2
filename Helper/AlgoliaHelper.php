@@ -245,6 +245,7 @@ class AlgoliaHelper extends AbstractHelper
             return;
         }
 
+        $this->resetCredentialsFromConfig();
         $this->client->initIndex(self::$lastUsedIndexName)->waitTask(self::$lastTaskId);
     }
 }

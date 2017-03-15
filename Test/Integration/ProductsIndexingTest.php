@@ -2,13 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Magento\CatalogInventory\Model\StockRegistry;
-use Magento\Framework\Indexer\ActionInterface;
 
-class ProductsIndexingTest extends AbstractTestCase
+class ProductsIndexingTest extends IndexingTestCase
 {
     public function testOnlyOnStockProducts()
     {
@@ -32,26 +29,6 @@ class ProductsIndexingTest extends AbstractTestCase
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
 
         $this->processTest($indexer, 'products', 186);
-    }
-
-    protected function processTest(ActionInterface $indexer, $indexSuffix, $expectedNbHits)
-    {
-        /** @var ConfigHelper $config */
-        $config = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\ConfigHelper');
-        $indexPrefix = $config->getIndexPrefix();
-
-        /** @var AlgoliaHelper $algoliaHelper */
-        $algoliaHelper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\AlgoliaHelper');
-
-        $algoliaHelper->clearIndex($indexPrefix.'default_'.$indexSuffix);
-
-        $indexer->executeFull();
-
-        $algoliaHelper->waitLastTask();
-
-        $resultsDefault = $algoliaHelper->query($indexPrefix.'default_'.$indexSuffix, '', array());
-
-        $this->assertEquals($expectedNbHits, $resultsDefault['nbHits']);
     }
 
     private function setOneProductOutOfStock()

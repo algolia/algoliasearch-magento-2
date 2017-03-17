@@ -30,6 +30,7 @@ $query = '';
 $refinementKey = '';
 $refinementValue = '';
 $path = '';
+$level = '';
 
 $addToCartParams = $block->getAddToCartParams();
 
@@ -42,12 +43,17 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
     if ($category && $category->getDisplayMode() !== 'PAGE') {
         $category->getUrlInstance()->setStore($block->getStoreId());
 
+        $level = -1;
         foreach ($category->getPathIds() as $treeCategoryId) {
             if ($path != '') {
                 $path .= ' /// ';
             }
 
             $path .= $productHelper->getCategoryName($treeCategoryId, $block->getStoreId());
+
+            if ($path) {
+                $level++;
+            }
         }
 
         $indexName = $productHelper->getIndexName($block->getStoreId());
@@ -60,6 +66,10 @@ if ($config->isInstantEnabled() && $config->replaceCategories() && $block->getRe
 /**
  * Handle search
  */
+$facets = $config->getFacets();
+
+$areCategoriesInFacets = false;
+
 if ($config->isInstantEnabled()) {
     $pageIdentifier = $block->getRequest()->getFullActionName();
 
@@ -83,6 +93,13 @@ if ($config->isInstantEnabled()) {
         }
 
         $isSearchPage = true;
+    }
+
+    foreach ($facets as $facet) {
+        if ($facet['attribute'] === 'categories') {
+            $areCategoriesInFacets = true;
+            break;
+        }
     }
 }
 
@@ -113,7 +130,8 @@ $algoliaJsConfig = [
     'applicationId' => $config->getApplicationID(),
     'indexName' => $productHelper->getBaseIndexName(),
     'apiKey' => $algoliaHelper->generateSearchSecuredApiKey($config->getSearchOnlyAPIKey(), $config->getAttributesToRetrieve($customerGroupId)),
-    'facets' => $config->getFacets(),
+    'facets' => $facets,
+    'areCategoriesInFacets' => $areCategoriesInFacets,
     'hitsPerPage' => (int) $config->getNumberOfProductResults(),
     'sortingIndices' => array_values($config->getSortingIndices()),
     'isSearchPage' => $isSearchPage,
@@ -129,6 +147,7 @@ $algoliaJsConfig = [
         'refinementKey' => $refinementKey,
         'refinementValue' => $refinementValue,
         'path' => $path,
+        'level' => $level,
     ],
     'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
     'showSuggestionsOnNoResultsPage' => $config->showSuggestionsOnNoResultsPage(),

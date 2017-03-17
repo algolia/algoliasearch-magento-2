@@ -76,6 +76,13 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					data.helper.toggleRefine(algoliaConfig.request.refinementKey, algoliaConfig.request.refinementValue);
 				}
 				
+				if (algoliaConfig.areCategoriesInFacets === false && algoliaConfig.request.path.length > 0) {
+					var facet = 'categories.level' + algoliaConfig.request.level;
+
+					data.helper.state.facets.push(facet);
+					data.helper.toggleRefine(facet, algoliaConfig.request.path);
+				}
+				
 				if (algoliaConfig.isCategoryPage) {
 					data.helper.addNumericRefinement('visibility_catalog', '=', 1);
 				}
@@ -398,7 +405,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			
 			search.start();
 			
-			if (algoliaConfig.request.path.length > 0) {
+			if (algoliaConfig.request.path.length > 0 && algoliaConfig.areCategoriesInFacets === true) {
 				search.helper.toggleRefine('categories.level0', algoliaConfig.request.path).search();
 			}
 			

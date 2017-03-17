@@ -206,6 +206,10 @@ class ProductHelper extends BaseHelper
             $customRankingsArr[] = $ranking['order'] . '(' . $ranking['attribute'] . ')';
         }
 
+        if ($this->config->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
+            $attributesForFaceting[] = 'categories';
+        }
+
         $indexSettings = [
             'attributesToIndex'       => array_values(array_unique($attributesToIndex)),
             'customRanking'           => $customRankingsArr,

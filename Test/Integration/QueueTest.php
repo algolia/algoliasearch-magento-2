@@ -109,4 +109,42 @@ class QueueTest extends TestCase
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(0, count($rows));
     }
+
+    public function testSettings()
+    {
+        $this->resetConfigs([
+            'algoliasearch_instant/instant/facets',
+            'algoliasearch_products/products/product_additional_attributes',
+        ]);
+
+        $this->setConfig('algoliasearch_queue/queue/active', '1');
+
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+
+        // Reindex products multiple times
+        /** @var Product $indexer */
+        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $indexer->executeFull();
+        $indexer->executeFull();
+        $indexer->executeFull();
+
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertEquals(12, count($rows));
+
+        // Process the whole queue
+        /** @var QueueRunner $queueRunner */
+        $queueRunner = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\QueueRunner');
+        $queueRunner->executeFull();
+        $queueRunner->executeFull();
+        $queueRunner->executeFull();
+
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertEquals(0, count($rows));
+
+        $this->algoliaHelper->waitLastTask();
+
+        $settings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
+        $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
+        $this->assertFalse(empty($settings['attributesToIndex']), 'SearchableAttributes should be set, but they are not.');
+    }
 }

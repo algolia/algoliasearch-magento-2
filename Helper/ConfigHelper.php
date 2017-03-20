@@ -284,7 +284,7 @@ class ConfigHelper
 
     public function isQueueActive($storeId = null)
     {
-        return $this->configInterface->getValue(self::IS_ACTIVE, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::IS_ACTIVE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getRemoveWordsIfNoResult($storeId = null)

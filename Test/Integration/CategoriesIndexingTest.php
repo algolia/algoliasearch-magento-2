@@ -35,6 +35,7 @@ class CategoriesIndexingTest extends IndexingTestCase
             'include_in_menu',
             '_tags',
             'popularity',
+            'algoliaLastUpdateAtCET',
             'product_count',
             '_highlightResult',
         );

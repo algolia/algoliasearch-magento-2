@@ -65,12 +65,13 @@ class PagesIndexingTest extends IndexingTestCase
             'url',
             'slug',
             'content',
+            'algoliaLastUpdateAtCET',
             '_highlightResult',
             '_snippetResult',
         );
 
         foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertTrue(isset($hit[$attribute]), 'Pages attribute "'.$attribute.'" should be indexed but it is not"');
+            $this->assertTrue(key_exists($attribute, $hit), 'Pages attribute "'.$attribute.'" should be indexed but it is not"');
             unset($hit[$attribute]);
         }
 

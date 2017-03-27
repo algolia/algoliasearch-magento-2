@@ -122,7 +122,8 @@ class Algolia implements AdapterInterface
         $table = null;
 
         if (!$this->config->getApplicationID($storeId) || !$this->config->getAPIKey($storeId) || $this->config->isEnabledFrontEnd($storeId) === false || $this->config->makeSeoRequest($storeId) === '0' ||
-            ($this->request->getControllerName() === 'category' && $this->config->replaceCategories($storeId) == false)
+            ($this->request->getControllerName() === 'category' && $this->config->replaceCategories($storeId) == false) ||
+            $this->request->getFullActionName() === 'catalogsearch_advanced_result' || $query === ''
         ) {
             $query = $this->mapper->buildQuery($request);
             $table = $temporaryStorage->storeDocumentsFromSelect($query);

@@ -102,6 +102,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="is_pub_root" translate="label comment" type="select" sortOrder="90" showInDefault="1">
+                    <label>Use pub as root folder</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If set to Yes, urls will remove any instance of the pub folder when indexing images.
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_autocomplete" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

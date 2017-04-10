@@ -21,6 +21,7 @@ class ConfigHelper
     const SEARCH_ONLY_API_KEY = 'algoliasearch_credentials/credentials/search_only_api_key';
     const INDEX_PREFIX = 'algoliasearch_credentials/credentials/index_prefix';
     const IS_INSTANT_ENABLED = 'algoliasearch_credentials/credentials/is_instant_enabled';
+    const IS_PUB_ROOT = 'algoliasearch_credentials/credentials/is_pub_root';
 
     const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
     const INSTANT_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
@@ -196,6 +197,11 @@ class ConfigHelper
     public function useSecureUrlsInFrontend($storeId = null)
     {
         return (bool) $this->configInterface->getValue(self::USE_SECURE_IN_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function isPubRoot($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::IS_PUB_ROOT, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function noProcess($storeId = null)

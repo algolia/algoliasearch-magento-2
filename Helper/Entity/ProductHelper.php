@@ -256,6 +256,8 @@ class ProductHelper extends BaseHelper
 
                             $replicas[] = $this->getIndexName($storeId) . '_' . $values['attribute'] . '_' . $suffix_index_name . '_' . $values['sort'];
                         }
+                    } else {
+                        $replicas[] = $this->getIndexName($storeId) . '_' . $values['attribute'] . '_' . $values['sort'];
                     }
                 } else {
                     if ($values['attribute'] === 'price') {
@@ -284,6 +286,10 @@ class ProductHelper extends BaseHelper
 
                             $this->algoliaHelper->setSettings($this->getIndexName($storeId) . '_' . $values['attribute'] . '_' . $suffix_index_name . '_' . $values['sort'], $mergeSettings);
                         }
+                    } else {
+                        $mergeSettings['ranking'] = [$values['sort'] . '(' . $values['attribute'] . ')', 'typo', 'geo', 'words', 'proximity', 'attribute', 'exact', 'custom'];
+
+                        $this->algoliaHelper->setSettings($this->getIndexName($storeId) . '_' . $values['attribute'] . '_' . $values['sort'], $mergeSettings);
                     }
                 } else {
                     $sort_attribute = strpos($values['attribute'], 'price') !== false ? $values['attribute'] . '.' . $currencies[0] . '.' . 'default' : $values['attribute'];

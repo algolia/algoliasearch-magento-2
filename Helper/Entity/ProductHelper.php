@@ -320,8 +320,8 @@ class ProductHelper extends BaseHelper
 
         $customer_groups_enabled = $this->config->isCustomerGroupsEnabled($product->getStoreId());
 
-        $currencies = $this->currencyHelper->getConfigAllowCurrencies();
-        $baseCurrencyCode = $store->getBaseCurrencyCode();
+        $currencies = $store->getAvailableCurrencyCodes();
+        $defaultCurrencyCode = $store->getDefaultCurrencyCode();
 
         $priceInfo = $product->getPriceInfo();
 
@@ -339,7 +339,7 @@ class ProductHelper extends BaseHelper
 
                 $price = $priceInfo->getPrice('regular_price')->getValue();
                 $price = (double) $this->catalogHelper->getTaxPrice($product, $price, $with_tax, null, null, null, $product->getStore(), null);
-                $price = $this->currencyDirectory->currencyConvert($price, $baseCurrencyCode, $currency_code);
+                $price = $this->currencyDirectory->currencyConvert($price, $defaultCurrencyCode, $currency_code);
 
                 $customData[$field][$currency_code]['default'] = $price;
                 $customData[$field][$currency_code]['default_formated'] = $this->formatPrice($price, false, $currency_code);
@@ -352,7 +352,7 @@ class ProductHelper extends BaseHelper
                 }
 
                 $special_price = (double) $this->catalogHelper->getTaxPrice($product, $special_price, $with_tax, null, null, null, $product->getStore(), null);
-                $special_price = $this->currencyDirectory->currencyConvert($special_price, $baseCurrencyCode, $currency_code);
+                $special_price = $this->currencyDirectory->currencyConvert($special_price, $defaultCurrencyCode, $currency_code);
 
                 if ($customer_groups_enabled) {
                     // If fetch special price for groups
@@ -362,11 +362,11 @@ class ProductHelper extends BaseHelper
                         $product->setCustomerGroupId($group_id);
 
                         $discounted_price = $product->getPriceModel()->getFinalPrice(1, $product);
-                        $discounted_price = $this->currencyDirectory->currencyConvert($discounted_price, $baseCurrencyCode, $currency_code);
+                        $discounted_price = $this->currencyDirectory->currencyConvert($discounted_price, $defaultCurrencyCode, $currency_code);
 
                         if ($discounted_price !== false) {
                             $customData[$field][$currency_code]['group_' . $group_id] = (double) $this->catalogHelper->getTaxPrice($product, $discounted_price, $with_tax, null, null, null, $product->getStore(), null);
-                            $customData[$field][$currency_code]['group_' . $group_id] = $this->currencyDirectory->currencyConvert($customData[$field][$currency_code]['group_' . $group_id], $baseCurrencyCode, $currency_code);
+                            $customData[$field][$currency_code]['group_' . $group_id] = $this->currencyDirectory->currencyConvert($customData[$field][$currency_code]['group_' . $group_id], $defaultCurrencyCode, $currency_code);
                             $customData[$field][$currency_code]['group_' . $group_id . '_formated'] = $this->formatPrice($customData[$field][$currency_code]['group_' . $group_id], false, $currency_code);
                         } else {
                             $customData[$field][$currency_code]['group_' . $group_id] = $customData[$field][$currency_code]['default'];
@@ -422,8 +422,8 @@ class ProductHelper extends BaseHelper
                     }
 
                     if ($min != $max) {
-                        $min = $this->currencyDirectory->currencyConvert($min, $baseCurrencyCode, $currency_code);
-                        $max = $this->currencyDirectory->currencyConvert($max, $baseCurrencyCode, $currency_code);
+                        $min = $this->currencyDirectory->currencyConvert($min, $defaultCurrencyCode, $currency_code);
+                        $max = $this->currencyDirectory->currencyConvert($max, $defaultCurrencyCode, $currency_code);
 
                         $dashed_format = $this->formatPrice($min, false, $currency_code) . ' - ' . $this->formatPrice($max, false, $currency_code);
 
@@ -454,7 +454,7 @@ class ProductHelper extends BaseHelper
                         $customData[$field][$currency_code]['default'] = $min;
 
                         if ($min === $max) {
-                            $min = $this->currencyDirectory->currencyConvert($min, $baseCurrencyCode, $currency_code);
+                            $min = $this->currencyDirectory->currencyConvert($min, $defaultCurrencyCode, $currency_code);
 
                             $customData[$field][$currency_code]['default'] = $min;
                             $customData[$field][$currency_code]['default_formated'] = $this->formatPrice($min, false, $currency_code);

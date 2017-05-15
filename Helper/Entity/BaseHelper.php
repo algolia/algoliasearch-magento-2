@@ -9,15 +9,16 @@ use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
+use Magento\CatalogRule\Model\ResourceModel\Rule;
 use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Directory\Helper\Data as CurrencyDirectory;
 use Magento\Directory\Model\Currency;
 use Magento\Directory\Model\Currency as CurrencyHelper;
-use Magento\Directory\Model\CurrencyFactory;
 use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\Url;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Tax\Helper\Data;
@@ -44,7 +45,8 @@ abstract class BaseHelper
     protected $catalogHelper;
     protected $queryResource;
     protected $filterProvider;
-    protected $currencyFactory;
+    protected $rule;
+    protected $priceCurrency;
 
     protected $storeUrls;
 
@@ -69,7 +71,8 @@ abstract class BaseHelper
                                 ResourceConnection $queryResource,
                                 Currency $currencyManager,
                                 FilterProvider $filterProvider,
-                                CurrencyFactory $currencyFactory)
+                                PriceCurrencyInterface $priceCurrency,
+                                Rule $rule)
     {
         $this->eavConfig = $eavConfig;
         $this->config = $configHelper;
@@ -89,7 +92,8 @@ abstract class BaseHelper
         $this->catalogHelper = $catalogHelper;
         $this->queryResource = $queryResource;
         $this->filterProvider = $filterProvider;
-        $this->currencyFactory = $currencyFactory;
+        $this->priceCurrency = $priceCurrency;
+        $this->rule = $rule;
     }
 
     public function getBaseIndexName($storeId = null)

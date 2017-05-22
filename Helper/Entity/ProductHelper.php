@@ -624,37 +624,7 @@ class ProductHelper extends BaseHelper
 
         $customData['categories_without_path'] = $categories;
 
-        /** @var Image $imageHelper */
-        $imageHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\Image');
-
-        if (false === isset($defaultData['thumbnail_url'])) {
-            $thumb = $imageHelper->init($product, 'thumbnail')->resize(75, 75);
-
-            $customData['thumbnail_url'] = $thumb->getUrl();
-        }
-
-        if (false === isset($defaultData['image_url'])) {
-            $image = $imageHelper->init($product, $this->config->getImageType())->resize($this->config->getImageWidth(), $this->config->getImageHeight());
-
-            $customData['image_url'] = $image->getUrl();
-
-            if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
-                $product->load('media_gallery');
-
-                $customData['media_gallery'] = [];
-
-                $images = $product->getMediaGalleryImages();
-                if ($images) {
-                    foreach ($images as $image) {
-                        $url = $image->getUrl();
-                        $url = $imageHelper->removeProtocol($url);
-                        $url = $imageHelper->removeDoubleSlashes($url);
-
-                        $customData['media_gallery'][] = $url;
-                    }
-                }
-            }
-        }
+        $customData = $this->addImageData($customData, $product, $additionalAttributes);
 
         $sub_products = [];
         $ids = null;
@@ -795,6 +765,43 @@ class ProductHelper extends BaseHelper
         $this->castProductObject($customData);
 
         $this->logger->stop('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($product->getStoreId()));
+
+        return $customData;
+    }
+
+    protected function addImageData(array $customData, $product, $additionalAttributes)
+    {
+        /** @var Image $imageHelper */
+        $imageHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\Image');
+
+        if (false === isset($defaultData['thumbnail_url'])) {
+            $thumb = $imageHelper->init($product, 'thumbnail')->resize(75, 75);
+
+            $customData['thumbnail_url'] = $thumb->getUrl();
+        }
+
+        if (false === isset($defaultData['image_url'])) {
+            $image = $imageHelper->init($product, $this->config->getImageType())->resize($this->config->getImageWidth(), $this->config->getImageHeight());
+
+            $customData['image_url'] = $image->getUrl();
+
+            if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
+                $product->load('media_gallery');
+
+                $customData['media_gallery'] = [];
+
+                $images = $product->getMediaGalleryImages();
+                if ($images) {
+                    foreach ($images as $image) {
+                        $url = $image->getUrl();
+                        $url = $imageHelper->removeProtocol($url);
+                        $url = $imageHelper->removeDoubleSlashes($url);
+
+                        $customData['media_gallery'][] = $url;
+                    }
+                }
+            }
+        }
 
         return $customData;
     }

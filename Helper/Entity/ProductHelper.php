@@ -8,9 +8,31 @@ use Magento\Directory\Model\Currency;
 use Magento\Framework\DataObject;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Model\Config as TaxConfig;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Logger;
+use Magento\Catalog\Helper\Data as CatalogHelper;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\CatalogInventory\Helper\Stock;
+use Magento\CatalogRule\Model\ResourceModel\Rule;
+use Magento\Cms\Model\Template\FilterProvider;
+use Magento\Directory\Helper\Data as CurrencyDirectory;
+use Magento\Directory\Model\Currency as CurrencyHelper;
+use Magento\Eav\Model\Config;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\ObjectManagerInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Tax\Helper\Data;
 
 class ProductHelper extends BaseHelper
 {
+    /**
+     * @var Image $imageHelper
+     */
+    protected $imageHelper;
+
     protected static $_productAttributes;
     protected static $_currencies;
     protected static $debug = 0;
@@ -35,6 +57,41 @@ class ProductHelper extends BaseHelper
         'media_gallery',
         'in_stock',
     ];
+
+    public function __construct(
+        Config $eavConfig,
+        ConfigHelper $configHelper,
+        AlgoliaHelper $algoliaHelper,
+        Logger $logger,
+        StoreManagerInterface $storeManager,
+        ManagerInterface $eventManager,
+        Visibility $visibility,
+        Stock $stock,
+        Data $taxHelper,
+        StockRegistryInterface $stockRegistry,
+        CurrencyDirectory $currencyDirectory,
+        CurrencyHelper $currencyHelper,
+        ObjectManagerInterface $objectManager,
+        CatalogHelper $catalogHelper,
+        ResourceConnection $queryResource,
+        CurrencyHelper $currencyManager,
+        FilterProvider $filterProvider,
+        PriceCurrencyInterface $priceCurrency,
+        Rule $rule
+    ) {
+        parent::__construct($eavConfig, $configHelper, $algoliaHelper, $logger, $storeManager,
+            $eventManager, $visibility, $stock, $taxHelper, $stockRegistry, $currencyDirectory,
+            $currencyHelper, $objectManager, $catalogHelper, $queryResource, $currencyManager,
+            $filterProvider, $priceCurrency, $rule);
+
+        $this->imageHelper = $this->objectManager->create(
+            'Algolia\AlgoliaSearch\Helper\Image',
+            [
+                'options' =>[
+                    'shouldRemovePubDir' => $this->config->shouldRemovePubDirectory(),
+                ]
+            ]);
+    }
 
     protected function getIndexNameSuffix()
     {
@@ -771,22 +828,19 @@ class ProductHelper extends BaseHelper
 
     protected function addImageData(array $customData, $product, $additionalAttributes)
     {
-        /** @var Image $imageHelper */
-        $imageHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\Image');
-
         if (false === isset($defaultData['thumbnail_url'])) {
-            $customData['thumbnail_url'] = $imageHelper
+            $customData['thumbnail_url'] = $this->imageHelper
                 ->init($product, 'thumbnail')
                 ->resize(75, 75)
                 ->getUrl();
         }
 
         if (false === isset($defaultData['image_url'])) {
-            $imageHelper
+            $this->imageHelper
                 ->init($product, $this->config->getImageType())
                 ->resize($this->config->getImageWidth(), $this->config->getImageHeight());
 
-            $customData['image_url'] = $imageHelper->getUrl();
+            $customData['image_url'] = $this->imageHelper->getUrl();
 
             if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
                 $product->load('media_gallery');
@@ -797,8 +851,8 @@ class ProductHelper extends BaseHelper
                 if ($images) {
                     foreach ($images as $image) {
                         $url = $image->getUrl();
-                        $url = $imageHelper->removeProtocol($url);
-                        $url = $imageHelper->removeDoubleSlashes($url);
+                        $url = $this->imageHelper->removeProtocol($url);
+                        $url = $this->imageHelper->removeDoubleSlashes($url);
 
                         $customData['media_gallery'][] = $url;
                     }

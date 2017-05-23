@@ -5,15 +5,21 @@ namespace Algolia\AlgoliaSearch\Helper;
 class Image extends \Magento\Catalog\Helper\Image
 {
     protected $logger;
+    protected $options;
 
     public function __construct(\Magento\Framework\App\Helper\Context $context,
                                 \Magento\Catalog\Model\Product\ImageFactory $productImageFactory,
                                 \Magento\Framework\View\Asset\Repository $assetRepo,
                                 \Magento\Framework\View\ConfigInterface $viewConfig,
-                                Logger $logger)
-    {
+                                Logger $logger,
+                                $options = []
+    ) {
         parent::__construct($context, $productImageFactory, $assetRepo, $viewConfig);
         $this->logger = $logger;
+
+        $this->options = array_merge([
+            'shouldRemovePubDir' => false
+        ], $options);
     }
 
     public function getUrl()
@@ -31,6 +37,10 @@ class Image extends \Magento\Catalog\Helper\Image
 
         $url = $this->removeProtocol($url);
         $url = $this->removeDoubleSlashes($url);
+
+        if ($this->options['shouldRemovePubDir']) {
+            $url = $this->removePubDirectory($url);
+        }
 
         return $url;
     }
@@ -61,5 +71,10 @@ class Image extends \Magento\Catalog\Helper\Image
         $url = '/'.$url;
 
         return $url;
+    }
+
+    public function removePubDirectory($url)
+    {
+        return str_replace('/pub/', '/', $url);;
     }
 }

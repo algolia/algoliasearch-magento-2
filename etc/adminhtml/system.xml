@@ -534,6 +534,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="remove_pub_dir_in_url" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Remove /pub/ from image URLs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If enabled, path like example.com/pub/media/image.jpg will become example.com/media/image.jpg. Activate this if your server is set to use the pub/ directory as root directory.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="make_seo_request" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Make SEO request</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

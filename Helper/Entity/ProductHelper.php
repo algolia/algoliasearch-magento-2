@@ -775,15 +775,18 @@ class ProductHelper extends BaseHelper
         $imageHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\Image');
 
         if (false === isset($defaultData['thumbnail_url'])) {
-            $thumb = $imageHelper->init($product, 'thumbnail')->resize(75, 75);
-
-            $customData['thumbnail_url'] = $thumb->getUrl();
+            $customData['thumbnail_url'] = $imageHelper
+                ->init($product, 'thumbnail')
+                ->resize(75, 75)
+                ->getUrl();
         }
 
         if (false === isset($defaultData['image_url'])) {
-            $image = $imageHelper->init($product, $this->config->getImageType())->resize($this->config->getImageWidth(), $this->config->getImageHeight());
+            $imageHelper
+                ->init($product, $this->config->getImageType())
+                ->resize($this->config->getImageWidth(), $this->config->getImageHeight());
 
-            $customData['image_url'] = $image->getUrl();
+            $customData['image_url'] = $imageHelper->getUrl();
 
             if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
                 $product->load('media_gallery');

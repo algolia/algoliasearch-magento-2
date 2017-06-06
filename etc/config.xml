@@ -65,6 +65,14 @@
                 <number_of_job_to_run>10</number_of_job_to_run>
             </queue>
         </algoliasearch_queue>
+        <algoliasearch_analytics>
+            <analytics_group>
+                <enable>0</enable>
+                <delay>3000</delay>
+                <trigger_on_ui_interaction>1</trigger_on_ui_interaction>
+                <push_initial_search>0</push_initial_search>
+            </analytics_group>
+        </algoliasearch_analytics>
         <algoliasearch_advanced>
             <advanced>
                 <number_of_element_by_page>100</number_of_element_by_page>

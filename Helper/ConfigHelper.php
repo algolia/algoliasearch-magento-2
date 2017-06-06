@@ -62,6 +62,11 @@ class ConfigHelper
     const ONEWAY_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/oneway_synonyms';
     const SYNONYMS_FILE = 'algoliasearch_synonyms/synonyms_group/synonyms_file';
 
+    const ANALYTICS_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
+    const ANALYTICS_DELAY = 'algoliasearch_analytics/analytics_group/delay';
+    const ANALYTICS_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
+    const ANALYTICS_PUSH_INITIAL_SEARCH = 'algoliasearch_analytics/analytics_group/push_initial_search';
+
     const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/advanced/number_of_element_by_page';
     const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
     const PARTIAL_UPDATES = 'algoliasearch_advanced/advanced/partial_update';
@@ -597,5 +602,20 @@ class ConfigHelper
         $baseDirectory = $this->directoryList->getPath(DirectoryList::MEDIA);
 
         return $baseDirectory . '/algoliasearch_admin_config_uploads/' . $filename;
+    }
+
+    public function isAnalyticsEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::ANALYTICS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getAnalyticsConfig($storeId = null)
+    {
+        return [
+            'enabled' => $this->isAnalyticsEnabled(),
+            'delay' => $this->configInterface->getValue(self::ANALYTICS_DELAY, ScopeInterface::SCOPE_STORE, $storeId),
+            'triggerOnUiInteraction' => $this->configInterface->getValue(self::ANALYTICS_TRIGGER_ON_UI_INTERACTION, ScopeInterface::SCOPE_STORE, $storeId),
+            'pushInitialSearch' => $this->configInterface->getValue(self::ANALYTICS_PUSH_INITIAL_SEARCH, ScopeInterface::SCOPE_STORE, $storeId),
+        ];
     }
 }

@@ -414,6 +414,27 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				addWidget(search, widgetType, widgetConfig);
 			}
 		});
+
+		if (algoliaConfig.analytics.enabled) {
+			if (typeof algoliaAnalyticsPushFunction != 'function') {
+				var algoliaAnalyticsPushFunction = function (formattedParameters, state, results) {
+					var trackedUrl = '/catalogsearch/result/?q=' + state.query + '&' + formattedParameters + '&numberOfHits=' + results.nbHits;
+
+					// Universal Analytics
+					if (typeof window.ga != 'undefined') {
+						window.ga('set', 'page', trackedUrl);
+						window.ga('send', 'pageView');
+					}
+				};
+			}
+
+			addWidget(search, 'analytics', {
+                pushFunction: algoliaAnalyticsPushFunction,
+                delay: algoliaConfig.analytics.delay,
+                triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
+                pushInitialSearch: algoliaConfig.analytics.pushInitialSearch
+			});
+		}
 		
 		var isStarted = false;
 		function startInstantSearch() {

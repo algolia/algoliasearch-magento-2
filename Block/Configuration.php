@@ -167,6 +167,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'urls' => [
                 'logo' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/search-by-algolia.svg'),
             ],
+            'analytics' => $config->getAnalyticsConfig(),
             'translations' => [
                 'to' => __('to'),
                 'or' => __('or'),

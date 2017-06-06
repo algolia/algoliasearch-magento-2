@@ -490,6 +490,68 @@
                 </field>
             </group>
         </section>
+
+        <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Analytics</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment>
+                    <![CDATA[
+                        Documentation of Magento analytics: <a href="https://community.algolia.com/magento/doc/m2/analytics/" target="_blank">https://community.algolia.com/magento/doc/m2/analytics/</a>
+                        <br>
+                        <br>
+                        <hr>
+                    ]]>
+                </comment>
+                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Analytics</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="delay" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Delay (in milliseconds)</label>
+                    <comment>
+                        <![CDATA[
+                            When the search bar is used, each keystroke triggers a search in Algolia. It’s really good for an instantsearch and as-you-type search UX, but it’s not that good for analytics as it generates a lot of data and brings a lot of noise to the analytics. The delay variable defines how long the widget should wait between keystrokes before pushing data to analytics - only the last search will be pushed.
+
+                            Default value: 3000
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="trigger_on_ui_interaction" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Trigger the push function before the the delay on UI interaction</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                        If the user selects a search result even before the push was trigger (because of the delay variable), the push to analytics might never be called. With this parameter you can trigger a data push to analytics if the user interacts with the search results during the delay.
+
+                        Default value: Yes
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="push_initial_search" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Trigger the push function after the initial search</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Sometimes your customers come directly to the search page from a link, so a search is triggered automatically without any action from the user. At the same time, the load of the page triggers standard Google Analytics code to track the page view. By this parameter you can specify if you want to trigger a data push on this kind of search scenario.
+
+                            Default value: No
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
         <section id="algoliasearch_advanced" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Advanced</label>
             <tab>algolia</tab>

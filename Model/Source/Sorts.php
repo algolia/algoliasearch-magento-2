@@ -17,8 +17,10 @@ class Sorts extends AbstractTable
                 'values' => function () use ($productHelper) {
                     $options = [];
 
-                    foreach ($productHelper->getAdditionalAttributes() as $attribute) {
-                        $options[$attribute['attribute']] = $attribute['attribute'];
+                    $attributes = $productHelper->getAllAttributes();
+
+                    foreach ($attributes as $key => $label) {
+                        $options[$key] = $key ? $key : $label;
                     }
 
                     return $options;

@@ -120,11 +120,6 @@ input::-ms-clear {
   margin-right: 10px;
 }
 
-.current-refinements
-{
-  position: relative;
-}
-
 .ais-current-refined-values--link
 {
   cursor: pointer;
@@ -479,12 +474,12 @@ a.ais-current-refined-values--link:hover
   content: '';
 }
 
-.col9 {
+#algolia-autocomplete-container .col9 {
   float: right;
   box-sizing: border-box;
 }
 
-.col3 {
+#algolia-autocomplete-container .col3 {
   float: right;
   box-sizing: border-box;
 }
@@ -504,14 +499,14 @@ a.ais-current-refined-values--link:hover
 }
 
 @media (min-width: 768px) {
-  .col9 {
+	#algolia-autocomplete-container .col9 {
     border-left: solid 1px #eeeeee;
     width: 70%;
 	  right: 0;
 	  height: 100%;
   }
-
-  .col3 {
+	
+	#algolia-autocomplete-container .col3 {
     float: left;
     width: 30%;
   }
@@ -528,7 +523,7 @@ a.ais-current-refined-values--link:hover
   }
 }
 
-.other-sections {
+#algolia-autocomplete-container .other-sections {
   margin: 20px 10px;
   margin-bottom: 70px;
 }
@@ -676,11 +671,11 @@ a.ais-current-refined-values--link:hover
 /**
  * Search Box
 */
-#algolia-searchbox{
+#algolia-searchbox {
   position: relative;
 }
 
-.clear-cross {
+#algolia-searchbox .clear-cross, #algolia_instant_selector .clear-cross {
 	position: absolute;
 	display: none;
 	background: url("data:image/svg+xml;utf8,<svg width=\'12\' height=\'12\' viewBox=\'0 0 12 12\' xmlns=\'http://www.w3.org/2000/svg\' opacity=\'0.6\'><path d=\'M.566 1.698L0 1.13 1.132 0l.565.566L6 4.868 10.302.566 10.868 0 12 1.132l-.566.565L7.132 6l4.302 4.3.566.568L10.868 12l-.565-.566L6 7.132l-4.3 4.302L1.13 12 0 10.868l.566-.565L4.868 6 .566 1.698z\'></path></svg>") no-repeat center center / contain;
@@ -699,7 +694,7 @@ a.ais-current-refined-values--link:hover
 	top: 13px;
 }
 
-.cross-wrapper .clear-refinement {
+#algolia_instant_selector .cross-wrapper .clear-refinement {
 	display: block;
 	position: relative;
 	top: 5px;
@@ -1154,77 +1149,77 @@ a.ais-current-refined-values--link:hover
 	display: none;
 }
 
-.row {
+#algolia_instant_selector .row {
   margin-left: -15px;
   margin-right: -15px;
 }
-.col-md-3, .col-md-4, .col-md-9, .col-md-12 {
+#algolia_instant_selector .col-md-3, #algolia_instant_selector .col-md-4, #algolia_instant_selector .col-md-9, #algolia_instant_selector .col-md-12 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
 @media (min-width: 768px) {
-  .col-sm-6 {
+	#algolia_instant_selector .col-sm-6 {
     width: 50%;
     float: left;
   }
 }
 @media (min-width: 992px) {
-  .col-md-3, .col-md-4, .col-md-9, .col-md-12 {
+  #algolia_instant_selector .col-md-3, #algolia_instant_selector .col-md-4, #algolia_instant_selector .col-md-9, #algolia_instant_selector .col-md-12 {
     float: left;
   }
-  .col-md-12 {
+  #algolia_instant_selector .col-md-12 {
     width: 100%;
   }
-  .col-md-9 {
+  #algolia_instant_selector .col-md-9 {
     width: 75%;
   }
-  .col-md-4 {
+  #algolia_instant_selector .col-md-4 {
     width: 33.33333333%;
   }
-  .col-md-3 {
+  #algolia_instant_selector .col-md-3 {
     width: 25%;
   }
 }
-.row:before,
-.row:after {
+#algolia_instant_selector .row:before,
+#algolia_instant_selector .row:after {
   content: " ";
   display: table;
 }
-.row:after {
+#algolia_instant_selector .row:after {
   clear: both;
 }
 
-.visible-xs, .visible-sm {
+#algolia_instant_selector .visible-xs, #algolia_instant_selector .visible-sm {
   display: none!important
 }
 
-.hidden-xs, .hidden-sm {
+#algolia_instant_selector .hidden-xs, #algolia_instant_selector .hidden-sm {
   display: block !important
 }
 
 @media (max-width: 767px) {
-  .visible-xs {
+  #algolia_instant_selector .visible-xs {
     display: block !important
   }
 
-  .hidden-xs {
+  #algolia_instant_selector .hidden-xs {
     display: none!important
   }
 }
 
 @media (max-width: 992px) {
-  .visible-sm {
+  #algolia_instant_selector .visible-sm {
     display: block !important
   }
 
-  .hidden-sm {
+  #algolia_instant_selector .hidden-sm {
     display: none!important
   }
 }
 
-.clearfix
+.algolia-clearfix
 {
   clear: both;
 }

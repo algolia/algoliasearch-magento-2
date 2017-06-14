@@ -71,6 +71,7 @@ class ConfigHelper
     const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
     const PARTIAL_UPDATES = 'algoliasearch_advanced/advanced/partial_update';
     const CUSTOMER_GROUPS_ENABLE = 'algoliasearch_advanced/advanced/customer_groups_enable';
+    const REMOVE_PUB_DIR_IN_URL = 'algoliasearch_advanced/advanced/remove_pub_dir_in_url';
     const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
     const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
     const AUTOCOMPLETE_SELECTOR = 'algoliasearch_advanced/advanced/autocomplete_selector';
@@ -79,6 +80,12 @@ class ConfigHelper
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
     const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
+
+    const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
+    const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
+    const EXTRA_SETTINGS_PAGES = 'algoliasearch_extra_settings/extra_settings/pages_extra_settings';
+    const EXTRA_SETTINGS_SUGGESTIONS = 'algoliasearch_extra_settings/extra_settings/suggestions_extra_settings';
+    const EXTRA_SETTINGS_ADDITIONAL_SECTIONS = 'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
 
     protected $_productTypeMap = [];
 
@@ -184,7 +191,7 @@ class ConfigHelper
 
     public function isEnabledBackend($storeId = null)
     {
-        return $this->configInterface->getValue(self::ENABLE_BACKEND, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::ENABLE_BACKEND, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function makeSeoRequest($storeId = null)
@@ -240,6 +247,11 @@ class ConfigHelper
     public function isCustomerGroupsEnabled($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::CUSTOMER_GROUPS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function shouldRemovePubDirectory($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::REMOVE_PUB_DIR_IN_URL, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isPartialUpdateEnabled($storeId = null)
@@ -446,10 +458,22 @@ class ConfigHelper
 
     public function getProductAdditionalAttributes($storeId = null)
     {
-        $attrs = unserialize($this->configInterface->getValue(self::PRODUCT_ATTRIBUTES, ScopeInterface::SCOPE_STORE, $storeId));
+        $attributes = unserialize($this->configInterface->getValue(self::PRODUCT_ATTRIBUTES, ScopeInterface::SCOPE_STORE, $storeId));
 
-        if (is_array($attrs)) {
-            return $attrs;
+        $facets = unserialize($this->configInterface->getValue(self::FACETS, ScopeInterface::SCOPE_STORE,$storeId));
+        $attributes = $this->addIndexableAttributes($attributes, $facets, '0');
+
+        $sorts = unserialize($this->configInterface->getValue(self::SORTING_INDICES, ScopeInterface::SCOPE_STORE,$storeId));
+        $attributes = $this->addIndexableAttributes($attributes, $sorts, '0');
+
+        $customRankings = unserialize($this->configInterface->getValue(self::PRODUCT_CUSTOM_RANKING, ScopeInterface::SCOPE_STORE,$storeId));
+        $customRankings = array_filter($customRankings, function ($customRanking) {
+            return $customRanking['attribute'] != 'custom_attribute';
+        });
+        $attributes = $this->addIndexableAttributes($attributes, $customRankings, '0', '0');
+
+        if (is_array($attributes)) {
+            return $attributes;
         }
 
         return [];
@@ -492,6 +516,15 @@ class ConfigHelper
         }
 
         return [];
+    }
+
+    public function getExtraSettings($section, $storeId = null)
+    {
+        $constant = 'EXTRA_SETTINGS_'.mb_strtoupper($section);
+
+        $value = $this->configInterface->getValue(constant('self::'.$constant), ScopeInterface::SCOPE_STORE, $storeId);
+
+        return trim($value);
     }
 
     public function getCurrency($storeId = null)
@@ -617,5 +650,25 @@ class ConfigHelper
             'triggerOnUiInteraction' => $this->configInterface->getValue(self::ANALYTICS_TRIGGER_ON_UI_INTERACTION, ScopeInterface::SCOPE_STORE, $storeId),
             'pushInitialSearch' => $this->configInterface->getValue(self::ANALYTICS_PUSH_INITIAL_SEARCH, ScopeInterface::SCOPE_STORE, $storeId),
         ];
+    }
+  
+    private function addIndexableAttributes($attributes, $addedAttributes, $searchable = '1', $retrievable = '1', $indexNoValue = '1')
+    {
+        foreach ((array) $addedAttributes as $addedAttribute) {
+            foreach ((array) $attributes as $attribute) {
+                if ($addedAttribute['attribute'] == $attribute['attribute']) {
+                    continue 2;
+                }
+            }
+
+            $attributes[] = array(
+                'attribute'         => $addedAttribute['attribute'],
+                'searchable'        => $searchable,
+                'retrievable'       => $retrievable,
+                'index_no_value'    => $indexNoValue,
+            );
+        }
+
+        return $attributes;
     }
 }

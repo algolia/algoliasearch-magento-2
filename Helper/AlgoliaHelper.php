@@ -72,13 +72,13 @@ class AlgoliaHelper extends AbstractHelper
         return $this->getIndex($indexName)->getObjects($objectIds);
     }
 
-    public function setSettings($indexName, $settings)
+    public function setSettings($indexName, $settings, $forwardToReplicas = false)
     {
         $this->checkClient(__FUNCTION__);
 
         $index = $this->getIndex($indexName);
 
-        $res = $index->setSettings($settings);
+        $res = $index->setSettings($settings, $forwardToReplicas);
 
         self::$lastUsedIndexName = $indexName;
         self::$lastTaskId = $res['taskID'];

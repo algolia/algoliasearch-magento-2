@@ -13,10 +13,11 @@ class CustomRankingProduct extends AbstractTable
                 'label'  => 'Attribute',
                 'values' => function () use ($productHelper) {
                     $options = [];
-                    $attributes = $productHelper->getAdditionalAttributes();
 
-                    foreach ($attributes as $attribute) {
-                        $options[$attribute['attribute']] = $attribute['attribute'];
+                    $attributes = $productHelper->getAllAttributes();
+
+                    foreach ($attributes as $key => $label) {
+                        $options[$key] = $key ? $key : $label;
                     }
 
                     return $options;

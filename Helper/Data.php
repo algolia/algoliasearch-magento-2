@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
+use AlgoliaSearch\AlgoliaException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -116,6 +117,8 @@ class Data
         }
 
         $this->productHelper->setSettings($storeId, $useTmpIndex);
+
+        $this->setExtraSettings($storeId, $useTmpIndex);
     }
 
     public function getSearchResult($query, $storeId)
@@ -553,10 +556,13 @@ class Data
                 $toRealRemove = $indexData['toRemove'];
             } else {
                 $indexData['toRemove'] = array_map('strval', $indexData['toRemove']);
-                $objects = $this->algoliaHelper->getObjects($indexName, $indexData['toRemove']);
-                foreach ($objects['results'] as $object) {
-                    if (isset($object['objectID'])) {
-                        $toRealRemove[] = $object['objectID'];
+
+                foreach (array_chunk($indexData['toRemove'], 1000) as $chunk) {
+                    $objects = $this->algoliaHelper->getObjects($indexName, $chunk);
+                    foreach ($objects['results'] as $object) {
+                        if (isset($object['objectID'])) {
+                            $toRealRemove[] = $object['objectID'];
+                        }
                     }
                 }
             }
@@ -607,5 +613,44 @@ class Data
         $this->emulationRuns = false;
 
         $this->logger->stop('STOP EMULATION');
+    }
+
+    private function setExtraSettings($storeId, $saveToTmpIndicesToo)
+    {
+        $sections = [
+            'products' => $this->productHelper->getIndexName($storeId),
+            'categories' => $this->categoryHelper->getIndexName($storeId),
+            'pages' => $this->pageHelper->getIndexName($storeId),
+            'suggestions' => $this->suggestionHelper->getIndexName($storeId),
+            'additional_sections' => $this->additionalSectionHelper->getIndexName($storeId),
+        ];
+
+        $error = [];
+        foreach ($sections as $section => $indexName) {
+            try {
+                $extraSettings = $this->configHelper->getExtraSettings($section, $storeId);
+
+                if ($extraSettings) {
+                    $extraSettings = json_decode($extraSettings, true);
+
+                    $this->algoliaHelper->setSettings($indexName, $extraSettings, true);
+
+                    if ($section === 'products' && $saveToTmpIndicesToo === true) {
+                        $this->algoliaHelper->setSettings($indexName.'_tmp', $extraSettings, true);
+                    }
+                }
+            } catch (AlgoliaException $e) {
+                if (strpos($e->getMessage(), 'Invalid object attributes:') === 0) {
+                    $error[] = 'Extra settings for "'.$section.'" indices were not saved. Error message: "'.$e->getMessage().'"';
+                    continue;
+                }
+
+                throw $e;
+            }
+        }
+
+        if (!empty($error)) {
+            throw new AlgoliaException('<br>'.implode('<br> ', $error));
+        }
     }
 }

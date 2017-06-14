@@ -22,6 +22,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="credentials" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Credentials and Setup</label>
                 <field id="enable_backend" translate="label comment" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Indexing</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -109,6 +110,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="autocomplete" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Autocomplete</label>
                 <field id="nb_of_products_suggestions" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of products</label>
@@ -193,6 +195,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="instant" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Instant Search Results Page</label>
                 <field id="instant_selector" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>DOM Selector</label>
                     <comment>
@@ -269,6 +272,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="products" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Products</label>
                 <field id="number_product_results" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of products per page in the instant result page</label>
@@ -326,6 +330,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="categories" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Categories</label>
                 <field id="category_additional_attributes" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Attributes</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\SortOrderCategory</frontend_model>
@@ -365,6 +370,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="image" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Images</label>
                 <field id="width" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Width</label>
@@ -395,6 +401,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="queue" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Indexing Queue / Cron</label>
                 <field id="active" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Queue Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -431,6 +438,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="synonyms_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Synonyms</label>
                 <comment>
                     <![CDATA[
                     <table>
@@ -557,6 +565,7 @@
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="advanced" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced</label>
                 <field id="number_of_element_by_page" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Max number of element per indexing job</label>
@@ -596,6 +605,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="remove_pub_dir_in_url" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Remove /pub/ from image URLs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If enabled, path like example.com/pub/media/image.jpg will become example.com/media/image.jpg. Activate this if your server is set to use the pub/ directory as root directory.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="make_seo_request" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Make SEO request</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -631,6 +649,52 @@
                             By default the feature is turned on.
                         ]]>
                     </comment>
+                </field>
+            </group>
+        </section>
+        <section id="algoliasearch_extra_settings" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Advanced - Extra Algolia indices settings</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="extra_settings" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Advanced - Extra Algolia indices settings</label>
+                <comment>
+                    <![CDATA[
+                    <p>Here, you can specify additional Algolia indices settings which can be applied only programatically via one of Algolia API clients.</p>
+
+                    <p>
+                    To set an extra settings, please fill the right textarea with JSON where you specify the extra settings.<br />
+                    Example: <code>{"exactOnSingleWordQuery":"word"}</code>
+                    </p>
+
+                    <p>List of possible settings: <a href="https://www.algolia.com/doc/api-client/default/settings/#index-settings-parameters" target="_blank">https://www.algolia.com/doc/api-client/default/settings/#index-settings-parameters</a></p>
+
+                    <p><span class="algolia-config-warning">&#9888;</span> Edit extra settings only when you're sure what you're doing. Bad settings can effect your search functionality and have a bad impact on your relevance.</p>
+                ]]>
+                </comment>
+
+                <field id="products_extra_settings" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\ExtraSettings</backend_model>
+                    <label>Products' indices extra settings</label>
+                    <attribute type="abrala" value="80">
+                        <value>90</value>
+                    </attribute>
+                </field>
+                <field id="categories_extra_settings" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\ExtraSettings</backend_model>
+                    <label>Categories' indices extra settings</label>
+                </field>
+                <field id="pages_extra_settings" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\ExtraSettings</backend_model>
+                    <label>Pages' indices extra settings</label>
+                </field>
+                <field id="suggestions_extra_settings" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\ExtraSettings</backend_model>
+                    <label>Suggestions' indices extra settings</label>
+                </field>
+                <field id="additional_sections_extra_settings" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\ExtraSettings</backend_model>
+                    <label>Additional sections' indices extra settings</label>
                 </field>
             </group>
         </section>

@@ -58,6 +58,7 @@ class ConfigHelper
     const XML_PATH_IMAGE_HEIGHT = 'algoliasearch_images/image/height';
     const XML_PATH_IMAGE_TYPE = 'algoliasearch_images/image/type';
 
+    const ENABLE_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/enable_synonyms';
     const SYNONYMS = 'algoliasearch_synonyms/synonyms_group/synonyms';
     const ONEWAY_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/oneway_synonyms';
     const SYNONYMS_FILE = 'algoliasearch_synonyms/synonyms_group/synonyms_file';
@@ -600,6 +601,11 @@ class ConfigHelper
         $attributes = array_unique($attributes);
 
         return ['attributesToRetrieve' => $attributes];
+    }
+
+    public function isEnabledSynonyms($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::ENABLE_SYNONYMS, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getSynonyms($storeId = null)

@@ -206,6 +206,36 @@ class AlgoliaHelper extends AbstractHelper
         self::$lastTaskId = $res['taskID'];
     }
 
+    public function copySynonyms($fromIndexName, $toIndexName)
+    {
+        $fromIndex = $this->getIndex($fromIndexName);
+        $toIndex = $this->getIndex($toIndexName);
+
+        $synonymsToSet = array();
+
+        $hitsPerPage = 100;
+        $page = 0;
+        do {
+            $fetchedSynonyms = $fromIndex->searchSynonyms('', array(), $page, $hitsPerPage);
+            foreach ($fetchedSynonyms['hits'] as $hit) {
+                unset($hit['_highlightResult']);
+
+                $synonymsToSet[] = $hit;
+            }
+
+            $page++;
+        } while (($page * $hitsPerPage) < $fetchedSynonyms['nbHits']);
+
+        if (empty($synonymsToSet)) {
+            $res = $toIndex->clearSynonyms(true);
+        } else {
+            $res = $toIndex->batchSynonyms($synonymsToSet, true, true);
+        }
+
+        self::$lastUsedIndexName= $toIndex;
+        self::$lastTaskId = $res['taskID'];
+    }
+
     private function checkClient($methodName)
     {
         if (isset($this->client)) {

@@ -73,6 +73,11 @@
                 <push_initial_search>0</push_initial_search>
             </analytics_group>
         </algoliasearch_analytics>
+        <algoliasearch_synonyms>
+            <synonyms_group>
+                <enable_synonyms>0</enable_synonyms>
+            </synonyms_group>
+        </algoliasearch_synonyms>
         <algoliasearch_advanced>
             <advanced>
                 <number_of_element_by_page>100</number_of_element_by_page>

@@ -452,6 +452,15 @@
                     <br>
                 ]]>
                 </comment>
+                <field id="enable_synonyms" translate="label comment" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Synonyms Management</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If set to No, synonyms will be managed only in Algolia's dashboard and won't get to be overriden by Magento.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="synonyms" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Synonyms</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\Synonyms</frontend_model>
@@ -466,7 +475,7 @@
                     </comment>
                 </field>
                 <field id="oneway_synonyms" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Synonyms</label>
+                    <label>One-way Synonyms</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\OnewaySynonyms</frontend_model>
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>

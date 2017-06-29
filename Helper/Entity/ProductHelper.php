@@ -386,7 +386,7 @@ class ProductHelper extends BaseHelper
             foreach ($currencies as $currencyCode) {
                 $customData[$field][$currencyCode] = [];
 
-                $price = $product->getPrice();
+                $price = $product->getPriceInfo()->getPrice('regular_price')->getValue();
                 if ($currencyCode !== $baseCurrencyCode) {
                     $price = $this->priceCurrency->convert($price, $store, $currencyCode);
                 }

@@ -392,7 +392,7 @@ class ProductHelper extends BaseHelper
             foreach ($currencies as $currencyCode) {
                 $customData[$field][$currencyCode] = [];
 
-                $price = $product->getPrice();
+                $price = $product->getPriceInfo()->getPrice('regular_price')->getValue();
                 if ($currencyCode !== $baseCurrencyCode) {
                     $price = $this->priceCurrency->convert($price, $store, $currencyCode);
                 }
@@ -404,7 +404,7 @@ class ProductHelper extends BaseHelper
 
                 $specialPrices = [];
                 $specialPrices[] = (double) $this->rule->getRulePrice(new \DateTime(), $store->getWebsiteId(), 0, $product->getId()); // The price with applied catalog rules
-                $specialPrices[] = (double) $product->getFinalPrice(); // The product's special price
+                $specialPrices[] = (double) $product->getPriceInfo()->getPrice('final_price')->getValue(); // The product's special price
 
                 $specialPrices = array_filter($specialPrices, function($price) {
                     return $price > 0;

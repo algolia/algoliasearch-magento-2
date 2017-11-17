@@ -380,11 +380,7 @@ class ProductHelper extends BaseHelper
         $currencies = $store->getAvailableCurrencyCodes();
         $baseCurrencyCode = $store->getBaseCurrencyCode();
 
-        $groups = [];
-
-        if ($areCustomersGroupsEnabled) {
-            $groups = $this->objectManager->create('Magento\Customer\Model\ResourceModel\Group\Collection');
-        }
+        $groups = $this->objectManager->create('Magento\Customer\Model\ResourceModel\Group\Collection');
 
         foreach ($fields as $field => $withTax) {
             $customData[$field] = [];

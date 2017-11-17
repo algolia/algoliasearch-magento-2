@@ -13,6 +13,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Url\Helper\Data;
 use Magento\Framework\View\Element\Template;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
+use Magento\Customer\Model\GroupManagement;
 
 class Algolia extends Template implements \Magento\Framework\Data\CollectionDataSourceInterface
 {
@@ -87,13 +88,13 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
 
     public function getGroupId()
     {
-        return $this->customerSession->getCustomer()->getGroupId();
+        return $this->customerSession->isLoggedIn() ? $this->customerSession->getCustomer()->getGroupId() : GroupManagement::NOT_LOGGED_IN_ID;
     }
 
     public function getPriceKey()
     {
         if ($this->priceKey === null) {
-            $groupId = $this->customerSession->getCustomer()->getGroupId();
+            $groupId = $this->getGroupId();
             $currencyCode = $this->getCurrencyCode();
             $this->priceKey = $this->config->isCustomerGroupsEnabled($this->_storeManager->getStore()->getStoreId()) ? '.' . $currencyCode . '.group_' . $groupId : '.' . $currencyCode . '.default';
         }
@@ -138,3 +139,4 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
     }
 }
+

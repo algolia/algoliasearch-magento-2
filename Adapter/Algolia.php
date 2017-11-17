@@ -117,16 +117,9 @@ class Algolia implements AdapterInterface
         $documents = [];
         $table = null;
 
-        if (!$this->config->getApplicationID($storeId) || !$this->config->getAPIKey($storeId) || $this->config->isEnabledFrontEnd($storeId) === false || $this->config->makeSeoRequest($storeId) === '0' ||
-            // Dont make the Algolia query on category page if replace category is false or use instant search is false
-            ($this->request->getControllerName() === 'category' && ($this->config->replaceCategories($storeId) == false || $this->config->isInstantEnabled($storeId) == false)) ||
-            // Dont make the Algolia query on catalog search advanced result page if replace category is false or use instant search is false
-            ($this->request->getFullActionName() === 'catalogsearch_advanced_result' && ($this->config->replaceCategories($storeId) == false || $this->config->isInstantEnabled($storeId) == false))
+        if ($this->isAllowed($storeId)
+            && ($this->isSearch($storeId) || $this->isReplaceCategory($storeId) || $this->isReplaceAdvancedSearch($storeId))
         ) {
-            $query = $this->mapper->buildQuery($request);
-            $table = $temporaryStorage->storeDocumentsFromSelect($query);
-            $documents = $this->getDocuments($table);
-        } else {
             $algolia_query = $query !== '__empty__' ? $query : '';
 
             //If instant search is on, do not make a search query unless SEO request is set to 'Yes'
@@ -146,6 +139,10 @@ class Algolia implements AdapterInterface
             }, $documents);
 
             $table = $temporaryStorage->{$storeDocumentsMethod}($apiDocuments);
+        } else {
+            $query = $this->mapper->buildQuery($request);
+            $table = $temporaryStorage->storeDocumentsFromSelect($query);
+            $documents = $this->getDocuments($table);
         }
 
         $aggregations = $this->aggregationBuilder->build($request, $table);
@@ -192,5 +189,75 @@ class Algolia implements AdapterInterface
     private function getDocument21($document)
     {
         return $this->documentFactory->create($document);
+    }
+
+    /**
+     * Check if algolia is properly configured and
+     * enabled
+     *
+     * @param  int     $storeId
+     * @return boolean
+     */
+    private function isAllowed($storeId)
+    {
+        return (
+            $this->config->getApplicationID($storeId)
+            && $this->config->getAPIKey($storeId)
+            && $this->config->isEnabledFrontEnd($storeId)
+        );
+    }
+
+    /**
+     * @param  int     $storeId
+     * @return boolean
+     */
+    private function isSearch($storeId)
+    {
+        return ($this->request->getFullActionName() == 'catalogsearch_result_index');
+    }
+
+    /**
+     * Check if Seo Request is enabled
+     *
+     * @param  int     $storeId
+     * @return boolean
+     */
+    private function isSeoRequestEnabled($storeId)
+    {
+        return ($this->config->makeSeoRequest($storeId) === '1');
+    }
+
+    /**
+     * Check if should replace category results
+     *
+     * @param  int     $storeId
+     * @return boolean
+     */
+    private function isReplaceCategory($storeId)
+    {
+        return (
+            $this->request->getControllerName() == 'category'
+            && (
+                $this->config->replaceCategories($storeId) == true
+                || $this->config->isInstantEnabled($storeId) == true
+            )
+        );
+    }
+
+    /**
+     * Check if replace advancend search result
+     *
+     * @param  int      $storeId
+     * @return boolean
+     */
+    private function isReplaceAdvancedSearch($storeId)
+    {
+        return (
+            $this->request->getFullActionName() == 'catalogsearch_advanced_result'
+            && (
+                $this->config->replaceCategories($storeId) == true
+                || $this->config->isInstantEnabled($storeId) == true
+            )
+        );
     }
 }

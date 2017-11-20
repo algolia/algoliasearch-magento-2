@@ -591,6 +591,7 @@ class ProductHelper extends BaseHelper
 
         $urlParams = [
             '_secure' => $this->config->useSecureUrlsInFrontend($product->getStoreId()),
+            '_nosid'  => true,
         ];
 
         $customData = [

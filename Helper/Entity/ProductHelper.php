@@ -382,6 +382,10 @@ class ProductHelper extends BaseHelper
 
         $groups = $this->objectManager->create('Magento\Customer\Model\ResourceModel\Group\Collection');
 
+        if (!$areCustomersGroupsEnabled) {
+            $groups->addFieldToFilter('main_table.customer_group_id', 0);
+        }
+
         foreach ($fields as $field => $withTax) {
             $customData[$field] = [];
 

@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Block;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Magento\Customer\Model\Session;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\Data\Form\FormKey;
 use Magento\Framework\Locale\Currency;
@@ -13,13 +12,13 @@ use Magento\Framework\Registry;
 use Magento\Framework\Url\Helper\Data;
 use Magento\Framework\View\Element\Template;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
-use Magento\Customer\Model\GroupManagement;
+use Magento\Framework\App\Http\Context as HttpContext;
+use Magento\Customer\Model\Context as CustomerContext;
 
 class Algolia extends Template implements \Magento\Framework\Data\CollectionDataSourceInterface
 {
     protected $config;
     protected $catalogSearchHelper;
-    protected $customerSession;
     protected $storeManager;
     protected $objectManager;
     protected $registry;
@@ -28,6 +27,7 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
     protected $algoliaHelper;
     protected $urlHelper;
     protected $formKey;
+    protected $httpContext;
 
     protected $priceKey;
 
@@ -35,24 +35,24 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
         Template\Context $context,
         ConfigHelper $config,
         CatalogSearchHelper $catalogSearchHelper,
-        Session $customerSession,
         ProductHelper $productHelper,
         Currency $currency,
         Registry $registry,
         AlgoliaHelper $algoliaHelper,
         Data $urlHelper,
         FormKey $formKey,
+        HttpContext $httpContext,
         array $data = []
     ) {
         $this->config = $config;
         $this->catalogSearchHelper = $catalogSearchHelper;
-        $this->customerSession = $customerSession;
         $this->productHelper = $productHelper;
         $this->currency = $currency;
         $this->registry = $registry;
         $this->algoliaHelper = $algoliaHelper;
         $this->urlHelper = $urlHelper;
         $this->formKey = $formKey;
+        $this->httpContext = $httpContext;
 
         parent::__construct($context, $data);
     }
@@ -88,7 +88,7 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
 
     public function getGroupId()
     {
-        return $this->customerSession->isLoggedIn() ? $this->customerSession->getCustomer()->getGroupId() : GroupManagement::NOT_LOGGED_IN_ID;
+        return $this->httpContext->getValue(CustomerContext::CONTEXT_GROUP);
     }
 
     public function getPriceKey()

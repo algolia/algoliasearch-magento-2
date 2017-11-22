@@ -44,7 +44,6 @@ class ConfigHelper
     const NUMBER_OF_PRODUCT_RESULTS = 'algoliasearch_products/products/number_product_results';
     const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
-    const RESULTS_LIMIT = 'algoliasearch_products/products/results_limit';
     const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_products/products/show_suggestions_on_no_result_page';
     const INDEX_OUT_OF_STOCK_OPTIONS = 'algoliasearch_products/products/index_out_of_stock_options';
 
@@ -324,11 +323,6 @@ class ConfigHelper
         return (int) $this->configInterface->getValue(self::NUMBER_OF_PRODUCT_RESULTS, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getResultsLimit($storeId = null)
-    {
-        return $this->configInterface->getValue(self::RESULTS_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
     public function isPopupEnabled($storeId = null)
     {
         return $this->configInterface->getValue(self::IS_POPUP_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
@@ -410,6 +404,11 @@ class ConfigHelper
 
             if ($indexName && $sortAttribute) {
                 $attr['name'] = $indexName;
+
+                if (!array_key_exists('label', $attr) && array_key_exists('sortLabel', $attr)) {
+                    $attr['label'] = $attr['sortLabel'];
+                }
+
                 $attr['ranking'] = [
                     $attr['sort'].'('.$sortAttribute.')',
                     'typo',
@@ -610,6 +609,7 @@ class ConfigHelper
         $attributes = $transport->getData();
 
         $attributes = array_unique($attributes);
+        $attributes = array_values($attributes);
 
         return ['attributesToRetrieve' => $attributes];
     }
@@ -691,8 +691,10 @@ class ConfigHelper
 
     private function unserialize($value)
     {
-        if (version_compare($this->getMagentoVersion(), '2.2.0-dev', '>=') === true) {
-            return json_decode($value, true);
+        $unserialized = json_decode($value, true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $unserialized;
         }
 
         return unserialize($value);

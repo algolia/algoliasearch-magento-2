@@ -141,17 +141,17 @@ class ConfigTest extends TestCase
             [
                 'attribute' => 'price',
                 'sort' => 'asc',
-                'label' => 'Lowest price',
+                'sortLabel' => 'Lowest price',
             ],
             [
                 'attribute' => 'price',
                 'sort' => 'desc',
-                'label' => 'Highest price',
+                'sortLabel' => 'Highest price',
             ],
             [
                 'attribute' => 'created_at',
                 'sort' => 'desc',
-                'label' => 'Newest first',
+                'sortLabel' => 'Newest first',
             ],
         ];
 

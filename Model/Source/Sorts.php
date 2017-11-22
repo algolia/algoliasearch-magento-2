@@ -33,7 +33,7 @@ class Sorts extends AbstractTable
                     'desc' => 'Descending',
                 ],
             ],
-            'label' => [
+            'sortLabel' => [
                 'label' => 'Label',
             ],
         ];

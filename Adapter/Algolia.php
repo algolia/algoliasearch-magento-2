@@ -22,61 +22,51 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class Algolia implements AdapterInterface
 {
-    /**
-     * Mapper instance
-     *
-     * @var Mapper
-     */
+    /** @var Mapper */
     protected $mapper;
 
-    /**
-     * Response Factory
-     *
-     * @var ResponseFactory
-     */
+    /** @var ResponseFactory */
     protected $responseFactory;
 
-    /**
-     * @var \Magento\Framework\App\ResourceConnection
-     */
+    /** @var ResourceConnection */
     private $resource;
 
-    /**
-     * @var AggregationBuilder
-     */
+    /** @var AggregationBuilder */
     private $aggregationBuilder;
 
-    /**
-     * @var TemporaryStorageFactory
-     */
+    /** @var TemporaryStorageFactory */
     private $temporaryStorageFactory;
-    /**
-     * @var ConfigHelper
-     */
+
+    /** @var ConfigHelper */
     protected $config;
-    /**
-     * @var Data
-     */
+
+    /** @var Data */
     protected $catalogSearchHelper;
-    /**
-     * @var StoreManagerInterface
-     */
+
+    /** @var StoreManagerInterface */
     protected $storeManager;
-    /**
-     * @var AlgoliaHelper
-     */
+
+    /** @var AlgoliaHelper */
     protected $algoliaHelper;
 
+    /** @var Http */
     protected $request;
 
+    /** @var DocumentFactory */
     protected $documentFactory;
 
     /**
-     * @param Mapper                  $mapper
-     * @param ResponseFactory         $responseFactory
-     * @param ResourceConnection      $resource
-     * @param AggregationBuilder      $aggregationBuilder
+     * @param Mapper $mapper
+     * @param ResponseFactory $responseFactory
+     * @param ResourceConnection $resource
+     * @param AggregationBuilder $aggregationBuilder
      * @param TemporaryStorageFactory $temporaryStorageFactory
+     * @param ConfigHelper $config
+     * @param Data $catalogSearchHelper
+     * @param StoreManagerInterface $storeManager
+     * @param AlgoliaHelper $algoliaHelper
+     * @param Http $request
+     * @param DocumentFactory $documentFactory
      */
     public function __construct(
         Mapper $mapper,
@@ -106,6 +96,9 @@ class Algolia implements AdapterInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @uses getDocument20
+     * @uses getDocument21
      */
     public function query(RequestInterface $request)
     {
@@ -117,21 +110,16 @@ class Algolia implements AdapterInterface
         $documents = [];
         $table = null;
 
-        if (!$this->config->getApplicationID($storeId) || !$this->config->getAPIKey($storeId) || $this->config->isEnabledFrontEnd($storeId) === false || $this->config->makeSeoRequest($storeId) === '0' ||
-            // Dont make the Algolia query on category page if replace category is false or use instant search is false
-            ($this->request->getControllerName() === 'category' && ($this->config->replaceCategories($storeId) == false || $this->config->isInstantEnabled($storeId) == false)) ||
-            // Dont make the Algolia query on catalog search advanced result page if replace category is false or use instant search is false
-            ($this->request->getFullActionName() === 'catalogsearch_advanced_result' && ($this->config->replaceCategories($storeId) == false || $this->config->isInstantEnabled($storeId) == false))
+        if ($this->isAllowed($storeId)
+            && ($this->isSearch() ||
+                $this->isReplaceCategory($storeId) ||
+                $this->isReplaceAdvancedSearch($storeId))
         ) {
-            $query = $this->mapper->buildQuery($request);
-            $table = $temporaryStorage->storeDocumentsFromSelect($query);
-            $documents = $this->getDocuments($table);
-        } else {
-            $algolia_query = $query !== '__empty__' ? $query : '';
+            $algoliaQuery = $query !== '__empty__' ? $query : '';
 
-            //If instant search is on, do not make a search query unless SEO request is set to 'Yes'
+            // If instant search is on, do not make a search query unless SEO request is set to 'Yes'
             if (!$this->config->isInstantEnabled($storeId) || $this->config->makeSeoRequest($storeId)) {
-                $documents = $this->algoliaHelper->getSearchResult($algolia_query, $storeId);
+                $documents = $this->algoliaHelper->getSearchResult($algoliaQuery, $storeId);
             }
 
             $getDocumentMethod = 'getDocument21';
@@ -146,6 +134,10 @@ class Algolia implements AdapterInterface
             }, $documents);
 
             $table = $temporaryStorage->{$storeDocumentsMethod}($apiDocuments);
+        } else {
+            $query = $this->mapper->buildQuery($request);
+            $table = $temporaryStorage->storeDocumentsFromSelect($query);
+            $documents = $this->getDocuments($table);
         }
 
         $aggregations = $this->aggregationBuilder->build($request, $table);
@@ -156,6 +148,70 @@ class Algolia implements AdapterInterface
         ];
 
         return $this->responseFactory->create($response);
+    }
+
+    /**
+     * Checks if Algolia is properly configured and enabled
+     *
+     * @param  int     $storeId
+     *
+     * @return boolean
+     */
+    private function isAllowed($storeId)
+    {
+        return (
+            $this->config->getApplicationID($storeId)
+            && $this->config->getAPIKey($storeId)
+            && $this->config->isEnabledFrontEnd($storeId)
+            && $this->config->makeSeoRequest($storeId)
+        );
+    }
+
+    /** @return boolean */
+    private function isSearch()
+    {
+        return ($this->request->getFullActionName() == 'catalogsearch_result_index');
+    }
+
+    /**
+     * Checks if Algolia should replace category results
+     *
+     * @param  int     $storeId
+     *
+     * @return boolean
+     */
+    private function isReplaceCategory($storeId)
+    {
+        return (
+            $this->request->getControllerName() == 'category'
+            && $this->config->replaceCategories($storeId) == true
+            && $this->config->isInstantEnabled($storeId) == true
+        );
+    }
+
+    /**
+     * Checks if Algolia should replace advanced search results
+     *
+     * @param  int      $storeId
+     *
+     * @return boolean
+     */
+    private function isReplaceAdvancedSearch($storeId)
+    {
+        return (
+            $this->request->getFullActionName() == 'catalogsearch_advanced_result'
+            && $this->config->isInstantEnabled($storeId) == true
+        );
+    }
+
+    private function getDocument20($document)
+    {
+        return new \Magento\Framework\Search\Document($document['entity_id'], ['score' => new \Magento\Framework\Search\DocumentField('score', $document['score'])]);
+    }
+
+    private function getDocument21($document)
+    {
+        return $this->documentFactory->create($document);
     }
 
     /**
@@ -176,21 +232,9 @@ class Algolia implements AdapterInterface
         return $connection->fetchAssoc($select);
     }
 
-    /**
-     * @return false|\Magento\Framework\DB\Adapter\AdapterInterface
-     */
+    /** @return false|\Magento\Framework\DB\Adapter\AdapterInterface */
     private function getConnection()
     {
         return $this->resource->getConnection();
-    }
-
-    private function getDocument20($document)
-    {
-        return new \Magento\Framework\Search\Document($document['entity_id'], ['score' => new \Magento\Framework\Search\DocumentField('score', $document['score'])]);
-    }
-
-    private function getDocument21($document)
-    {
-        return $this->documentFactory->create($document);
     }
 }

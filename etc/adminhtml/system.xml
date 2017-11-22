@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="../../../../Magento/Config/etc/system_file.xsd">
     <system>
-        <tab id="algolia" translate="label" sortOrder="10">
+        <tab id="algolia" translate="label" sortOrder="100001">
             <label>
                 <![CDATA[
                     Algolia Search

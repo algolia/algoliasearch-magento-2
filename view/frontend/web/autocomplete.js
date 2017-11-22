@@ -104,5 +104,20 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				fixAutocompleteCssSticky(menu);
 			});
 		});
+		
+		// Hack to handle buggy onclick event on iOS
+		$(algoliaConfig.autocomplete.selector).each(function () {
+			var data = $(this).data('aaAutocomplete');
+			var dropdown = data.dropdown;
+			var suggestionClass = '.' + dropdown.cssClasses.prefix + dropdown.cssClasses.suggestion;
+			
+			dropdown.$menu.on('touchstart', suggestionClass, function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				var url = $(this).find('a').attr('href');
+				location.assign(url);
+			});
+		});
 	});
 });

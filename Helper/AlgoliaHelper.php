@@ -44,6 +44,7 @@ class AlgoliaHelper extends AbstractHelper
         Version::addPrefixUserAgentSegment('Magento2 integration', $this->config->getExtensionVersion());
         Version::addSuffixUserAgentSegment('PHP', phpversion());
         Version::addSuffixUserAgentSegment('Magento', $this->config->getMagentoVersion());
+        Version::addSuffixUserAgentSegment('Edition', $this->config->getMagentoEdition());
     }
 
     public function getRequest()

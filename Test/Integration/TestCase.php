@@ -9,7 +9,13 @@ use AlgoliaSearch\AlgoliaException;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+if (class_exists('PHPUnit\Framework\TestCase')) {
+    class_alias('PHPUnit\Framework\TestCase', '\TC');
+} else {
+    class_alias('\PHPUnit_Framework_TestCase', '\TC');
+}
+
+abstract class TestCase extends \TC
 {
     private $boostrapped = false;
 

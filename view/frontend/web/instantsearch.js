@@ -119,6 +119,28 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		});
 		
 		var allWidgetConfiguration = {
+			/**
+			 * Products' hits
+			 * This widget renders all products into result page
+			 * Docs: https://community.algolia.com/instantsearch.js/documentation/#hits
+			 **/
+			hits: {
+				container: '#instant-search-results-container',
+				templates: {
+					item: $('#instant-hit-template').html()
+				},
+				transformData: {
+					item: function (hit) {
+						hit = transformHit(hit, algoliaConfig.priceKey);
+						hit.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
+						
+						hit.algoliaConfig = window.algoliaConfig;
+						
+						return hit;
+					}
+				},
+				hitsPerPage: algoliaConfig.hitsPerPage
+			},
 			custom: [
 				/**
 				 * Custom widget - this widget is used to refine results for search page or catalog page
@@ -231,28 +253,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				container: '#algolia-sorts',
 				indices: algoliaConfig.sortingIndices,
 				cssClass: 'form-control'
-			},
-			/**
-			 * Products' hits
-			 * This widget renders all products into result page
-			 * Docs: https://community.algolia.com/instantsearch.js/documentation/#hits
-			 **/
-			hits: {
-				container: '#instant-search-results-container',
-				templates: {
-					item: $('#instant-hit-template').html()
-				},
-				transformData: {
-					item: function (hit) {
-						hit = transformHit(hit, algoliaConfig.priceKey);
-						hit.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
-						
-						hit.algoliaConfig = window.algoliaConfig;
-						
-						return hit;
-					}
-				},
-				hitsPerPage: algoliaConfig.hitsPerPage
 			},
 			/**
 			 * Widget name: Current refinements

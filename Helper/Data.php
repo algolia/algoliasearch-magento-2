@@ -102,18 +102,15 @@ class Data
 
     public function getSearchResult($query, $storeId)
     {
-        $resultsLimit = $this->configHelper->getResultsLimit($storeId);
+        $indexName = $this->productHelper->getIndexName($storeId);
 
-        $index_name = $this->productHelper->getIndexName($storeId);
-
-        $number_of_results = 1000;
-
+        $numberOfResults = 1000;
         if ($this->configHelper->isInstantEnabled()) {
-            $number_of_results = min($this->configHelper->getNumberOfProductResults($storeId), 1000);
+            $numberOfResults = min($this->configHelper->getNumberOfProductResults($storeId), 1000);
         }
 
-        $answer = $this->algoliaHelper->query($index_name, $query, [
-            'hitsPerPage'            => $number_of_results, // retrieve all the hits (hard limit is 1000)
+        $answer = $this->algoliaHelper->query($indexName, $query, [
+            'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
             'attributesToRetrieve'   => 'objectID',
             'attributesToHighlight'  => '',
             'attributesToSnippet'    => '',
@@ -130,7 +127,7 @@ class Data
             if ($productId) {
                 $data[$productId] = [
                     'entity_id' => $productId,
-                    'score'     => $resultsLimit - $i,
+                    'score'     => $numberOfResults - $i,
                 ];
             }
         }

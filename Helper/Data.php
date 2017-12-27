@@ -12,6 +12,7 @@ use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Search\Model\Query;
@@ -27,6 +28,7 @@ class Data
     protected $categoryHelper;
     protected $productHelper;
     protected $additionalSectionHelper;
+    protected $stockRegistry;
 
     protected $logger;
     protected $configHelper;
@@ -43,6 +45,7 @@ class Data
         PageHelper $pageHelper,
         SuggestionHelper $suggestionHelper,
         AdditionalSectionHelper $additionalSectionHelper,
+        StockRegistryInterface $stockRegistry,
         Emulation $emulation,
         Logger $logger,
         ResourceConnection $resource,
@@ -55,6 +58,7 @@ class Data
         $this->productHelper = $producthelper;
         $this->suggestionHelper = $suggestionHelper;
         $this->additionalSectionHelper = $additionalSectionHelper;
+        $this->stockRegistry = $stockRegistry;
 
         $this->configHelper = $configHelper;
         $this->logger = $logger;
@@ -429,10 +433,17 @@ class Data
             if ($product->isDeleted() === true
                 || $product->getStatus() == Status::STATUS_DISABLED
                 || !in_array((int) $product->getVisibility(), [Product\Visibility::VISIBILITY_BOTH, Product\Visibility::VISIBILITY_IN_SEARCH, Product\Visibility::VISIBILITY_IN_CATALOG], true)
-                || (!$this->configHelper->getShowOutOfStock($storeId) && (!$product->isInStock() || !$product->isSalable()))
             ) {
                 $productsToRemove[$productId] = $productId;
                 continue;
+            }
+
+            if (!$this->configHelper->getShowOutOfStock($storeId)) {
+                $stockItem = $this->stockRegistry->getStockItem($product->getId());
+                if (!$product->isSalable() || !$stockItem->getIsInStock()) {
+                    $productsToRemove[$productId] = $productId;
+                    continue;
+                }
             }
 
             if (isset($salesData[$productId])) {

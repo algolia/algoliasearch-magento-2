@@ -429,7 +429,7 @@ class Data
             if ($product->isDeleted() === true
                 || $product->getStatus() == Status::STATUS_DISABLED
                 || !in_array((int) $product->getVisibility(), [Product\Visibility::VISIBILITY_BOTH, Product\Visibility::VISIBILITY_IN_SEARCH, Product\Visibility::VISIBILITY_IN_CATALOG], true)
-                || (!$product->isSalable() && !$this->configHelper->getShowOutOfStock($storeId))
+                || (!$this->configHelper->getShowOutOfStock($storeId) && (!$product->isInStock() || !$product->isSalable()))
             ) {
                 $productsToRemove[$productId] = $productId;
                 continue;

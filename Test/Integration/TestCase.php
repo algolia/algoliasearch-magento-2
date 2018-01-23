@@ -69,7 +69,7 @@ abstract class TestCase extends \TC
             if (strpos($name, $this->indexPrefix) === 0) {
                 try {
                     $this->algoliaHelper->deleteIndex($name);
-                } catch(AlgoliaException $e) {
+                } catch (AlgoliaException $e) {
                     // Might be a replica
                 }
             }
@@ -111,7 +111,7 @@ abstract class TestCase extends \TC
      *
      * @return mixed Method return.
      */
-    protected function invokeMethod(&$object, $methodName, array $parameters = array())
+    protected function invokeMethod(&$object, $methodName, array $parameters = [])
     {
         $reflection = new \ReflectionClass(get_class($object));
         $method = $reflection->getMethod($methodName);

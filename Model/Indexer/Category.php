@@ -25,15 +25,17 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
 
     public static $affectedProductIds = [];
 
-    public function __construct(StoreManagerInterface $storeManager,
-                                CategoryHelper $categoryHelper,
-                                Data $helper,
-                                AlgoliaHelper $algoliaHelper,
-                                Queue $queue,
-                                ConfigHelper $configHelper,
-                                ManagerInterface $messageManager,
-                                ConsoleOutput $output)
-    {
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        CategoryHelper $categoryHelper,
+        Data $helper,
+        AlgoliaHelper $algoliaHelper,
+        Queue $queue,
+        ConfigHelper $configHelper,
+        ManagerInterface $messageManager,
+        ConsoleOutput $output
+    ) {
+    
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
         $this->categoryHelper = $categoryHelper;
@@ -46,8 +48,11 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
 
     public function execute($categoryIds)
     {
-        if (!$this->configHelper->getApplicationID() || !$this->configHelper->getAPIKey() || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed: 
+                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 
             if (php_sapi_name() === 'cli') {
                 $this->output->writeln($errorMessage);
@@ -70,15 +75,30 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
 
             if ($categoryIds !== null) {
                 $indexName = $this->fullAction->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
-                $this->queue->addToQueue($this->fullAction, 'deleteObjects', ['store_id' => $storeId, 'category_ids' => $categoryIds, 'index_name' => $indexName], count($categoryIds));
+                $this->queue->addToQueue(
+                    $this->fullAction,
+                    'deleteObjects',
+                    ['store_id' => $storeId, 'category_ids' => $categoryIds, 'index_name' => $indexName],
+                    count($categoryIds)
+                );
             } else {
                 $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
             }
 
-            $this->queue->addToQueue($this->fullAction, 'rebuildStoreCategoryIndex', ['store_id' => $storeId, 'category_ids' => $categoryIds], count($categoryIds));
+            $this->queue->addToQueue(
+                $this->fullAction,
+                'rebuildStoreCategoryIndex',
+                ['store_id' => $storeId, 'category_ids' => $categoryIds],
+                count($categoryIds)
+            );
 
             if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
-                $this->queue->addToQueue($this->fullAction, 'rebuildStoreProductIndex', ['store_id' => $storeId, 'product_ids' => self::$affectedProductIds], $affectedProductsCount);
+                $this->queue->addToQueue(
+                    $this->fullAction,
+                    'rebuildStoreProductIndex',
+                    ['store_id' => $storeId, 'product_ids' => self::$affectedProductIds],
+                    $affectedProductsCount
+                );
             }
         }
     }

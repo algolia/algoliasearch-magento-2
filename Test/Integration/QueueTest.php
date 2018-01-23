@@ -100,7 +100,6 @@ class QueueTest extends TestCase
             if ($index['name'] === $this->indexPrefix.'default_products_tmp') {
                 $existsDefaultTmpIndex = true;
             }
-
         }
 
         $this->assertFalse($existsDefaultTmpIndex, 'Default product TMP index exists and it should not'); // Was already moved
@@ -302,7 +301,7 @@ class QueueTest extends TestCase
         $expectedCategoryJob = [
             'job_id' => 7,
             'created' => '2017-09-01 12:00:00',
-            'pid' => NULL,
+            'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreCategoryIndex',
             'data' => [
@@ -326,7 +325,7 @@ class QueueTest extends TestCase
         $expectedProductJob = [
             'job_id' => 10,
             'created' => '2017-09-01 12:00:00',
-            'pid' => NULL,
+            'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreProductIndex',
             'data' => [
@@ -482,8 +481,8 @@ class QueueTest extends TestCase
 
         $jobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
-        $jobs = $this->invokeMethod($queue, 'prepareJobs', array('jobs' => $jobs));
-        $mergedJobs = $this->invokeMethod($queue, 'mergeJobs', array('jobs' => $jobs));
+        $jobs = $this->invokeMethod($queue, 'prepareJobs', ['jobs' => $jobs]);
+        $mergedJobs = $this->invokeMethod($queue, 'mergeJobs', ['jobs' => $jobs]);
         $this->assertEquals(12, count($mergedJobs));
 
         $this->assertEquals('rebuildStoreCategoryIndex', $jobs[0]['method']);
@@ -646,51 +645,51 @@ class QueueTest extends TestCase
         $queue = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Model\Queue');
 
         $pid = getmypid();
-        $jobs = $this->invokeMethod($queue, 'getJobs', array('maxJobs' => 10, 'pid' => $pid));
+        $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10, 'pid' => $pid]);
         $this->assertEquals(6, count($jobs));
 
-        $expectedFirstJob = array(
+        $expectedFirstJob = [
             'job_id' => 7,
             'created' => '2017-09-01 12:00:00',
-            'pid' => NULL,
+            'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreCategoryIndex',
-            'data' => array(
+            'data' => [
                 'store_id' => '1',
-                'category_ids' => array(
+                'category_ids' => [
                     0 => '9',
                     1 => '22',
                     2 => '40',
-                ),
-            ),
+                ],
+            ],
             'max_retries' => '3',
             'retries' => '0',
             'error_log' => '',
             'data_size' => 3,
             'merged_ids' => ['1', '7'],
             'store_id' => '1',
-        );
+        ];
 
-        $expectedLastJob = array(
+        $expectedLastJob = [
             'job_id' => 12,
             'created' => '2017-09-01 12:00:00',
-            'pid' => NULL,
+            'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreProductIndex',
-            'data' => array(
+            'data' => [
                 'store_id' => '3',
-                'product_ids' => array(
+                'product_ids' => [
                     0 => '448',
                     1 => '405',
-                ),
-            ),
+                ],
+            ],
             'max_retries' => '3',
             'retries' => '0',
             'error_log' => '',
             'data_size' => 2,
             'merged_ids' => ['6', '12'],
             'store_id' => '3',
-        );
+        ];
 
         $this->assertEquals($expectedFirstJob, reset($jobs));
         $this->assertEquals($expectedLastJob, end($jobs));
@@ -722,7 +721,7 @@ class QueueTest extends TestCase
         $queue = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Model\Queue');
 
         $pid = getmypid();
-        $jobs = $this->invokeMethod($queue, 'getJobs', array('maxJobs' => 10, 'pid' => $pid));
+        $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10, 'pid' => $pid]);
 
         $this->assertEquals(1, count($jobs));
 
@@ -759,7 +758,7 @@ class QueueTest extends TestCase
         $queue = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Model\Queue');
 
         $pid = getmypid();
-        $jobs = $this->invokeMethod($queue, 'getJobs', array('maxJobs' => 10, 'pid' => $pid));
+        $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10, 'pid' => $pid]);
 
         $this->assertEquals(2, count($jobs));
 

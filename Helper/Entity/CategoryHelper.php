@@ -40,8 +40,14 @@ class CategoryHelper
     protected static $_activeCategories;
     protected static $_categoryNames;
 
-    public function __construct(ManagerInterface $eventManager, ObjectManagerInterface $objectManager, StoreManagerInterface $storeManager, ResourceConnection $resourceConnection, Config $eavConfig, ConfigHelper $configHelper)
-    {
+    public function __construct(
+        ManagerInterface $eventManager,
+        ObjectManagerInterface $objectManager,
+        StoreManagerInterface $storeManager,
+        ResourceConnection $resourceConnection,
+        Config $eavConfig,
+        ConfigHelper $configHelper
+    ) {
         $this->eventManager = $eventManager;
         $this->objectManager = $objectManager;
         $this->storeManager = $storeManager;
@@ -94,13 +100,11 @@ class CategoryHelper
         $this->eventManager->dispatch('algolia_index_settings_prepare', [ // Only for backward compatibility
                 'store_id'       => $storeId,
                 'index_settings' => $transport,
-            ]
-        );
+            ]);
         $this->eventManager->dispatch('algolia_categories_index_before_set_settings', [
                 'store_id'       => $storeId,
                 'index_settings' => $transport,
-            ]
-        );
+            ]);
         $indexSettings = $transport->getData();
 
         return $indexSettings;
@@ -146,14 +150,17 @@ class CategoryHelper
             $categories->addFieldToFilter('entity_id', ['in' => $categoryIds]);
         }
 
-        $this->eventManager->dispatch('algolia_after_categories_collection_build', ['store' => $storeId, 'collection' => $categories]);
+        $this->eventManager->dispatch(
+            'algolia_after_categories_collection_build',
+            ['store' => $storeId, 'collection' => $categories]
+        );
 
         return $categories;
     }
 
     public function getAllAttributes()
     {
-        if (is_null(self::$_categoryAttributes)) {
+        if (self::$_categoryAttributes === null) {
             self::$_categoryAttributes = [];
 
             $allAttributes = $this->eavConfig->getEntityAttributeCodes('catalog_category');
@@ -162,11 +169,12 @@ class CategoryHelper
 
             $excludedAttributes = [
                 'all_children', 'available_sort_by', 'children', 'children_count', 'custom_apply_to_products',
-                'custom_design', 'custom_design_from', 'custom_design_to', 'custom_layout_update', 'custom_use_parent_settings',
-                'default_sort_by', 'display_mode', 'filter_price_range', 'global_position', 'image', 'include_in_menu', 'is_active',
-                'is_always_include_in_menu', 'is_anchor', 'landing_page', 'level', 'lower_cms_block',
-                'page_layout', 'path_in_store', 'position', 'small_image', 'thumbnail', 'url_key', 'url_path',
-                'visible_in_menu', ];
+                'custom_design', 'custom_design_from', 'custom_design_to', 'custom_layout_update',
+                'custom_use_parent_settings', 'default_sort_by', 'display_mode', 'filter_price_range',
+                'global_position', 'image', 'include_in_menu', 'is_active', 'is_always_include_in_menu', 'is_anchor',
+                'landing_page', 'level', 'lower_cms_block', 'page_layout', 'path_in_store', 'position', 'small_image',
+                'thumbnail', 'url_key', 'url_path','visible_in_menu',
+            ];
 
             $categoryAttributes = array_diff($categoryAttributes, $excludedAttributes);
 
@@ -189,7 +197,10 @@ class CategoryHelper
         $category->setProductCount($productCollection->getSize());
 
         $transport = new DataObject();
-        $this->eventManager->dispatch('algolia_category_index_before', ['category' => $category, 'custom_data' => $transport]);
+        $this->eventManager->dispatch(
+            'algolia_category_index_before',
+            ['category' => $category, 'custom_data' => $transport]
+        );
         $customData = $transport->getData();
 
         $storeId = $category->getStoreId();
@@ -257,7 +268,10 @@ class CategoryHelper
         $data = array_merge($data, $customData);
 
         $transport = new DataObject($data);
-        $this->eventManager->dispatch('algolia_after_create_category_object', ['category' => $category, 'categoryObject' => $transport]);
+        $this->eventManager->dispatch(
+            'algolia_after_create_category_object',
+            ['category' => $category, 'categoryObject' => $transport]
+        );
         $data = $transport->getData();
 
         return $data;
@@ -300,8 +314,8 @@ class CategoryHelper
 
     public function isCategoryActive($categoryId, $storeId = null)
     {
-        $storeId = intval($storeId);
-        $categoryId = intval($categoryId);
+        $storeId = (int) $storeId;
+        $categoryId = (int) $categoryId;
 
         if ($path = $this->getCategoryPath($categoryId, $storeId)) {
             // Check whether the specified category is active
@@ -337,8 +351,8 @@ class CategoryHelper
     private function getCategoryPath($categoryId, $storeId = null)
     {
         $categories = $this->getCategories();
-        $storeId = intval($storeId);
-        $categoryId = intval($categoryId);
+        $storeId = (int) $storeId;
+        $categoryId = (int) $categoryId;
         $path = null;
 
         $categoryKeyId = $categoryId;
@@ -350,19 +364,19 @@ class CategoryHelper
             }
         }
 
-        if(is_null($categoryKeyId)) {
+        if ($categoryKeyId === null) {
             return $path;
         }
 
         $key = $storeId . '-' . $categoryKeyId;
 
         if (isset($categories[$key])) {
-            $path = ($categories[$key]['value'] == 1) ? strval($categories[$key]['path']) : null;
+            $path = ($categories[$key]['value'] == 1) ? (string) $categories[$key]['path'] : null;
         } elseif ($storeId !== 0) {
             $key = '0-' . $categoryKeyId;
 
             if (isset($categories[$key])) {
-                $path = ($categories[$key]['value'] == 1) ? strval($categories[$key]['path']) : null;
+                $path = ($categories[$key]['value'] == 1) ? (string) $categories[$key]['path'] : null;
             }
         }
 
@@ -371,20 +385,30 @@ class CategoryHelper
 
     private function getCategories()
     {
-        if (is_null(self::$_activeCategories)) {
+        if (self::$_activeCategories === null) {
             self::$_activeCategories = [];
 
             /** @var \Magento\Catalog\Model\ResourceModel\Category $resource */
             $resource = $this->objectManager->create('\Magento\Catalog\Model\ResourceModel\Category');
 
             if ($attribute = $resource->getAttribute('is_active')) {
+                $columnId = $this->getCorrectIdColumn();
+                $key = new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend.".$columnId.")");
+
                 $connection = $this->resourceConnection->getConnection();
                 $select = $connection->select()
-                                     ->from(['backend' => $attribute->getBackendTable()], ['key' => new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend.".$this->getCorrectIdColumn().")"), 'category.path', 'backend.value'])
-                                     ->join(['category' => $resource->getTable('catalog_category_entity')], 'backend.'.$this->getCorrectIdColumn().' = category.'.$this->getCorrectIdColumn(), [])
+                                     ->from(
+                                         ['backend' => $attribute->getBackendTable()],
+                                         ['key' => $key, 'category.path', 'backend.value']
+                                     )
+                                     ->join(
+                                         ['category' => $resource->getTable('catalog_category_entity')],
+                                         'backend.'.$columnId.' = category.'.$columnId,
+                                         []
+                                     )
                                      ->where('backend.attribute_id = ?', $attribute->getAttributeId())
                                      ->order('backend.store_id')
-                                     ->order('backend.'.$this->getCorrectIdColumn());
+                                     ->order('backend.'.$columnId);
 
                 self::$_activeCategories = $connection->fetchAssoc($select);
             }
@@ -403,21 +427,30 @@ class CategoryHelper
             $storeId = $storeId->getId();
         }
 
-        $categoryId = intval($categoryId);
-        $storeId = intval($storeId);
+        $categoryId = (int) $categoryId;
+        $storeId = (int) $storeId;
 
-        if (is_null(self::$_categoryNames)) {
+        if (self::$_categoryNames === null) {
             self::$_categoryNames = [];
 
             /** @var \Magento\Catalog\Model\ResourceModel\Category $categoryModel */
             $categoryModel = $this->objectManager->create('\Magento\Catalog\Model\ResourceModel\Category');
 
             if ($attribute = $categoryModel->getAttribute('name')) {
-                $connection = $this->resourceConnection->getConnection();
+                $columnId = $this->getCorrectIdColumn();
+                $expression = new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend.".$columnId.")");
 
+                $connection = $this->resourceConnection->getConnection();
                 $select = $connection->select()
-                                     ->from(['backend' => $attribute->getBackendTable()], [new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend.".$this->getCorrectIdColumn().")"), 'backend.value'])
-                                     ->join(['category' => $categoryModel->getTable('catalog_category_entity')], 'backend.'.$this->getCorrectIdColumn().' = category.'.$this->getCorrectIdColumn(), [])
+                                     ->from(
+                                         ['backend' => $attribute->getBackendTable()],
+                                         [$expression, 'backend.value']
+                                     )
+                                     ->join(
+                                         ['category' => $categoryModel->getTable('catalog_category_entity')],
+                                         'backend.'.$columnId.' = category.'.$columnId,
+                                         []
+                                     )
                                      ->where('backend.attribute_id = ?', $attribute->getAttributeId())
                                      ->where('category.level > ?', 1);
 
@@ -436,7 +469,7 @@ class CategoryHelper
             }
         }
 
-        if(is_null($categoryKeyId)) {
+        if ($categoryKeyId === null) {
             return $categoryName;
         }
 
@@ -444,12 +477,12 @@ class CategoryHelper
 
         if (isset(self::$_categoryNames[$key])) {
             // Check whether the category name is present for the specified store
-            $categoryName = strval(self::$_categoryNames[$key]);
+            $categoryName = (string) self::$_categoryNames[$key];
         } elseif ($storeId != 0) {
             // Check whether the category name is present for the default store
             $key = '0-' . $categoryKeyId;
             if (isset(self::$_categoryNames[$key])) {
-                $categoryName = strval(self::$_categoryNames[$key]);
+                $categoryName = (string) self::$_categoryNames[$key];
             }
         }
 
@@ -481,7 +514,8 @@ class CategoryHelper
         return $this->isCategoryVisibleInMenuCache[$key];
     }
 
-    public function getCoreCategories() {
+    public function getCoreCategories()
+    {
         if (isset($this->coreCategories)) {
             return $this->coreCategories;
         }
@@ -511,7 +545,10 @@ class CategoryHelper
 
         $this->idColumn = 'entity_id';
 
-        if ($this->configHelper->getMagentoEdition() !== 'Community' && version_compare($this->configHelper->getMagentoVersion(), '2.1.0', '>=')) {
+        $edition = $this->configHelper->getMagentoEdition();
+        $version = $this->configHelper->getMagentoVersion();
+
+        if ($edition !== 'Community' && version_compare($version, '2.1.0', '>=')) {
             $this->idColumn = 'row_id';
         }
 

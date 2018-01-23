@@ -6,6 +6,8 @@
 
 $priceKey = $block->getPriceKey();
 
+$origFormatedVar = 'price' . $priceKey . '_original_formated';
+
 ?>
 
 <script type="text/template" id="instant-hit-template">
@@ -27,7 +29,9 @@ $priceKey = $block->getPriceKey();
                                     <div class="rating-summary">
                                         <span class="label"><span>Rating:</span></span>
                                         <div class="rating-result" title="{{rating_summary}}%">
-                                            <span style="width:{{rating_summary}}%"><span>{{rating_summary}}%</span></span>
+                                            <span style="width:{{rating_summary}}%">
+                                                <span>{{rating_summary}}%</span>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -35,15 +39,18 @@ $priceKey = $block->getPriceKey();
                                 <div class="price">
                                     <div class="price-wrapper">
                                         <div>
-                                            <span class="after_special {{#price<?php echo $priceKey; ?>_original_formated}}promotion{{/price<?php echo $priceKey; ?>_original_formated}}">
+                                            <span class="after_special
+                                                    {{#<?php echo $origFormatedVar; ?>}}
+                                                        promotion
+                                                    {{/<?php echo $origFormatedVar; ?>}}">
                                                 {{price<?php echo $priceKey; ?>_formated}}
                                             </span>
 
-                                            {{#price<?php echo $priceKey; ?>_original_formated}}
+                                            {{#<?php echo $origFormatedVar; ?>}}
                                                 <span class="before_special">
-                                                    {{price<?php echo $priceKey; ?>_original_formated}}
+                                                    {{<?php echo $origFormatedVar; ?>}}
                                                 </span>
-                                            {{/price<?php echo $priceKey; ?>_original_formated}}
+                                            {{/<?php echo $origFormatedVar; ?>}}
                                         </div>
                                     </div>
                                 </div>

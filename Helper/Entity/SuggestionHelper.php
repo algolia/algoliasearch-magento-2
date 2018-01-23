@@ -21,8 +21,12 @@ class SuggestionHelper
 
     private $popularQueriesCacheId = 'algoliasearch_popular_queries_cache_tag';
 
-    public function __construct(ManagerInterface $eventManager, ObjectManagerInterface $objectManager, ConfigCache $cache, ConfigHelper $configHelper)
-    {
+    public function __construct(
+        ManagerInterface $eventManager,
+        ObjectManagerInterface $objectManager,
+        ConfigCache $cache,
+        ConfigHelper $configHelper
+    ) {
         $this->eventManager = $eventManager;
         $this->objectManager = $objectManager;
         $this->cache = $cache;
@@ -44,7 +48,10 @@ class SuggestionHelper
         ];
 
         $transport = new DataObject($indexSettings);
-        $this->eventManager->dispatch('algolia_suggestions_index_before_set_settings', ['store_id' => $storeId, 'index_settings' => $transport]);
+        $this->eventManager->dispatch(
+            'algolia_suggestions_index_before_set_settings',
+            ['store_id' => $storeId, 'index_settings' => $transport]
+        );
         $indexSettings = $transport->getData();
 
         return $indexSettings;
@@ -61,7 +68,10 @@ class SuggestionHelper
         ];
 
         $transport = new DataObject($suggestionObject);
-        $this->eventManager->dispatch('algolia_after_create_suggestion_object', ['suggestion' => $transport, 'suggestionObject' => $suggestion]);
+        $this->eventManager->dispatch(
+            'algolia_after_create_suggestion_object',
+            ['suggestion' => $transport, 'suggestionObject' => $suggestion]
+        );
         $suggestionObject = $transport->getData();
 
         return $suggestionObject;
@@ -75,7 +85,11 @@ class SuggestionHelper
         }
         
         $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
-        $collection->getSelect()->where('num_results >= ' . $this->configHelper->getMinNumberOfResults() . ' AND popularity >= ' . $this->configHelper->getMinPopularity() . ' AND query_text != "__empty__"');
+        $collection->getSelect()->where(
+            'num_results >= ' . $this->configHelper->getMinNumberOfResults() . ' 
+            AND popularity >= ' . $this->configHelper->getMinPopularity() . ' 
+            AND query_text != "__empty__"'
+        );
         $collection->getSelect()->limit(12);
         $collection->setOrder('popularity', 'DESC');
         $collection->setOrder('num_results', 'DESC');
@@ -108,9 +122,16 @@ class SuggestionHelper
         $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
         $collection = $collection->addStoreFilter($storeId)->setStoreId($storeId);
 
-        $collection->getSelect()->where('num_results >= ' . $this->configHelper->getMinNumberOfResults($storeId) . ' AND popularity >= ' . $this->configHelper->getMinPopularity($storeId) . ' AND query_text != "__empty__"');
+        $collection->getSelect()->where(
+            'num_results >= ' . $this->configHelper->getMinNumberOfResults($storeId) . ' 
+            AND popularity >= ' . $this->configHelper->getMinPopularity($storeId) . ' 
+            AND query_text != "__empty__"'
+        );
 
-        $this->eventManager->dispatch('algolia_after_suggestions_collection_build', ['store' => $storeId, 'collection' => $collection]);
+        $this->eventManager->dispatch(
+            'algolia_after_suggestions_collection_build',
+            ['store' => $storeId, 'collection' => $collection]
+        );
 
         return $collection;
     }

@@ -24,8 +24,12 @@ abstract class Queue extends Action
     protected $tableName;
     protected $db;
 
-    public function __construct(Context $context, ConfigHelper $configHelper, JsonFactory $resultJsonFactory, ResourceConnection $resourceConnection)
-    {
+    public function __construct(
+        Context $context,
+        ConfigHelper $configHelper,
+        JsonFactory $resultJsonFactory,
+        ResourceConnection $resourceConnection
+    ) {
         parent::__construct($context);
 
         $this->configHelper = $configHelper;

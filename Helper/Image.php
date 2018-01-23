@@ -90,6 +90,6 @@ class Image extends \Magento\Catalog\Helper\Image
 
     public function removePubDirectory($url)
     {
-        return str_replace('/pub/', '/', $url);;
+        return str_replace('/pub/', '/', $url);
     }
 }

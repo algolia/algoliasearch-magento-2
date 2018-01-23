@@ -45,8 +45,11 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
 
     public function execute($productIds)
     {
-        if (!$this->configHelper->getApplicationID() || !$this->configHelper->getAPIKey() || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed: 
+                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 
             if (php_sapi_name() === 'cli') {
                 $this->output->writeln($errorMessage);
@@ -70,8 +73,12 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
 
             if (is_array($productIds) && count($productIds) > 0) {
                 foreach (array_chunk($productIds, $productsPerPage) as $chunk) {
-                    $this->queue->addToQueue($this->fullAction, 'rebuildStoreProductIndex',
-                        ['store_id' => $storeId, 'product_ids' => $chunk], count($chunk));
+                    $this->queue->addToQueue(
+                        $this->fullAction,
+                        'rebuildStoreProductIndex',
+                        ['store_id' => $storeId, 'product_ids' => $chunk],
+                        count($chunk)
+                    );
                 }
 
                 continue;
@@ -106,9 +113,11 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
             }
 
             if ($useTmpIndex) {
+                $suffix = $this->productHelper->getIndexNameSuffix();
+
                 $this->queue->addToQueue($this->fullAction, 'moveIndex', [
-                    'tmpIndexName' => $this->fullAction->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, true),
-                    'indexName' => $this->fullAction->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, false),
+                    'tmpIndexName' => $this->fullAction->getIndexName($suffix, $storeId, true),
+                    'indexName' => $this->fullAction->getIndexName($suffix, $storeId, false),
                     'store_id' => $storeId,
                 ]);
             }

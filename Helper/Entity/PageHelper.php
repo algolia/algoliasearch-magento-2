@@ -25,8 +25,13 @@ class PageHelper
 
     private $storeUrls;
 
-    public function __construct(ManagerInterface $eventManager, ObjectManagerInterface $objectManager, ConfigHelper $configHelper, FilterProvider $filterProvider, StoreManagerInterface $storeManager)
-    {
+    public function __construct(
+        ManagerInterface $eventManager,
+        ObjectManagerInterface $objectManager,
+        ConfigHelper $configHelper,
+        FilterProvider $filterProvider,
+        StoreManagerInterface $storeManager
+    ) {
         $this->eventManager = $eventManager;
         $this->objectManager = $objectManager;
         $this->configHelper = $configHelper;
@@ -47,7 +52,10 @@ class PageHelper
         ];
 
         $transport = new DataObject($indexSettings);
-        $this->eventManager->dispatch('algolia_pages_index_before_set_settings', ['store_id' => $storeId, 'index_settings' => $transport]);
+        $this->eventManager->dispatch(
+            'algolia_pages_index_before_set_settings',
+            ['store_id' => $storeId, 'index_settings' => $transport]
+        );
         $indexSettings = $transport->getData();
 
         return $indexSettings;
@@ -95,11 +103,21 @@ class PageHelper
             }
 
             $pageObject['objectID'] = $page->getId();
-            $pageObject['url'] = $this->getStoreUrl($storeId)->getUrl(null, ['_direct' => $page->getIdentifier(), '_secure' => $this->configHelper->useSecureUrlsInFrontend($storeId)]);
-            $pageObject['content'] = $this->strip($content, array('script', 'style'));
+            $pageObject['url'] = $this->getStoreUrl($storeId)
+                                      ->getUrl(
+                                          null,
+                                          [
+                                              '_direct' => $page->getIdentifier(),
+                                              '_secure' => $this->configHelper->useSecureUrlsInFrontend($storeId),
+                                          ]
+                                      );
+            $pageObject['content'] = $this->strip($content, ['script', 'style']);
 
             $transport = new DataObject($pageObject);
-            $this->eventManager->dispatch('algolia_after_create_page_object', ['page' => $transport, 'pageObject' => $page]);
+            $this->eventManager->dispatch(
+                'algolia_after_create_page_object',
+                ['page' => $transport, 'pageObject' => $page]
+            );
             $pageObject = $transport->getData();
 
             $pages[] = $pageObject;
@@ -159,7 +177,7 @@ class PageHelper
         if (!empty($completeRemoveTags) && $s) {
             $dom = new \DOMDocument();
             if (@$dom->loadHTML(mb_convert_encoding($s, 'HTML-ENTITIES', 'UTF-8'))) {
-                $toRemove = array();
+                $toRemove = [];
                 foreach ($completeRemoveTags as $tag) {
                     $removeTags = $dom->getElementsByTagName($tag);
 

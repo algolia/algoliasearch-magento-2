@@ -55,7 +55,9 @@ class Url extends ProductUrl
 
         $categoryId = null;
 
-        if (!isset($params['_ignore_category']) && $product->getCategoryId() && !$product->getData('do_not_use_category_id')) {
+        if (!isset($params['_ignore_category'])
+            && $product->getCategoryId()
+            && !$product->getData('do_not_use_category_id')) {
             $categoryId = $product->getCategoryId();
         }
 
@@ -110,9 +112,11 @@ class Url extends ProductUrl
 
         /*
          * This is the only line changed from the default method.
-         * For reference, the original line: $this->getUrlInstance()->setScope($storeId)->getUrl($routePath, $routeParams);
-         * getUrlInstance() is a private method, so a new method has been written that will create a frontend Url object if
-         * the store scope is not the admin scope.
+         * For reference, the original line:
+         * $this->getUrlInstance()->setScope($storeId)->getUrl($routePath, $routeParams);
+         * getUrlInstance() is a private method, so a new method has been written that
+         * will create a frontend Url object
+         * if the store scope is not the admin scope.
          */
         return $this->getStoreScopeUrlInstance($storeId)->getUrl($routePath, $routeParams);
     }

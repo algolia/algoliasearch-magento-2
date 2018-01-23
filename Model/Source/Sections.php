@@ -24,10 +24,15 @@ class Sections extends AbstractTable
                         if ($attribute['attribute'] == 'price') {
                             continue;
                         }
+
                         if ($attribute['attribute'] == 'category' || $attribute['attribute'] == 'categories') {
                             continue;
                         }
-                        $sections[] = ['name' => $attribute['attribute'], 'label' => $attribute['label'] ? $attribute['label'] : $attribute['attribute']];
+
+                        $sections[] = [
+                            'name' => $attribute['attribute'],
+                            'label' => $attribute['label'] ? $attribute['label'] : $attribute['attribute'],
+                        ];
                     }
 
                     foreach ($sections as $section) {

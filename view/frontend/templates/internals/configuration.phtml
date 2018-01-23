@@ -6,10 +6,16 @@
 ?>
 
 <script>
-    <?php if ($block->getConfigHelper()->isInstantEnabled() && $block->isSearchPage() === true): ?>
+    <?php
+    if ($block->getConfigHelper()->isInstantEnabled() && $block->isSearchPage() === true) :
+        $css = '<style type="text/css">'.$block->getConfigHelper()->getInstantSelector().' {display:none}</style>';
+    ?>
+
         // Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
-        document.write('<style type="text/css"><?php /* @escapeNotVerified */ echo $block->getConfigHelper()->getInstantSelector(); ?> { display:none }</style>');
-    <?php endif; ?>
+        document.write(<?php /* @escapeNotVerified */ echo $css; ?>);
+    <?php
+    endif;
+    ?>
 
     window.algoliaConfig = <?php echo json_encode($block->getConfiguration()); ?>;
 </script>

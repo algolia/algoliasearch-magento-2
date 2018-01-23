@@ -29,7 +29,7 @@ class PagesIndexingTest extends IndexingTestCase
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Page');
         $this->processTest($indexer, 'pages', 4);
 
-        $results = $this->algoliaHelper->query($this->indexPrefix.'default_pages', '', array());
+        $results = $this->algoliaHelper->query($this->indexPrefix.'default_pages', '', []);
 
         $noRoutePageExists = false;
         $homePageExists = false;
@@ -56,10 +56,10 @@ class PagesIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->query($this->indexPrefix.'default_pages', '', array('hitsPerPage' => 1));
+        $results = $this->algoliaHelper->query($this->indexPrefix.'default_pages', '', ['hitsPerPage' => 1]);
         $hit = reset($results['hits']);
 
-        $defaultAttributes = array(
+        $defaultAttributes = [
             'objectID',
             'name',
             'url',
@@ -68,7 +68,7 @@ class PagesIndexingTest extends IndexingTestCase
             'algoliaLastUpdateAtCET',
             '_highlightResult',
             '_snippetResult',
-        );
+        ];
 
         foreach ($defaultAttributes as $key => $attribute) {
             $this->assertTrue(key_exists($attribute, $hit), 'Pages attribute "'.$attribute.'" should be indexed but it is not"');
@@ -88,7 +88,7 @@ class PagesIndexingTest extends IndexingTestCase
                              ->setIdentifier('example-cms-page')
                              ->setIsActive(true)
                              ->setPageLayout('1column')
-                             ->setStores(array(0))
+                             ->setStores([0])
                              ->setContent('Hello Im a test CMS page with script tags and style tags. <script>alert("Foo");</script> <style>.bar { font-weight: bold; }</style>')
                              ->save();
 
@@ -121,7 +121,7 @@ class PagesIndexingTest extends IndexingTestCase
                              ->setIdentifier('example-cms-page-utf8')
                              ->setIsActive(true)
                              ->setPageLayout('1column')
-                             ->setStores(array(0))
+                             ->setStores([0])
                              ->setContent($utf8Content)
                              ->save();
 

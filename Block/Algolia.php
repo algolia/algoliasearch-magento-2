@@ -124,10 +124,14 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getPriceKey()
     {
         if ($this->priceKey === null) {
-            $groupId = $this->getGroupId();
             $currencyCode = $this->getCurrencyCode();
 
-            $this->priceKey = $this->config->isCustomerGroupsEnabled($this->getStore()->getStoreId()) ? '.' . $currencyCode . '.group_' . $groupId : '.' . $currencyCode . '.default';
+            $this->priceKey = '.' . $currencyCode . '.default';
+
+            if ($this->config->isCustomerGroupsEnabled($this->getStore()->getStoreId())) {
+                $groupId = $this->getGroupId();
+                $this->priceKey = '.' . $currencyCode . '.group_' . $groupId;;
+            }
         }
 
         return $this->priceKey;
@@ -170,4 +174,3 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
     }
 }
-

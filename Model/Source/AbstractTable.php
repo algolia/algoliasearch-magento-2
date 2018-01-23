@@ -21,12 +21,14 @@ abstract class AbstractTable extends AbstractFieldArray
 
     abstract protected function getTableData();
 
-    public function __construct(Context $context,
-                                ProductHelper $producthelper,
-                                CategoryHelper $categoryHelper,
-                                ConfigHelper $configHelper,
-                                array $data = [])
-    {
+    public function __construct(
+        Context $context,
+        ProductHelper $producthelper,
+        CategoryHelper $categoryHelper,
+        ConfigHelper $configHelper,
+        array $data = []
+    ) {
+    
         $this->config = $configHelper;
         $this->productHelper = $producthelper;
         $this->categoryHelper = $categoryHelper;
@@ -38,7 +40,10 @@ abstract class AbstractTable extends AbstractFieldArray
     {
         if (!array_key_exists($columnId, $this->selectFields) || !$this->selectFields[$columnId]) {
             /** @var \Algolia\AlgoliaSearch\Block\System\Form\Field\Select $select */
-            $select = $this->getLayout()->createBlock('Algolia\AlgoliaSearch\Block\System\Form\Field\Select', '', ['data' => ['is_render_to_js_template' => true]]);
+            $select = $this->getLayout()
+                           ->createBlock('Algolia\AlgoliaSearch\Block\System\Form\Field\Select', '', [
+                               'data' => ['is_render_to_js_template' => true]
+                           ]);
 
             $options = $columnData['values'];
 
@@ -94,7 +99,10 @@ abstract class AbstractTable extends AbstractFieldArray
             $columnData = $data[$columnId];
 
             if (isset($columnData['values'])) {
-                $options['option_' . $this->getRenderer($columnId, $columnData)->calcOptionHash($row->getData($columnId))] = 'selected="selected"';
+                $index = 'option_' . $this->getRenderer($columnId, $columnData)
+                                          ->calcOptionHash($row->getData($columnId));
+
+                $options[$index] = 'selected="selected"';
             }
         }
 

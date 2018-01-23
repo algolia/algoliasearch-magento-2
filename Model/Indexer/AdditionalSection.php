@@ -19,8 +19,14 @@ class AdditionalSection implements Magento\Framework\Indexer\ActionInterface, Ma
     private $messageManager;
     private $output;
 
-    public function __construct(StoreManagerInterface $storeManager, Data $helper, Queue $queue, ConfigHelper $configHelper, ManagerInterface $messageManager, ConsoleOutput $output)
-    {
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        Data $helper,
+        Queue $queue,
+        ConfigHelper $configHelper,
+        ManagerInterface $messageManager,
+        ConsoleOutput $output
+    ) {
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
         $this->queue = $queue;
@@ -31,12 +37,16 @@ class AdditionalSection implements Magento\Framework\Indexer\ActionInterface, Ma
 
     public function execute($ids)
     {
+        return $this;
     }
 
     public function executeFull()
     {
-        if (!$this->configHelper->getApplicationID() || !$this->configHelper->getAPIKey() || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed: 
+            You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 
             if (php_sapi_name() === 'cli') {
                 $this->output->writeln($errorMessage);
@@ -56,15 +66,22 @@ class AdditionalSection implements Magento\Framework\Indexer\ActionInterface, Ma
                 continue;
             }
 
-            $this->queue->addToQueue($this->fullAction, 'rebuildStoreAdditionalSectionsIndex', ['store_id' => $storeId], 1);
+            $this->queue->addToQueue(
+                $this->fullAction,
+                'rebuildStoreAdditionalSectionsIndex',
+                ['store_id' => $storeId],
+                1
+            );
         }
     }
 
     public function executeList(array $ids)
     {
+        return $this;
     }
 
     public function executeRow($id)
     {
+        return $this;
     }
 }

@@ -261,7 +261,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
         /* SET DEFAULT CONFIG DATA */
 
         $table = $setup->getTable('core_config_data');
-        $alreadyInserted = $setup->getConnection()->query('SELECT path, value FROM '.$table.' WHERE path LIKE "algoliasearch_%"')->fetchAll(\PDO::FETCH_KEY_PAIR);
+        $alreadyInserted = $setup->getConnection()
+                                 ->query('SELECT path, value FROM '.$table.' WHERE path LIKE "algoliasearch_%"')
+                                 ->fetchAll(\PDO::FETCH_KEY_PAIR);
 
         foreach ($this->defaultConfigData as $path => $value) {
             if (isset($alreadyInserted[$path])) {
@@ -277,8 +279,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection = $setup->getConnection();
             $table = $connection->newTable($setup->getTable('algoliasearch_queue'));
 
-            $table->addColumn('job_id', $table::TYPE_INTEGER, 20,
-                ['identity' => true, 'nullable' => false, 'primary' => true]);
+            $table->addColumn(
+                'job_id',
+                $table::TYPE_INTEGER,
+                20,
+                ['identity' => true, 'nullable' => false, 'primary' => true]
+            );
             $table->addColumn('pid', $table::TYPE_INTEGER, 20, ['nullable' => true, 'default' => null]);
             $table->addColumn('class', $table::TYPE_TEXT, 50, ['nullable' => false]);
             $table->addColumn('method', $table::TYPE_TEXT, 50, ['nullable' => false]);
@@ -300,7 +306,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 [
                     'type' => Table::TYPE_TEXT,
                     'length' => '2M',
-                ]);
+                ]
+            );
         }
 
         if (version_compare($context->getVersion(), '1.3.0') < 0) {
@@ -314,12 +321,17 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     'nullabled' => true,
                     'after' => 'job_id',
                     'comment' => 'Date and time of job creation',
-                ]);
+                ]
+            );
 
             // LOG TABLE
             $table = $connection->newTable($setup->getTable('algoliasearch_queue_log'));
 
-            $table->addColumn('id', $table::TYPE_INTEGER, 20, ['identity' => true, 'nullable' => false, 'primary' => true]);
+            $table->addColumn('id', $table::TYPE_INTEGER, 20, [
+                'identity' => true,
+                'nullable' => false,
+                'primary' => true
+            ]);
             $table->addColumn('started', $table::TYPE_DATETIME, null, ['nullable' => false]);
             $table->addColumn('duration', $table::TYPE_INTEGER, 20, ['nullable' => false]);
             $table->addColumn('processed_jobs', $table::TYPE_INTEGER, null, ['nullable' => false]);

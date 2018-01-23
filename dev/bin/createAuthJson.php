@@ -1,9 +1,9 @@
 <?php
 
-$json['http-basic']['repo.magento.com'] = array(
+$json['http-basic']['repo.magento.com'] = [
     'username' => getenv('MAGENTO_AUTH_USERNAME'),
     'password' => getenv('MAGENTO_AUTH_PASSWORD'),
-);
+];
 
 $dirname = dirname(getenv('AUTH_DIR'));
 if (!is_dir($dirname)) {

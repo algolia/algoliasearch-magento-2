@@ -2,8 +2,9 @@
 <!-- Wrapping template -->
 <script type="text/template" id="instant_wrapper_template">
     {{#findAutocomplete}}
-    <div id="algolia-autocomplete-container"></div>
+        <div id="algolia-autocomplete-container"></div>
     {{/findAutocomplete}}
+
     <div id="algolia_instant_selector" class="<?php echo $block->hasFacets() ? ' with-facets' : '' ?>">
         <div class="row">
             <div class="col-md-3" id="algolia-left-container">
@@ -28,7 +29,13 @@
                                             <?php echo __('Search :'); ?>
                                         </label>
 
-                                        <input placeholder="<?php echo __('Search for products'); ?>" id="instant-search-bar" type="text" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" />
+                                        <input placeholder="<?php echo __('Search for products'); ?>"
+                                               id="instant-search-bar"
+                                               type="text"
+                                               autocomplete="off"
+                                               spellcheck="false"
+                                               autocorrect="off"
+                                               autocapitalize="off" />
                                     </div>
                                 </div>
                             </div>
@@ -36,6 +43,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="row">
                     <div>
                         <div class="hits">
@@ -60,6 +68,5 @@
                 </div>
             </div>
         </div>
-
     </div>
 </script>

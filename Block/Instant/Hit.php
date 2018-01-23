@@ -34,7 +34,8 @@ class Hit extends Template
             $store = $this->_storeManager->getStore();
 
             $currencyCode = $store->getCurrentCurrencyCode();
-            $this->priceKey = $this->config->isCustomerGroupsEnabled($store->getStoreId()) ? '.' . $currencyCode . '.group_' . $groupId : '.' . $currencyCode . '.default';
+            $this->priceKey = $this->config->isCustomerGroupsEnabled($store->getStoreId())
+                ? '.' . $currencyCode . '.group_' . $groupId : '.' . $currencyCode . '.default';
         }
 
         return $this->priceKey;

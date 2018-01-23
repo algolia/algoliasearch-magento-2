@@ -67,7 +67,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         /**
          * Handle category replacement
          */
-        if ($config->isInstantEnabled() && $config->replaceCategories() && $request->getControllerName() == 'category') {
+        if ($config->isInstantEnabled()
+            && $config->replaceCategories()
+            && $request->getControllerName() == 'category') {
             $category = $this->getCurrentCategory();
 
             if ($category && $category->getDisplayMode() !== 'PAGE') {
@@ -112,8 +114,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 if ($refinementKey !== null) {
                     $refinementValue = $query;
                     $query = "";
-                }
-                else {
+                } else {
                     $refinementKey = "";
                 }
             }
@@ -145,11 +146,16 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'extensionVersion' => $config->getExtensionVersion(),
             'applicationId' => $config->getApplicationID(),
             'indexName' => $coreHelper->getBaseIndexName(),
-            'apiKey' => $algoliaHelper->generateSearchSecuredApiKey($config->getSearchOnlyAPIKey(), $config->getAttributesToRetrieve($customerGroupId)),
+            'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
+                $config->getSearchOnlyAPIKey(),
+                $config->getAttributesToRetrieve($customerGroupId)
+            ),
             'facets' => $facets,
             'areCategoriesInFacets' => $areCategoriesInFacets,
             'hitsPerPage' => (int) $config->getNumberOfProductResults(),
-            'sortingIndices' => array_values($config->getSortingIndices($coreHelper->getIndexName($productHelper->getIndexNameSuffix()))),
+            'sortingIndices' => array_values($config->getSortingIndices(
+                $coreHelper->getIndexName($productHelper->getIndexNameSuffix())
+            )),
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $isCategoryPage,
             'removeBranding' => (bool) $config->isRemoveBranding(),

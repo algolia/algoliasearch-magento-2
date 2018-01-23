@@ -15,8 +15,11 @@ class AdditionalSectionHelper
 
     private $eavConfig;
 
-    public function __construct(ManagerInterface $eventManager, ObjectManagerInterface $objectManager, Config $eavConfig)
-    {
+    public function __construct(
+        ManagerInterface $eventManager,
+        ObjectManagerInterface $objectManager,
+        Config $eavConfig
+    ) {
         $this->eventManager = $eventManager;
         $this->objectManager = $objectManager;
         $this->eavConfig = $eavConfig;
@@ -34,7 +37,10 @@ class AdditionalSectionHelper
         ];
 
         $transport = new DataObject($indexSettings);
-        $this->eventManager->dispatch('algolia_additional_sections_index_before_set_settings', ['store_id' => $storeId, 'index_settings' => $transport]);
+        $this->eventManager->dispatch(
+            'algolia_additional_sections_index_before_set_settings',
+            ['store_id' => $storeId, 'index_settings' => $transport]
+        );
         $indexSettings = $transport->getData();
 
         return $indexSettings;
@@ -74,8 +80,14 @@ class AdditionalSectionHelper
             ];
 
             $transport = new DataObject($record);
-            $this->eventManager->dispatch('algolia_additional_section_item_index_before', ['section' => $section, 'record' => $transport, 'store_id' => $storeId]);
-            $this->eventManager->dispatch('algolia_additional_section_items_before_index', ['section' => $section, 'record' => $transport, 'store_id' => $storeId]);
+            $this->eventManager->dispatch(
+                'algolia_additional_section_item_index_before',
+                ['section' => $section, 'record' => $transport, 'store_id' => $storeId]
+            );
+            $this->eventManager->dispatch(
+                'algolia_additional_section_items_before_index',
+                ['section' => $section, 'record' => $transport, 'store_id' => $storeId]
+            );
             $record = $transport->getData();
 
             return $record;

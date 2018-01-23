@@ -36,8 +36,12 @@ class AlgoliaHelper extends AbstractHelper
     /** @var string */
     private static $lastTaskId;
 
-    public function __construct(Context $context, ConfigHelper $configHelper, ManagerInterface $messageManager, ConsoleOutput $consoleOutput)
-    {
+    public function __construct(
+        Context $context,
+        ConfigHelper $configHelper,
+        ManagerInterface $messageManager,
+        ConsoleOutput $consoleOutput
+    ) {
         parent::__construct($context);
 
         $this->config = $configHelper;
@@ -205,7 +209,13 @@ class AlgoliaHelper extends AbstractHelper
         $hitsPerPage = 100;
         $page = 0;
         do {
-            $complexSynonyms = $index->searchSynonyms('', ['altCorrection1', 'altCorrection2', 'placeholder'], $page, $hitsPerPage);
+            $complexSynonyms = $index->searchSynonyms(
+                '',
+                ['altCorrection1', 'altCorrection2', 'placeholder'],
+                $page,
+                $hitsPerPage
+            );
+
             foreach ($complexSynonyms['hits'] as $hit) {
                 unset($hit['_highlightResult']);
 
@@ -217,8 +227,7 @@ class AlgoliaHelper extends AbstractHelper
 
         if (empty($synonyms)) {
             $res = $index->clearSynonyms(true);
-        }
-        else {
+        } else {
             $res = $index->batchSynonyms($synonyms, true, true);
         }
 
@@ -299,7 +308,8 @@ class AlgoliaHelper extends AbstractHelper
         $this->resetCredentialsFromConfig();
 
         if (!isset($this->client)) {
-            throw new AlgoliaException('Operation "' . $methodName . ' could not be performed because Algolia credentials were not provided.');
+            $msg = 'Operation '.$methodName.' could not be performed because Algolia credentials were not provided.';
+            throw new AlgoliaException($msg);
         }
     }
 
@@ -336,7 +346,8 @@ class AlgoliaHelper extends AbstractHelper
 
             if ($object === false) {
                 $longestAttribute = $this->getLongestAttribute($previousObject);
-                $modifiedIds[] = $indexName.' - ID '.$previousObject['objectID'].' - skipped - longest attribute: '.$longestAttribute;
+                $modifiedIds[] = $indexName.' 
+                    - ID '.$previousObject['objectID'].' - skipped - longest attribute: '.$longestAttribute;
 
                 unset($objects[$key]);
             } elseif ($previousObject !== $object) {
@@ -349,7 +360,11 @@ class AlgoliaHelper extends AbstractHelper
         if (!empty($modifiedIds)) {
             $separator = php_sapi_name() === 'cli' ? "\n" : '<br>';
 
-            $errorMessage = 'Algolia reindexing: You have some records which are too big to be indexed in Algolia. They have either been truncated (removed attributes: '.implode(', ', $this->potentiallyLongAttributes).') or skipped completely: '.$separator.implode($separator, $modifiedIds);
+            $errorMessage = 'Algolia reindexing: 
+                You have some records which are too big to be indexed in Algolia. 
+                They have either been truncated 
+                (removed attributes: '.implode(', ', $this->potentiallyLongAttributes).') 
+                or skipped completely: '.$separator.implode($separator, $modifiedIds);
 
             if (php_sapi_name() === 'cli') {
                 $this->consoleOutput->writeln($errorMessage);
@@ -401,7 +416,7 @@ class AlgoliaHelper extends AbstractHelper
 
     public function castProductObject(&$productData)
     {
-        $nonCastableAttributes = array('sku', 'name', 'description');
+        $nonCastableAttributes = ['sku', 'name', 'description'];
 
         foreach ($productData as $key => &$data) {
             if (in_array($key, $nonCastableAttributes, true) === true) {
@@ -436,8 +451,8 @@ class AlgoliaHelper extends AbstractHelper
 
     private function castAttribute($value)
     {
-        if (is_numeric($value) && floatval($value) == floatval(intval($value))) {
-            return intval($value);
+        if (is_numeric($value) && floatval($value) == floatval((int) $value)) {
+            return (int) $value;
         }
 
         if (is_numeric($value)) {

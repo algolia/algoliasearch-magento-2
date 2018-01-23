@@ -11,6 +11,7 @@ use AlgoliaSearch\AlgoliaException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\ResourceConnection;
@@ -41,7 +42,8 @@ class Data
 
     private $emulationRuns = false;
 
-    public function __construct(AlgoliaHelper $algoliaHelper,
+    public function __construct(
+        AlgoliaHelper $algoliaHelper,
         ConfigHelper $configHelper,
         ProductHelper $producthelper,
         CategoryHelper $categoryHelper,
@@ -53,8 +55,9 @@ class Data
         Logger $logger,
         ResourceConnection $resource,
         ManagerInterface $eventManager,
-        StoreManagerInterface $storeManager)
-    {
+        StoreManagerInterface $storeManager
+    ) {
+    
         $this->algoliaHelper = $algoliaHelper;
 
         $this->pageHelper = $pageHelper;
@@ -91,16 +94,31 @@ class Data
             return;
         }
 
-        $this->algoliaHelper->setSettings($this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId), $this->categoryHelper->getIndexSettings($storeId), false, true);
-        $this->algoliaHelper->setSettings($this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId), $this->pageHelper->getIndexSettings($storeId));
-        $this->algoliaHelper->setSettings($this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId), $this->suggestionHelper->getIndexSettings($storeId));
+        $this->algoliaHelper->setSettings(
+            $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
+            $this->categoryHelper->getIndexSettings($storeId),
+            false,
+            true
+        );
+        $this->algoliaHelper->setSettings(
+            $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
+            $this->pageHelper->getIndexSettings($storeId)
+        );
+        $this->algoliaHelper->setSettings(
+            $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId),
+            $this->suggestionHelper->getIndexSettings($storeId)
+        );
 
+        $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
         foreach ($this->configHelper->getAutocompleteSections() as $section) {
-            if ($section['name'] === 'products' || $section['name'] === 'categories' || $section['name'] === 'pages' || $section['name'] === 'suggestions') {
+            if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }
 
-            $this->algoliaHelper->setSettings($this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId) . '_' . $section['name'], $this->additionalSectionHelper->getIndexSettings($storeId));
+            $indexName = $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId);
+            $indexName = $indexName . '_' . $section['name'];
+
+            $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
         }
 
         $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
@@ -154,12 +172,14 @@ class Data
 
         $additionalSections = $this->configHelper->getAutocompleteSections();
 
+        $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
         foreach ($additionalSections as $section) {
-            if ($section['name'] === 'products' || $section['name'] === 'categories' || $section['name'] === 'pages' || $section['name'] === 'suggestions') {
+            if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }
 
-            $indexName = $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId) . '_' . $section['name'];
+            $indexName = $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId);
+            $indexName = $indexName . '_' . $section['name'];
 
             $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
 
@@ -215,7 +235,12 @@ class Data
                 $page = 1;
 
                 while ($page <= $pages) {
-                    $this->rebuildStoreCategoryIndexPage($storeId, $collection, $page, $this->configHelper->getNumberOfElementByPage());
+                    $this->rebuildStoreCategoryIndexPage(
+                        $storeId,
+                        $collection,
+                        $page,
+                        $this->configHelper->getNumberOfElementByPage()
+                    );
 
                     $page++;
                 }
@@ -246,7 +271,12 @@ class Data
             $page = 1;
 
             while ($page <= $pages) {
-                $this->rebuildStoreSuggestionIndexPage($storeId, $collection, $page, $this->configHelper->getNumberOfElementByPage());
+                $this->rebuildStoreSuggestionIndexPage(
+                    $storeId,
+                    $collection,
+                    $page,
+                    $this->configHelper->getNumberOfElementByPage()
+                );
 
                 $page++;
             }
@@ -273,7 +303,10 @@ class Data
         }
 
         $indexNameSuffix = $this->suggestionHelper->getIndexNameSuffix();
-        $this->algoliaHelper->moveIndex($this->getIndexName($indexNameSuffix, $storeId, true), $this->getIndexName($indexNameSuffix, $storeId));
+        $tmpIndexName = $this->getIndexName($indexNameSuffix, $storeId, true);
+        $indexName = $this->getIndexName($indexNameSuffix, $storeId);
+
+        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
     }
 
     public function rebuildStoreProductIndex($storeId, $productIds)
@@ -303,7 +336,14 @@ class Data
                 $page = 1;
 
                 while ($page <= $pages) {
-                    $this->rebuildStoreProductIndexPage($storeId, $collection, $page, $this->configHelper->getNumberOfElementByPage(), null, $productIds);
+                    $this->rebuildStoreProductIndexPage(
+                        $storeId,
+                        $collection,
+                        $page,
+                        $this->configHelper->getNumberOfElementByPage(),
+                        null,
+                        $productIds
+                    );
 
                     $page++;
                 }
@@ -390,7 +430,8 @@ class Data
 
             $categoryObject = $this->categoryHelper->getObject($category);
 
-            if ($this->configHelper->shouldIndexEmptyCategories($storeId) === true || $categoryObject['product_count'] > 0) {
+            if ($this->configHelper->shouldIndexEmptyCategories($storeId) === true
+                || $categoryObject['product_count'] > 0) {
                 array_push($indexData, $categoryObject);
             }
         }
@@ -414,7 +455,10 @@ class Data
 
         // In $potentiallyDeletedProductsIds there might be IDs of deleted products which will not be in a collection
         if (is_array($potentiallyDeletedProductsIds)) {
-            $potentiallyDeletedProductsIds = array_combine($potentiallyDeletedProductsIds, $potentiallyDeletedProductsIds);
+            $potentiallyDeletedProductsIds = array_combine(
+                $potentiallyDeletedProductsIds,
+                $potentiallyDeletedProductsIds
+            );
         }
 
         $this->logger->start('CREATE RECORDS ' . $this->logger->getStoreName($storeId));
@@ -429,7 +473,8 @@ class Data
 
             $productId = $product->getId();
 
-            // If $productId is in the collection, remove it from $potentiallyDeletedProductsIds so it's not removed without check
+            // If $productId is in the collection, remove it from $potentiallyDeletedProductsIds
+            // so it's not removed without check
             if (isset($potentiallyDeletedProductsIds[$productId])) {
                 unset($potentiallyDeletedProductsIds[$productId]);
             }
@@ -440,7 +485,11 @@ class Data
 
             if ($product->isDeleted() === true
                 || $product->getStatus() == Status::STATUS_DISABLED
-                || !in_array($product->getVisibility(), [Product\Visibility::VISIBILITY_BOTH, Product\Visibility::VISIBILITY_IN_SEARCH, Product\Visibility::VISIBILITY_IN_CATALOG])
+                || !in_array($product->getVisibility(), [
+                    Visibility::VISIBILITY_BOTH,
+                    Visibility::VISIBILITY_IN_SEARCH,
+                    Visibility::VISIBILITY_IN_CATALOG,
+                ])
             ) {
                 $productsToRemove[$productId] = $productId;
                 continue;
@@ -474,13 +523,23 @@ class Data
         ];
     }
 
-    public function rebuildStoreProductIndexPage($storeId, $collectionDefault, $page, $pageSize, $emulationInfo = null, $productIds = null, $useTmpIndex = false)
-    {
+    public function rebuildStoreProductIndexPage(
+        $storeId,
+        $collectionDefault,
+        $page,
+        $pageSize,
+        $emulationInfo = null,
+        $productIds = null,
+        $useTmpIndex = false
+    ) {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        $this->logger->start('rebuildStoreProductIndexPage ' . $this->logger->getStoreName($storeId) . ' page ' . $page . ' pageSize ' . $pageSize);
+        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ', 
+            page ' . $page . ', 
+            pageSize ' . $pageSize;
+        $this->logger->start($wrapperLogMessage);
 
         if ($emulationInfo === null) {
             $this->startEmulation($storeId);
@@ -497,7 +556,9 @@ class Data
 
         if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'rating_summary')) {
             $reviewTableName = $this->resource->getTableName('review_entity_summary');
-            $collection->getSelect()->columns('(SELECT MAX(rating_summary) FROM ' . $reviewTableName . ' AS o WHERE o.entity_pk_value = e.entity_id AND o.store_id = '.$storeId.') as rating_summary');
+            $collection->getSelect()->columns('(SELECT MAX(rating_summary) 
+                FROM ' . $reviewTableName . ' AS o 
+                WHERE o.entity_pk_value = e.entity_id AND o.store_id = '.$storeId.') as rating_summary');
         }
 
         $this->eventManager->dispatch(
@@ -505,12 +566,16 @@ class Data
             ['collection' => $collection, 'store' => $storeId]
         );
 
-        $this->logger->start('LOADING ' . $this->logger->getStoreName($storeId) . ' collection page ' . $page . ', pageSize ' . $pageSize);
+        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ', 
+            collection page: ' . $page . ', 
+            pageSize: ' . $pageSize;
+
+        $this->logger->start($logMessage);
 
         $collection->load();
 
         $this->logger->log('Loaded ' . count($collection) . ' products');
-        $this->logger->stop('LOADING ' . $this->logger->getStoreName($storeId) . ' collection page ' . $page . ', pageSize ' . $pageSize);
+        $this->logger->stop($logMessage);
 
         $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, $useTmpIndex);
 
@@ -564,7 +629,7 @@ class Data
             $this->stopEmulation();
         }
 
-        $this->logger->stop('rebuildStoreProductIndexPage ' . $this->logger->getStoreName($storeId) . ' page ' . $page . ' pageSize ' . $pageSize);
+        $this->logger->stop($wrapperLogMessage);
     }
 
     public function startEmulation($storeId)
@@ -604,12 +669,14 @@ class Data
 
     private function setExtraSettings($storeId, $saveToTmpIndicesToo)
     {
+        $additionalSectionsSuffix = $this->additionalSectionHelper->getIndexNameSuffix();
+
         $sections = [
             'products' => $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId),
             'categories' => $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
             'pages' => $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
             'suggestions' => $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId),
-            'additional_sections' => $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId),
+            'additional_sections' => $this->getIndexName($additionalSectionsSuffix, $storeId),
         ];
 
         $error = [];
@@ -628,7 +695,10 @@ class Data
                 }
             } catch (AlgoliaException $e) {
                 if (strpos($e->getMessage(), 'Invalid object attributes:') === 0) {
-                    $error[] = 'Extra settings for "'.$section.'" indices were not saved. Error message: "'.$e->getMessage().'"';
+                    $error[] = '
+                        Extra settings for "'.$section.'" indices were not saved. 
+                        Error message: "'.$e->getMessage().'"';
+
                     continue;
                 }
 
@@ -644,7 +714,8 @@ class Data
     private function getSalesData($storeId, Collection $collection)
     {
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
-        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
+        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
+            && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
             return [];
         }
 
@@ -657,11 +728,14 @@ class Data
 
         try {
             $salesConnection = $this->resource->getConnectionByName('sales');
-        } catch(\DomainException $e) {
+        } catch (\DomainException $e) {
             $salesConnection = $this->resource->getConnection();
         }
 
-        $query = 'SELECT product_id, SUM(qty_ordered) AS ordered_qty, SUM(row_total) AS total_ordered FROM ' . $ordersTableName . ' WHERE product_id IN (' . $ids . ') GROUP BY product_id';
+        $query = 'SELECT product_id, SUM(qty_ordered) AS ordered_qty, SUM(row_total) AS total_ordered 
+            FROM ' . $ordersTableName . ' 
+            WHERE product_id IN (' . $ids . ') 
+            GROUP BY product_id';
         $salesData = $salesConnection->query($query)->fetchAll(\PDO::FETCH_GROUP|\PDO::FETCH_UNIQUE|\PDO::FETCH_ASSOC);
 
         return $salesData;

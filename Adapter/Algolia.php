@@ -206,7 +206,9 @@ class Algolia implements AdapterInterface
 
     private function getDocument20($document)
     {
-        return new \Magento\Framework\Search\Document($document['entity_id'], ['score' => new \Magento\Framework\Search\DocumentField('score', $document['score'])]);
+        return new \Magento\Framework\Search\Document($document['entity_id'], [
+            'score' => new \Magento\Framework\Search\DocumentField('score', $document['score']),
+        ]);
     }
 
     private function getDocument21($document)

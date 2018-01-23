@@ -14,8 +14,11 @@ class Logger
     protected $timers = [];
     protected $stores = [];
 
-    public function __construct(StoreManagerInterface $storeManager, ConfigHelper $configHelper, LoggerInterface $logger)
-    {
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        ConfigHelper $configHelper,
+        LoggerInterface $logger
+    ) {
         $this->config = $configHelper;
         $this->enabled = $this->config->isLoggingEnabled();
         $this->logger = $logger;

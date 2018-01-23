@@ -1,4 +1,5 @@
-/* SEARCH BOX */
+/** SEARCH BOX */
+
 .ais-search-box--powered-by {
   font-size: .8em;
   text-align: right;
@@ -9,7 +10,8 @@ input::-ms-clear {
   display: none;
 }
 
-/* PAGINATION */
+/** PAGINATION */
+
 #instant-search-pagination-container {
   width: 100%;
   text-align: center;
@@ -47,7 +49,7 @@ input::-ms-clear {
   color: #606060;
 }
 
-/* REFINEMENT LIST */
+/** REFINEMENT LIST */
 
 .ais-menu--link,
 .ais-hierarchical-menu--link,
@@ -72,12 +74,12 @@ input::-ms-clear {
 }
 
 .ais-hierearchical-link-wrapper, .ais-refinement-list--item {
-  padding: 7px 0px;
+  padding: 7px 0;
 }
 
 .ais-refinement-list--label, .ais-hierarchical-menu--link {
   line-height: 1.0em;
-  padding: 0px 10px;
+  padding: 0 10px;
 }
 
 .ais-refinement-list--label img {
@@ -86,42 +88,38 @@ input::-ms-clear {
 
 .ais-hierarchical-menu--item__active .ais-hierearchical-link-wrapper .cross-circle,
 .ais-refinement-list--item__active .cross-circle {
-	display: inline-block;
-	width: 12px;
-	height: 12px;
-	background:  url("data:image/svg+xml;utf8,<svg width=\'34\' height=\'34\' viewBox=\'0 0 34 34\' xmlns=\'http://www.w3.org/2000/svg\'><title>testvg</title><g fill=\'%23000\' fill-rule=\'evenodd\'><path d=\'M17.163 0C7.95 0 .41 7.578.353 16.893c-.03 4.542 1.693 8.82 4.847 12.053 3.156 3.23 7.367 5.026 11.857 5.054h.11c9.21 0 16.75-7.578 16.81-16.893C34.035 7.735 26.54.06 17.163 0zm.015 30.842v1.08l-.09-1.08c-3.656-.023-7.085-1.485-9.654-4.115-2.57-2.63-3.97-6.116-3.948-9.814C3.533 9.33 9.673 3.158 17.262 3.158c7.548.048 13.65 6.297 13.605 13.93-.05 7.585-6.19 13.754-13.69 13.754z\'/><path d=\'M22.362 10.23l-5.186 5.245-5.186-5.244c-.417-.42-1.092-.42-1.51 0-.416.422-.416 1.105 0 1.526L15.668 17l-5.186 5.244c-.416.42-.416 1.104 0 1.525.21.21.483.316.755.316.273 0 .546-.106.755-.317l5.186-5.245 5.186 5.244c.208.21.482.316.754.316.273 0 .546-.106.755-.317.417-.422.417-1.105 0-1.526L18.685 17l5.187-5.244c.417-.42.417-1.104 0-1.525-.416-.42-1.09-.42-1.508 0z\'/></g></svg>")no-repeat center center / contain;
-	opacity: 0;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background:  url("data:image/svg+xml;utf8,<svg width=\'34\' height=\'34\' viewBox=\'0 0 34 34\' xmlns=\'http://www.w3.org/2000/svg\'><title>testvg</title><g fill=\'%23000\' fill-rule=\'evenodd\'><path d=\'M17.163 0C7.95 0 .41 7.578.353 16.893c-.03 4.542 1.693 8.82 4.847 12.053 3.156 3.23 7.367 5.026 11.857 5.054h.11c9.21 0 16.75-7.578 16.81-16.893C34.035 7.735 26.54.06 17.163 0zm.015 30.842v1.08l-.09-1.08c-3.656-.023-7.085-1.485-9.654-4.115-2.57-2.63-3.97-6.116-3.948-9.814C3.533 9.33 9.673 3.158 17.262 3.158c7.548.048 13.65 6.297 13.605 13.93-.05 7.585-6.19 13.754-13.69 13.754z\'/><path d=\'M22.362 10.23l-5.186 5.245-5.186-5.244c-.417-.42-1.092-.42-1.51 0-.416.422-.416 1.105 0 1.526L15.668 17l-5.186 5.244c-.416.42-.416 1.104 0 1.525.21.21.483.316.755.316.273 0 .546-.106.755-.317l5.186-5.245 5.186 5.244c.208.21.482.316.754.316.273 0 .546-.106.755-.317.417-.422.417-1.105 0-1.526L18.685 17l5.187-5.244c.417-.42.417-1.104 0-1.525-.416-.42-1.09-.42-1.508 0z\'/></g></svg>")no-repeat center center / contain;
+  opacity: 0;
 }
 
 .ais-hierarchical-menu--item__active .ais-hierearchical-link-wrapper:hover .cross-circle,
 .ais-refinement-list--item__active:hover .cross-circle {
-	text-decoration: underline;
-	vertical-align: bottom;
-	margin-left: 6px;
-	opacity: 1;
+  text-decoration: underline;
+  vertical-align: bottom;
+  margin-left: 6px;
+  opacity: 1;
 }
 
 .ais-refinement-list--item:hover {
   text-decoration: underline;
 }
 
-.ais-price-ranges--input
-{
+.ais-price-ranges--input {
   width: 70px !important;
 }
 
-.ais-price-ranges--label
-{
+.ais-price-ranges--label {
   margin: 5px;
 }
 
-.ais-refinement-list--checkbox
-{
+.ais-refinement-list--checkbox {
   margin-right: 10px;
 }
 
-.ais-current-refined-values--link
-{
+.ais-current-refined-values--link {
   cursor: pointer;
   color: #636363;
   border-radius: 2px;
@@ -135,8 +133,7 @@ input::-ms-clear {
   overflow: hidden;
 }
 
-.ais-current-refined-values--clear-all
-{
+.ais-current-refined-values--clear-all {
   position: absolute;
   right: 6px;
   top: 3px;
@@ -144,8 +141,7 @@ input::-ms-clear {
   font-weight: 500;
 }
 
-a.ais-current-refined-values--link:hover
-{
+a.ais-current-refined-values--link:hover {
   text-decoration: none;
 }
 
@@ -208,7 +204,7 @@ a.ais-current-refined-values--link:hover
   color: #666;
 }
 
-/* RANGE SLIDER */
+/** RANGE SLIDER */
 
 .ais-range-slider .rheostat {
   overflow: visible;
@@ -295,11 +291,7 @@ a.ais-current-refined-values--link:hover
   margin-left: 0;
 }
 
-/******************
-**
-** Auto-completion menu
-**
-******************/
+/** Auto-completion menu */
 
 #algolia-autocomplete-container .aa-dropdown-menu .before_special {
   color: #aaaaaa;
@@ -308,7 +300,7 @@ a.ais-current-refined-values--link:hover
 }
 
 #algolia-autocomplete-container .aa-dropdown-menu .info-without-thumb .category-tag {
-    color: #3284b6;
+  color: #3284b6;
 }
 
 #algolia-autocomplete-container .aa-dropdown-menu .info-without-thumb .details {
@@ -331,7 +323,7 @@ a.ais-current-refined-values--link:hover
 #algolia-autocomplete-container .aa-dropdown-menu {
   position: absolute;
   margin-top: -1px;
-  right: 0px;
+  right: 0;
   width: 100%;
   z-index: 1000 !important;
   border: 1px solid #BBB;
@@ -441,9 +433,9 @@ a.ais-current-refined-values--link:hover
 
 .autocomplete-wrapper {
   width: 100%;
-	display: flex;
-	flex-direction: row-reverse;
-	flex-wrap: wrap;
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
 }
 
 .autocomplete-wrapper:after {
@@ -469,30 +461,29 @@ a.ais-current-refined-values--link:hover
 #algolia-autocomplete-container.reverse .col9 {
   float: left;
   min-width: 100%;
-	display: flex;
-	height: 100%;
-	flex: 1;
-
+  display: flex;
+  height: 100%;
+  flex: 1;
 }
 
 @media (min-width: 768px) {
-	#algolia-autocomplete-container .col9 {
+  #algolia-autocomplete-container .col9 {
     border-left: solid 1px #eeeeee;
     width: 70%;
-	  right: 0;
-	  height: 100%;
+    right: 0;
+    height: 100%;
   }
-	
-	#algolia-autocomplete-container .col3 {
+  
+  #algolia-autocomplete-container .col3 {
     float: left;
     width: 30%;
   }
-
+  
   #algolia-autocomplete-container.reverse .col3 {
     float: left;
     width: 30%;
   }
-
+  
   #algolia-autocomplete-container.reverse .col9 {
     border-right: solid 1px #eeeeee;
     float: left;
@@ -501,8 +492,7 @@ a.ais-current-refined-values--link:hover
 }
 
 #algolia-autocomplete-container .other-sections {
-  margin: 20px 10px;
-  margin-bottom: 70px;
+  margin: 20px 10px 70px;
 }
 
 
@@ -543,7 +533,7 @@ a.ais-current-refined-values--link:hover
 }
 
 #algolia-autocomplete-container .aa-dropdown-menu .aa-cursor .algoliasearch-autocomplete-hit {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }
 
 #algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit em {
@@ -573,14 +563,14 @@ a.ais-current-refined-values--link:hover
 }
 
 #autocomplete-products-footer {
-	background-color: #F9F9F9;
-	text-align: center;
-	display: none;
-	position: absolute;
-	width:70%;
-	padding: 10px 0;
-	bottom: 0;
-	left: 30%;
+  background-color: #F9F9F9;
+  text-align: center;
+  display: none;
+  position: absolute;
+  width:70%;
+  padding: 10px 0;
+  bottom: 0;
+  left: 30%;
 }
 
 #algolia-autocomplete-container.reverse #autocomplete-products-footer {
@@ -645,59 +635,58 @@ a.ais-current-refined-values--link:hover
   max-width: 130px;
 }
 
-/**
- * Search Box
-*/
+/** Search Box */
+
 #algolia-searchbox {
   position: relative;
 }
 
 #algolia-searchbox .clear-cross, #algolia_instant_selector .clear-cross {
-	position: absolute;
-	display: none;
-	background: url("data:image/svg+xml;utf8,<svg width=\'12\' height=\'12\' viewBox=\'0 0 12 12\' xmlns=\'http://www.w3.org/2000/svg\' opacity=\'0.6\'><path d=\'M.566 1.698L0 1.13 1.132 0l.565.566L6 4.868 10.302.566 10.868 0 12 1.132l-.566.565L7.132 6l4.302 4.3.566.568L10.868 12l-.565-.566L6 7.132l-4.3 4.302L1.13 12 0 10.868l.566-.565L4.868 6 .566 1.698z\'></path></svg>") no-repeat center center / contain;
-	cursor: pointer;
-	width: 16px;
-	height: 16px;
+  position: absolute;
+  display: none;
+  background: url("data:image/svg+xml;utf8,<svg width=\'12\' height=\'12\' viewBox=\'0 0 12 12\' xmlns=\'http://www.w3.org/2000/svg\' opacity=\'0.6\'><path d=\'M.566 1.698L0 1.13 1.132 0l.565.566L6 4.868 10.302.566 10.868 0 12 1.132l-.566.565L7.132 6l4.302 4.3.566.568L10.868 12l-.565-.566L6 7.132l-4.3 4.302L1.13 12 0 10.868l.566-.565L4.868 6 .566 1.698z\'></path></svg>") no-repeat center center / contain;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
 }
 
 #algolia-searchbox .clear-query-autocomplete {
-	bottom: 22px;
-	right: 9px;
+  bottom: 22px;
+  right: 9px;
 }
 
 #algolia_instant_selector .cross-wrapper .clear-refinement {
-	display: block;
-	position: relative;
-	top: 5px;
-	left: 5px;
+  display: block;
+  position: relative;
+  top: 5px;
+  left: 5px;
 }
 
 #algolia-searchbox .magnifying-glass {
-	position: absolute;
-	bottom: 21px;
-	right: 7px;
-	width: 20px;
-	height: 20px;
-	display: block;
-	background: url("data:image/svg+xml;utf8,<svg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'  fill=\'%23A6A6A6\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M15.553 31.107c8.59 0 15.554-6.964 15.554-15.554S24.143 0 15.553 0 0 6.964 0 15.553c0 8.59 6.964 15.554 15.553 15.554zm0-3.888c6.443 0 11.666-5.225 11.666-11.668 0-6.442-5.225-11.665-11.668-11.665-6.442 0-11.665 5.223-11.665 11.665 0 6.443 5.223 11.666 11.665 11.666zm12.21 3.84a2.005 2.005 0 0 1 .002-2.833l.463-.463a2.008 2.008 0 0 1 2.833-.003l8.17 8.168c.78.78.78 2.05-.004 2.833l-.462.463a2.008 2.008 0 0 1-2.834.004l-8.168-8.17z\' fill-rule=\'evenodd\'/></svg>") no-repeat center right / 20px;
+  position: absolute;
+  bottom: 21px;
+  right: 7px;
+  width: 20px;
+  height: 20px;
+  display: block;
+  background: url("data:image/svg+xml;utf8,<svg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'  fill=\'%23A6A6A6\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M15.553 31.107c8.59 0 15.554-6.964 15.554-15.554S24.143 0 15.553 0 0 6.964 0 15.553c0 8.59 6.964 15.554 15.553 15.554zm0-3.888c6.443 0 11.666-5.225 11.666-11.668 0-6.442-5.225-11.665-11.668-11.665-6.442 0-11.665 5.223-11.665 11.665 0 6.443 5.223 11.666 11.665 11.666zm12.21 3.84a2.005 2.005 0 0 1 .002-2.833l.463-.463a2.008 2.008 0 0 1 2.833-.003l8.17 8.168c.78.78.78 2.05-.004 2.833l-.462.463a2.008 2.008 0 0 1-2.834.004l-8.168-8.17z\' fill-rule=\'evenodd\'/></svg>") no-repeat center right / 20px;
 }
 
 @media (min-width: 768px) {
-	#algolia-searchbox .magnifying-glass {
-		bottom: 6px;
-	}
+  #algolia-searchbox .magnifying-glass {
+    bottom: 6px;
+  }
 }
 
 @media (min-width: 768px) {
-	#algolia-searchbox .clear-query-autocomplete {
-		bottom: 8px;
-	}
+  #algolia-searchbox .clear-query-autocomplete {
+    bottom: 8px;
+  }
 }
 
 
 #algolia-searchbox .algolia-search-input:focus:not([value=""]) {
-	background: transparent;
+  background: transparent;
 }
 
 #algolia-searchbox .algolia-search-input {
@@ -710,9 +699,7 @@ a.ais-current-refined-values--link:hover
   border: solid 1px #54A5CD;
 }
 
-/**
- * Instant Search
- */
+/** Instant Search */
 
 #algolia_instant_selector {
   margin: 10px;
@@ -730,18 +717,11 @@ a.ais-current-refined-values--link:hover
   display: block;
 }
 
-#algolia_instant_selector .category {
-}
-
-#algolia_instant_selector .title {
-}
-
 #algolia_instant_selector .title img {
   width: 200px;
 }
 
-#algolia_instant_selector .text-ellipsis
-{
+#algolia_instant_selector .text-ellipsis {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -758,9 +738,6 @@ a.ais-current-refined-values--link:hover
   padding-top: 2px;
 }
 
-#algolia_instant_selector.with-facets #algolia-right-container {
-}
-
 #algolia_instant_selector.with-facets #algolia-left-container {
   min-height: 1px;
 }
@@ -773,7 +750,7 @@ a.ais-current-refined-values--link:hover
   background: #F4F4F4;
   font-size: 12px;
   clear: both;
-	line-height: 32px;
+  line-height: 32px;
 }
 
 #algolia_instant_selector .hits .infos::after {
@@ -878,19 +855,16 @@ a.ais-current-refined-values--link:hover
   position: relative;
 }
 
-#algolia_instant_selector .as-range-slider--base
-{
-    margin-top: 45px;
+#algolia_instant_selector .as-range-slider--base {
+  margin-top: 45px;
 }
 
-#algolia_instant_selector .hierarchical .ais-hierarchical-menu--list
-{
+#algolia_instant_selector .hierarchical .ais-hierarchical-menu--list {
   padding-left: 10px;
 }
 
-#algolia_instant_selector .hierarchical .ais-hierarchical-menu--list.ais-hierarchical-menu--list__lvl0
-{
-  padding-left: 0px;
+#algolia_instant_selector .hierarchical .ais-hierarchical-menu--list.ais-hierarchical-menu--list__lvl0 {
+  padding-left: 0;
 }
 
 #algolia_instant_selector .facet .sub_facet:not(:last-child) {
@@ -978,7 +952,7 @@ a.ais-current-refined-values--link:hover
 /** INSTANT SEARCH BAR **/
 
 #algolia_instant_selector #instant-search-bar-container {
-  padding-top: 0px;
+  padding-top: 0;
   margin-bottom: 15px;
   width: 100%;
   position: relative;
@@ -997,8 +971,8 @@ a.ais-current-refined-values--link:hover
 }
 
 #algolia_instant_selector #instant-search-bar:focus {
-    outline: 0;
-    box-shadow: none;
+  outline: 0;
+  box-shadow: none;
 }
 
 #algolia_instant_selector #instant-search-box label {
@@ -1065,15 +1039,15 @@ a.ais-current-refined-values--link:hover
 }
 
 #algolia_instant_selector button:hover {
-  background: #2E8AB8 none repeat scroll 0% 0%;
+  background: #2E8AB8 none repeat scroll 0 0;
   cursor: pointer;
 }
 
 .ais-price-ranges--button {
-  background: #39C none repeat scroll 0% 0%;
+  background: #39C none repeat scroll 0 0;
   padding: 5px 15px;
   margin-left: 10px;
-  border: 0px none;
+  border: 0 none;
   color: #FFF;
   font-size: 13px;
   font-weight: normal;
@@ -1085,12 +1059,11 @@ a.ais-current-refined-values--link:hover
 }
 
 #algolia_instant_selector button:not(.ais-price-ranges--button) {
-  background: #f4f4f4 none repeat scroll 0% 0%;
+  background: #f4f4f4 none repeat scroll 0 0;
   display: block;
-  margin: auto;
-  margin-top: 0px;
+  margin: 0 auto auto;
   padding: 7px 15px;
-  border: 0px none;
+  border: 0 none;
   color: #666666;
   font-size: 13px;
   font-weight: normal;
@@ -1103,7 +1076,7 @@ a.ais-current-refined-values--link:hover
 }
 
 #algolia_instant_selector button:not(.ais-price-ranges--button):hover {
-  background: rgb(53, 153, 204) none repeat scroll 0% 0%;
+  background: rgb(53, 153, 204) none repeat scroll 0 0;
   color: white;
 }
 
@@ -1115,8 +1088,7 @@ a.ais-current-refined-values--link:hover
   float: right;
 }
 
-#algolia_instant_selector #refine-toggle
-{
+#algolia_instant_selector #refine-toggle {
   font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif;
   text-align: center;
   height: 40px;
@@ -1127,14 +1099,11 @@ a.ais-current-refined-values--link:hover
   cursor: pointer;
 }
 
-#algolia-static-content
-{
+#algolia-static-content {
   margin-bottom: 20px;
 }
 
-/**
-** GRID
-*/
+/** GRID */
 
 #algolia_instant_selector, #algolia_instant_selector *,
 #search_mini_form, #search_mini_form * {
@@ -1152,38 +1121,45 @@ a.ais-current-refined-values--link:hover
 }
 
 #search_mini_form label {
-	display: none;
+  display: none;
 }
 
 #algolia_instant_selector .row {
   margin-left: -15px;
   margin-right: -15px;
 }
+
 #algolia_instant_selector .col-md-3, #algolia_instant_selector .col-md-4, #algolia_instant_selector .col-md-9, #algolia_instant_selector .col-md-12 {
   position: relative;
   min-height: 1px;
   padding-left: 15px;
   padding-right: 15px;
 }
+
 @media (min-width: 768px) {
-	#algolia_instant_selector .col-sm-6 {
+  #algolia_instant_selector .col-sm-6 {
     width: 50%;
     float: left;
   }
 }
+
 @media (min-width: 992px) {
   #algolia_instant_selector .col-md-3, #algolia_instant_selector .col-md-4, #algolia_instant_selector .col-md-9, #algolia_instant_selector .col-md-12 {
     float: left;
   }
+  
   #algolia_instant_selector .col-md-12 {
     width: 100%;
   }
+  
   #algolia_instant_selector .col-md-9 {
     width: 75%;
   }
+  
   #algolia_instant_selector .col-md-4 {
     width: 33.33333333%;
   }
+  
   #algolia_instant_selector .col-md-3 {
     width: 25%;
   }
@@ -1193,6 +1169,7 @@ a.ais-current-refined-values--link:hover
   content: " ";
   display: table;
 }
+
 #algolia_instant_selector .row:after {
   clear: both;
 }
@@ -1209,7 +1186,7 @@ a.ais-current-refined-values--link:hover
   #algolia_instant_selector .visible-xs {
     display: block !important
   }
-
+  
   #algolia_instant_selector .hidden-xs {
     display: none!important
   }
@@ -1223,7 +1200,7 @@ a.ais-current-refined-values--link:hover
   #algolia_instant_selector .visible-sm {
     display: block !important
   }
-
+  
   #algolia_instant_selector .hidden-sm {
     display: none!important
   }

@@ -1,3 +1,5 @@
+<?php  /** @var \Magento\Framework\View\Element\Template $block */ ?>
+
 <!-- Suggestion hit template -->
 <script type="text/template" id="autocomplete_suggestions_template">
     <a class="algoliasearch-autocomplete-hit" href="{{url}}">
@@ -17,7 +19,8 @@
             {{{_highlightResult.query.value}}}
 
             {{#category}}
-            <span class="text-muted"><?php echo __('in'); ?></span> <span class="category-tag">{{category}}</span>
+                <span class="text-muted"><?php echo $block->escapeHtml(__('in')); ?></span>
+                <span class="category-tag">{{category}}</span>
             {{/category}}
         </div>
         <div class="algolia-clearfix"></div>

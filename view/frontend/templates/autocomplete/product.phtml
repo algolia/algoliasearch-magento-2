@@ -19,7 +19,7 @@ $origFormatedVar = 'price' . $priceKey . '_original_formated';
 
             <div class="algoliasearch-autocomplete-category">
                 {{#categories_without_path}}
-                <?php echo __('in'); ?> {{{categories_without_path}}}
+                <?php echo $block->escapeHtml(__('in')); ?> {{{categories_without_path}}}
                 {{/categories_without_path}}
 
                 {{#_highlightResult.color}}
@@ -34,15 +34,17 @@ $origFormatedVar = 'price' . $priceKey . '_original_formated';
 
             <div class="algoliasearch-autocomplete-price">
                     <span class="after_special
-                                {{#<?php echo $origFormatedVar; ?>}}promotion{{/<?php echo $origFormatedVar; ?>}}">
-                        {{price<?php echo $priceKey; ?>_formated}}
+                                {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                                    promotion
+                                {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}">
+                        {{price<?php echo $block->escapeHtml($priceKey); ?>_formated}}
                     </span>
 
-                {{#<?php echo $origFormatedVar; ?>}}
+                {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                     <span class="before_special">
-                        {{<?php echo $origFormatedVar; ?>}}
+                        {{<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                     </span>
-                {{/<?php echo $origFormatedVar; ?>}}
+                {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}
             </div>
         </div>
     </a>

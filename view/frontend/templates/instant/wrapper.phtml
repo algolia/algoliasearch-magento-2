@@ -1,14 +1,18 @@
-<?php /** @var \Algolia\AlgoliaSearch\Block\Instant\Wrapper $block */?>
+<?php /** @var \Algolia\AlgoliaSearch\Block\Instant\Wrapper $block */ ?>
+
 <!-- Wrapping template -->
 <script type="text/template" id="instant_wrapper_template">
     {{#findAutocomplete}}
         <div id="algolia-autocomplete-container"></div>
     {{/findAutocomplete}}
 
-    <div id="algolia_instant_selector" class="<?php echo $block->hasFacets() ? ' with-facets' : '' ?>">
+    <div id="algolia_instant_selector"
+         class="<?php echo $block->escapeHtml($block->hasFacets() ? ' with-facets' : ''); ?>">
         <div class="row">
             <div class="col-md-3" id="algolia-left-container">
-                <div id="refine-toggle" class="visible-xs visible-sm">+ <?php echo __('Refine'); ?></div>
+                <div id="refine-toggle" class="visible-xs visible-sm">
+                    + <?php echo $block->escapeHtml(__('Refine')); ?>
+                </div>
                 <div class="hidden-xs hidden-sm" id="instant-search-facets-container">
                     <div id="current-refinements"></div>
                 </div>
@@ -22,14 +26,14 @@
                             <div id="instant-search-bar-container">
                                 <div id="instant-search-box">
                                     <div class="instant-search-bar-label">
-                                        <span><?php echo __('Current search') ?></span>
+                                        <span><?php echo $block->escapeHtml(__('Current search')); ?></span>
                                     </div>
                                     <div class="instant-search-bar-wrapper">
                                         <label for="instant-search-bar">
-                                            <?php echo __('Search :'); ?>
+                                            <?php echo $block->escapeHtml(__('Search :')); ?>
                                         </label>
 
-                                        <input placeholder="<?php echo __('Search for products'); ?>"
+                                        <input placeholder="<?php echo $block->escapeHtml(__('Search for products')) ?>"
                                                id="instant-search-bar"
                                                type="text"
                                                autocomplete="off"
@@ -51,7 +55,7 @@
                                 <div class="pull-left" id="algolia-stats"></div>
                                 <div class="pull-right">
                                     <div class="sort-by-label pull-left">
-                                        <?php echo __('SORT BY'); ?>
+                                        <?php echo $block->escapeHtml(__('SORT BY')); ?>
                                     </div>
                                     <div class="pull-left" id="algolia-sorts"></div>
                                 </div>

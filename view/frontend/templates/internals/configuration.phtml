@@ -1,9 +1,4 @@
-<?php
-/**
- * @var \Magento\Framework\View\TemplateEngine\Php $this
- * @var \Algolia\AlgoliaSearch\Block\Configuration $block
- */
-?>
+<?php /** @var \Algolia\AlgoliaSearch\Block\Configuration $block */ ?>
 
 <script>
     <?php
@@ -12,12 +7,12 @@
     ?>
 
         // Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
-        document.write(<?php /* @escapeNotVerified */ echo $css; ?>);
+        document.write(<?php /* @noEscape */ echo $css; ?>);
     <?php
     endif;
     ?>
 
-    window.algoliaConfig = <?php echo json_encode($block->getConfiguration()); ?>;
+    window.algoliaConfig = <?php /* @noEscape */ echo json_encode($block->getConfiguration()); ?>;
 </script>
 
 <!--[if lte IE 9]>

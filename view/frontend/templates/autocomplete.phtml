@@ -8,23 +8,25 @@ $catalogSearchHelper = $block->getCatalogSearchHelper();
 $placeholder = __('Search for products, categories, ...');
 
 /** Render form with autocomplete input **/
-if ($config->isDefaultSelector()): ?>
+if ($config->isDefaultSelector()) : ?>
 <div class="block block-search algolia-search-block">
-    <div class="block block-title"><strong><?php echo __('Search'); ?></strong></div>
+    <div class="block block-title"><strong><?php echo $block->escapeHtml(__('Search')); ?></strong></div>
     <div class="block block-content">
-        <form id="search_mini_form" action="<?php echo $catalogSearchHelper->getResultUrl() ?>" method="get">
+        <form id="search_mini_form"
+              action="<?php echo $block->escapeHtml($catalogSearchHelper->getResultUrl()); ?>"
+              method="get">
             <div id="algolia-searchbox">
-                <label for="search"><?php echo __('Search:') ?></label>
+                <label for="search"><?php echo $block->escapeHtml(__('Search:')); ?></label>
 
                 <input id="search"
                        type="text"
-                       name="<?php echo $catalogSearchHelper->getQueryParamName() ?>"
+                       name="<?php echo $block->escapeHtml($catalogSearchHelper->getQueryParamName()); ?>"
                        class="input-text algolia-search-input"
                        autocomplete="off"
                        spellcheck="false"
                        autocorrect="off"
                        autocapitalize="off"
-                       placeholder="<?php echo $placeholder; ?>" />
+                       placeholder="<?php echo $block->escapeHtml($placeholder); ?>" />
 
                 <span class="clear-cross clear-query-autocomplete"></span>
                 <span id="algolia-glass" class="magnifying-glass" width="24" height="24"></span>

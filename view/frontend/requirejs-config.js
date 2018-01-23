@@ -1,5 +1,5 @@
 var config = {
-    'paths': {
-        'algoliaBundle': 'Algolia_AlgoliaSearch/internals/algoliaBundle.min'
-    }
+	'paths': {
+		'algoliaBundle': 'Algolia_AlgoliaSearch/internals/algoliaBundle.min'
+	}
 };

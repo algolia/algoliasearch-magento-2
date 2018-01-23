@@ -518,6 +518,8 @@ class ProductHelper
                                 null
                             );
 
+                            $customData[$field][$currencyCode]['group_' . $groupId] = $taxPrice;
+
                             $formated = $this->priceCurrency->format(
                                 $customData[$field][$currencyCode]['group_' . $groupId],
                                 false,
@@ -525,8 +527,6 @@ class ProductHelper
                                 $store,
                                 $currencyCode
                             );
-
-                            $customData[$field][$currencyCode]['group_' . $groupId] = $taxPrice;
                             $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $formated;
 
                             if ($customData[$field][$currencyCode]['default'] >

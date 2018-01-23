@@ -8,7 +8,7 @@ use Magento\Framework\Setup\UninstallInterface;
 
 class Uninstall implements UninstallInterface
 {
-    public function uninstall(SchemaSetupInterface $setup)
+    public function uninstall(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
         $setup->startSetup();
         

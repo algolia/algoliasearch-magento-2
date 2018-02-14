@@ -51,5 +51,5 @@ Run the following commands:
 
 - ```$ composer require algolia/algoliasearch-magento-2```
 - ```$ bin/magento module:enable Algolia_AlgoliaSearch```
-- ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
+- ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy -f```
 

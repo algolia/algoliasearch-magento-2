@@ -1,11 +1,11 @@
 var algolia = {
 	allowedHooks: [
-		'modifyAutocompleteSources',
-		'modifyAutocompleteOptions',
-		'algoliaHookBeforeInstantsearchInit',
-		'algoliaHookBeforeWidgetInitialization',
-		'algoliaHookBeforeInstantsearchStart',
-		'algoliaHookAfterInstantsearchStart'
+		'beforeAutocompleteSources',
+		'beforeAutocompleteOptions',
+		'beforeInstantsearchInit',
+		'beforeWidgetInitialization',
+		'beforeInstantsearchStart',
+		'afterInstantsearchStart'
 	],
 	registeredHooks: [],
 	registerHook: function (hookName, callback) {
@@ -13,39 +13,32 @@ var algolia = {
 			throw 'Hook "' + hookName + '" cannot be defined. Please use one of ' + this.allowedHooks.join(', ');
 		}
 		
-		if (this.registeredHooks[hookName] === undefined) {
-			this.registeredHooks[hookName] = [];
+		if (!this.registeredHooks[hookName]) {
+			this.registeredHooks[hookName] = [callback];
+		} else {
+			this.registeredHooks[hookName].push(callback);
 		}
-		
-		this.registeredHooks[hookName].push(callback);
 	},
 	getRegisteredHooks: function(hookName) {
-		if (this.registeredHooks[hookName] === undefined) {
+		if (this.allowedHooks.indexOf(hookName) === -1) {
+			throw 'Hook "' + hookName + '" cannot be defined. Please use one of ' + this.allowedHooks.join(', ');
+		}
+		
+		if (!this.registeredHooks[hookName]) {
 			return [];
 		}
 		
 		return this.registeredHooks[hookName];
 	},
 	triggerHooks: function () {
-		var hookName = arguments[0];
-		delete arguments[0];
+		var hookName = arguments[0],
+			clearedArguments = Array.prototype.slice.call(arguments, 1);
 		
-		var clearedArguments = this.clearArguments(arguments);
-		
-		var registeredHooks = this.getRegisteredHooks(hookName);
-		for (var i = 0; i < registeredHooks.length; i++) {
-			clearedArguments[0] = registeredHooks[i].apply(this, clearedArguments);
-		}
-		
-		return clearedArguments[0];
-	},
-	clearArguments: function(arguments) {
-		var clearArguments = Array.prototype.slice.call(arguments);
-		clearArguments = clearArguments.filter(function (item) {
-			return item !== undefined;
+		this.getRegisteredHooks(hookName).forEach(function(callback) {
+			clearedArguments[0] = callback.apply(this, clearedArguments);
 		});
 		
-		return clearArguments;
+		return clearedArguments[0];
 	}
 };
 

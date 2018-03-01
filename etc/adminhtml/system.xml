@@ -666,22 +666,55 @@
                 </field>
             </group>
         </section>
-        <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Analytics</label>
+        <section id="algoliasearch_cc_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Click Analytics</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Analytics</label>
+            <group id="cc_analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Click Analytics</label>
                 <comment>
                     <![CDATA[
-                        Documentation of Magento analytics: <a href="https://community.algolia.com/magento/doc/m2/analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/analytics/</a>
+                        Click analytics can be tracked only when you're on Business or a higher Algolia plan.
+                        <br><br>
+                        Documentation of click analytics: <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/click-analytics/</a>
                         <br>
                         <br>
                         <hr>
                     ]]>
                 </comment>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Analytics</label>
+                    <label>Enable Click Analytics</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="is_selector" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DOM selector of a result container on instant search page</label>
+                    <comment>
+                        <![CDATA[
+                            The element must contain attributes "data-objectid" and "data-position".
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+        <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Google Analytics</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Google Analytics</label>
+                <comment>
+                    <![CDATA[
+                        Documentation of Magento Google analytics: <a href="https://community.algolia.com/magento/doc/m2/analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/analytics/</a>
+                        <br>
+                        <br>
+                        <hr>
+                    ]]>
+                </comment>
+                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Google Analytics</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="delay" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -38,6 +38,8 @@ class Observer implements ObserverInterface
                     }
 
                     $this->loadPreventBackendRenderingHandle($layout);
+
+                    $this->loadAnalyticsHandle($layout);
                 }
             }
         }
@@ -57,5 +59,14 @@ class Observer implements ObserverInterface
         }
 
         $layout->getUpdate()->addHandle('algolia_search_handle_prevent_backend_rendering');
+    }
+
+    private function loadAnalyticsHandle(Layout $layout)
+    {
+        if ($this->config->isClickConversionAnalyticsEnabled() === false) {
+            return;
+        }
+
+        $layout->getUpdate()->addHandle('algolia_search_handle_click_conversion_analytics');
     }
 }

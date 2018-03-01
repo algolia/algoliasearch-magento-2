@@ -68,10 +68,13 @@ class ConfigHelper
     const ONEWAY_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/oneway_synonyms';
     const SYNONYMS_FILE = 'algoliasearch_synonyms/synonyms_group/synonyms_file';
 
-    const ANALYTICS_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
-    const ANALYTICS_DELAY = 'algoliasearch_analytics/analytics_group/delay';
-    const ANALYTICS_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
-    const ANALYTICS_PUSH_INITIAL_SEARCH = 'algoliasearch_analytics/analytics_group/push_initial_search';
+    const CC_ANALYTICS_ENABLE = 'algoliasearch_cc_analytics/cc_analytics_group/enable';
+    const CC_ANALYTICS_IS_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/is_selector';
+
+    const GA_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
+    const GA_DELAY = 'algoliasearch_analytics/analytics_group/delay';
+    const GA_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
+    const GA_PUSH_INITIAL_SEARCH = 'algoliasearch_analytics/analytics_group/push_initial_search';
 
     const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/advanced/number_of_element_by_page';
     const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
@@ -842,23 +845,33 @@ class ConfigHelper
         return $baseDirectory . '/algoliasearch_admin_config_uploads/' . $filename;
     }
 
+    public function isClickConversionAnalyticsEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::CC_ANALYTICS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getClickConversionAnalyticsISSelector($storeId = null)
+    {
+        return $this->configInterface->getValue(self::CC_ANALYTICS_IS_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
     public function isAnalyticsEnabled($storeId = null)
     {
-        return $this->configInterface->isSetFlag(self::ANALYTICS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::GA_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getAnalyticsConfig($storeId = null)
     {
         return [
             'enabled' => $this->isAnalyticsEnabled(),
-            'delay' => $this->configInterface->getValue(self::ANALYTICS_DELAY, ScopeInterface::SCOPE_STORE, $storeId),
+            'delay' => $this->configInterface->getValue(self::GA_DELAY, ScopeInterface::SCOPE_STORE, $storeId),
             'triggerOnUiInteraction' => $this->configInterface->getValue(
-                self::ANALYTICS_TRIGGER_ON_UI_INTERACTION,
+                self::GA_TRIGGER_ON_UI_INTERACTION,
                 ScopeInterface::SCOPE_STORE,
                 $storeId
             ),
             'pushInitialSearch' => $this->configInterface->getValue(
-                self::ANALYTICS_PUSH_INITIAL_SEARCH,
+                self::GA_PUSH_INITIAL_SEARCH,
                 ScopeInterface::SCOPE_STORE,
                 $storeId
             ),

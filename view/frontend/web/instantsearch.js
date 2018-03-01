@@ -278,6 +278,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 						
 						hit.algoliaConfig = window.algoliaConfig;
 						
+						hit.__position = hit.__hitIndex + 1;
+						
 						return hit;
 					}
 				},
@@ -303,6 +305,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 						hit.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
 						
 						hit.algoliaConfig = window.algoliaConfig;
+						
+						hit.__position = hit.__hitIndex + 1;
 						
 						return hit;
 					}

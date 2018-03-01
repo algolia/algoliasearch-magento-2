@@ -88,6 +88,9 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 		}
 		
+		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions);
+		
+		// Keep for backward compatibility
 		if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
 			instantsearchOptions = algoliaHookBeforeInstantsearchInit(instantsearchOptions);
 		}
@@ -487,6 +490,9 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
             };
         }
 		
+		allWidgetConfiguration = algolia.triggerHooks('beforeWidgetInitialization', allWidgetConfiguration);
+  
+		// Keep for backward compatibility
 		if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
 			allWidgetConfiguration = algoliaHookBeforeWidgetInitialization(allWidgetConfiguration);
 		}
@@ -507,12 +513,18 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				return;
 			}
 			
+			search = algolia.triggerHooks('beforeInstantsearchStart', search);
+			
+			// Keep for backward compatibility
 			if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
 				search = algoliaHookBeforeInstantsearchStart(search);
 			}
 			
 			search.start();
 			
+			search = algolia.triggerHooks('afterInstantsearchStart', search);
+			
+			// Keep for backward compatibility
 			if (typeof algoliaHookAfterInstantsearchStart === 'function') {
 				search = algoliaHookAfterInstantsearchStart(search);
 			}

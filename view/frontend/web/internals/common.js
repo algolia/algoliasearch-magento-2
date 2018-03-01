@@ -1,18 +1,51 @@
-var algoliaExtentension = {
+var algolia = {
+	allowedHooks: [
+		'modifyAutocompleteSources',
+		'modifyAutocompleteOptions',
+		'algoliaHookBeforeInstantsearchInit',
+		'algoliaHookBeforeWidgetInitialization',
+		'algoliaHookBeforeInstantsearchStart',
+		'algoliaHookAfterInstantsearchStart'
+	],
 	registeredHooks: [],
 	registerHook: function (hookName, callback) {
-		if (typeof this.registeredHooks[hookName] === 'undefined') {
+		if (this.allowedHooks.indexOf(hookName) === -1) {
+			throw 'Hook "' + hookName + '" cannot be defined. Please use one of ' + this.allowedHooks.join(', ');
+		}
+		
+		if (this.registeredHooks[hookName] === undefined) {
 			this.registeredHooks[hookName] = [];
 		}
 		
 		this.registeredHooks[hookName].push(callback);
 	},
 	getRegisteredHooks: function(hookName) {
-		if (typeof this.registeredHooks[hookName] === 'undefined') {
+		if (this.registeredHooks[hookName] === undefined) {
 			return [];
 		}
 		
 		return this.registeredHooks[hookName];
+	},
+	triggerHooks: function () {
+		var hookName = arguments[0];
+		delete arguments[0];
+		
+		var clearedArguments = this.clearArguments(arguments);
+		
+		var registeredHooks = this.getRegisteredHooks(hookName);
+		for (var i = 0; i < registeredHooks.length; i++) {
+			clearedArguments[0] = registeredHooks[i].apply(this, clearedArguments);
+		}
+		
+		return clearedArguments[0];
+	},
+	clearArguments: function(arguments) {
+		var clearArguments = Array.prototype.slice.call(arguments);
+		clearArguments = clearArguments.filter(function (item) {
+			return item !== undefined;
+		});
+		
+		return clearArguments;
 	}
 };
 

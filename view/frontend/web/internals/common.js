@@ -1,3 +1,21 @@
+var algoliaExtentension = {
+	registeredHooks: [],
+	registerHook: function (hookName, callback) {
+		if (typeof this.registeredHooks[hookName] === 'undefined') {
+			this.registeredHooks[hookName] = [];
+		}
+		
+		this.registeredHooks[hookName].push(callback);
+	},
+	getRegisteredHooks: function(hookName) {
+		if (typeof this.registeredHooks[hookName] === 'undefined') {
+			return [];
+		}
+		
+		return this.registeredHooks[hookName];
+	}
+};
+
 requirejs(['algoliaBundle'], function(algoliaBundle) {
 	algoliaBundle.$(function ($) {
 		window.isMobile = function() {

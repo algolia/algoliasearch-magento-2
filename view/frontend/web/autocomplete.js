@@ -81,6 +81,16 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				options.templates.footer = '<div class="footer_algolia"><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="Search by Algolia" target="_blank"><img src="' +algoliaConfig.urls.logo + '"  alt="Search by Algolia" /></a></div>';
 			}
 			
+			
+			var registeredHooks = algoliaExtentension.getRegisteredHooks('algoliaHookBeforeAutocompleteStart');
+			$.each(registeredHooks, function(index, callback) {
+				hookResult = callback(sources, options);
+				
+				sources = hookResult.shift();
+				options = hookResult.shift();
+			});
+			
+			// Keep for backward compatibility
 			if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
 				var hookResult = algoliaHookBeforeAutocompleteStart(sources, options);
 				

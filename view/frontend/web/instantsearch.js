@@ -88,6 +88,9 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 		}
 		
+		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions);
+		
+		// Keep for backward compatibility
 		if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
 			instantsearchOptions = algoliaHookBeforeInstantsearchInit(instantsearchOptions);
 		}
@@ -466,27 +469,30 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 		});
 
-        if (algoliaConfig.analytics.enabled) {
-            if (typeof algoliaAnalyticsPushFunction != 'function') {
-                var algoliaAnalyticsPushFunction = function (formattedParameters, state, results) {
-                    var trackedUrl = '/catalogsearch/result/?q=' + state.query + '&' + formattedParameters + '&numberOfHits=' + results.nbHits;
+		if (algoliaConfig.analytics.enabled) {
+			if (typeof algoliaAnalyticsPushFunction != 'function') {
+				var algoliaAnalyticsPushFunction = function (formattedParameters, state, results) {
+					var trackedUrl = '/catalogsearch/result/?q=' + state.query + '&' + formattedParameters + '&numberOfHits=' + results.nbHits;
 
-                    // Universal Analytics
-                    if (typeof window.ga != 'undefined') {
-                        window.ga('set', 'page', trackedUrl);
-                        window.ga('send', 'pageView');
-                    }
-                };
-            }
+					// Universal Analytics
+					if (typeof window.ga != 'undefined') {
+						window.ga('set', 'page', trackedUrl);
+						window.ga('send', 'pageView');
+					}
+				};
+			}
 
-            allWidgetConfiguration['analytics'] = {
-                pushFunction: algoliaAnalyticsPushFunction,
-                delay: algoliaConfig.analytics.delay,
-                triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
-                pushInitialSearch: algoliaConfig.analytics.pushInitialSearch
-            };
-        }
+			allWidgetConfiguration['analytics'] = {
+				pushFunction: algoliaAnalyticsPushFunction,
+				delay: algoliaConfig.analytics.delay,
+				triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
+				pushInitialSearch: algoliaConfig.analytics.pushInitialSearch
+			};
+		}
 		
+		allWidgetConfiguration = algolia.triggerHooks('beforeWidgetInitialization', allWidgetConfiguration);
+  
+		// Keep for backward compatibility
 		if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
 			allWidgetConfiguration = algoliaHookBeforeWidgetInitialization(allWidgetConfiguration);
 		}
@@ -507,12 +513,18 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				return;
 			}
 			
+			search = algolia.triggerHooks('beforeInstantsearchStart', search);
+			
+			// Keep for backward compatibility
 			if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
 				search = algoliaHookBeforeInstantsearchStart(search);
 			}
 			
 			search.start();
 			
+			search = algolia.triggerHooks('afterInstantsearchStart', search);
+			
+			// Keep for backward compatibility
 			if (typeof algoliaHookAfterInstantsearchStart === 'function') {
 				search = algoliaHookAfterInstantsearchStart(search);
 			}

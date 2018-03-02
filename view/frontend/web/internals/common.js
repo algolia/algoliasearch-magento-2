@@ -32,13 +32,15 @@ var algolia = {
 	},
 	triggerHooks: function () {
 		var hookName = arguments[0],
-			clearedArguments = Array.prototype.slice.call(arguments, 1);
+			originalData = arguments[1],
+			hookArguments = Array.prototype.slice.call(arguments, 2);
 		
-		this.getRegisteredHooks(hookName).forEach(function(callback) {
-			clearedArguments[0] = callback.apply(this, clearedArguments);
-		});
+		var data = this.getRegisteredHooks(hookName).reduce(function(currentData, hook) {
+			var allParameters = [].concat(currentData).concat(hookArguments);
+			return hook.apply(null, allParameters);
+		}, originalData);
 		
-		return clearedArguments[0];
+		return data;
 	}
 };
 

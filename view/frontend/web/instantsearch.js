@@ -20,6 +20,12 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			$(algoliaConfig.instant.selector).find('#algolia-autocomplete-container').remove();
 		}
 		
+		/** BC of old hooks **/
+		registerHook('beforeInstantsearchInit', algoliaHookBeforeInstantsearchInit);
+		registerHook('beforeWidgetInitialization', algoliaHookBeforeWidgetInitialization);
+		registerHook('beforeInstantsearchStart', algoliaHookBeforeInstantsearchStart);
+		registerHook('afterInstantsearchStart', algoliaHookAfterInstantsearchStart);
+		
 		/**
 		 * Setup wrapper
 		 *
@@ -89,11 +95,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		}
 		
 		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions);
-		
-		// Keep for backward compatibility
-		if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
-			instantsearchOptions = algoliaHookBeforeInstantsearchInit(instantsearchOptions);
-		}
 		
 		var search = algoliaBundle.instantsearch(instantsearchOptions);
 		
@@ -491,11 +492,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		}
 		
 		allWidgetConfiguration = algolia.triggerHooks('beforeWidgetInitialization', allWidgetConfiguration);
-  
-		// Keep for backward compatibility
-		if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
-			allWidgetConfiguration = algoliaHookBeforeWidgetInitialization(allWidgetConfiguration);
-		}
 		
 		$.each(allWidgetConfiguration, function (widgetType, widgetConfig) {
 			if (Array.isArray(widgetConfig) === true) {
@@ -515,19 +511,9 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			
 			search = algolia.triggerHooks('beforeInstantsearchStart', search);
 			
-			// Keep for backward compatibility
-			if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
-				search = algoliaHookBeforeInstantsearchStart(search);
-			}
-			
 			search.start();
 			
 			search = algolia.triggerHooks('afterInstantsearchStart', search);
-			
-			// Keep for backward compatibility
-			if (typeof algoliaHookAfterInstantsearchStart === 'function') {
-				search = algoliaHookAfterInstantsearchStart(search);
-			}
 			
 			var instant_search_bar = $(instant_selector);
 			if (instant_search_bar.is(":focus") === false) {

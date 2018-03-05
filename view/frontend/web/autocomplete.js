@@ -86,6 +86,10 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			
 			// Keep for backward compatibility
 			if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
+				console.warn('Deprecated! You are using an old API for Algolia\'s front end hooks. ' +
+					'Please, replace your hook method with new hook API. ' +
+					'More information you can find on https://community.algolia.com/magento/doc/m2/frontend-events/');
+				
 				var hookResult = algoliaHookBeforeAutocompleteStart(sources, options, algolia_client);
 				
 				sources = hookResult.shift();

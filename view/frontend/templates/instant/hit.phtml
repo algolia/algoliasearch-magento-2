@@ -11,7 +11,7 @@ $origFormatedVar = 'price' . $priceKey . '_original_formated';
 <script type="text/template" id="instant-hit-template">
     <div class="col-md-4 col-sm-6">
         <div class="result-wrapper">
-            <a href="{{url}}" class="result">
+            <a href="{{url}}" class="result" data-objectid="{{objectID}}" data-position="{{__position}}">
                 <div class="result-content">
                     <div class="result-thumbnail">
                         {{#image_url}}<img src="{{{ image_url }}}" />{{/image_url}}

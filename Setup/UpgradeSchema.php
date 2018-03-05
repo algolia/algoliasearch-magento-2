@@ -55,6 +55,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_queue/queue/number_of_job_to_run' => '10',
         'algoliasearch_queue/queue/number_of_retries' => '3',
 
+        'algoliasearch_cc_analytics/cc_analytics_group/enable' => '0',
+        'algoliasearch_cc_analytics/cc_analytics_group/is_selector' => '.ais-hits--item a.result',
+
         'algoliasearch_analytics/analytics_group/enable' => '0',
         'algoliasearch_analytics/analytics_group/delay' => '3000',
         'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction' => '1',

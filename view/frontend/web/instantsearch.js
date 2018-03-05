@@ -279,6 +279,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 						
 						hit.algoliaConfig = window.algoliaConfig;
 						
+						hit.__position = hit.__hitIndex + 1;
+						
 						return hit;
 					}
 				},
@@ -304,6 +306,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 						hit.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
 						
 						hit.algoliaConfig = window.algoliaConfig;
+						
+						hit.__position = hit.__hitIndex + 1;
 						
 						return hit;
 					}
@@ -469,8 +473,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				allWidgetConfiguration[widgetType].push(widgetConfig);
 			}
 		});
-
-		if (algoliaConfig.analytics.enabled) {
+    
+    if (algoliaConfig.analytics.enabled) {
 			if (typeof algoliaAnalyticsPushFunction != 'function') {
 				var algoliaAnalyticsPushFunction = function (formattedParameters, state, results) {
 					var trackedUrl = '/catalogsearch/result/?q=' + state.query + '&' + formattedParameters + '&numberOfHits=' + results.nbHits;

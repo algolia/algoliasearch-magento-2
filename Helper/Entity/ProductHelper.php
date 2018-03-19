@@ -184,7 +184,7 @@ class ProductHelper extends BaseHelper
             ->addAttributeToSelect('special_from_date')
             ->addAttributeToSelect('special_to_date')
             ->addAttributeToSelect('visibility')
-            ->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
+            ->addAttributeToSelect('status');
 
         $additionalAttr = $this->getAdditionalAttributes($storeId);
 

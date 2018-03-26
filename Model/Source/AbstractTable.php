@@ -21,12 +21,14 @@ abstract class AbstractTable extends AbstractFieldArray
 
     abstract protected function getTableData();
 
-    public function __construct(Context $context,
-                                ProductHelper $producthelper,
-                                CategoryHelper $categoryHelper,
-                                ConfigHelper $configHelper,
-                                array $data = [])
-    {
+    public function __construct(
+        Context $context,
+        ProductHelper $producthelper,
+        CategoryHelper $categoryHelper,
+        ConfigHelper $configHelper,
+        array $data = []
+    ) {
+    
         $this->config = $configHelper;
         $this->productHelper = $producthelper;
         $this->categoryHelper = $categoryHelper;
@@ -37,7 +39,11 @@ abstract class AbstractTable extends AbstractFieldArray
     protected function getRenderer($columnId, $columnData)
     {
         if (!array_key_exists($columnId, $this->selectFields) || !$this->selectFields[$columnId]) {
-            $select = $this->getLayout()->createBlock('Algolia\AlgoliaSearch\Block\System\Form\Field\Select', '', ['data' => ['is_render_to_js_template' => true]]);
+            /** @var \Algolia\AlgoliaSearch\Block\System\Form\Field\Select $select */
+            $select = $this->getLayout()
+                           ->createBlock('Algolia\AlgoliaSearch\Block\System\Form\Field\Select', '', [
+                               'data' => ['is_render_to_js_template' => true]
+                           ]);
 
             $options = $columnData['values'];
 
@@ -46,7 +52,7 @@ abstract class AbstractTable extends AbstractFieldArray
             }
 
             $extraParams = $columnId === 'attribute' ? 'style="width:160px;"' : 'style="width:100px;"';
-            $select->setExtraParams($extraParams);
+            $select->setData('extra_params', $extraParams);
             $select->setOptions($options);
 
             $this->selectFields[$columnId] = $select;
@@ -93,7 +99,10 @@ abstract class AbstractTable extends AbstractFieldArray
             $columnData = $data[$columnId];
 
             if (isset($columnData['values'])) {
-                $options['option_' . $this->getRenderer($columnId, $columnData)->calcOptionHash($row->getData($columnId))] = 'selected="selected"';
+                $index = 'option_' . $this->getRenderer($columnId, $columnData)
+                                          ->calcOptionHash($row->getData($columnId));
+
+                $options[$index] = 'selected="selected"';
             }
         }
 

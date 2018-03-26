@@ -25,7 +25,7 @@
         </description>
     </indexer>
     <indexer id="algolia_additional_sections" view_id="algolia_additional_sections" class="Algolia\AlgoliaSearch\Model\Indexer\AdditionalSection">
-        <title translate="true">Algolia Search Suggestions</title>
+        <title translate="true">Algolia Additional Sections</title>
         <description translate="true">
             Rebuild additional sections index.
         </description>
@@ -34,6 +34,13 @@
         <title translate="true">Algolia Search Queue Runner</title>
         <description translate="true">
             Processes the indexing queue if enabled. This allows to run jobs in the indexing queues.
+        </description>
+    </indexer>
+    <indexer id="algolia_delete_products" view_id="algolia_delete_products" class="Algolia\AlgoliaSearch\Model\Indexer\DeleteProduct">
+        <title translate="true">Algolia Search - Delete inactive products</title>
+        <description translate="true">
+            Removes inactive / deleted products from Algolia.
+            Run it only when you want to remove inactive / deleted products from Algolia.
         </description>
     </indexer>
 </config>

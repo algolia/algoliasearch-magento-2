@@ -1,0 +1,11 @@
+parameters:
+	excludes_analyse:
+		- %currentWorkingDirectory%/vendor/algolia/algoliasearch-magento-2/Test
+	autoload_files:
+		- %currentWorkingDirectory%/vendor/autoload.php
+		- %currentWorkingDirectory%/dev/tests/integration/framework/autoload.php
+		- %currentWorkingDirectory%/app/functions.php
+	ignoreErrors:
+		- '#Parameter \#1 \$callback of method Magento\\Framework\\Model\\ResourceModel\\AbstractResource::addCommitCallback\(\) expects array, Closure given.#' # Wrong typehint in Magento 2.0.x
+		- '#Parameter \#1 \$requestPath of method Magento\\Catalog\\Model\\Product::setRequestPath\(\) expects string, false given.#' # Wrong typehint in Magento
+		- '#Parameter \$resultJsonFactory of method Algolia\\AlgoliaSearch\\Controller\\Adminhtml\\Queue::\_\_construct\(\) has invalid typehint type Magento\\Framework\\Controller\\Result\\JsonFactory.#' # class doesn't officialy exists in Magento 2.0.x

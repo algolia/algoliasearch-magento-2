@@ -12,14 +12,14 @@ class SortOrderProduct extends AbstractTable
             'attribute' => [
                 'label'  => 'Attribute',
                 'values' => function () use ($productHelper) {
-                    $aOptions = [];
+                    $options = [];
                     $attributes = $productHelper->getAllAttributes();
 
                     foreach ($attributes as $key => $label) {
-                        $aOptions[$key] = $key ? $key : $label;
+                        $options[$key] = $key ? $key : $label;
                     }
 
-                    return $aOptions;
+                    return $options;
                 },
             ],
             'searchable' => [

@@ -8,6 +8,8 @@
     </view>
     <view id="algolia_queue_runner" class="Algolia\AlgoliaSearch\Model\Indexer\QueueRunner" group="indexer">
     </view>
+    <view id="algolia_delete_products" class="Algolia\AlgoliaSearch\Model\Indexer\DeleteProduct" group="indexer">
+    </view>
     <view id="algolia_categories" class="Algolia\AlgoliaSearch\Model\Indexer\Category" group="indexer">
         <subscriptions>
             <table name="catalog_category_entity" entity_column="entity_id" />
@@ -32,6 +34,7 @@
             <table name="catalog_product_entity_varchar" entity_column="entity_id" />
             <table name="catalog_product_website" entity_column="product_id" />
             <table name="catalog_category_product" entity_column="product_id" />
+            <table name="cataloginventory_stock_item" entity_column="product_id" />
         </subscriptions>
     </view>
 </config>

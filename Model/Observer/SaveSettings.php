@@ -9,8 +9,8 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class SaveSettings implements ObserverInterface
 {
-    protected $helper;
-    protected $storeManager;
+    private $helper;
+    private $storeManager;
 
     public function __construct(StoreManagerInterface $storeManager, Data $helper)
     {

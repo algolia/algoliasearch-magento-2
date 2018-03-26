@@ -23,10 +23,10 @@ class CategoriesIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_categories', array('3'));
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_categories', ['3']);
         $hit = reset($results['results']);
 
-        $defaultAttributes = array(
+        $defaultAttributes = [
             'objectID',
             'name',
             'url',
@@ -37,7 +37,7 @@ class CategoriesIndexingTest extends IndexingTestCase
             'popularity',
             'algoliaLastUpdateAtCET',
             'product_count',
-        );
+        ];
 
         foreach ($defaultAttributes as $key => $attribute) {
             $this->assertTrue(key_exists($attribute, $hit), 'Category attribute "'.$attribute.'" should be indexed but it is not"');

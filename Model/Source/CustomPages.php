@@ -16,9 +16,9 @@ class CustomPages extends AbstractTable
                 'label'  => 'Page',
                 'values' => function () use ($pageCollection) {
                     $options = [];
-                    $magento_pages = $pageCollection->addFieldToFilter('is_active', 1);
+                    $magentoPages = $pageCollection->addFieldToFilter('is_active', 1);
 
-                    foreach ($magento_pages as $page) {
+                    foreach ($magentoPages as $page) {
                         $options[$page->getData('identifier')] = $page->getData('identifier');
                     }
 

@@ -7,24 +7,25 @@ use Psr\Log\LoggerInterface;
 
 class Logger
 {
-    protected $enabled;
-    protected $config;
-    protected $timers = [];
-    protected $stores = [];
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
+    private $enabled;
+    private $config;
+    private $logger;
 
-    public function __construct(StoreManagerInterface $storeManager, ConfigHelper $configHelper, LoggerInterface $logger)
-    {
+    private $timers = [];
+    private $stores = [];
+
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        ConfigHelper $configHelper,
+        LoggerInterface $logger
+    ) {
         $this->config = $configHelper;
         $this->enabled = $this->config->isLoggingEnabled();
+        $this->logger = $logger;
 
         foreach ($storeManager->getStores() as $store) {
             $this->stores[$store->getId()] = $store->getName();
         }
-        $this->logger = $logger;
     }
 
     public function isEnable()
@@ -43,7 +44,7 @@ class Logger
 
     public function start($action)
     {
-        if ($this->enabled == false) {
+        if ($this->enabled === false) {
             return;
         }
 
@@ -55,7 +56,7 @@ class Logger
 
     public function stop($action)
     {
-        if ($this->enabled == false) {
+        if ($this->enabled === false) {
             return;
         }
 
@@ -68,12 +69,12 @@ class Logger
 
     public function log($message)
     {
-        if ($this->config->isLoggingEnabled()) {
+        if ($this->enabled) {
             $this->logger->info($message);
         }
     }
 
-    protected function formatTime($begin, $end)
+    private function formatTime($begin, $end)
     {
         return ($end - $begin) . 'sec';
     }

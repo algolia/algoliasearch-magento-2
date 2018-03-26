@@ -120,6 +120,17 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="use_adaptive_image" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Replace default image by matching variation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            E.g. When a customer searches for a "blue dress", Algolia will display the image associated with the blue variation instead of the default picture.
+                            The same happens when a customer refines products by any color.
+                            <br /><br />If a customer searches for "blue dress" and refines by "red" color, Algolia will display images for red (refined) color.
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_autocomplete" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -145,7 +156,8 @@
                     <label>Number of products</label>
                     <comment>
                         <![CDATA[
-                            The number of products (>=1) suggested in the autocomplete dropdown. Default value is 6
+                            The number of products suggested in the autocomplete dropdown. Default value is 6.<br>
+                            Set 0 to disable the products section.
                         ]]>
                     </comment>
                 </field>
@@ -154,7 +166,8 @@
                     <label>Number of categories</label>
                     <comment>
                         <![CDATA[
-                            The number of categories (>=1) suggested in the autocomplete dropdown. Default value is 2
+                            The number of categories suggested in the autocomplete dropdown. Default value is 2.<br>
+                            Set 0 to disable the categories section.
                         ]]>
                     </comment>
                 </field>
@@ -163,7 +176,8 @@
                     <label>Number of queries</label>
                     <comment>
                         <![CDATA[
-                            The number of queries suggestions (0 to disabled it) suggested in the autocomplete dropdown. Default value is 0
+                            The number of queries suggestions suggested in the autocomplete dropdown. Default value is 0.<br>
+                            Set 0 to disable the query suggestion section.
                         ]]>
                     </comment>
                 </field>
@@ -265,7 +279,11 @@
                             Configure here the filtering options you want to display on your search results page.
                             Choose Disjunctive to allow the selection of different values of a facet (e.g. hotels with 4 OR 5 stars).
                             Choose Conjunctive to allow the selection of only one value of a facet (e.g. only "Size M").
-                            <br>
+                            <br><br>
+                            Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
+                            <br><br>
+                            Create a Query rule for facet when you want Algolia to automatically filter on a facet when a user searches for its value in query. It means when you create a Query rule for "color" facet and user is searching for query "red shorts", Algolia will internally filter results for color "red" and search only for query "shorts". It leads to more relevant users. This query rule is applied for both autocomplete and instant search results. Query rules can be used only when you are on Business or higher plan.
+                            <br><br>
                             Facets' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets">https://community.algolia.com/magento/doc/m2/indexing/#facets</a>
                         ]]>
                     </comment>
@@ -318,6 +336,15 @@
                     <comment>
                         <![CDATA[
                             Choose here if you want to add an "add to cart" button in the template.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="infinite_scroll_enable" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Infinite Scrolling?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            This will display a show more button to load more results instead of traditional pagination.
                         ]]>
                     </comment>
                 </field>
@@ -447,6 +474,15 @@
                     <comment>
                         <![CDATA[
                             If set to Yes, Algolia will display all categories in both the autocomplete menu and instant search page ignoring the setting: "Include in navigation menu". Default value: No
+                        ]]>
+                    </comment>
+                </field>
+                <field id="index_empty_categories" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Index empty categories?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If set to Yes, Algolia will display all categories in both the autocomplete menu and instant search page ignoring if they contain products or not. Default value: No
                         ]]>
                     </comment>
                 </field>
@@ -632,22 +668,55 @@
                 </field>
             </group>
         </section>
-        <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Analytics</label>
+        <section id="algoliasearch_cc_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Click Analytics</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
-            <group id="analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Analytics</label>
+            <group id="cc_analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Click Analytics</label>
                 <comment>
                     <![CDATA[
-                        Documentation of Magento analytics: <a href="https://community.algolia.com/magento/doc/m2/analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/analytics/</a>
+                        Click analytics can be tracked only when you're on Business or a higher Algolia plan.
+                        <br><br>
+                        Documentation of click analytics: <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/click-analytics/</a>
                         <br>
                         <br>
                         <hr>
                     ]]>
                 </comment>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Analytics</label>
+                    <label>Enable Click Analytics</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="is_selector" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DOM selector of a result container on instant search page</label>
+                    <comment>
+                        <![CDATA[
+                            The element must contain attributes "data-objectid" and "data-position".
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+        <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Google Analytics</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Google Analytics</label>
+                <comment>
+                    <![CDATA[
+                        Documentation of Magento Google analytics: <a href="https://community.algolia.com/magento/doc/m2/analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/analytics/</a>
+                        <br>
+                        <br>
+                        <hr>
+                    ]]>
+                </comment>
+                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Google Analytics</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="delay" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -783,6 +852,32 @@
                             By default the feature is turned on.
                         ]]>
                     </comment>
+                </field>
+                <field id="prevent_backend_rendering" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Prevent backend rendering?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            <span class="algolia-config-warning">&#9888;</span>
+                            By preventing your store from backend rendering you might break your SEO and accessibility of your store by search crawlers. Please, read documentation before you turn the backend rendering off:
+                            <a target="_blank" href="https://community.algolia.com/magento/doc/m2/prevent-backend-rendering/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Prevent Backend Rendering documentation</a>
+                        ]]>
+                    </comment>
+                </field>
+                <field id="prevent_backend_rendering_display_mode" translate="label comment" type="select" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Prevent backend rendering for:</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\BackendRenderingDisplayMode</source_model>
+                </field>
+                <field id="backend_rendering_allowed_user_agents" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Allow backend rendering for User Agents:</label>
+                    <comment>
+                        <![CDATA[
+                            To specify multiple User-Agents, please put one User-Agent per line.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="prevent_backend_rendering">1</field>
+                    </depends>
                 </field>
             </group>
         </section>

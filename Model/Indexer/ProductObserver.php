@@ -2,7 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Magento\Catalog\Model\Product\Action;
 use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Framework\Model\AbstractModel;
 
 class ProductObserver
 {
@@ -16,7 +18,7 @@ class ProductObserver
     public function aroundSave(
         \Magento\Catalog\Model\ResourceModel\Product $productResource,
         \Closure $proceed,
-        \Magento\Framework\Model\AbstractModel $product
+        AbstractModel $product
     ) {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
@@ -30,7 +32,7 @@ class ProductObserver
     public function aroundDelete(
         \Magento\Catalog\Model\ResourceModel\Product $productResource,
         \Closure $proceed,
-        \Magento\Framework\Model\AbstractModel $product
+        AbstractModel $product
     ) {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
@@ -42,7 +44,7 @@ class ProductObserver
     }
 
     public function aroundUpdateAttributes(
-        \Magento\Catalog\Model\Product\Action $subject,
+        Action $subject,
         \Closure $closure,
         array $productIds,
         array $attrData,
@@ -57,7 +59,7 @@ class ProductObserver
     }
 
     public function aroundUpdateWebsites(
-        \Magento\Catalog\Model\Product\Action $subject,
+        Action $subject,
         \Closure $closure,
         array $productIds,
         array $websiteIds,

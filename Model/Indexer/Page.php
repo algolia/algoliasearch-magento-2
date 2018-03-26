@@ -49,8 +49,11 @@ class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framewo
 
     public function executeFull()
     {
-        if (!$this->configHelper->getApplicationID() || !$this->configHelper->getAPIKey() || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed: 
+                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 
             if (php_sapi_name() === 'cli') {
                 $this->output->writeln($errorMessage);
@@ -63,14 +66,13 @@ class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framewo
             return;
         }
 
-        $storeIds = [];
-        foreach ($this->storeManager->getStores() as $store) {
-            if ($store->isActive()) {
-                $storeIds[] = $store->getId();
-            }
-        }
+        $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
+            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+                continue;
+            }
+
             if ($this->isPagesInAdditionalSections($storeId)) {
                 $this->queue->addToQueue($this->fullAction, 'rebuildStorePageIndex', ['store_id' => $storeId], 1);
             }

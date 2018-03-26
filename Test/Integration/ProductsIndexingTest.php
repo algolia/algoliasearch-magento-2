@@ -46,10 +46,10 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', array('994'));
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', ['994']);
         $hit = reset($results['results']);
 
-        $defaultAttributes = array(
+        $defaultAttributes = [
             'objectID',
             'name',
             'url',
@@ -63,7 +63,7 @@ class ProductsIndexingTest extends IndexingTestCase
             'price',
             'type_id',
             'algoliaLastUpdateAtCET',
-        );
+        ];
 
         foreach ($defaultAttributes as $key => $attribute) {
             $this->assertArrayHasKey($attribute, $hit, 'Products attribute "'.$attribute.'" should be indexed but it is not"');
@@ -92,7 +92,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', array('994'));
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', ['994']);
         $hit = reset($results['results']);
 
         $this->assertStringStartsWith('//', $hit['image_url']);

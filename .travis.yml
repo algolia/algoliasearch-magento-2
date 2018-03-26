@@ -20,6 +20,7 @@ cache:
 
 before_install:
   - mysql -e 'CREATE DATABASE magento20;'
+  - composer global require phpstan/phpstan
 
 install:
   # create auth.json to be able to install Magento store
@@ -52,5 +53,9 @@ install:
   # set the right tests config for DB and administration
   - mv $TRAVIS_BUILD_DIR/dev/tests/install-config-mysql.php $HOME/magento20/dev/tests/integration/etc/install-config-mysql.php
 
+before_script:
+  - wget https://alg.li/algolia-keys && chmod +x algolia-keys
+
 script:
-  - cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+  - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
+  - eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

@@ -2,43 +2,45 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Algolia\AlgoliaSearch\Helper\Image;
+use AlgoliaSearch\Index;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
 use Magento\Directory\Model\Currency;
-use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
-use Magento\Framework\Pricing\PriceCurrencyInterface;
-use Magento\Tax\Model\Config as TaxConfig;
+use Magento\Store\Model\Store;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
-use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
-use Magento\CatalogRule\Model\ResourceModel\Rule;
-use Magento\Cms\Model\Template\FilterProvider;
-use Magento\Directory\Helper\Data as CurrencyDirectory;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Tax\Helper\Data;
+use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
-class ProductHelper extends BaseHelper
+class ProductHelper
 {
-    /**
-     * @var Image $imageHelper
-     */
-    protected $imageHelper;
+    private $eavConfig;
+    private $configHelper;
+    private $algoliaHelper;
+    private $logger;
+    private $storeManager;
+    private $eventManager;
+    private $visibility;
+    private $stockHelper;
+    private $stockRegistry;
+    private $objectManager;
+    private $currencyManager;
+    private $categoryHelper;
+    private $priceManager;
+    private $imageHelper;
 
-    protected static $_productAttributes;
-    protected static $_currencies;
-    protected static $debug = 0;
+    private $productAttributes;
 
-    protected static $_predefinedProductAttributes = [
+    private $predefinedProductAttributes = [
         'name',
         'url_key',
         'image',
@@ -47,7 +49,7 @@ class ProductHelper extends BaseHelper
         'msrp_enabled', // Needed to handle MSRP behavior
     ];
 
-    protected static $createdAttributes = [
+    private $createdAttributes = [
         'path',
         'categories',
         'categories_without_path',
@@ -67,43 +69,46 @@ class ProductHelper extends BaseHelper
         StoreManagerInterface $storeManager,
         ManagerInterface $eventManager,
         Visibility $visibility,
-        Stock $stock,
-        Data $taxHelper,
+        Stock $stockHelper,
         StockRegistryInterface $stockRegistry,
-        CurrencyDirectory $currencyDirectory,
-        CurrencyHelper $currencyHelper,
         ObjectManagerInterface $objectManager,
-        CatalogHelper $catalogHelper,
-        ResourceConnection $queryResource,
         CurrencyHelper $currencyManager,
-        FilterProvider $filterProvider,
-        PriceCurrencyInterface $priceCurrency,
-        Rule $rule,
-        ConfigCache $cache
+        CategoryHelper $categoryHelper,
+        PriceManager $priceManager
     ) {
-        parent::__construct($eavConfig, $configHelper, $algoliaHelper, $logger, $storeManager,
-            $eventManager, $visibility, $stock, $taxHelper, $stockRegistry, $currencyDirectory,
-            $currencyHelper, $objectManager, $catalogHelper, $queryResource, $currencyManager,
-            $filterProvider, $priceCurrency, $rule, $cache);
+        $this->eavConfig = $eavConfig;
+        $this->configHelper = $configHelper;
+        $this->algoliaHelper = $algoliaHelper;
+        $this->logger = $logger;
+        $this->storeManager = $storeManager;
+        $this->eventManager = $eventManager;
+        $this->visibility = $visibility;
+        $this->stockHelper = $stockHelper;
+        $this->stockRegistry = $stockRegistry;
+        $this->objectManager = $objectManager;
+        $this->currencyManager = $currencyManager;
+        $this->categoryHelper = $categoryHelper;
+        $this->priceManager = $priceManager;
 
         $this->imageHelper = $this->objectManager->create(
             'Algolia\AlgoliaSearch\Helper\Image',
             [
                 'options' =>[
-                    'shouldRemovePubDir' => $this->config->shouldRemovePubDirectory(),
+                    'shouldRemovePubDir' => $this->configHelper->shouldRemovePubDirectory(),
                 ]
-            ]);
+            ]
+        );
     }
 
-    protected function getIndexNameSuffix()
+    public function getIndexNameSuffix()
     {
         return '_products';
     }
 
-    public function getAllAttributes($add_empty_row = false)
+    public function getAllAttributes($addEmptyRow = false)
     {
-        if (is_null(self::$_productAttributes)) {
-            self::$_productAttributes = [];
+        if (!isset($this->productAttributes)) {
+            $this->productAttributes = [];
 
             $allAttributes = $this->eavConfig->getEntityAttributeCodes('catalog_product');
 
@@ -123,22 +128,25 @@ class ProductHelper extends BaseHelper
 
             $excludedAttributes = [
                 'all_children', 'available_sort_by', 'children', 'children_count', 'custom_apply_to_products',
-                'custom_design', 'custom_design_from', 'custom_design_to', 'custom_layout_update', 'custom_use_parent_settings',
-                'default_sort_by', 'display_mode', 'filter_price_range', 'global_position', 'image', 'include_in_menu', 'is_active',
-                'is_always_include_in_menu', 'is_anchor', 'landing_page', 'level', 'lower_cms_block',
-                'page_layout', 'path_in_store', 'position', 'small_image', 'thumbnail', 'url_key', 'url_path',
-                'visible_in_menu', 'quantity_and_stock_status', ];
+                'custom_design', 'custom_design_from', 'custom_design_to', 'custom_layout_update',
+                'custom_use_parent_settings', 'default_sort_by', 'display_mode', 'filter_price_range',
+                'global_position', 'image', 'include_in_menu', 'is_active', 'is_always_include_in_menu', 'is_anchor',
+                'landing_page', 'level', 'lower_cms_block', 'page_layout', 'path_in_store', 'position', 'small_image',
+                'thumbnail', 'url_key', 'url_path', 'visible_in_menu', 'quantity_and_stock_status',
+            ];
 
             $productAttributes = array_diff($productAttributes, $excludedAttributes);
 
             foreach ($productAttributes as $attributeCode) {
-                self::$_productAttributes[$attributeCode] = $this->eavConfig->getAttribute('catalog_product', $attributeCode)->getFrontendLabel();
+                $this->productAttributes[$attributeCode] = $this->eavConfig
+                    ->getAttribute('catalog_product', $attributeCode)
+                    ->getFrontendLabel();
             }
         }
 
-        $attributes = self::$_productAttributes;
+        $attributes = $this->productAttributes;
 
-        if ($add_empty_row === true) {
+        if ($addEmptyRow === true) {
             $attributes[''] = '';
         }
 
@@ -149,10 +157,10 @@ class ProductHelper extends BaseHelper
         return $attributes;
     }
 
-    public function isAttributeEnabled($additionalAttributes, $attr_name)
+    public function isAttributeEnabled($additionalAttributes, $attributeName)
     {
         foreach ($additionalAttributes as $attr) {
-            if ($attr['attribute'] === $attr_name) {
+            if ($attr['attribute'] === $attributeName) {
                 return true;
             }
         }
@@ -160,9 +168,9 @@ class ProductHelper extends BaseHelper
         return false;
     }
 
-    public function getProductCollectionQuery($storeId, $productIds = null, $only_visible = true)
+    public function getProductCollectionQuery($storeId, $productIds = null, $onlyVisible = true)
     {
-        /** @var $products \Magento\Catalog\Model\ResourceModel\Product\Collection $productCollection */
+        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $products */
         $products = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Product\Collection');
 
         $products = $products
@@ -170,13 +178,14 @@ class ProductHelper extends BaseHelper
             ->addStoreFilter($storeId)
             ->distinct(true);
 
-        if ($only_visible) {
-            $products = $products->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()])
+        if ($onlyVisible) {
+            $products = $products
+                ->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()])
                 ->addAttributeToFilter('status', ['=' => \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED]);
         }
 
-        if ($this->config->getShowOutOfStock($storeId) === false) {
-            $this->stock->addInStockFilterToCollection($products);
+        if ($onlyVisible && $this->configHelper->getShowOutOfStock($storeId) === false) {
+            $this->stockHelper->addInStockFilterToCollection($products);
         }
 
         /* @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
@@ -193,8 +202,8 @@ class ProductHelper extends BaseHelper
             $attr = $attr['attribute'];
         }
 
-        $attrs = array_merge(static::$_predefinedProductAttributes, $additionalAttr);
-        $attrs = array_diff($attrs, static::$createdAttributes);
+        $attrs = array_merge($this->predefinedProductAttributes, $additionalAttr);
+        $attrs = array_diff($attrs, $this->createdAttributes);
 
         $products = $products->addAttributeToSelect(array_values($attrs));
 
@@ -202,133 +211,96 @@ class ProductHelper extends BaseHelper
             $products = $products->addAttributeToFilter('entity_id', ['in' => $productIds]);
         }
 
-        $this->eventManager->dispatch('algolia_rebuild_store_product_index_collection_load_before', ['store' => $storeId, 'collection' => $products]); // Only for backward compatibility
-        $this->eventManager->dispatch('algolia_after_products_collection_build', ['store' => $storeId, 'collection' => $products]);
+        $this->eventManager->dispatch( // Only for backward compatibility
+            'algolia_rebuild_store_product_index_collection_load_before',
+            ['store' => $storeId, 'collection' => $products]
+        );
+        $this->eventManager->dispatch(
+            'algolia_after_products_collection_build',
+            ['store' => $storeId, 'collection' => $products]
+        );
 
         return $products;
     }
 
     public function getAdditionalAttributes($storeId = null)
     {
-        return $this->config->getProductAdditionalAttributes($storeId);
+        return $this->configHelper->getProductAdditionalAttributes($storeId);
     }
 
-    public function setSettings($storeId, $saveToTmpIndicesToo = false)
+    public function setSettings($indexName, $indexNameTmp, $storeId, $saveToTmpIndicesToo = false)
     {
-        $searchableAttributes = [];
-        $unretrievableAttributes = [];
-        $attributesForFaceting = [];
-
-        foreach ($this->getAdditionalAttributes() as $attribute) {
-            if ($attribute['searchable'] == '1') {
-                if (!isset($attribute['order']) || $attribute['order'] == 'ordered') {
-                    $searchableAttributes[] = $attribute['attribute'];
-                } else {
-                    $searchableAttributes[] = 'unordered(' . $attribute['attribute'] . ')';
-                }
-            }
-
-            if ($attribute['retrievable'] != '1') {
-                $unretrievableAttributes[] = $attribute['attribute'];
-            }
-
-            if ($attribute['attribute'] == 'categories') {
-                $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] == 'ordered') ? 'categories_without_path' : 'unordered(categories_without_path)';
-            }
-        }
-
-        $customRankings = $this->config->getProductCustomRanking($storeId);
-
-        $customRankingsArr = [];
-
-        $facets = $this->config->getFacets();
-
-        $currencies = $this->currencyManager->getConfigAllowCurrencies();
-
-        foreach ($facets as $facet) {
-            if ($facet['attribute'] === 'price') {
-                foreach ($currencies as $currency_code) {
-                    $facet['attribute'] = 'price.' . $currency_code . '.default';
-
-                    if ($this->config->isCustomerGroupsEnabled($storeId)) {
-                        $groupCollection = $this->objectManager->create('Magento\Customer\Model\ResourceModel\Group\Collection');
-
-                        foreach ($groupCollection as $group) {
-                            $group_id = (int) $group->getData('customer_group_id');
-
-                            $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $group_id;
-                        }
-                    }
-
-                    $attributesForFaceting[] = $facet['attribute'];
-                }
-            } else {
-                $attributesForFaceting[] = $facet['attribute'];
-            }
-        }
-
-        foreach ($customRankings as $ranking) {
-            $customRankingsArr[] = $ranking['order'] . '(' . $ranking['attribute'] . ')';
-        }
-
-        if ($this->config->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
-            $attributesForFaceting[] = 'categories';
-        }
+        $searchableAttributes = $this->getSearchableAttributes();
+        $customRanking = $this->getCustomRanking($storeId);
+        $unretrievableAttributes = $this->getUnretrieveableAttributes();
+        $attributesForFaceting = $this->getAttributesForFaceting($storeId);
 
         $indexSettings = [
-            'searchableAttributes'    => array_values(array_unique($searchableAttributes)),
-            'customRanking'           => $customRankingsArr,
+            'searchableAttributes'    => $searchableAttributes,
+            'customRanking'           => $customRanking,
             'unretrievableAttributes' => $unretrievableAttributes,
             'attributesForFaceting'   => $attributesForFaceting,
-            'maxValuesPerFacet'       => (int) $this->config->getMaxValuesPerFacet($storeId),
-            'removeWordsIfNoResults'  => $this->config->getRemoveWordsIfNoResult($storeId),
+            'maxValuesPerFacet'       => (int) $this->configHelper->getMaxValuesPerFacet($storeId),
+            'removeWordsIfNoResults'  => $this->configHelper->getRemoveWordsIfNoResult($storeId),
         ];
 
         // Additional index settings from event observer
         $transport = new DataObject($indexSettings);
-        $this->eventManager->dispatch('algolia_index_settings_prepare', [ // Only for backward compatibility
-            'store_id'       => $storeId,
-            'index_settings' => $transport,
-        ]);
-        $this->eventManager->dispatch('algolia_products_index_before_set_settings', [
-            'store_id'       => $storeId,
-            'index_settings' => $transport,
-        ]);
+        $this->eventManager->dispatch( // Only for backward compatibility
+            'algolia_index_settings_prepare',
+            ['store_id' => $storeId, 'index_settings' => $transport]
+        );
+        $this->eventManager->dispatch(
+            'algolia_products_index_before_set_settings',
+            [
+                'store_id'       => $storeId,
+                'index_settings' => $transport,
+            ]
+        );
         $indexSettings = $transport->getData();
 
-        $mergeSettings = $this->algoliaHelper->mergeSettings($this->getIndexName($storeId), $indexSettings);
-
-        $this->algoliaHelper->setSettings($this->getIndexName($storeId), $mergeSettings);
+        $this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
         if ($saveToTmpIndicesToo === true) {
-            $this->algoliaHelper->setSettings($this->getIndexName($storeId, true), $mergeSettings);
+            $this->algoliaHelper->setSettings($indexNameTmp, $indexSettings, false, true);
+        }
+
+        $this->setFacetsQueryRules($indexName);
+        if ($saveToTmpIndicesToo === true) {
+            $this->setFacetsQueryRules($indexNameTmp);
         }
 
         /*
          * Handle replicas
          */
-        $isInstantSearchEnabled = (bool) $this->config->isInstantEnabled($storeId);
-        $sortingIndices = $this->config->getSortingIndices($storeId);
+        $isInstantSearchEnabled = $this->configHelper->isInstantEnabled($storeId);
+        $sortingIndices = $this->configHelper->getSortingIndices($indexName, $storeId);
+
+        $replicas = array_values(array_map(function ($sortingIndex) {
+            return $sortingIndex['name'];
+        }, $sortingIndices));
 
         if ($isInstantSearchEnabled === true && count($sortingIndices) > 0) {
-            $replicas = array_values(array_map(function($sortingIndex) {
-                return $sortingIndex['name'];
-            }, $sortingIndices));
-
-            $this->algoliaHelper->setSettings($this->getIndexName($storeId), ['replicas' => $replicas]);
+            $this->algoliaHelper->setSettings($indexName, ['replicas' => $replicas]);
+            $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
 
             foreach ($sortingIndices as $values) {
-                $mergeSettings['ranking'] = $values['ranking'];
-                $this->algoliaHelper->setSettings($values['name'], $mergeSettings);
+                $indexSettings['ranking'] = $values['ranking'];
+                $this->algoliaHelper->setSettings($values['name'], $indexSettings, false, true);
             }
+        } else {
+            $this->algoliaHelper->setSettings($indexName, ['replicas' => []]);
+            $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
         }
 
-        if ($this->config->isEnabledSynonyms($storeId) === true) {
-            if ($synonymsFile = $this->config->getSynonymsFile($storeId)) {
+        $this->deleteUnusedReplicas($indexName, $replicas, $setReplicasTaskId);
+
+        if ($this->configHelper->isEnabledSynonyms($storeId) === true) {
+            if ($synonymsFile = $this->configHelper->getSynonymsFile($storeId)) {
                 $synonymsToSet = json_decode(file_get_contents($synonymsFile));
             } else {
                 $synonymsToSet = [];
 
-                $synonyms = $this->config->getSynonyms($storeId);
+                $synonyms = $this->configHelper->getSynonyms($storeId);
                 foreach ($synonyms as $objectID => $synonym) {
                     $synonymsToSet[] = [
                         'objectID' => $objectID,
@@ -337,7 +309,7 @@ class ProductHelper extends BaseHelper
                     ];
                 }
 
-                $onewaySynonyms = $this->config->getOnewaySynonyms($storeId);
+                $onewaySynonyms = $this->configHelper->getOnewaySynonyms($storeId);
                 foreach ($onewaySynonyms as $objectID => $onewaySynonym) {
                     $synonymsToSet[] = [
                         'objectID' => $objectID,
@@ -348,229 +320,19 @@ class ProductHelper extends BaseHelper
                 }
             }
 
-            $this->algoliaHelper->setSynonyms($this->getIndexName($storeId, $saveToTmpIndicesToo), $synonymsToSet);
+            $this->algoliaHelper->setSynonyms($saveToTmpIndicesToo ? $indexNameTmp : $indexName, $synonymsToSet);
         } elseif ($saveToTmpIndicesToo === true) {
-            $this->algoliaHelper->copySynonyms($this->getIndexName($storeId), $this->getIndexName($storeId, $saveToTmpIndicesToo));
+            $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
         }
 
         if ($saveToTmpIndicesToo === true) {
-            $this->algoliaHelper->copyQueryRules($this->getIndexName($storeId), $this->getIndexName($storeId, $saveToTmpIndicesToo));
-        }
-    }
-
-    protected function getFields($store)
-    {
-        if ($this->taxHelper->getPriceDisplayType($store) == TaxConfig::DISPLAY_TYPE_EXCLUDING_TAX) {
-            return ['price' => false];
-        }
-
-        if ($this->taxHelper->getPriceDisplayType($store) == TaxConfig::DISPLAY_TYPE_INCLUDING_TAX) {
-            return ['price' => true];
-        }
-
-        return ['price' => false, 'price_with_tax' => true];
-    }
-
-    protected function handlePrice(Product &$product, $subProducts, &$customData)
-    {
-        $store = $product->getStore();
-        $type = $product->getTypeId();
-
-        $fields = $this->getFields($store);
-
-        $areCustomersGroupsEnabled = $this->config->isCustomerGroupsEnabled($product->getStoreId());
-
-        $currencies = $store->getAvailableCurrencyCodes();
-        $baseCurrencyCode = $store->getBaseCurrencyCode();
-
-        $groups = $this->objectManager->create('Magento\Customer\Model\ResourceModel\Group\Collection');
-
-        if (!$areCustomersGroupsEnabled) {
-            $groups->addFieldToFilter('main_table.customer_group_id', 0);
-        }
-
-        foreach ($fields as $field => $withTax) {
-            $customData[$field] = [];
-
-            foreach ($currencies as $currencyCode) {
-                $customData[$field][$currencyCode] = [];
-
-                $price = $product->getPrice();
-                if ($currencyCode !== $baseCurrencyCode) {
-                    $price = $this->priceCurrency->convert($price, $store, $currencyCode);
-                }
-
-                $price = (double) $this->catalogHelper->getTaxPrice($product, $price, $withTax, null, null, null, $product->getStore(), null);
-
-                $customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($price);
-                $customData[$field][$currencyCode]['default_formated'] = $this->priceCurrency->format($price, false, PriceCurrencyInterface::DEFAULT_PRECISION, $store, $currencyCode);
-
-                $specialPrices   = [];
-                $specialPrice    = [];
-                foreach ($groups as $group) {
-                    $groupId = (int) $group->getData('customer_group_id');
-                    $specialPrices[$groupId] = [];
-                    $specialPrices[$groupId][] = (double) $this->rule->getRulePrice(new \DateTime(), $store->getWebsiteId(), $groupId, $product->getId()); // The price with applied catalog rules
-                    $specialPrices[$groupId][] = (double) $product->getFinalPrice(); // The product's special price
-
-                    $specialPrices[$groupId] = array_filter($specialPrices[$groupId], function ($price) {
-                        return $price > 0;
-                    });
-
-                    $specialPrice[$groupId] = false;
-                    if (!empty($specialPrices[$groupId])) {
-                        $specialPrice[$groupId] = min($specialPrices[$groupId]);
-                    }
-
-                    if ($specialPrice[$groupId]) {
-                        if ($currencyCode !== $baseCurrencyCode) {
-                            $specialPrice[$groupId] = $this->priceCurrency->convert($specialPrice[$groupId], $store, $currencyCode);
-                            $specialPrice[$groupId] = $this->priceCurrency->round($specialPrice[$groupId]);
-                        }
-
-                        $specialPrice[$groupId] = (double) $this->catalogHelper->getTaxPrice($product, $specialPrice[$groupId], $withTax, null, null, null, $product->getStore(), null);
-                    }
-                }
-
-                if ($areCustomersGroupsEnabled) {
-                    foreach ($groups as $group) {
-                        $groupId = (int) $group->getData('customer_group_id');
-
-                        $product->setCustomerGroupId($groupId);
-
-                        $discountedPrice = (double) $product->getPriceModel()->getFinalPrice(1, $product);
-                        if ($currencyCode !== $baseCurrencyCode) {
-                            $discountedPrice = $this->priceCurrency->convert($discountedPrice, $store, $currencyCode);
-                        }
-
-                        if ($discountedPrice !== false) {
-                            $customData[$field][$currencyCode]['group_' . $groupId] = (double) $this->catalogHelper->getTaxPrice($product, $discountedPrice, $withTax, null, null, null, $product->getStore(), null);
-                            $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $this->priceCurrency->format($customData[$field][$currencyCode]['group_' . $groupId], false, PriceCurrencyInterface::DEFAULT_PRECISION, $store, $currencyCode);
-                        } else {
-                            $customData[$field][$currencyCode]['group_' . $groupId] = $customData[$field][$currencyCode]['default'];
-                            $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $customData[$field][$currencyCode]['default_formated'];
-                        }
-                    }
-
-                    $product->setCustomerGroupId(null);
-                }
-
-                $customData[$field][$currencyCode]['special_from_date'] = strtotime($product->getSpecialFromDate());
-                $customData[$field][$currencyCode]['special_to_date'] = strtotime($product->getSpecialToDate());
-
-                if ($areCustomersGroupsEnabled) {
-                    foreach ($groups as $group) {
-                        $groupId = (int) $group->getData('customer_group_id');
-
-                        if ($specialPrice[$groupId] && $specialPrice[$groupId] < $customData[$field][$currencyCode]['group_' . $groupId]) {
-                            $customData[$field][$currencyCode]['group_' . $groupId] = $specialPrice[$groupId];
-                            $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $this->priceCurrency->format($specialPrice[$groupId], false, PriceCurrencyInterface::DEFAULT_PRECISION, $store, $currencyCode);
-                        }
-                    }
-                } else {
-                    if ($specialPrice[0] && $specialPrice[0] < $customData[$field][$currencyCode]['default']) {
-                        $customData[$field][$currencyCode]['default_original_formated'] = $customData[$field][$currencyCode]['default_formated'];
-
-                        $customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($specialPrice[0]);
-                        $customData[$field][$currencyCode]['default_formated'] = $this->priceCurrency->format($specialPrice[0], false, PriceCurrencyInterface::DEFAULT_PRECISION, $store, $currencyCode);
-                    }
-                }
-
-                if ($type == 'configurable' || $type == 'grouped' || $type == 'bundle') {
-                    $min = PHP_INT_MAX;
-                    $max = 0;
-
-                    if ($type == 'bundle') {
-                        list($min, $max) = $product->getPriceModel()->getTotalPrices($product, null, $withTax, true);
-                    }
-
-                    if ($type == 'grouped' || $type == 'configurable') {
-                        if (count($subProducts) > 0) {
-                            /** @var Product $subProduct */
-                            foreach ($subProducts as $subProduct) {
-                                $price = (double) $this->catalogHelper->getTaxPrice($product, $subProduct->getFinalPrice(), $withTax, null, null, null, $product->getStore(), null);
-
-                                $min = min($min, $price);
-                                $max = max($max, $price);
-                            }
-                        } else {
-                            $min = $max;
-                        } // avoid to have PHP_INT_MAX in case of no subproducts (Corner case of visibility and stock options)
-                    }
-
-                    if ($min != $max) {
-                        if ($currencyCode !== $baseCurrencyCode) {
-                            $min = $this->priceCurrency->convert($min, $store, $currencyCode);
-                        }
-
-                        if ($currencyCode !== $baseCurrencyCode) {
-                            $max = $this->priceCurrency->convert($max, $store, $currencyCode);
-                        }
-
-                        $dashedFormat =
-                            $this->priceCurrency->format($min, false, PriceCurrencyInterface::DEFAULT_PRECISION, $store, $currencyCode)
-                            . ' - ' .
-                            $this->priceCurrency->format($max, false, PriceCurrencyInterface::DEFAULT_PRECISION, $store, $currencyCode);
-
-                        if (isset($customData[$field][$currencyCode]['default_original_formated']) === false || $min <= $customData[$field][$currencyCode]['default']) {
-                            $customData[$field][$currencyCode]['default_formated'] = $dashedFormat;
-
-                            //// Do not keep special price that is already taken into account in min max
-                            unset($customData['price']['special_from_date']);
-                            unset($customData['price']['special_to_date']);
-                            unset($customData['price']['default_original_formated']);
-
-                            $customData[$field][$currencyCode]['default'] = 0; // will be reset just after
-                        }
-
-                        if ($areCustomersGroupsEnabled) {
-                            foreach ($groups as $group) {
-                                $groupId = (int) $group->getData('customer_group_id');
-
-                                if ($min != $max && $min <= $customData[$field][$currencyCode]['group_' . $groupId]) {
-                                    $customData[$field][$currencyCode]['group_' . $groupId] = 0;
-                                    $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
-                                }
-                            }
-                        }
-                    }
-
-                    if ($customData[$field][$currencyCode]['default'] == 0) {
-                        $customData[$field][$currencyCode]['default'] = $min;
-
-                        if ($min === $max) {
-                            if ($currencyCode !== $baseCurrencyCode) {
-                                $min = $this->priceCurrency->convert($min, $store, $currencyCode);
-                            }
-
-                            $customData[$field][$currencyCode]['default'] = $min;
-                            $customData[$field][$currencyCode]['default_formated'] = $this->priceCurrency->format($min, false, PriceCurrencyInterface::DEFAULT_PRECISION, $store, $currencyCode);
-                        }
-                    }
-
-                    if ($areCustomersGroupsEnabled) {
-                        foreach ($groups as $group) {
-                            $groupId = (int) $group->getData('customer_group_id');
-
-                            if ($customData[$field][$currencyCode]['group_' . $groupId] == 0) {
-                                $customData[$field][$currencyCode]['group_' . $groupId] = $min;
-
-                                if ($min === $max) {
-                                    $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $customData[$field][$currencyCode]['default_formated'];
-                                } else {
-                                    $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
         }
     }
 
     public function getAllCategories($categoryIds)
     {
-        $categories = $this->getCoreCategories();
+        $categories = $this->categoryHelper->getCoreCategories();
 
         $selectedCategories = [];
         foreach ($categoryIds as $id) {
@@ -584,22 +346,26 @@ class ProductHelper extends BaseHelper
 
     public function getObject(Product $product)
     {
-        $type = $product->getTypeId();
-        $this->logger->start('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($product->getStoreId()));
+        $storeId = $product->getStoreId();
+
+        $this->logger->start('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId));
         $defaultData = [];
 
         $transport = new DataObject($defaultData);
-        $this->eventManager->dispatch('algolia_product_index_before', ['product' => $product, 'custom_data' => $transport]);
+        $this->eventManager->dispatch(
+            'algolia_product_index_before',
+            ['product' => $product, 'custom_data' => $transport]
+        );
 
         $defaultData = $transport->getData();
 
-        $visibility = (int) $product->getVisibility();
+        $visibility = $product->getVisibility();
 
         $visibleInCatalog = $this->visibility->getVisibleInCatalogIds();
         $visibleInSearch = $this->visibility->getVisibleInSearchIds();
 
         $urlParams = [
-            '_secure' => $this->config->useSecureUrlsInFrontend($product->getStoreId()),
+            '_secure' => $this->configHelper->useSecureUrlsInFrontend($product->getStoreId()),
             '_nosid' => true,
         ];
 
@@ -609,30 +375,116 @@ class ProductHelper extends BaseHelper
             'url'                => $product->getUrlModel()->getUrl($product, $urlParams),
             'visibility_search'  => (int) (in_array($visibility, $visibleInSearch)),
             'visibility_catalog' => (int) (in_array($visibility, $visibleInCatalog)),
+            'type_id'            => $product->getTypeId(),
         ];
 
         $additionalAttributes = $this->getAdditionalAttributes($product->getStoreId());
         $groups = null;
 
-        if ($this->isAttributeEnabled($additionalAttributes, 'description')) {
-            $customData['description'] = $product->getDescription();
+        $customData = $this->addAttribute('description', $defaultData, $customData, $additionalAttributes, $product);
+        $customData = $this->addAttribute('ordered_qty', $defaultData, $customData, $additionalAttributes, $product);
+        $customData = $this->addAttribute('total_ordered', $defaultData, $customData, $additionalAttributes, $product);
+        $customData = $this->addAttribute('rating_summary', $defaultData, $customData, $additionalAttributes, $product);
+
+        $customData = $this->addCategoryData($customData, $product);
+        $customData = $this->addImageData($customData, $product, $additionalAttributes);
+
+        $customData = $this->addInStock($defaultData, $customData, $product);
+        $customData = $this->addStockQty($defaultData, $customData, $additionalAttributes, $product);
+
+        $subProducts = $this->getSubProducts($product);
+
+        $customData = $this->addAdditionalAttributes($customData, $additionalAttributes, $product, $subProducts);
+
+        $customData = $this->priceManager->addPriceData($customData, $product, $subProducts);
+
+        $transport = new DataObject($customData);
+        $this->eventManager->dispatch(
+            'algolia_subproducts_index',
+            ['custom_data' => $transport, 'sub_products' => $subProducts, 'productObject' => $product]
+        );
+        $customData = $transport->getData();
+
+        $customData = array_merge($customData, $defaultData);
+
+        $this->algoliaHelper->castProductObject($customData);
+
+        $transport = new DataObject($customData);
+        $this->eventManager->dispatch(
+            'algolia_after_create_product_object',
+            ['custom_data' => $transport, 'sub_products' => $subProducts, 'productObject' => $product]
+        );
+        $customData = $transport->getData();
+
+        $this->logger->stop('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId));
+
+        return $customData;
+    }
+
+    private function getSubProducts(Product $product)
+    {
+        $subProducts = [];
+        $ids = null;
+
+        $type = $product->getTypeId();
+        if ($type === 'configurable' || $type === 'grouped' || $type === 'bundle') {
+            if ($type === 'bundle') {
+                $ids = [];
+
+                /** @var \Magento\Bundle\Model\Product\Type $typeInstance */
+                $typeInstance = $product->getTypeInstance();
+
+                $selection = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product);
+                foreach ($selection as $option) {
+                    $ids[] = $option->getProductId();
+                }
+            }
+
+            if ($type === 'configurable' || $type === 'grouped') {
+                $ids = $product->getTypeInstance()->getChildrenIds($product->getId());
+                $ids = call_user_func_array('array_merge', $ids);
+            }
+
+            if (count($ids)) {
+                $subProducts = $this->getProductCollectionQuery($product->getStoreId(), $ids, false)->load();
+            }
         }
 
+        return $subProducts;
+    }
+
+    private function addAttribute($attribute, $defaultData, $customData, $additionalAttributes, Product $product)
+    {
+        if (isset($defaultData[$attribute]) === false
+            && $this->isAttributeEnabled($additionalAttributes, $attribute)) {
+            $customData[$attribute] = $product->getData($attribute);
+        }
+
+        return $customData;
+    }
+
+    private function addCategoryData($customData, Product $product)
+    {
+        $storeId = $product->getStoreId();
+
         $categories = [];
-        $categories_with_path = [];
+        $categoriesWithPath = [];
 
         $_categoryIds = $product->getCategoryIds();
 
         if (is_array($_categoryIds) && count($_categoryIds) > 0) {
             $categoryCollection = $this->getAllCategories($_categoryIds);
-            $rootCat = $this->storeManager->getStore($product->getStoreId())->getRootCategoryId();
+
+            /** @var Store $store */
+            $store = $this->storeManager->getStore($product->getStoreId());
+            $rootCat = $store->getRootCategoryId();
 
             foreach ($categoryCollection as $category) {
                 // Check and skip all categories that is not
                 // in the path of the current store.
                 $path = $category->getPath();
-                $path_parts = explode('/', $path);
-                if (isset($path_parts[1]) && $path_parts[1] != $rootCat) {
+                $pathParts = explode('/', $path);
+                if (isset($pathParts[1]) && $pathParts[1] !== $rootCat) {
                     continue;
                 }
 
@@ -646,227 +498,88 @@ class ProductHelper extends BaseHelper
                 $path = [];
 
                 foreach ($category->getPathIds() as $treeCategoryId) {
-                    if (!$this->config->showCatsNotIncludedInNavigation($product->getStoreId()) && !$this->isCategoryVisibleInMenu($treeCategoryId, $product->getStoreId())) {
+                    if (!$this->configHelper->showCatsNotIncludedInNavigation($storeId)
+                        && !$this->categoryHelper->isCategoryVisibleInMenu($treeCategoryId, $storeId)) {
                         // If the category should not be included in menu - skip it
                         $path[] = null;
                         continue;
                     }
 
-                    $name = $this->getCategoryName($treeCategoryId, $product->getStoreId());
+                    $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
                     if ($name) {
                         $path[] = $name;
                     }
                 }
 
-                $categories_with_path[] = $path;
+                $categoriesWithPath[] = $path;
             }
         }
 
-        foreach ($categories_with_path as $result) {
+        foreach ($categoriesWithPath as $result) {
             for ($i = count($result) - 1; $i > 0; $i--) {
-                $categories_with_path[] = array_slice($result, 0, $i);
+                $categoriesWithPath[] = array_slice($result, 0, $i);
             }
         }
 
-        $categories_with_path = array_intersect_key($categories_with_path, array_unique(array_map('serialize', $categories_with_path)));
+        $categoriesWithPath = array_intersect_key(
+            $categoriesWithPath,
+            array_unique(array_map('serialize', $categoriesWithPath))
+        );
 
-        $categories_hierarchical = [];
+        $hierarchicalCategories = $this->getHierarchicalCategories($categoriesWithPath);
 
-        $level_name = 'level';
+        $customData['categories'] = $hierarchicalCategories;
+        $customData['categories_without_path'] = $categories;
 
-        foreach ($categories_with_path as $category) {
-            for ($i = 0; $i < count($category); $i++) {
-                if (isset($categories_hierarchical[$level_name . $i]) === false) {
-                    $categories_hierarchical[$level_name . $i] = [];
+        return $customData;
+    }
+
+    private function getHierarchicalCategories($categoriesWithPath)
+    {
+        $hierachivalCategories = [];
+
+        $levelName = 'level';
+
+        foreach ($categoriesWithPath as $category) {
+            $categoryCount = count($category);
+            for ($i = 0; $i < $categoryCount; $i++) {
+                if (isset($hierachivalCategories[$levelName . $i]) === false) {
+                    $hierachivalCategories[$levelName . $i] = [];
                 }
 
                 if ($category[$i] === null) {
                     continue;
                 }
 
-                $categories_hierarchical[$level_name . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
+                $hierachivalCategories[$levelName . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
             }
         }
 
-        foreach ($categories_hierarchical as &$level) {
+        foreach ($hierachivalCategories as &$level) {
             $level = array_values(array_unique($level));
         }
 
-        foreach ($categories_with_path as &$category) {
-            $category = implode(' /// ', $category);
-        }
-
-        $customData['categories'] = $categories_hierarchical;
-
-        $customData['categories_without_path'] = $categories;
-
-        $customData = $this->addImageData($customData, $product, $additionalAttributes);
-
-        $sub_products = [];
-        $ids = null;
-
-        if ($type == 'configurable' || $type == 'grouped' || $type == 'bundle') {
-            if ($type == 'bundle') {
-                $ids = [];
-
-                $selection = $product->getTypeInstance(true)->getSelectionsCollection($product->getTypeInstance(true)->getOptionsIds($product), $product);
-
-                foreach ($selection as $option) {
-                    $ids[] = $option->getProductId();
-                }
-            }
-
-            if ($type == 'configurable' || $type == 'grouped') {
-                $ids = $product->getTypeInstance(true)->getChildrenIds($product->getId());
-                $ids = call_user_func_array('array_merge', $ids);
-            }
-
-            if (count($ids)) {
-                $sub_products = $this->getProductCollectionQuery($product->getStoreId(), $ids, false)->load();
-            }
-        }
-
-        if (false === isset($defaultData['in_stock'])) {
-            $stockItem = $this->stockRegistry->getStockItem($product->getId());
-
-            $customData['in_stock'] = $stockItem && (int) $stockItem->getIsInStock();
-        }
-
-        // skip default calculation if we have provided these attributes via the observer in $defaultData
-        if (false === isset($defaultData['ordered_qty']) && $this->isAttributeEnabled($additionalAttributes, 'ordered_qty')) {
-            $customData['ordered_qty'] = (int) $product->getOrderedQty();
-        }
-
-        if (false === isset($defaultData['total_ordered']) && $this->isAttributeEnabled($additionalAttributes, 'total_ordered')) {
-            $customData['total_ordered'] = (int) $product->getTotalOrdered();
-        }
-
-        if (false === isset($defaultData['stock_qty']) && $this->isAttributeEnabled($additionalAttributes, 'stock_qty')) {
-            $customData['stock_qty'] = (int) $product->getStockQty();
-        }
-
-        if ($this->isAttributeEnabled($additionalAttributes, 'rating_summary')) {
-            $customData['rating_summary'] = (int) $product->getRatingSummary();
-        }
-
-        foreach ($additionalAttributes as $attribute) {
-            if (isset($customData[$attribute['attribute']])) {
-                continue;
-            }
-
-            $value = $product->getData($attribute['attribute']);
-
-            $attribute_resource = $product->getResource()->getAttribute($attribute['attribute']);
-
-            if ($attribute_resource) {
-                $attribute_resource = $attribute_resource->setStoreId($product->getStoreId());
-
-                if ($value === null) {
-                    /* Get values as array in children */
-                    if ($type == 'configurable' || $type == 'grouped' || $type == 'bundle') {
-                        $values = [];
-
-                        $all_sub_products_out_of_stock = true;
-
-                        /** @var Product $sub_product */
-                        foreach ($sub_products as $sub_product) {
-                            $isInStock = (int) $this->stockRegistry->getStockItem($sub_product->getId())->getIsInStock();
-
-                            if ($isInStock == false && $this->config->indexOutOfStockOptions($product->getStoreId()) == false) {
-                                continue;
-                            }
-
-                            $all_sub_products_out_of_stock = false;
-
-                            $value = $sub_product->getData($attribute['attribute']);
-
-                            if ($value) {
-                                $value_text = $sub_product->getAttributeText($attribute['attribute']);
-
-                                if ($value_text) {
-                                    if (is_array($value_text)) {
-                                        foreach ($value_text as $value_text_elt) {
-                                            $values[] = $value_text_elt;
-                                        }
-                                    } else {
-                                        $values[] = $value_text;
-                                    }
-                                } else {
-                                    $values[] = $attribute_resource->getFrontend()->getValue($sub_product);
-                                }
-                            }
-                        }
-
-                        if (is_array($values) && count($values) > 0) {
-                            $customData[$attribute['attribute']] = array_values(array_unique($values));
-                        }
-
-                        if (isset($customData['in_stock']) && $customData['in_stock'] && $all_sub_products_out_of_stock) {
-                            // Set main product out of stock if all
-                            // sub-products is out of stock.
-                            $customData['in_stock'] = 0;
-                        }
-                    }
-                } else {
-                    $value_text = null;
-
-                    if (!is_array($value)) {
-                        $value_text = $product->getAttributeText($attribute['attribute']);
-                    }
-
-                    if ($value_text) {
-                        $value = $value_text;
-                    } else {
-                        $attribute_resource = $attribute_resource->setStoreId($product->getStoreId());
-                        $value = $attribute_resource->getFrontend()->getValue($product);
-                    }
-
-                    if ($value) {
-                        $customData[$attribute['attribute']] = $value;
-                    }
-                }
-            }
-        }
-
-        $this->handlePrice($product, $sub_products, $customData);
-
-        $customData['type_id'] = $type;
-
-        $transport = new DataObject($customData);
-        $this->eventManager->dispatch('algolia_subproducts_index', ['custom_data' => $transport, 'sub_products' => $sub_products, 'productObject' => $product]);
-        $customData = $transport->getData();
-
-        $customData = array_merge($customData, $defaultData);
-
-        $this->castProductObject($customData);
-
-        $transport = new DataObject($customData);
-        $this->eventManager->dispatch('algolia_after_create_product_object', ['custom_data' => $transport, 'sub_products' => $sub_products, 'productObject' => $product]);
-        $customData = $transport->getData();
-
-        $this->logger->stop('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($product->getStoreId()));
-
-        return $customData;
+        return $hierachivalCategories;
     }
 
-    protected function addImageData(array $customData, $product, $additionalAttributes)
+    private function addImageData(array $customData, Product $product, $additionalAttributes)
     {
-        if (false === isset($defaultData['thumbnail_url'])) {
+        if (false === isset($customData['thumbnail_url'])) {
             $customData['thumbnail_url'] = $this->imageHelper
                 ->init($product, 'thumbnail')
                 ->resize(75, 75)
                 ->getUrl();
         }
 
-        if (false === isset($defaultData['image_url'])) {
+        if (false === isset($customData['image_url'])) {
             $this->imageHelper
-                ->init($product, $this->config->getImageType())
-                ->resize($this->config->getImageWidth(), $this->config->getImageHeight());
+                ->init($product, $this->configHelper->getImageType())
+                ->resize($this->configHelper->getImageWidth(), $this->configHelper->getImageHeight());
 
             $customData['image_url'] = $this->imageHelper->getUrl();
 
             if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
-                $product->load('media_gallery');
+                $product->load($product->getId(), 'media_gallery');
 
                 $customData['media_gallery'] = [];
 
@@ -886,9 +599,347 @@ class ProductHelper extends BaseHelper
         return $customData;
     }
 
+    private function addInStock($defaultData, $customData, Product $product)
+    {
+        if (isset($defaultData['in_stock']) === false) {
+            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            $customData['in_stock'] = $stockItem && (int) $stockItem->getIsInStock();
+        }
+
+        return $customData;
+    }
+
+    private function addStockQty($defaultData, $customData, $additionalAttributes, Product $product)
+    {
+        if (isset($defaultData['stock_qty']) === false
+            && $this->isAttributeEnabled($additionalAttributes, 'stock_qty')) {
+            $customData['stock_qty'] = 0;
+
+            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            if ($stockItem) {
+                $customData['stock_qty'] = (int) $stockItem->getQty();
+            }
+        }
+
+        return $customData;
+    }
+
+    private function addAdditionalAttributes($customData, $additionalAttributes, Product $product, $subProducts)
+    {
+        foreach ($additionalAttributes as $attribute) {
+            if (isset($customData[$attribute['attribute']])) {
+                continue;
+            }
+
+            /** @var \Magento\Catalog\Model\ResourceModel\Product $resource */
+            $resource = $product->getResource();
+
+            /** @var AttributeResource $attributeResource */
+            $attributeResource = $resource->getAttribute($attribute['attribute']);
+            if (!$attributeResource) {
+                continue;
+            }
+
+            $attributeResource = $attributeResource->setData('store_id', $product->getStoreId());
+
+            $value = $product->getData($attribute['attribute']);
+
+            if ($value !== null) {
+                $customData = $this->addNonNullValue($customData, $value, $product, $attribute, $attributeResource);
+                continue;
+            }
+
+            $type = $product->getTypeId();
+            if ($type !== 'configurable' && $type !== 'grouped' && $type !== 'bundle') {
+                continue;
+            }
+
+            $storeId = $product->getStoreId();
+            $customData = $this->addNullValue($customData, $subProducts, $storeId, $attribute, $attributeResource);
+        }
+
+        return $customData;
+    }
+
+    private function addNullValue($customData, $subProducts, $storeId, $attribute, AttributeResource $attributeResource)
+    {
+        $values = [];
+        $subProductImages = [];
+
+        /** @var Product $subProduct */
+        foreach ($subProducts as $subProduct) {
+            $isInStock = (bool) $this->stockRegistry->getStockItem($subProduct->getId())->getIsInStock();
+
+            if ($isInStock === false && $this->configHelper->indexOutOfStockOptions($storeId) === false) {
+                continue;
+            }
+
+            $value = $subProduct->getData($attribute['attribute']);
+            if ($value) {
+                /** @var string|array $valueText */
+                $valueText = $subProduct->getAttributeText($attribute['attribute']);
+
+                $values = $this->getValues($valueText, $subProduct, $attributeResource);
+                $subProductImages = $this->addSubProductImage($subProductImages, $attribute, $subProduct, $valueText);
+            }
+        }
+
+        if (is_array($values) && count($values) > 0) {
+            $customData[$attribute['attribute']] = array_values(array_unique($values));
+        }
+
+        if (count($subProductImages) > 0) {
+            $customData['images_data'] = $subProductImages;
+        }
+
+        return $customData;
+    }
+
+    private function getValues($valueText, Product $subProduct, AttributeResource $attributeResource)
+    {
+        $values = [];
+
+        if ($valueText) {
+            if (is_array($valueText)) {
+                foreach ($valueText as $valueText_elt) {
+                    $values[] = $valueText_elt;
+                }
+            } else {
+                $values[] = $valueText;
+            }
+        } else {
+            $values[] = $attributeResource->getFrontend()->getValue($subProduct);
+        }
+
+        return $values;
+    }
+
+    private function addSubProductImage($subProductImages, $attribute, $subProduct, $valueText)
+    {
+        if (mb_strtolower($attribute['attribute'], 'utf-8') !== 'color') {
+            return $subProductImages;
+        }
+
+        $image = $this->imageHelper
+            ->init($subProduct, $this->configHelper->getImageType())
+            ->resize(
+                $this->configHelper->getImageWidth(),
+                $this->configHelper->getImageHeight()
+            );
+
+        try {
+            $textValueInLower = mb_strtolower($valueText, 'utf-8');
+            $subProductImages[$textValueInLower] = $image->getUrl();
+        } catch (\Exception $e) {
+            $this->logger->log($e->getMessage());
+            $this->logger->log($e->getTraceAsString());
+        }
+
+        return $subProductImages;
+    }
+
+    private function addNonNullValue(
+        $customData,
+        $value,
+        Product $product,
+        $attribute,
+        AttributeResource $attributeResource
+    ) {
+        $valueText = null;
+
+        if (!is_array($value)) {
+            $valueText = $product->getAttributeText($attribute['attribute']);
+        }
+
+        if ($valueText) {
+            $value = $valueText;
+        } else {
+            $attributeResource = $attributeResource->setData('store_id', $product->getStoreId());
+            $value = $attributeResource->getFrontend()->getValue($product);
+        }
+
+        if ($value) {
+            $customData[$attribute['attribute']] = $value;
+        }
+
+        return $customData;
+    }
+
+    private function getSearchableAttributes()
+    {
+        $searchableAttributes = [];
+
+        foreach ($this->getAdditionalAttributes() as $attribute) {
+            if ($attribute['searchable'] === '1') {
+                if (!isset($attribute['order']) || $attribute['order'] === 'ordered') {
+                    $searchableAttributes[] = $attribute['attribute'];
+                } else {
+                    $searchableAttributes[] = 'unordered(' . $attribute['attribute'] . ')';
+                }
+            }
+
+            if ($attribute['attribute'] === 'categories') {
+                $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] === 'ordered') ?
+                    'categories_without_path' : 'unordered(categories_without_path)';
+            }
+        }
+
+        $searchableAttributes = array_values(array_unique($searchableAttributes));
+
+        return $searchableAttributes;
+    }
+
+    private function getCustomRanking($storeId)
+    {
+        $customRanking = [];
+
+        $customRankings = $this->configHelper->getProductCustomRanking($storeId);
+        foreach ($customRankings as $ranking) {
+            $customRanking[] = $ranking['order'] . '(' . $ranking['attribute'] . ')';
+        }
+
+        return $customRanking;
+    }
+
+    private function getUnretrieveableAttributes()
+    {
+        $unretrievableAttributes = [];
+
+        foreach ($this->getAdditionalAttributes() as $attribute) {
+            if ($attribute['retrievable'] !== '1') {
+                $unretrievableAttributes[] = $attribute['attribute'];
+            }
+        }
+
+        return $unretrievableAttributes;
+    }
+
+    private function getAttributesForFaceting($storeId)
+    {
+        $attributesForFaceting = [];
+
+        $currencies = $this->currencyManager->getConfigAllowCurrencies();
+
+        $facets = $this->configHelper->getFacets();
+        foreach ($facets as $facet) {
+            if ($facet['attribute'] === 'price') {
+                foreach ($currencies as $currency_code) {
+                    $facet['attribute'] = 'price.' . $currency_code . '.default';
+
+                    if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
+                        $groupCollection = $this->objectManager
+                            ->create('Magento\Customer\Model\ResourceModel\Group\Collection');
+
+                        foreach ($groupCollection as $group) {
+                            $group_id = (int) $group->getData('customer_group_id');
+
+                            $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $group_id;
+                        }
+                    }
+
+                    $attributesForFaceting[] = $facet['attribute'];
+                }
+            } else {
+                $attribute = $facet['attribute'];
+                if (array_key_exists('searchable', $facet) && $facet['searchable'] === '1') {
+                    $attribute = 'searchable('.$attribute.')';
+                }
+
+                $attributesForFaceting[] = $attribute;
+            }
+        }
+
+        if ($this->configHelper->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
+            $attributesForFaceting[] = 'categories';
+        }
+
+        return $attributesForFaceting;
+    }
+
+    private function deleteUnusedReplicas($indexName, $replicas, $setReplicasTaskId)
+    {
+        $indicesToDelete = [];
+
+        $allIndices = $this->algoliaHelper->listIndexes();
+        foreach ($allIndices['items'] as $indexInfo) {
+            if (strpos($indexInfo['name'], $indexName) !== 0 || $indexInfo['name'] === $indexName) {
+                continue;
+            }
+
+            if (in_array($indexInfo['name'], $replicas) === false) {
+                $indicesToDelete[] = $indexInfo['name'];
+            }
+        }
+
+        if (count($indicesToDelete) > 0) {
+            $this->algoliaHelper->waitLastTask($indexName, $setReplicasTaskId);
+
+            foreach ($indicesToDelete as $indexToDelete) {
+                $this->algoliaHelper->deleteIndex($indexToDelete);
+            }
+        }
+    }
+
+    private function setFacetsQueryRules($indexName)
+    {
+        $index = $this->algoliaHelper->getIndex($indexName);
+
+        $this->clearFacetsQueryRules($index);
+
+        $rules = [];
+        $facets = $this->configHelper->getFacets();
+        foreach ($facets as $facet) {
+            if (!array_key_exists('create_rule', $facet) || $facet['create_rule'] !== '1') {
+                continue;
+            }
+
+            $attribute = $facet['attribute'];
+
+            $rules[] = [
+                'objectID' => 'filter_'.$attribute,
+                'description' => 'Filter facet "'.$attribute.'"',
+                'condition' => [
+                    'anchoring' => 'contains',
+                    'pattern' => '{facet:'.$attribute.'}',
+                    'context' => 'magento_filters',
+                ],
+                'consequence' => [
+                    'params' => [
+                        'automaticFacetFilters' => [$attribute],
+                        'query' => [
+                            'remove' => ['{facet:'.$attribute.'}']
+                        ]
+                    ],
+                ]
+            ];
+        }
+
+        if ($rules) {
+            $index->batchRules($rules, true);
+        }
+    }
+
+    private function clearFacetsQueryRules(Index $index)
+    {
+        $hitsPerPage = 100;
+        $page = 0;
+        do {
+            $fetchedQueryRules = $index->searchRules([
+                'context' => 'magento_filters',
+                'page' => $page,
+                'hitsPerPage' => $hitsPerPage,
+            ]);
+
+            foreach ($fetchedQueryRules['hits'] as $hit) {
+                $index->deleteRule($hit['objectID'], true);
+            }
+
+            $page++;
+        } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
+    }
+
     private function explodeSynonyms($synonyms)
     {
         return array_map('trim', explode(',', $synonyms));
     }
 }
-

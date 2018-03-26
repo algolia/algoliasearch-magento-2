@@ -1,17 +1,23 @@
 <?php
-/**
- * @var \Magento\Framework\View\TemplateEngine\Php $this
- * @var \Algolia\AlgoliaSearch\Block\Configuration $block
- */
+
+/** @var \Algolia\AlgoliaSearch\Block\Configuration $block */
+
+$configuration = $block->getConfiguration();
+
 ?>
 
 <script>
-    <?php if ($block->getConfigHelper()->isInstantEnabled() && $block->isSearchPage() === true): ?>
-        // Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
-        document.write('<style type="text/css"><?php /* @escapeNotVerified */ echo $block->getConfigHelper()->getInstantSelector(); ?> { display:none }</style>');
-    <?php endif; ?>
+    <?php
+    if ($configuration['instant']['enabled'] === true && $configuration['isSearchPage'] === true) :
+        $css = '<style type="text/css">'.$configuration['instant']['selector'].' {display:none}</style>';
+    ?>
+	// Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
+	document.write('<?php /* @noEscape */ echo $css; ?>');
+    <?php
+    endif;
+    ?>
 
-    window.algoliaConfig = <?php echo json_encode($block->getConfiguration()); ?>;
+	window.algoliaConfig = <?php /* @noEscape */ echo json_encode($configuration); ?>;
 </script>
 
 <!--[if lte IE 9]>

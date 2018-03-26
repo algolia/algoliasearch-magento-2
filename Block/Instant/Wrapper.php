@@ -7,7 +7,7 @@ use Magento\Framework\View\Element\Template;
 
 class Wrapper extends Template
 {
-    protected $config;
+    private $config;
 
     public function __construct(
         Template\Context $context,

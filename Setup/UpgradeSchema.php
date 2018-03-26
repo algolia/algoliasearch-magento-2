@@ -25,6 +25,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_credentials/credentials/index_prefix' => 'magento2_',
         'algoliasearch_credentials/credentials/is_popup_enabled' => '1',
         'algoliasearch_credentials/credentials/is_instant_enabled' => '0',
+        'algoliasearch_credentials/credentials/use_adaptive_image' => '0',
 
         'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions' => '6',
         'algoliasearch_autocomplete/autocomplete/nb_of_categories_suggestions' => '2',
@@ -38,11 +39,13 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_instant/instant/max_values_per_facet' => '10',
         'algoliasearch_instant/instant/replace_categories' => '1',
         'algoliasearch_instant/instant/add_to_cart_enable' => '1',
+        'algoliasearch_instant/instant/infinite_scroll_enable' => '0',
 
         'algoliasearch_products/products/number_product_results' => '9',
         'algoliasearch_products/products/show_suggestions_on_no_result_page' => '1',
 
         'algoliasearch_categories/categories/show_cats_not_included_in_navigation' => '1',
+        'algoliasearch_categories/categories/index_empty_categories' => '0',
 
         'algoliasearch_images/image/width' => '265',
         'algoliasearch_images/image/height' => '265',
@@ -51,6 +54,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_queue/queue/active' => '0',
         'algoliasearch_queue/queue/number_of_job_to_run' => '10',
         'algoliasearch_queue/queue/number_of_retries' => '3',
+
+        'algoliasearch_cc_analytics/cc_analytics_group/enable' => '0',
+        'algoliasearch_cc_analytics/cc_analytics_group/is_selector' => '.ais-hits--item a.result',
 
         'algoliasearch_analytics/analytics_group/enable' => '0',
         'algoliasearch_analytics/analytics_group/delay' => '3000',
@@ -67,6 +73,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_advanced/advanced/remove_branding' => '0',
         'algoliasearch_advanced/advanced/autocomplete_selector' => '.algolia-search-input',
         'algoliasearch_advanced/advanced/index_product_on_category_products_update' => '1',
+        'algoliasearch_advanced/advanced/prevent_backend_rendering' => '0',
+        'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode' => 'all',
+        'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents' => "Googlebot\nBingbot",
     ];
 
     private $defaultArrayConfigData = [
@@ -88,16 +97,22 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'attribute' => 'price',
                 'type' => 'slider',
                 'label' => 'Price',
+                'searchable' => '2',
+                'create_rule' => '2',
             ],
             [
                 'attribute' => 'categories',
                 'type' => 'conjunctive',
                 'label' => 'Categories',
+                'searchable' => '2',
+                'create_rule' => '2',
             ],
             [
                 'attribute' => 'color',
                 'type' => 'disjunctive',
                 'label' => 'Colors',
+                'searchable' => '1',
+                'create_rule' => '1',
             ],
         ],
         'algoliasearch_instant/instant/sorts' => [
@@ -260,7 +275,9 @@ class UpgradeSchema implements UpgradeSchemaInterface
         /* SET DEFAULT CONFIG DATA */
 
         $table = $setup->getTable('core_config_data');
-        $alreadyInserted = $setup->getConnection()->query('SELECT path, value FROM '.$table.' WHERE path LIKE "algoliasearch_%"')->fetchAll(\PDO::FETCH_KEY_PAIR);
+        $alreadyInserted = $setup->getConnection()
+                                 ->query('SELECT path, value FROM '.$table.' WHERE path LIKE "algoliasearch_%"')
+                                 ->fetchAll(\PDO::FETCH_KEY_PAIR);
 
         foreach ($this->defaultConfigData as $path => $value) {
             if (isset($alreadyInserted[$path])) {
@@ -276,8 +293,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection = $setup->getConnection();
             $table = $connection->newTable($setup->getTable('algoliasearch_queue'));
 
-            $table->addColumn('job_id', $table::TYPE_INTEGER, 20,
-                ['identity' => true, 'nullable' => false, 'primary' => true]);
+            $table->addColumn(
+                'job_id',
+                $table::TYPE_INTEGER,
+                20,
+                ['identity' => true, 'nullable' => false, 'primary' => true]
+            );
             $table->addColumn('pid', $table::TYPE_INTEGER, 20, ['nullable' => true, 'default' => null]);
             $table->addColumn('class', $table::TYPE_TEXT, 50, ['nullable' => false]);
             $table->addColumn('method', $table::TYPE_TEXT, 50, ['nullable' => false]);
@@ -299,7 +320,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 [
                     'type' => Table::TYPE_TEXT,
                     'length' => '2M',
-                ]);
+                ]
+            );
         }
 
         if (version_compare($context->getVersion(), '1.3.0') < 0) {
@@ -313,12 +335,17 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     'nullabled' => true,
                     'after' => 'job_id',
                     'comment' => 'Date and time of job creation',
-                ]);
+                ]
+            );
 
             // LOG TABLE
             $table = $connection->newTable($setup->getTable('algoliasearch_queue_log'));
 
-            $table->addColumn('id', $table::TYPE_INTEGER, 20, ['identity' => true, 'nullable' => false, 'primary' => true]);
+            $table->addColumn('id', $table::TYPE_INTEGER, 20, [
+                'identity' => true,
+                'nullable' => false,
+                'primary' => true
+            ]);
             $table->addColumn('started', $table::TYPE_DATETIME, null, ['nullable' => false]);
             $table->addColumn('duration', $table::TYPE_INTEGER, 20, ['nullable' => false]);
             $table->addColumn('processed_jobs', $table::TYPE_INTEGER, null, ['nullable' => false]);

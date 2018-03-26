@@ -3,6 +3,8 @@
 /** @var \Algolia\AlgoliaSearch\Block\Algolia $block */
 $priceKey = $block->getPriceKey();
 
+$origFormatedVar = 'price' . $priceKey . '_original_formated';
+
 ?>
 
 <!-- Product hit template -->
@@ -17,28 +19,32 @@ $priceKey = $block->getPriceKey();
 
             <div class="algoliasearch-autocomplete-category">
                 {{#categories_without_path}}
-                <?php echo __('in'); ?> {{{categories_without_path}}}
+                <?php echo $block->escapeHtml(__('in')); ?> {{{categories_without_path}}}
                 {{/categories_without_path}}
 
                 {{#_highlightResult.color}}
                 {{#_highlightResult.color.value}}
                 <span>
-                   {{#categories_without_path}} | {{/categories_without_path}} Color:  {{{_highlightResult.color.value}}}
+                    {{#categories_without_path}} | {{/categories_without_path}}
+                    Color: {{{_highlightResult.color.value}}}
                 </span>
                 {{/_highlightResult.color.value}}
                 {{/_highlightResult.color}}
             </div>
 
             <div class="algoliasearch-autocomplete-price">
-                    <span class="after_special {{#price<?php echo $priceKey; ?>_original_formated}}promotion{{/price<?php echo $priceKey; ?>_original_formated}}">
-                        {{price<?php echo $priceKey; ?>_formated}}
+                    <span class="after_special
+                                {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                                    promotion
+                                {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}">
+                        {{price<?php echo $block->escapeHtml($priceKey); ?>_formated}}
                     </span>
 
-                {{#price<?php echo $priceKey; ?>_original_formated}}
+                {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                     <span class="before_special">
-                        {{price<?php echo $priceKey; ?>_original_formated}}
+                        {{<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                     </span>
-                {{/price<?php echo $priceKey; ?>_original_formated}}
+                {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}
             </div>
         </div>
     </a>

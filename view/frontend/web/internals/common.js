@@ -1,3 +1,49 @@
+var algolia = {
+	allowedHooks: [
+		'beforeAutocompleteSources',
+		'beforeAutocompleteOptions',
+		'beforeInstantsearchInit',
+		'beforeWidgetInitialization',
+		'beforeInstantsearchStart',
+		'afterInstantsearchStart'
+	],
+	registeredHooks: [],
+	registerHook: function (hookName, callback) {
+		if (this.allowedHooks.indexOf(hookName) === -1) {
+			throw 'Hook "' + hookName + '" cannot be defined. Please use one of ' + this.allowedHooks.join(', ');
+		}
+		
+		if (!this.registeredHooks[hookName]) {
+			this.registeredHooks[hookName] = [callback];
+		} else {
+			this.registeredHooks[hookName].push(callback);
+		}
+	},
+	getRegisteredHooks: function(hookName) {
+		if (this.allowedHooks.indexOf(hookName) === -1) {
+			throw 'Hook "' + hookName + '" cannot be defined. Please use one of ' + this.allowedHooks.join(', ');
+		}
+		
+		if (!this.registeredHooks[hookName]) {
+			return [];
+		}
+		
+		return this.registeredHooks[hookName];
+	},
+	triggerHooks: function () {
+		var hookName = arguments[0],
+			originalData = arguments[1],
+			hookArguments = Array.prototype.slice.call(arguments, 2);
+		
+		var data = this.getRegisteredHooks(hookName).reduce(function(currentData, hook) {
+			var allParameters = [].concat(currentData).concat(hookArguments);
+			return hook.apply(null, allParameters);
+		}, originalData);
+		
+		return data;
+	}
+};
+
 requirejs(['algoliaBundle'], function(algoliaBundle) {
 	algoliaBundle.$(function ($) {
 		window.isMobile = function() {
@@ -8,7 +54,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			return check;
 		};
 		
-		window.transformHit = function (hit, price_key) {
+		window.transformHit = function (hit, price_key, helper) {
 			if (Array.isArray(hit.categories))
 				hit.categories = hit.categories.join(', ');
 			
@@ -20,6 +66,18 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				hit.categories_without_path = hit.categories_without_path.join(', ');
 			}
 			
+			var matchedColors = [];
+			
+			if (helper && algoliaConfig.useAdaptiveImage === true) {
+				if (hit.images_data && helper.state.facetsRefinements.color) {
+					matchedColors = helper.state.disjunctiveFacetsRefinements.color.slice(0); // slice to clone
+				}
+				
+				if (hit.images_data && helper.state.disjunctiveFacetsRefinements.color) {
+					matchedColors = helper.state.disjunctiveFacetsRefinements.color.slice(0); // slice to clone
+				}
+			}
+			
 			if (Array.isArray(hit.color)) {
 				var colors = [];
 				
@@ -27,17 +85,44 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					if (color.matchLevel === 'none') {
 						return;
 					}
+					
 					colors.push(color.value);
+					
+					if (algoliaConfig.useAdaptiveImage === true) {
+						var re = /<em>(.*?)<\/em>/g;
+						var matchedWords = color.value.match(re).map(function (val) {
+							return val.replace(/<\/?em>/g, '');
+						});
+						
+						var matchedColor = matchedWords.join(' ');
+						
+						if (hit.images_data && color.fullyHighlighted && color.fullyHighlighted === true) {
+							matchedColors.push(matchedColor);
+						}
+					}
 				});
 				
 				colors = colors.join(', ');
 				
-				hit._highlightResult.color = {value: colors};
+				hit._highlightResult.color = { value: colors };
 			}
 			else {
 				if (hit._highlightResult.color && hit._highlightResult.color.matchLevel === 'none') {
-					hit._highlightResult.color = {value: ''};
+					hit._highlightResult.color = { value: '' };
 				}
+			}
+			
+			if (algoliaConfig.useAdaptiveImage === true) {
+				$.each(matchedColors, function (i, color) {
+					color = color.toLowerCase();
+					
+					if (hit.images_data[color]) {
+						hit.image_url = hit.images_data[color];
+						hit.thumbnail_url = hit.images_data[color];
+						
+						return false;
+					}
+				});
 			}
 			
 			if (hit._highlightResult.color && hit._highlightResult.color.value && hit.categories_without_path) {
@@ -74,7 +159,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			
 			var options = {
 				hitsPerPage: section.hitsPerPage,
-				analyticsTags: 'autocomplete'
+				analyticsTags: 'autocomplete',
+				clickAnalytics: true
 			};
 			
 			var source;
@@ -82,6 +168,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			if (section.name === "products") {
 				options.facets = ['categories.level0'];
 				options.numericFilters = 'visibility_search=1';
+				options.ruleContexts = ['magento_filters', '']; // Empty context to keep BC for already create rules in dashboard
 				
 				source =  {
 					source: $.fn.autocomplete.sources.hits(algolia_client.initIndex(algoliaConfig.indexName + "_" + section.name), options),
@@ -109,9 +196,14 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							
 							return template;
 						},
-						suggestion: function (hit) {
-							hit = transformHit(hit, algoliaConfig.priceKey)
+						suggestion: function (hit, payload) {
+							hit = transformHit(hit, algoliaConfig.priceKey);
+							
 							hit.displayKey = hit.displayKey || hit.name;
+							
+							hit.__queryID = payload.queryID;
+							hit.__position = payload.hits.indexOf(hit) + 1;
+							
 							return algoliaConfig.autocomplete.templates[section.name].render(hit);
 						}
 					}
@@ -119,7 +211,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 			else if (section.name === "categories" || section.name === "pages")
 			{
-				if (section.name === "categories" && algoliaConfig.show_cats_not_included_in_navigation == false) {
+				if (section.name === "categories" && algoliaConfig.showCatsNotIncludedInNavigation === false) {
 					options.numericFilters = 'include_in_menu=1';
 				}
 				
@@ -128,7 +220,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					name: i,
 					templates: {
 						empty: '<div class="aa-no-results">' + algoliaConfig.translations.noResults + '</div>',
-						suggestion: function (hit) {
+						suggestion: function (hit, payload) {
 							if (section.name === 'categories') {
 								hit.displayKey = hit.path;
 							}
@@ -150,6 +242,10 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							}
 							
 							hit.displayKey = hit.displayKey || hit.name;
+							
+							hit.__queryID = payload.queryID;
+							hit.__position = payload.hits.indexOf(hit) + 1;
+							
 							return algoliaConfig.autocomplete.templates[section.name].render(hit);
 						}
 					}
@@ -162,9 +258,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				var products_index = algolia_client.initIndex(algoliaConfig.indexName + "_products");
 				
 				source = {
-					source: $.fn.autocomplete.sources.popularIn(suggestions_index, {
-						hitsPerPage: section.hitsPerPage
-					}, {
+					source: $.fn.autocomplete.sources.popularIn(suggestions_index, options, {
 						source: 'query',
 						index: products_index,
 						facets: ['categories.level0'],
@@ -179,7 +273,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					displayKey: 'query',
 					name: section.name,
 					templates: {
-						suggestion: function (hit) {
+						suggestion: function (hit, payload) {
 							if (hit.facet) {
 								hit.category = hit.facet.value;
 							}
@@ -193,6 +287,9 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							var toEscape = hit._highlightResult.query.value;
 							hit._highlightResult.query.value = algoliaBundle.autocomplete.escapeHighlightedString(toEscape);
 							
+							hit.__queryID = payload.queryID;
+							hit.__position = payload.hits.indexOf(hit) + 1;
+							
 							return algoliaConfig.autocomplete.templates.suggestions.render(hit);
 						}
 					}
@@ -202,15 +299,16 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				var index = algolia_client.initIndex(algoliaConfig.indexName + "_section_" + section.name);
 				
 				source = {
-					source: $.fn.autocomplete.sources.hits(index, {
-						hitsPerPage: section.hitsPerPage,
-						analyticsTags: 'autocomplete'
-					}),
+					source: $.fn.autocomplete.sources.hits(index, options),
 					displayKey: 'value',
 					name: i,
 					templates: {
-						suggestion: function (hit) {
+						suggestion: function (hit, payload) {
 							hit.url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + hit.value + '&refinement_key=' + section.name;
+							
+							hit.__queryID = payload.queryID;
+							hit.__position = payload.hits.indexOf(hit) + 1;
+							
 							return algoliaConfig.autocomplete.templates.additionalSection.render(hit);
 						}
 					}
@@ -313,7 +411,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			$(this).closest('form').submit(function (e) {
 				var query = $(this).find(algoliaConfig.autocomplete.selector).val();
 				
-				if (algoliaConfig.instant.enabled && query == '')
+				if (algoliaConfig.instant.enabled && query === '')
 					query = '__empty__';
 				
 				window.location = $(this).attr('action') + '?q=' + query;
@@ -343,40 +441,12 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			instant_search_bar.val(search.helper.state.query);
 		};
 		
-		window.handleInputCrossInstant = function (input) {
-			if (input.val().length > 0) {
-				input.closest('#instant-search-box').find('.clear-query-instant').show();
-			}
-			else {
-				input.closest('#instant-search-box').find('.clear-query-instant').hide();
-			}
-		};
-		
 		window.createISWidgetContainer = function (attributeName) {
 			var div = document.createElement('div');
 			div.className = 'is-widget-container-' + attributeName.split('.').join('_');
 			
 			return div;
 		};
-		
-		var instant_selector = !algoliaConfig.autocomplete.enabled ? ".algolia-search-input" : "#instant-search-bar";
-		
-		$(document).on('input', algoliaConfig.autocomplete.selector, function () {
-			handleInputCrossAutocomplete($(this));
-		});
-		
-		$(document).on('input', instant_selector, function () {
-			handleInputCrossInstant($(this));
-		});
-		
-		$(document).on('click', '.clear-query-instant', function () {
-			var input = $(this).closest('#instant-search-box').find('input');
-			
-			input.val('');
-			input.get(0).dispatchEvent(new Event('input'));
-			
-			handleInputCrossInstant(input);
-		});
 		
 		$(document).on('click', '.clear-query-autocomplete', function () {
 			var input = $(this).closest('#algolia-searchbox').find('input');
@@ -471,10 +541,10 @@ var AlgoliaBase64 = {
 			
 			output = output + String.fromCharCode(chr1);
 			
-			if (enc3 != 64) {
+			if (enc3 !== 64) {
 				output = output + String.fromCharCode(chr2);
 			}
-			if (enc4 != 64) {
+			if (enc4 !== 64) {
 				output = output + String.fromCharCode(chr3);
 			}
 		}

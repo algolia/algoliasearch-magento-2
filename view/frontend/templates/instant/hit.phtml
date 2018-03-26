@@ -1,17 +1,17 @@
 <?php
 
-/**
- * @var \Algolia\AlgoliaSearch\Block\Instant\Hit $block
- */
+/** @var \Algolia\AlgoliaSearch\Block\Instant\Hit $block */
 
 $priceKey = $block->getPriceKey();
+
+$origFormatedVar = 'price' . $priceKey . '_original_formated';
 
 ?>
 
 <script type="text/template" id="instant-hit-template">
     <div class="col-md-4 col-sm-6">
         <div class="result-wrapper">
-            <a href="{{url}}" class="result">
+            <a href="{{url}}" class="result" data-objectid="{{objectID}}" data-position="{{__position}}">
                 <div class="result-content">
                     <div class="result-thumbnail">
                         {{#image_url}}<img src="{{{ image_url }}}" />{{/image_url}}
@@ -27,7 +27,9 @@ $priceKey = $block->getPriceKey();
                                     <div class="rating-summary">
                                         <span class="label"><span>Rating:</span></span>
                                         <div class="rating-result" title="{{rating_summary}}%">
-                                            <span style="width:{{rating_summary}}%"><span>{{rating_summary}}%</span></span>
+                                            <span style="width:{{rating_summary}}%">
+                                                <span>{{rating_summary}}%</span>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -35,15 +37,18 @@ $priceKey = $block->getPriceKey();
                                 <div class="price">
                                     <div class="price-wrapper">
                                         <div>
-                                            <span class="after_special {{#price<?php echo $priceKey; ?>_original_formated}}promotion{{/price<?php echo $priceKey; ?>_original_formated}}">
-                                                {{price<?php echo $priceKey; ?>_formated}}
+                                            <span class="after_special
+                                                    {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                                                        promotion
+                                                    {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}">
+                                                {{price<?php echo $block->escapeHtml($priceKey); ?>_formated}}
                                             </span>
 
-                                            {{#price<?php echo $priceKey; ?>_original_formated}}
+                                            {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                                                 <span class="before_special">
-                                                    {{price<?php echo $priceKey; ?>_original_formated}}
+                                                    {{<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                                                 </span>
-                                            {{/price<?php echo $priceKey; ?>_original_formated}}
+                                            {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                                         </div>
                                     </div>
                                 </div>

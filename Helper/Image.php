@@ -2,17 +2,32 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Magento\Catalog\Model\Product\ImageFactory;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\View\Asset\Repository;
+use Magento\Framework\View\ConfigInterface;
+
 class Image extends \Magento\Catalog\Helper\Image
 {
-    protected $logger;
-    protected $options;
+    private $logger;
+    private $options;
 
-    public function __construct(\Magento\Framework\App\Helper\Context $context,
-                                \Magento\Catalog\Model\Product\ImageFactory $productImageFactory,
-                                \Magento\Framework\View\Asset\Repository $assetRepo,
-                                \Magento\Framework\View\ConfigInterface $viewConfig,
-                                Logger $logger,
-                                $options = []
+    /**
+     * Image constructor.
+     * @param Context $context
+     * @param ImageFactory $productImageFactory
+     * @param Repository $assetRepo
+     * @param ConfigInterface $viewConfig
+     * @param Logger $logger
+     * @param array $options
+     */
+    public function __construct(
+        Context $context,
+        ImageFactory $productImageFactory,
+        Repository $assetRepo,
+        ConfigInterface $viewConfig,
+        Logger $logger,
+        $options = []
     ) {
         parent::__construct($context, $productImageFactory, $assetRepo, $viewConfig);
         $this->logger = $logger;
@@ -75,6 +90,6 @@ class Image extends \Magento\Catalog\Helper\Image
 
     public function removePubDirectory($url)
     {
-        return str_replace('/pub/', '/', $url);;
+        return str_replace('/pub/', '/', $url);
     }
 }

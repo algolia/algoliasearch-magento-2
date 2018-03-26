@@ -6,6 +6,9 @@
     <type name="Magento\Catalog\Model\Product\Action">
         <plugin name="algoliaProductsMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>
     </type>
+    <type name="Magento\CatalogInventory\Model\ResourceModel\Stock\Item">
+        <plugin name="algoliaProducts" type="Algolia\AlgoliaSearch\Model\Indexer\StockItemObserver"/>
+    </type>
 
     <type name="Magento\Catalog\Model\ResourceModel\Category">
         <plugin name="algoliaCategories" type="Algolia\AlgoliaSearch\Model\Indexer\CategoryObserver"/>

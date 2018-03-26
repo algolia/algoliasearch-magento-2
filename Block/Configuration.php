@@ -17,7 +17,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 return true;
             }
 
-            if ($this->getConfigHelper()->replaceCategories() && $request->getControllerName() == 'category') {
+            if ($this->getConfigHelper()->replaceCategories() && $request->getControllerName() === 'category') {
                 $category = $this->getCurrentCategory();
                 if ($category && $category->getDisplayMode() !== 'PAGE') {
                     return true;
@@ -34,13 +34,15 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $catalogSearchHelper = $this->getCatalogSearchHelper();
 
+        $coreHelper = $this->getCoreHelper();
+
+        $categoryHelper = $this->getCategoryHelper();
+
         $productHelper = $this->getProductHelper();
 
         $algoliaHelper = $this->getAlgoliaHelper();
 
         $baseUrl = rtrim($this->getBaseUrl(), '/');
-
-        $isCategoryPage = false;
 
         $currencyCode = $this->getCurrencyCode();
         $currencySymbol = $this->getCurrencySymbol();
@@ -63,7 +65,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         /**
          * Handle category replacement
          */
-        if ($config->isInstantEnabled() && $config->replaceCategories() && $request->getControllerName() == 'category') {
+
+        $isCategoryPage = false;
+        if ($config->isInstantEnabled()
+            && $config->replaceCategories()
+            && $request->getControllerName() === 'category') {
             $category = $this->getCurrentCategory();
 
             if ($category && $category->getDisplayMode() !== 'PAGE') {
@@ -71,11 +77,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
                 $level = -1;
                 foreach ($category->getPathIds() as $treeCategoryId) {
-                    if ($path != '') {
+                    if ($path !== '') {
                         $path .= ' /// ';
                     }
 
-                    $path .= $productHelper->getCategoryName($treeCategoryId, $this->getStoreId());
+                    $path .= $categoryHelper->getCategoryName($treeCategoryId, $this->getStoreId());
 
                     if ($path) {
                         $level++;
@@ -91,7 +97,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
          */
         $facets = $config->getFacets();
 
-        $areCategoriesInFacets = false;
+        $areCategoriesInFacets = $this->areCategoriesInFacets($facets);
 
         if ($config->isInstantEnabled()) {
             $pageIdentifier = $request->getFullActionName();
@@ -99,7 +105,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             if ($pageIdentifier === 'catalogsearch_result_index') {
                 $query = $this->getRequest()->getParam($catalogSearchHelper->getQueryParamName());
 
-                if ($query == '__empty__') {
+                if ($query === '__empty__') {
                     $query = '';
                 }
 
@@ -108,26 +114,20 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 if ($refinementKey !== null) {
                     $refinementValue = $query;
                     $query = "";
-                }
-                else {
+                } else {
                     $refinementKey = "";
-                }
-            }
-
-            foreach ($facets as $facet) {
-                if ($facet['attribute'] === 'categories') {
-                    $areCategoriesInFacets = true;
-                    break;
                 }
             }
         }
 
         $algoliaJsConfig = [
             'instant' => [
-                'enabled' => (bool) $config->isInstantEnabled(),
+                'enabled' => $config->isInstantEnabled(),
                 'selector' => $config->getInstantSelector(),
                 'isAddToCartEnabled' => $config->isAddToCartEnable(),
                 'addToCartParams' => $addToCartParams,
+                'infiniteScrollEnabled' => $config->isInfiniteScrollEnabled(),
+                'urlTrackedParameters' => $this->getUrlTrackedParameters(),
             ],
             'autocomplete' => [
                 'enabled' => (bool) $config->isAutoCompleteEnabled(),
@@ -140,12 +140,17 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             ],
             'extensionVersion' => $config->getExtensionVersion(),
             'applicationId' => $config->getApplicationID(),
-            'indexName' => $productHelper->getBaseIndexName(),
-            'apiKey' => $algoliaHelper->generateSearchSecuredApiKey($config->getSearchOnlyAPIKey(), $config->getAttributesToRetrieve($customerGroupId)),
+            'indexName' => $coreHelper->getBaseIndexName(),
+            'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
+                $config->getSearchOnlyAPIKey(),
+                $config->getAttributesToRetrieve($customerGroupId)
+            ),
             'facets' => $facets,
             'areCategoriesInFacets' => $areCategoriesInFacets,
             'hitsPerPage' => (int) $config->getNumberOfProductResults(),
-            'sortingIndices' => array_values($config->getSortingIndices()),
+            'sortingIndices' => array_values($config->getSortingIndices(
+                $coreHelper->getIndexName($productHelper->getIndexNameSuffix())
+            )),
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $isCategoryPage,
             'removeBranding' => (bool) $config->isRemoveBranding(),
@@ -165,8 +170,12 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'showSuggestionsOnNoResultsPage' => $config->showSuggestionsOnNoResultsPage(),
             'baseUrl' => $baseUrl,
             'popularQueries' => $config->getPopularQueries(),
+            'useAdaptiveImage' => $config->useAdaptiveImage(),
             'urls' => [
                 'logo' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/search-by-algolia.svg'),
+            ],
+            'ccAnalytics' => [
+                'ISSelector' => $config->getClickConversionAnalyticsISSelector(),
             ],
             'analytics' => $config->getAnalyticsConfig(),
             'translations' => [
@@ -190,6 +199,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'categories' => __('Categories'),
                 'products' => __('Products'),
                 'searchBy' => __('Search by'),
+                'searchForFacetValuesPlaceholder' => __('Search for other ...'),
+                'showMore' => __('Show more products'),
             ],
         ];
 
@@ -198,5 +209,27 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $algoliaJsConfig = $transport->getData();
 
         return $algoliaJsConfig;
+    }
+
+    private function areCategoriesInFacets($facets)
+    {
+        foreach ($facets as $facet) {
+            if ($facet['attribute'] === 'categories') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getUrlTrackedParameters()
+    {
+        $urlTrackedParameters = ['query', 'attribute:*', 'index'];
+
+        if ($this->getConfigHelper()->isInfiniteScrollEnabled() === false) {
+            $urlTrackedParameters[] = 'page';
+        }
+
+        return $urlTrackedParameters;
     }
 }

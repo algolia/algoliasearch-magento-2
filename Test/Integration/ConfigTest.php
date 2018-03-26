@@ -28,11 +28,44 @@ class ConfigTest extends TestCase
                     $attributesMatched++;
                 } elseif ($facet['attribute'] === $indexFacet) {
                     $attributesMatched++;
+                } elseif ($facet['attribute'] === 'color' && 'searchable(color)' === $indexFacet) {
+                    $attributesMatched++;
                 }
             }
         }
 
         $this->assertEquals(count($facets), $attributesMatched);
+    }
+
+    public function testQueryRules()
+    {
+        /** @var Data $helper */
+        $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
+        $helper->saveConfigurationToAlgolia(1);
+
+        $this->algoliaHelper->waitLastTask();
+
+        $index = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products');
+
+        $matchedRules = [];
+
+        $hitsPerPage = 100;
+        $page = 0;
+        do {
+            $fetchedQueryRules = $index->searchRules([
+                'context' => 'magento_filters',
+                'page' => $page,
+                'hitsPerPage' => $hitsPerPage,
+            ]);
+
+            foreach ($fetchedQueryRules['hits'] as $hit) {
+                $matchedRules[] = $hit;
+            }
+
+            $page++;
+        } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
+
+        $this->assertEquals(1, count($matchedRules));
     }
 
     public function testAutomaticalSetOfCategoriesFacet()
@@ -43,7 +76,7 @@ class ConfigTest extends TestCase
         // Remove categories from facets
         $facets = $this->configHelper->getFacets();
         foreach ($facets as $key => $facet) {
-            if($facet['attribute'] === 'categories') {
+            if ($facet['attribute'] === 'categories') {
                 unset($facets[$key]);
                 break;
             }
@@ -96,7 +129,7 @@ class ConfigTest extends TestCase
 
     public function testRetrievableAttributes()
     {
-        $this->resetConfigs(array('algoliasearch_products/products/product_additional_attributes', 'algoliasearch_categories/categories/category_additional_attributes'));
+        $this->resetConfigs(['algoliasearch_products/products/product_additional_attributes', 'algoliasearch_categories/categories/category_additional_attributes']);
 
         $this->setConfig('algoliasearch_advanced/advanced/customer_groups_enable', '0');
 
@@ -172,7 +205,7 @@ class ConfigTest extends TestCase
         $this->algoliaHelper->waitLastTask();
 
         $indices = $this->algoliaHelper->listIndexes();
-        $indicesNames = array_map(function($indexData) {
+        $indicesNames = array_map(function ($indexData) {
             return $indexData['name'];
         }, $indices['items']);
 
@@ -192,12 +225,12 @@ class ConfigTest extends TestCase
         $helper->saveConfigurationToAlgolia(1);
         $this->algoliaHelper->waitLastTask();
 
-        $sections = array('products', 'categories', 'pages', 'suggestions');
+        $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix.'default_'.$section;
 
-            $this->algoliaHelper->setSettings($indexName, array('exactOnSingleWordQuery' => 'attribute'));
+            $this->algoliaHelper->setSettings($indexName, ['exactOnSingleWordQuery' => 'attribute']);
         }
 
         $this->algoliaHelper->waitLastTask();
@@ -233,7 +266,7 @@ class ConfigTest extends TestCase
         /** @var Data $helper */
         $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
 
-        $sections = array('products', 'categories', 'pages', 'suggestions');
+        $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
             $this->setConfig('algoliasearch_extra_settings/extra_settings/'.$section.'_extra_settings', '{"foo":"bar"}');
@@ -241,7 +274,7 @@ class ConfigTest extends TestCase
 
         try {
             $helper->saveConfigurationToAlgolia(1);
-        } catch(AlgoliaException $e) {
+        } catch (AlgoliaException $e) {
             $message = $e->getMessage();
 
             // Check if the error message contains error for all sections

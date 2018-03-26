@@ -15,8 +15,12 @@ class QueueRunner implements Magento\Framework\Indexer\ActionInterface, Magento\
     private $messageManager;
     private $output;
 
-    public function __construct(ConfigHelper $configHelper, Queue $queue, ManagerInterface $messageManager, ConsoleOutput $output)
-    {
+    public function __construct(
+        ConfigHelper $configHelper,
+        Queue $queue,
+        ManagerInterface $messageManager,
+        ConsoleOutput $output
+    ) {
         $this->configHelper = $configHelper;
         $this->queue = $queue;
         $this->messageManager = $messageManager;
@@ -25,12 +29,16 @@ class QueueRunner implements Magento\Framework\Indexer\ActionInterface, Magento\
 
     public function execute($ids)
     {
+        return $this;
     }
 
     public function executeFull()
     {
-        if (!$this->configHelper->getApplicationID() || !$this->configHelper->getAPIKey() || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed: You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed: 
+                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 
             if (php_sapi_name() === 'cli') {
                 $this->output->writeln($errorMessage);
@@ -44,15 +52,15 @@ class QueueRunner implements Magento\Framework\Indexer\ActionInterface, Magento\
         }
 
         $this->queue->runCron();
-
-        return;
     }
 
     public function executeList(array $ids)
     {
+        return $this;
     }
 
     public function executeRow($id)
     {
+        return $this;
     }
 }

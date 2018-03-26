@@ -27,16 +27,18 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		algolia_client.addAlgoliaAgent('Magento2 integration (' + algoliaConfig.extensionVersion + ')');
 		
 		/** Add products and categories that are required sections **/
-		var nb_cat = algoliaConfig.autocomplete.nbOfCategoriesSuggestions >= 1 ? algoliaConfig.autocomplete.nbOfCategoriesSuggestions : 2;
-		var nb_pro = algoliaConfig.autocomplete.nbOfProductsSuggestions >= 1 ? algoliaConfig.autocomplete.nbOfProductsSuggestions : 6;
-		var nb_que = algoliaConfig.autocomplete.nbOfQueriesSuggestions >= 0 ? algoliaConfig.autocomplete.nbOfQueriesSuggestions : 0;
-		
-		if (nb_que > 0) {
-			algoliaConfig.autocomplete.sections.unshift({ hitsPerPage: nb_que, label: '', name: "suggestions"});
+		/** Add autocomplete menu sections **/
+		if (algoliaConfig.autocomplete.nbOfProductsSuggestions > 0) {
+			algoliaConfig.autocomplete.sections.unshift({ hitsPerPage: algoliaConfig.autocomplete.nbOfProductsSuggestions, label: algoliaConfig.translations.products, name: "products"});
 		}
 		
-		algoliaConfig.autocomplete.sections.unshift({ hitsPerPage: nb_cat, label: algoliaConfig.translations.categories, name: "categories"});
-		algoliaConfig.autocomplete.sections.unshift({ hitsPerPage: nb_pro, label: algoliaConfig.translations.products, name: "products"});
+		if (algoliaConfig.autocomplete.nbOfCategoriesSuggestions > 0) {
+			algoliaConfig.autocomplete.sections.unshift({ hitsPerPage: algoliaConfig.autocomplete.nbOfCategoriesSuggestions, label: algoliaConfig.translations.categories, name: "categories"});
+		}
+		
+		if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
+			algoliaConfig.autocomplete.sections.unshift({ hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions, label: '', name: "suggestions"});
+		}
 		
 		/** Setup autocomplete data sources **/
 		var sources = [],
@@ -79,8 +81,16 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				options.templates.footer = '<div class="footer_algolia"><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="Search by Algolia" target="_blank"><img src="' +algoliaConfig.urls.logo + '"  alt="Search by Algolia" /></a></div>';
 			}
 			
+			sources = algolia.triggerHooks('beforeAutocompleteSources', sources, algolia_client);
+			options = algolia.triggerHooks('beforeAutocompleteOptions', options);
+			
+			// Keep for backward compatibility
 			if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
-				var hookResult = algoliaHookBeforeAutocompleteStart(sources, options);
+				console.warn('Deprecated! You are using an old API for Algolia\'s front end hooks. ' +
+					'Please, replace your hook method with new hook API. ' +
+					'More information you can find on https://community.algolia.com/magento/doc/m2/frontend-events/');
+				
+				var hookResult = algoliaHookBeforeAutocompleteStart(sources, options, algolia_client);
 				
 				sources = hookResult.shift();
 				options = hookResult.shift();
@@ -111,12 +121,19 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			var dropdown = data.dropdown;
 			var suggestionClass = '.' + dropdown.cssClasses.prefix + dropdown.cssClasses.suggestion;
 			
-			dropdown.$menu.on('touchstart', suggestionClass, function(e) {
-				e.preventDefault();
-				e.stopPropagation();
-				
-				var url = $(this).find('a').attr('href');
-				location.assign(url);
+			var touchmoved;
+			dropdown.$menu.on('touchend', suggestionClass, function (e) {
+				if(touchmoved === false) {
+					e.preventDefault();
+					e.stopPropagation();
+					
+					var url = $(this).find('a').attr('href');
+					location.assign(url);
+				}
+			}).on('touchmove', function (){
+				touchmoved = true;
+			}).on('touchstart', function(){
+				touchmoved = false;
 			});
 		});
 	});

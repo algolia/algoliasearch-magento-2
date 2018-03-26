@@ -4,57 +4,77 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Magento\Customer\Model\Session;
 use Magento\Framework\App\ActionInterface;
+use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\Data\Form\FormKey;
 use Magento\Framework\Locale\Currency;
 use Magento\Framework\Registry;
 use Magento\Framework\Url\Helper\Data;
 use Magento\Framework\View\Element\Template;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
-use Magento\Customer\Model\GroupManagement;
+use Magento\Framework\App\Http\Context as HttpContext;
+use Magento\Customer\Model\Context as CustomerContext;
 
-class Algolia extends Template implements \Magento\Framework\Data\CollectionDataSourceInterface
+class Algolia extends Template implements CollectionDataSourceInterface
 {
-    protected $config;
-    protected $catalogSearchHelper;
-    protected $customerSession;
-    protected $storeManager;
-    protected $objectManager;
-    protected $registry;
-    protected $productHelper;
-    protected $currency;
-    protected $algoliaHelper;
-    protected $urlHelper;
-    protected $formKey;
+    private $config;
+    private $catalogSearchHelper;
+    private $storeManager;
+    private $objectManager;
+    private $registry;
+    private $productHelper;
+    private $currency;
+    private $algoliaHelper;
+    private $urlHelper;
+    private $formKey;
+    private $httpContext;
+    private $coreHelper;
+    private $categoryHelper;
 
-    protected $priceKey;
+    private $priceKey;
 
     public function __construct(
         Template\Context $context,
         ConfigHelper $config,
         CatalogSearchHelper $catalogSearchHelper,
-        Session $customerSession,
         ProductHelper $productHelper,
         Currency $currency,
         Registry $registry,
         AlgoliaHelper $algoliaHelper,
         Data $urlHelper,
         FormKey $formKey,
+        HttpContext $httpContext,
+        CoreHelper $coreHelper,
+        CategoryHelper $categoryHelper,
         array $data = []
     ) {
         $this->config = $config;
         $this->catalogSearchHelper = $catalogSearchHelper;
-        $this->customerSession = $customerSession;
         $this->productHelper = $productHelper;
         $this->currency = $currency;
         $this->registry = $registry;
         $this->algoliaHelper = $algoliaHelper;
         $this->urlHelper = $urlHelper;
         $this->formKey = $formKey;
+        $this->httpContext = $httpContext;
+        $this->coreHelper = $coreHelper;
+        $this->categoryHelper = $categoryHelper;
 
         parent::__construct($context, $data);
+    }
+
+    /**
+     * @return \Magento\Store\Model\Store
+     */
+    public function getStore()
+    {
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->_storeManager->getStore();
+
+        return $store;
     }
 
     public function getConfigHelper()
@@ -62,9 +82,19 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
         return $this->config;
     }
 
+    public function getCoreHelper()
+    {
+        return $this->coreHelper;
+    }
+
     public function getProductHelper()
     {
         return $this->productHelper;
+    }
+
+    public function getCategoryHelper()
+    {
+        return $this->categoryHelper;
     }
 
     public function getCatalogSearchHelper()
@@ -83,20 +113,25 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
     }
     public function getCurrencyCode()
     {
-        return $this->_storeManager->getStore()->getCurrentCurrencyCode();
+        return $this->getStore()->getCurrentCurrencyCode();
     }
 
     public function getGroupId()
     {
-        return $this->customerSession->isLoggedIn() ? $this->customerSession->getCustomer()->getGroupId() : GroupManagement::NOT_LOGGED_IN_ID;
+        return $this->httpContext->getValue(CustomerContext::CONTEXT_GROUP);
     }
 
     public function getPriceKey()
     {
         if ($this->priceKey === null) {
-            $groupId = $this->getGroupId();
             $currencyCode = $this->getCurrencyCode();
-            $this->priceKey = $this->config->isCustomerGroupsEnabled($this->_storeManager->getStore()->getStoreId()) ? '.' . $currencyCode . '.group_' . $groupId : '.' . $currencyCode . '.default';
+
+            $this->priceKey = '.' . $currencyCode . '.default';
+
+            if ($this->config->isCustomerGroupsEnabled($this->getStore()->getStoreId())) {
+                $groupId = $this->getGroupId();
+                $this->priceKey = '.' . $currencyCode . '.group_' . $groupId;
+            }
         }
 
         return $this->priceKey;
@@ -104,7 +139,7 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
 
     public function getStoreId()
     {
-        return $this->_storeManager->getStore()->getStoreId();
+        return $this->getStore()->getStoreId();
     }
 
     public function getCurrentCategory()
@@ -132,11 +167,10 @@ class Algolia extends Template implements \Magento\Framework\Data\CollectionData
             '_secure' => $this->algoliaHelper->getRequest()->isSecure()
         ];
 
-        if (!empty($additional)) {
+        if ($additional !== []) {
             $routeParams = array_merge($routeParams, $additional);
         }
 
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
     }
 }
-

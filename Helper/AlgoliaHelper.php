@@ -13,31 +13,35 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 class AlgoliaHelper extends AbstractHelper
 {
     /** @var Client */
-    protected $client;
+    private $client;
 
     /** @var ConfigHelper */
-    protected $config;
+    private $config;
 
     /** @var ManagerInterface */
-    protected $messageManager;
+    private $messageManager;
 
     /** @var ConsoleOutput */
-    protected $consoleOutput;
+    private $consoleOutput;
 
     /** @var int */
-    protected $maxRecordSize = 20000;
+    private $maxRecordSize = 20000;
 
     /** @var array */
-    protected $potentiallyLongAttributes = ['description', 'short_description', 'meta_description', 'content'];
+    private $potentiallyLongAttributes = ['description', 'short_description', 'meta_description', 'content'];
 
     /** @var string */
     private static $lastUsedIndexName;
 
-    /** @var int */
+    /** @var string */
     private static $lastTaskId;
 
-    public function __construct(Context $context, ConfigHelper $configHelper, ManagerInterface $messageManager, ConsoleOutput $consoleOutput)
-    {
+    public function __construct(
+        Context $context,
+        ConfigHelper $configHelper,
+        ManagerInterface $messageManager,
+        ConsoleOutput $consoleOutput
+    ) {
         parent::__construct($context);
 
         $this->config = $configHelper;
@@ -88,11 +92,15 @@ class AlgoliaHelper extends AbstractHelper
         return $this->getIndex($indexName)->getObjects($objectIds);
     }
 
-    public function setSettings($indexName, $settings, $forwardToReplicas = false)
+    public function setSettings($indexName, $settings, $forwardToReplicas = false, $mergeSettings = false)
     {
         $this->checkClient(__FUNCTION__);
 
         $index = $this->getIndex($indexName);
+
+        if ($mergeSettings === true) {
+            $settings = $this->mergeSettings($indexName, $settings);
+        }
 
         $res = $index->setSettings($settings, $forwardToReplicas);
 
@@ -201,7 +209,13 @@ class AlgoliaHelper extends AbstractHelper
         $hitsPerPage = 100;
         $page = 0;
         do {
-            $complexSynonyms = $index->searchSynonyms('', ['altCorrection1', 'altCorrection2', 'placeholder'], $page, $hitsPerPage);
+            $complexSynonyms = $index->searchSynonyms(
+                '',
+                ['altCorrection1', 'altCorrection2', 'placeholder'],
+                $page,
+                $hitsPerPage
+            );
+
             foreach ($complexSynonyms['hits'] as $hit) {
                 unset($hit['_highlightResult']);
 
@@ -211,10 +225,9 @@ class AlgoliaHelper extends AbstractHelper
             $page++;
         } while (($page * $hitsPerPage) < $complexSynonyms['nbHits']);
 
-        if (empty($synonyms)) {
+        if (!$synonyms) {
             $res = $index->clearSynonyms(true);
-        }
-        else {
+        } else {
             $res = $index->batchSynonyms($synonyms, true, true);
         }
 
@@ -242,7 +255,7 @@ class AlgoliaHelper extends AbstractHelper
             $page++;
         } while (($page * $hitsPerPage) < $fetchedSynonyms['nbHits']);
 
-        if (empty($synonymsToSet)) {
+        if (!$synonymsToSet) {
             $res = $toIndex->clearSynonyms(true);
         } else {
             $res = $toIndex->batchSynonyms($synonymsToSet, true, true);
@@ -276,7 +289,7 @@ class AlgoliaHelper extends AbstractHelper
             $page++;
         } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
 
-        if (empty($queryRulesToSet)) {
+        if (!$queryRulesToSet) {
             $res = $toIndex->clearRules(true);
         } else {
             $res = $toIndex->batchRules($queryRulesToSet, true, true);
@@ -295,7 +308,8 @@ class AlgoliaHelper extends AbstractHelper
         $this->resetCredentialsFromConfig();
 
         if (!isset($this->client)) {
-            throw new AlgoliaException('Operation "' . $methodName . ' could not be performed because Algolia credentials were not provided.');
+            $msg = 'Operation '.$methodName.' could not be performed because Algolia credentials were not provided.';
+            throw new AlgoliaException($msg);
         }
     }
 
@@ -307,14 +321,21 @@ class AlgoliaHelper extends AbstractHelper
         self::$lastTaskId = $res['taskID'];
     }
 
-    public function waitLastTask()
+    public function waitLastTask($lastUsedIndexName = null, $lastTaskId = null)
     {
-        if (!isset(self::$lastUsedIndexName) || !isset(self::$lastTaskId)) {
+        if ($lastUsedIndexName === null && isset(self::$lastUsedIndexName)) {
+            $lastUsedIndexName = self::$lastUsedIndexName;
+        }
+
+        if ($lastTaskId === null && isset(self::$lastTaskId)) {
+            $lastTaskId = self::$lastTaskId;
+        }
+        if (!$lastUsedIndexName || !$lastTaskId) {
             return;
         }
 
         $this->checkClient(__FUNCTION__);
-        $this->client->initIndex(self::$lastUsedIndexName)->waitTask(self::$lastTaskId);
+        $this->client->initIndex($lastUsedIndexName)->waitTask($lastTaskId);
     }
 
     private function prepareRecords(&$objects, $indexName)
@@ -332,29 +353,36 @@ class AlgoliaHelper extends AbstractHelper
 
             if ($object === false) {
                 $longestAttribute = $this->getLongestAttribute($previousObject);
-                $modifiedIds[] = $indexName.' - ID '.$previousObject['objectID'].' - skipped - longest attribute: '.$longestAttribute;
+                $modifiedIds[] = $indexName.' 
+                    - ID '.$previousObject['objectID'].' - skipped - longest attribute: '.$longestAttribute;
 
                 unset($objects[$key]);
             } elseif ($previousObject !== $object) {
                 $modifiedIds[] = $indexName.' - ID '.$previousObject['objectID'].' - truncated';
             }
+
+            $object = $this->castRecord($object);
         }
 
-        if (!empty($modifiedIds)) {
+        if ($modifiedIds && $modifiedIds !== []) {
             $separator = php_sapi_name() === 'cli' ? "\n" : '<br>';
 
-            $errorMessage = 'Algolia reindexing: You have some records which are too big to be indexed in Algolia. They have either been truncated (removed attributes: '.implode(', ', $this->potentiallyLongAttributes).') or skipped completely: '.$separator.implode($separator, $modifiedIds);
+            $errorMessage = 'Algolia reindexing: 
+                You have some records which are too big to be indexed in Algolia. 
+                They have either been truncated 
+                (removed attributes: '.implode(', ', $this->potentiallyLongAttributes).') 
+                or skipped completely: '.$separator.implode($separator, $modifiedIds);
 
             if (php_sapi_name() === 'cli') {
                 $this->consoleOutput->writeln($errorMessage);
                 return;
             }
 
-            $this->messageManager->addError($errorMessage);
+            $this->messageManager->addErrorMessage($errorMessage);
         }
     }
 
-    public function handleTooBigRecord($object)
+    private function handleTooBigRecord($object)
     {
         $size = mb_strlen(json_encode($object));
 
@@ -391,5 +419,63 @@ class AlgoliaHelper extends AbstractHelper
         }
 
         return $longestAttribute;
+    }
+
+    public function castProductObject(&$productData)
+    {
+        $nonCastableAttributes = ['sku', 'name', 'description'];
+
+        foreach ($productData as $key => &$data) {
+            if (in_array($key, $nonCastableAttributes, true) === true) {
+                continue;
+            }
+
+            $data = $this->castAttribute($data);
+
+            if (is_array($data) === false) {
+                $data = explode('|', $data);
+
+                if (count($data) === 1) {
+                    $data = $data[0];
+                    $data = $this->castAttribute($data);
+                } else {
+                    foreach ($data as &$element) {
+                        $element = $this->castAttribute($element);
+                    }
+                }
+            }
+        }
+    }
+
+    private function castRecord($object)
+    {
+        foreach ($object as &$value) {
+            $value = $this->castAttribute($value);
+        }
+
+        return $object;
+    }
+
+    private function castAttribute($value)
+    {
+        if (is_numeric($value) && floatval($value) === floatval((int) $value)) {
+            return (int) $value;
+        }
+
+        if (is_numeric($value)) {
+            return floatval($value);
+        }
+
+        return $value;
+    }
+
+    public function getLastIndexName()
+    {
+        return self::$lastUsedIndexName;
+    }
+
+    public function getLastTaskId()
+    {
+        return self::$lastTaskId;
     }
 }

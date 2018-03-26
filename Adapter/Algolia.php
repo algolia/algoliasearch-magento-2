@@ -23,10 +23,10 @@ use Magento\Store\Model\StoreManagerInterface;
 class Algolia implements AdapterInterface
 {
     /** @var Mapper */
-    protected $mapper;
+    private $mapper;
 
     /** @var ResponseFactory */
-    protected $responseFactory;
+    private $responseFactory;
 
     /** @var ResourceConnection */
     private $resource;
@@ -38,22 +38,22 @@ class Algolia implements AdapterInterface
     private $temporaryStorageFactory;
 
     /** @var ConfigHelper */
-    protected $config;
+    private $config;
 
     /** @var Data */
-    protected $catalogSearchHelper;
+    private $catalogSearchHelper;
 
     /** @var StoreManagerInterface */
-    protected $storeManager;
+    private $storeManager;
 
     /** @var AlgoliaHelper */
-    protected $algoliaHelper;
+    private $algoliaHelper;
 
     /** @var Http */
-    protected $request;
+    private $request;
 
     /** @var DocumentFactory */
-    protected $documentFactory;
+    private $documentFactory;
 
     /**
      * @param Mapper $mapper
@@ -170,7 +170,7 @@ class Algolia implements AdapterInterface
     /** @return boolean */
     private function isSearch()
     {
-        return ($this->request->getFullActionName() == 'catalogsearch_result_index');
+        return ($this->request->getFullActionName() === 'catalogsearch_result_index');
     }
 
     /**
@@ -183,9 +183,9 @@ class Algolia implements AdapterInterface
     private function isReplaceCategory($storeId)
     {
         return (
-            $this->request->getControllerName() == 'category'
-            && $this->config->replaceCategories($storeId) == true
-            && $this->config->isInstantEnabled($storeId) == true
+            $this->request->getControllerName() === 'category'
+            && $this->config->replaceCategories($storeId) === true
+            && $this->config->isInstantEnabled($storeId) === true
         );
     }
 
@@ -199,14 +199,16 @@ class Algolia implements AdapterInterface
     private function isReplaceAdvancedSearch($storeId)
     {
         return (
-            $this->request->getFullActionName() == 'catalogsearch_advanced_result'
-            && $this->config->isInstantEnabled($storeId) == true
+            $this->request->getFullActionName() === 'catalogsearch_advanced_result'
+            && $this->config->isInstantEnabled($storeId) === true
         );
     }
 
     private function getDocument20($document)
     {
-        return new \Magento\Framework\Search\Document($document['entity_id'], ['score' => new \Magento\Framework\Search\DocumentField('score', $document['score'])]);
+        return new \Magento\Framework\Search\Document($document['entity_id'], [
+            'score' => new \Magento\Framework\Search\DocumentField('score', $document['score']),
+        ]);
     }
 
     private function getDocument21($document)
@@ -232,7 +234,7 @@ class Algolia implements AdapterInterface
         return $connection->fetchAssoc($select);
     }
 
-    /** @return false|\Magento\Framework\DB\Adapter\AdapterInterface */
+    /** @return \Magento\Framework\DB\Adapter\AdapterInterface */
     private function getConnection()
     {
         return $this->resource->getConnection();

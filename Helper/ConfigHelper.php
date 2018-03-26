@@ -23,6 +23,7 @@ class ConfigHelper
     const SEARCH_ONLY_API_KEY = 'algoliasearch_credentials/credentials/search_only_api_key';
     const INDEX_PREFIX = 'algoliasearch_credentials/credentials/index_prefix';
     const IS_INSTANT_ENABLED = 'algoliasearch_credentials/credentials/is_instant_enabled';
+    const USE_ADAPTIVE_IMAGE = 'algoliasearch_credentials/credentials/use_adaptive_image';
 
     const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
     const INSTANT_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
@@ -30,6 +31,7 @@ class ConfigHelper
     const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant/max_values_per_facet';
     const SORTING_INDICES = 'algoliasearch_instant/instant/sorts';
     const XML_ADD_TO_CART_ENABLE = 'algoliasearch_instant/instant/add_to_cart_enable';
+    const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant/infinite_scroll_enable';
 
     const NB_OF_PRODUCTS_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions';
     const NB_OF_CATEGORIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_categories_suggestions';
@@ -50,7 +52,8 @@ class ConfigHelper
     const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
     const INDEX_PRODUCT_COUNT = 'algoliasearch_categories/categories/index_product_count';
     const CATEGORY_CUSTOM_RANKING = 'algoliasearch_categories/categories/custom_ranking_category_attributes';
-    const SHOW_CATS_NOT_INCLUDED_IN_NAVIGATION = 'algoliasearch_categories/categories/show_cats_not_included_in_navigation';
+    const SHOW_CATS_NOT_INCLUDED_IN_NAV = 'algoliasearch_categories/categories/show_cats_not_included_in_navigation';
+    const INDEX_EMPTY_CATEGORIES = 'algoliasearch_categories/categories/index_empty_categories';
 
     const IS_ACTIVE = 'algoliasearch_queue/queue/active';
     const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
@@ -65,10 +68,13 @@ class ConfigHelper
     const ONEWAY_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/oneway_synonyms';
     const SYNONYMS_FILE = 'algoliasearch_synonyms/synonyms_group/synonyms_file';
 
-    const ANALYTICS_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
-    const ANALYTICS_DELAY = 'algoliasearch_analytics/analytics_group/delay';
-    const ANALYTICS_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
-    const ANALYTICS_PUSH_INITIAL_SEARCH = 'algoliasearch_analytics/analytics_group/push_initial_search';
+    const CC_ANALYTICS_ENABLE = 'algoliasearch_cc_analytics/cc_analytics_group/enable';
+    const CC_ANALYTICS_IS_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/is_selector';
+
+    const GA_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
+    const GA_DELAY = 'algoliasearch_analytics/analytics_group/delay';
+    const GA_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
+    const GA_PUSH_INITIAL_SEARCH = 'algoliasearch_analytics/analytics_group/push_initial_search';
 
     const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/advanced/number_of_element_by_page';
     const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
@@ -78,7 +84,12 @@ class ConfigHelper
     const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
     const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
     const AUTOCOMPLETE_SELECTOR = 'algoliasearch_advanced/advanced/autocomplete_selector';
-    const INDEX_PRODUCT_ON_CATEGORY_PRODUCTS_UPDATE = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
+    const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
+    const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
+    const PREVENT_BACKEND_RENDERING_DISPLAY_MODE =
+        'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode';
+    const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
+        'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
 
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
@@ -88,9 +99,8 @@ class ConfigHelper
     const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
     const EXTRA_SETTINGS_PAGES = 'algoliasearch_extra_settings/extra_settings/pages_extra_settings';
     const EXTRA_SETTINGS_SUGGESTIONS = 'algoliasearch_extra_settings/extra_settings/suggestions_extra_settings';
-    const EXTRA_SETTINGS_ADDITIONAL_SECTIONS = 'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
-
-    protected $_productTypeMap = [];
+    const EXTRA_SETTINGS_ADDITIONAL_SECTIONS =
+        'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
 
     private $configInterface;
     private $objectManager;
@@ -103,17 +113,19 @@ class ConfigHelper
     private $eventManager;
     private $currencyManager;
 
-    public function __construct(Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
-                                Magento\Framework\ObjectManagerInterface $objectManager,
-                                StoreManagerInterface $storeManager,
-                                Currency $currency,
-                                DirCurrency $dirCurrency,
-                                DirectoryList $directoryList,
-                                Magento\Framework\Module\ResourceInterface $moduleResource,
-                                Magento\Framework\App\ProductMetadataInterface $productMetadata,
-                                Magento\Framework\Event\ManagerInterface $eventManager,
-                                Magento\Directory\Model\Currency $currencyManager)
-    {
+    public function __construct(
+        Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
+        Magento\Framework\ObjectManagerInterface $objectManager,
+        StoreManagerInterface $storeManager,
+        Currency $currency,
+        DirCurrency $dirCurrency,
+        DirectoryList $directoryList,
+        Magento\Framework\Module\ResourceInterface $moduleResource,
+        Magento\Framework\App\ProductMetadataInterface $productMetadata,
+        Magento\Framework\Event\ManagerInterface $eventManager,
+        Magento\Directory\Model\Currency $currencyManager
+    ) {
+    
         $this->objectManager = $objectManager;
         $this->configInterface = $configInterface;
         $this->currency = $currency;
@@ -128,12 +140,25 @@ class ConfigHelper
 
     public function indexOutOfStockOptions($storeId = null)
     {
-        return $this->configInterface->getValue(self::INDEX_OUT_OF_STOCK_OPTIONS, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(
+            self::INDEX_OUT_OF_STOCK_OPTIONS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function showCatsNotIncludedInNavigation($storeId = null)
     {
-        return $this->configInterface->getValue(self::SHOW_CATS_NOT_INCLUDED_IN_NAVIGATION, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(
+            self::SHOW_CATS_NOT_INCLUDED_IN_NAV,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function shouldIndexEmptyCategories($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::INDEX_EMPTY_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getMagentoVersion()
@@ -163,33 +188,54 @@ class ConfigHelper
 
     public function indexProductOnCategoryProductsUpdate($storeId = null)
     {
-        return $this->configInterface->getValue(self::INDEX_PRODUCT_ON_CATEGORY_PRODUCTS_UPDATE, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->getValue(
+            self::IDX_PRODUCT_ON_CAT_PRODUCTS_UPD,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function getNumberOfQueriesSuggestions($storeId = null)
     {
-        return $this->configInterface->getValue(self::NB_OF_QUERIES_SUGGESTIONS, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->getValue(
+            self::NB_OF_QUERIES_SUGGESTIONS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function getNumberOfProductsSuggestions($storeId = null)
     {
-        return $this->configInterface->getValue(self::NB_OF_PRODUCTS_SUGGESTIONS, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->getValue(
+            self::NB_OF_PRODUCTS_SUGGESTIONS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function getNumberOfCategoriesSuggestions($storeId = null)
     {
-        return $this->configInterface->getValue(self::NB_OF_CATEGORIES_SUGGESTIONS, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->getValue(
+            self::NB_OF_CATEGORIES_SUGGESTIONS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function showSuggestionsOnNoResultsPage($storeId = null)
     {
-        return $this->configInterface->getValue(self::SHOW_SUGGESTIONS_NO_RESULTS, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->getValue(
+            self::SHOW_SUGGESTIONS_NO_RESULTS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function isEnabledFrontEnd($storeId = null)
     {
         // Frontend = Backend + Frontend
-        return (bool) $this->configInterface->getValue(self::ENABLE_BACKEND, ScopeInterface::SCOPE_STORE, $storeId) && (bool) $this->configInterface->getValue(self::ENABLE_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
+        return (bool) $this->configInterface->getValue(self::ENABLE_BACKEND, ScopeInterface::SCOPE_STORE, $storeId)
+            && (bool) $this->configInterface->getValue(self::ENABLE_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isEnabledBackend($storeId = null)
@@ -204,7 +250,7 @@ class ConfigHelper
 
     public function isLoggingEnabled($storeId = null)
     {
-        return $this->configInterface->getValue(self::LOGGING_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::LOGGING_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getShowOutOfStock($storeId = null)
@@ -214,13 +260,22 @@ class ConfigHelper
 
     public function useSecureUrlsInFrontend($storeId = null)
     {
-        return (bool) $this->configInterface->getValue(self::USE_SECURE_IN_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
+        return (bool) $this->configInterface->getValue(
+            self::USE_SECURE_IN_FRONTEND,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function getImageWidth($storeId = null)
     {
-        $imageWidth = $this->configInterface->getValue(self::XML_PATH_IMAGE_WIDTH, ScopeInterface::SCOPE_STORE, $storeId);
-        if (empty($imageWidth)) {
+        $imageWidth = $this->configInterface->getValue(
+            self::XML_PATH_IMAGE_WIDTH,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        if (!$imageWidth) {
             return 265;
         }
 
@@ -229,8 +284,13 @@ class ConfigHelper
 
     public function getImageHeight($storeId = null)
     {
-        $imageHeight = $this->configInterface->getValue(self::XML_PATH_IMAGE_HEIGHT, ScopeInterface::SCOPE_STORE, $storeId);
-        if (empty($imageHeight)) {
+        $imageHeight = $this->configInterface->getValue(
+            self::XML_PATH_IMAGE_HEIGHT,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        if (!$imageHeight) {
             return 265;
         }
 
@@ -259,7 +319,11 @@ class ConfigHelper
 
     public function getAutocompleteSections($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(self::AUTOCOMPLETE_SECTIONS, ScopeInterface::SCOPE_STORE, $storeId));
+        $attrs = $this->unserialize($this->configInterface->getValue(
+            self::AUTOCOMPLETE_SECTIONS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         if (is_array($attrs)) {
             return array_values($attrs);
@@ -280,7 +344,17 @@ class ConfigHelper
 
     public function isAddToCartEnable($storeId = null)
     {
-        return (bool) $this->configInterface->getValue(self::XML_ADD_TO_CART_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+        return (bool) $this->configInterface->getValue(
+            self::XML_ADD_TO_CART_ENABLE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function isInfiniteScrollEnabled($storeId = null)
+    {
+        return $this->isInstantEnabled($storeId)
+            && $this->configInterface->isSetFlag(self::INFINITE_SCROLL_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isRemoveBranding($storeId = null)
@@ -320,7 +394,11 @@ class ConfigHelper
 
     public function getNumberOfProductResults($storeId = null)
     {
-        return (int) $this->configInterface->getValue(self::NUMBER_OF_PRODUCT_RESULTS, ScopeInterface::SCOPE_STORE, $storeId);
+        return (int) $this->configInterface->getValue(
+            self::NUMBER_OF_PRODUCT_RESULTS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function isPopupEnabled($storeId = null)
@@ -330,7 +408,7 @@ class ConfigHelper
 
     public function replaceCategories($storeId = null)
     {
-        return $this->configInterface->getValue(self::REPLACE_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::REPLACE_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isAutoCompleteEnabled($storeId = null)
@@ -340,7 +418,12 @@ class ConfigHelper
 
     public function isInstantEnabled($storeId = null)
     {
-        return $this->configInterface->getValue(self::IS_INSTANT_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::IS_INSTANT_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function useAdaptiveImage($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::USE_ADAPTIVE_IMAGE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getInstantSelector($storeId = null)
@@ -350,7 +433,11 @@ class ConfigHelper
 
     public function getExcludedPages($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(self::EXCLUDED_PAGES, ScopeInterface::SCOPE_STORE, $storeId));
+        $attrs = $this->unserialize($this->configInterface->getValue(
+            self::EXCLUDED_PAGES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         if (is_array($attrs)) {
             return $attrs;
@@ -361,7 +448,11 @@ class ConfigHelper
 
     public function getRenderTemplateDirectives($storeId = null)
     {
-        return $this->configInterface->getValue(self::RENDER_TEMPLATE_DIRECTIVES, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->getValue(
+            self::RENDER_TEMPLATE_DIRECTIVES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function isAutocompleteDebugEnabled($storeId = null)
@@ -369,12 +460,13 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_MENU_DEBUG, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getSortingIndices($storeId = null)
+    public function getSortingIndices($originalIndexName, $storeId = null)
     {
-        /** @var ProductHelper $productHelper */
-        $productHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\Entity\ProductHelper');
-
-        $attrs = $this->unserialize($this->configInterface->getValue(self::SORTING_INDICES, ScopeInterface::SCOPE_STORE, $storeId));
+        $attrs = $this->unserialize($this->configInterface->getValue(
+            self::SORTING_INDICES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         $currency = $this->getCurrencyCode($storeId);
 
@@ -391,14 +483,14 @@ class ConfigHelper
 
                     $indexNameSuffix = 'group_'.$customerGroupId;
 
-                    $indexName = $productHelper->getIndexName($storeId).'_'.$attr['attribute'].'_'.$indexNameSuffix.'_'.$attr['sort'];
+                    $indexName = $originalIndexName.'_'.$attr['attribute'].'_'.$indexNameSuffix.'_'.$attr['sort'];
                     $sortAttribute = $attr['attribute'] . '.' . $currency . '.' . $indexNameSuffix;
                 }
             } elseif ($attr['attribute'] === 'price') {
-                $indexName = $productHelper->getIndexName($storeId) . '_' . $attr['attribute'] . '_' . 'default' . '_' . $attr['sort'];
+                $indexName = $originalIndexName . '_' . $attr['attribute'] . '_' . 'default' . '_' . $attr['sort'];
                 $sortAttribute = $attr['attribute'] . '.' . $currency . '.' . 'default';
             } else {
-                $indexName = $productHelper->getIndexName($storeId) . '_' . $attr['attribute'] . '_' . $attr['sort'];
+                $indexName = $originalIndexName . '_' . $attr['attribute'] . '_' . $attr['sort'];
                 $sortAttribute = $attr['attribute'];
             }
 
@@ -414,6 +506,7 @@ class ConfigHelper
                     'typo',
                     'geo',
                     'words',
+                    'filters',
                     'proximity',
                     'attribute',
                     'exact',
@@ -451,7 +544,11 @@ class ConfigHelper
 
     public function getCategoryAdditionalAttributes($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(self::CATEGORY_ATTRIBUTES, ScopeInterface::SCOPE_STORE, $storeId));
+        $attrs = $this->unserialize($this->configInterface->getValue(
+            self::CATEGORY_ATTRIBUTES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         if (is_array($attrs)) {
             return $attrs;
@@ -462,17 +559,33 @@ class ConfigHelper
 
     public function getProductAdditionalAttributes($storeId = null)
     {
-        $attributes = $this->unserialize($this->configInterface->getValue(self::PRODUCT_ATTRIBUTES, ScopeInterface::SCOPE_STORE, $storeId));
+        $attributes = $this->unserialize($this->configInterface->getValue(
+            self::PRODUCT_ATTRIBUTES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
-        $facets = $this->unserialize($this->configInterface->getValue(self::FACETS, ScopeInterface::SCOPE_STORE,$storeId));
+        $facets = $this->unserialize($this->configInterface->getValue(
+            self::FACETS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
         $attributes = $this->addIndexableAttributes($attributes, $facets, '0');
 
-        $sorts = $this->unserialize($this->configInterface->getValue(self::SORTING_INDICES, ScopeInterface::SCOPE_STORE,$storeId));
+        $sorts = $this->unserialize($this->configInterface->getValue(
+            self::SORTING_INDICES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
         $attributes = $this->addIndexableAttributes($attributes, $sorts, '0');
 
-        $customRankings = $this->unserialize($this->configInterface->getValue(self::PRODUCT_CUSTOM_RANKING, ScopeInterface::SCOPE_STORE,$storeId));
+        $customRankings = $this->unserialize($this->configInterface->getValue(
+            self::PRODUCT_CUSTOM_RANKING,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
         $customRankings = array_filter($customRankings, function ($customRanking) {
-            return $customRanking['attribute'] != 'custom_attribute';
+            return $customRanking['attribute'] !== 'custom_attribute';
         });
         $attributes = $this->addIndexableAttributes($attributes, $customRankings, '0', '0');
 
@@ -485,10 +598,14 @@ class ConfigHelper
 
     public function getFacets($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(self::FACETS, ScopeInterface::SCOPE_STORE, $storeId));
+        $attrs = $this->unserialize($this->configInterface->getValue(
+            self::FACETS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         foreach ($attrs as &$attr) {
-            if ($attr['type'] == 'other') {
+            if ($attr['type'] === 'other') {
                 $attr['type'] = $attr['other_type'];
             }
         }
@@ -502,7 +619,11 @@ class ConfigHelper
 
     public function getCategoryCustomRanking($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(self::CATEGORY_CUSTOM_RANKING, ScopeInterface::SCOPE_STORE, $storeId));
+        $attrs = $this->unserialize($this->configInterface->getValue(
+            self::CATEGORY_CUSTOM_RANKING,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         if (is_array($attrs)) {
             return $attrs;
@@ -513,7 +634,11 @@ class ConfigHelper
 
     public function getProductCustomRanking($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(self::PRODUCT_CUSTOM_RANKING, ScopeInterface::SCOPE_STORE, $storeId));
+        $attrs = $this->unserialize($this->configInterface->getValue(
+            self::PRODUCT_CUSTOM_RANKING,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         if (is_array($attrs)) {
             return $attrs;
@@ -529,6 +654,53 @@ class ConfigHelper
         $value = $this->configInterface->getValue(constant('self::'.$constant), ScopeInterface::SCOPE_STORE, $storeId);
 
         return trim($value);
+    }
+
+    public function preventBackendRendering($storeId = null)
+    {
+        $preventBackendRendering = $this->configInterface->isSetFlag(
+            self::PREVENT_BACKEND_RENDERING,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        if ($preventBackendRendering === false) {
+            return false;
+        }
+
+        $userAgent = mb_strtolower($_SERVER['HTTP_USER_AGENT'], 'utf-8');
+
+        $allowedUserAgents = $this->configInterface->getValue(
+            self::BACKEND_RENDERING_ALLOWED_USER_AGENTS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        $allowedUserAgents = trim($allowedUserAgents);
+
+        if ($allowedUserAgents === '') {
+            return true;
+        }
+
+        $allowedUserAgents = explode("\n", $allowedUserAgents);
+
+        foreach ($allowedUserAgents as $allowedUserAgent) {
+            $allowedUserAgent = mb_strtolower($allowedUserAgent, 'utf-8');
+            if (strpos($userAgent, $allowedUserAgent) !== false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function getBackendRenderingDisplayMode($storeId = null)
+    {
+        return $this->configInterface->getValue(
+            self::PREVENT_BACKEND_RENDERING_DISPLAY_MODE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     public function getCurrency($storeId = null)
@@ -552,7 +724,7 @@ class ConfigHelper
     public function getPopularQueries($storeId = null)
     {
         if (!$this->isInstantEnabled($storeId) || !$this->showSuggestionsOnNoResultsPage($storeId)) {
-            return array();
+            return [];
         }
 
         if ($storeId === null) {
@@ -566,7 +738,7 @@ class ConfigHelper
         return $popularQueries;
     }
 
-    public function getAttributesToRetrieve($group_id)
+    public function getAttributesToRetrieve($groupId)
     {
         if (false === $this->isCustomerGroupsEnabled()) {
             return [];
@@ -596,6 +768,7 @@ class ConfigHelper
             'categories_without_path',
             'thumbnail_url',
             'image_url',
+            'images_data',
             'in_stock',
             'type_id',
             'value',
@@ -607,8 +780,9 @@ class ConfigHelper
             $attributes[] = 'price.' . $currency . '.default';
             $attributes[] = 'price.' . $currency . '.default_formated';
             $attributes[] = 'price.' . $currency . '.default_original_formated';
-            $attributes[] = 'price.' . $currency . '.group_' . $group_id;
-            $attributes[] = 'price.' . $currency . '.group_' . $group_id . '_formated';
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId;
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_formated';
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_original_formated';
             $attributes[] = 'price.' . $currency . '.special_from_date';
             $attributes[] = 'price.' . $currency . '.special_to_date';
         }
@@ -630,7 +804,11 @@ class ConfigHelper
 
     public function getSynonyms($storeId = null)
     {
-        $synonyms = $this->unserialize($this->configInterface->getValue(self::SYNONYMS, ScopeInterface::SCOPE_STORE, $storeId));
+        $synonyms = $this->unserialize($this->configInterface->getValue(
+            self::SYNONYMS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         if (is_array($synonyms)) {
             return $synonyms;
@@ -641,7 +819,11 @@ class ConfigHelper
 
     public function getOnewaySynonyms($storeId = null)
     {
-        $onewaySynonyms = $this->unserialize($this->configInterface->getValue(self::ONEWAY_SYNONYMS, ScopeInterface::SCOPE_STORE, $storeId));
+        $onewaySynonyms = $this->unserialize($this->configInterface->getValue(
+            self::ONEWAY_SYNONYMS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
 
         if (is_array($onewaySynonyms)) {
             return $onewaySynonyms;
@@ -663,36 +845,59 @@ class ConfigHelper
         return $baseDirectory . '/algoliasearch_admin_config_uploads/' . $filename;
     }
 
+    public function isClickConversionAnalyticsEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::CC_ANALYTICS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getClickConversionAnalyticsISSelector($storeId = null)
+    {
+        return $this->configInterface->getValue(self::CC_ANALYTICS_IS_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
     public function isAnalyticsEnabled($storeId = null)
     {
-        return $this->configInterface->isSetFlag(self::ANALYTICS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::GA_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getAnalyticsConfig($storeId = null)
     {
         return [
             'enabled' => $this->isAnalyticsEnabled(),
-            'delay' => $this->configInterface->getValue(self::ANALYTICS_DELAY, ScopeInterface::SCOPE_STORE, $storeId),
-            'triggerOnUiInteraction' => $this->configInterface->getValue(self::ANALYTICS_TRIGGER_ON_UI_INTERACTION, ScopeInterface::SCOPE_STORE, $storeId),
-            'pushInitialSearch' => $this->configInterface->getValue(self::ANALYTICS_PUSH_INITIAL_SEARCH, ScopeInterface::SCOPE_STORE, $storeId),
+            'delay' => $this->configInterface->getValue(self::GA_DELAY, ScopeInterface::SCOPE_STORE, $storeId),
+            'triggerOnUiInteraction' => $this->configInterface->getValue(
+                self::GA_TRIGGER_ON_UI_INTERACTION,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            ),
+            'pushInitialSearch' => $this->configInterface->getValue(
+                self::GA_PUSH_INITIAL_SEARCH,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            ),
         ];
     }
   
-    private function addIndexableAttributes($attributes, $addedAttributes, $searchable = '1', $retrievable = '1', $indexNoValue = '1')
-    {
+    private function addIndexableAttributes(
+        $attributes,
+        $addedAttributes,
+        $searchable = '1',
+        $retrievable = '1',
+        $indexNoValue = '1'
+    ) {
         foreach ((array) $addedAttributes as $addedAttribute) {
             foreach ((array) $attributes as $attribute) {
-                if ($addedAttribute['attribute'] == $attribute['attribute']) {
+                if ($addedAttribute['attribute'] === $attribute['attribute']) {
                     continue 2;
                 }
             }
 
-            $attributes[] = array(
+            $attributes[] = [
                 'attribute'         => $addedAttribute['attribute'],
                 'searchable'        => $searchable,
                 'retrievable'       => $retrievable,
                 'index_no_value'    => $indexNoValue,
-            );
+            ];
         }
 
         return $attributes;

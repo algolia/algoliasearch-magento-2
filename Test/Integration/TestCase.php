@@ -69,7 +69,7 @@ abstract class TestCase extends \TC
             if (strpos($name, $this->indexPrefix) === 0) {
                 try {
                     $this->algoliaHelper->deleteIndex($name);
-                } catch(AlgoliaException $e) {
+                } catch (AlgoliaException $e) {
                     // Might be a replica
                 }
             }
@@ -92,11 +92,11 @@ abstract class TestCase extends \TC
 
         $this->configHelper = $config = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\ConfigHelper');
 
-        $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('APPLICATION_ID'));
-        $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('SEARCH_ONLY_API_KEY'));
-        $this->setConfig('algoliasearch_credentials/credentials/api_key', getenv('API_KEY'));
+        $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'));
+        $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_API_KEY'));
+        $this->setConfig('algoliasearch_credentials/credentials/api_key', getenv('ALGOLIA_API_KEY'));
 
-        $this->indexPrefix =  getmypid() . (getenv('INDEX_PREFIX') ?: 'magento20tests_');
+        $this->indexPrefix =  'TRAVIS_M2_' . getmypid() . (getenv('INDEX_PREFIX') ?: 'magento20tests_');
         $this->setConfig('algoliasearch_credentials/credentials/index_prefix', $this->indexPrefix);
 
         $this->boostrapped = true;
@@ -105,13 +105,13 @@ abstract class TestCase extends \TC
     /**
      * Call protected/private method of a class.
      *
-     * @param object &$object    Instantiated object that we will run method on.
+     * @param object $object    Instantiated object that we will run method on.
      * @param string $methodName Method name to call
      * @param array  $parameters Array of parameters to pass into method.
      *
      * @return mixed Method return.
      */
-    protected function invokeMethod(&$object, $methodName, array $parameters = array())
+    protected function invokeMethod(&$object, $methodName, array $parameters = [])
     {
         $reflection = new \ReflectionClass(get_class($object));
         $method = $reflection->getMethod($methodName);

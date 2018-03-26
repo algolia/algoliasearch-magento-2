@@ -1,0 +1,11 @@
+parameters:
+	excludes_analyse:
+		- %currentWorkingDirectory%/vendor/algolia/algoliasearch-magento-2/Test
+	autoload_files:
+		- %currentWorkingDirectory%/vendor/autoload.php
+		- %currentWorkingDirectory%/dev/tests/integration/framework/autoload.php
+		- %currentWorkingDirectory%/app/functions.php
+	ignoreErrors:
+		- '#Instantiated class Magento\\Framework\\Search\\Document not found.#' # class exists only on Magento 2.0.X
+		- '#Instantiated class Magento\\Framework\\Search\\DocumentField not found.#' # class exists only on Magento 2.0.X
+		- '#Parameter \#1 \$requestPath of method Magento\\Catalog\\Model\\Product::setRequestPath\(\) expects string, false given.#' # Wrong typehint in Magento

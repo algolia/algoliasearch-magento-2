@@ -9,8 +9,8 @@ use Magento\Search\Helper\Data as CatalogSearchHelper;
 
 class TopSearch extends Template implements CollectionDataSourceInterface
 {
-    protected $config;
-    protected $catalogSearchHelper;
+    private $config;
+    private $catalogSearchHelper;
 
     public function __construct(
         Template\Context $context,

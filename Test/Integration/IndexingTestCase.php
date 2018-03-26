@@ -21,7 +21,7 @@ abstract class IndexingTestCase extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix.'default_'.$indexSuffix, '', array());
+        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix.'default_'.$indexSuffix, '', []);
 
         $this->assertEquals($expectedNbHits, $resultsDefault['nbHits']);
     }

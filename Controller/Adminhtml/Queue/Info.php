@@ -21,11 +21,11 @@ class Info extends Queue
             $eta = $hours . ' hours ' . $restMinutes . ' minutes';
         }
 
-        $queueInfo = array(
+        $queueInfo = [
             'isEnabled' => $this->configHelper->isQueueActive(),
             'currentSize' => $size,
             'eta' => $eta,
-        );
+        ];
 
         /** @var \Magento\Framework\Controller\Result\Json $result */
         $result = $this->resultJsonFactory->create();

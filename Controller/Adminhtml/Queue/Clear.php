@@ -11,9 +11,9 @@ class Clear extends Queue
         try {
             $this->db->query('TRUNCATE TABLE '.$this->tableName);
 
-            $status = array('status' => 'ok');
+            $status = ['status' => 'ok'];
         } catch (\Exception $e) {
-            $status = array('status' => 'ko', 'message' => $e->getMessage());
+            $status = ['status' => 'ko', 'message' => $e->getMessage()];
         }
 
         /** @var \Magento\Framework\Controller\Result\Json $result */

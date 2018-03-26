@@ -11,43 +11,54 @@ use AlgoliaSearch\AlgoliaException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Search\Model\Query;
 use Magento\Store\Model\App\Emulation;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Data
 {
     const COLLECTION_PAGE_SIZE = 100;
 
-    protected $algoliaHelper;
+    private $algoliaHelper;
 
-    protected $pageHelper;
-    protected $categoryHelper;
-    protected $productHelper;
-    protected $additionalSectionHelper;
+    private $pageHelper;
+    private $categoryHelper;
+    private $productHelper;
+    private $suggestionHelper;
+    private $additionalSectionHelper;
+    private $stockRegistry;
 
-    protected $logger;
-    protected $configHelper;
-    protected $emulation;
-    protected $resource;
-    protected $eventManager;
+    private $logger;
+    private $configHelper;
+    private $emulation;
+    private $resource;
+    private $eventManager;
+    private $storeManager;
 
     private $emulationRuns = false;
 
-    public function __construct(AlgoliaHelper $algoliaHelper,
+    public function __construct(
+        AlgoliaHelper $algoliaHelper,
         ConfigHelper $configHelper,
         ProductHelper $producthelper,
         CategoryHelper $categoryHelper,
         PageHelper $pageHelper,
         SuggestionHelper $suggestionHelper,
         AdditionalSectionHelper $additionalSectionHelper,
+        StockRegistryInterface $stockRegistry,
         Emulation $emulation,
         Logger $logger,
         ResourceConnection $resource,
-        ManagerInterface $eventManager)
-    {
+        ManagerInterface $eventManager,
+        StoreManagerInterface $storeManager
+    ) {
+    
         $this->algoliaHelper = $algoliaHelper;
 
         $this->pageHelper = $pageHelper;
@@ -55,12 +66,14 @@ class Data
         $this->productHelper = $producthelper;
         $this->suggestionHelper = $suggestionHelper;
         $this->additionalSectionHelper = $additionalSectionHelper;
+        $this->stockRegistry = $stockRegistry;
 
         $this->configHelper = $configHelper;
         $this->logger = $logger;
         $this->emulation = $emulation;
         $this->resource = $resource;
         $this->eventManager = $eventManager;
+        $this->storeManager = $storeManager;
     }
 
     public function deleteObjects($storeId, $ids, $indexName)
@@ -82,27 +95,44 @@ class Data
             return;
         }
 
-        $this->algoliaHelper->setSettings($this->categoryHelper->getIndexName($storeId), $this->categoryHelper->getIndexSettings($storeId));
+        $this->algoliaHelper->setSettings(
+            $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
+            $this->categoryHelper->getIndexSettings($storeId),
+            false,
+            true
+        );
+        $this->algoliaHelper->setSettings(
+            $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
+            $this->pageHelper->getIndexSettings($storeId)
+        );
+        $this->algoliaHelper->setSettings(
+            $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId),
+            $this->suggestionHelper->getIndexSettings($storeId)
+        );
 
-        $this->algoliaHelper->setSettings($this->pageHelper->getIndexName($storeId), $this->pageHelper->getIndexSettings($storeId));
-        $this->algoliaHelper->setSettings($this->suggestionHelper->getIndexName($storeId), $this->suggestionHelper->getIndexSettings($storeId));
-
+        $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
         foreach ($this->configHelper->getAutocompleteSections() as $section) {
-            if ($section['name'] === 'products' || $section['name'] === 'categories' || $section['name'] === 'pages' || $section['name'] === 'suggestions') {
+            if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }
 
-            $this->algoliaHelper->setSettings($this->additionalSectionHelper->getIndexName($storeId) . '_' . $section['name'], $this->additionalSectionHelper->getIndexSettings($storeId));
+            $indexName = $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId);
+            $indexName = $indexName . '_' . $section['name'];
+
+            $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
         }
 
-        $this->productHelper->setSettings($storeId, $useTmpIndex);
+        $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
+        $productsIndexNameTmp = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, true);
+        
+        $this->productHelper->setSettings($productsIndexName, $productsIndexNameTmp, $storeId, $useTmpIndex);
 
         $this->setExtraSettings($storeId, $useTmpIndex);
     }
 
     public function getSearchResult($query, $storeId)
     {
-        $indexName = $this->productHelper->getIndexName($storeId);
+        $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
 
         $numberOfResults = 1000;
         if ($this->configHelper->isInstantEnabled()) {
@@ -141,24 +171,26 @@ class Data
             return;
         }
 
-        $additional_sections = $this->configHelper->getAutocompleteSections();
+        $additionalSections = $this->configHelper->getAutocompleteSections();
 
-        foreach ($additional_sections as $section) {
-            if ($section['name'] === 'products' || $section['name'] === 'categories' || $section['name'] === 'pages' || $section['name'] === 'suggestions') {
+        $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
+        foreach ($additionalSections as $section) {
+            if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }
 
-            $index_name = $this->additionalSectionHelper->getIndexName($storeId) . '_' . $section['name'];
+            $indexName = $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId);
+            $indexName = $indexName . '_' . $section['name'];
 
-            $attribute_values = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
+            $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
 
-            foreach (array_chunk($attribute_values, 100) as $chunk) {
-                $this->algoliaHelper->addObjects($chunk, $index_name . '_tmp');
+            foreach (array_chunk($attributeValues, 100) as $chunk) {
+                $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
             }
 
-            $this->algoliaHelper->moveIndex($index_name . '_tmp', $index_name);
+            $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
-            $this->algoliaHelper->setSettings($index_name, $this->additionalSectionHelper->getIndexSettings($storeId));
+            $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
         }
     }
 
@@ -170,17 +202,17 @@ class Data
 
         $this->startEmulation($storeId);
 
-        $index_name = $this->pageHelper->getIndexName($storeId);
+        $indexName = $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId);
 
         $pages = $this->pageHelper->getPages($storeId);
 
         foreach (array_chunk($pages, 100) as $chunk) {
-            $this->algoliaHelper->addObjects($chunk, $index_name . '_tmp');
+            $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
         }
 
-        $this->algoliaHelper->moveIndex($index_name . '_tmp', $index_name);
+        $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
-        $this->algoliaHelper->setSettings($index_name, $this->pageHelper->getIndexSettings($storeId));
+        $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
 
         $this->stopEmulation();
     }
@@ -204,7 +236,12 @@ class Data
                 $page = 1;
 
                 while ($page <= $pages) {
-                    $this->rebuildStoreCategoryIndexPage($storeId, $collection, $page, $this->configHelper->getNumberOfElementByPage());
+                    $this->rebuildStoreCategoryIndexPage(
+                        $storeId,
+                        $collection,
+                        $page,
+                        $this->configHelper->getNumberOfElementByPage()
+                    );
 
                     $page++;
                 }
@@ -235,7 +272,12 @@ class Data
             $page = 1;
 
             while ($page <= $pages) {
-                $this->rebuildStoreSuggestionIndexPage($storeId, $collection, $page, $this->configHelper->getNumberOfElementByPage());
+                $this->rebuildStoreSuggestionIndexPage(
+                    $storeId,
+                    $collection,
+                    $page,
+                    $this->configHelper->getNumberOfElementByPage()
+                );
 
                 $page++;
             }
@@ -261,7 +303,11 @@ class Data
             return;
         }
 
-        $this->algoliaHelper->moveIndex($this->suggestionHelper->getIndexName($storeId) . '_tmp', $this->suggestionHelper->getIndexName($storeId));
+        $indexNameSuffix = $this->suggestionHelper->getIndexNameSuffix();
+        $tmpIndexName = $this->getIndexName($indexNameSuffix, $storeId, true);
+        $indexName = $this->getIndexName($indexNameSuffix, $storeId);
+
+        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
     }
 
     public function rebuildStoreProductIndex($storeId, $productIds)
@@ -279,7 +325,7 @@ class Data
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds);
             $size = $collection->getSize();
 
-            if (!empty($productIds)) {
+            if ($productIds && $productIds !== []) {
                 $size = max(count($productIds), $size);
             }
 
@@ -291,7 +337,14 @@ class Data
                 $page = 1;
 
                 while ($page <= $pages) {
-                    $this->rebuildStoreProductIndexPage($storeId, $collection, $page, $this->configHelper->getNumberOfElementByPage(), null, $productIds);
+                    $this->rebuildStoreProductIndexPage(
+                        $storeId,
+                        $collection,
+                        $page,
+                        $this->configHelper->getNumberOfElementByPage(),
+                        null,
+                        $productIds
+                    );
 
                     $page++;
                 }
@@ -326,7 +379,7 @@ class Data
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
 
-        $index_name = $this->suggestionHelper->getIndexName($storeId) . '_tmp';
+        $indexName = $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId, true);
 
         $indexData = [];
 
@@ -334,15 +387,15 @@ class Data
         foreach ($collection as $suggestion) {
             $suggestion->setStoreId($storeId);
 
-            $suggestion_obj = $this->suggestionHelper->getObject($suggestion);
+            $suggestionObject = $this->suggestionHelper->getObject($suggestion);
 
-            if (strlen($suggestion_obj['query']) >= 3) {
-                array_push($indexData, $suggestion_obj);
+            if (strlen($suggestionObject['query']) >= 3) {
+                array_push($indexData, $suggestionObject);
             }
         }
 
         if (count($indexData) > 0) {
-            $this->algoliaHelper->addObjects($indexData, $index_name);
+            $this->algoliaHelper->addObjects($indexData, $indexName);
         }
 
         unset($indexData);
@@ -364,7 +417,7 @@ class Data
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
 
-        $index_name = $this->categoryHelper->getIndexName($storeId);
+        $indexName = $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
 
         $indexData = [];
 
@@ -376,15 +429,16 @@ class Data
 
             $category->setStoreId($storeId);
 
-            $category_obj = $this->categoryHelper->getObject($category);
+            $categoryObject = $this->categoryHelper->getObject($category);
 
-            if ($category_obj['product_count'] > 0) {
-                array_push($indexData, $category_obj);
+            if ($this->configHelper->shouldIndexEmptyCategories($storeId) === true
+                || $categoryObject['product_count'] > 0) {
+                array_push($indexData, $categoryObject);
             }
         }
 
         if (count($indexData) > 0) {
-            $this->algoliaHelper->addObjects($indexData, $index_name);
+            $this->algoliaHelper->addObjects($indexData, $indexName);
         }
 
         unset($indexData);
@@ -395,14 +449,17 @@ class Data
         unset($collection);
     }
 
-    protected function getProductsRecords($storeId, $collection, $potentiallyDeletedProductsIds = null)
+    private function getProductsRecords($storeId, $collection, $potentiallyDeletedProductsIds = null)
     {
         $productsToIndex = [];
         $productsToRemove = [];
 
         // In $potentiallyDeletedProductsIds there might be IDs of deleted products which will not be in a collection
         if (is_array($potentiallyDeletedProductsIds)) {
-            $potentiallyDeletedProductsIds = array_combine($potentiallyDeletedProductsIds, $potentiallyDeletedProductsIds);
+            $potentiallyDeletedProductsIds = array_combine(
+                $potentiallyDeletedProductsIds,
+                $potentiallyDeletedProductsIds
+            );
         }
 
         $this->logger->start('CREATE RECORDS ' . $this->logger->getStoreName($storeId));
@@ -417,7 +474,8 @@ class Data
 
             $productId = $product->getId();
 
-            // If $productId is in the collection, remove it from $potentiallyDeletedProductsIds so it's not removed without check
+            // If $productId is in the collection, remove it from $potentiallyDeletedProductsIds
+            // so it's not removed without check
             if (isset($potentiallyDeletedProductsIds[$productId])) {
                 unset($potentiallyDeletedProductsIds[$productId]);
             }
@@ -427,12 +485,23 @@ class Data
             }
 
             if ($product->isDeleted() === true
-                || $product->getStatus() == Status::STATUS_DISABLED
-                || !in_array((int) $product->getVisibility(), [Product\Visibility::VISIBILITY_BOTH, Product\Visibility::VISIBILITY_IN_SEARCH, Product\Visibility::VISIBILITY_IN_CATALOG], true)
-                || ($product->isInStock() == false && !$this->configHelper->getShowOutOfStock($storeId))
+                || $product->getStatus() === Status::STATUS_DISABLED
+                || !in_array($product->getVisibility(), [
+                    Visibility::VISIBILITY_BOTH,
+                    Visibility::VISIBILITY_IN_SEARCH,
+                    Visibility::VISIBILITY_IN_CATALOG,
+                ])
             ) {
                 $productsToRemove[$productId] = $productId;
                 continue;
+            }
+
+            if (!$this->configHelper->getShowOutOfStock($storeId)) {
+                $stockItem = $this->stockRegistry->getStockItem($product->getId());
+                if (!$product->isSalable() || !$stockItem->getIsInStock()) {
+                    $productsToRemove[$productId] = $productId;
+                    continue;
+                }
             }
 
             if (isset($salesData[$productId])) {
@@ -455,21 +524,27 @@ class Data
         ];
     }
 
-    public function rebuildStoreProductIndexPage($storeId, $collectionDefault, $page, $pageSize, $emulationInfo = null, $productIds = null, $useTmpIndex = false)
-    {
+    public function rebuildStoreProductIndexPage(
+        $storeId,
+        $collectionDefault,
+        $page,
+        $pageSize,
+        $emulationInfo = null,
+        $productIds = null,
+        $useTmpIndex = false
+    ) {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        $this->logger->start('rebuildStoreProductIndexPage ' . $this->logger->getStoreName($storeId) . ' page ' . $page . ' pageSize ' . $pageSize);
+        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ', 
+            page ' . $page . ', 
+            pageSize ' . $pageSize;
+        $this->logger->start($wrapperLogMessage);
 
         if ($emulationInfo === null) {
             $this->startEmulation($storeId);
         }
-
-        $superTableName = $this->resource->getTableName('catalog_product_super_link');
-        $reviewTableName = $this->resource->getTableName('review_entity_summary');
-        $stockTableName = $this->resource->getTableName('cataloginventory_stock_item');
 
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
 
@@ -480,12 +555,11 @@ class Data
         $collection->addCategoryIds();
         $collection->addUrlRewrite();
 
-        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'stock_qty')) {
-            $collection->getSelect()->columns('(SELECT MAX(qty) FROM ' . $stockTableName . ' AS o LEFT JOIN ' . $superTableName . ' AS l ON l.product_id = o.product_id WHERE o.product_id = e.entity_id OR l.parent_id = e.entity_id) as stock_qty');
-        }
-
         if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'rating_summary')) {
-            $collection->getSelect()->columns('(SELECT MAX(rating_summary) FROM ' . $reviewTableName . ' AS o WHERE o.entity_pk_value = e.entity_id AND o.store_id = '.$storeId.') as rating_summary');
+            $reviewTableName = $this->resource->getTableName('review_entity_summary');
+            $collection
+                ->getSelect()
+                ->columns('(SELECT MAX(rating_summary) FROM ' . $reviewTableName . ' AS o WHERE o.entity_pk_value = e.entity_id AND o.store_id = '.$storeId.') as rating_summary');
         }
 
         $this->eventManager->dispatch(
@@ -493,18 +567,22 @@ class Data
             ['collection' => $collection, 'store' => $storeId]
         );
 
-        $this->logger->start('LOADING ' . $this->logger->getStoreName($storeId) . ' collection page ' . $page . ', pageSize ' . $pageSize);
+        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ', 
+            collection page: ' . $page . ', 
+            pageSize: ' . $pageSize;
+
+        $this->logger->start($logMessage);
 
         $collection->load();
 
         $this->logger->log('Loaded ' . count($collection) . ' products');
-        $this->logger->stop('LOADING ' . $this->logger->getStoreName($storeId) . ' collection page ' . $page . ', pageSize ' . $pageSize);
+        $this->logger->stop($logMessage);
 
-        $indexName = $this->productHelper->getIndexName($storeId, $useTmpIndex);
+        $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, $useTmpIndex);
 
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
 
-        if (!empty($indexData['toIndex'])) {
+        if ($indexData['toIndex'] && $indexData['toIndex'] !== []) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
 
             $this->algoliaHelper->addObjects($indexData['toIndex'], $indexName);
@@ -513,25 +591,10 @@ class Data
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
 
-        if (!empty($indexData['toRemove'])) {
-            $toRealRemove = [];
+        if ($indexData['toRemove'] && $indexData['toRemove'] !== []) {
+            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove']);
 
-            if (count($indexData['toRemove']) === 1) {
-                $toRealRemove = $indexData['toRemove'];
-            } else {
-                $indexData['toRemove'] = array_map('strval', $indexData['toRemove']);
-
-                foreach (array_chunk($indexData['toRemove'], 1000) as $chunk) {
-                    $objects = $this->algoliaHelper->getObjects($indexName, $chunk);
-                    foreach ($objects['results'] as $object) {
-                        if (isset($object['objectID'])) {
-                            $toRealRemove[] = $object['objectID'];
-                        }
-                    }
-                }
-            }
-
-            if (!empty($toRealRemove)) {
+            if ($toRealRemove && $toRealRemove !== []) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
 
                 $this->algoliaHelper->deleteObjects($toRealRemove, $indexName);
@@ -552,7 +615,7 @@ class Data
             $this->stopEmulation();
         }
 
-        $this->logger->stop('rebuildStoreProductIndexPage ' . $this->logger->getStoreName($storeId) . ' page ' . $page . ' pageSize ' . $pageSize);
+        $this->logger->stop($wrapperLogMessage);
     }
 
     public function startEmulation($storeId)
@@ -563,7 +626,7 @@ class Data
 
         $this->logger->start('START EMULATION');
 
-        $this->emulation->startEnvironmentEmulation($storeId);
+        $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
         $this->emulationRuns = true;
 
         $this->logger->stop('START EMULATION');
@@ -579,14 +642,49 @@ class Data
         $this->logger->stop('STOP EMULATION');
     }
 
+    public function isIndexingEnabled($storeId = null)
+    {
+        if ($this->configHelper->isEnabledBackend($storeId) === false) {
+            $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function getIdsToRealRemove($indexName, $idsToRemove)
+    {
+        if (count($idsToRemove) === 1) {
+            return $idsToRemove;
+        }
+
+        $toRealRemove = [];
+
+        $idsToRemove = array_map('strval', $idsToRemove);
+
+        foreach (array_chunk($idsToRemove, 1000) as $chunk) {
+            $objects = $this->algoliaHelper->getObjects($indexName, $chunk);
+            foreach ($objects['results'] as $object) {
+                if (isset($object['objectID'])) {
+                    $toRealRemove[] = $object['objectID'];
+                }
+            }
+        }
+
+        return $toRealRemove;
+    }
+
     private function setExtraSettings($storeId, $saveToTmpIndicesToo)
     {
+        $additionalSectionsSuffix = $this->additionalSectionHelper->getIndexNameSuffix();
+
         $sections = [
-            'products' => $this->productHelper->getIndexName($storeId),
-            'categories' => $this->categoryHelper->getIndexName($storeId),
-            'pages' => $this->pageHelper->getIndexName($storeId),
-            'suggestions' => $this->suggestionHelper->getIndexName($storeId),
-            'additional_sections' => $this->additionalSectionHelper->getIndexName($storeId),
+            'products' => $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId),
+            'categories' => $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
+            'pages' => $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
+            'suggestions' => $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId),
+            'additional_sections' => $this->getIndexName($additionalSectionsSuffix, $storeId),
         ];
 
         $error = [];
@@ -605,7 +703,10 @@ class Data
                 }
             } catch (AlgoliaException $e) {
                 if (strpos($e->getMessage(), 'Invalid object attributes:') === 0) {
-                    $error[] = 'Extra settings for "'.$section.'" indices were not saved. Error message: "'.$e->getMessage().'"';
+                    $error[] = '
+                        Extra settings for "'.$section.'" indices were not saved. 
+                        Error message: "'.$e->getMessage().'"';
+
                     continue;
                 }
 
@@ -613,26 +714,16 @@ class Data
             }
         }
 
-        if (!empty($error)) {
+        if ($error) {
             throw new AlgoliaException('<br>'.implode('<br> ', $error));
         }
-    }
-
-    private function isIndexingEnabled($storeId = null)
-    {
-        if ($this->configHelper->isEnabledBackend($storeId) === false) {
-            $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
-
-            return false;
-        }
-
-        return true;
     }
 
     private function getSalesData($storeId, Collection $collection)
     {
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
-        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
+        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
+            && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
             return [];
         }
 
@@ -645,13 +736,61 @@ class Data
 
         try {
             $salesConnection = $this->resource->getConnectionByName('sales');
-        } catch(\DomainException $e) {
+        } catch (\DomainException $e) {
             $salesConnection = $this->resource->getConnection();
         }
 
-        $query = 'SELECT product_id, SUM(qty_ordered) AS ordered_qty, SUM(row_total) AS total_ordered FROM ' . $ordersTableName . ' WHERE product_id IN (' . $ids . ') GROUP BY product_id';
+        $query = 'SELECT product_id, SUM(qty_ordered) AS ordered_qty, SUM(row_total) AS total_ordered 
+            FROM ' . $ordersTableName . ' 
+            WHERE product_id IN (' . $ids . ') 
+            GROUP BY product_id';
         $salesData = $salesConnection->query($query)->fetchAll(\PDO::FETCH_GROUP|\PDO::FETCH_UNIQUE|\PDO::FETCH_ASSOC);
 
         return $salesData;
+    }
+
+    public function deleteInactiveProducts($storeId)
+    {
+        $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
+        $index = $this->algoliaHelper->getIndex($indexName);
+
+        $objectIds = [];
+        $counter = 0;
+        foreach ($index->browse('', ['attributesToRetrieve' => ['objectID']]) as $hit) {
+            $objectIds[] = $hit['objectID'];
+            $counter++;
+
+            if ($counter === 1000) {
+                $this->deleteInactiveIds($storeId, $objectIds, $indexName);
+
+                $objectIds = [];
+                $counter = 0;
+            }
+        }
+
+        if ($objectIds && $objectIds !== []) {
+            $this->deleteInactiveIds($storeId, $objectIds, $indexName);
+        }
+    }
+
+    public function getIndexName($indexSuffix, $storeId = null, $tmp = false)
+    {
+        return $this->getBaseIndexName($storeId) . $indexSuffix . ($tmp ? '_tmp' : '');
+    }
+
+    public function getBaseIndexName($storeId = null)
+    {
+        return $this->configHelper->getIndexPrefix($storeId) . $this->storeManager->getStore($storeId)->getCode();
+    }
+
+    private function deleteInactiveIds($storeId, $objectIds, $indexName)
+    {
+        $collection = $this->productHelper->getProductCollectionQuery($storeId, $objectIds);
+        $dbIds = $collection->getAllIds();
+
+        $collection = null;
+
+        $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
+        $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName);
     }
 }

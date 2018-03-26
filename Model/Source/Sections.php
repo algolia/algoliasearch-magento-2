@@ -21,13 +21,18 @@ class Sections extends AbstractTable
                     $attributes = $config->getFacets();
 
                     foreach ($attributes as $attribute) {
-                        if ($attribute['attribute'] == 'price') {
+                        if ($attribute['attribute'] === 'price') {
                             continue;
                         }
-                        if ($attribute['attribute'] == 'category' || $attribute['attribute'] == 'categories') {
+
+                        if ($attribute['attribute'] === 'category' || $attribute['attribute'] === 'categories') {
                             continue;
                         }
-                        $sections[] = ['name' => $attribute['attribute'], 'label' => $attribute['label'] ? $attribute['label'] : $attribute['attribute']];
+
+                        $sections[] = [
+                            'name' => $attribute['attribute'],
+                            'label' => $attribute['label'] ? $attribute['label'] : $attribute['attribute'],
+                        ];
                     }
 
                     foreach ($sections as $section) {

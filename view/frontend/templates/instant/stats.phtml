@@ -1,5 +1,13 @@
 <script type="text/template" id="instant-stats-template">
-    {{#hasOneResult}}<strong>1</strong> <?php echo __('result'); ?> found{{/hasOneResult}}
-    {{#hasManyResults}}{{^hasNoResults}}{{first}}-{{last}} out of{{/hasNoResults}} <strong>{{#helpers.formatNumber}}{{nbHits}}{{/helpers.formatNumber}} <?php echo __('results found'); ?></strong>{{/hasManyResults}}
-    <?php echo __('in'); ?> {{seconds}} <?php echo __('seconds'); ?>
+    {{#hasOneResult}}<strong>1</strong> <?php echo $block->escapeHtml(__('result')); ?> found{{/hasOneResult}}
+
+    {{#hasManyResults}}
+        {{^hasNoResults}}{{first}}-{{last}} out of{{/hasNoResults}}
+        <strong>
+            {{#helpers.formatNumber}}{{nbHits}}{{/helpers.formatNumber}}
+            <?php echo $block->escapeHtml(__('results found')); ?>
+        </strong>
+    {{/hasManyResults}}
+
+    <?php echo $block->escapeHtml(__('in')); ?> {{seconds}} <?php echo $block->escapeHtml(__('seconds')); ?>
 </script>

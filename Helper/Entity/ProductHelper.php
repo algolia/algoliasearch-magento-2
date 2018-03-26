@@ -171,7 +171,8 @@ class ProductHelper extends BaseHelper
             ->distinct(true);
 
         if ($only_visible) {
-            $products = $products->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()]);
+            $products = $products->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()])
+                ->addAttributeToFilter('status', ['=' => \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED]);
         }
 
         if ($this->config->getShowOutOfStock($storeId) === false) {

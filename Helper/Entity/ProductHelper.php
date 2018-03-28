@@ -421,7 +421,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function getSubProducts(Product $product)
+    protected function getSubProducts(Product $product)
     {
         $subProducts = [];
         $ids = null;
@@ -453,7 +453,7 @@ class ProductHelper
         return $subProducts;
     }
 
-    private function addAttribute($attribute, $defaultData, $customData, $additionalAttributes, Product $product)
+    protected function addAttribute($attribute, $defaultData, $customData, $additionalAttributes, Product $product)
     {
         if (isset($defaultData[$attribute]) === false
             && $this->isAttributeEnabled($additionalAttributes, $attribute)) {
@@ -463,7 +463,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function addCategoryData($customData, Product $product)
+    protected function addCategoryData($customData, Product $product)
     {
         $storeId = $product->getStoreId();
 
@@ -534,7 +534,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function getHierarchicalCategories($categoriesWithPath)
+    protected function getHierarchicalCategories($categoriesWithPath)
     {
         $hierachivalCategories = [];
 
@@ -562,7 +562,7 @@ class ProductHelper
         return $hierachivalCategories;
     }
 
-    private function addImageData(array $customData, Product $product, $additionalAttributes)
+    protected function addImageData(array $customData, Product $product, $additionalAttributes)
     {
         if (false === isset($customData['thumbnail_url'])) {
             $customData['thumbnail_url'] = $this->imageHelper
@@ -598,7 +598,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function addInStock($defaultData, $customData, Product $product)
+    protected function addInStock($defaultData, $customData, Product $product)
     {
         if (isset($defaultData['in_stock']) === false) {
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
@@ -608,7 +608,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function addStockQty($defaultData, $customData, $additionalAttributes, Product $product)
+    protected function addStockQty($defaultData, $customData, $additionalAttributes, Product $product)
     {
         if (isset($defaultData['stock_qty']) === false
             && $this->isAttributeEnabled($additionalAttributes, 'stock_qty')) {
@@ -623,7 +623,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function addAdditionalAttributes($customData, $additionalAttributes, Product $product, $subProducts)
+    protected function addAdditionalAttributes($customData, $additionalAttributes, Product $product, $subProducts)
     {
         foreach ($additionalAttributes as $attribute) {
             if (isset($customData[$attribute['attribute']])) {
@@ -660,7 +660,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function addNullValue($customData, $subProducts, $storeId, $attribute, AttributeResource $attributeResource)
+    protected function addNullValue($customData, $subProducts, $storeId, $attribute, AttributeResource $attributeResource)
     {
         $values = [];
         $subProductImages = [];
@@ -694,7 +694,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function getValues($valueText, Product $subProduct, AttributeResource $attributeResource)
+    protected function getValues($valueText, Product $subProduct, AttributeResource $attributeResource)
     {
         $values = [];
 
@@ -713,7 +713,7 @@ class ProductHelper
         return $values;
     }
 
-    private function addSubProductImage($subProductImages, $attribute, $subProduct, $valueText)
+    protected function addSubProductImage($subProductImages, $attribute, $subProduct, $valueText)
     {
         if (mb_strtolower($attribute['attribute'], 'utf-8') !== 'color') {
             return $subProductImages;
@@ -737,7 +737,7 @@ class ProductHelper
         return $subProductImages;
     }
 
-    private function addNonNullValue(
+    protected function addNonNullValue(
         $customData,
         $value,
         Product $product,
@@ -764,7 +764,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function getSearchableAttributes()
+    protected function getSearchableAttributes()
     {
         $searchableAttributes = [];
 
@@ -788,7 +788,7 @@ class ProductHelper
         return $searchableAttributes;
     }
 
-    private function getCustomRanking($storeId)
+    protected function getCustomRanking($storeId)
     {
         $customRanking = [];
 
@@ -800,7 +800,7 @@ class ProductHelper
         return $customRanking;
     }
 
-    private function getUnretrieveableAttributes()
+    protected function getUnretrieveableAttributes()
     {
         $unretrievableAttributes = [];
 
@@ -813,7 +813,7 @@ class ProductHelper
         return $unretrievableAttributes;
     }
 
-    private function getAttributesForFaceting($storeId)
+    protected function getAttributesForFaceting($storeId)
     {
         $attributesForFaceting = [];
 
@@ -855,7 +855,7 @@ class ProductHelper
         return $attributesForFaceting;
     }
 
-    private function deleteUnusedReplicas($indexName, $replicas, $setReplicasTaskId)
+    protected function deleteUnusedReplicas($indexName, $replicas, $setReplicasTaskId)
     {
         $indicesToDelete = [];
 
@@ -879,7 +879,7 @@ class ProductHelper
         }
     }
 
-    private function setFacetsQueryRules($indexName)
+    protected function setFacetsQueryRules($indexName)
     {
         $index = $this->algoliaHelper->getIndex($indexName);
 
@@ -918,7 +918,7 @@ class ProductHelper
         }
     }
 
-    private function clearFacetsQueryRules(Index $index)
+    protected function clearFacetsQueryRules(Index $index)
     {
         $hitsPerPage = 100;
         $page = 0;
@@ -937,7 +937,7 @@ class ProductHelper
         } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
     }
 
-    private function explodeSynonyms($synonyms)
+    protected function explodeSynonyms($synonyms)
     {
         return array_map('trim', explode(',', $synonyms));
     }

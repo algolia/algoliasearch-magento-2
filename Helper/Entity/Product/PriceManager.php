@@ -12,6 +12,7 @@ use Magento\Tax\Helper\Data as TaxHelper;
 use Magento\Tax\Model\Config as TaxConfig;
 use Magento\Customer\Model\Group;
 use Magento\CatalogRule\Model\ResourceModel\Rule;
+use Magento\CatalogInventory\Api\StockRegistryInterface;
 
 class PriceManager
 {
@@ -21,6 +22,7 @@ class PriceManager
     private $catalogHelper;
     private $taxHelper;
     private $rule;
+    private $stockRegistry;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -28,7 +30,8 @@ class PriceManager
         PriceCurrencyInterface $priceCurrency,
         CatalogHelper $catalogHelper,
         TaxHelper $taxHelper,
-        Rule $rule
+        Rule $rule,
+        StockRegistryInterface $stockRegistry
     ) {
         $this->configHelper = $configHelper;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
@@ -36,6 +39,7 @@ class PriceManager
         $this->catalogHelper = $catalogHelper;
         $this->taxHelper = $taxHelper;
         $this->rule = $rule;
+        $this->stockRegistry = $stockRegistry;
     }
 
     public function addPriceData($customData, Product $product, $subProducts)
@@ -384,6 +388,11 @@ class PriceManager
             if (count($subProducts) > 0) {
                 /** @var Product $subProduct */
                 foreach ($subProducts as $subProduct) {
+                    $isInStock = (bool) $this->stockRegistry->getStockItem($subProduct->getId())->getIsInStock();
+                    if ($isInStock === false && $this->configHelper->indexOutOfStockOptions($store->getId()) === false) {
+                        continue;
+                    }
+
                     $price = (double) $this->catalogHelper->getTaxPrice(
                         $product,
                         $subProduct->getFinalPrice(),

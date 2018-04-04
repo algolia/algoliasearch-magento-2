@@ -678,7 +678,7 @@ class ProductHelper
                 /** @var string|array $valueText */
                 $valueText = $subProduct->getAttributeText($attribute['attribute']);
 
-                $values = $this->getValues($valueText, $subProduct, $attributeResource);
+                $values = array_merge($values, $this->getValues($valueText, $subProduct, $attributeResource));
                 $subProductImages = $this->addSubProductImage($subProductImages, $attribute, $subProduct, $valueText);
             }
         }

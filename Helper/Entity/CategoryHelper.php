@@ -3,11 +3,13 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\ResourceModel\Category as CategoryResource;
+use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Catalog\Model\Category as MagentoCategory;
 use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Image;
@@ -17,8 +19,6 @@ use Magento\Framework\DataObject;
 class CategoryHelper
 {
     private $eventManager;
-
-    private $objectManager;
 
     private $storeManager;
 
@@ -35,21 +35,55 @@ class CategoryHelper
     private $rootCategoryId = -1;
     private $activeCategories;
     private $categoryNames;
+    /**
+     * @var CategoryCollection
+     */
+    private $categoryCollection;
+    /**
+     * @var Image
+     */
+    private $imageHelper;
+    /**
+     * @var CategoryResource
+     */
+    private $categoryResource;
+    /**
+     * @var CategoryFactory
+     */
+    private $categoryFactory;
 
+    /**
+     * CategoryHelper constructor.
+     * @param ManagerInterface $eventManager
+     * @param StoreManagerInterface $storeManager
+     * @param ResourceConnection $resourceConnection
+     * @param Config $eavConfig
+     * @param ConfigHelper $configHelper
+     * @param CategoryCollection $categoryCollection
+     * @param Image $imageHelper
+     * @param CategoryResource $categoryResource
+     * @param CategoryFactory $categoryFactory
+     */
     public function __construct(
         ManagerInterface $eventManager,
-        ObjectManagerInterface $objectManager,
         StoreManagerInterface $storeManager,
         ResourceConnection $resourceConnection,
         Config $eavConfig,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        CategoryCollection $categoryCollection,
+        Image $imageHelper,
+        CategoryResource $categoryResource,
+        CategoryFactory $categoryFactory
     ) {
         $this->eventManager = $eventManager;
-        $this->objectManager = $objectManager;
         $this->storeManager = $storeManager;
         $this->resourceConnection = $resourceConnection;
         $this->eavConfig = $eavConfig;
         $this->configHelper = $configHelper;
+        $this->categoryCollection = $categoryCollection;
+        $this->imageHelper = $imageHelper;
+        $this->categoryResource = $categoryResource;
+        $this->categoryFactory = $categoryFactory;
     }
 
     public function getIndexNameSuffix()
@@ -63,15 +97,15 @@ class CategoryHelper
         $unretrievableAttributes = [];
 
         foreach ($this->configHelper->getCategoryAdditionalAttributes($storeId) as $attribute) {
-            if ($attribute['searchable'] === '1') {
-                if ($attribute['order'] === 'ordered') {
+            if ($attribute['searchable'] == '1') {
+                if ($attribute['order'] == 'ordered') {
                     $searchableAttributes[] = $attribute['attribute'];
                 } else {
                     $searchableAttributes[] = 'unordered(' . $attribute['attribute'] . ')';
                 }
             }
 
-            if ($attribute['retrievable'] !== '1') {
+            if ($attribute['retrievable'] != '1') {
                 $unretrievableAttributes[] = $attribute['attribute'];
             }
         }
@@ -118,7 +152,7 @@ class CategoryHelper
         $storeRootCategoryPath = sprintf('%d/%d', $this->getRootCategoryId(), $store->getRootCategoryId());
 
         /* @var \Magento\Catalog\Model\ResourceModel\Category\Collection $collection */
-        $categories = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Category\Collection');
+        $categories = $this->categoryCollection;
 
         $unserializedCategorysAttrs = $this->getAdditionalAttributes($storeId);
 
@@ -209,7 +243,7 @@ class CategoryHelper
 
         $path = '';
         foreach ($category->getPathIds() as $categoryId) {
-            if ($path !== '') {
+            if ($path != '') {
                 $path .= ' / ';
             }
             $path .= $this->getCategoryName($categoryId, $storeId);
@@ -233,9 +267,9 @@ class CategoryHelper
             'product_count' => $category->getProductCount(),
         ];
 
-        if ($imageUrl) {
+        if (!empty($imageUrl)) {
             /** @var Image $imageHelper */
-            $imageHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\Image');
+            $imageHelper = $this->imageHelper;
 
             $imageUrl = $imageHelper->removeProtocol($imageUrl);
             $imageUrl = $imageHelper->removeDoubleSlashes($imageUrl);
@@ -246,7 +280,7 @@ class CategoryHelper
         foreach ($this->configHelper->getCategoryAdditionalAttributes($storeId) as $attribute) {
             $value = $category->getData($attribute['attribute']);
 
-            /** @var \Magento\Catalog\Model\ResourceModel\Category $resource */
+            /** @var CategoryResource $resource */
             $resource = $category->getResource();
 
             $attributeResource = $resource->getAttribute($attribute['attribute']);
@@ -281,8 +315,7 @@ class CategoryHelper
             return $this->rootCategoryId;
         }
 
-        /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $collection */
-        $collection = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Category\Collection');
+        $collection = $this->categoryCollection;
         $collection->addFieldToFilter('parent_id', 0);
         $collection->getSelect()->limit(1);
 
@@ -369,13 +402,14 @@ class CategoryHelper
         }
 
         $key = $storeId . '-' . $categoryKeyId;
+
         if (isset($categories[$key])) {
-            $path = ($categories[$key]['value'] === '1') ? (string) $categories[$key]['path'] : null;
+            $path = ($categories[$key]['value'] == 1) ? (string) $categories[$key]['path'] : null;
         } elseif ($storeId !== 0) {
             $key = '0-' . $categoryKeyId;
 
             if (isset($categories[$key])) {
-                $path = ($categories[$key]['value'] === '1') ? (string) $categories[$key]['path'] : null;
+                $path = ($categories[$key]['value'] == 1) ? (string) $categories[$key]['path'] : null;
             }
         }
 
@@ -390,8 +424,8 @@ class CategoryHelper
 
         $this->activeCategories = [];
 
-        /** @var \Magento\Catalog\Model\ResourceModel\Category $resource */
-        $resource = $this->objectManager->create('\Magento\Catalog\Model\ResourceModel\Category');
+        /** @var CategoryResource $resource */
+        $resource = $this->categoryResource;
 
         if ($attribute = $resource->getAttribute('is_active')) {
             $columnId = $this->getCorrectIdColumn();
@@ -434,8 +468,8 @@ class CategoryHelper
         if (!isset($this->categoryNames)) {
             $this->categoryNames = [];
 
-            /** @var \Magento\Catalog\Model\ResourceModel\Category $categoryModel */
-            $categoryModel = $this->objectManager->create('\Magento\Catalog\Model\ResourceModel\Category');
+            /** @var CategoryResource $categoryModel */
+            $categoryModel = $this->categoryResource;
 
             if ($attribute = $categoryModel->getAttribute('name')) {
                 $columnId = $this->getCorrectIdColumn();
@@ -472,7 +506,7 @@ class CategoryHelper
         if (isset($this->categoryNames[$key])) {
             // Check whether the category name is present for the specified store
             $categoryName = (string) $this->categoryNames[$key];
-        } elseif ($storeId !== 0) {
+        } elseif ($storeId != 0) {
             // Check whether the category name is present for the default store
             $key = '0-' . $categoryKeyId;
             if (isset($this->categoryNames[$key])) {
@@ -514,7 +548,7 @@ class CategoryHelper
         $categoryId = (int) $categoryId;
 
         /** @var \Magento\Catalog\Model\Category $category */
-        $category = $this->objectManager->create('\Magento\Catalog\Model\Category');
+        $category = $this->categoryFactory->create();
         $category = $category->setStoreId($storeId)->load($categoryId);
 
         $this->isCategoryVisibleInMenuCache[$key] = (bool) $category->getIncludeInMenu();
@@ -528,8 +562,7 @@ class CategoryHelper
             return $this->coreCategories;
         }
 
-        $categoriesData = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Category\Collection');
-        $categoriesData
+        $this->categoryCollection
             ->addAttributeToSelect('name')
             ->addAttributeToFilter('include_in_menu', '1')
             ->addFieldToFilter('level', ['gt' => 1])
@@ -538,7 +571,7 @@ class CategoryHelper
         $this->coreCategories = [];
 
         /** @var \Magento\Catalog\Model\Category $category */
-        foreach ($categoriesData as $category) {
+        foreach ($this->categoryCollection as $category) {
             $this->coreCategories[$category->getId()] = $category;
         }
 

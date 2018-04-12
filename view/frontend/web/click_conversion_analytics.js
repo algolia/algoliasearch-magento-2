@@ -25,14 +25,23 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 			trackClick($this.data('objectid'), $this.data('position'));
 		});
 		
-		
-		if (algoliaConfig.ccAnalytics.conversionAnalyticsEnabled) {
+		// "Add to cart" conversion
+		if (algoliaConfig.ccAnalytics.conversionAnalyticsMode === 'add_to_cart') {
 			$(document).on('click', algoliaConfig.ccAnalytics.addToCartSelector, function () {
 				var objectId = $(this).data('objectid') || algoliaConfig.productId;
 				
 				setTimeout(function () {
 					trackConversion(objectId);
 				}, 0);
+			});
+		}
+		
+		// "Place order" conversion
+		if (algoliaConfig.ccAnalytics.conversionAnalyticsMode === 'place_order') {
+			$(document).on('click', algoliaConfig.ccAnalytics.placeOrderSelector, function () {
+				$.each(algoliaConfig.ccAnalytics.productIdsInCart, function (i, objectId) {
+					trackConversion(objectId);
+				});
 			});
 		}
 	});

@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Magento\Checkout\Helper\Cart;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\Data\Form\FormKey;
@@ -22,8 +23,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
 {
     private $config;
     private $catalogSearchHelper;
-    private $storeManager;
-    private $objectManager;
     private $registry;
     private $productHelper;
     private $currency;
@@ -33,6 +32,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
     private $httpContext;
     private $coreHelper;
     private $categoryHelper;
+    private $cart;
 
     private $priceKey;
 
@@ -49,6 +49,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         HttpContext $httpContext,
         CoreHelper $coreHelper,
         CategoryHelper $categoryHelper,
+        Cart $cart,
         array $data = []
     ) {
         $this->config = $config;
@@ -62,6 +63,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $this->httpContext = $httpContext;
         $this->coreHelper = $coreHelper;
         $this->categoryHelper = $categoryHelper;
+        $this->cart = $cart;
 
         parent::__construct($context, $data);
     }
@@ -105,6 +107,11 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getAlgoliaHelper()
     {
         return $this->algoliaHelper;
+    }
+
+    public function getCart()
+    {
+        return $this->cart;
     }
 
     public function getCurrencySymbol()

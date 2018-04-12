@@ -68,6 +68,12 @@ class AlgoliaHelper extends AbstractHelper
         }
     }
 
+    public function getClient()
+    {
+        $this->checkClient(__FUNCTION__);
+        return $this->client;
+    }
+
     public function getIndex($name)
     {
         $this->checkClient(__FUNCTION__);

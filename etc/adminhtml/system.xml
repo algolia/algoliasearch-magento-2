@@ -676,9 +676,9 @@
                 <label><![CDATA[Click & Conversion Analytics]]></label>
                 <comment>
                     <![CDATA[
-                        Click analytics can be tracked only when you're on Business or a higher Algolia plan.
+                        Analyse how your customers are behaving when searching on your website. With <a target="_blank" href="https://www.algolia.com/doc/guides/analytics/click-analytics/">Click & Conversion analytics</a>, you can track which products are clicked more, and which search queries leads to more conversion. Note: this feature is not available on all plans, please refer to <a target="_blank" href="https://www.algolia.com/pricing/">Algolia's pricing page</a> for more details
                         <br><br>
-                        Documentation of click analytics: <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/click-analytics/</a>
+                        Documentation of Click & Conversion analytics: <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/click-analytics/</a>
                         <br>
                         <br>
                         <hr>
@@ -687,6 +687,7 @@
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Click Analytics</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\EnableClickAnalytics</backend_model>
                 </field>
                 <field id="is_selector" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>DOM selector of a result container on instant search page</label>
@@ -699,9 +700,9 @@
                         <field id="enable">1</field>
                     </depends>
                 </field>
-                <field id="enable_conversion_analytics" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Conversion Analytics</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                <field id="conversion_analytics_mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Conversion Analytics mode</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\ConversionAnalyticsMode</source_model>
                     <comment>
                         <![CDATA[
                             Conversion is tracked when the product was found and clicked in search results and then added to cart.
@@ -721,7 +722,20 @@
                         ]]>
                     </comment>
                     <depends>
-                        <field id="enable_conversion_analytics">1</field>
+                        <field id="conversion_analytics_mode">add_to_cart</field>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="place_order_selector" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DOM selector of a "Place Order" button</label>
+                    <comment>
+                        <![CDATA[
+                            More selectors separate by a comma (,).
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="conversion_analytics_mode">place_order</field>
+                        <field id="enable">1</field>
                     </depends>
                 </field>
             </group>

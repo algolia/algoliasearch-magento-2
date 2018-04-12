@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Block;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
 
@@ -10,7 +12,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     public function isSearchPage()
     {
         if ($this->getConfigHelper()->isInstantEnabled()) {
-            /** @var \Magento\Framework\App\Request\Http $request */
+            /** @var Http $request */
             $request = $this->getRequest();
 
             if ($request->getFullActionName() === 'catalogsearch_result_index') {
@@ -59,7 +61,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $addToCartParams = $this->getAddToCartParams();
 
-        /** @var \Magento\Framework\App\Request\Http $request */
+        /** @var Http $request */
         $request = $this->getRequest();
 
         /**
@@ -182,8 +184,10 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             ],
             'ccAnalytics' => [
                 'ISSelector' => $config->getClickConversionAnalyticsISSelector(),
-                'conversionAnalyticsEnabled' => $config->isConversionAnalyticsEnabled(),
+                'conversionAnalyticsMode' => $config->getConversionAnalyticsMode(),
                 'addToCartSelector' => $config->getConversionAnalyticsAddToCartSelector(),
+                'placeOrderSelector' => $config->getConversionAnalyticsPlaceOrderSelector(),
+                'productIdsInCart' => $this->getProductIdsInCart($config, $request),
             ],
             'analytics' => $config->getAnalyticsConfig(),
             'translations' => [
@@ -239,5 +243,23 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         }
 
         return $urlTrackedParameters;
+    }
+
+    private function getProductIdsInCart(ConfigHelper $configHelper, Http $request)
+    {
+        $ids = [];
+
+        if ($configHelper->getConversionAnalyticsMode() === 'disabled'
+            || $request->getFullActionName() !== 'checkout_index_index') {
+            return $ids;
+        }
+
+        $items = $this->getCart()->getQuote()->getItems();
+        /** @var \Magento\Quote\Model\Quote\Item $item */
+        foreach ($items as $item) {
+            $ids[] = $item->getProduct()->getId();
+        }
+
+        return $ids;
     }
 }

@@ -12,6 +12,9 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AlgoliaHelper extends AbstractHelper
 {
+    /** @var array */
+    protected $nonCastableAttributes = ['sku', 'name', 'description'];
+
     /** @var Client */
     private $client;
 
@@ -424,10 +427,8 @@ class AlgoliaHelper extends AbstractHelper
 
     public function castProductObject(&$productData)
     {
-        $nonCastableAttributes = ['sku', 'name', 'description'];
-
         foreach ($productData as $key => &$data) {
-            if (in_array($key, $nonCastableAttributes, true) === true) {
+            if (in_array($key, $this->nonCastableAttributes, true) === true) {
                 continue;
             }
 
@@ -450,7 +451,11 @@ class AlgoliaHelper extends AbstractHelper
 
     private function castRecord($object)
     {
-        foreach ($object as &$value) {
+        foreach ($object as $key => &$value) {
+            if (in_array($key, $this->nonCastableAttributes, true) === true) {
+                continue;
+            }
+
             $value = $this->castAttribute($value);
         }
 

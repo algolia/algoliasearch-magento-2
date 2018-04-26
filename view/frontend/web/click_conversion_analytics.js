@@ -35,6 +35,8 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 					objectId = postData.data.product;
 				}
 				
+				// "setTimeout" ensures "trackConversion" is always triggered AFTER "trackClick"
+				// when clicking "Add to cart" on instant search results page
 				setTimeout(function () {
 					trackConversion(objectId);
 				}, 0);

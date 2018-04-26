@@ -36,13 +36,14 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 			});
 		}
 		
-		// "Place order" conversion
+		// "Place order" conversions
 		if (algoliaConfig.ccAnalytics.conversionAnalyticsMode === 'place_order') {
-			$(document).on('click', algoliaConfig.ccAnalytics.placeOrderSelector, function () {
-				$.each(algoliaConfig.ccAnalytics.productIdsInCart, function (i, objectId) {
+			// "algoliaConfig.ccAnalytics.orderedProductIds" are set only on checkout success page
+			if (algoliaConfig.ccAnalytics.orderedProductIds.length > 0) {
+				$.each(algoliaConfig.ccAnalytics.orderedProductIds, function (i, objectId) {
 					trackConversion(objectId);
 				});
-			});
+			}
 		}
 	});
 	

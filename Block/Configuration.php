@@ -187,7 +187,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'conversionAnalyticsMode' => $config->getConversionAnalyticsMode(),
                 'addToCartSelector' => $config->getConversionAnalyticsAddToCartSelector(),
                 'placeOrderSelector' => $config->getConversionAnalyticsPlaceOrderSelector(),
-                'productIdsInCart' => $this->getProductIdsInCart($config, $request),
+                'orderedProductIds' => $this->getOrderedProductIds($config, $request),
             ],
             'analytics' => $config->getAnalyticsConfig(),
             'translations' => [
@@ -245,19 +245,24 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         return $urlTrackedParameters;
     }
 
-    private function getProductIdsInCart(ConfigHelper $configHelper, Http $request)
+    private function getOrderedProductIds(ConfigHelper $configHelper, Http $request)
     {
         $ids = [];
 
         if ($configHelper->getConversionAnalyticsMode() === 'disabled'
-            || $request->getFullActionName() !== 'checkout_index_index') {
+            || $request->getFrontName() !== 'checkout'
+            || $request->getActionName() !== 'success') {
             return $ids;
         }
 
-        $items = $this->getCart()->getQuote()->getItems();
-        /** @var \Magento\Quote\Model\Quote\Item $item */
+        $lastOrder = $this->getLastOrder();
+        if (!$lastOrder) {
+            return $ids;
+        }
+
+        $items = $lastOrder->getItems();
         foreach ($items as $item) {
-            $ids[] = $item->getProduct()->getId();
+            $ids[] = $item->getProductId();
         }
 
         return $ids;

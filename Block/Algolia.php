@@ -7,7 +7,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Magento\Checkout\Helper\Cart;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\Data\Form\FormKey;
@@ -32,7 +32,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
     private $httpContext;
     private $coreHelper;
     private $categoryHelper;
-    private $cart;
+    private $checkoutSession;
 
     private $priceKey;
 
@@ -49,7 +49,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         HttpContext $httpContext,
         CoreHelper $coreHelper,
         CategoryHelper $categoryHelper,
-        Cart $cart,
+        CheckoutSession $checkoutSession,
         array $data = []
     ) {
         $this->config = $config;
@@ -63,7 +63,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $this->httpContext = $httpContext;
         $this->coreHelper = $coreHelper;
         $this->categoryHelper = $categoryHelper;
-        $this->cart = $cart;
+        $this->checkoutSession = $checkoutSession;
 
         parent::__construct($context, $data);
     }
@@ -107,11 +107,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getAlgoliaHelper()
     {
         return $this->algoliaHelper;
-    }
-
-    public function getCart()
-    {
-        return $this->cart;
     }
 
     public function getCurrencySymbol()
@@ -158,6 +153,12 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getCurrentProduct()
     {
         return $this->registry->registry('product');
+    }
+
+    /** @return \Magento\Sales\Model\Order */
+    public function getLastOrder()
+    {
+        return $this->checkoutSession->getLastRealOrder();
     }
 
     public function getAddToCartParams()

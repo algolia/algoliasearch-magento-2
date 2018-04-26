@@ -726,18 +726,6 @@
                         <field id="enable">1</field>
                     </depends>
                 </field>
-                <field id="place_order_selector" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>DOM selector of a "Place Order" button</label>
-                    <comment>
-                        <![CDATA[
-                            More selectors separate by a comma (,).
-                        ]]>
-                    </comment>
-                    <depends>
-                        <field id="conversion_analytics_mode">place_order</field>
-                        <field id="enable">1</field>
-                    </depends>
-                </field>
             </group>
         </section>
         <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">

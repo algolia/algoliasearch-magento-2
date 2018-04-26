@@ -95,7 +95,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         }
 
         $productId = null;
-        if ($config->isClickConversionAnalyticsEnabled() && $request->getControllerName() === 'product') {
+        if ($config->isClickConversionAnalyticsEnabled() && $request->getFullActionName() === 'catalog_product_view') {
             $productId = $this->getCurrentProduct()->getId();
         }
 

@@ -10,11 +10,7 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 		// "Click" in autocomplete
 		$(algoliaConfig.autocomplete.selector).each(function () {
 			$(this).on('autocomplete:selected', function (e, suggestion) {
-				algoliaAnalytics.click({
-					queryID: suggestion.__queryID,
-					objectID: suggestion.objectID,
-					position: suggestion.__position
-				});
+				trackClick(suggestion.objectID, suggestion.__position, suggestion.__queryID);
 			});
 		});
 		
@@ -74,17 +70,23 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 		return search;
 	});
 	
-	function trackClick(objectID, position) {
+	function trackClick(objectID, position, queryId) {
 		objectID = objectID.toString();
 		
 		var arrayIndex = getArrayIndex(objectID);
 		
 		var clickedObjectIds = getObjectIds('clicked');
 		if (!clickedObjectIds[arrayIndex]) {
-			algoliaAnalytics.click({
+			var clickData = {
 				objectID: objectID,
 				position: parseInt(position)
-			});
+			};
+			
+			if (queryId) {
+				clickData.queryID = queryId;
+			}
+			
+			algoliaAnalytics.click(clickData);
 			
 			
 			clickedObjectIds[arrayIndex] = 1;

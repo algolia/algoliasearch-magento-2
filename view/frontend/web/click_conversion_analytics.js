@@ -30,6 +30,15 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 			$(document).on('click', algoliaConfig.ccAnalytics.addToCartSelector, function () {
 				var objectId = $(this).data('objectid') || algoliaConfig.productId;
 				
+				if (!objectId) {
+					var postData = $(this).data('post');
+					if (!postData || !postData.data.product) {
+						return;
+					}
+					
+					objectId = postData.data.product;
+				}
+				
 				setTimeout(function () {
 					trackConversion(objectId);
 				}, 0);
@@ -68,17 +77,20 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 	function trackClick(objectID, position) {
 		objectID = objectID.toString();
 		
+		var arrayIndex = getArrayIndex(objectID);
+		
 		var clickedObjectIds = getObjectIds('clicked');
-		if (!clickedObjectIds[objectID]) {
+		if (!clickedObjectIds[arrayIndex]) {
 			algoliaAnalytics.click({
-				objectID: objectID.toString(),
+				objectID: objectID,
 				position: parseInt(position)
 			});
 			
-			clickedObjectIds[objectID] = 1;
+			
+			clickedObjectIds[arrayIndex] = 1;
 			
 			var convertedObjectIds = getObjectIds('converted');
-			delete convertedObjectIds[objectID];
+			delete convertedObjectIds[arrayIndex];
 			
 			setObjectIds('clicked', clickedObjectIds);
 			setObjectIds('converted', convertedObjectIds);
@@ -88,16 +100,18 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 	function trackConversion(objectID) {
 		objectID = objectID.toString();
 		
+		var arrayIndex = getArrayIndex(objectID);
+		
 		var convertedObjectIds = getObjectIds('converted');
-		if (!convertedObjectIds[objectID]) {
+		if (!convertedObjectIds[arrayIndex]) {
 			algoliaAnalytics.conversion({
 				objectID: objectID
 			});
 			
-			convertedObjectIds[objectID] = 1;
+			convertedObjectIds[arrayIndex] = 1;
 			
 			var clickedObjectIds = getObjectIds('clicked');
-			delete clickedObjectIds[objectID];
+			delete clickedObjectIds[arrayIndex];
 			
 			setObjectIds('clicked', clickedObjectIds);
 			setObjectIds('converted', convertedObjectIds);
@@ -116,5 +130,9 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 	
 	function setObjectIds(type, objectIds) {
 		localStorage.setItem(objectIdsStorageKey + '_' + type, JSON.stringify(objectIds));
+	}
+	
+	function getArrayIndex(objectID) {
+		return 'product-' + objectID;
 	}
 });

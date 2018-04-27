@@ -75,10 +75,10 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 	function trackClick(objectID, position, queryId) {
 		objectID = objectID.toString();
 		
-		var arrayIndex = getArrayIndex(objectID);
+		var propertyName = getPropertyName(objectID);
 		
 		var clickedObjectIds = getObjectIds('clicked');
-		if (!clickedObjectIds[arrayIndex]) {
+		if (!clickedObjectIds[propertyName]) {
 			var clickData = {
 				objectID: objectID,
 				position: parseInt(position)
@@ -91,10 +91,10 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 			algoliaAnalytics.click(clickData);
 			
 			
-			clickedObjectIds[arrayIndex] = 1;
+			clickedObjectIds[propertyName] = 1;
 			
 			var convertedObjectIds = getObjectIds('converted');
-			delete convertedObjectIds[arrayIndex];
+			delete convertedObjectIds[propertyName];
 			
 			setObjectIds('clicked', clickedObjectIds);
 			setObjectIds('converted', convertedObjectIds);
@@ -104,18 +104,18 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 	function trackConversion(objectID) {
 		objectID = objectID.toString();
 		
-		var arrayIndex = getArrayIndex(objectID);
+		var propertyName = getPropertyName(objectID);
 		
 		var convertedObjectIds = getObjectIds('converted');
-		if (!convertedObjectIds[arrayIndex]) {
+		if (!convertedObjectIds[propertyName]) {
 			algoliaAnalytics.conversion({
 				objectID: objectID
 			});
 			
-			convertedObjectIds[arrayIndex] = 1;
+			convertedObjectIds[propertyName] = 1;
 			
 			var clickedObjectIds = getObjectIds('clicked');
-			delete clickedObjectIds[arrayIndex];
+			delete clickedObjectIds[propertyName];
 			
 			setObjectIds('clicked', clickedObjectIds);
 			setObjectIds('converted', convertedObjectIds);
@@ -126,7 +126,7 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 		var objectIds = localStorage.getItem(objectIdsStorageKey + '_' + type);
 		
 		if (!objectIds) {
-			return [];
+			return {};
 		}
 		
 		return JSON.parse(objectIds);
@@ -136,7 +136,7 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 		localStorage.setItem(objectIdsStorageKey + '_' + type, JSON.stringify(objectIds));
 	}
 	
-	function getArrayIndex(objectID) {
+	function getPropertyName(objectID) {
 		return 'product-' + objectID;
 	}
 });

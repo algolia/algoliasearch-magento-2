@@ -13,6 +13,8 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\Product\Type;
+use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\Directory\Model\Currency as CurrencyHelper;
@@ -38,6 +40,16 @@ class ProductHelper
     private $categoryHelper;
     private $priceManager;
     private $imageHelper;
+
+    /**
+     * @var Type
+     */
+    private $productType;
+
+    /**
+     * @var AbstractType[]
+     */
+    private $compositeTypes;
 
     private $productAttributes;
 
@@ -75,7 +87,8 @@ class ProductHelper
         ObjectManagerInterface $objectManager,
         CurrencyHelper $currencyManager,
         CategoryHelper $categoryHelper,
-        PriceManager $priceManager
+        PriceManager $priceManager,
+        Type $productType
     ) {
         $this->eavConfig = $eavConfig;
         $this->configHelper = $configHelper;
@@ -90,6 +103,7 @@ class ProductHelper
         $this->currencyManager = $currencyManager;
         $this->categoryHelper = $categoryHelper;
         $this->priceManager = $priceManager;
+        $this->productType = $productType;
 
         $this->imageHelper = $this->objectManager->create(
             'Algolia\AlgoliaSearch\Helper\Image',
@@ -457,6 +471,42 @@ class ProductHelper
         }
 
         return $subProducts;
+    }
+
+    /**
+     * Returns all parent product IDs, e.g. when simple product is part of configurable or bundle
+     *
+     * @param array $productIds
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getParentProductIds(array $productIds)
+    {
+        $parentIds = [];
+        foreach ($this->getCompositeTypes() as $typeInstance) {
+            $parentIds = array_merge($parentIds, $typeInstance->getParentIdsByChild($productIds));
+        }
+
+        return $parentIds;
+    }
+
+    /**
+     * Returns composite product type instances
+     *
+     * @return AbstractType[]
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @see \Magento\Catalog\Model\Indexer\Product\Flat\AbstractAction::_getProductTypeInstances
+     */
+    private function getCompositeTypes()
+    {
+        if (null === $this->compositeTypes) {
+            $productEmulator = new \Magento\Framework\DataObject();
+            foreach ($this->productType->getCompositeTypes() as $typeId) {
+                $productEmulator->setTypeId($typeId);
+                $this->compositeTypes[$typeId] = $this->productType->factory($productEmulator);
+            }
+        }
+        return $this->compositeTypes;
     }
 
     private function addAttribute($attribute, $defaultData, $customData, $additionalAttributes, Product $product)

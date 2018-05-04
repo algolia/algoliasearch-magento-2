@@ -62,6 +62,10 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
             return;
         }
 
+        if ($productIds) {
+            $productIds = array_merge($productIds, $this->productHelper->getParentProductids($productIds));
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {

@@ -499,7 +499,7 @@ class ProductHelper
      */
     private function getCompositeTypes()
     {
-        if (null === $this->compositeTypes) {
+        if ($this->compositeTypes === null) {
             $productEmulator = new \Magento\Framework\DataObject();
             foreach ($this->productType->getCompositeTypes() as $typeId) {
                 $productEmulator->setTypeId($typeId);

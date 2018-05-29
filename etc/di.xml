@@ -17,4 +17,20 @@
         <plugin name="algoliaCategoriesMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\CategoryObserver"/>
     </type>
     <preference for="Magento\Framework\Search\Adapter\Mysql\Adapter" type="Algolia\AlgoliaSearch\Adapter\Algolia" />
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="algolia_algoliasearch_job_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">algoliasearch_queue</argument>
+            <argument name="eventPrefix" xsi:type="string">algoliasearch_queue_grid_collection</argument>
+            <argument name="eventObject" xsi:type="string">algoliasearch_queue_grid_collection</argument>
+            <argument name="resourceModel" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Job</argument>
+        </arguments>
+    </type>
 </config>

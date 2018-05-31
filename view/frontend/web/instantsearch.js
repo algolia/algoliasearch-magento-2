@@ -98,10 +98,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				
 				instantsearchOptions.searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
 			} else {
-				instantsearchOptions.searchParameters = {
-					hierarchicalFacetsRefinements: {
-						'categories.level0': [algoliaConfig.request.path]
-					}
+				instantsearchOptions.searchParameters.hierarchicalFacetsRefinements = {
+					'categories.level0': [algoliaConfig.request.path]
 				}
 			}
 		}

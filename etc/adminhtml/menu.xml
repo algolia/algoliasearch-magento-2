@@ -3,7 +3,7 @@
     <menu>
         <add
             id="Algolia_AlgoliaSearch::manage"
-            title="Algolia"
+            title="Algolia Search"
             module="Algolia_AlgoliaSearch"
             sortOrder="999"
             parent="Magento_Backend::stores"

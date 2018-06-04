@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add
+            id="Algolia_AlgoliaSearch::manage"
+            title="Algolia"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="999"
+            parent="Magento_Backend::stores"
+            resource="Magento_Backend::stores"
+        />
+        <add
+            id="Algolia_AlgoliaSearch::config"
+            title="Configuration"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="10"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="adminhtml/system_config/edit/section/algoliasearch_credentials"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
+    </menu>
+</config>

@@ -12,6 +12,9 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AlgoliaHelper extends AbstractHelper
 {
+    /** @var array */
+    protected $nonCastableAttributes = ['sku', 'name', 'description'];
+
     /** @var Client */
     private $client;
 

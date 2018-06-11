@@ -198,12 +198,30 @@ class PriceManager
         foreach ($groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $specialPrices[$groupId] = [];
-            $specialPrices[$groupId][] = (double) $this->rule->getRulePrice(
-                new \DateTime(),
-                $store->getWebsiteId(),
-                $groupId,
-                $product->getId()
-            ); // The price with applied catalog rules
+
+            if ($product->getTypeId() == 'configurable')  {
+                $childrenPrices = [];
+                $children = $product->getTypeInstance()->getUsedProducts($product);
+                foreach ($children as $child){
+                    $childPrice = (double) $this->rule->getRulePrice(
+                        new \DateTime(),
+                        $store->getWebsiteId(),
+                        $groupId,
+                        $child->getId()
+                    );
+                    $childrenPrices[] = $childPrice;
+                }
+                $specialPrices[$groupId][] = min($childrenPrices);
+            } else {
+                $specialPrices[$groupId][] = (double) $this->rule->getRulePrice(
+                    new \DateTime(),
+                    $store->getWebsiteId(),
+                    $groupId,
+                    $product->getId()
+                );
+            }
+
+            // The price with applied catalog rules
             $specialPrices[$groupId][] = $product->getFinalPrice(); // The product's special price
 
             $specialPrices[$groupId] = array_filter($specialPrices[$groupId], function ($price) {

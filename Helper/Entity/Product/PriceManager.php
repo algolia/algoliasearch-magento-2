@@ -201,7 +201,9 @@ class PriceManager
 
             if ($product->getTypeId() == 'configurable')  {
                 $childrenPrices = [];
-                $children = $product->getTypeInstance()->getUsedProducts($product);
+                /** @var \Magento\ConfigurableProduct\Model\Product\Type\Configurable $typeInstance */
+                $typeInstance = $product->getTypeInstance();
+                $children = $typeInstance->getUsedProducts($product);
                 foreach ($children as $child){
                     $childPrice = (double) $this->rule->getRulePrice(
                         new \DateTime(),

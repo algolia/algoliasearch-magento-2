@@ -185,5 +185,10 @@
                 </item>
             </argument>
         </column>
+        <actionsColumn name="actions" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\QueueActions">
+            <settings>
+                <indexField>job_id</indexField>
+            </settings>
+        </actionsColumn>
     </columns>
 </listing>

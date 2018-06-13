@@ -1,8 +1,11 @@
 <?php
 namespace Algolia\AlgoliaSearch\Model;
 
+use Magento\Framework\DataObject\IdentityInterface;
+use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 
-class Job extends \Magento\Framework\Model\AbstractModel implements \Magento\Framework\DataObject\IdentityInterface
+
+class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInterface, JobInterface
 {
     const CACHE_TAG = 'algoliasearch_queue_job';
 

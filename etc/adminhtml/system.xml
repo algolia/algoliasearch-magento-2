@@ -321,14 +321,28 @@
                     </comment>
                 </field>
                 <field id="replace_categories" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Replace categories page</label>
+                    <label>Replace category pages</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Choose here if you want the default Magento category pages to be replaced by an instant-search
-                            results page when a category is selected either in the menu of categories or in the drop-down menu.
+                            Choose if you want the default Magento category pages to be replaced by an instant search
+                            results page.
                         ]]>
                     </comment>
+                </field>
+                <field id="keep_category_products_order" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Preserve order of products set in category settings</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Choose if you want to preserve ...<br />
+                            If you select "Yes" the extension will create a query rule for each category. Be sure your query rules quota is high enough to have a query rule for each category.
+                            To create intial query rules, please reindex "query rules" indexer.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="replace_categories">1</field>
+                    </depends>
                 </field>
                 <field id="add_to_cart_enable" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Add to Cart</label>

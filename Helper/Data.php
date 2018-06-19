@@ -618,6 +618,66 @@ class Data
         $this->logger->stop($wrapperLogMessage);
     }
 
+    public function rebuildCategoryProductsOrderQueryRules($storeId, $categoryIds)
+    {
+        if ($this->isIndexingEnabled($storeId) === false) {
+            return;
+        }
+
+        $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
+
+        if ($this->configHelper->shouldKeepCategoryProductsOrder($storeId) === false) {
+            $this->deleteCategoryProductsOrderQueryRules($productsIndexName);
+
+            return;
+        }
+
+        if ($categoryIds !== null) {
+            $this->deleteCategoryProductsOrderQueryRules($productsIndexName);
+        }
+
+        $this->startEmulation($storeId);
+
+        try {
+            $pageSize = 100;
+
+            /** @var \Magento\Catalog\Model\ResourceModel\Category\Collection $collection */
+            $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId, $categoryIds, true);
+            $collection->clear();
+
+            $size = $collection->getSize();
+
+            $pages = ceil($size / $pageSize);
+            for ($i = 1; $i <= $pages; $i++) {
+                $collection->setCurPage($i)->setPageSize($pageSize)->load();
+
+                $rules = [];
+
+                /** @var \Magento\Catalog\Model\Category $category */
+                foreach ($collection as $category) {
+                    $category->setStoreId($storeId);
+
+                    $rule = $this->createCategoryProductsRule($category);
+                    if (is_array($rule)) {
+                        $rules[] = $rule;
+                    }
+                    else {
+                        $this->algoliaHelper->deleteRule($productsIndexName, $this->getQueryRuleId($category->getId()));
+                    }
+                }
+
+                if ($rules !== []) {
+                    $this->algoliaHelper->batchRules($rules, $productsIndexName);
+                }
+            }
+        } catch (\Exception $e) {
+            $this->stopEmulation();
+            throw $e;
+        }
+
+        $this->stopEmulation();
+    }
+
     public function startEmulation($storeId)
     {
         if ($this->emulationRuns === true) {
@@ -792,5 +852,75 @@ class Data
 
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
         $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName);
+    }
+
+    private function deleteCategoryProductsOrderQueryRules($indexName)
+    {
+        $page = 0;
+        $hitsPerPage = 100;
+
+        do {
+            $rules = $this->algoliaHelper->searchRules($indexName, [
+                'query' => 'MagentoGeneratedQueryRule',
+                'hitsPerPage' => $hitsPerPage,
+                'page' => $page,
+            ]);
+
+            foreach ($rules['hits'] as $rule) {
+                $this->algoliaHelper->deleteRule($indexName, $rule['objectID']);
+            }
+
+            $page++;
+        } while($page < $rules['nbPages']);
+    }
+
+    private function createCategoryProductsRule(Category $category)
+    {
+        $positions = $category->getProductsPosition();
+        if ($positions === []) {
+            return null;
+        }
+
+        $min = min($positions);
+        $max = max($positions);
+
+        if ($min === $max) {
+            return null;
+        }
+
+        asort($positions);
+
+        $promoted = [];
+        $position = 0;
+        foreach ($positions as $objectID => $void) {
+            $promoted[] = [
+                'objectID' => (string) $objectID,
+                'position' => $position++,
+            ];
+
+            if ($position === 50) {
+                break;
+            }
+        }
+
+        $rule = [
+            'objectID' => $this->getQueryRuleId($category->getId()),
+            'description' => 'MagentoGeneratedQueryRule',
+            'condition' => [
+                'pattern' => '',
+                'anchoring' => 'is',
+                'context' => 'magento-category-'.$category['objectID'],
+            ],
+            'consequence' => [
+                'promote' => $promoted,
+            ]
+        ];
+
+        return $rule;
+    }
+
+    private function getQueryRuleId($categoryId)
+    {
+        return 'magento-category-'.$categoryId;
     }
 }

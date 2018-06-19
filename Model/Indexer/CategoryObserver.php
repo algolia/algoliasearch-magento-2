@@ -8,10 +8,12 @@ use Magento\Framework\Model\AbstractModel;
 class CategoryObserver
 {
     private $indexer;
+    private $productsOrderIndex;
 
     public function __construct(IndexerRegistry $indexerRegistry)
     {
         $this->indexer = $indexerRegistry->get('algolia_categories');
+        $this->productsOrderIndex = $indexerRegistry->get('algolia_category_products_order');
     }
 
     public function aroundSave(
@@ -23,6 +25,8 @@ class CategoryObserver
             if (!$this->indexer->isScheduled()) {
                 Category::$affectedProductIds = (array) $category->getData('affected_product_ids');
                 $this->indexer->reindexRow($category->getId());
+
+                $this->productsOrderIndex->reindexRow($category->getId());
             }
         });
 
@@ -38,6 +42,7 @@ class CategoryObserver
             if (!$this->indexer->isScheduled()) {
                 Category::$affectedProductIds = (array) $category->getData('affected_product_ids');
                 $this->indexer->reindexRow($category->getId());
+                $this->productsOrderIndex->reindexRow($category->getId());
             }
         });
 

@@ -207,6 +207,31 @@ class AlgoliaHelper extends AbstractHelper
         self::$lastTaskId = $res['taskID'];
     }
 
+    public function batchRules($rules, $indexName)
+    {
+        $index = $this->getIndex($indexName);
+        $res = $index->batchRules($rules, false, false);
+
+        self::$lastUsedIndexName = $indexName;
+        self::$lastTaskId = $res['taskID'];
+    }
+
+    public function searchRules($indexName, $parameters)
+    {
+        $index = $this->getIndex($indexName);
+
+        return $index->searchRules($parameters);
+    }
+
+    public function deleteRule($indexName, $objectID, $forwardToReplicas = false)
+    {
+        $index = $this->getIndex($indexName);
+        $res = $index->deleteRule($objectID, $forwardToReplicas);
+
+        self::$lastUsedIndexName = $indexName;
+        self::$lastTaskId = $res['taskID'];
+    }
+
     public function setSynonyms($indexName, $synonyms)
     {
         $index = $this->getIndex($indexName);

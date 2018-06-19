@@ -26,6 +26,7 @@ class ConfigHelper
     const USE_ADAPTIVE_IMAGE = 'algoliasearch_credentials/credentials/use_adaptive_image';
 
     const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
+    const KEEP_CATEGORY_PRODUCTS_ORDER = 'algoliasearch_instant/instant/keep_category_products_order';
     const INSTANT_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
     const FACETS = 'algoliasearch_instant/instant/facets';
     const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant/max_values_per_facet';
@@ -411,6 +412,11 @@ class ConfigHelper
     public function replaceCategories($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::REPLACE_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function shouldKeepCategoryProductsOrder($storeId = null)
+    {
+        $this->configInterface->isSetFlag(self::KEEP_CATEGORY_PRODUCTS_ORDER, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isAutoCompleteEnabled($storeId = null)

@@ -144,7 +144,7 @@ class CategoryHelper
         return $this->configHelper->getCategoryAdditionalAttributes($storeId);
     }
 
-    public function getCategoryCollectionQuery($storeId, $categoryIds = null)
+    public function getCategoryCollectionQuery($storeId, $categoryIds = null, $ignoreIncludeInMenu = false)
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
@@ -163,7 +163,7 @@ class CategoryHelper
             ->addPathFilter($storeRootCategoryPath)
             ->addAttributeToSelect(array_merge(['name'], $additionalAttr));
 
-        if (!$this->configHelper->showCatsNotIncludedInNavigation()) {
+        if ($ignoreIncludeInMenu === false && !$this->configHelper->showCatsNotIncludedInNavigation()) {
             $categories->addAttributeToFilter('include_in_menu', '1');
         }
 
@@ -247,14 +247,14 @@ class CategoryHelper
         }
 
         $data = [
-            'objectID'      => $category->getId(),
-            'name'          => $category->getName(),
-            'path'          => $path,
-            'level'         => $category->getLevel(),
-            'url'           => $this->getUrl($category),
+            'objectID' => $category->getId(),
+            'name' => $category->getName(),
+            'path' => $path,
+            'level' => $category->getLevel(),
+            'url' => $this->getUrl($category),
             'include_in_menu' => $category->getIncludeInMenu(),
-            '_tags'         => ['category'],
-            'popularity'    => 1,
+            '_tags' => ['category'],
+            'popularity' => 1,
             'product_count' => $category->getProductCount(),
         ];
 

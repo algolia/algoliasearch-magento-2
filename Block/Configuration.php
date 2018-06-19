@@ -58,6 +58,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $refinementValue = '';
         $path = '';
         $level = '';
+        $categoryId = '';
 
         $addToCartParams = $this->getAddToCartParams();
 
@@ -76,6 +77,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
             if ($category && $category->getDisplayMode() !== 'PAGE') {
                 $category->getUrlInstance()->setStore($this->getStoreId());
+
+                $categoryId = $category->getId();
 
                 $level = -1;
                 foreach ($category->getPathIds() as $treeCategoryId) {
@@ -171,6 +174,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'query' => html_entity_decode($query),
                 'refinementKey' => $refinementKey,
                 'refinementValue' => $refinementValue,
+                'categoryId' => $categoryId, 
                 'path' => $path,
                 'level' => $level,
             ],

@@ -17,6 +17,8 @@ class QueueActions extends Column
      * Url path
      */
     const URL_PATH_DELETE = 'algolia_algoliasearch/queue/delete';
+    const URL_PATH_EXECUTE = 'algolia_algoliasearch/queue/execute';
+    const URL_PATH_VIEW = 'algolia_algoliasearch/queue/view';
 
     /**
      * @var UrlInterface
@@ -55,18 +57,40 @@ class QueueActions extends Column
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
                 $item[$this->getData('name')] = [
-                    'delete' => [
+//                    'delete' => [
+//                        'href' => $this->urlBuilder->getUrl(
+//                            static::URL_PATH_DELETE,
+//                            [
+//                                'id' => $item['job_id']
+//                            ]
+//                        ),
+//                        'label' => __('Delete'),
+//                        'confirm' => [
+//                            'title' => __('Delete ?'),
+//                            'message' => __('Are you sure you want to delete this job ?')
+//                        ]
+//                    ],
+//                    'execute' => [
+//                        'href' => $this->urlBuilder->getUrl(
+//                            static::URL_PATH_EXECUTE,
+//                            [
+//                                'id' => $item['job_id']
+//                            ]
+//                        ),
+//                        'label' => __('Execute'),
+//                        'confirm' => [
+//                            'title' => __('Execute ?'),
+//                            'message' => __('Are you sure you want to execute this job ?')
+//                        ]
+//                    ],
+                    'view' => [
                         'href' => $this->urlBuilder->getUrl(
-                            static::URL_PATH_DELETE,
+                            static::URL_PATH_VIEW,
                             [
                                 'id' => $item['job_id']
                             ]
                         ),
-                        'label' => __('Delete'),
-                        'confirm' => [
-                            'title' => __('Delete ?'),
-                            'message' => __('Are you sure you want to delete this record?')
-                        ]
+                        'label' => __('View')
                     ]
                 ];
             }

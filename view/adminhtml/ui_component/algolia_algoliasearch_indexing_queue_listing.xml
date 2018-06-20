@@ -109,14 +109,25 @@
                 </item>
             </argument>
         </column>
-        <column name="pid">
+        <!--<column name="pid">-->
+            <!--<argument name="data" xsi:type="array">-->
+                <!--<item name="config" xsi:type="array">-->
+                    <!--<item name="filter" xsi:type="string">text</item>-->
+                    <!--<item name="editor" xsi:type="array">-->
+                        <!--<item name="editorType" xsi:type="string">text</item>-->
+                    <!--</item>-->
+                    <!--<item name="label" xsi:type="string" translate="true">PID</item>-->
+                <!--</item>-->
+            <!--</argument>-->
+        <!--</column>-->
+        <column name="status" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\Status">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">text</item>
                     <item name="editor" xsi:type="array">
                         <item name="editorType" xsi:type="string">text</item>
                     </item>
-                    <item name="label" xsi:type="string" translate="true">PID</item>
+                    <item name="label" xsi:type="string" translate="true">Status</item>
                 </item>
             </argument>
         </column>
@@ -142,7 +153,7 @@
                 </item>
             </argument>
         </column>
-        <column name="data" >
+        <column name="data" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\Data" >
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">text</item>
@@ -175,28 +186,28 @@
                 </item>
             </argument>
         </column>
-        <column name="data_size" >
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">int</item>
-                    <item name="editor" xsi:type="array">
-                        <item name="editorType" xsi:type="string">text</item>
-                    </item>
-                    <item name="label" xsi:type="string" translate="true">Data Size</item>
-                </item>
-            </argument>
-        </column>
-        <column name="error_log" >
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="editor" xsi:type="array">
-                        <item name="editorType" xsi:type="string">text</item>
-                    </item>
-                    <item name="label" xsi:type="string" translate="true">Error Log</item>
-                </item>
-            </argument>
-        </column>
+        <!--<column name="data_size" >-->
+            <!--<argument name="data" xsi:type="array">-->
+                <!--<item name="config" xsi:type="array">-->
+                    <!--<item name="filter" xsi:type="string">int</item>-->
+                    <!--<item name="editor" xsi:type="array">-->
+                        <!--<item name="editorType" xsi:type="string">text</item>-->
+                    <!--</item>-->
+                    <!--<item name="label" xsi:type="string" translate="true">Data Size</item>-->
+                <!--</item>-->
+            <!--</argument>-->
+        <!--</column>-->
+        <!--<column name="error_log" >-->
+            <!--<argument name="data" xsi:type="array">-->
+                <!--<item name="config" xsi:type="array">-->
+                    <!--<item name="filter" xsi:type="string">text</item>-->
+                    <!--<item name="editor" xsi:type="array">-->
+                        <!--<item name="editorType" xsi:type="string">text</item>-->
+                    <!--</item>-->
+                    <!--<item name="label" xsi:type="string" translate="true">Error Log</item>-->
+                <!--</item>-->
+            <!--</argument>-->
+        <!--</column>-->
         <actionsColumn name="actions" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\QueueActions">
             <settings>
                 <indexField>job_id</indexField>

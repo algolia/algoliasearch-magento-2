@@ -139,7 +139,6 @@ class PriceManager
                         );
                     }
 
-
                     if (!$customData[$field][$currencyCode]['default']) {
                         $customData = $this->handleZeroDefaultPrice(
                             $customData,

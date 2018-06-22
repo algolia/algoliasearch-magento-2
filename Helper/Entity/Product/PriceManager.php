@@ -139,6 +139,7 @@ class PriceManager
                         );
                     }
 
+
                     if (!$customData[$field][$currencyCode]['default']) {
                         $customData = $this->handleZeroDefaultPrice(
                             $customData,
@@ -147,7 +148,8 @@ class PriceManager
                             $baseCurrencyCode,
                             $min,
                             $max,
-                            $store
+                            $store,
+                            $subProducts
                         );
                     }
 
@@ -503,11 +505,26 @@ class PriceManager
         $baseCurrencyCode,
         $min,
         $max,
-        Store $store
+        Store $store,
+        $subProducts
     ) {
         $customData[$field][$currencyCode]['default'] = $min;
 
+        $defaultOriginals = [];
+        foreach ($subProducts as $subProduct) {
+            $defaultOriginals[] = $subProduct->getPrice();
+        }
+
+        $defaultOriginal = min($defaultOriginals);
+        $defaultOriginalMax = max($defaultOriginals);
+
         if ($min !== $max) {
+            $customData[$field][$currencyCode]['default_min'] = $min;
+            $customData[$field][$currencyCode]['default_max'] = $max;
+            $customData[$field][$currencyCode]['default_original'] = $defaultOriginal;
+            $customData[$field][$currencyCode]['default_original_min'] = $defaultOriginal;
+            $customData[$field][$currencyCode]['default_original_max'] = $defaultOriginalMax;
+            $customData[$field][$currencyCode]['default_original_formated'] = $this->getDashedPriceFormat($defaultOriginal, $defaultOriginalMax, $store, $currencyCode);
             return $customData;
         }
 
@@ -523,6 +540,16 @@ class PriceManager
             $currencyCode
         );
 
+        $defaultOriginalFormated = $this->priceCurrency->format(
+            $defaultOriginal,
+            false,
+            PriceCurrencyInterface::DEFAULT_PRECISION,
+            $store,
+            $currencyCode
+        );
+
+        $customData[$field][$currencyCode]['default_original'] = $defaultOriginal;
+        $customData[$field][$currencyCode]['default_original_formated'] = $defaultOriginalFormated;
         $customData[$field][$currencyCode]['default'] = $min;
         $customData[$field][$currencyCode]['default_formated'] = $minFormatted;
 

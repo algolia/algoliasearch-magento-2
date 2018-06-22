@@ -521,6 +521,7 @@ class PriceManager
         if ($min !== $max) {
             $customData[$field][$currencyCode]['default_min'] = $min;
             $customData[$field][$currencyCode]['default_max'] = $max;
+            $customData[$field][$currencyCode]['default_formated'] = $this->getDashedPriceFormat($min, $max, $store, $currencyCode);
             $customData[$field][$currencyCode]['default_original'] = $defaultOriginal;
             $customData[$field][$currencyCode]['default_original_min'] = $defaultOriginal;
             $customData[$field][$currencyCode]['default_original_max'] = $defaultOriginalMax;

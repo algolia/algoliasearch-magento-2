@@ -147,7 +147,11 @@ class PriceManager
                             $baseCurrencyCode,
                             $min,
                             $max,
-                            $store
+                            $store,
+                            $subProducts,
+                            $areCustomersGroupsEnabled,
+                            $groups,
+                            $specialPrice
                         );
                     }
 
@@ -503,17 +507,41 @@ class PriceManager
         $baseCurrencyCode,
         $min,
         $max,
-        Store $store
+        Store $store,
+        $subProducts,
+        $areCustomersGroupsEnabled,
+        $groups,
+        $specialPrice
     ) {
+        if ($min == $max) {
+            if (!$areCustomersGroupsEnabled && !empty($specialPrice)) {
+                $min = $max = $specialPrice[0];
+            } elseif ($areCustomersGroupsEnabled && !empty($specialPrice)) {
+                foreach ($groups as $group) {
+                    $groupId = (int)$group->getData('customer_group_id');
+
+                    $customData[$field][$currencyCode]['group_' . $groupId] = $specialPrice[$groupId];
+                    $groupSpecialPriceFormated = $this->priceCurrency->format(
+                        $specialPrice[$groupId],
+                        false,
+                        PriceCurrencyInterface::DEFAULT_PRECISION,
+                        $store,
+                        $currencyCode
+                    );
+                    $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $groupSpecialPriceFormated;
+                }
+            }
+        }
+
         $customData[$field][$currencyCode]['default'] = $min;
 
-        if ($min !== $max) {
-            return $customData;
+        $defaultOriginals = [];
+        foreach ($subProducts as $subProduct) {
+            $defaultOriginals[] = $subProduct->getPrice();
         }
 
-        if ($currencyCode !== $baseCurrencyCode) {
-            $min = $this->priceCurrency->convert($min, $store, $currencyCode);
-        }
+        $defaultOriginal = min($defaultOriginals);
+        $defaultOriginalMax = max($defaultOriginals);
 
         $minFormatted = $this->priceCurrency->format(
             $min,
@@ -522,6 +550,64 @@ class PriceManager
             $store,
             $currencyCode
         );
+
+        $maxFormatted = $this->priceCurrency->format(
+            $max,
+            false,
+            PriceCurrencyInterface::DEFAULT_PRECISION,
+            $store,
+            $currencyCode
+        );
+
+        $defaultMinFormatted = $this->priceCurrency->format(
+            $defaultOriginal,
+            false,
+            PriceCurrencyInterface::DEFAULT_PRECISION,
+            $store,
+            $currencyCode
+        );
+
+        $defaultMaxFormatted = $this->priceCurrency->format(
+            $defaultOriginalMax,
+            false,
+            PriceCurrencyInterface::DEFAULT_PRECISION,
+            $store,
+            $currencyCode
+        );
+
+        if ($min !== $max) {
+            $customData[$field][$currencyCode]['default_min'] = $min;
+            $customData[$field][$currencyCode]['default_min_formated'] = $minFormatted;
+            $customData[$field][$currencyCode]['default_max'] = $max;
+            $customData[$field][$currencyCode]['default_max_formated'] = $maxFormatted;
+            $customData[$field][$currencyCode]['default_formated'] = $this->getDashedPriceFormat($min, $max, $store, $currencyCode);
+            if ($defaultOriginal != $min && $defaultOriginal > $min) {
+                $customData[$field][$currencyCode]['default_original'] = $defaultOriginal;
+                $customData[$field][$currencyCode]['default_original_min'] = $defaultOriginal;
+                $customData[$field][$currencyCode]['default_original_min_formated'] = $defaultMinFormatted;
+                $customData[$field][$currencyCode]['default_original_max'] = $defaultOriginalMax;
+                $customData[$field][$currencyCode]['default_original_max_formated'] = $defaultMaxFormatted;
+                $customData[$field][$currencyCode]['default_original_formated'] = $this->getDashedPriceFormat($defaultOriginal, $defaultOriginalMax, $store, $currencyCode);
+            }
+            return $customData;
+        }
+
+        if ($currencyCode !== $baseCurrencyCode) {
+            $min = $this->priceCurrency->convert($min, $store, $currencyCode);
+        }
+
+        $defaultOriginalFormated = $this->priceCurrency->format(
+            $defaultOriginal,
+            false,
+            PriceCurrencyInterface::DEFAULT_PRECISION,
+            $store,
+            $currencyCode
+        );
+
+        if ($defaultOriginal != $min && $defaultOriginal > $min) {
+            $customData[$field][$currencyCode]['default_original'] = $defaultOriginal;
+            $customData[$field][$currencyCode]['default_original_formated'] = $defaultOriginalFormated;
+        }
 
         $customData[$field][$currencyCode]['default'] = $min;
         $customData[$field][$currencyCode]['default_formated'] = $minFormatted;

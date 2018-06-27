@@ -331,11 +331,11 @@
                     </comment>
                 </field>
                 <field id="keep_category_products_order" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Preserve order of products set in category settings</label>
+                    <label>Keep order of products set in category settings</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Choose if you want to preserve ...<br />
+                            Choose if you want to keep ...<br />
                             If you select "Yes" the extension will create a query rule for each category. Be sure your query rules quota is high enough to have a query rule for each category.
                             To create intial query rules, please reindex "query rules" indexer.
                         ]]>

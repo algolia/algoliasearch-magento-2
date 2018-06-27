@@ -17,6 +17,11 @@ interface JobInterface
      */
     const TABLE_NAME = 'algoliasearch_queue';
 
+    const STATUS_NEW = "new";
+    const STATUS_PROCESSING = "processing";
+    const STATUS_ERROR = "error";
+    const STATUS_COMPLETE = "complete";
+
     /**#@+
      * Constants for keys of data array. Identical to the name of the getter in snake case
      */

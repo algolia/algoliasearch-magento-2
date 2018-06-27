@@ -1,0 +1,120 @@
+<?php
+
+/* @var \Algolia\AlgoliaSearch\Model\Job $job */
+/* @var \Algolia\AlgoliaSearch\Block\Adminhtml\Job\View $this */
+$job = $this->getCurrentJob();
+?>
+<style type="text/css">
+    .algolia-setup-fieldset .admin__fieldset-wrapper-title { padding-top: 0; margin-bottom: 0; }
+    .algolia-setup-fieldset .admin__field         { margin-bottom: 0; margin-top: 0; }
+    .algolia-setup-fieldset .admin__field-label   { width: calc(100% * 0.17 - 30px) !important; }
+    .algolia-setup-fieldset .admin__field-control { width: calc(100% * 0.83 - 30px) !important; }
+    .algolia-setup-fieldset .admin__field-pre     {
+        overflow: scroll;
+        border: solid 1px grey;
+        color: #FFF;
+        background-color: #111;
+        width: 850px;
+    }
+</style>
+
+
+<div class="admin__fieldset-wrapper opened algolia-setup-fieldset">
+    <div class="admin__fieldset-wrapper-title"">
+        <strong class="title">
+            <span><?php /* @escapeNotVerified */ echo __('Job Informations'); ?></span>
+        </strong>
+    </div>
+    <div class="admin__fieldset-wrapper-content">
+        <fieldset class="admin__fieldset">
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Job Id'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getId()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('PID'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getPid()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Created'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getCreated()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Status'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getStatus()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Class'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getClass()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Method'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getMethod()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Data'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getData('data')); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Max retries'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php /* @escapeNotVerified */ echo $this->escapeHtml($job->getMaxRetries()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Retries'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getRetries()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Data Size'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getDataSize()); ?>
+                    </div>
+                </div>
+            </div>
+            <div class="admin__field">
+                <label class="admin__field-label"><span><?php /* @escapeNotVerified */ echo __('Error Log'); ?></span></label>
+                <div class="admin__field-control">
+                    <div class="admin__field admin__field-option">
+                        <?php echo $this->escapeHtml($job->getErrorLog()); ?>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+</div>

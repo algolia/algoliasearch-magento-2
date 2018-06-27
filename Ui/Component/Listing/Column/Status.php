@@ -2,13 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Ui\Component\Listing\Column;
 
+use Algolia\AlgoliaSearch\Api\Data\JobInterface;
+
 class Status extends \Magento\Ui\Component\Listing\Columns\Column
 {
-    const STATUS_NEW = "new";
-    const STATUS_PROCESSING = "processing";
-    const STATUS_ERROR = "error";
-    const STATUS_COMPLETE = "complete";
-
     /**
      * Prepare Data Source
      *
@@ -43,14 +40,14 @@ class Status extends \Magento\Ui\Component\Listing\Columns\Column
      */
     private function defineStatus($item)
     {
-        $status = self::STATUS_PROCESSING;
+        $status = JobInterface::STATUS_PROCESSING;
 
-        if (is_null($item['pid'])) {
-            $status = self::STATUS_NEW;
+        if (is_null($item[JobInterface::FIELD_PID])) {
+            $status = JobInterface::STATUS_NEW;
         }
 
-        if ((int) $item['retries'] >= $item['max_retries']) {
-            $status = self::STATUS_ERROR;
+        if ((int) $item[JobInterface::FIELD_RETRIES] >= $item[JobInterface::FIELD_MAX_RETRIES]) {
+            $status = JobInterface::STATUS_ERROR;
         }
 
         return $status;

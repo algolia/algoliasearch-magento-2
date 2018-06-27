@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Model;
 use Magento\Framework\DataObject\IdentityInterface;
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 
-
 class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInterface, JobInterface
 {
     const CACHE_TAG = 'algoliasearch_queue_job';
@@ -64,6 +63,21 @@ class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInte
         $values = [];
 
         return $values;
+    }
+
+    public function getStatus()
+    {
+        $status = JobInterface::STATUS_PROCESSING;
+
+        if (is_null($this->getPid())) {
+            $status = JobInterface::STATUS_NEW;
+        }
+
+        if ((int) $this->getRetries() >= $this->getMaxRetries()) {
+            $status = JobInterface::STATUS_ERROR;
+        }
+
+        return $status;
     }
 
     /**

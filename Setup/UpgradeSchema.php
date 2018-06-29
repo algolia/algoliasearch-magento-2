@@ -143,7 +143,13 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'order' => 'unordered',
             ],
             [
-                'attribute' => 'path',
+	            'attribute' => 'sku',
+	            'searchable' => '1',
+	            'retrievable' => '1',
+	            'order' => 'unordered',
+            ],
+            [
+                'attribute' => 'manufacturer',
                 'searchable' => '1',
                 'retrievable' => '1',
                 'order' => 'unordered',
@@ -161,47 +167,31 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'order' => 'unordered',
             ],
             [
-                'attribute' => 'sku',
-                'searchable' => '1',
-                'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
                 'attribute' => 'price',
-                'searchable' => '0',
+                'searchable' => '2',
                 'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'ordered_qty',
-                'searchable' => '0',
-                'retrievable' => '0',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'stock_qty',
-                'searchable' => '0',
-                'retrievable' => '0',
                 'order' => 'unordered',
             ],
             [
                 'attribute' => 'rating_summary',
-                'searchable' => '0',
+                'searchable' => '2',
                 'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'created_at',
-                'searchable' => '0',
-                'retrievable' => '0',
                 'order' => 'unordered',
             ],
         ],
         'algoliasearch_products/products/custom_ranking_product_attributes' => [
-            [
-                'attribute' => 'ordered_qty',
-                'order' => 'desc',
-            ],
+	        [
+		        'attribute' => 'in_stock',
+		        'order' => 'desc',
+	        ],
+	        [
+		        'attribute' => 'ordered_qty',
+		        'order' => 'desc',
+	        ],
+	        [
+		        'attribute' => 'created_at',
+		        'order' => 'desc',
+	        ],
         ],
 
         'algoliasearch_categories/categories/category_additional_attributes' => [
@@ -213,12 +203,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             ],
             [
                 'attribute' => 'path',
-                'searchable' => '1',
-                'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'description',
                 'searchable' => '1',
                 'retrievable' => '1',
                 'order' => 'unordered',
@@ -238,12 +222,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             [
                 'attribute' => 'meta_description',
                 'searchable' => '1',
-                'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'product_count',
-                'searchable' => '0',
                 'retrievable' => '1',
                 'order' => 'unordered',
             ],

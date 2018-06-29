@@ -137,7 +137,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'urlTrackedParameters' => $this->getUrlTrackedParameters(),
             ],
             'autocomplete' => [
-                'enabled' => (bool) $config->isAutoCompleteEnabled(),
+                'enabled' => $config->isAutoCompleteEnabled(),
                 'selector' => $config->getAutocompleteSelector(),
                 'sections' => $config->getAutocompleteSections(),
                 'nbOfProductsSuggestions' => $config->getNumberOfProductsSuggestions(),

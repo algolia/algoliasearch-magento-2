@@ -538,6 +538,7 @@ class ProductHelper
 
         $categories = [];
         $categoriesWithPath = [];
+        $categoryIds = [];
 
         $_categoryIds = $product->getCategoryIds();
 
@@ -576,6 +577,7 @@ class ProductHelper
 
                     $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
                     if ($name) {
+                        $categoryIds[] = $treeCategoryId;
                         $path[] = $name;
                     }
                 }
@@ -599,6 +601,7 @@ class ProductHelper
 
         $customData['categories'] = $hierarchicalCategories;
         $customData['categories_without_path'] = $categories;
+        $customData['categoryIds'] = array_values(array_unique($categoryIds));
 
         return $customData;
     }
@@ -913,6 +916,9 @@ class ProductHelper
         if ($this->configHelper->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
             $attributesForFaceting[] = 'categories';
         }
+
+        // Used for merchandising
+        $attributesForFaceting[] = 'categoryIds';
 
         return $attributesForFaceting;
     }

@@ -12,12 +12,6 @@
             Rebuild categories index.
         </description>
     </indexer>
-    <indexer id="algolia_category_products_order" view_id="algolia_category_products_order" class="Algolia\AlgoliaSearch\Model\Indexer\CategoryProductsOrder">
-        <title translate="true">Algolia Search Category Products Order</title>
-        <description translate="true">
-            Rebuild query rules to keep products order on category pages.
-        </description>
-    </indexer>
     <indexer id="algolia_pages" view_id="algolia_pages" class="Algolia\AlgoliaSearch\Model\Indexer\Page">
         <title translate="true">Algolia Search Pages</title>
         <description translate="true">

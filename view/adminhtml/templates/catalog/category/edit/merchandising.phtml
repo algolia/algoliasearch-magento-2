@@ -1,25 +1,224 @@
 <?php
+
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
 
-/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Tab\Merchandising $blockGrid */
-$blockGrid = $block->getBlockGrid();
-$gridJsObjectName = $blockGrid->getJsObjectName();
+$configHelper = $block->getConfigHelper();
+
+$indexName = $block->getCoreHelper()->getBaseIndexName();
+
+
+$category = $block->getCategory();
+
+$categoryId = $category->getId();
+$categoryName = $category->getName();
+
+$isConfig = [
+    'appId' => $configHelper->getApplicationID(),
+    'apiKey' => $configHelper->getSearchOnlyAPIKey(),
+    'indexName' => $configHelper->getIndexPrefix() . 'default_products',
+    'routing' => false,
+    'searchParameters' => [
+        'hitsPerPage' => $configHelper->getNumberOfProductResults(),
+        'getRankingInfo' => true,
+        'ruleContexts' => [
+            '',
+            'magento-category-'.$categoryId,
+        ],
+        'facetFilters' => [
+            'categoryIds:'.$block->getCategory()->getId(),
+        ],
+    ],
+];
 
 ?>
-Muj Scriptisek hola
-<?= $block->getGridHtml() ?>
-<input type="hidden" name="category_products" id="in_category_products" data-form-part="category_form" value="" />
-<script type="text/x-magento-init">
-    {
-        "*": {
-            "Magento_Catalog/catalog/category/algolia-merchandising": {
-                "selectedProducts": <?= /* @escapeNotVerified */ $block->getProductsJson() ?>,
-                "gridJsObjectName": <?= /* @escapeNotVerified */ '"' . $gridJsObjectName . '"' ?: '{}' ?>
-            }
-        }
-    }
+
+<div>
+    <p>
+        On this page you see the exact products in the exact order
+        as your customers see it on <b>"<?= $categoryName; ?>"</b> category page.
+    </p>
+    <p>
+        Drag & drop products to a specific position and pin it there to have the product displayed always in this position.
+    </p>
+</div>
+
+<div id="algolia_merchandising_search_box"></div>
+<div id="algolia_merchandising_hits"></div>
+
+<input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="category_form" />
+
+<script type="text/template" id="algolia_merchandising_all_items_template">
+    <div class="admin__data-grid-wrap admin__data-grid-wrap-static algolia_merchandising_items_table">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th class="data-grid-th">Image</th>
+                    <th class="data-grid-th">ID</th>
+                    <th class="data-grid-th">SKU</th>
+                    <th class="data-grid-th">Name</th>
+                    <th class="data-grid-th">Price</th>
+                    <th class="data-grid-th">Pin it</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#hits}}
+                    <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
+                        <td class="image_cell"><img src="{{ image_url }}" width="60" /></td>
+                        <td>{{ objectID }}</td>
+                        <td>{{{ _highlightResult.sku.value }}}</td>
+                        <td>{{{ _highlightResult.name.value }}}</td>
+                        <td>{{ price.USD.default_formated }}</td>
+                        <td>
+                            {{#_rankingInfo.promoted}}
+                            {{/_rankingInfo.promoted}}
+
+                            <span class="unpin_block" style="display: {{ pinnedDisplayMode }};">
+                                Pinned <a href="#" class="unpinIt">UNPIN IT</a>
+                            </span>
+                            <span class="pin_block" style="display: {{ unpinnedDisplayMode }};">
+                                <a href="#" class="pinIt">PIN IT</a>
+                            </span>
+                        </td>
+                    </tr>
+                {{/hits}}
+            </tbody>
+        </table>
+    </div>
 </script>
-<!-- @todo remove when "UI components" will support such initialization -->
+
+<style>
+    .algolia_merchandising_items_table em {
+        font-style: normal;
+        font-weight: bold;
+    }
+
+    .algolia_merchandising_items_table .image_cell {
+        width: 90px;
+    }
+
+    .algolia_merchandising_items_table tr .unpin_block {
+        display: none;
+    }
+
+    .algolia_merchandising_items_table tr .pin_block {
+        display: inline;
+    }
+
+    .algolia_merchandising_items_table tr.pinned .unpin_block {
+        display: inline;
+    }
+
+    .algolia_merchandising_items_table tr.pinned .pin_block {
+        display: none;
+    }
+</style>
+
 <script>
-    require('mage/apply/main').apply();
+    requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
+        algoliaAdminBundle.$(function ($) {
+            var search = algoliaAdminBundle.instantsearch(<?= json_encode($isConfig); ?>);
+
+            // // initialize SearchBox
+            // search.addWidget(
+             //    algoliaAdminBundle.instantsearch.widgets.searchBox({
+             //        container: '#algolia_merchandising_search_box',
+             //        placeholder: 'Search for products',
+             //        reset: false,
+             //        magnifier: false
+             //    })
+            // );
+
+            // initialize hits widget
+            search.addWidget(
+                algoliaAdminBundle.instantsearch.widgets.hits({
+                    container: '#algolia_merchandising_hits',
+                    transformData: {
+                        allItems: function(res) {
+                            var positions = {};
+                            for (var i = 0; i < res.hits.length; i++) {
+                                var hit = res.hits[i],
+                                    pinned = false,
+                                    unpinnedDisplayMode = 'inline';
+
+                                if (hit._rankingInfo.promoted === true) {
+                                    positions[hit.objectID] = i;
+                                    pinned = true;
+                                }
+
+                                res.hits[i]['pinned'] = true;
+                            }
+
+                            $('input[name="algolia_merchandising_positions"]').val(JSON.stringify(positions));
+
+                            return res;
+                        }
+                    },
+                    templates: {
+                        allItems: $('#algolia_merchandising_all_items_template').html()
+                    },
+                    escapeHits: true
+                })
+            );
+
+            search.start();
+
+            $(document).on('click', '.algolia_merchandising_items_table .pinIt', function(e) {
+                var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
+                    positions = {};
+
+                $(this).closest('tr').addClass('pinned');
+
+                $('.algolia_merchandising_items_table tbody tr').each(function(position) {
+                    if ($(this).hasClass('pinned')) {
+                        var objectId = $(this).data('objectid');
+                        positions[objectId] = position;
+                    }
+                });
+
+                $positionsInput.val(JSON.stringify(positions));
+
+                e.preventDefault();
+                return false;
+            });
+
+            $(document).on('click', '.algolia_merchandising_items_table .unpinIt', function(e) {
+                var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
+                    positions = JSON.parse($positionsInput.val()),
+                    $parent = $(this).closest('tr'),
+                    unpinnedObjectId = $parent.data('objectid');
+
+                delete positions[unpinnedObjectId];
+
+                $positionsInput.val(JSON.stringify(positions));
+
+                $parent.removeClass('pinned');
+
+                e.preventDefault();
+                return false;
+            });
+
+            // MAKE RESULTS SORTABLE
+            var fixHelper = function(e, ui) {
+                ui.children().each(function() {
+                    $(this).width($(this).width());
+                });
+
+                return ui;
+            };
+
+            setTimeout(function () {
+                $('.algolia_merchandising_items_table tbody').sortable({
+                    containment: 'parent',
+                    items: 'tr',
+                    tolerance: 'pointer',
+                    helper: fixHelper,
+                    start: function (event, ui) {
+                        $(ui.item).css('margin-left', '10px');
+                    }
+                });
+
+                $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+            }, 1000);
+        });
+    });
 </script>

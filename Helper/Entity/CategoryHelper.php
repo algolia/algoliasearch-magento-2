@@ -144,7 +144,7 @@ class CategoryHelper
         return $this->configHelper->getCategoryAdditionalAttributes($storeId);
     }
 
-    public function getCategoryCollectionQuery($storeId, $categoryIds = null, $ignoreIncludeInMenu = false)
+    public function getCategoryCollectionQuery($storeId, $categoryIds = null)
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
@@ -163,7 +163,7 @@ class CategoryHelper
             ->addPathFilter($storeRootCategoryPath)
             ->addAttributeToSelect(array_merge(['name'], $additionalAttr));
 
-        if ($ignoreIncludeInMenu === false && !$this->configHelper->showCatsNotIncludedInNavigation()) {
+        if (!$this->configHelper->showCatsNotIncludedInNavigation()) {
             $categories->addAttributeToFilter('include_in_menu', '1');
         }
 

@@ -10,8 +10,6 @@
     </view>
     <view id="algolia_delete_products" class="Algolia\AlgoliaSearch\Model\Indexer\DeleteProduct" group="indexer">
     </view>
-    <view id="algolia_category_products_order" class="Algolia\AlgoliaSearch\Model\Indexer\CategoryProductsOrder" group="indexer">
-    </view>
     <view id="algolia_categories" class="Algolia\AlgoliaSearch\Model\Indexer\Category" group="indexer">
         <subscriptions>
             <table name="catalog_category_entity" entity_column="entity_id" />

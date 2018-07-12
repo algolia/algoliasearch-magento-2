@@ -360,7 +360,7 @@
                     </depends>
                 </field>
                 <field id="show_suggestions_on_no_result_page" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Display query suggestions when there are no results</label>
+                    <label>Show query suggestions when no results</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
@@ -501,7 +501,7 @@
                     </comment>
                 </field>
                 <field id="show_cats_not_included_in_navigation" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Show categories that are not included in the navigation menu</label>
+                    <label>Show categories not included in navigation</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[

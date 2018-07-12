@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Block\Adminhtml\Category;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Magento\Backend\Block\Template\Context;
+use Magento\Catalog\Model\Category;
 use Magento\Framework\Registry;
 
 class Merchandising extends \Magento\Backend\Block\Template
@@ -42,23 +43,19 @@ class Merchandising extends \Magento\Backend\Block\Template
         parent::__construct($context, $data);
     }
 
-    /** @return \Magento\Catalog\Model\Category | null */
+    /** @return Category | null */
     public function getCategory()
     {
         return $this->registry->registry('category');
     }
 
-    /**
-     * @return ConfigHelper
-     */
+    /** @return ConfigHelper */
     public function getConfigHelper()
     {
         return $this->configHelper;
     }
 
-    /**
-     * @return Data
-     */
+    /** @return Data */
     public function getCoreHelper()
     {
         return $this->coreHelper;

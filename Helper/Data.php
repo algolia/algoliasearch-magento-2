@@ -626,11 +626,6 @@ class Data
 
         $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
 
-        if ($this->configHelper->shouldKeepCategoryProductsOrder($storeId) === false) {
-            $this->deleteMerchandisingQueryRule($storeId, $categoryId);
-            return;
-        }
-
         $positions = $this->transformPositions($rawPositions);
 
         $rule = [

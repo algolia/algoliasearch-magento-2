@@ -52,19 +52,19 @@
                 </templates>
             </settings>
         </filters>
-        <massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">
-            <action name="delete">
-                <settings>
-                    <confirm>
-                        <message translate="true">Are you sure you want to delete selected items?</message>
-                        <title translate="true">Delete items</title>
-                    </confirm>
-                    <url path="*/*/massDelete"/>
-                    <type>delete</type>
-                    <label translate="true">Delete</label>
-                </settings>
-            </action>
-        </massaction>
+        <!--<massaction name="listing_massaction" component="Magento_Ui/js/grid/tree-massactions">-->
+            <!--<action name="delete">-->
+                <!--<settings>-->
+                    <!--<confirm>-->
+                        <!--<message translate="true">Are you sure you want to delete selected items?</message>-->
+                        <!--<title translate="true">Delete items</title>-->
+                    <!--</confirm>-->
+                    <!--<url path="*/*/massDelete"/>-->
+                    <!--<type>delete</type>-->
+                    <!--<label translate="true">Delete</label>-->
+                <!--</settings>-->
+            <!--</action>-->
+        <!--</massaction>-->
         <paging name="listing_paging"/>
     </listingToolbar>
 
@@ -111,33 +111,25 @@
         </column>
         <column name="status" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\Status">
             <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Algolia\AlgoliaSearch\Model\Source\JobStatuses</item>
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">text</item>
-                    <item name="editor" xsi:type="array">
-                        <item name="editorType" xsi:type="string">text</item>
-                    </item>
+                    <item name="sortable" xsi:type="string">false</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/select</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="editor" xsi:type="string">select</item>
                     <item name="label" xsi:type="string" translate="true">Status</item>
                 </item>
             </argument>
         </column>
-        <column name="class" >
+        <column name="method">
             <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Algolia\AlgoliaSearch\Model\Source\JobMethods</item>
                 <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="editor" xsi:type="array">
-                        <item name="editorType" xsi:type="string">text</item>
-                    </item>
-                    <item name="label" xsi:type="string" translate="true">Class</item>
-                </item>
-            </argument>
-        </column>
-        <column name="method" >
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="editor" xsi:type="array">
-                        <item name="editorType" xsi:type="string">text</item>
-                    </item>
+                    <item name="filter" xsi:type="string">select</item>
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/select</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="editor" xsi:type="string">select</item>
                     <item name="label" xsi:type="string" translate="true">Method</item>
                 </item>
             </argument>
@@ -150,6 +142,7 @@
                         <item name="editorType" xsi:type="string">text</item>
                     </item>
                     <item name="label" xsi:type="string" translate="true">Data</item>
+                    <item name="bodyTmpl" xsi:type="string" translate="true">ui/grid/cells/html</item>
                 </item>
             </argument>
         </column>

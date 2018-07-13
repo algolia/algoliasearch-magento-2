@@ -618,40 +618,6 @@ class Data
         $this->logger->stop($wrapperLogMessage);
     }
 
-    public function saveMerchandisingQueryRule($storeId, $categoryId, $rawPositions)
-    {
-        if ($this->isIndexingEnabled($storeId) === false) {
-            return;
-        }
-
-        $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
-
-        $positions = $this->transformPositions($rawPositions);
-
-        $rule = [
-            'objectID' => $this->getQueryRuleId($categoryId),
-            'description' => 'MagentoGeneratedQueryRule',
-            'condition' => [
-                'pattern' => '',
-                'anchoring' => 'is',
-                'context' => 'magento-category-'.$categoryId,
-            ],
-            'consequence' => [
-                'promote' => $positions,
-            ]
-        ];
-
-        $this->algoliaHelper->saveRule($rule, $productsIndexName);
-    }
-
-    public function deleteMerchandisingQueryRule($storeId, $categoryId)
-    {
-        $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
-        $ruleId = $this->getQueryRuleId($categoryId);
-
-        $this->algoliaHelper->deleteRule($productsIndexName, $ruleId);
-    }
-
     public function startEmulation($storeId)
     {
         if ($this->emulationRuns === true) {
@@ -826,24 +792,5 @@ class Data
 
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
         $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName);
-    }
-
-    private function transformPositions($positions)
-    {
-        $transformedPositions = [];
-
-        foreach ($positions as $objectID => $position) {
-            $transformedPositions[] = [
-                'objectID' => (string) $objectID,
-                'position' => $position,
-            ];
-        }
-
-        return $transformedPositions;
-    }
-
-    private function getQueryRuleId($categoryId)
-    {
-        return 'magento-category-'.$categoryId;
     }
 }

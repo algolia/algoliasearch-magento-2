@@ -2,21 +2,25 @@
 
 namespace Algolia\AlgoliaSearch\Model\Observer;
 
-use Algolia\AlgoliaSearch\Helper\Data;
+use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Merchandising implements ObserverInterface
 {
-    private $helper;
+    private $merchandisingHelper;
     private $storeManager;
     private $request;
 
-    public function __construct(StoreManagerInterface $storeManager, Data $helper, \Magento\Framework\App\RequestInterface $request)
-    {
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        MerchandisingHelper $merchandisingHelper,
+        RequestInterface $request
+    ) {
         $this->storeManager = $storeManager;
-        $this->helper = $helper;
+        $this->merchandisingHelper = $merchandisingHelper;
         $this->request = $request;
     }
 
@@ -38,11 +42,11 @@ class Merchandising implements ObserverInterface
             }
 
             if (!$positions) {
-                $this->helper->deleteMerchandisingQueryRule($store->getId(), $categoryId);
+                $this->merchandisingHelper->deleteQueryRule($store->getId(), $categoryId);
                 return;
             }
 
-            $this->helper->saveMerchandisingQueryRule($store->getId(), $categoryId, $positions);
+            $this->merchandisingHelper->saveQueryRule($store->getId(), $categoryId, $positions);
         }
     }
 }

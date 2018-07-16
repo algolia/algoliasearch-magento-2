@@ -897,6 +897,8 @@
                     <comment>
                         <![CDATA[
                             Do you want to remove Algolia logo from autocomplete menu?
+                            <br><span class="algolia-config-warning">&#9888;</span>
+                            Only paid customer are allowed to remove the logo.
                         ]]>
                     </comment>
                 </field>

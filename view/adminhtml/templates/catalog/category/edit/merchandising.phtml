@@ -160,6 +160,21 @@ $isConfig = [
                 })
             );
 
+            search.on('render', function() {
+	            // MAKE RESULTS SORTABLE
+	            $('.algolia_merchandising_items_table tbody').sortable({
+		            containment: 'parent',
+		            items: 'tr',
+		            tolerance: 'pointer',
+		            helper: sortableHelper,
+		            start: function (event, ui) {
+			            $(ui.item).css('margin-left', '10px');
+		            }
+	            });
+
+	            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+            });
+
             search.start();
 
             $(document).on('click', '.algolia_merchandising_items_table .pinIt', function(e) {
@@ -197,28 +212,13 @@ $isConfig = [
                 return false;
             });
 
-            // MAKE RESULTS SORTABLE
-            var fixHelper = function(e, ui) {
+            var sortableHelper = function(e, ui) {
                 ui.children().each(function() {
                     $(this).width($(this).width());
                 });
 
                 return ui;
             };
-
-            setTimeout(function () {
-                $('.algolia_merchandising_items_table tbody').sortable({
-                    containment: 'parent',
-                    items: 'tr',
-                    tolerance: 'pointer',
-                    helper: fixHelper,
-                    start: function (event, ui) {
-                        $(ui.item).css('margin-left', '10px');
-                    }
-                });
-
-                $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
-            }, 1000);
         });
     });
 </script>

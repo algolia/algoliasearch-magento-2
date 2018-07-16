@@ -23,26 +23,26 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_credentials/credentials/api_key' => '',
         'algoliasearch_credentials/credentials/debug' => '0',
         'algoliasearch_credentials/credentials/index_prefix' => 'magento2_',
-        'algoliasearch_credentials/credentials/is_popup_enabled' => '1',
-        'algoliasearch_credentials/credentials/is_instant_enabled' => '0',
-        'algoliasearch_credentials/credentials/use_adaptive_image' => '0',
 
+        'algoliasearch_autocomplete/autocomplete/is_popup_enabled' => '1',
         'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions' => '6',
         'algoliasearch_autocomplete/autocomplete/nb_of_categories_suggestions' => '2',
         'algoliasearch_autocomplete/autocomplete/nb_of_queries_suggestions' => '0',
-        'algoliasearch_autocomplete/autocomplete/min_popularity' => '2',
-        'algoliasearch_autocomplete/autocomplete/min_number_of_results' => '1000',
+        'algoliasearch_autocomplete/autocomplete/min_popularity' => '1000',
+        'algoliasearch_autocomplete/autocomplete/min_number_of_results' => '2',
         'algoliasearch_autocomplete/autocomplete/render_template_directives' => '1',
         'algoliasearch_autocomplete/autocomplete/debug' => '0',
 
+        'algoliasearch_instant/instant/is_instant_enabled' => '0',
         'algoliasearch_instant/instant/instant_selector' => '.columns',
+        'algoliasearch_instant/instant/number_product_results' => '9',
         'algoliasearch_instant/instant/max_values_per_facet' => '10',
         'algoliasearch_instant/instant/replace_categories' => '1',
+        'algoliasearch_instant/instant/show_suggestions_on_no_result_page' => '1',
         'algoliasearch_instant/instant/add_to_cart_enable' => '1',
         'algoliasearch_instant/instant/infinite_scroll_enable' => '0',
 
-        'algoliasearch_products/products/number_product_results' => '9',
-        'algoliasearch_products/products/show_suggestions_on_no_result_page' => '1',
+        'algoliasearch_products/products/use_adaptive_image' => '0',
 
         'algoliasearch_categories/categories/show_cats_not_included_in_navigation' => '1',
         'algoliasearch_categories/categories/index_empty_categories' => '0',
@@ -139,67 +139,57 @@ class UpgradeSchema implements UpgradeSchemaInterface
             [
                 'attribute' => 'name',
                 'searchable' => '1',
-                'retrievable' => '1',
                 'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'path',
-                'searchable' => '1',
                 'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'categories',
-                'searchable' => '1',
-                'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'color',
-                'searchable' => '1',
-                'retrievable' => '1',
-                'order' => 'unordered',
             ],
             [
                 'attribute' => 'sku',
                 'searchable' => '1',
-                'retrievable' => '1',
                 'order' => 'unordered',
+                'retrievable' => '1',
+            ],
+            [
+                'attribute' => 'manufacturer',
+                'searchable' => '1',
+                'order' => 'unordered',
+                'retrievable' => '1',
+            ],
+            [
+                'attribute' => 'categories',
+                'searchable' => '1',
+                'order' => 'unordered',
+                'retrievable' => '1',
+            ],
+            [
+                'attribute' => 'color',
+                'searchable' => '1',
+                'order' => 'unordered',
+                'retrievable' => '1',
             ],
             [
                 'attribute' => 'price',
-                'searchable' => '0',
+                'searchable' => '2',
+                'order' => 'unordered',
                 'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'ordered_qty',
-                'searchable' => '0',
-                'retrievable' => '0',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'stock_qty',
-                'searchable' => '0',
-                'retrievable' => '0',
-                'order' => 'unordered',
             ],
             [
                 'attribute' => 'rating_summary',
-                'searchable' => '0',
+                'searchable' => '2',
+                'order' => 'unordered',
                 'retrievable' => '1',
-                'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'created_at',
-                'searchable' => '0',
-                'retrievable' => '0',
-                'order' => 'unordered',
             ],
         ],
         'algoliasearch_products/products/custom_ranking_product_attributes' => [
             [
+                'attribute' => 'in_stock',
+                'order' => 'desc',
+            ],
+            [
                 'attribute' => 'ordered_qty',
+                'order' => 'desc',
+            ],
+            [
+                'attribute' => 'created_at',
                 'order' => 'desc',
             ],
         ],
@@ -208,44 +198,32 @@ class UpgradeSchema implements UpgradeSchemaInterface
             [
                 'attribute' => 'name',
                 'searchable' => '1',
-                'retrievable' => '1',
                 'order' => 'unordered',
+                'retrievable' => '1',
             ],
             [
                 'attribute' => 'path',
                 'searchable' => '1',
-                'retrievable' => '1',
                 'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'description',
-                'searchable' => '1',
                 'retrievable' => '1',
-                'order' => 'unordered',
             ],
             [
                 'attribute' => 'meta_title',
                 'searchable' => '1',
-                'retrievable' => '1',
                 'order' => 'unordered',
+                'retrievable' => '1',
             ],
             [
                 'attribute' => 'meta_keywords',
                 'searchable' => '1',
-                'retrievable' => '1',
                 'order' => 'unordered',
+                'retrievable' => '1',
             ],
             [
                 'attribute' => 'meta_description',
                 'searchable' => '1',
-                'retrievable' => '1',
                 'order' => 'unordered',
-            ],
-            [
-                'attribute' => 'product_count',
-                'searchable' => '0',
                 'retrievable' => '1',
-                'order' => 'unordered',
             ],
         ],
         'algoliasearch_categories/categories/custom_ranking_category_attributes' => [
@@ -273,6 +251,26 @@ class UpgradeSchema implements UpgradeSchemaInterface
     public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
         $setup->startSetup();
+
+        /* MOVE TRANSFERED CONFIG DIRECTIVES */
+
+        // In version 1.8.0 some config directives were moved to different config sections
+        // This code preserves previously set config values for those directives
+        // Notice: It needs to run before settings default config values
+
+        $movedConfigDirectives = [
+            'algoliasearch_credentials/credentials/use_adaptive_image' => 'algoliasearch_products/products/use_adaptive_image',
+            'algoliasearch_products/products/number_product_results' => 'algoliasearch_instant/instant/number_product_results',
+            'algoliasearch_products/products/show_suggestions_on_no_result_page' => 'algoliasearch_instant/instant/show_suggestions_on_no_result_page',
+            'algoliasearch_credentials/credentials/is_popup_enabled' => 'algoliasearch_autocomplete/autocomplete/is_popup_enabled',
+            'algoliasearch_credentials/credentials/is_instant_enabled' => 'algoliasearch_instant/instant/is_instant_enabled',
+        ];
+
+        $connection = $setup->getConnection();
+        $table = $setup->getTable('core_config_data');
+        foreach ($movedConfigDirectives as $from => $to) {
+            $connection->query('UPDATE '.$table.' SET path = "'.$to.'" WHERE path = "'.$from.'"');
+        }
 
         /* SET DEFAULT CONFIG DATA */
 

@@ -17,22 +17,23 @@ class ConfigHelper
     const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
     const ENABLE_BACKEND = 'algoliasearch_credentials/credentials/enable_backend';
     const LOGGING_ENABLED = 'algoliasearch_credentials/credentials/debug';
-    const IS_POPUP_ENABLED = 'algoliasearch_credentials/credentials/is_popup_enabled';
     const APPLICATION_ID = 'algoliasearch_credentials/credentials/application_id';
     const API_KEY = 'algoliasearch_credentials/credentials/api_key';
     const SEARCH_ONLY_API_KEY = 'algoliasearch_credentials/credentials/search_only_api_key';
     const INDEX_PREFIX = 'algoliasearch_credentials/credentials/index_prefix';
-    const IS_INSTANT_ENABLED = 'algoliasearch_credentials/credentials/is_instant_enabled';
-    const USE_ADAPTIVE_IMAGE = 'algoliasearch_credentials/credentials/use_adaptive_image';
 
+    const IS_INSTANT_ENABLED = 'algoliasearch_instant/instant/is_instant_enabled';
     const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
     const INSTANT_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
+    const NUMBER_OF_PRODUCT_RESULTS = 'algoliasearch_instant/instant/number_product_results';
     const FACETS = 'algoliasearch_instant/instant/facets';
     const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant/max_values_per_facet';
     const SORTING_INDICES = 'algoliasearch_instant/instant/sorts';
+    const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant/show_suggestions_on_no_result_page';
     const XML_ADD_TO_CART_ENABLE = 'algoliasearch_instant/instant/add_to_cart_enable';
     const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant/infinite_scroll_enable';
 
+    const IS_POPUP_ENABLED = 'algoliasearch_autocomplete/autocomplete/is_popup_enabled';
     const NB_OF_PRODUCTS_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions';
     const NB_OF_CATEGORIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_categories_suggestions';
     const NB_OF_QUERIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_queries_suggestions';
@@ -43,10 +44,9 @@ class ConfigHelper
     const RENDER_TEMPLATE_DIRECTIVES = 'algoliasearch_autocomplete/autocomplete/render_template_directives';
     const AUTOCOMPLETE_MENU_DEBUG = 'algoliasearch_autocomplete/autocomplete/debug';
 
-    const NUMBER_OF_PRODUCT_RESULTS = 'algoliasearch_products/products/number_product_results';
     const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
-    const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_products/products/show_suggestions_on_no_result_page';
+    const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
     const INDEX_OUT_OF_STOCK_OPTIONS = 'algoliasearch_products/products/index_out_of_stock_options';
 
     const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
@@ -235,9 +235,7 @@ class ConfigHelper
 
     public function isEnabledFrontEnd($storeId = null)
     {
-        // Frontend = Backend + Frontend
-        return (bool) $this->configInterface->getValue(self::ENABLE_BACKEND, ScopeInterface::SCOPE_STORE, $storeId)
-            && (bool) $this->configInterface->getValue(self::ENABLE_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::ENABLE_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isEnabledBackend($storeId = null)
@@ -403,11 +401,6 @@ class ConfigHelper
         );
     }
 
-    public function isPopupEnabled($storeId = null)
-    {
-        return $this->configInterface->getValue(self::IS_POPUP_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
     public function replaceCategories($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::REPLACE_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
@@ -415,7 +408,7 @@ class ConfigHelper
 
     public function isAutoCompleteEnabled($storeId = null)
     {
-        return $this->configInterface->getValue(self::IS_POPUP_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::IS_POPUP_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isInstantEnabled($storeId = null)
@@ -546,14 +539,24 @@ class ConfigHelper
 
     public function getCategoryAdditionalAttributes($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(
+        $attributes = $this->unserialize($this->configInterface->getValue(
             self::CATEGORY_ATTRIBUTES,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
 
-        if (is_array($attrs)) {
-            return $attrs;
+        $customRankings = $this->unserialize($this->configInterface->getValue(
+            self::CATEGORY_CUSTOM_RANKING,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
+        $customRankings = array_filter($customRankings, function ($customRanking) {
+            return $customRanking['attribute'] !== 'custom_attribute';
+        });
+        $attributes = $this->addIndexableAttributes($attributes, $customRankings, '0', '0');
+
+        if (is_array($attributes)) {
+            return $attributes;
         }
 
         return [];

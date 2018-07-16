@@ -146,7 +146,7 @@ class ConfigTest extends TestCase
 
         $this->assertContains('objectID', $retrievableAttributes);
         $this->assertContains('name', $retrievableAttributes);
-        $this->assertContains('product_count', $retrievableAttributes); // Category attribute
+        $this->assertContains('path', $retrievableAttributes); // Category attribute
     }
 
     public function testReplicaCreationWithoutCustomerGroups()

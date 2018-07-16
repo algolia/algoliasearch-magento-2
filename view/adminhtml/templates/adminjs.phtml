@@ -2,6 +2,13 @@
     .algolia td {
         padding-top: 1rem !important;
     }
+
+    .algolia-config-warning {
+        font-size: 30px;
+        color: #D83900;
+        position: relative;
+        top: 6px;
+    }
 </style>
 
 <script>
@@ -111,6 +118,36 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			        $rows.show();
 		        } else {
 			        $rows.hide();
+		        }
+	        }
+
+	        // ORDERED / UNORDERED
+	        var $attributesRows = $('#algoliasearch_products_products_product_additional_attributes, #algoliasearch_categories_categories_category_additional_attributes');
+	        initAttributes($attributesRows);
+
+	        $attributesRows.on('click', 'button[id^="addToEndBtn"]', function (e) {
+		        initAttributes($attributesRows);
+	        });
+
+	        $attributesRows.on('change', 'select[name$="[searchable]"]', function (e) {
+		        handleAttributes($(this));
+	        });
+
+	        function initAttributes($attributesRows) {
+		        $attributesRows.find('select[name$="[searchable]"]').each(function(e) {
+			        handleAttributes($(this));
+		        });
+	        }
+
+	        function handleAttributes($selectBox) {
+		        var selectValue = $selectBox.val(),
+			        $input = $selectBox.parent('td').next().find('select[name$="[order]"]');
+
+		        if(selectValue !== '1') {
+			        $input.hide();
+		        }
+		        else {
+			        $input.show();
 		        }
 	        }
         });

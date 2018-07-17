@@ -49,6 +49,20 @@ class Merchandising extends \Magento\Backend\Block\Template
         return $this->registry->registry('category');
     }
 
+    /** @return boolean */
+    public function isRootCategory()
+    {
+        $category = $this->getCategory();
+        $path = $category->getPath();
+
+        $parts = explode('/', $path);
+        if (count($parts) <= 2) {
+            return true;
+        }
+
+        return false;
+    }
+
     /** @return ConfigHelper */
     public function getConfigHelper()
     {

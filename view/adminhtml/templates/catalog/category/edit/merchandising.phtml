@@ -2,10 +2,24 @@
 
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
 
+?>
+
+<?php if ($block->isRootCategory()): ?>
+
+<div class="messages">
+    <div class="message message-info info">
+        The root category is not displayed on Magento's frontend and therefore it's not indexed within Algolia records.
+        <br>To merchandise products, please select any sub-category.
+    </div>
+</div>
+
+<?php return; endif; ?>
+
+<?php
+
 $configHelper = $block->getConfigHelper();
 
 $indexName = $block->getCoreHelper()->getBaseIndexName();
-
 
 $category = $block->getCategory();
 
@@ -32,22 +46,22 @@ $isConfig = [
 
 ?>
 
-<div>
-    <p>
-        On this page you see the exact products in the exact order
-        as your customers see it on <b>"<?= $categoryName; ?>"</b> category page.
-    </p>
-    <p>
-        Drag & drop products to a specific position and pin it there to have the product displayed always in this position.
-    </p>
-</div>
-
 <div id="algolia_merchandising_search_box"></div>
 <div id="algolia_merchandising_hits"></div>
 
 <input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="category_form" />
 
 <script type="text/template" id="algolia_merchandising_all_items_template">
+    <div>
+        <p>
+            On this page you see the exact products in the exact order
+            as your customers see it on <b>"<?= $categoryName; ?>"</b> category page.
+        </p>
+        <p>
+            Drag & drop products to a specific position and pin it there to have the product displayed always in this position.
+        </p>
+    </div>
+
     <div class="admin__data-grid-wrap admin__data-grid-wrap-static algolia_merchandising_items_table">
         <table class="data-grid">
             <thead>
@@ -83,6 +97,15 @@ $isConfig = [
                 {{/hits}}
             </tbody>
         </table>
+    </div>
+</script>
+
+<script type="text/template" id="algolia_merchandising_no_results">
+    <div class="algolia_merchandising_no_results messages">
+        <div class="message message-warning warning">
+            Algolia didn't find any products in this category.
+            If there are supposed to be some products, please reindex Products indexer.
+        </div>
     </div>
 </script>
 
@@ -154,7 +177,8 @@ $isConfig = [
                         }
                     },
                     templates: {
-                        allItems: $('#algolia_merchandising_all_items_template').html()
+                        allItems: $('#algolia_merchandising_all_items_template').html(),
+                        empty: $('#algolia_merchandising_no_results').html()
                     },
                     escapeHits: true
                 })

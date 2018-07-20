@@ -41,7 +41,7 @@
                     <label>Application ID</label>
                     <comment>
                         <![CDATA[
-                            You can find your Application ID and API keys in <a href="https://www.algolia.com/api-keys" target="_blank">Algolia dashboard</a>.
+                            You can find your Application ID and API keys in the <a href="https://www.algolia.com/api-keys" target="_blank">Algolia dashboard</a>.
                         ]]>
                     </comment>
                 </field>
@@ -49,7 +49,7 @@
                     <label>Search-only (public) API key</label>
                     <comment>
                         <![CDATA[
-                            You can find your Application ID and API keys in <a href="https://www.algolia.com/api-keys" target="_blank">Algolia dashboard</a>.
+                            You can find your Application ID and API keys in the <a href="https://www.algolia.com/api-keys" target="_blank">Algolia dashboard</a>.
                         ]]>
                     </comment>
                 </field>
@@ -57,7 +57,7 @@
                     <label>Admin API key</label>
                     <comment>
                         <![CDATA[
-                            You can find your Application ID and API keys in <a href="https://www.algolia.com/api-keys" target="_blank">Algolia dashboard</a>.
+                            You can find your Application ID and API keys in the <a href="https://www.algolia.com/api-keys" target="_blank">Algolia dashboard</a>.
                         ]]>
                     </comment>
                 </field>
@@ -65,7 +65,7 @@
                     <label>Index Name Prefix</label>
                     <comment>
                         <![CDATA[
-                            Specify different index prefix for each environment (eg. local, staging, production) you have. It will prevent your data from being overriden.
+                            Specify different index prefixes for each environment (eg. local, staging, production). It will prevent your data from being overridden.
                         ]]>
                     </comment>
                 </field>
@@ -74,8 +74,9 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want the Algolia extension to push data to Algolia?<br>
-                            If not, you will need to push data to Algolia in a different way to keep the search working.
+                            Choose "Yes" if you want the Algolia extension to push your data to Algolia?<br>
+                            The benefit here is that Algolia will manage to keep your data up to date.
+                            If you choose "No", you will need to push and manage your data in a different way.
                         ]]>
                     </comment>
                 </field>
@@ -84,8 +85,8 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to use Algolia's search?<br>
-                            If not, Magento will do all the search and not touch Algolia at all.
+                            Choose "Yes" if you want to use Algolia's search.<br>
+                            If not, Magento will perform all searches and not touch Algolia at all.
                         ]]>
                     </comment>
                 </field>
@@ -94,7 +95,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                           Logging generates a significant amount of data and can affect performance of the extension. Use it only for debug reasons.
+                           Logging generates a significant amount of data and can affect performance of the extension. Use it only for debugging.
                         ]]>
                     </comment>
                 </field>
@@ -108,9 +109,9 @@
                 <label>Autocomplete Menu</label>
                 <comment>
                     <![CDATA[
-                        To customize autocomplete menu beyond its configuration, you can read tutorials:
+                        To customize the autocomplete menu beyond its configuration, you can read tutorials:
                         <a target="_blank" href="https://community.algolia.com/magento/doc/m2/customize-autocomplete/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize autocomplete</a>,
-                        <a target="_blank" href="https://community.algolia.com/magento/doc/m1/external-autocomplete-source/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to add external data source</a>,
+                        <a target="_blank" href="https://community.algolia.com/magento/doc/m1/external-autocomplete-source/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to add an external data source</a>,
                         <a target="_blank" href="https://community.algolia.com/magento/doc/m2/backend/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
                         <br>
                         <br>
@@ -133,7 +134,7 @@
                     <label>Number of products</label>
                     <comment>
                         <![CDATA[
-                            How many products do you want to display in autocomplete menu? Default value is 6.<br>
+                            How many products do you want to display in the autocomplete menu? Default value is 6.<br>
                             Set 0 to disable the products section.
                         ]]>
                     </comment>
@@ -146,7 +147,7 @@
                     <label>Number of categories</label>
                     <comment>
                         <![CDATA[
-                            How many categories do you want to display in autocomplete menu? Default value is 2.<br>
+                            How many categories do you want to display in the autocomplete menu? Default value is 2.<br>
                             Set 0 to disable the categories section.
                         ]]>
                     </comment>
@@ -159,7 +160,7 @@
                     <label>Number of queries</label>
                     <comment>
                         <![CDATA[
-                            How many query suggestions do you want to display in autocomplete menu? By default it's disabled.<br>
+                            How many query suggestions do you want to display in the autocomplete menu? By default it's disabled.<br>
                             Set 0 to disable the query suggestion section.
                         ]]>
                     </comment>
@@ -172,7 +173,7 @@
                     <label>Minimal query popularity</label>
                     <comment>
                         <![CDATA[
-                            A minimiman number of times a query has been performed in order to be suggested in autocomplete menu. Default value is 1000.
+                            A minimum number of times a query has been performed in order to be suggested in the autocomplete menu. Default value is 1000.
                         ]]>
                     </comment>
                     <depends>
@@ -184,7 +185,7 @@
                     <label>Minimal number of results per query</label>
                     <comment>
                         <![CDATA[
-                            A minimal number of results a query needs to return to be suggested. Default value is 2.
+                            A minimal number of results a query needs in order to be suggested. Default value is 2.
                         ]]>
                     </comment>
                     <depends>
@@ -197,8 +198,8 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            Specify an additional sections you want to include in the autocomplete menu (eg. pages, colors, manufaturers).
-                            <br><span class="algolia-config-warning">&#9888;</span> All attributes used here have to be configured as facets in <strong>Instant Search Results Page Configuration</strong> panel.
+                            Specify additional sections you want to include in the autocomplete menu (eg. pages, colors, manufacturers).
+                            <br><span class="algolia-config-warning">&#9888;</span> All attributes used here have to be configured as facets in the <strong>Instant Search Results Page Configuration</strong> panel.
                         ]]>
                     </comment>
                     <depends>
@@ -211,9 +212,9 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            Specify a pages you don't want to search in.<br>
+                            Specify pages you don't want to search in.<br>
                             Pages' indexing documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#pages-indexing">https://community.algolia.com/magento/doc/m2/indexing/#pages-indexing</a>
-                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex Algolia Search Pages indexer after you've modified this panel.
+                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Pages indexer after you've modified this panel.
                         ]]>
                     </comment>
                     <depends>
@@ -226,7 +227,7 @@
                     <comment>
                         <![CDATA[
                             Do you want to have CMS pages' templates' content (e.g. <code>{{block type="core/template" ...}}</code>) indexed? Default value is "Yes".
-                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex Algolia Search Pages indexer after you've modified this setting.
+                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Pages indexer after you've modified this setting.
                             ]]>
                     </comment>
                     <depends>
@@ -238,8 +239,8 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            When set to "Yes", autocomplete menu won't disappear when clicked outside of the menu.
-                            It's useful when you debug / style a look and feel of the autocomplete menu.
+                            When set to "Yes", the autocomplete menu won't disappear when clicked outside of the menu.
+                            It's useful when you debug or style a look and feel of the autocomplete menu.
                         ]]>
                     </comment>
                     <depends>
@@ -256,8 +257,8 @@
                 <label>Instant Search Results Page</label>
                 <comment>
                     <![CDATA[
-                        To customize instant search results page beyond its configuration, you can read tutorials:<br >
-                         &nbsp; - <a target="_blank" href="https://community.algolia.com/magento/doc/m2/customize-instantsearch/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize instantsearch</a><br>
+                        To customize the instant search results page beyond its configuration, you can read these tutorials:<br >
+                         &nbsp; - <a target="_blank" href="https://community.algolia.com/magento/doc/m2/customize-instantsearch/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize InstantSearch</a><br>
                          &nbsp; - <a target="_blank" href="https://community.algolia.com/magento/doc/m2/backend/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
                         <br>
                         <br>
@@ -270,9 +271,9 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want the products inside a searcg results page to be searchable and updated with as-you-type experience?<br>
+                            Do you want the products inside a search results page to be searchable and updated with as-you-type experience?<br>
                             It requires your theme to expose a <code>top.search</code> and <code>content</code> block.
-                            <br><span class="algolia-config-warning">&#9888;</span> Enabling instant search results page can potentially break your design and some work will be required to have a good integration with your theme
+                            <br><span class="algolia-config-warning">&#9888;</span> Enabling instant search results page can potentially break your design and some work will be required to have a good integration with your theme.
                         ]]>
                     </comment>
                 </field>
@@ -305,13 +306,13 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            Specify a filtering options you want to offer on a search results page.<br>
-                                &nbsp; - Disjunctive allows a selection of different values of a facet (e.g. hotels with 4 OR 5 stars).<br>
-                                &nbsp; - Conjunctive allows a selection of only one value of a facet (e.g. only "Size M").
+                            Specify the filtering options you want to offer on a search results page.<br>
+                                &nbsp; - Disjunctive allows a selection of different values per facet (e.g. hotels with 4 OR 5 stars).<br>
+                                &nbsp; - Conjunctive allows a selection of only one value per facet (e.g. only "Size M").
                             <br><br>
                             Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
                             <br><br>
-                            Create a Query rule for facet when you want Algolia to automatically filter on a facet when a user searches for its value in query. It means when you create a Query rule for "color" facet and user is searching for query "red shorts", Algolia will internally filter results for color "red" and search only for query "shorts". It leads to more relevant users. This query rule is applied for both autocomplete and instant search results. Query rules can be used only when you are on Business or higher plan.
+                            Create a Query rule for a facet when you want Algolia to automatically filter on a facet when a user searches for its value in a query. For example, when you create a Query rule for a "color" facet and a user is searching "red shorts", Algolia will internally filter results for the color "red" and search only "shorts". It leads to more relevant results. This query rule is applied for both autocomplete and instant search results. Query rules can be used only when you are on Business or higher plan.
                             <br><br>
                             Facets' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets">https://community.algolia.com/magento/doc/m2/indexing/#facets</a>
                         ]]>
@@ -339,7 +340,7 @@
                     <comment>
                         <![CDATA[
                             Specify different sorting options you want to offer on a search results page.<br>
-                            Each sort will significantly increate a number of records you store in Algolia.<br>
+                            Each sort will significantly increase the number of records you store in Algolia.<br>
                             Read more in <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#sorting-strategies">documentation</a>.
                         ]]>
                     </comment>
@@ -376,7 +377,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to display an "Add To Cart" button in a product on instant search results page?
+                            Do you want to display an "Add To Cart" button in a product on an instant search results page?
                         ]]>
                     </comment>
                     <depends>
@@ -388,7 +389,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to display a "Show More" button to load more results instead of traditional pagination?
+                            Do you want to display a "Show More" button to load more results instead of using traditional pagination?
                         ]]>
                     </comment>
                     <depends>
@@ -425,7 +426,7 @@
                             Specify a product's attributes your users can search on (searchable) and the ones required to display search results.
                             The order of the searchable attributes matters: a query matching the first searchable attribute of a product will put this product before the others in the results.<br><br>
                             Searchable attributes' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes">Products' searchable attributes</a>
-                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex Algolia Search Products indexer after you've modified this panel.
+                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Products indexer after you've modified this panel.
                         ]]>
                     </comment>
                 </field>
@@ -435,8 +436,8 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            Configure an attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/ranking/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - an attributes that reflect popularity of a product (eg. stock status, number of sales).
-                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex Algolia Search Products indexer after you've modified this panel.
+                            Configure attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/ranking/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - for example, an attribute that reflects popularity of a product (eg. stock status, number of sales).
+                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Products indexer after you've modified this panel.
                         ]]>
                     </comment>
                 </field>
@@ -447,7 +448,7 @@
                         <![CDATA[
                             When a customer searches for a "blue dress", Algolia will display the image associated with the blue variation instead of the default picture.
                             The same happens when a customer refines products by any color.
-                            <br><br>If a customer searches for "blue dress" and refines by "red" color, Algolia will display images for red (refined) color.
+                            <br><br>If a customer searches for "blue dress" and refines by "red" color, Algolia will display images for the red (refined) color.
                         ]]>
                     </comment>
                 </field>
@@ -485,7 +486,7 @@
                             Specify a category's attributes your users can search on (searchable).
                             The order of the searchable attributes matters: a query matching the first searchable attribute of a category will put this category before the others in the results.<br><br>
                             Searchable attributes' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes-1">Categories's searchable attributes</a>
-                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex Algolia Search Categories indexer after you've modified this panel.
+                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Categories indexer after you've modified this panel.
                         ]]>
                     </comment>
                 </field>
@@ -495,8 +496,8 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            Configure an attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/ranking/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - an attributes that reflect popularity of a category (eg. products count, total number of sales of the category).
-                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex Algolia Search Categories indexer after you've modified this panel.
+                            Configure attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/ranking/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - for example, an attribute that reflects popularity of a category (eg. products count, total number of sales of the category).
+                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Categories indexer after you've modified this panel.
                         ]]>
                     </comment>
                 </field>
@@ -548,7 +549,7 @@
                     <label>Height</label>
                     <comment>
                         <![CDATA[
-                            You can specify the size of the images used at the Insant Search Results Page.<br>
+                            You can specify the size of the images used on the instant search results page.<br>
                             If your images are already present in some size, eg. 265x265, Algolia's index job may not have to resize those, potentially saving time and resources.
                         ]]>
                     </comment>
@@ -558,7 +559,7 @@
                     <source_model>Algolia\AlgoliaSearch\Model\Source\ImageType</source_model>
                     <comment>
                         <![CDATA[
-                            What type of image do you want to display on Instant Search Results Page.
+                            What type of image do you want to display on the instant search results page.
                         ]]>
                     </comment>
                 </field>
@@ -649,7 +650,7 @@
                     <comment>
                         <![CDATA[
                             Do you want to manage <a target="_blank" href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">synonyms</a> in Magento?
-                            If not, synonyms will be managed only in <a target="_blank" href="https://www.algolia.com/dashboard/">Algolia's dashboard</a> and won't get to be overriden by Magento.
+                            If not, synonyms will be managed only in <a target="_blank" href="https://www.algolia.com/dashboard/">Algolia's dashboard</a> and won't be overridden by Magento.
                         ]]>
                     </comment>
                 </field>
@@ -659,7 +660,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            <a href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/#regular-synonyms" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that should be considered equivalent by the Algolia engine.<br>
+                            <a href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/#regular-synonyms" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that will be considered equivalent by the Algolia engine.<br>
                             For instance: <code>tv, television, tv set</code><br>
                             Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.
                         ]]>
@@ -672,13 +673,13 @@
                     <comment>
                         <![CDATA[
                         <a href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#one-way-synonyms" target="_blank">One-way synonyms</a>
-                        allow you to define alternative words for a search term, which are not synonyms to each others.<br>
+                        allow you to define alternative words for a search term, which are not synonyms to each other.<br>
                         Let’s take an example: when a user searches for “tablet”, you want him to be able to find iPads and Galaxy Note tablets alike, but you might not want Android tablets to show up when he searches for “iPad”.<br>
-                        To do this, you’d define a one-way synonyms set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.
+                        To do this, you’d define a one-way synonym set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.
                         <br>
                         <br>
                         Algolia offers more synonymys’ types - placeholders and alternative corrections. These types can be managed directly from your <a href="https://www.algolia.com/dashboard" target="_blank">Algolia’s dashboard</a>.
-                        Any changes you will make to placeholders and alternative corrections in Algolia’s dashboard won’t be overriden.
+                        Any changes you make to placeholders and alternative corrections in Algolia’s dashboard won’t be overridden.
                         ]]>
                     </comment>
                 </field>
@@ -689,8 +690,8 @@
                     <base_url type="media" scope_info="1">algoliasearch_admin_config_uploads</base_url>
                     <comment>
                         <![CDATA[
-                            If you have large amount of synonyms (appr. more than hundred), you don't have to fill it into inputs above
-                            and you can upload a <a href="https://www.algolia.com/doc/tutorials/full-text-search/relevance/synonyms/managing-synonyms-from-the-dashboard/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link&language=php#importing-synonyms-from-a-file" target="_blank">JSON file</a> with synonyms instead.
+                            If you have a large amount of synonyms (more than 1 hundred), you don't have to manually enter them in the inputs above.
+                            You can upload a <a href="https://www.algolia.com/doc/tutorials/full-text-search/relevance/synonyms/managing-synonyms-from-the-dashboard/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link&language=php#importing-synonyms-from-a-file" target="_blank">JSON file</a> with synonyms instead.
                             <br><span class="algolia-config-warning">&#9888;</span>
                             When you upload a JSON file, all the synonyms settings from above will be ignored and only synonyms from the JSON file will be pushed to Algolia.
                         ]]>
@@ -722,7 +723,7 @@
                     <backend_model>Algolia\AlgoliaSearch\Model\Backend\EnableClickAnalytics</backend_model>
                 </field>
                 <field id="is_selector" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>DOM selector of a result container on instant search page</label>
+                    <label>DOM selector of a result container on the instant search page</label>
                     <comment>
                         <![CDATA[
                             The element must contain attributes <code>data-objectid</code> and <code>data-position</code>.
@@ -745,13 +746,13 @@
                     </depends>
                 </field>
                 <field id="add_to_cart_selector" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>DOM selector of a "Add to Cart" buttons</label>
+                    <label>DOM selector of "Add to Cart" buttons</label>
                     <comment>
                         <![CDATA[
                             The element has to contain attribute <code>data-objectid</code> or a <code>productId</code> variable needs to be specified
-                            in "frontend" <code>algoliaConfig</code> variable.
+                            in a "frontend" <code>algoliaConfig</code> variable.
                             <br><br>
-                            More selectors separate by a comma (,).
+                            More selectors separated by comma (,).
                         ]]>
                     </comment>
                     <depends>
@@ -794,12 +795,12 @@
                     </depends>
                 </field>
                 <field id="trigger_on_ui_interaction" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Trigger the push function before the the delay on UI interaction</label>
+                    <label>Trigger the push function before the delay on UI interaction</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                        If a user selects a search result even before the push was trigger (because of the delay), the push to GA might never be called.
-                        With this parameter you can trigger a data push to GA when the user interacts with a search results during the delay.
+                        If a user selects a search result even before the push was triggered (because of the delay), the push to GA might never be called.
+                        With this parameter you can trigger a data push to GA when the user interacts with a search result during the delay.
                         ]]>
                     </comment>
                     <depends>
@@ -856,7 +857,7 @@
                     <comment>
                         <![CDATA[
                             Do you want to use <code>partialUpdateObjects</code> instead of <code>addObjects</code>?<br>
-                            You should enable this option if you update some attributes of your records from an external source to avoid overriding of Magento data.
+                            You should enable this option if you want to update only some attributes of your records from an external source without avoiding overriding Magento data.
                         ]]>
                     </comment>
                 </field>
@@ -866,7 +867,7 @@
                     <comment>
                         <![CDATA[
                             Do you want to take into account customer groups and display the price of the logged-in group instead of the default price?
-                            <br><span class="algolia-config-warning">&#9888;</span> When you use sort according <code>price</code> attribute on Instant Search Results Page, this option will create replica index for each customer group multiplying the amount of records in Algolia.
+                            <br><span class="algolia-config-warning">&#9888;</span> If you want to sort by the  <code>price</code> attribute on the instant search results page, this option will create a replica index for each customer group, thereby multiplying the amount of records in Algolia.
                         ]]>
                     </comment>
                 </field>
@@ -875,18 +876,18 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to replace image URL like <code>example.com/<b>pub/</b>media/image.jpg</code> by <code>example.com/media/image.jpg</code>?<br>
+                            Do you want to replace an image URL like <code>example.com/<b>pub/</b>media/image.jpg</code> by <code>example.com/media/image.jpg</code>?<br>
                             Activate this if your server is set to use the <code>pub/</code> directory as a root directory.
                         ]]>
                     </comment>
                 </field>
                 <field id="make_seo_request" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Make backend search query</label>
+                    <label>Make a backend search query</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want Algolia to perform backend search query on search results page?<br>
-                            Algolia works only on frontend and by default it up to Magento to fetch results for backend rendered pages.
+                            Do you want Algolia to perform backend search queries on the search results page?<br>
+                            Algolia works only on the frontend and by default it us up to Magento to fetch the results for backend rendered pages.
                             Activate this to let Algolia return results to Magento's backend rendered pages.
                         ]]>
                     </comment>
@@ -898,7 +899,7 @@
                         <![CDATA[
                             Do you want to remove Algolia logo from autocomplete menu?
                             <br><span class="algolia-config-warning">&#9888;</span>
-                            Only paid customer are allowed to remove the logo.
+                            Only paid customers are allowed to remove the logo.
                         ]]>
                     </comment>
                 </field>
@@ -906,7 +907,7 @@
                     <label>Search input DOM Selector</label>
                     <comment>
                         <![CDATA[
-                            If you don't have the <code>top.search</code> block you can specify a DOM selector of your search input here to make the search work.
+                            If you don't have the <code>top.search</code> block, you can specify a DOM selector of your search input here to make the search work.
                             Default value is <code>.algolia-search-input</code>.
                         ]]>
                     </comment>
@@ -927,7 +928,7 @@
                         <![CDATA[
                             <span class="algolia-config-warning">&#9888;</span>
                             By preventing your store from backend rendering you might break your SEO and accessibility of your store by search crawlers.
-                            Please, read <a target="_blank" href="https://community.algolia.com/magento/doc/m2/prevent-backend-rendering/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">the documentation</a> before you turn the backend rendering off.
+                            Please, read <a target="_blank" href="https://community.algolia.com/magento/doc/m2/prevent-backend-rendering/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">the documentation</a> before you turn backend rendering off.
                         ]]>
                     </comment>
                 </field>
@@ -962,7 +963,7 @@
                     <p>Here, you can specify additional Algolia indices settings which can be applied only programatically via one of Algolia API clients.</p>
 
                     <p>
-                    To set an extra settings, please fill the right textarea with JSON where you specify the extra settings.<br>
+                    To set extra settings, please fill the right textarea with JSON where you specify the extra settings.<br>
                     Example: <code>{"exactOnSingleWordQuery":"word"}</code>
                     </p>
 

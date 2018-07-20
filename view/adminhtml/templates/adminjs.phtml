@@ -49,9 +49,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
                 $.getJSON(baseUrl + '/algolia_algoliasearch/queue/info/', function(queueInfo) {
                     var message = '<span style="font-size: 25px; position: relative; top: 5px;">⚠</span> ' +
-                        '<strong style="font-size: 1.15em;"><a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Indexing queue</a> is not enabled</strong><br>' +
-                        'It\'s highly recommended to enable it, especially if you are on production environment. ' +
-                        'You can learn how to enable the index queue in the documentation: <a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Indexing queue</a>';
+                        '<strong style="font-size: 1.15em;">Your <a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Indexing Queue</a> is not enabled</strong><br>' +
+                        'It is highly recommended that you enable it, especially if you are on a production environment. ' +
+                        'You can learn how to enable the index queue in our documentation: <a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Indexing Queue</a>';
 
                     if (queueInfo.isEnabled === true) {
                         message = '<strong style="font-size: 1.15em;"><a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Indexing queue</a> information</strong><br>' +

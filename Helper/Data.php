@@ -484,24 +484,9 @@ class Data
                 continue;
             }
 
-            if ($product->isDeleted() === true
-                || $product->getStatus() === Status::STATUS_DISABLED
-                || !in_array($product->getVisibility(), [
-                    Visibility::VISIBILITY_BOTH,
-                    Visibility::VISIBILITY_IN_SEARCH,
-                    Visibility::VISIBILITY_IN_CATALOG,
-                ])
-            ) {
+            if ($this->productCanBeReindexed($product, $storeId) === false) {
                 $productsToRemove[$productId] = $productId;
                 continue;
-            }
-
-            if (!$this->configHelper->getShowOutOfStock($storeId)) {
-                $stockItem = $this->stockRegistry->getStockItem($product->getId());
-                if (!$product->isSalable() || !$stockItem->getIsInStock()) {
-                    $productsToRemove[$productId] = $productId;
-                    continue;
-                }
             }
 
             if (isset($salesData[$productId])) {
@@ -522,6 +507,47 @@ class Data
             'toIndex' => $productsToIndex,
             'toRemove' => array_unique($productsToRemove),
         ];
+    }
+
+
+    public function productCanBeReindexed($product, $storeId, $throwExceptions = false)
+    {
+        if ($product->isDeleted() === true) {
+            if ($throwExceptions === true) {
+                throw new \Exception(__("The product \"%1\" is deleted", $product->getName()));
+            }
+            return false;
+        }
+
+        if ($product->getStatus() == Status::STATUS_DISABLED) {
+            if ($throwExceptions === true) {
+                throw new \Exception(__("The product \"%1\" is disabled", $product->getName()));
+            }
+            return false;
+        }
+
+        if (!in_array($product->getVisibility(), [
+            Visibility::VISIBILITY_BOTH,
+            Visibility::VISIBILITY_IN_SEARCH,
+            Visibility::VISIBILITY_IN_CATALOG,
+        ])) {
+            if ($throwExceptions === true) {
+                throw new \Exception(__("The product \"%1\" is not visible individually", $product->getName()));
+            }
+            return false;
+        }
+
+        if (!$this->configHelper->getShowOutOfStock($storeId)) {
+            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            if (!$product->isSalable() || !$stockItem->getIsInStock()) {
+                if ($throwExceptions === true) {
+                    throw new \Exception(__("The product \"%1\" is out of stock", $product->getName()));
+                }
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function rebuildStoreProductIndexPage(

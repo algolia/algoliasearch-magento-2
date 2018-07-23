@@ -74,7 +74,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Choose "Yes" if you want the Algolia extension to push your data to Algolia?<br>
+                            Do you want the Algolia extension to push your data to Algolia?<br>
                             The benefit here is that Algolia will manage to keep your data up to date.
                             If you choose "No", you will need to push and manage your data in a different way.
                         ]]>
@@ -85,7 +85,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Choose "Yes" if you want to use Algolia's search.<br>
+                            Do you want to use Algolia for search?<br>
                             If not, Magento will perform all searches and not touch Algolia at all.
                         ]]>
                     </comment>
@@ -173,7 +173,7 @@
                     <label>Minimal query popularity</label>
                     <comment>
                         <![CDATA[
-                            A minimum number of times a query has been performed in order to be suggested in the autocomplete menu. Default value is 1000.
+                            The minimal number of times a query has been performed in order to be suggested in the autocomplete menu. Default value is 1000.
                         ]]>
                     </comment>
                     <depends>
@@ -185,7 +185,7 @@
                     <label>Minimal number of results per query</label>
                     <comment>
                         <![CDATA[
-                            A minimal number of results a query needs in order to be suggested. Default value is 2.
+                            The minimal number of results a query needs in order to be suggested. Default value is 2.
                         ]]>
                     </comment>
                     <depends>
@@ -226,7 +226,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to have CMS pages' templates' content (e.g. <code>{{block type="core/template" ...}}</code>) indexed? Default value is "Yes".
+                            Do you want to have CMS pages' templates' content (e.g. <code>{{block type="core/template" ...}}</code>) indexed?
                             <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Pages indexer after you've modified this setting.
                             ]]>
                     </comment>
@@ -506,7 +506,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to display all categories in both the autocomplete menu and instant search results page ignoring the "Include in navigation menu" setting? Default value: No
+                            Do you want to display all categories in both the autocomplete menu and instant search results page ignoring the "Include in navigation menu" setting?
                         ]]>
                     </comment>
                 </field>
@@ -515,7 +515,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to display all categories in both the autocomplete menu and instant search results page ignoring if they contain products or not? Default value: No
+                            Do you want to display all categories in both the autocomplete menu and instant search results page ignoring if they contain products or not?
                         ]]>
                     </comment>
                 </field>

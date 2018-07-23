@@ -184,8 +184,12 @@ class ProductHelper
         return false;
     }
 
-    public function getProductCollectionQuery($storeId, $productIds = null, $onlyVisible = true)
-    {
+    public function getProductCollectionQuery(
+        $storeId,
+        $productIds = null,
+        $onlyVisible = true,
+        $includeNotVisibleIndividually = false
+    ) {
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $products */
         $products = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Product\Collection');
 
@@ -195,13 +199,16 @@ class ProductHelper
             ->distinct(true);
 
         if ($onlyVisible) {
-            $products = $products
-                ->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()])
-                ->addAttributeToFilter('status', ['=' => Status::STATUS_ENABLED]);
-        }
+            $products = $products->addAttributeToFilter('status', ['=' => Status::STATUS_ENABLED]);
 
-        if ($onlyVisible && $this->configHelper->getShowOutOfStock($storeId) === false) {
-            $this->stockHelper->addInStockFilterToCollection($products);
+            if ($includeNotVisibleIndividually === false) {
+                $products = $products
+                    ->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()]);
+            }
+
+            if ($this->configHelper->getShowOutOfStock($storeId) === false) {
+                $this->stockHelper->addInStockFilterToCollection($products);
+            }
         }
 
         /* @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
@@ -474,12 +481,14 @@ class ProductHelper
             }
 
             if (count($ids)) {
+                $storeId = $product->getStoreId();
+
                 $onlyVisible = false;
-                if ($this->configHelper->indexOutOfStockOptions($product->getStoreId()) === false) {
+                if ($this->configHelper->indexOutOfStockOptions($storeId) === false) {
                     $onlyVisible = true;
                 }
 
-                $subProducts = $this->getProductCollectionQuery($product->getStoreId(), $ids, $onlyVisible)->load();
+                $subProducts = $this->getProductCollectionQuery($storeId, $ids, $onlyVisible, true)->load();
             }
         }
 

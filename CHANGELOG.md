@@ -1,5 +1,16 @@
 # CHANGE LOG
 
+## 1.7.1
+
+### UPDATES
+- Algolia JS bundle were updated to it's latest version (#504)
+
+### FIXES
+- Fixed issue where configurable products were indexed with "0" prices (#527)
+- The extension doesn't throw a fatal error when Algolia credentials are not provided (#505)
+- Catalog rule's prices are now correctly indexed within configurable products (#506)
+- Scope is correctly added to URLs (#509, #513)
+
 ## 1.7.0
 
 ### FEATURES

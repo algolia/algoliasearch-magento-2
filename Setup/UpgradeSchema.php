@@ -44,7 +44,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
         'algoliasearch_products/products/use_adaptive_image' => '0',
 
-        'algoliasearch_categories/categories/show_cats_not_included_in_navigation' => '1',
+        'algoliasearch_categories/categories/show_cats_not_included_in_navigation' => '0',
         'algoliasearch_categories/categories/index_empty_categories' => '0',
 
         'algoliasearch_images/image/width' => '265',

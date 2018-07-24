@@ -153,7 +153,7 @@ $isConfig = [
 </script>
 
 <script type="text/template" id="algolia_merchandising_autocomplete_hit">
-    <a class="algoliasearch-autocomplete-hit" href="{{ url }}">
+    <div class="algoliasearch-autocomplete-hit">
         <div class="thumb"><img src="{{ image_url }}" /></div>
 
         <div class="info">
@@ -166,7 +166,7 @@ $isConfig = [
 			</span>
         </div>
         <div class="algolia-clearfix"></div>
-    </a>
+    </div>
 </script>
 
 <style>
@@ -276,13 +276,11 @@ $isConfig = [
         text-overflow: ellipsis;
         overflow: hidden;
         float: left;
-        width: 380px;
         line-height: 59px;
     }
 
     .aa-dropdown-menu .algoliasearch-autocomplete-hit .price {
         float: right;
-        font-weight: bold;
         line-height: 59px;
     }
 
@@ -392,7 +390,8 @@ $isConfig = [
                     index = client.initIndex(config.indexName),
                     template = algoliaAdminBundle.Hogan.compile($('#algolia_merchandising_autocomplete_hit').html()),
                     options = {
-                        hitsPerPage: 8
+                        hitsPerPage: config.searchParameters.hitsPerPage + 5,
+                        facetFilters: config.searchParameters.facetFilters
                     },
                     sources = [{
                         source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
@@ -406,13 +405,21 @@ $isConfig = [
 
 	            $('#algolia_merchandising_autocomplete')
                     .autocomplete({ debug: true, hint: false }, sources)
-		            .on('autocomplete:selected', function (e, suggestion, dataset) {
-			            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
-                            newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
-                            rowHtml = newRowTemplate.render(suggestion);
+		            .on('autocomplete:selected', function (e, suggestion) {
+		            	var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
 
-			            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
-			            $('.algolia_merchandising_items_table tbody tr').last().remove();
+		            	if ($existingRow.length > 0) {
+		            		var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+		            		$existingRow.insertBefore($firstRow);
+                        }
+                        else {
+				            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+					            newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+					            rowHtml = newRowTemplate.render(suggestion);
+
+				            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+				            $('.algolia_merchandising_items_table tbody tr').last().remove();
+			            }
 
 			            regeneratePositionsValue();
 		            });

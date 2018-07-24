@@ -62,6 +62,11 @@ $isConfig = [
         </p>
     </div>
 
+    <label for="algolia_merchandising_autocomplete">
+        Add a product to first position:
+        <input type="text" id="algolia_merchandising_autocomplete" />
+    </label>
+
     <div class="admin__data-grid-wrap admin__data-grid-wrap-static algolia_merchandising_items_table">
         <table class="data-grid">
             <thead>
@@ -83,13 +88,10 @@ $isConfig = [
                         <td>{{{ _highlightResult.name.value }}}</td>
                         <td>{{ price.USD.default_formated }}</td>
                         <td>
-                            {{#_rankingInfo.promoted}}
-                            {{/_rankingInfo.promoted}}
-
-                            <span class="unpin_block" style="display: {{ pinnedDisplayMode }};">
+                            <span class="unpin_block">
                                 Pinned <a href="#" class="unpinIt">UNPIN IT</a>
                             </span>
-                            <span class="pin_block" style="display: {{ unpinnedDisplayMode }};">
+                            <span class="pin_block">
                                 <a href="#" class="pinIt">PIN IT</a>
                             </span>
                         </td>
@@ -107,6 +109,41 @@ $isConfig = [
             If there are supposed to be some products, please reindex Products indexer.
         </div>
     </div>
+</script>
+
+<script type="text/template" id="algolia_merchandisign_table_row">
+    <tr data-objectid="{{ objectID }}">
+        <td class="image_cell"><img src="{{ image_url }}" width="60" /></td>
+        <td>{{ objectID }}</td>
+        <td>{{{ sku }}}</td>
+        <td>{{{ name }}}</td>
+        <td>{{ price.USD.default_formated }}</td>
+        <td>
+            <span class="unpin_block">
+                Pinned <a href="#" class="unpinIt">UNPIN IT</a>
+            </span>
+            <span class="pin_block">
+                <a href="#" class="pinIt">PIN IT</a>
+            </span>
+        </td>
+    </tr>
+</script>
+
+<script type="text/template" id="algolia_merchandising_autocomplete_hit">
+    <a class="algoliasearch-autocomplete-hit" href="{{ url }}">
+        <div class="thumb"><img src="{{ image_url }}" /></div>
+
+        <div class="info">
+            {{{ _highlightResult.name.value }}}
+        </div>
+
+        <div class="price">
+			<span class="right">
+				{{ price.USD.default_formated }}
+			</span>
+        </div>
+        <div class="algolia-clearfix"></div>
+    </a>
 </script>
 
 <style>
@@ -134,11 +171,100 @@ $isConfig = [
     .algolia_merchandising_items_table tr.pinned .pin_block {
         display: none;
     }
+
+    /* AUTOCOMPLETE HIT */
+    .aa-dropdown-menu {
+        position: absolute;
+        margin-top: 5px;
+        right: 0;
+        width: 100%;
+        z-index: 10000 !important;
+        border: 1px solid #adadad;
+        border-radius: 5px;
+        background: white;
+    }
+
+    @media (min-width: 992px) {
+        .aa-dropdown-menu {
+            width: 71.1%;
+            min-width: 550px;
+        }
+    }
+
+    .aa-dropdown-menu .aa-dataset-products .aa-suggestion {
+        display: inline-block;
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .aa-dropdown-menu .aa-dataset-products .aa-suggestion {
+            display: inline-block;
+        }
+    }
+
+    .aa-dataset-products .aa-suggestions:after {
+        content:'';
+        display:block;
+        clear: both;
+    }
+
+    .aa-dataset-products .aa-suggestions {
+        margin: 10px auto 10px auto;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit {
+        display: block;
+        position: relative;
+        padding: 2px 10px;
+        color: #303030;
+        text-align: left;
+        text-decoration: none;
+    }
+
+    .aa-dropdown-menu .aa-cursor .algoliasearch-autocomplete-hit {
+        background-color: #f5d6c7;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit em {
+        font-weight: bold;
+        font-style: normal;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .thumb {
+        float: left;
+        width: 55px;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .thumb img {
+        width: 55px;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .info {
+        margin-left: 15px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        float: left;
+        width: 380px;
+        line-height: 59px;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .price {
+        float: right;
+        font-weight: bold;
+        line-height: 59px;
+    }
+
+    .algolia-clearfix {
+        clear: both;
+    }
 </style>
 
 <script>
     requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
+        	var config = <?= json_encode($isConfig); ?>;
+
             var search = algoliaAdminBundle.instantsearch(<?= json_encode($isConfig); ?>);
 
             // // initialize SearchBox
@@ -185,21 +311,9 @@ $isConfig = [
             );
 
             search.on('render', function() {
-	            // MAKE RESULTS SORTABLE
-	            $('.algolia_merchandising_items_table tbody').sortable({
-		            containment: 'parent',
-		            items: 'tr',
-		            tolerance: 'pointer',
-		            helper: sortableHelper,
-		            start: function (event, ui) {
-			            $(ui.item).css('margin-left', '10px');
-		            },
-                    stop: function () {
-		            	regeneratePositionsValue();
-                    }
-	            });
+	            initAutocomplete();
 
-	            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+                initSortableTable();
             });
 
             search.start();
@@ -221,6 +335,54 @@ $isConfig = [
                 e.preventDefault();
                 return false;
             });
+
+            var initAutocomplete = function() {
+	            var client = algoliaAdminBundle.algoliasearch(config.appId, config.apiKey),
+                    index = client.initIndex(config.indexName),
+                    template = algoliaAdminBundle.Hogan.compile($('#algolia_merchandising_autocomplete_hit').html()),
+                    options = {
+                        hitsPerPage: 8
+                    },
+                    sources = [{
+                        source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
+                        name: 'products',
+                        templates: {
+                            suggestion: function (hit) {
+                                return template.render(hit);
+                            }
+                        }
+                    }];
+
+	            $('#algolia_merchandising_autocomplete')
+                    .autocomplete({ debug: true, hint: false }, sources)
+		            .on('autocomplete:selected', function (e, suggestion, dataset) {
+			            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+                            newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+                            rowHtml = newRowTemplate.render(suggestion);
+
+			            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+			            $('.algolia_merchandising_items_table tbody tr').last().remove();
+
+			            regeneratePositionsValue();
+		            });
+            };
+
+            var initSortableTable = function() {
+	            $('.algolia_merchandising_items_table tbody').sortable({
+		            containment: 'parent',
+		            items: 'tr',
+		            tolerance: 'pointer',
+		            helper: sortableHelper,
+		            start: function (event, ui) {
+			            $(ui.item).css('margin-left', '10px');
+		            },
+		            stop: function () {
+			            regeneratePositionsValue();
+		            }
+	            });
+
+	            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+            };
 
             var regeneratePositionsValue = function() {
 	            var $positionsInput = $('input[name="algolia_merchandising_positions"]'),

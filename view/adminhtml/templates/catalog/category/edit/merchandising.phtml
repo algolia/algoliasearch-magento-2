@@ -60,10 +60,21 @@ $isConfig = [
         <p>
             Drag & drop products to a specific position and pin it there to have the product displayed always in this position.
         </p>
+        <p>
+            Merchandising will create <a href="https://www.algolia.com/doc/guides/query-rules/query-rules-overview/" target="_blank">1 query rule</a>
+            for each merchandised category. Each Algolia plan has a <a href="https://www.algolia.com/pricing" target="_blank">query rules quota</a>,
+            which cannot be exceeded.<br>
+            When you'll try to merchandise a category and you're query rules quota will be hit,
+            you'll see an error on top of the page.
+        </p>
+        <p>
+            Query rule is created only when a category contains at least one "pinned" product.
+            When there are no "pinned" products, no query rule is created.
+        </p>
     </div>
-
+    <br>
     <label for="algolia_merchandising_autocomplete">
-        Add a product to first position:
+        Add a product to the first position:
         <input type="text" id="algolia_merchandising_autocomplete" />
     </label>
 

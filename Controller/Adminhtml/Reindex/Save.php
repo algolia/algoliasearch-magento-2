@@ -9,6 +9,7 @@ use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Data as DataHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 
 class Save extends \Magento\Backend\App\Action
 {
@@ -31,22 +32,30 @@ class Save extends \Magento\Backend\App\Action
     protected $dataHelper;
 
     /**
+     * @var ProductHelper
+     */
+    protected $productHelper;
+
+    /**
      *
      * @param Context               $context
      * @param ProductFactory        $productFactory
      * @param StoreManagerInterface $storeManager
      * @param DataHelper            $dataHelper
+     * @param ProductHelper         $productHelper
      */
     public function __construct(
         Context $context,
         ProductFactory $productFactory,
         StoreManagerInterface $storeManager,
-        DataHelper $dataHelper
+        DataHelper $dataHelper,
+        ProductHelper $productHelper
     ) {
         parent::__construct($context);
         $this->productFactory = $productFactory;
         $this->storeManager = $storeManager;
         $this->dataHelper = $dataHelper;
+        $this->productHelper = $productHelper;
     }
 
     /**
@@ -77,31 +86,52 @@ class Save extends \Magento\Backend\App\Action
             $this->messageManager->addErrorMessage(__('Please enter less than %1 sku(s)', self::MAX_SKUS));
         }
 
-        try {
-            foreach ($skus as $sku) {
-                $this->checkReindex($sku, $storeIds);
-                $this->messageManager->addSuccessMessage(__('Product with SKU %1 is OK', $sku));
+        foreach ($skus as $sku) {
+            $sku = trim($sku);
+            try {
+                $product = $this->productFactory->create();
+                $product->load($product->getIdBySku($sku));
+
+                if (! $product->getId()) {
+                    throw new \Exception(__('Unknown product with sku "%1"', $sku));
+                }
+
+                $this->checkAndReindex($product, $storeIds);
+
+            } catch (\Exception $e) {
+                $this->messageManager->addExceptionMessage($e);
             }
-        } catch (\Exception $e) {
-            $this->messageManager->addExceptionMessage($e);
         }
 
         return $resultRedirect;
     }
 
 
-    protected function checkReindex($sku, $storeIds)
+    protected function checkAndReindex($product, $storeIds)
     {
-        $product = $this->productFactory->create();
-        $product->load($product->getIdBySku($sku));
-
-        if (! $product->getId()) {
-            throw new \Exception(__('Unknown product with sku "%1"', $sku));
-        }
-
         foreach ($storeIds as $storeId) {
+            if (! in_array($storeId, array_values($product->getStoreIds()))) {
+                $this->messageManager->addNoticeMessage(
+                    __(
+                        'Product "%1" (%2) is not associated to store %3',
+                        [$product->getName(), $product->getSku(), $storeId]
+                    )
+                );
+
+                continue;
+            }
             $this->dataHelper->productCanBeReindexed($product, $storeId, true);
+
+            $productIds = [$product->getId()];
+            $productIds = array_merge($productIds, $this->productHelper->getParentProductIds($productIds));
+
+            $this->dataHelper->rebuildStoreProductIndex($storeId, $productIds);
+            $this->messageManager->addSuccessMessage(
+                __(
+                    'Product "%1" (%2) has been reindexed (store %3)',
+                    [$product->getName(), $product->getSku(), $storeId]
+                )
+            );
         }
     }
-
 }

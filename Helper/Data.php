@@ -514,14 +514,24 @@ class Data
     {
         if ($product->isDeleted() === true) {
             if ($throwExceptions === true) {
-                throw new \Exception(__("The product \"%1\" is deleted", $product->getName()));
+                throw new \Exception(
+                    __(
+                        'The product "%1" (%2) is deleted (store %3)',
+                        [$product->getName(), $product->getSku(), $storeId]
+                    )
+                );
             }
             return false;
         }
 
         if ($product->getStatus() == Status::STATUS_DISABLED) {
             if ($throwExceptions === true) {
-                throw new \Exception(__("The product \"%1\" is disabled", $product->getName()));
+                throw new \Exception(
+                    __(
+                        'The product "%1" (%2) is disabled (store %3)',
+                        [$product->getName(), $product->getSku(), $storeId]
+                    )
+                );
             }
             return false;
         }
@@ -532,7 +542,12 @@ class Data
             Visibility::VISIBILITY_IN_CATALOG,
         ])) {
             if ($throwExceptions === true) {
-                throw new \Exception(__("The product \"%1\" is not visible individually", $product->getName()));
+                throw new \Exception(
+                    __(
+                        'The product "%1" (%2) is not visible individually (store %3)',
+                        [$product->getName(), $product->getSku(), $storeId]
+                    )
+                );
             }
             return false;
         }
@@ -541,7 +556,12 @@ class Data
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
             if (!$product->isSalable() || !$stockItem->getIsInStock()) {
                 if ($throwExceptions === true) {
-                    throw new \Exception(__("The product \"%1\" is out of stock", $product->getName()));
+                    throw new \Exception(
+                        __(
+                            'The product "%1" (%2) is out of stock (store %3)',
+                            [$product->getName(), $product->getSku(), $storeId]
+                        )
+                    );
                 }
                 return false;
             }

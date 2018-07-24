@@ -88,11 +88,17 @@ $isConfig = [
                         <td>{{{ _highlightResult.name.value }}}</td>
                         <td>{{ price.USD.default_formated }}</td>
                         <td>
+                            <span class="up">
+                                <a href="#">⬆️</a> |
+                            </span>
                             <span class="unpin_block">
                                 Pinned <a href="#" class="unpinIt">UNPIN IT</a>
                             </span>
                             <span class="pin_block">
                                 <a href="#" class="pinIt">PIN IT</a>
+                            </span>
+                            <span class="down">
+                                | <a href="#">⬇️</a>
                             </span>
                         </td>
                     </tr>
@@ -119,11 +125,17 @@ $isConfig = [
         <td>{{{ name }}}</td>
         <td>{{ price.USD.default_formated }}</td>
         <td>
+            <span class="up">
+                <a href="#">⬆️</a> |
+            </span>
             <span class="unpin_block">
                 Pinned <a href="#" class="unpinIt">UNPIN IT</a>
             </span>
             <span class="pin_block">
                 <a href="#" class="pinIt">PIN IT</a>
+            </span>
+            <span class="down">
+                | <a href="#">⬇️</a>
             </span>
         </td>
     </tr>
@@ -169,6 +181,14 @@ $isConfig = [
     }
 
     .algolia_merchandising_items_table tr.pinned .pin_block {
+        display: none;
+    }
+
+    .algolia_merchandising_items_table tr:first-child span.up {
+        display: none;
+    }
+
+    .algolia_merchandising_items_table tr:last-child span.down {
         display: none;
     }
 
@@ -335,6 +355,26 @@ $isConfig = [
                 e.preventDefault();
                 return false;
             });
+
+	        $(document).on('click', '.algolia_merchandising_items_table .up a', function(e) {
+		        var $row = $(this).closest('tr');
+		        $row.prev().insertAfter($row);
+
+		        regeneratePositionsValue();
+
+		        e.preventDefault();
+		        return false;
+	        });
+
+	        $(document).on('click', '.algolia_merchandising_items_table .down a', function(e) {
+		        var $row = $(this).closest('tr');
+
+		        $row.next().insertBefore($row);
+		        regeneratePositionsValue();
+
+		        e.preventDefault();
+		        return false;
+	        });
 
             var initAutocomplete = function() {
 	            var client = algoliaAdminBundle.algoliasearch(config.appId, config.apiKey),

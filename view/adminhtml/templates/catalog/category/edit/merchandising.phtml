@@ -348,9 +348,8 @@ $isConfig = [
             search.start();
 
             $(document).on('click', '.algolia_merchandising_items_table .pinIt', function(e) {
-                $(this).closest('tr').addClass('pinned');
-
-                regeneratePositionsValue();
+                var $row = $(this).closest('tr');
+                pinIt($row);
 
                 e.preventDefault();
                 return false;
@@ -367,9 +366,9 @@ $isConfig = [
 
 	        $(document).on('click', '.algolia_merchandising_items_table .up a', function(e) {
 		        var $row = $(this).closest('tr');
-		        $row.prev().insertAfter($row);
 
-		        regeneratePositionsValue();
+		        $row.prev().insertAfter($row);
+		        pinIt($row);
 
 		        e.preventDefault();
 		        return false;
@@ -379,7 +378,7 @@ $isConfig = [
 		        var $row = $(this).closest('tr');
 
 		        $row.next().insertBefore($row);
-		        regeneratePositionsValue();
+		        pinIt($row);
 
 		        e.preventDefault();
 		        return false;
@@ -421,7 +420,8 @@ $isConfig = [
 				            $('.algolia_merchandising_items_table tbody tr').last().remove();
 			            }
 
-			            regeneratePositionsValue();
+			            var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+			            pinIt($firstRow);
 		            });
             };
 
@@ -434,12 +434,21 @@ $isConfig = [
 		            start: function (event, ui) {
 			            $(ui.item).css('margin-left', '10px');
 		            },
-		            stop: function () {
-			            regeneratePositionsValue();
+		            stop: function (event, ui) {
+		            	var $row = $(ui.item[0]);
+		            	pinIt($row);
 		            }
 	            });
 
 	            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+            };
+
+            var pinIt = function($row) {
+            	if ($row.hasClass('pinned') === false) {
+		            $row.addClass('pinned');
+	            }
+
+	            regeneratePositionsValue();
             };
 
             var regeneratePositionsValue = function() {

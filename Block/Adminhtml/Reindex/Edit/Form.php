@@ -1,8 +1,14 @@
 <?php
+/**
+ * Module Algolia Algoliasearch
+ */
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Reindex\Edit;
 
 use \Magento\Backend\Block\Widget\Form\Generic;
 
+/**
+ * Class: Form
+ */
 class Form extends Generic
 {
     /**
@@ -32,7 +38,7 @@ class Form extends Generic
 
         $fieldset = $form->addFieldset(
             'base_fieldset',
-            ['legend' => __('General Information'), 'class' => 'fieldset-wide']
+            ['legend' => __('Reindex SKU(s) separated by commas'), 'class' => 'fieldset-wide']
         );
 
         $fieldset->addField(

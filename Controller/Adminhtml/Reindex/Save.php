@@ -10,7 +10,15 @@ use Magento\Catalog\Model\ProductFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Data as DataHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Exception\AlgoliaReindexException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductDisabledException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductNotVisibleException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductOutOfStockException;
 
+/**
+ * Class: Save
+ */
 class Save extends \Magento\Backend\App\Action
 {
 
@@ -19,22 +27,22 @@ class Save extends \Magento\Backend\App\Action
     /**
      * @var ProductFactory
      */
-    protected $productFactory;
+    private $productFactory;
 
     /**
      * @var StoreManagerInterface
      */
-    protected $storeManager;
+    private $storeManager;
 
     /**
      * @var DataHelper
      */
-    protected $dataHelper;
+    private $dataHelper;
 
     /**
      * @var ProductHelper
      */
-    protected $productHelper;
+    private $productHelper;
 
     /**
      *
@@ -62,6 +70,8 @@ class Save extends \Magento\Backend\App\Action
      * Execute the action
      *
      * @return \Magento\Framework\View\Result\Page
+     *
+     * @throws AlgoliaReindexException
      */
     public function execute()
     {
@@ -70,11 +80,11 @@ class Save extends \Magento\Backend\App\Action
         $resultRedirect->setPath('*/*/index');
 
         $skus = explode(",", $this->getRequest()->getParam('skus'));
-        $storeIds = array_keys($this->storeManager->getStores());
+        $stores = $this->storeManager->getStores();
 
-        foreach ($storeIds as $key => $storeId) {
+        foreach ($stores as $storeId => $storeData) {
             if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
-                unset($storeIds[$key]);
+                unset($stores[$storeId]);
             }
         }
 
@@ -89,17 +99,51 @@ class Save extends \Magento\Backend\App\Action
         foreach ($skus as $sku) {
             $sku = trim($sku);
             try {
+                /** @var \Magento\Catalog\Model\Product $product */
                 $product = $this->productFactory->create();
                 $product->load($product->getIdBySku($sku));
 
                 if (! $product->getId()) {
-                    throw new \Exception(__('Unknown product with sku "%1"', $sku));
+                    throw new AlgoliaReindexException(__('Unknown product with sku "%1"', $sku));
                 }
 
-                $this->checkAndReindex($product, $storeIds);
+                $this->checkAndReindex($product, $stores);
 
-            } catch (\Exception $e) {
+            } catch (AlgoliaReindexException $e) {
                 $this->messageManager->addExceptionMessage($e);
+
+            } catch (AlgoliaProductDisabledException $e) {
+                $this->messageManager->addExceptionMessage(
+                    $e,
+                    __(
+                        'The product "%1" (%2) is disabled (%3)',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                    )
+                );
+            } catch (AlgoliaProductDeletedException $e) {
+                $this->messageManager->addExceptionMessage(
+                    $e,
+                    __(
+                        'The product "%1" (%2) is deleted (%3)',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                    )
+                );
+            } catch (AlgoliaProductNotVisibleException $e) {
+                $this->messageManager->addExceptionMessage(
+                    $e,
+                    __(
+                        'The product "%1" (%2) is not visible (%3)',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                    )
+                );
+            } catch (AlgoliaProductOutOfStockException $e) {
+                $this->messageManager->addExceptionMessage(
+                    $e,
+                    __(
+                        'The product "%1" (%2) is out of stock (%3)',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                    )
+                );
             }
         }
 
@@ -107,14 +151,22 @@ class Save extends \Magento\Backend\App\Action
     }
 
 
-    protected function checkAndReindex($product, $storeIds)
+    /**
+     * Check and reindex one product
+     *
+     * @param \Magento\Catalog\Model\Product $product
+     * @param array                          $stores
+     *
+     * @return void
+     */
+    private function checkAndReindex($product, $stores)
     {
-        foreach ($storeIds as $storeId) {
+        foreach ($stores as $storeId => $storeData) {
             if (! in_array($storeId, array_values($product->getStoreIds()))) {
                 $this->messageManager->addNoticeMessage(
                     __(
-                        'Product "%1" (%2) is not associated to store %3',
-                        [$product->getName(), $product->getSku(), $storeId]
+                        'Product "%1" (%2) is not associated to %3',
+                        [$product->getName(), $product->getSku(), $storeData->getName()]
                     )
                 );
 
@@ -128,8 +180,8 @@ class Save extends \Magento\Backend\App\Action
             $this->dataHelper->rebuildStoreProductIndex($storeId, $productIds);
             $this->messageManager->addSuccessMessage(
                 __(
-                    'Product "%1" (%2) has been reindexed (store %3)',
-                    [$product->getName(), $product->getSku(), $storeId]
+                    'Product "%1" (%2) has been reindexed (%3)',
+                    [$product->getName(), $product->getSku(), $storeData->getName()]
                 )
             );
         }

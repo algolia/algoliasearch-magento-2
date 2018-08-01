@@ -1,9 +1,14 @@
 <?php
-
+/**
+ * Module Algolia Algoliasearch
+ */
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Reindex;
 
 use Magento\Backend\Block\Widget\Form\Container;
 
+/**
+ * Class: Index
+ */
 class Index extends Container
 {
     /**

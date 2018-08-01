@@ -8,6 +8,10 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use AlgoliaSearch\AlgoliaException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductDisabledException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductNotVisibleException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductOutOfStockException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -509,29 +513,36 @@ class Data
         ];
     }
 
-
+    /**
+     * Check if product can be index on Algolia
+     *
+     * @param Product $product
+     * @param int     $storeId
+     * @param boolean $throwExceptions
+     *
+     * @return boolean
+     *
+     * @throws AlgoliaProductDisabledException
+     * @throws AlgoliaProductDeletedException
+     * @throws AlgoliaProductNotVisibleException
+     * @throws AlgoliaProductOutOfStockException
+     */
     public function productCanBeReindexed($product, $storeId, $throwExceptions = false)
     {
         if ($product->isDeleted() === true) {
             if ($throwExceptions === true) {
-                throw new \Exception(
-                    __(
-                        'The product "%1" (%2) is deleted (store %3)',
-                        [$product->getName(), $product->getSku(), $storeId]
-                    )
-                );
+                throw (new AlgoliaProductDeletedException)
+                    ->withProduct($product)
+                    ->withStoreId($storeId);
             }
             return false;
         }
 
         if ($product->getStatus() == Status::STATUS_DISABLED) {
             if ($throwExceptions === true) {
-                throw new \Exception(
-                    __(
-                        'The product "%1" (%2) is disabled (store %3)',
-                        [$product->getName(), $product->getSku(), $storeId]
-                    )
-                );
+                throw (new AlgoliaProductDisabledException)
+                    ->withProduct($product)
+                    ->withStoreId($storeId);
             }
             return false;
         }
@@ -542,12 +553,9 @@ class Data
             Visibility::VISIBILITY_IN_CATALOG,
         ])) {
             if ($throwExceptions === true) {
-                throw new \Exception(
-                    __(
-                        'The product "%1" (%2) is not visible individually (store %3)',
-                        [$product->getName(), $product->getSku(), $storeId]
-                    )
-                );
+                throw (new AlgoliaProductNotVisibleException())
+                    ->withProduct($product)
+                    ->withStoreId($storeId);
             }
             return false;
         }
@@ -556,12 +564,9 @@ class Data
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
             if (!$product->isSalable() || !$stockItem->getIsInStock()) {
                 if ($throwExceptions === true) {
-                    throw new \Exception(
-                        __(
-                            'The product "%1" (%2) is out of stock (store %3)',
-                            [$product->getName(), $product->getSku(), $storeId]
-                        )
-                    );
+                    throw (new AlgoliaProductOutOfStockException())
+                        ->withProduct($product)
+                        ->withStoreId($storeId);
                 }
                 return false;
             }

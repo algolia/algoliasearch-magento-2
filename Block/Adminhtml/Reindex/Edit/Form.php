@@ -38,12 +38,12 @@ class Form extends Generic
 
         $fieldset = $form->addFieldset(
             'base_fieldset',
-            ['legend' => __('Reindex SKU(s) separated by commas'), 'class' => 'fieldset-wide']
+            ['legend' => __('Reindex SKU(s) separated by commas or carriage returns'), 'class' => 'fieldset-wide']
         );
 
         $fieldset->addField(
             'skus',
-            'text',
+            'textarea',
             ['name' => 'skus', 'label' => __('Sku(s)'), 'title' => __('Sku(s)'), 'required' => true]
         );
 

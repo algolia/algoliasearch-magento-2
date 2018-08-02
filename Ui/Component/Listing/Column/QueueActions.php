@@ -16,8 +16,6 @@ class QueueActions extends Column
     /**
      * Url path
      */
-    const URL_PATH_DELETE = 'algolia_algoliasearch/queue/delete';
-    const URL_PATH_EXECUTE = 'algolia_algoliasearch/queue/execute';
     const URL_PATH_VIEW = 'algolia_algoliasearch/queue/view';
 
     /**

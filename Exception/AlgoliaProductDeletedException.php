@@ -1,13 +1,8 @@
 <?php
-/**
- * Module Algolia Algoliasearch
- */
+
 namespace Algolia\AlgoliaSearch\Exception;
 
-/**
- * Class: AlgoliaProductDeletedException
- */
-class AlgoliaProductDeletedException extends AbstractAlgoliaProductException
+class AlgoliaProductDeletedException extends AlgoliaProductReindexingException
 {
 
 }

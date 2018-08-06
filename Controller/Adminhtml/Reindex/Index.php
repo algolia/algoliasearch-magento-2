@@ -1,7 +1,5 @@
 <?php
-/**
- * Module Algolia Algoliasearch
- */
+
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Reindex;
 
 use Magento\Framework\Controller\ResultFactory;

@@ -1,24 +1,15 @@
 <?php
-/**
- * Module Algolia Algoliasearch
- */
+
 namespace Algolia\AlgoliaSearch\Exception;
 
 use Magento\Catalog\Model\Product;
 
-/**
- * Class: AbstractAlgoliaProductException
- */
-abstract class AbstractAlgoliaProductException extends \Exception
+abstract class AlgoliaProductReindexingException extends \RuntimeException
 {
-    /**
-     * @var Product
-     */
+    /** @var Product */
     protected $product;
 
-    /**
-     * @var int
-     */
+    /** @var int  */
     protected $storeId;
 
     /**
@@ -36,7 +27,7 @@ abstract class AbstractAlgoliaProductException extends \Exception
     }
 
     /**
-     * Add related store id
+     * Add related store ID
      *
      * @param int $storeId
      *
@@ -60,7 +51,7 @@ abstract class AbstractAlgoliaProductException extends \Exception
     }
 
     /**
-     * Get related store id
+     * Get related store ID
      *
      * @return int
      */

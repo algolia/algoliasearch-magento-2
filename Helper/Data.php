@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use AlgoliaSearch\AlgoliaException;
+use Algolia\AlgoliaSearch\Exception\AlgoliaProductReindexingException;
 use Algolia\AlgoliaSearch\Exception\AlgoliaProductDisabledException;
 use Algolia\AlgoliaSearch\Exception\AlgoliaProductDeletedException;
 use Algolia\AlgoliaSearch\Exception\AlgoliaProductNotVisibleException;
@@ -488,7 +489,10 @@ class Data
                 continue;
             }
 
-            if ($this->productCanBeReindexed($product, $storeId) === false) {
+            try {
+                $this->canProductBeReindexed($product, $storeId);
+
+            } catch (AlgoliaProductReindexingException $e) {
                 $productsToRemove[$productId] = $productId;
                 continue;
             }
@@ -518,7 +522,6 @@ class Data
      *
      * @param Product $product
      * @param int     $storeId
-     * @param boolean $throwExceptions
      *
      * @return boolean
      *
@@ -527,23 +530,19 @@ class Data
      * @throws AlgoliaProductNotVisibleException
      * @throws AlgoliaProductOutOfStockException
      */
-    public function productCanBeReindexed($product, $storeId, $throwExceptions = false)
+    public function canProductBeReindexed($product, $storeId)
     {
         if ($product->isDeleted() === true) {
-            if ($throwExceptions === true) {
-                throw (new AlgoliaProductDeletedException)
-                    ->withProduct($product)
-                    ->withStoreId($storeId);
-            }
+            throw (new AlgoliaProductDeletedException)
+                ->withProduct($product)
+                ->withStoreId($storeId);
             return false;
         }
 
         if ($product->getStatus() == Status::STATUS_DISABLED) {
-            if ($throwExceptions === true) {
-                throw (new AlgoliaProductDisabledException)
-                    ->withProduct($product)
-                    ->withStoreId($storeId);
-            }
+            throw (new AlgoliaProductDisabledException)
+                ->withProduct($product)
+                ->withStoreId($storeId);
             return false;
         }
 
@@ -552,22 +551,18 @@ class Data
             Visibility::VISIBILITY_IN_SEARCH,
             Visibility::VISIBILITY_IN_CATALOG,
         ])) {
-            if ($throwExceptions === true) {
-                throw (new AlgoliaProductNotVisibleException())
-                    ->withProduct($product)
-                    ->withStoreId($storeId);
-            }
+            throw (new AlgoliaProductNotVisibleException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
             return false;
         }
 
         if (!$this->configHelper->getShowOutOfStock($storeId)) {
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
-            if (!$product->isSalable() || !$stockItem->getIsInStock()) {
-                if ($throwExceptions === true) {
-                    throw (new AlgoliaProductOutOfStockException())
-                        ->withProduct($product)
-                        ->withStoreId($storeId);
-                }
+            if (! $product->isSalable() || ! $stockItem->getIsInStock()) {
+                throw (new AlgoliaProductOutOfStockException())
+                    ->withProduct($product)
+                    ->withStoreId($storeId);
                 return false;
             }
         }

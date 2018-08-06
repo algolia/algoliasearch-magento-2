@@ -1,14 +1,9 @@
 <?php
-/**
- * Module Algolia Algoliasearch
- */
+
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Reindex\Edit;
 
 use \Magento\Backend\Block\Widget\Form\Generic;
 
-/**
- * Class: Form
- */
 class Form extends Generic
 {
     /**
@@ -32,19 +27,31 @@ class Form extends Generic
     {
 
         /** @var \Magento\Framework\Data\Form $form */
-        $form = $this->_formFactory->create(
-            ['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]
-        );
+        $form = $this->_formFactory->create([
+            'data' => [
+                'id' => 'edit_form',
+                'action' => $this->getData('action'),
+                'method' => 'post'
+            ]
+        ]);
 
         $fieldset = $form->addFieldset(
             'base_fieldset',
-            ['legend' => __('Reindex SKU(s) separated by commas or carriage returns'), 'class' => 'fieldset-wide']
+            [
+                'legend' => __('Reindex SKU(s) separated by commas or carriage returns'),
+                'class' => 'fieldset-wide'
+            ]
         );
 
         $fieldset->addField(
             'skus',
             'textarea',
-            ['name' => 'skus', 'label' => __('Sku(s)'), 'title' => __('Sku(s)'), 'required' => true]
+            [
+                'name' => 'skus',
+                'label' => __('SKU(s)'),
+                'title' => __('SKU(s)'),
+                'required' => true
+            ]
         );
 
         $form->setUseContainer(true);

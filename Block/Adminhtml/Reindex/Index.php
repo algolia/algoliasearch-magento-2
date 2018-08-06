@@ -1,14 +1,9 @@
 <?php
-/**
- * Module Algolia Algoliasearch
- */
+
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Reindex;
 
 use Magento\Backend\Block\Widget\Form\Container;
 
-/**
- * Class: Index
- */
 class Index extends Container
 {
     /**
@@ -23,6 +18,6 @@ class Index extends Container
         $this->_controller = 'adminhtml_reindex';
 
         parent::_construct();
-        $this->buttonList->update('save', 'label', __('Reindex'));
+        $this->buttonList->update('save', 'label', __('Reindex SKU(s)'));
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Algolia\AlgoliaSearch\Model;
 
 use Magento\Framework\DataObject\IdentityInterface;
@@ -12,15 +13,10 @@ class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInte
 
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
-    /**
-     * Object Manager
-     * @var \Magento\Framework\ObjectManagerInterface
-     */
+    /** @var \Magento\Framework\ObjectManagerInterface */
     protected $objectManager;
 
     /**
-     * PHP Constructor
-     *
      * @param \Magento\Framework\Model\Context                        $context
      * @param \Magento\Framework\Registry                             $registry
      * @param \Magento\Framework\ObjectManagerInterface               $objectManager
@@ -80,11 +76,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInte
         return $status;
     }
 
-    /**
-     * execute the job
-     *
-     * @return Job
-     */
+    /** @return Job */
     public function execute()
     {
         $this->setPid(getmypid());
@@ -101,8 +93,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInte
     }
 
     /**
-     * Save the error
-     *
      * @param \Exception $e
      *
      * @return Job

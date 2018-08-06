@@ -1,13 +1,13 @@
 <?php
+
 namespace Algolia\AlgoliaSearch\Model\ResourceModel;
 
+use \Magento\Framework\Model\ResourceModel\Db\Context;
 
 class Job extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
 
-    public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context
-    )
+    public function __construct(Context $context)
     {
         parent::__construct($context);
     }
@@ -18,9 +18,7 @@ class Job extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * delete a list of entities by the ids
-     *
-     * @param int[] $ids ids to delete
+     * @param int[] $ids IDs to delete
      *
      * @return Job
      */
@@ -33,8 +31,6 @@ class Job extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * delete all entities
-     *
      * @return Job
      */
     public function deleteAll()

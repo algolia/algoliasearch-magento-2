@@ -55,9 +55,7 @@ class Collection extends JobCollection implements SearchResultInterface
         $this->setMainTable($mainTable);
     }
 
-    /**
-     * @return AggregationInterface
-     */
+    /** @return AggregationInterface */
     public function getAggregations()
     {
         return $this->aggregations;
@@ -65,6 +63,7 @@ class Collection extends JobCollection implements SearchResultInterface
 
     /**
      * @param AggregationInterface $aggregations
+     *
      * @return $this
      */
     public function setAggregations($aggregations)
@@ -72,21 +71,17 @@ class Collection extends JobCollection implements SearchResultInterface
         $this->aggregations = $aggregations;
     }
 
-    /**
-     * Get search criteria.
-     *
-     * @return \Magento\Framework\Api\SearchCriteriaInterface|null
-     */
+    /** @return \Magento\Framework\Api\SearchCriteriaInterface|null */
     public function getSearchCriteria()
     {
         return null;
     }
 
     /**
-     * Set search criteria.
-     *
      * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     *
      * @return $this
+     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function setSearchCriteria(\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria = null)
@@ -94,21 +89,17 @@ class Collection extends JobCollection implements SearchResultInterface
         return $this;
     }
 
-    /**
-     * Get total count.
-     *
-     * @return int
-     */
+    /** @return int */
     public function getTotalCount()
     {
         return $this->getSize();
     }
 
     /**
-     * Set total count.
-     *
      * @param int $totalCount
+     *
      * @return $this
+     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function setTotalCount($totalCount)
@@ -117,10 +108,10 @@ class Collection extends JobCollection implements SearchResultInterface
     }
 
     /**
-     * Set items list.
-     *
      * @param \Magento\Framework\Api\ExtensibleDataInterface[] $items
+     *
      * @return $this
+     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function setItems(array $items = null)

@@ -1,7 +1,5 @@
 <?php
-/**
- * Module Algolia Algoliasearcgh
- */
+
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
 use Magento\Framework\Controller\ResultFactory;
@@ -10,13 +8,10 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
 class Index extends \Magento\Backend\App\Action
 {
-    /**
-     * @var Algolia\AlgoliaSearch\Helper\ConfigHelper
-     */
+    /** @var Algolia\AlgoliaSearch\Helper\ConfigHelper */
     protected $configHelper;
 
     /**
-     *
      * @param Context       $context
      * @param ConfigHelper  $configHelper
      */
@@ -28,11 +23,7 @@ class Index extends \Magento\Backend\App\Action
         $this->configHelper = $configHelper;
     }
 
-    /**
-     * Execute the action
-     *
-     * @return \Magento\Framework\View\Result\Page
-     */
+    /** @return \Magento\Framework\View\Result\Page */
     public function execute()
     {
         $breadMain = __('Algolia Indexing Queue');

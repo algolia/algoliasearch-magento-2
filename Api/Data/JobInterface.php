@@ -1,8 +1,5 @@
 <?php
-/**
- * Data API for Job
- *
- */
+
 namespace Algolia\AlgoliaSearch\Api\Data;
 
 /**
@@ -12,9 +9,6 @@ namespace Algolia\AlgoliaSearch\Api\Data;
  */
 interface JobInterface
 {
-    /**
-     * Name of the Mysql TABLE
-     */
     const TABLE_NAME = 'algoliasearch_queue';
 
     const STATUS_NEW = "new";

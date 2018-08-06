@@ -1,7 +1,5 @@
 <?php
-/**
- * Module Algolia Algoliasearcgh
- */
+
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
 use Magento\Backend\App\Action\Context;
@@ -12,29 +10,20 @@ use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /**
-     * Core registry
-     *
-     * @var Registry
-     */
+    /** @var Registry */
     protected $coreRegistry;
 
-    /**
-     * @var \Algolia\AlgoliaSearch\Model\JobFactory
-     */
+    /** @var \Algolia\AlgoliaSearch\Model\JobFactory */
     protected $jobFactory;
 
-    /**
-     * @var JobResourceModel
-     */
+    /** @var JobResourceModel */
     protected $jobResourceModel;
 
     protected $db;
+
     protected $tableName;
 
     /**
-     * AbstractAction constructor.
-     *
      * @param Context          $context
      * @param Registry         $coreRegistry
      * @param JobFactory       $jobFactory
@@ -57,24 +46,15 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
 
     }
 
-    /**
-     * Is it allowed ?
-     *
-     * @return bool
-     */
+    /** @return bool */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /**
-     * Init the current job
-     *
-     * @return Algolia\AlgoliaSearch\Model
-     */
+    /** @return Algolia\AlgoliaSearch\Model */
     protected function initJob()
     {
-        // Get the ID
         $jobId = (int) $this->getRequest()->getParam('id');
 
         // We must have an id

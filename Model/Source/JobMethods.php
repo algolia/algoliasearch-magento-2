@@ -7,9 +7,7 @@ use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 class JobMethods implements \Magento\Framework\Data\OptionSourceInterface
 {
 
-    /**
-     * @return array
-     */
+    /** @return array */
     public function toOptionArray()
     {
         $options = [];

@@ -9,16 +9,10 @@ use Magento\Backend\Block\Widget\Button;
 
 class View extends Template
 {
-    /**
-     * Core registry
-     *
-     * @var \Magento\Framework\Registry
-     */
+    /** @var \Magento\Framework\Registry */
     protected $coreRegistry;
 
     /**
-     * PHP Constructor
-     *
      * @param Context       $context
      * @param Registry      $coreRegistry
      * @param array         $data
@@ -33,9 +27,7 @@ class View extends Template
         $this->coreRegistry = $coreRegistry;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function _prepareLayout()
     {
         /** @var Button $button */
@@ -53,21 +45,13 @@ class View extends Template
         return parent::_prepareLayout();
     }
 
-    /**
-     * get the current job
-     *
-     * @return \Algolia\AlgoliaSearch\Model\Job
-     */
+    /** @return \Algolia\AlgoliaSearch\Model\Job */
     public function getCurrentJob()
     {
         return $this->coreRegistry->registry('current_job');
     }
 
-    /**
-     * return back url
-     *
-     * @return string
-     */
+    /**  @return string */
     public function getBackUrl()
     {
         return $this->getUrl('*/*/index');

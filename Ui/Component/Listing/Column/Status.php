@@ -7,10 +7,10 @@ use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 class Status extends \Magento\Ui\Component\Listing\Columns\Column
 {
     /**
-     * Prepare Data Source
-     *
      * @param array $dataSource
+     *
      * @return array
+     *
      * @since 101.0.0
      */
     public function prepareDataSource(array $dataSource)
@@ -32,8 +32,6 @@ class Status extends \Magento\Ui\Component\Listing\Columns\Column
 
 
     /**
-     * Define the job status
-     *
      * @param array $item
      *
      * @return string

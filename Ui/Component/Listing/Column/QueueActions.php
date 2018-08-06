@@ -8,24 +8,14 @@ use Magento\Framework\View\Element\UiComponentFactory;
 use Magento\Ui\Component\Listing\Columns\Column;
 use Magento\Framework\Escaper;
 
-/**
- * Class QueueActions
- */
 class QueueActions extends Column
 {
-    /**
-     * Url path
-     */
     const URL_PATH_VIEW = 'algolia_algoliasearch/queue/view';
 
-    /**
-     * @var UrlInterface
-     */
+    /** @var UrlInterface */
     protected $urlBuilder;
 
     /**
-     * Constructor
-     *
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
      * @param UrlInterface $urlBuilder
@@ -45,9 +35,8 @@ class QueueActions extends Column
     }
 
     /**
-     * Prepare Data Source
-     *
      * @param array $dataSource
+     *
      * @return array
      */
     public function prepareDataSource(array $dataSource)
@@ -55,32 +44,6 @@ class QueueActions extends Column
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
                 $item[$this->getData('name')] = [
-//                    'delete' => [
-//                        'href' => $this->urlBuilder->getUrl(
-//                            static::URL_PATH_DELETE,
-//                            [
-//                                'id' => $item['job_id']
-//                            ]
-//                        ),
-//                        'label' => __('Delete'),
-//                        'confirm' => [
-//                            'title' => __('Delete ?'),
-//                            'message' => __('Are you sure you want to delete this job ?')
-//                        ]
-//                    ],
-//                    'execute' => [
-//                        'href' => $this->urlBuilder->getUrl(
-//                            static::URL_PATH_EXECUTE,
-//                            [
-//                                'id' => $item['job_id']
-//                            ]
-//                        ),
-//                        'label' => __('Execute'),
-//                        'confirm' => [
-//                            'title' => __('Execute ?'),
-//                            'message' => __('Are you sure you want to execute this job ?')
-//                        ]
-//                    ],
                     'view' => [
                         'href' => $this->urlBuilder->getUrl(
                             static::URL_PATH_VIEW,

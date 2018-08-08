@@ -451,7 +451,9 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 					},
 					tooltips: {
 						format: function (formattedValue) {
-							return priceUtils.formatPrice(formattedValue, algoliaConfig.priceFormat);;
+							return facet.attribute.match(/price/) === null ?
+								parseInt(formattedValue) :
+								priceUtils.formatPrice(formattedValue, algoliaConfig.priceFormat);
 						}
 					}
 				}];

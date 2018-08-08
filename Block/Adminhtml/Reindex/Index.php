@@ -6,11 +6,6 @@ use Magento\Backend\Block\Widget\Form\Container;
 
 class Index extends Container
 {
-    /**
-     * Department edit block
-     *
-     * @return void
-     */
     protected function _construct()
     {
         $this->_objectId = 'id';

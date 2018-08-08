@@ -8,11 +8,11 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use AlgoliaSearch\AlgoliaException;
-use Algolia\AlgoliaSearch\Exception\AlgoliaProductReindexingException;
-use Algolia\AlgoliaSearch\Exception\AlgoliaProductDisabledException;
-use Algolia\AlgoliaSearch\Exception\AlgoliaProductDeletedException;
-use Algolia\AlgoliaSearch\Exception\AlgoliaProductNotVisibleException;
-use Algolia\AlgoliaSearch\Exception\AlgoliaProductOutOfStockException;
+use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
+use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
+use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
+use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -491,8 +491,7 @@ class Data
 
             try {
                 $this->canProductBeReindexed($product, $storeId);
-
-            } catch (AlgoliaProductReindexingException $e) {
+            } catch (ProductReindexingException $e) {
                 $productsToRemove[$productId] = $productId;
                 continue;
             }
@@ -525,25 +524,23 @@ class Data
      *
      * @return boolean
      *
-     * @throws AlgoliaProductDisabledException
-     * @throws AlgoliaProductDeletedException
-     * @throws AlgoliaProductNotVisibleException
-     * @throws AlgoliaProductOutOfStockException
+     * @throws ProductDisabledException
+     * @throws ProductDeletedException
+     * @throws ProductNotVisibleException
+     * @throws ProductOutOfStockException
      */
     public function canProductBeReindexed($product, $storeId)
     {
         if ($product->isDeleted() === true) {
-            throw (new AlgoliaProductDeletedException)
+            throw (new ProductDeletedException)
                 ->withProduct($product)
                 ->withStoreId($storeId);
-            return false;
         }
 
         if ($product->getStatus() == Status::STATUS_DISABLED) {
-            throw (new AlgoliaProductDisabledException)
+            throw (new ProductDisabledException)
                 ->withProduct($product)
                 ->withStoreId($storeId);
-            return false;
         }
 
         if (!in_array($product->getVisibility(), [
@@ -551,19 +548,17 @@ class Data
             Visibility::VISIBILITY_IN_SEARCH,
             Visibility::VISIBILITY_IN_CATALOG,
         ])) {
-            throw (new AlgoliaProductNotVisibleException())
+            throw (new ProductNotVisibleException())
                 ->withProduct($product)
                 ->withStoreId($storeId);
-            return false;
         }
 
         if (!$this->configHelper->getShowOutOfStock($storeId)) {
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
             if (! $product->isSalable() || ! $stockItem->getIsInStock()) {
-                throw (new AlgoliaProductOutOfStockException())
+                throw (new ProductOutOfStockException())
                     ->withProduct($product)
                     ->withStoreId($storeId);
-                return false;
             }
         }
 

@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\Exception;
 
 use Magento\Catalog\Model\Product;
 
-abstract class AlgoliaProductReindexingException extends \RuntimeException
+abstract class ProductReindexingException extends \RuntimeException
 {
     /** @var Product */
     protected $product;

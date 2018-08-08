@@ -9,8 +9,6 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 class Index extends \Magento\Backend\App\Action
 {
     /**
-     * Execute the action
-     *
      * @return \Magento\Framework\View\Result\Page
      */
     public function execute()

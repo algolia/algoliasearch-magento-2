@@ -6,11 +6,7 @@ use \Magento\Backend\Block\Widget\Form\Generic;
 
 class Form extends Generic
 {
-    /**
-     * Init form
-     *
-     * @return void
-     */
+
     protected function _construct()
     {
         parent::_construct();
@@ -18,11 +14,6 @@ class Form extends Generic
         $this->setTitle(__('Reindex'));
     }
 
-    /**
-     * Prepare form
-     *
-     * @return $this
-     */
     protected function _prepareForm()
     {
 

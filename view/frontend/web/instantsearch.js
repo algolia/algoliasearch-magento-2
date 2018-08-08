@@ -1,4 +1,4 @@
-requirejs(['algoliaBundle'], function(algoliaBundle) {
+requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBundle, priceUtils) {
 	algoliaBundle.$(function ($) {
 		
 		/** We have nothing to do here if instantsearch is not enabled **/
@@ -441,7 +441,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			
 			if (facet.type === 'slider') {
 				delete templates.item;
-				
+
 				return ['rangeSlider', {
 					container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
 					attributeName: facet.attribute,
@@ -451,7 +451,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					},
 					tooltips: {
 						format: function (formattedValue) {
-							return parseInt(formattedValue);
+							return priceUtils.formatPrice(formattedValue, algoliaConfig.priceFormat);;
 						}
 					}
 				}];

@@ -48,6 +48,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $currencyCode = $this->getCurrencyCode();
         $currencySymbol = $this->getCurrencySymbol();
+        $priceFormat = $this->getPriceFormat();
 
         $customerGroupId = $this->getGroupId();
 
@@ -165,6 +166,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'priceKey' => $priceKey,
             'currencyCode' => $currencyCode,
             'currencySymbol' => $currencySymbol,
+            'priceFormat' => $priceFormat,
             'maxValuesPerFacet' => (int) $config->getMaxValuesPerFacet(),
             'autofocus' => true,
             'request' => [

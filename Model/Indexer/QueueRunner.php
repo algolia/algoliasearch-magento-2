@@ -10,6 +10,8 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class QueueRunner implements Magento\Framework\Indexer\ActionInterface, Magento\Framework\Mview\ActionInterface
 {
+    const INDEXER_ID = 'algolia_queue_runner';
+
     private $configHelper;
     private $queue;
     private $messageManager;

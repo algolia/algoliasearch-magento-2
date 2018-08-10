@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Indexer\Model\IndexerFactory;
 use Algolia\AlgoliaSearch\Model\JobFactory;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
 
@@ -19,6 +20,9 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     /** @var JobResourceModel */
     protected $jobResourceModel;
 
+    /** @var IndexerFactory */
+    protected $indexerFactory;
+
     protected $db;
 
     protected $tableName;
@@ -28,12 +32,14 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
      * @param Registry         $coreRegistry
      * @param JobFactory       $jobFactory
      * @param JobResourceModel $jobResourceModel
+     * @param IndexerFactory   $indexerFactory
      */
     public function __construct(
         Context $context,
         Registry $coreRegistry,
         JobFactory $jobFactory,
         JobResourceModel $jobResourceModel,
+        IndexerFactory $indexerFactory,
         ResourceConnection $resourceConnection
     ) {
         parent::__construct($context);
@@ -41,9 +47,9 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $this->coreRegistry     = $coreRegistry;
         $this->jobFactory       = $jobFactory;
         $this->jobResourceModel = $jobResourceModel;
+        $this->indexerFactory   = $indexerFactory;
         $this->db               = $resourceConnection->getConnection('core_write');
         $this->tableName        = $resourceConnection->getTableName('algoliasearch_queue');
-
     }
 
     /** @return bool */

@@ -15,7 +15,7 @@ class Clear extends AbstractAction
 
         try {
             $this->db->query('TRUNCATE TABLE '.$this->tableName);
-            $this->messageManager->addNoticeMessage(__('Queue has been cleared'));
+            $this->messageManager->addNoticeMessage(__('Queue has been cleared.'));
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage($e);
         }

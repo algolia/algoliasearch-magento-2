@@ -8,9 +8,7 @@ use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection as JobCollection;
 
 class Collection extends JobCollection implements SearchResultInterface
 {
-    /**
-     * @var AggregationInterface
-     */
+    /** @var AggregationInterface */
     protected $aggregations;
 
     /**

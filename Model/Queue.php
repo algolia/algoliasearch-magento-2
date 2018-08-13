@@ -84,6 +84,27 @@ class Queue
         ]);
     }
 
+    /**
+     * Return the average processing time for the 2 last two days
+     * (null if there was less than 100 runs with processed jobs)
+     *
+     * @return float|null
+     * @throws \Zend_Db_Statement_Exception
+     */
+    public function getAverageProcessingTime()
+    {
+        $data = $this->db->query(
+            $this->db->select()
+                ->from($this->logTable, ['number_of_runs' => 'COUNT(duration)', 'average_time' => 'AVG(duration)'])
+                ->where('processed_jobs > 0 AND with_empty_queue = 0 AND started >= (CURDATE() - INTERVAL 2 DAY)')
+        );
+        $result = $data->fetch();
+
+        return (int) $result['number_of_runs'] >= 100 && isset($result['average_time']) ?
+            (float) $result['average_time'] :
+            null;
+    }
+
     public function runCron($nbJobs = null, $force = false)
     {
         if (!$this->configHelper->isQueueActive() && $force === false) {
@@ -150,12 +171,6 @@ class Queue
             } catch (\Exception $e) {
                 $this->noOfFailedJobs++;
 
-                // Increment retries, set the job ID back to NULL
-                $updateQuery = "UPDATE {$this->table} 
-                    SET pid = NULL, retries = retries + 1 
-                    WHERE job_id IN (".implode(', ', (array) $job['merged_ids']).")";
-                $this->db->query($updateQuery);
-
                 // Log error information
                 $logMessage = 'Queue processing '.$job['pid'].' [KO]: 
                     Class: '.$job['class'].', 
@@ -167,6 +182,12 @@ class Queue
                     '.$e->getMessage().' in '.$e->getFile().':'.$e->getLine().
                     "\nStack trace:\n".$e->getTraceAsString();
                 $this->logger->log($logMessage);
+
+                // Increment retries, set the job ID back to NULL
+                $updateQuery = "UPDATE {$this->table} 
+                    SET pid = NULL, retries = retries + 1 , error_log = '". addslashes($logMessage) . "' 
+                    WHERE job_id IN (".implode(', ', (array) $job['merged_ids']).")";
+                $this->db->query($updateQuery);
             }
         }
 

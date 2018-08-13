@@ -8,10 +8,15 @@ use Magento\Indexer\Model\Indexer;
 use Magento\Indexer\Model\IndexerFactory;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\Queue;
 
 class Status extends Template
 {
     const CRON_QUEUE_FREQUENCY = 300;
+
+    const QUEUE_NOT_PROCESSED_LIMIT = 3600;
+
+    const QUEUE_FAST_LIMIT = 60;
 
     /** @var IndexerFactory */
     private $indexerFactory;
@@ -22,6 +27,9 @@ class Status extends Template
     /** @var ConfigHelper */
     private $configHelper;
 
+    /** @var Queue */
+    private $queue;
+
     /** @var Indexer */
     private $queueRunnerIndexer;
 
@@ -30,6 +38,7 @@ class Status extends Template
      * @param IndexerFactory $indexerFactory
      * @param DateTime       $dateTime
      * @param ConfigHelper   $configHelper
+     * @param Queue          $queue
      * @param array          $data
      */
     public function __construct(
@@ -37,6 +46,7 @@ class Status extends Template
         IndexerFactory $indexerFactory,
         DateTime $dateTime,
         ConfigHelper $configHelper,
+        Queue $queue,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -44,6 +54,7 @@ class Status extends Template
         $this->indexerFactory = $indexerFactory;
         $this->dateTime = $dateTime;
         $this->configHelper = $configHelper;
+        $this->queue = $queue;
 
         if ($this->isQueueActive()) {
             $this->queueRunnerIndexer = $this->indexerFactory->create();
@@ -95,14 +106,43 @@ class Status extends Template
             return false;
         }
 
-        $start = $this->dateTime->gmtTimestamp($this->queueRunnerIndexer->getLatestUpdated());
-        $end = $this->dateTime->gmtTimestamp('now');
-        $diff = $end - $start;
-
-        if ($diff > self::CRON_QUEUE_FREQUENCY) {
+        if ($this->getTimeSinceLastIndexerUpdate() > self::CRON_QUEUE_FREQUENCY) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Check if the queue indexer has not been processed for more than 1 hour
+     *
+     * @return boolean
+     */
+    public function isQueueNotProcessed()
+    {
+        return $this->getTimeSinceLastIndexerUpdate() > self::QUEUE_NOT_PROCESSED_LIMIT;
+    }
+
+    /**
+     * Check if the average processing time  of the queue is fast
+     *
+     * @return boolean
+     */
+    public function isQueueFast()
+    {
+        $averageProcessingTime = $this->queue->getAverageProcessingTime();
+        return !is_null($averageProcessingTime) && $averageProcessingTime < self::QUEUE_FAST_LIMIT;
+    }
+
+    /** @return int */
+    private function getIndexerLastUpdateTimestamp()
+    {
+        return $this->dateTime->gmtTimestamp($this->queueRunnerIndexer->getLatestUpdated());
+    }
+
+    /** @return int */
+    private function getTimeSinceLastIndexerUpdate()
+    {
+        return $this->dateTime->gmtTimestamp('now') - $this->getIndexerLastUpdateTimestamp();
     }
 }

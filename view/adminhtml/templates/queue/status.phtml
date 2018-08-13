@@ -8,9 +8,15 @@
             <?php /* @escapeNotVerified */ echo __('Status of the queue : <strong>%1</strong>.', $this->getQueueRunnerStatus()); ?>
             <p><?php /* @escapeNotVerified */ echo __('Last Update : <strong>%1</strong>.', $this->getLastQueueUpdate()); ?></p>
             <?php if ($this->isQueueStuck()) : ?>
-                <p>
-                    <a href="<?php echo $this->getResetQueueUrl() ?>"><?php /* @escapeNotVerified */ echo __('Reset queue'); ?></a>
-                </p>
+                <p><a href="<?php echo $this->getResetQueueUrl() ?>"><?php /* @escapeNotVerified */ echo __('Reset queue'); ?></a></p>
+            <?php endif; ?>
+            <?php if ($this->isQueueNotProcessed()) : ?>
+                <p><?php /* @escapeNotVerified */ echo __('We noticed that the queue has not been processed for one hour. Can you please check its status and if you correctly set up the cron?'); ?></p>
+                <p><?php /* @escapeNotVerified */ echo __('To help you, please read our <a href="%1" target="_blank">documentation</a>.', "https://community.algolia.com/magento/doc/m2/indexing-queue/"); ?></p>
+            <?php endif; ?>
+            <?php if ($this->isQueueFast()) : ?>
+                <p><?php /* @escapeNotVerified */ echo __('We noticed that the average processing time of the queue is under one minute during the two last past days.'); ?></p>
+                <p><?php /* @escapeNotVerified */ echo __('Please consider to increase the number of jobs to process to speed the queue if you want.'); ?></p>
             <?php endif; ?>
         </div>
     </div>

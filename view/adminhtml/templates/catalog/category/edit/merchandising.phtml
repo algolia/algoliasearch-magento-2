@@ -88,6 +88,7 @@ $isConfig = [
                 {{#hits}}
                     <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
                         <td class="position_cell">
+                            <span class="padlock"></span>
                             <span class="draggable-handle"></span>
                         </td>
                         <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
@@ -96,8 +97,6 @@ $isConfig = [
                         <td>{{{ _highlightResult.name.value }}}</td>
                         <td>{{ price.USD.default_formated }}</td>
                         <td class="actions">
-                            <a href="#" class="unpin_block unpinIt">Click to un-pin</a>
-
                             <div class="pin_block">
                                 <a class="arrow up" href="#">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
@@ -105,6 +104,7 @@ $isConfig = [
                                     </svg>
                                 ️</a>
                                 <a href="#" class="pinIt">PIN HERE</a>
+                                <a href="#" class="unpinIt">UN-PIN</a>
                                 <a class="arrow down" href="#">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
                                         <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
@@ -131,6 +131,7 @@ $isConfig = [
 <script type="text/template" id="algolia_merchandisign_table_row">
     <tr data-objectid="{{ objectID }}">
         <td class="position_cell">
+            <span class="padlock"></span>
             <span class="draggable-handle"></span>
         </td>
         <td class="image_cell"><img src="{{ image_url }}" width="60" /></td>
@@ -139,8 +140,6 @@ $isConfig = [
         <td>{{{ name }}}</td>
         <td>{{ price.USD.default_formated }}</td>
         <td class="actions">
-            <a href="#" class="unpin_block unpinIt">Click to un-pin</a>
-
             <div class="pin_block">
                 <a class="arrow up" href="#">
                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
@@ -148,6 +147,7 @@ $isConfig = [
                     </svg>
                     ️</a>
                 <a href="#" class="pinIt">PIN HERE</a>
+                <a href="#" class="unpinIt">UN-PIN</a>
                 <a class="arrow down" href="#">
                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
                         <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
@@ -220,10 +220,6 @@ $isConfig = [
         text-align: center;
     }
 
-    .algolia_merchandising_items_table .actions .unpin_block {
-        display: none;
-    }
-
     .algolia_merchandising_items_table .actions a {
         display: inline-block;
         height: 43px;
@@ -234,6 +230,7 @@ $isConfig = [
         font-size: 11px;
         font-weight: 600;
         text-align: center;
+        text-transform: uppercase;
     }
 
     .algolia_merchandising_items_table .actions a:hover {
@@ -241,23 +238,20 @@ $isConfig = [
         background-color: rgba(0,0,0,0.08) !important;
     }
 
-    .algolia_merchandising_items_table .actions a.pinIt {
+    .algolia_merchandising_items_table .actions a.pinIt, .algolia_merchandising_items_table .actions a.unpinIt {
         width: 81px;
     }
 
-    .algolia_merchandising_items_table tr.pinned .unpin_block {
-        display: inline-block;
-        width: 165px;
-        height: 43px;
-        border-radius: 3px;
-        background: rgba(210, 210, 210, 0.24) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="9" height="12" viewBox="0 0 9 12"><path fill="#767676" fill-rule="nonzero" d="M4.5 9.143c.619 0 1.125-.514 1.125-1.143S5.119 6.857 4.5 6.857 3.375 7.371 3.375 8 3.881 9.143 4.5 9.143zM7.875 4C8.494 4 9 4.514 9 5.143v5.714C9 11.486 8.494 12 7.875 12h-6.75A1.137 1.137 0 0 1 0 10.857V5.143C0 4.514.506 4 1.125 4h5.119V2.857c0-.977-.782-1.771-1.744-1.771s-1.744.794-1.744 1.771H1.688C1.688 1.28 2.947 0 4.5 0c1.553 0 2.813 1.28 2.813 2.857V4h.562z"/></svg>') no-repeat 27px;
-        padding-left: 17px;
-        border: solid 1px #d2d2d2;
-        text-transform: uppercase;
+    .algolia_merchandising_items_table tr.pinned .pinIt {
+        display: none;
     }
 
-    .algolia_merchandising_items_table tr.pinned .pin_block {
+    .algolia_merchandising_items_table .actions .unpinIt {
         display: none;
+    }
+
+    .algolia_merchandising_items_table tr.pinned .unpinIt {
+        display: inline-block;
     }
 
     .algolia_merchandising_items_table tr:first-child a.up, .algolia_merchandising_items_table tr:last-child a.down {
@@ -302,6 +296,21 @@ $isConfig = [
     .algolia_merchandising_items_table .position_cell {
         text-align: center;
         vertical-align: middle;
+        position: relative;
+    }
+
+    .algolia_merchandising_items_table .padlock {
+        display: none;
+    }
+
+    .algolia_merchandising_items_table tr.pinned .padlock {
+        display: inline-block;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="15" viewBox="0 0 12 15"><g fill="none" fill-rule="evenodd"><path d="M-2 0h16v16H-2z"/><path fill="#000" fill-rule="nonzero" d="M10 5.333h-.667V4a3.335 3.335 0 0 0-6.666 0v1.333H2c-.733 0-1.333.6-1.333 1.334v6.666c0 .734.6 1.334 1.333 1.334h8c.733 0 1.333-.6 1.333-1.334V6.667c0-.734-.6-1.334-1.333-1.334zm-4 6c-.733 0-1.333-.6-1.333-1.333S5.267 8.667 6 8.667s1.333.6 1.333 1.333-.6 1.333-1.333 1.333zm2.067-6H3.933V4c0-1.14.927-2.067 2.067-2.067 1.14 0 2.067.927 2.067 2.067v1.333z" opacity=".4"/></g></svg>');
+        width: 12px;
+        height: 15px;
+        position: absolute;
+        left: 13px;
+        top: 29px;
     }
 
     .algolia_merchandising_items_table .draggable-handle {
@@ -487,8 +496,7 @@ $isConfig = [
                             var positions = {};
                             for (var i = 0; i < res.hits.length; i++) {
                                 var hit = res.hits[i],
-                                    pinned = false,
-                                    unpinnedDisplayMode = 'inline';
+                                    pinned = false;
 
                                 if (hit._rankingInfo.promoted === true) {
                                     positions[hit.objectID] = i;

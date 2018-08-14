@@ -51,7 +51,7 @@ class CategoryHelper
     private $rootCategoryId = -1;
     private $activeCategories;
     private $categoryNames;
-	private $moduleManager;
+    private $moduleManager;
 
     /**
      * CategoryHelper constructor.
@@ -75,7 +75,7 @@ class CategoryHelper
         Image $imageHelper,
         CategoryResource $categoryResource,
         CategoryFactory $categoryFactory,
-		Manager $moduleManager
+	Manager $moduleManager
     ) {
         $this->eventManager = $eventManager;
         $this->storeManager = $storeManager;
@@ -86,7 +86,7 @@ class CategoryHelper
         $this->imageHelper = $imageHelper;
         $this->categoryResource = $categoryResource;
         $this->categoryFactory = $categoryFactory;
-		$this->moduleManager = $moduleManager;
+	$this->moduleManager = $moduleManager;
     }
 
     public function getIndexNameSuffix()

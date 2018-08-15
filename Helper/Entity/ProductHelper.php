@@ -243,8 +243,8 @@ class ProductHelper
             [
                 'store' => $storeId, 
                 'collection' => $products,
-                'onlyVisible' => $onlyVisible, 
-                'includeNotVisibleIndividually' => $includeNotVisibleIndividually
+                'only_visible' => $onlyVisible,
+                'include_not_visible_individually' => $includeNotVisibleIndividually
             ]
         );
 

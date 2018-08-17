@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\ObjectManagerInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Queue
 {
@@ -15,7 +16,9 @@ class Queue
     private $db;
     private $table;
     private $logTable;
+    private $archiveTable;
     private $objectManager;
+    private $output;
 
     private $elementsPerPage;
 
@@ -41,17 +44,20 @@ class Queue
         ConfigHelper $configHelper,
         Logger $logger,
         ResourceConnection $resourceConnection,
-        ObjectManagerInterface $objectManager
+        ObjectManagerInterface $objectManager,
+        ConsoleOutput $output
     ) {
         $this->configHelper = $configHelper;
         $this->logger = $logger;
 
         $this->table = $resourceConnection->getTableName('algoliasearch_queue');
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
+        $this->archiveTable = $resourceConnection->getTableName('algoliasearch_queue_archive');
 
         $this->db = $resourceConnection->getConnection('core_write');
 
         $this->objectManager = $objectManager;
+        $this->output = $output;
 
         $this->elementsPerPage = $this->configHelper->getNumberOfElementByPage();
 
@@ -134,6 +140,12 @@ class Queue
 
         $this->logRecord['duration'] = time() - $started;
 
+        if (php_sapi_name() === 'cli') {
+            $this->output->writeln(
+                $this->logRecord['processed_jobs'] . ' jobs processed in ' . $this->logRecord['duration'] .' seconds.'
+            );
+        }
+
         $this->db->insert($this->logTable, $this->logRecord);
     }
 
@@ -167,6 +179,10 @@ class Queue
 
                 call_user_func_array([$model, $method], $data);
 
+                // Delete one by one
+                $where = $this->db->quoteInto('pid = ?', $pid);
+                $this->db->delete($this->table, $where);
+
                 $this->logRecord['processed_jobs'] += count($job['merged_ids']);
             } catch (\Exception $e) {
                 $this->noOfFailedJobs++;
@@ -188,12 +204,12 @@ class Queue
                     SET pid = NULL, retries = retries + 1 , error_log = '". addslashes($logMessage) . "' 
                     WHERE job_id IN (".implode(', ', (array) $job['merged_ids']).")";
                 $this->db->query($updateQuery);
+
+                if (php_sapi_name() === 'cli') {
+                    $this->output->writeln($logMessage);
+                }
             }
         }
-
-        // Delete only when finished to be able to debug the queue if needed
-        $where = $this->db->quoteInto('pid = ?', $pid);
-        $this->db->delete($this->table, $where);
 
         $isFullReindex = ($maxJobs === -1);
         if ($isFullReindex) {
@@ -203,14 +219,26 @@ class Queue
         }
     }
 
+    private function archiveFailedJobs($whereClause)
+    {
+        $this->db->query(
+            "INSERT INTO {$this->archiveTable} (pid, class, method, data, error_log, data_size, created_at) 
+                  SELECT pid, class, method, data, error_log, data_size, NOW()
+                  FROM {$this->table}
+                  WHERE " . $whereClause
+        );
+    }
+
     private function getJobs($maxJobs, $pid)
     {
         // Clear jobs with crossed max retries count
         $retryLimit = $this->configHelper->getRetryLimit();
         if ($retryLimit > 0) {
             $where = $this->db->quoteInto('retries >= ?', $retryLimit);
+            $this->archiveFailedJobs($where);
             $this->db->delete($this->table, $where);
         } else {
+            $this->archiveFailedJobs('retries > max_retries');
             $this->db->delete($this->table, 'retries > max_retries');
         }
 
@@ -271,21 +299,20 @@ class Queue
                 }
             }
 
+            if (isset($firstJobId)) {
+                $lastJobId = $this->maxValueInArray($jobs, 'job_id');
+
+                // Reserve all new jobs since last run
+                $this->db->query("UPDATE {$this->db->quoteIdentifier($this->table, true)} 
+                SET pid = ".$pid.' 
+                WHERE job_id >= '.$firstJobId." AND job_id <= $lastJobId");
+            }
+
             $this->db->commit();
         } catch (\Exception $e) {
             $this->db->rollBack();
 
             throw $e;
-        }
-
-
-        if (isset($firstJobId)) {
-            $lastJobId = $this->maxValueInArray($jobs, 'job_id');
-
-            // Reserve all new jobs since last run
-            $this->db->query("UPDATE {$this->db->quoteIdentifier($this->table, true)} 
-                SET pid = ".$pid.' 
-                WHERE job_id >= '.$firstJobId." AND job_id <= $lastJobId");
         }
 
         return $jobs;

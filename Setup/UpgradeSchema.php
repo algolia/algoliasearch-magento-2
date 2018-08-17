@@ -354,6 +354,24 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
+        if (version_compare($context->getVersion(), '1.7.1', '>=') === true) {
+
+            $connection = $setup->getConnection();
+            if (!$connection->isTableExists('algoliasearch_queue_archive')) {
+                $table = $connection->newTable($setup->getTable('algoliasearch_queue_archive'));
+
+                $table->addColumn('pid', $table::TYPE_INTEGER, 20, ['nullable' => true, 'default' => null]);
+                $table->addColumn('class', $table::TYPE_TEXT, 50, ['nullable' => false]);
+                $table->addColumn('method', $table::TYPE_TEXT, 50, ['nullable' => false]);
+                $table->addColumn('data', $table::TYPE_TEXT, 5000, ['nullable' => false]);
+                $table->addColumn('error_log', $table::TYPE_TEXT, null, ['nullable' => false]);
+                $table->addColumn('data_size', $table::TYPE_INTEGER, 11, ['nullable' => true, 'default' => null]);
+                $table->addColumn('created_at', $table::TYPE_DATETIME, null, ['nullable' => false]);
+
+                $connection->createTable($table);
+            }
+        }
+
         $setup->endSetup();
     }
 

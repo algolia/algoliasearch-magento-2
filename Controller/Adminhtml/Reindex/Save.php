@@ -118,6 +118,26 @@ class Save extends \Magento\Backend\App\Action
                     )
                 );
             } catch (ProductNotVisibleException $e) {
+                // If it's a simple product that is not visible, try to index its parent if it exists
+                if ($e->getProduct()->getTypeId() == 'simple') {
+                    $parentId = $this->productHelper->getParentProductIds([$e->getProduct()->getId()]);
+                    if (isset($parentId[0])) {
+                        $parentId = $parentId[0];
+                        /** @var \Magento\Catalog\Model\Product $product */
+                        $parentProduct = $this->productFactory->create();
+                        $parentProduct->load($parentId);
+                        $this->messageManager->addNoticeMessage(
+                            __(
+                                'The product "%1" (%2) is not visible but it has a parent product "%3" (%4).',
+                                [$e->getProduct()->getName(), $e->getProduct()->getSku(), $parentProduct->getName(), $parentProduct->getSku()]
+                            )
+                        );
+
+                        $this->checkAndReindex($parentProduct, $stores);
+                        continue;
+                    }
+                }
+
                 $this->messageManager->addExceptionMessage(
                     $e,
                     __(

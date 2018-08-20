@@ -123,7 +123,7 @@ class Save extends \Magento\Backend\App\Action
                     $parentId = $this->productHelper->getParentProductIds([$e->getProduct()->getId()]);
                     if (isset($parentId[0])) {
                         $parentId = $parentId[0];
-                        /** @var \Magento\Catalog\Model\Product $product */
+                        /** @var \Magento\Catalog\Model\Product $parentProduct */
                         $parentProduct = $this->productFactory->create();
                         $parentProduct->load($parentId);
                         $this->messageManager->addNoticeMessage(

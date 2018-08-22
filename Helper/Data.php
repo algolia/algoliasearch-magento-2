@@ -8,6 +8,11 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use AlgoliaSearch\AlgoliaException;
+use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
+use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
+use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
+use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -484,24 +489,11 @@ class Data
                 continue;
             }
 
-            if ($product->isDeleted() === true
-                || $product->getStatus() === Status::STATUS_DISABLED
-                || !in_array($product->getVisibility(), [
-                    Visibility::VISIBILITY_BOTH,
-                    Visibility::VISIBILITY_IN_SEARCH,
-                    Visibility::VISIBILITY_IN_CATALOG,
-                ])
-            ) {
+            try {
+                $this->canProductBeReindexed($product, $storeId);
+            } catch (ProductReindexingException $e) {
                 $productsToRemove[$productId] = $productId;
                 continue;
-            }
-
-            if (!$this->configHelper->getShowOutOfStock($storeId)) {
-                $stockItem = $this->stockRegistry->getStockItem($product->getId());
-                if (!$product->isSalable() || !$stockItem->getIsInStock()) {
-                    $productsToRemove[$productId] = $productId;
-                    continue;
-                }
             }
 
             if (isset($salesData[$productId])) {
@@ -522,6 +514,55 @@ class Data
             'toIndex' => $productsToIndex,
             'toRemove' => array_unique($productsToRemove),
         ];
+    }
+
+    /**
+     * Check if product can be index on Algolia
+     *
+     * @param Product $product
+     * @param int     $storeId
+     *
+     * @return boolean
+     *
+     * @throws ProductDisabledException
+     * @throws ProductDeletedException
+     * @throws ProductNotVisibleException
+     * @throws ProductOutOfStockException
+     */
+    public function canProductBeReindexed($product, $storeId)
+    {
+        if ($product->isDeleted() === true) {
+            throw (new ProductDeletedException)
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if ($product->getStatus() == Status::STATUS_DISABLED) {
+            throw (new ProductDisabledException)
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if (!in_array($product->getVisibility(), [
+            Visibility::VISIBILITY_BOTH,
+            Visibility::VISIBILITY_IN_SEARCH,
+            Visibility::VISIBILITY_IN_CATALOG,
+        ])) {
+            throw (new ProductNotVisibleException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if (!$this->configHelper->getShowOutOfStock($storeId)) {
+            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            if (! $product->isSalable() || ! $stockItem->getIsInStock()) {
+                throw (new ProductOutOfStockException())
+                    ->withProduct($product)
+                    ->withStoreId($storeId);
+            }
+        }
+
+        return true;
     }
 
     public function rebuildStoreProductIndexPage(

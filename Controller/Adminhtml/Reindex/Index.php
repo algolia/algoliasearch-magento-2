@@ -17,7 +17,6 @@ class Index extends \Magento\Backend\App\Action
 
         /** @var \Magento\Framework\View\Result\Page $resultPage */
         $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
-        $resultPage->setActiveMenu('Algolia_AlgoliaSearch::manage');
         $resultPage->getConfig()->getTitle()->prepend($breadMain);
 
         return $resultPage;

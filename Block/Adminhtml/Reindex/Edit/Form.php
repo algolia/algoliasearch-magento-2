@@ -10,8 +10,8 @@ class Form extends Generic
     protected function _construct()
     {
         parent::_construct();
-        $this->setId('reindex_skus');
-        $this->setTitle(__('Reindex'));
+        $this->setData('id', 'reindex_skus');
+        $this->setData('title', __('Reindex'));
     }
 
     protected function _prepareForm()
@@ -60,7 +60,7 @@ class Form extends Generic
             ]
         );
 
-        $form->setUseContainer(true);
+        $form->setData('use_container', true);
         $this->setForm($form);
 
         return parent::_prepareForm();

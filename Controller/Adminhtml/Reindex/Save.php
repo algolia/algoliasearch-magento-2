@@ -53,7 +53,7 @@ class Save extends \Magento\Backend\App\Action
     }
 
     /**
-     * @return \Magento\Framework\View\Result\Page
+     * @return \Magento\Backend\Model\View\Result\Redirect
      *
      * @throws UnknownSkuException
      */
@@ -93,13 +93,13 @@ class Save extends \Magento\Backend\App\Action
                 $product->load($product->getIdBySku($sku));
 
                 if (! $product->getId()) {
-                    throw new UnknownSkuException(__('Product with SKU <strong>%1</strong> was not found.', $sku));
+                    throw new UnknownSkuException(__('Product with SKU "%1" was not found.', $sku));
                 }
 
                 $this->checkAndReindex($product, $stores);
 
             } catch (UnknownSkuException $e) {
-                $this->messageManager->addExceptionMessage($e);
+                $this->messageManager->addExceptionMessage($e, $e->getMessage());
 
             } catch (ProductDisabledException $e) {
                 $this->messageManager->addExceptionMessage(

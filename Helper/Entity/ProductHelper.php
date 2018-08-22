@@ -240,7 +240,12 @@ class ProductHelper
         );
         $this->eventManager->dispatch(
             'algolia_after_products_collection_build',
-            ['store' => $storeId, 'collection' => $products]
+            [
+                'store' => $storeId, 
+                'collection' => $products,
+                'only_visible' => $onlyVisible,
+                'include_not_visible_individually' => $includeNotVisibleIndividually
+            ]
         );
 
         return $products;

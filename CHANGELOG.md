@@ -1,5 +1,9 @@
 # CHANGE LOG
 
+## 1.7.2
+
+Fixed JavaScript issue causing malfunctioning the extension in IE 11 (#538)
+
 ## 1.7.1
 
 ### UPDATES

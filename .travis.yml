@@ -13,6 +13,7 @@ env:
 branches:
   only:
     - master
+    - develop
 
 cache:
   directories:

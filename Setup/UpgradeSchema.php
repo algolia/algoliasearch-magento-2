@@ -269,7 +269,11 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $connection = $setup->getConnection();
         $table = $setup->getTable('core_config_data');
         foreach ($movedConfigDirectives as $from => $to) {
-            $connection->query('UPDATE '.$table.' SET path = "'.$to.'" WHERE path = "'.$from.'"');
+            try {
+                $connection->query('UPDATE '.$table.' SET path = "'.$to.'" WHERE path = "'.$from.'"');
+            } catch (\Magento\Framework\DB\Adapter\DuplicateException $e) {
+                //
+            }
         }
 
         /* SET DEFAULT CONFIG DATA */

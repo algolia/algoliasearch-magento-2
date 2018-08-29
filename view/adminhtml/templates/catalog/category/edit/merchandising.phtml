@@ -2,6 +2,8 @@
 
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
 
+$configHelper = $block->getConfigHelper();
+
 ?>
 
 <?php if ($block->isRootCategory()): ?>
@@ -15,9 +17,27 @@
 
 <?php return; endif; ?>
 
-<?php
 
-$configHelper = $block->getConfigHelper();
+
+<?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()): ?>
+
+<div class="messages">
+    <div class="message message-info info">
+        To merchandise products using Algolia
+        you need to enable <b>Instant search</b> with <b>Replace category pages</b> feature.
+        You can do it in Algolia's <a href="" target="_blank">Instant Search configuration</a>.
+        <br><br>
+        <b>Instant search</b> with enabled <b>Replace category pages</b> feature gives your customers a great experience
+        while browsing your catalog. It enables your customers to search and filter for products at real time resulting
+        in better customer journey.<br>
+        With the speed and relevancy of Algolia your customers are more likely to purchase
+        and enjoy the shopping on your store(s).
+    </div>
+</div>
+
+<?php return; endif; ?>
+
+<?php
 
 $indexName = $block->getCoreHelper()->getBaseIndexName();
 

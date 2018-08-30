@@ -3,8 +3,6 @@
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Reindex;
 
 use Magento\Framework\Controller\ResultFactory;
-use Magento\Backend\App\Action\Context;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
 class Index extends \Magento\Backend\App\Action
 {

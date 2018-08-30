@@ -9,7 +9,7 @@ abstract class ProductReindexingException extends \RuntimeException
     /** @var Product */
     protected $product;
 
-    /** @var int  */
+    /** @var int */
     protected $storeId;
 
     /**

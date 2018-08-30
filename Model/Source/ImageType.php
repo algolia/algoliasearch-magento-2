@@ -15,4 +15,3 @@ class ImageType implements ArrayInterface
         ];
     }
 }
-

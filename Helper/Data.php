@@ -2,17 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
+use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
+use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
+use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use AlgoliaSearch\AlgoliaException;
-use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
-use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
-use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
-use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
-use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -63,7 +63,6 @@ class Data
         ManagerInterface $eventManager,
         StoreManagerInterface $storeManager
     ) {
-    
         $this->algoliaHelper = $algoliaHelper;
 
         $this->pageHelper = $pageHelper;
@@ -129,7 +128,7 @@ class Data
 
         $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
         $productsIndexNameTmp = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, true);
-        
+
         $this->productHelper->setSettings($productsIndexName, $productsIndexNameTmp, $storeId, $useTmpIndex);
 
         $this->setExtraSettings($storeId, $useTmpIndex);
@@ -394,7 +393,7 @@ class Data
 
             $suggestionObject = $this->suggestionHelper->getObject($suggestion);
 
-            if (strlen($suggestionObject['query']) >= 3) {
+            if (mb_strlen($suggestionObject['query']) >= 3) {
                 array_push($indexData, $suggestionObject);
             }
         }
@@ -522,23 +521,24 @@ class Data
      * @param Product $product
      * @param int     $storeId
      *
-     * @return boolean
-     *
      * @throws ProductDisabledException
      * @throws ProductDeletedException
      * @throws ProductNotVisibleException
      * @throws ProductOutOfStockException
+     *
+     * @return bool
+     *
      */
     public function canProductBeReindexed($product, $storeId)
     {
         if ($product->isDeleted() === true) {
-            throw (new ProductDeletedException)
+            throw (new ProductDeletedException())
                 ->withProduct($product)
                 ->withStoreId($storeId);
         }
 
         if ($product->getStatus() == Status::STATUS_DISABLED) {
-            throw (new ProductDisabledException)
+            throw (new ProductDisabledException())
                 ->withProduct($product)
                 ->withStoreId($storeId);
         }
@@ -600,7 +600,7 @@ class Data
             $reviewTableName = $this->resource->getTableName('review_entity_summary');
             $collection
                 ->getSelect()
-                ->columns('(SELECT MAX(rating_summary) FROM ' . $reviewTableName . ' AS o WHERE o.entity_pk_value = e.entity_id AND o.store_id = '.$storeId.') as rating_summary');
+                ->columns('(SELECT MAX(rating_summary) FROM ' . $reviewTableName . ' AS o WHERE o.entity_pk_value = e.entity_id AND o.store_id = ' . $storeId . ') as rating_summary');
         }
 
         $this->eventManager->dispatch(
@@ -640,7 +640,7 @@ class Data
 
                 $this->algoliaHelper->deleteObjects($toRealRemove, $indexName);
 
-                $this->logger->log('Product IDs: '.implode(', ', $toRealRemove));
+                $this->logger->log('Product IDs: ' . implode(', ', $toRealRemove));
                 $this->logger->stop('REMOVE FROM ALGOLIA');
             }
         }
@@ -739,14 +739,14 @@ class Data
                     $this->algoliaHelper->setSettings($indexName, $extraSettings, true);
 
                     if ($section === 'products' && $saveToTmpIndicesToo === true) {
-                        $this->algoliaHelper->setSettings($indexName.'_tmp', $extraSettings, true);
+                        $this->algoliaHelper->setSettings($indexName . '_tmp', $extraSettings, true);
                     }
                 }
             } catch (AlgoliaException $e) {
-                if (strpos($e->getMessage(), 'Invalid object attributes:') === 0) {
+                if (mb_strpos($e->getMessage(), 'Invalid object attributes:') === 0) {
                     $error[] = '
-                        Extra settings for "'.$section.'" indices were not saved. 
-                        Error message: "'.$e->getMessage().'"';
+                        Extra settings for "' . $section . '" indices were not saved. 
+                        Error message: "' . $e->getMessage() . '"';
 
                     continue;
                 }
@@ -756,7 +756,7 @@ class Data
         }
 
         if ($error) {
-            throw new AlgoliaException('<br>'.implode('<br> ', $error));
+            throw new AlgoliaException('<br>' . implode('<br> ', $error));
         }
     }
 

@@ -2,33 +2,32 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Reindex;
 
-use Magento\Framework\Controller\ResultFactory;
-use Magento\Backend\App\Action\Context;
-use Magento\Catalog\Model\ProductFactory;
-use Magento\Store\Model\StoreManagerInterface;
-use Algolia\AlgoliaSearch\Helper\Data as DataHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Algolia\AlgoliaSearch\Exception\UnknownSkuException;
-use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
 use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
 use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
 use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
+use Algolia\AlgoliaSearch\Exception\UnknownSkuException;
+use Algolia\AlgoliaSearch\Helper\Data as DataHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Magento\Backend\App\Action\Context;
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Framework\Controller\ResultFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Save extends \Magento\Backend\App\Action
 {
-
     const MAX_SKUS = 10;
 
     /** @var ProductFactory */
     private $productFactory;
 
-    /**  @var StoreManagerInterface */
+    /** @var StoreManagerInterface */
     private $storeManager;
 
     /** @var DataHelper */
     private $dataHelper;
 
-    /**  @var ProductHelper */
+    /** @var ProductHelper */
     private $productHelper;
 
     /**
@@ -53,9 +52,10 @@ class Save extends \Magento\Backend\App\Action
     }
 
     /**
+     * @throws UnknownSkuException
+     *
      * @return \Magento\Backend\Model\View\Result\Redirect
      *
-     * @throws UnknownSkuException
      */
     public function execute()
     {
@@ -97,10 +97,8 @@ class Save extends \Magento\Backend\App\Action
                 }
 
                 $this->checkAndReindex($product, $stores);
-
             } catch (UnknownSkuException $e) {
                 $this->messageManager->addExceptionMessage($e, $e->getMessage());
-
             } catch (ProductDisabledException $e) {
                 $this->messageManager->addExceptionMessage(
                     $e,
@@ -158,7 +156,6 @@ class Save extends \Magento\Backend\App\Action
 
         return $resultRedirect;
     }
-
 
     /**
      * @param \Magento\Catalog\Model\Product $product

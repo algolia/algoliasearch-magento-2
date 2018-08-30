@@ -2,28 +2,27 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
+use Algolia\AlgoliaSearch\Helper\Logger;
 use AlgoliaSearch\AlgoliaException;
 use AlgoliaSearch\Index;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
-use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
-use Magento\Directory\Model\Currency;
-use Magento\Framework\DataObject;
-use Magento\Store\Model\Store;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
-use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\Product\Type\AbstractType;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
 class ProductHelper
 {
@@ -116,7 +115,7 @@ class ProductHelper
             [
                 'options' =>[
                     'shouldRemovePubDir' => $this->configHelper->shouldRemovePubDirectory(),
-                ]
+                ],
             ]
         );
     }
@@ -246,10 +245,10 @@ class ProductHelper
         $this->eventManager->dispatch(
             'algolia_after_products_collection_build',
             [
-                'store' => $storeId, 
+                'store' => $storeId,
                 'collection' => $products,
                 'only_visible' => $onlyVisible,
-                'include_not_visible_individually' => $includeNotVisibleIndividually
+                'include_not_visible_individually' => $includeNotVisibleIndividually,
             ]
         );
 
@@ -509,8 +508,10 @@ class ProductHelper
      * Returns all parent product IDs, e.g. when simple product is part of configurable or bundle
      *
      * @param array $productIds
-     * @return array
+     *
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return array
      */
     public function getParentProductIds(array $productIds)
     {
@@ -525,8 +526,10 @@ class ProductHelper
     /**
      * Returns composite product type instances
      *
-     * @return AbstractType[]
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return AbstractType[]
+     *
      * @see \Magento\Catalog\Model\Indexer\Product\Flat\AbstractAction::_getProductTypeInstances
      */
     private function getCompositeTypes()
@@ -538,6 +541,7 @@ class ProductHelper
                 $this->compositeTypes[$typeId] = $this->productType->factory($productEmulator);
             }
         }
+
         return $this->compositeTypes;
     }
 
@@ -936,7 +940,7 @@ class ProductHelper
             } else {
                 $attribute = $facet['attribute'];
                 if (array_key_exists('searchable', $facet) && $facet['searchable'] === '1') {
-                    $attribute = 'searchable('.$attribute.')';
+                    $attribute = 'searchable(' . $attribute . ')';
                 }
 
                 $attributesForFaceting[] = $attribute;
@@ -959,11 +963,11 @@ class ProductHelper
 
         $allIndices = $this->algoliaHelper->listIndexes();
         foreach ($allIndices['items'] as $indexInfo) {
-            if (strpos($indexInfo['name'], $indexName) !== 0 || $indexInfo['name'] === $indexName) {
+            if (mb_strpos($indexInfo['name'], $indexName) !== 0 || $indexInfo['name'] === $indexName) {
                 continue;
             }
 
-            if (strpos($indexInfo['name'], '_tmp') === false && in_array($indexInfo['name'], $replicas) === false) {
+            if (mb_strpos($indexInfo['name'], '_tmp') === false && in_array($indexInfo['name'], $replicas) === false) {
                 $indicesToDelete[] = $indexInfo['name'];
             }
         }
@@ -993,21 +997,21 @@ class ProductHelper
             $attribute = $facet['attribute'];
 
             $rules[] = [
-                'objectID' => 'filter_'.$attribute,
-                'description' => 'Filter facet "'.$attribute.'"',
+                'objectID' => 'filter_' . $attribute,
+                'description' => 'Filter facet "' . $attribute . '"',
                 'condition' => [
                     'anchoring' => 'contains',
-                    'pattern' => '{facet:'.$attribute.'}',
+                    'pattern' => '{facet:' . $attribute . '}',
                     'context' => 'magento_filters',
                 ],
                 'consequence' => [
                     'params' => [
                         'automaticFacetFilters' => [$attribute],
                         'query' => [
-                            'remove' => ['{facet:'.$attribute.'}']
-                        ]
+                            'remove' => ['{facet:' . $attribute . '}'],
+                        ],
                     ],
-                ]
+                ],
             ];
         }
 

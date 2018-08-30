@@ -124,9 +124,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
                 if ($refinementKey !== null) {
                     $refinementValue = $query;
-                    $query = "";
+                    $query = '';
                 } else {
-                    $refinementKey = "";
+                    $refinementKey = '';
                 }
             }
         }
@@ -176,7 +176,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'query' => html_entity_decode($query),
                 'refinementKey' => $refinementKey,
                 'refinementValue' => $refinementValue,
-                'categoryId' => $categoryId, 
+                'categoryId' => $categoryId,
                 'path' => $path,
                 'level' => $level,
             ],

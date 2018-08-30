@@ -52,7 +52,7 @@ class Merchandising implements ObserverInterface
 
                 $this->merchandisingHelper->saveQueryRule($store->getId(), $categoryId, $positions);
             }
-        } catch(\AlgoliaSearch\AlgoliaException $e) {
+        } catch (\AlgoliaSearch\AlgoliaException $e) {
             $message = $e->getMessage();
 
             if ($message === 'Rules quota exceeded. Please contact us if you need an extended quota.') {

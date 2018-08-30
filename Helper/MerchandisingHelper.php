@@ -41,11 +41,11 @@ class MerchandisingHelper
             'condition' => [
                 'pattern' => '',
                 'anchoring' => 'is',
-                'context' => 'magento-category-'.$categoryId,
+                'context' => 'magento-category-' . $categoryId,
             ],
             'consequence' => [
                 'promote' => $positions,
-            ]
+            ],
         ];
 
         $this->algoliaHelper->saveRule($rule, $productsIndexName);
@@ -79,6 +79,6 @@ class MerchandisingHelper
 
     private function getQueryRuleId($categoryId)
     {
-        return 'magento-category-'.$categoryId;
+        return 'magento-category-' . $categoryId;
     }
 }

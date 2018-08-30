@@ -24,7 +24,7 @@ abstract class TestCase extends \TC
     /** @var AlgoliaHelper */
     protected $algoliaHelper;
 
-    /** @var  ConfigHelper */
+    /** @var ConfigHelper */
     protected $configHelper;
 
     public function setUp()
@@ -66,7 +66,7 @@ abstract class TestCase extends \TC
         foreach ($indices['items'] as $index) {
             $name = $index['name'];
 
-            if (strpos($name, $this->indexPrefix) === 0) {
+            if (mb_strpos($name, $this->indexPrefix) === 0) {
                 try {
                     $this->algoliaHelper->deleteIndex($name);
                 } catch (AlgoliaException $e) {
@@ -105,11 +105,11 @@ abstract class TestCase extends \TC
     /**
      * Call protected/private method of a class.
      *
-     * @param object $object    Instantiated object that we will run method on.
+     * @param object $object    instantiated object that we will run method on
      * @param string $methodName Method name to call
-     * @param array  $parameters Array of parameters to pass into method.
+     * @param array  $parameters array of parameters to pass into method
      *
-     * @return mixed Method return.
+     * @return mixed method return
      */
     protected function invokeMethod(&$object, $methodName, array $parameters = [])
     {

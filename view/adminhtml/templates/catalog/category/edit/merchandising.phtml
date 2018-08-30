@@ -56,10 +56,10 @@ $isConfig = [
         'getRankingInfo' => true,
         'ruleContexts' => [
             '',
-            'magento-category-'.$categoryId,
+            'magento-category-' . $categoryId,
         ],
         'facetFilters' => [
-            'categoryIds:'.$block->getCategory()->getId(),
+            'categoryIds:' . $block->getCategory()->getId(),
         ],
     ],
 ];
@@ -75,7 +75,7 @@ $isConfig = [
     <div>
         <p>
             On this page you see the exact products in the exact order
-            as your customers see it on "<?= $categoryName; ?>" category page.<br>
+            as your customers see it on "<?php echo $categoryName; ?>" category page.<br>
             Drag & drop products to a specific position and pin it there to have the product displayed always in this position.
         </p>
         <p class="info">
@@ -492,9 +492,9 @@ $isConfig = [
 <script>
     requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
-        	var config = <?= json_encode($isConfig); ?>;
+        	var config = <?php echo json_encode($isConfig); ?>;
 
-            var search = algoliaAdminBundle.instantsearch(<?= json_encode($isConfig); ?>);
+            var search = algoliaAdminBundle.instantsearch(<?php echo json_encode($isConfig); ?>);
 
             // // initialize SearchBox
             // search.addWidget(

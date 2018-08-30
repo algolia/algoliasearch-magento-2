@@ -46,7 +46,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', ['994']);
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', ['994']);
         $hit = reset($results['results']);
 
         $defaultAttributes = [
@@ -67,12 +67,12 @@ class ProductsIndexingTest extends IndexingTestCase
         ];
 
         foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertArrayHasKey($attribute, $hit, 'Products attribute "'.$attribute.'" should be indexed but it is not"');
+            $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }
 
         $extraAttributes = implode(', ', array_keys($hit));
-        $this->assertEmpty($hit, 'Extra products attributes ('.$extraAttributes.') are indexed and should not be.');
+        $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
     }
 
     public function testNoProtocolImageUrls()
@@ -93,7 +93,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', ['994']);
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', ['994']);
         $hit = reset($results['results']);
 
         $this->assertStringStartsWith('//', $hit['image_url']);
@@ -114,7 +114,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $res = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', ['9']);
+        $res = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', ['9']);
         $algoliaProduct = reset($res['results']);
 
         $this->assertEquals(32, $algoliaProduct['price']['USD']['default']);
@@ -152,7 +152,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $res = $this->algoliaHelper->getObjects($this->indexPrefix.'default_products', ['9']);
+        $res = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', ['9']);
         $algoliaProduct = reset($res['results']);
 
         $this->assertEquals($specialPrice, $algoliaProduct['price']['USD']['default']);

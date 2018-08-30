@@ -3,13 +3,12 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Magento\Cms\Model\Page;
+use Magento\Cms\Model\Template\FilterProvider;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Cms\Model\Page;
-use Magento\Framework\DataObject;
-use Magento\Framework\Url;
 
 class PageHelper
 {

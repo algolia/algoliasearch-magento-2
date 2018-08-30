@@ -8,7 +8,9 @@ use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Customer\Model\Context as CustomerContext;
 use Magento\Framework\App\ActionInterface;
+use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\Data\Form\FormKey;
 use Magento\Framework\Locale\Currency;
@@ -18,8 +20,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Url\Helper\Data;
 use Magento\Framework\View\Element\Template;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
-use Magento\Framework\App\Http\Context as HttpContext;
-use Magento\Customer\Model\Context as CustomerContext;
 
 class Algolia extends Template implements CollectionDataSourceInterface
 {
@@ -196,7 +196,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
 
         $routeParams = [
             $urlParamName => $continueUrl,
-            '_secure' => $this->algoliaHelper->getRequest()->isSecure()
+            '_secure' => $this->algoliaHelper->getRequest()->isSecure(),
         ];
 
         if ($additional !== []) {

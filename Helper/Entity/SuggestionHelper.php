@@ -3,10 +3,10 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Search\Model\Query;
 
 class SuggestionHelper
@@ -83,7 +83,7 @@ class SuggestionHelper
         if ($queries !== false) {
             return unserialize($queries);
         }
-        
+
         $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
         $collection->getSelect()->where(
             'num_results >= ' . $this->configHelper->getMinNumberOfResults() . ' 
@@ -104,7 +104,7 @@ class SuggestionHelper
         $suggestions = [];
 
         foreach ($collection as $suggestion) {
-            if (strlen($suggestion['query_text']) >= 3) {
+            if (mb_strlen($suggestion['query_text']) >= 3) {
                 $suggestions[] = $suggestion['query_text'];
             }
         }

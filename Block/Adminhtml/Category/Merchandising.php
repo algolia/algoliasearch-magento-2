@@ -49,7 +49,7 @@ class Merchandising extends \Magento\Backend\Block\Template
         return $this->registry->registry('category');
     }
 
-    /** @return boolean */
+    /** @return bool */
     public function isRootCategory()
     {
         $category = $this->getCategory();

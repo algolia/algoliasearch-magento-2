@@ -12,11 +12,11 @@ use Algolia\AlgoliaSearch\Model\Queue;
 
 class Status extends Template
 {
-    const CRON_QUEUE_FREQUENCY = 300;
+    const CRON_QUEUE_FREQUENCY = 330;
 
     const QUEUE_NOT_PROCESSED_LIMIT = 3600;
 
-    const QUEUE_FAST_LIMIT = 60;
+    const QUEUE_FAST_LIMIT = 220;
 
     /** @var IndexerFactory */
     private $indexerFactory;

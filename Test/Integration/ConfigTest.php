@@ -19,7 +19,8 @@ class ConfigTest extends TestCase
 
         $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
 
-        $this->assertEquals(count($facets), count($indexSettings['attributesForFaceting']));
+        // + 1 for categoryIds which are not in $configHelper->getFacets()
+        $this->assertEquals(count($facets) + 1, count($indexSettings['attributesForFaceting']));
 
         $attributesMatched = 0;
         foreach ($facets as $facet) {
@@ -93,7 +94,8 @@ class ConfigTest extends TestCase
 
         $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
 
-        $this->assertEquals(2, count($indexSettings['attributesForFaceting']));
+        // + 1 for categoryIds which are not in $configHelper->getFacets()
+        $this->assertEquals(2 + 1, count($indexSettings['attributesForFaceting']));
 
         $categoriesAttributeIsIncluded = false;
         foreach ($indexSettings['attributesForFaceting'] as $attribute) {
@@ -114,7 +116,8 @@ class ConfigTest extends TestCase
 
         $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
 
-        $this->assertEquals(3, count($indexSettings['attributesForFaceting']));
+        // + 1 for categoryIds which are not in $configHelper->getFacets()
+        $this->assertEquals(3 + 1, count($indexSettings['attributesForFaceting']));
 
         $categoriesAttributeIsIncluded = false;
         foreach ($indexSettings['attributesForFaceting'] as $attribute) {

@@ -63,6 +63,7 @@ class ProductsIndexingTest extends IndexingTestCase
             'price',
             'type_id',
             'algoliaLastUpdateAtCET',
+            'categoryIds',
         ];
 
         foreach ($defaultAttributes as $key => $attribute) {

@@ -53,11 +53,14 @@ class Merchandising extends \Magento\Backend\Block\Template
     public function isRootCategory()
     {
         $category = $this->getCategory();
-        $path = $category->getPath();
 
-        $parts = explode('/', $path);
-        if (count($parts) <= 2) {
-            return true;
+        if ($category) {
+            $path = $category->getPath();
+
+            $parts = explode('/', $path);
+            if (count($parts) <= 2) {
+                return true;
+            }
         }
 
         return false;

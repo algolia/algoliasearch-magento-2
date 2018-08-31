@@ -10,7 +10,7 @@ The development team will review all issues and contributions submitted by the c
 
 ## Contribution requirements
 
-1. Contributions must pass [Continous Integration checks]().
+1. Contributions must pass [Continous Integration checks](#continuous-integration-checks).
 2. Pull requests (PRs) have to be accompanied by a meaningful description of their purpose. Comprehensive descriptions increase the chances of a pull request to be merged quickly and without additional clarification requests.
 3. Commits must be accompanied by meaningful commit messages.
 4. PRs which include bug fixing, must be accompanied with step-by-step description of how to reproduce the bug.
@@ -77,6 +77,36 @@ $ php vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --confi
 $ cd [[magento_root_dir]]
 $ php vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
 ```
+
+#### Comments (not annotations)
+
+The developer should do the best to avoid using comments. Comments should be used only in rare cases where it really helps others to understand what the code does.
+
+The code itself should be self descriptive. Each time you want to comment a code think first about rewriting the code, e. g. extract the piece of code to a better named class / method, which will describe what the code does.
+
+**Example of a bad comment:**
+
+```php
+/**
+ * Method gets user ID
+ */
+public function getUserId() { ... }
+```
+
+**Example of a good comment:**
+```php
+// In $potentiallyDeletedProductsIds there might be IDs of deleted products which will not be in a collection
+if (is_array($potentiallyDeletedProductsIds)) {
+    $potentiallyDeletedProductsIds = array_combine(
+        $potentiallyDeletedProductsIds,
+        $potentiallyDeletedProductsIds
+    );
+}
+```
+
+To learn more about good commenting you can read:
+- https://medium.freecodecamp.org/code-comments-the-good-the-bad-and-the-ugly-be9cc65fbf83
+- https://improvingsoftware.com/2011/06/27/5-best-practices-for-commenting-your-code/
 
 ### Static analysis
 

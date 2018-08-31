@@ -13,6 +13,9 @@
     "ext-mbstring": "*",
     "ext-dom": "*"
   },
+  "require-dev": {
+    "phpstan/phpstan-shim": "~0.10.3"
+  },
   "autoload": {
     "files": [ "registration.php" ],
     "psr-4": {

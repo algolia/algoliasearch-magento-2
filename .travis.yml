@@ -60,5 +60,5 @@ before_script:
 
 script:
   - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
-  - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
+  - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --allow-risky=yes
   - eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

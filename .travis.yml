@@ -13,6 +13,23 @@ env:
   - MAGENTO_VERSION="2.0"
   - MAGENTO_VERSION="2.1"
 
+matrix:
+  include:
+    - name: "Magento 2.0.*"
+      env: MAGENTO_VERSION="2.0"
+      script:
+        - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
+        - eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+    - name: "Magento 2.1.*"
+      env: MAGENTO_VERSION="2.1"
+      script:
+        - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
+        - eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+    - name: "Magento 2.2.*"
+      env: MAGENTO_VERSION="2.2"
+      script:
+        - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --use-cache=no --allow-risky=yes
+
 branches:
   only:
     - master
@@ -60,8 +77,3 @@ install:
 
 before_script:
   - wget https://alg.li/algolia-keys && chmod +x algolia-keys
-
-script:
-  - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
-  - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --allow-risky=yes
-  - eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

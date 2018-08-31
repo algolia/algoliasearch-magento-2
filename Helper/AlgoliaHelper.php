@@ -53,6 +53,12 @@ class AlgoliaHelper extends AbstractHelper
 
         $this->resetCredentialsFromConfig();
 
+        // Merge non castable attributes set in config
+        $this->nonCastableAttributes = array_merge(
+            $this->nonCastableAttributes,
+            $this->config->getNonCastableAttributes()
+        );
+
         Version::addPrefixUserAgentSegment('Magento2 integration', $this->config->getExtensionVersion());
         Version::addSuffixUserAgentSegment('PHP', phpversion());
         Version::addSuffixUserAgentSegment('Magento', $this->config->getMagentoVersion());

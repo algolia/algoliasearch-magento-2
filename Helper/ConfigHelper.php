@@ -917,7 +917,7 @@ class ConfigHelper
 
         return $nonCastableAttributes;
     }
-  
+
     private function addIndexableAttributes(
         $attributes,
         $addedAttributes,

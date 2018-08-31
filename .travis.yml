@@ -25,7 +25,7 @@ matrix:
     - name: "Magento 2.2.*"
       env: MAGENTO_VERSION="2.2"
       script:
-        - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --use-cache=no --allow-risky=yes
+        - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
 
 branches:
   only:

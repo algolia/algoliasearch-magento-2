@@ -22,7 +22,7 @@ class ProductAttributes extends AbstractTable
 
                     return $options;
                 },
-            ]
+            ],
         ];
     }
 }

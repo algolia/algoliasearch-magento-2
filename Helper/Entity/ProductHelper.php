@@ -238,7 +238,8 @@ class ProductHelper
             $products = $products->addAttributeToFilter('entity_id', ['in' => $productIds]);
         }
 
-        $this->eventManager->dispatch( // Only for backward compatibility
+        // Only for backward compatibility
+        $this->eventManager->dispatch(
             'algolia_rebuild_store_product_index_collection_load_before',
             ['store' => $storeId, 'collection' => $products]
         );
@@ -278,7 +279,8 @@ class ProductHelper
 
         // Additional index settings from event observer
         $transport = new DataObject($indexSettings);
-        $this->eventManager->dispatch( // Only for backward compatibility
+        // Only for backward compatibility
+        $this->eventManager->dispatch(
             'algolia_index_settings_prepare',
             ['store_id' => $storeId, 'index_settings' => $transport]
         );

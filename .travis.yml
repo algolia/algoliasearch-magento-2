@@ -7,11 +7,8 @@ php:
   - 7.0
 
 notifications:
-  webhooks: https://www.travisbuddy.com/
-
-env:
-  - MAGENTO_VERSION="2.0"
-  - MAGENTO_VERSION="2.1"
+  webhooks:
+    - https://www.travisbuddy.com/
 
 matrix:
   include:

@@ -24,8 +24,13 @@ The development team will review all issues and contributions submitted by the c
 If you are a new GitHub user, we recommend that you create your own [free github account](https://github.com/signup/free). By doing that, you will be able to collaborate with the Magento 2 development team, “fork” the Magento 2 project and be able to easily send “pull requests”.
 
 1. Fork the repository according to [Fork instructions](https://help.github.com/articles/fork-a-repo/)
-2. Create and test your work.
-3. When you are ready, send us a pull request – follow [Create a pull request instructions](https://help.github.com/articles/about-pull-requests/).
+2. Create and test your work
+	* Write tests
+3. Commit your work:
+	* Write a [good commit message](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+3. When you are ready, send us a pull request
+	* Follow [Create a pull request instructions](https://help.github.com/articles/about-pull-requests/)
+	* Allow [edits from maintainers](https://blog.github.com/2016-09-07-improving-collaboration-with-forks/)
 4. Once your contribution is received, the development team will review the contribution and collaborate with you as needed to improve the quality of the contribution.
 
 # Continuous Integration checks
@@ -80,9 +85,10 @@ $ php vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --confi
 
 ### Comments (not annotations)
 
-The developer should do the best to avoid using comments. Comments should be used only in rare cases where it really helps others to understand what the code does.
+Comments should be used only in rare cases where it really helps others (or your future self) to understand what the code does.
 
-The code itself should be self descriptive. Each time you want to comment a code think first about rewriting the code, e. g. extract the piece of code to a better named class / method, which will describe what the code does.
+The code itself should be self descriptive. Each time you want to comment a code think first about rewriting the code to be more self explanatory. 
+E. g. extract the piece of code to a better named class / method, which will describe what the code does.
 
 **Example of a bad comment:**
 

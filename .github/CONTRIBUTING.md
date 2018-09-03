@@ -51,6 +51,14 @@ Integration tests are run via [PHPUnit](https://phpunit.de/) and the extension f
 	cp [[extension_root_dir]]/dev/tests/install-config-mysql.php [[magento_root_dir]]/dev/tests/integration/etc/install-config-mysql.php
 	```
 2. Fill the correct DB credentials to the newly created config file
+3. The tests use Algolia credentials from ENV variables: 
+	* `ALGOLIA_APPLICATION_ID` (mandatory)
+	* `ALGOLIA_SEARCH_API_KEY` (mandatory)
+	* `ALGOLIA_API_KEY` (mandatory)
+	* `INDEX_PREFIX` (optional, defaults to "magento20tests_")
+	* The variable can be set either:
+		* Globally by exporting them (`$ export ALGOLIA_APPLICATION_ID=FOO`, repeat for each var)
+		* Manually when running the tests (`$ ALGOLIA_APPLICATION_ID=FOO ...other vars... testsRunningCommand`)
 
 ### Run
 

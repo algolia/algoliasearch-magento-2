@@ -10,7 +10,7 @@ class CategoriesIndexingTest extends IndexingTestCase
     {
         /** @var Category $categoriesIndexer */
         $categoriesIndexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Category');
-        $this->processTest($categoriesIndexer, 'categories', 18);
+        $this->processTest($categoriesIndexer, 'categories', ($this->assertValues)::CATEGORIES_COUNT);
     }
 
     public function testDefaultIndexableAttributes()

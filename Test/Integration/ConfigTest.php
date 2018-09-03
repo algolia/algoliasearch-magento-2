@@ -19,23 +19,7 @@ class ConfigTest extends TestCase
 
         $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
 
-        // + 1 for categoryIds which are not in $configHelper->getFacets()
-        $this->assertEquals(count($facets) + 1, count($indexSettings['attributesForFaceting']));
-
-        $attributesMatched = 0;
-        foreach ($facets as $facet) {
-            foreach ($indexSettings['attributesForFaceting'] as $indexFacet) {
-                if ($facet['attribute'] === 'price' && mb_strpos($indexFacet, 'price.') === 0) {
-                    $attributesMatched++;
-                } elseif ($facet['attribute'] === $indexFacet) {
-                    $attributesMatched++;
-                } elseif ($facet['attribute'] === 'color' && 'searchable(color)' === $indexFacet) {
-                    $attributesMatched++;
-                }
-            }
-        }
-
-        $this->assertEquals(count($facets), $attributesMatched);
+        $this->assertEquals(($this->assertValues)::FACETS_COUNT, count($indexSettings['attributesForFaceting']));
     }
 
     public function testQueryRules()
@@ -94,8 +78,7 @@ class ConfigTest extends TestCase
 
         $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
 
-        // + 1 for categoryIds which are not in $configHelper->getFacets()
-        $this->assertEquals(2 + 1, count($indexSettings['attributesForFaceting']));
+        $this->assertEquals(($this->assertValues)::FACETS_CATEGORIES_COUNT, count($indexSettings['attributesForFaceting']));
 
         $categoriesAttributeIsIncluded = false;
         foreach ($indexSettings['attributesForFaceting'] as $attribute) {
@@ -116,8 +99,7 @@ class ConfigTest extends TestCase
 
         $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
 
-        // + 1 for categoryIds which are not in $configHelper->getFacets()
-        $this->assertEquals(3 + 1, count($indexSettings['attributesForFaceting']));
+        $this->assertEquals(($this->assertValues)::FACETS_CATEGORIES_COUNT + 1, count($indexSettings['attributesForFaceting']));
 
         $categoriesAttributeIsIncluded = false;
         foreach ($indexSettings['attributesForFaceting'] as $attribute) {

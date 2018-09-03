@@ -16,7 +16,7 @@ class ProductsIndexingTest extends IndexingTestCase
         /** @var Product $indexer */
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
 
-        $this->processTest($indexer, 'products', 185);
+        $this->processTest($indexer, 'products', ($this->assertValues)::PRODUCTS_ON_STOCK_COUNT);
     }
 
     public function testIncludingOutOfStock()
@@ -28,7 +28,7 @@ class ProductsIndexingTest extends IndexingTestCase
         /** @var Product $indexer */
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
 
-        $this->processTest($indexer, 'products', 186);
+        $this->processTest($indexer, 'products', ($this->assertValues)::PRODUCTS_OUT_OF_STOCK_COUNT);
     }
 
     public function testDefaultIndexableAttributes()
@@ -66,6 +66,10 @@ class ProductsIndexingTest extends IndexingTestCase
             'categoryIds',
         ];
 
+        if (!$hit) {
+            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
+        }
+
         foreach ($defaultAttributes as $key => $attribute) {
             $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
@@ -97,7 +101,7 @@ class ProductsIndexingTest extends IndexingTestCase
         $hit = reset($results['results']);
 
         if (!$hit || !array_key_exists('image_url', $hit)) {
-            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions.');
+            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
         }
 
         $this->assertStringStartsWith('//', $hit['image_url']);

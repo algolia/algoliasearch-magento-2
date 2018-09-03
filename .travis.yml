@@ -26,6 +26,7 @@ matrix:
       env: MAGENTO_VERSION="2.2"
       script:
         - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
+        - eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 branches:
   only:

@@ -121,6 +121,10 @@ class ProductsIndexingTest extends IndexingTestCase
         $res = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', ['9']);
         $algoliaProduct = reset($res['results']);
 
+        if (!$algoliaProduct || !array_key_exists('price', $algoliaProduct)) {
+            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions.');
+        }
+
         $this->assertEquals(32, $algoliaProduct['price']['USD']['default']);
         $this->assertFalse($algoliaProduct['price']['USD']['special_from_date']);
         $this->assertFalse($algoliaProduct['price']['USD']['special_to_date']);

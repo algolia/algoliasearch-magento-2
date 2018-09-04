@@ -15,13 +15,11 @@ matrix:
     - name: "Magento 2.0.*"
       env: MAGENTO_VERSION="2.0"
       script:
-        - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
         - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
         - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
     - name: "Magento 2.1.*"
       env: MAGENTO_VERSION="2.1"
       script:
-        - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
         - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
         - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
     - name: "Magento 2.2.*"
@@ -43,7 +41,6 @@ cache:
 before_install:
   - phpenv config-add travis.php.ini
   - mysql -e 'CREATE DATABASE magento20;'
-  - composer global require phpstan/phpstan
 
 install:
   # create auth.json to be able to install Magento store

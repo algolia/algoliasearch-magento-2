@@ -101,8 +101,7 @@ abstract class TestCase extends \TC
 
         if (version_compare($this->getMagentoVersion(), '2.2.0', '<')) {
             $this->assertValues = new Magento_2_01();
-        }
-        else {
+        } else {
             $this->assertValues = new Magento_2_2();
         }
 
@@ -127,8 +126,9 @@ abstract class TestCase extends \TC
      * @param string $methodName Method name to call
      * @param array $parameters array of parameters to pass into method
      *
-     * @return mixed method return
      * @throws \ReflectionException
+     *
+     * @return mixed method return
      */
     protected function invokeMethod(&$object, $methodName, array $parameters = [])
     {

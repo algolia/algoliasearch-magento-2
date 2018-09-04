@@ -16,19 +16,19 @@ matrix:
       env: MAGENTO_VERSION="2.0"
       script:
         - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
-        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
         - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
     - name: "Magento 2.1.*"
       env: MAGENTO_VERSION="2.1"
       script:
         - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
-        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
         - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
     - name: "Magento 2.2.*"
       env: MAGENTO_VERSION="2.2"
       script:
         - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
-        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
         - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 branches:
@@ -51,7 +51,7 @@ install:
 
   # install Magento store to home directory
   - cd $HOME
-  - composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:${MAGENTO_VERSION} magento20
+  - composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:~${MAGENTO_VERSION}.0 magento20
 
   # install Marketplace Extension quality tools
   - composer create-project --repository=https://repo.magento.com magento/marketplace-eqp magento-coding-standard

@@ -37,9 +37,6 @@ If you are a new GitHub user, we recommend that you create your own [free github
 
 Automated continous integration checks are run on [Travis CI](https://travis-ci.org/algolia/algoliasearch-magento-2/).
 
-As of today the automated checks are run agains Magento 2.0.* and Magento 2.1.*.
-Version for Magento 2.2.* is being prepared.
-
 ## Integration tests
 
 Integration tests are run via [PHPUnit](https://phpunit.de/) and the extension follows [Magento 2 framework](https://devdocs.magento.com/guides/v2.2/test/integration/integration_test_execution.html) to run integration tests. 

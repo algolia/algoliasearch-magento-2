@@ -121,3 +121,37 @@ if (is_array($potentiallyDeletedProductsIds)) {
 To learn more about good commenting you can read:
 - https://medium.freecodecamp.org/code-comments-the-good-the-bad-and-the-ugly-be9cc65fbf83
 - https://improvingsoftware.com/2011/06/27/5-best-practices-for-commenting-your-code/
+
+## Static analysis
+
+For static analysis check the extension uses [Magento Extension Quality Program Coding Standard](https://github.com/magento/marketplace-eqp/) library.
+It is a set of rules and sniffs for [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer).
+
+It allows automatically check your code against some of the common Magento and PHP coding issues, like:
+- raw SQL queries
+- SQL queries inside a loop
+- direct class instantiation
+- unnecessary collection loading
+- excessive code complexity
+- use of dangerous functions
+- use of PHP superglobals'
+
+This tool is used on official Magento Marketplace and automatically checks the extension during upload.
+
+The tool let the **WARNING**s go, but rejects the extension when **ERROR** appears.
+
+Try to avoid both, warnings and errors, but only **ERROR** prevents a pull request from being merged for now.
+This policy may change in a future.
+
+### Setup
+
+Install the tool via [Composer](https://getcomposer.org) next to your Magento instance:
+```bash
+$ composer create-project --repository=https://repo.magento.com magento/marketplace-eqp magento-coding-standard
+```
+
+### Run
+
+```bash
+[[magento-coding-standard_dir]]/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test [[magento_root_dir]]/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+```

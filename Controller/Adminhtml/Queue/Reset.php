@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
-use Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 use Magento\Framework\Controller\ResultFactory;
 
 class Reset extends AbstractAction

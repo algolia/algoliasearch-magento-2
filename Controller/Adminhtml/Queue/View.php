@@ -3,8 +3,6 @@
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
 use Magento\Framework\Controller\ResultFactory;
-use Magento\Backend\App\Action\Context;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
 class View extends AbstractAction
 {
@@ -16,6 +14,7 @@ class View extends AbstractAction
             $this->messageManager->addErrorMessage(__('This job does not exists.'));
             /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
             $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+
             return $resultRedirect->setPath('*/*/');
         }
 
@@ -29,7 +28,7 @@ class View extends AbstractAction
             ->addBreadcrumb($breadcrumbTitle, $breadcrumbTitle);
 
         $resultPage->getConfig()->getTitle()->prepend(__('Indexing Queue'));
-        $resultPage->getConfig()->getTitle()->prepend(__("View Job #%1", $job->getId()));
+        $resultPage->getConfig()->getTitle()->prepend(__('View Job #%1', $job->getId()));
 
         return $resultPage;
     }

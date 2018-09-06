@@ -11,10 +11,10 @@ interface JobInterface
 {
     const TABLE_NAME = 'algoliasearch_queue';
 
-    const STATUS_NEW = "new";
-    const STATUS_PROCESSING = "processing";
-    const STATUS_ERROR = "error";
-    const STATUS_COMPLETE = "complete";
+    const STATUS_NEW = 'new';
+    const STATUS_PROCESSING = 'processing';
+    const STATUS_ERROR = 'error';
+    const STATUS_COMPLETE = 'complete';
 
     const METHODS = [
         'saveConfigurationToAlgolia' => 'Save Configuration ',

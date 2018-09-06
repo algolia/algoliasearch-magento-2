@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
-use Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 use Magento\Framework\Controller\ResultFactory;
 
 class Clear extends AbstractAction
@@ -14,7 +13,7 @@ class Clear extends AbstractAction
         $resultRedirect->setPath('*/*/index');
 
         try {
-            $this->db->query('TRUNCATE TABLE '.$this->tableName);
+            $this->db->query('TRUNCATE TABLE ' . $this->tableName);
             $this->messageManager->addNoticeMessage(__('Queue has been cleared.'));
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage($e);

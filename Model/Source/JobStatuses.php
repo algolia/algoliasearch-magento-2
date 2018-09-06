@@ -6,7 +6,6 @@ use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 
 class JobStatuses implements \Magento\Framework\Data\OptionSourceInterface
 {
-
     /** @return array */
     public function toOptionArray()
     {

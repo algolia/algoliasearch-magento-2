@@ -2,12 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
-use Magento\Backend\App\Action\Context;
-use Magento\Framework\Registry;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Indexer\Model\IndexerFactory;
 use Algolia\AlgoliaSearch\Model\JobFactory;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Registry;
+use Magento\Indexer\Model\IndexerFactory;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {

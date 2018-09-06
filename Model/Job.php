@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model;
 
-use Magento\Framework\DataObject\IdentityInterface;
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
+use Magento\Framework\DataObject\IdentityInterface;
 
 class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInterface, JobInterface
 {

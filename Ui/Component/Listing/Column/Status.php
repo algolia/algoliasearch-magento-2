@@ -30,7 +30,6 @@ class Status extends \Magento\Ui\Component\Listing\Columns\Column
         return $dataSource;
     }
 
-
     /**
      * @param array $item
      *

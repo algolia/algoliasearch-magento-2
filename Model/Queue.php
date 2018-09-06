@@ -94,8 +94,9 @@ class Queue
      * Return the average processing time for the 2 last two days
      * (null if there was less than 100 runs with processed jobs)
      *
-     * @return float|null
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return float|null
      */
     public function getAverageProcessingTime()
     {
@@ -142,7 +143,7 @@ class Queue
 
         if (php_sapi_name() === 'cli') {
             $this->output->writeln(
-                $this->logRecord['processed_jobs'] . ' jobs processed in ' . $this->logRecord['duration'] .' seconds.'
+                $this->logRecord['processed_jobs'] . ' jobs processed in ' . $this->logRecord['duration'] . ' seconds.'
             );
         }
 
@@ -201,8 +202,8 @@ class Queue
 
                 // Increment retries, set the job ID back to NULL
                 $updateQuery = "UPDATE {$this->table} 
-                    SET pid = NULL, retries = retries + 1 , error_log = '". addslashes($logMessage) . "' 
-                    WHERE job_id IN (".implode(', ', (array) $job['merged_ids']).")";
+                    SET pid = NULL, retries = retries + 1 , error_log = '" . addslashes($logMessage) . "' 
+                    WHERE job_id IN (" . implode(', ', (array) $job['merged_ids']) . ')';
                 $this->db->query($updateQuery);
 
                 if (php_sapi_name() === 'cli') {
@@ -304,8 +305,8 @@ class Queue
 
                 // Reserve all new jobs since last run
                 $this->db->query("UPDATE {$this->db->quoteIdentifier($this->table, true)} 
-                SET pid = ".$pid.' 
-                WHERE job_id >= '.$firstJobId." AND job_id <= $lastJobId");
+                SET pid = " . $pid . ' 
+                WHERE job_id >= ' . $firstJobId . " AND job_id <= $lastJobId");
             }
 
             $this->db->commit();

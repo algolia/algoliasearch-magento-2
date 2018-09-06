@@ -2,10 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Job;
 
+use Magento\Backend\Block\Widget\Button;
+use Magento\Framework\Registry;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
-use Magento\Framework\Registry;
-use Magento\Backend\Block\Widget\Button;
 
 class View extends Template
 {
@@ -27,7 +27,7 @@ class View extends Template
         $this->coreRegistry = $coreRegistry;
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     protected function _prepareLayout()
     {
         /** @var Button $button */
@@ -35,8 +35,8 @@ class View extends Template
         $button->setData(
             [
                 'label' => __('Back to job list'),
-                'onclick' => 'setLocation(\''.$this->getBackUrl().'\')',
-                'class' => 'back'
+                'onclick' => 'setLocation(\'' . $this->getBackUrl() . '\')',
+                'class' => 'back',
             ]
         );
 

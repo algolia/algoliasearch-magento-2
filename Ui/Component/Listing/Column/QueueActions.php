@@ -6,7 +6,6 @@ use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
 use Magento\Ui\Component\Listing\Columns\Column;
-use Magento\Framework\Escaper;
 
 class QueueActions extends Column
 {
@@ -48,11 +47,11 @@ class QueueActions extends Column
                         'href' => $this->urlBuilder->getUrl(
                             static::URL_PATH_VIEW,
                             [
-                                'id' => $item['job_id']
+                                'id' => $item['job_id'],
                             ]
                         ),
-                        'label' => __('View')
-                    ]
+                        'label' => __('View'),
+                    ],
                 ];
             }
         }

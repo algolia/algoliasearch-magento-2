@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid;
 
-use Magento\Framework\Api\Search\SearchResultInterface;
-use Magento\Framework\Api\Search\AggregationInterface;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection as JobCollection;
+use Magento\Framework\Api\Search\AggregationInterface;
+use Magento\Framework\Api\Search\SearchResultInterface;
 
 class Collection extends JobCollection implements SearchResultInterface
 {

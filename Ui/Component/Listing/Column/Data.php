@@ -25,11 +25,11 @@ class Data extends \Magento\Ui\Component\Listing\Columns\Column
             $data = json_decode($item[$fieldName], true);
             $formattedData = '';
             if (is_array($data)) {
-                foreach($data as $key => $value) {
+                foreach ($data as $key => $value) {
                     if (is_array($value)) {
-                        $value = implode(', ' ,$value);
+                        $value = implode(', ', $value);
                     }
-                    $formattedData .= $key . " : " . $value . "<br>";
+                    $formattedData .= $key . ' : ' . $value . '<br>';
                 }
             }
             $item[$fieldName] = $formattedData;

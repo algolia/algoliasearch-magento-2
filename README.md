@@ -53,3 +53,7 @@ Run the following commands:
 - ```$ bin/magento module:enable Algolia_AlgoliaSearch```
 - ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
 
+Contribution
+------------
+
+To start contribuiting to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).

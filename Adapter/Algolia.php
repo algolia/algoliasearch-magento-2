@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Adapter;
 
-use AlgoliaSearch\AlgoliaConnectionException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data as AlgoliaHelper;
+use AlgoliaSearch\AlgoliaConnectionException;
 use Magento\CatalogSearch\Helper\Data;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\ResourceConnection;
@@ -131,7 +131,6 @@ class Algolia implements AdapterInterface
                 }, $documents);
 
                 $table = $temporaryStorage->{$storeDocumentsMethod}($apiDocuments);
-
             } catch (AlgoliaConnectionException $e) {
                 $useNative = true;
             }
@@ -169,7 +168,7 @@ class Algolia implements AdapterInterface
 
         return [
             'documents' => $documents,
-            'table' => $table
+            'table' => $table,
         ];
     }
 
@@ -178,16 +177,15 @@ class Algolia implements AdapterInterface
      *
      * @param  int     $storeId
      *
-     * @return boolean
+     * @return bool
      */
     private function isAllowed($storeId)
     {
-        return (
+        return
             $this->config->getApplicationID($storeId)
             && $this->config->getAPIKey($storeId)
             && $this->config->isEnabledFrontEnd($storeId)
-            && $this->config->makeSeoRequest($storeId)
-        );
+            && $this->config->makeSeoRequest($storeId);
     }
 
     /**
@@ -228,10 +226,10 @@ class Algolia implements AdapterInterface
         return 'storeApiDocuments';
     }
 
-    /** @return boolean */
+    /** @return bool */
     private function isSearch()
     {
-        return ($this->request->getFullActionName() === 'catalogsearch_result_index');
+        return $this->request->getFullActionName() === 'catalogsearch_result_index';
     }
 
     /**
@@ -239,15 +237,14 @@ class Algolia implements AdapterInterface
      *
      * @param  int     $storeId
      *
-     * @return boolean
+     * @return bool
      */
     private function isReplaceCategory($storeId)
     {
-        return (
+        return
             $this->request->getControllerName() === 'category'
             && $this->config->replaceCategories($storeId) === true
-            && $this->config->isInstantEnabled($storeId) === true
-        );
+            && $this->config->isInstantEnabled($storeId) === true;
     }
 
     /**
@@ -255,14 +252,13 @@ class Algolia implements AdapterInterface
      *
      * @param  int      $storeId
      *
-     * @return boolean
+     * @return bool
      */
     private function isReplaceAdvancedSearch($storeId)
     {
-        return (
+        return
             $this->request->getFullActionName() === 'catalogsearch_advanced_result'
-            && $this->config->isInstantEnabled($storeId) === true
-        );
+            && $this->config->isInstantEnabled($storeId) === true;
     }
 
     private function getDocument20($document)
@@ -282,9 +278,10 @@ class Algolia implements AdapterInterface
      *
      * @param Table $table
      *
+     * @throws \Zend_Db_Exception
+     *
      * @return array
      *
-     * @throws \Zend_Db_Exception
      */
     private function getDocuments(Table $table)
     {

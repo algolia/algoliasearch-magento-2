@@ -44,9 +44,11 @@ class Url extends ProductUrl
      *
      * @param Product $product
      * @param array $params
-     * @return string
      *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return string
+     *
      */
     public function getUrl(Product $product, $params = [])
     {
@@ -121,16 +123,18 @@ class Url extends ProductUrl
     /**
      * If the store id passed in is admin (0), will return a Backend Url object (Default \Magento\Backend\Model\Url),
      * otherwise returns the default Url object (default \Magento\Framework\Url)
+     *
      * @param int $storeId
+     *
      * @return mixed
      */
     public function getStoreScopeUrlInstance($storeId)
     {
         if (!$storeId) {
             return $this->objectManager->create(self::BACKEND_URL);
-        } else {
-            return $this->objectManager->create(self::FRONTEND_URL);
         }
+
+        return $this->objectManager->create(self::FRONTEND_URL);
     }
 
     private function getCategoryId(Product $product, $params)

@@ -3,15 +3,15 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity\Product;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\Product;
+use Magento\CatalogRule\Model\ResourceModel\Rule;
+use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
-use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Store\Model\Store;
 use Magento\Tax\Helper\Data as TaxHelper;
 use Magento\Tax\Model\Config as TaxConfig;
-use Magento\Customer\Model\Group;
-use Magento\CatalogRule\Model\ResourceModel\Rule;
 
 class PriceManager
 {
@@ -67,7 +67,7 @@ class PriceManager
                     $price = $this->priceCurrency->convert($price, $store, $currencyCode);
                 }
 
-                $price = (double) $this->catalogHelper
+                $price = (float) $this->catalogHelper
                     ->getTaxPrice($product, $price, $withTax, null, null, null, $product->getStore(), null);
 
                 $customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($price);
@@ -199,13 +199,13 @@ class PriceManager
             $groupId = (int) $group->getData('customer_group_id');
             $specialPrices[$groupId] = [];
 
-            if ($product->getTypeId() == 'configurable')  {
+            if ($product->getTypeId() == 'configurable') {
                 $childrenPrices = [];
                 /** @var \Magento\ConfigurableProduct\Model\Product\Type\Configurable $typeInstance */
                 $typeInstance = $product->getTypeInstance();
                 $children = $typeInstance->getUsedProducts($product);
-                foreach ($children as $child){
-                    $childPrice = (double) $this->rule->getRulePrice(
+                foreach ($children as $child) {
+                    $childPrice = (float) $this->rule->getRulePrice(
                         new \DateTime(),
                         $store->getWebsiteId(),
                         $groupId,
@@ -215,7 +215,7 @@ class PriceManager
                 }
                 $specialPrices[$groupId][] = min($childrenPrices);
             } else {
-                $specialPrices[$groupId][] = (double) $this->rule->getRulePrice(
+                $specialPrices[$groupId][] = (float) $this->rule->getRulePrice(
                     new \DateTime(),
                     $store->getWebsiteId(),
                     $groupId,
@@ -245,7 +245,7 @@ class PriceManager
                     $specialPrice[$groupId] = $this->priceCurrency->round($specialPrice[$groupId]);
                 }
 
-                $specialPrice[$groupId] = (double) $this->catalogHelper->getTaxPrice(
+                $specialPrice[$groupId] = (float) $this->catalogHelper->getTaxPrice(
                     $product,
                     $specialPrice[$groupId],
                     $withTax,
@@ -283,7 +283,7 @@ class PriceManager
             }
 
             if ($discountedPrice !== false) {
-                $taxPrice = (double) $this->catalogHelper->getTaxPrice(
+                $taxPrice = (float) $this->catalogHelper->getTaxPrice(
                     $product,
                     $discountedPrice,
                     $withTax,
@@ -308,7 +308,7 @@ class PriceManager
                 if ($customData[$field][$currencyCode]['default'] >
                     $customData[$field][$currencyCode]['group_' . $groupId]) {
                     $original = $customData[$field][$currencyCode]['default_formated'];
-                    $customData[$field][$currencyCode]['group_'.$groupId.'_original_formated'] = $original;
+                    $customData[$field][$currencyCode]['group_' . $groupId . '_original_formated'] = $original;
                 }
             } else {
                 $default = $customData[$field][$currencyCode]['default'];
@@ -354,7 +354,7 @@ class PriceManager
                     if ($customData[$field][$currencyCode]['default'] >
                         $customData[$field][$currencyCode]['group_' . $groupId]) {
                         $original = $customData[$field][$currencyCode]['default_formated'];
-                        $customData[$field][$currencyCode]['group_'.$groupId.'_original_formated'] = $original;
+                        $customData[$field][$currencyCode]['group_' . $groupId . '_original_formated'] = $original;
                     }
                 }
             }
@@ -404,7 +404,7 @@ class PriceManager
             if (count($subProducts) > 0) {
                 /** @var Product $subProduct */
                 foreach ($subProducts as $subProduct) {
-                    $price = (double) $this->catalogHelper->getTaxPrice(
+                    $price = (float) $this->catalogHelper->getTaxPrice(
                         $product,
                         $subProduct->getFinalPrice(),
                         $withTax,
@@ -456,7 +456,7 @@ class PriceManager
             $currencyCode
         );
 
-        return $minFormatted.' - '.$maxFormatted;
+        return $minFormatted . ' - ' . $maxFormatted;
     }
 
     private function handleNonEqualMinMaxPrices(
@@ -474,9 +474,7 @@ class PriceManager
             $customData[$field][$currencyCode]['default_formated'] = $dashedFormat;
 
             //// Do not keep special price that is already taken into account in min max
-            unset($customData['price']['special_from_date']);
-            unset($customData['price']['special_to_date']);
-            unset($customData['price']['default_original_formated']);
+            unset($customData['price']['special_from_date'], $customData['price']['special_to_date'], $customData['price']['default_original_formated']);
 
             $customData[$field][$currencyCode]['default'] = 0; // will be reset just after
         }
@@ -487,8 +485,8 @@ class PriceManager
                 $groupId = (int) $group->getData('customer_group_id');
 
                 if ($min !== $max && $min <= $customData[$field][$currencyCode]['group_' . $groupId]) {
-                    $customData[$field][$currencyCode]['group_'.$groupId] = 0;
-                    $customData[$field][$currencyCode]['group_'.$groupId.'_formated'] = $dashedFormat;
+                    $customData[$field][$currencyCode]['group_' . $groupId] = 0;
+                    $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
                 }
             }
         }
@@ -540,9 +538,9 @@ class PriceManager
 
                 if ($min === $max) {
                     $default = $customData[$field][$currencyCode]['default_formated'];
-                    $customData[$field][$currencyCode]['group_'.$groupId.'_formated'] = $default;
+                    $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $default;
                 } else {
-                    $customData[$field][$currencyCode]['group_'.$groupId.'_formated'] = $dashedFormat;
+                    $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
                 }
             }
         }

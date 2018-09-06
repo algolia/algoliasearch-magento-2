@@ -5,6 +5,8 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\UpgradeSchema;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_01;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_2;
 use AlgoliaSearch\AlgoliaException;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -15,17 +17,26 @@ if (class_exists('PHPUnit\Framework\TestCase')) {
     class_alias('\PHPUnit_Framework_TestCase', '\TC');
 }
 
+if (class_exists('\Algolia\AlgoliaSearch\Test\Integration\AssertValues_2_01')) {
+    class_alias('\Algolia\AlgoliaSearch\Test\Integration\AssertValues_2_01', 'AssertValues');
+}
+
 abstract class TestCase extends \TC
 {
+    /** @var bool */
     private $boostrapped = false;
 
+    /** @var string */
     protected $indexPrefix;
 
     /** @var AlgoliaHelper */
     protected $algoliaHelper;
 
-    /** @var  ConfigHelper */
+    /** @var ConfigHelper */
     protected $configHelper;
+
+    /** @var Magento_2_01|Magento_2_2 */
+    protected $assertValues;
 
     public function setUp()
     {
@@ -66,7 +77,7 @@ abstract class TestCase extends \TC
         foreach ($indices['items'] as $index) {
             $name = $index['name'];
 
-            if (strpos($name, $this->indexPrefix) === 0) {
+            if (mb_strpos($name, $this->indexPrefix) === 0) {
                 try {
                     $this->algoliaHelper->deleteIndex($name);
                 } catch (AlgoliaException $e) {
@@ -88,6 +99,12 @@ abstract class TestCase extends \TC
             return;
         }
 
+        if (version_compare($this->getMagentoVersion(), '2.2.0', '<')) {
+            $this->assertValues = new Magento_2_01();
+        } else {
+            $this->assertValues = new Magento_2_2();
+        }
+
         $this->algoliaHelper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\AlgoliaHelper');
 
         $this->configHelper = $config = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\ConfigHelper');
@@ -105,11 +122,13 @@ abstract class TestCase extends \TC
     /**
      * Call protected/private method of a class.
      *
-     * @param object $object    Instantiated object that we will run method on.
+     * @param object $object instantiated object that we will run method on
      * @param string $methodName Method name to call
-     * @param array  $parameters Array of parameters to pass into method.
+     * @param array $parameters array of parameters to pass into method
      *
-     * @return mixed Method return.
+     * @throws \ReflectionException
+     *
+     * @return mixed method return
      */
     protected function invokeMethod(&$object, $methodName, array $parameters = [])
     {
@@ -118,5 +137,13 @@ abstract class TestCase extends \TC
         $method->setAccessible(true);
 
         return $method->invokeArgs($object, $parameters);
+    }
+
+    private function getMagentoVersion()
+    {
+        /** @var \Magento\Framework\App\ProductMetadataInterface $productMetadata */
+        $productMetadata = $this->getObjectManager()->get('\Magento\Framework\App\ProductMetadataInterface');
+
+        return $productMetadata->getVersion();
     }
 }

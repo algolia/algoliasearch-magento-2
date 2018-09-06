@@ -66,6 +66,11 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 		 * Docs: https://community.algolia.com/instantsearch.js/
 		 **/
 		
+		var ruleContexts = ['']; // Empty context to keep BC for already create rules in dashboard
+		if (algoliaConfig.request.categoryId.length > 0) {
+			ruleContexts.push('magento-category-' + algoliaConfig.request.categoryId);
+		}
+		
 		var instantsearchOptions = {
 			appId: algoliaConfig.applicationId,
 			apiKey: algoliaConfig.apiKey,
@@ -76,7 +81,7 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 			},
 			searchParameters: {
 				hitsPerPage: algoliaConfig.hitsPerPage,
-				ruleContexts: ['magento_filters', ''] // Empty context to keep BC for already create rules in dashboard
+				ruleContexts: ruleContexts
 			},
 			searchFunction: function(helper) {
 				if (helper.state.query === '' && !algoliaConfig.isSearchPage) {

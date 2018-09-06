@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="algolia_merchandising" sortOrder="50">
+        <settings>
+            <collapsible>true</collapsible>
+            <label translate="true">Algolia Merchandising</label>
+        </settings>
+        <container name="algolia_merchandising_container" sortOrder="180">
+            <htmlContent name="html_content">
+                <block name="algolia_merchandising" class="Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising"/>
+            </htmlContent>
+        </container>
+    </fieldset>
+</form>

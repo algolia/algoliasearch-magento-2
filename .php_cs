@@ -1,43 +1,53 @@
 <?php
 
-define('DS', DIRECTORY_SEPARATOR);
+/** @var PhpCsFixer\Config $config */
+$config = require __DIR__ . '/../../../.php_cs.dist';
 
-$directories = [
-    __DIR__.DS.'Adapter',
-    __DIR__.DS.'Block',
-    __DIR__.DS.'Controller',
-    __DIR__.DS.'Helper',
-    __DIR__.DS.'Model',
-    __DIR__.DS.'Plugin',
+$originalRules = $config->getRules();
+
+// When released, add https://github.com/FriendsOfPHP/PHP-CS-Fixer/pull/3810
+
+// Commented rules are released, but not in the version of PHP CS fixer Magento supports
+$extensionRules = [
+    'blank_line_after_opening_tag' => true,
+    'blank_line_before_return' => true,
+    'cast_spaces' => true,
+    'combine_consecutive_unsets' => true,
+    'mb_str_functions' => true,
+    'no_blank_lines_after_class_opening' => true,
+    'no_empty_phpdoc' => true,
+    'no_empty_statement' => true,
+    'no_multiline_whitespace_around_double_arrow' => true,
+    'no_short_bool_cast' => true,
+    'no_short_echo_tag' => true,
+    // 'no_superfluous_phpdoc_tags' => true,
+    'no_unneeded_control_parentheses' => true,
+    'no_unreachable_default_argument_value' => true,
+    // 'no_unset_on_property' => true,
+    'no_unused_imports' => true,
+    'no_useless_else' => true,
+    'no_useless_return' => true,
+    'no_whitespace_before_comma_in_array' => true,
+    'no_whitespace_in_blank_line' => true,
+    'normalize_index_brace' => true,
+    'not_operator_with_space' => false,
+    'object_operator_without_whitespace' => true,
+    'phpdoc_annotation_without_dot' => true,
+    'phpdoc_inline_tag' => true,
+    'phpdoc_order' => true,
+    'phpdoc_scalar' => true,
+    'phpdoc_separation' => true,
+    'phpdoc_single_line_var_spacing' => true,
+    'protected_to_private' => true,
+    'psr4' => true,
+    'short_scalar_cast' => true, // ?
+    'single_blank_line_before_namespace' => true,
+    'single_quote' => true,
+    'space_after_semicolon' => true,
+    'standardize_not_equals' => true,
+    'ternary_operator_spaces' => true,
+    'trailing_comma_in_multiline_array' => true,
+    'trim_array_spaces' => true,
 ];
 
-$finder = Symfony\CS\Finder\DefaultFinder::create()
-    ->in($directories);
-
-return Symfony\CS\Config\Config::create()
-   ->finder($finder)
-   ->level(Symfony\CS\FixerInterface::PSR2_LEVEL)
-   ->fixers([
-       'double_arrow_multiline_whitespaces',
-       'duplicate_semicolon',
-       'extra_empty_lines',
-       'include',
-       'join_function',
-       'multiline_array_trailing_comma',
-       'namespace_no_leading_whitespace',
-       'new_with_braces',
-       'object_operator',
-       'operators_spaces',
-       'remove_leading_slash_use',
-       'remove_lines_between_uses',
-       'single_array_no_trailing_comma',
-       'spaces_before_semicolon',
-       'standardize_not_equal',
-       'ternary_spaces',
-       'unused_use',
-       'whitespacy_lines',
-       'concat_with_spaces',
-       'multiline_spaces_before_semicolon',
-       'ordered_use',
-       'short_array_syntax',
-   ]);
+return $config->setRules(array_merge($originalRules, $extensionRules));

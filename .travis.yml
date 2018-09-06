@@ -6,9 +6,28 @@ language: php
 php:
   - 7.0
 
-env:
-  - MAGENTO_VERSION="2.0"
-  - MAGENTO_VERSION="2.1"
+notifications:
+  webhooks:
+    - https://www.travisbuddy.com/
+
+matrix:
+  include:
+    - name: "Magento 2.0.*"
+      env: MAGENTO_VERSION="2.0"
+      script:
+        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+        - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+    - name: "Magento 2.1.*"
+      env: MAGENTO_VERSION="2.1"
+      script:
+        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+        - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+    - name: "Magento 2.2.*"
+      env: MAGENTO_VERSION="2.2"
+      script:
+        - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
+        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+        - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 branches:
   only:
@@ -22,7 +41,6 @@ cache:
 before_install:
   - phpenv config-add travis.php.ini
   - mysql -e 'CREATE DATABASE magento20;'
-  - composer global require phpstan/phpstan
 
 install:
   # create auth.json to be able to install Magento store
@@ -30,7 +48,10 @@ install:
 
   # install Magento store to home directory
   - cd $HOME
-  - composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:${MAGENTO_VERSION} magento20
+  - composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:~${MAGENTO_VERSION}.0 magento20
+
+  # install Marketplace Extension quality tools
+  - composer create-project --repository=https://repo.magento.com magento/marketplace-eqp magento-coding-standard
 
   # create auth.json to be able to deploy sample data
   - AUTH_DIR=$HOME/magento20/var/composer_home/auth.json php $TRAVIS_BUILD_DIR/dev/bin/createAuthJson.php
@@ -56,8 +77,4 @@ install:
   - mv $TRAVIS_BUILD_DIR/dev/tests/install-config-mysql.php $HOME/magento20/dev/tests/integration/etc/install-config-mysql.php
 
 before_script:
-  - wget https://alg.li/algolia-keys && chmod +x algolia-keys
-
-script:
-  - cd $HOME/magento20 && $HOME/.composer/vendor/bin/phpstan analyse -c vendor/algolia/algoliasearch-magento-2/phpstan-travis-${MAGENTO_VERSION}.neon --level max vendor/algolia/algoliasearch-magento-2
-  - eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+  - cd $HOME && wget https://alg.li/algolia-keys && chmod +x algolia-keys

@@ -76,7 +76,7 @@ class QueueTest extends TestCase
 
         $existsDefaultTmpIndex = false;
         foreach ($indices['items'] as $index) {
-            if ($index['name'] === $this->indexPrefix.'default_products_tmp') {
+            if ($index['name'] === $this->indexPrefix . 'default_products_tmp') {
                 $existsDefaultTmpIndex = true;
             }
         }
@@ -93,11 +93,11 @@ class QueueTest extends TestCase
         $existsDefaultProdIndex = false;
         $existsDefaultTmpIndex = false;
         foreach ($indices['items'] as $index) {
-            if ($index['name'] === $this->indexPrefix.'default_products') {
+            if ($index['name'] === $this->indexPrefix . 'default_products') {
                 $existsDefaultProdIndex = true;
             }
 
-            if ($index['name'] === $this->indexPrefix.'default_products_tmp') {
+            if ($index['name'] === $this->indexPrefix . 'default_products_tmp') {
                 $existsDefaultTmpIndex = true;
             }
         }
@@ -142,7 +142,7 @@ class QueueTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $settings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
+        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
         $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
@@ -714,7 +714,7 @@ class QueueTest extends TestCase
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
         $this->connection->query('INSERT INTO `algoliasearch_queue` (`job_id`, `pid`, `class`, `method`, `data`, `max_retries`, `retries`, `error_log`, `data_size`) VALUES
-            (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":'.$jsonProductIds.'}\', 3, 0, \'\', 5000),
+            (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":' . $jsonProductIds . '}\', 3, 0, \'\', 5000),
             (2, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"2","product_ids":["9","22"]}\', 3, 0, \'\', 2);');
 
         /** @var Queue $queue */
@@ -751,7 +751,7 @@ class QueueTest extends TestCase
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
         $this->connection->query('INSERT INTO `algoliasearch_queue` (`job_id`, `pid`, `class`, `method`, `data`, `max_retries`, `retries`, `error_log`, `data_size`) VALUES
-            (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":'.$jsonProductIds.'}\', 3, 0, \'\', 99),
+            (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":' . $jsonProductIds . '}\', 3, 0, \'\', 99),
             (2, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"2","product_ids":["9","22"]}\', 3, 0, \'\', 2);');
 
         /** @var Queue $queue */
@@ -801,7 +801,7 @@ class QueueTest extends TestCase
         $firstJob = reset($dbJobs);
         $lastJob = end($dbJobs);
 
-        $this->assertEquals(100, $firstJob['data_size']);
-        $this->assertEquals(49, $lastJob['data_size']);
+        $this->assertEquals(100, (int) $firstJob['data_size']);
+        $this->assertEquals(($this->assertValues)::LAST_JOB_DATA_SIZE, (int) $lastJob['data_size']);
     }
 }

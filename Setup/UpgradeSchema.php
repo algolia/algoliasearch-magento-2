@@ -270,7 +270,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $table = $setup->getTable('core_config_data');
         foreach ($movedConfigDirectives as $from => $to) {
             try {
-                $connection->query('UPDATE '.$table.' SET path = "'.$to.'" WHERE path = "'.$from.'"');
+                $connection->query('UPDATE ' . $table . ' SET path = "' . $to . '" WHERE path = "' . $from . '"');
             } catch (\Magento\Framework\DB\Adapter\DuplicateException $e) {
                 //
             }
@@ -280,7 +280,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
         $table = $setup->getTable('core_config_data');
         $alreadyInserted = $setup->getConnection()
-                                 ->query('SELECT path, value FROM '.$table.' WHERE path LIKE "algoliasearch_%"')
+                                 ->query('SELECT path, value FROM ' . $table . ' WHERE path LIKE "algoliasearch_%"')
                                  ->fetchAll(\PDO::FETCH_KEY_PAIR);
 
         foreach ($this->defaultConfigData as $path => $value) {
@@ -348,7 +348,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $table->addColumn('id', $table::TYPE_INTEGER, 20, [
                 'identity' => true,
                 'nullable' => false,
-                'primary' => true
+                'primary' => true,
             ]);
             $table->addColumn('started', $table::TYPE_DATETIME, null, ['nullable' => false]);
             $table->addColumn('duration', $table::TYPE_INTEGER, 20, ['nullable' => false]);

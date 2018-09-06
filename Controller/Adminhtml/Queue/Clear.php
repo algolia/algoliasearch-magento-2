@@ -9,7 +9,7 @@ class Clear extends Queue
     public function execute()
     {
         try {
-            $this->db->query('TRUNCATE TABLE '.$this->tableName);
+            $this->db->query('TRUNCATE TABLE ' . $this->tableName);
 
             $status = ['status' => 'ok'];
         } catch (\Exception $e) {

@@ -29,7 +29,7 @@ class PagesIndexingTest extends IndexingTestCase
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Page');
         $this->processTest($indexer, 'pages', 4);
 
-        $results = $this->algoliaHelper->query($this->indexPrefix.'default_pages', '', []);
+        $results = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
 
         $noRoutePageExists = false;
         $homePageExists = false;
@@ -56,7 +56,7 @@ class PagesIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->query($this->indexPrefix.'default_pages', '', ['hitsPerPage' => 1]);
+        $results = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', ['hitsPerPage' => 1]);
         $hit = reset($results['hits']);
 
         $defaultAttributes = [
@@ -71,12 +71,12 @@ class PagesIndexingTest extends IndexingTestCase
         ];
 
         foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertTrue(key_exists($attribute, $hit), 'Pages attribute "'.$attribute.'" should be indexed but it is not"');
+            $this->assertTrue(key_exists($attribute, $hit), 'Pages attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }
 
         $extraAttributes = implode(', ', array_keys($hit));
-        $this->assertTrue(empty($hit), 'Extra pages attributes ('.$extraAttributes.') are indexed and should not be.');
+        $this->assertTrue(empty($hit), 'Extra pages attributes (' . $extraAttributes . ') are indexed and should not be.');
     }
 
     public function testStripTags()

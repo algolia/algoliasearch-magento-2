@@ -292,6 +292,7 @@ a.ais-current-refined-values--link:hover {
   position: absolute;
   background: #FFFFFF;
   top: -2em;
+  left: -50%;
   min-width: 20px;
   text-align: center;
   font-size: .8em;

@@ -950,6 +950,16 @@
                         <field id="prevent_backend_rendering">1</field>
                     </depends>
                 </field>
+                <field id="non_castable_attributes" translate="label comment" type="text" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product numeric textfield attributes</label>
+                    <frontend_model>Algolia\AlgoliaSearch\Model\Source\ProductAttributes</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>
+                        <![CDATA[
+                            Choose here the textfield attributes that you don't want to be turned into numeric values (i.e. : if you don't want "00123" turned into "123")
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_extra_settings" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">

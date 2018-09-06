@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
-use AlgoliaSearch\AlgoliaException;
 
 class SearchTest extends TestCase
 {

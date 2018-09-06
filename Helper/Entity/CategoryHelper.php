@@ -3,18 +3,19 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Image;
+use Magento\Catalog\Model\Category;
+use Magento\Catalog\Model\Category as MagentoCategory;
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Catalog\Model\ResourceModel\Category as CategoryResource;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
-use Magento\Catalog\Model\Category as MagentoCategory;
 use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Module\Manager;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
-use Algolia\AlgoliaSearch\Helper\Image;
-use Magento\Catalog\Model\Category;
-use Magento\Framework\DataObject;
 
 class CategoryHelper
 {
@@ -50,9 +51,11 @@ class CategoryHelper
     private $rootCategoryId = -1;
     private $activeCategories;
     private $categoryNames;
+    private $moduleManager;
 
     /**
      * CategoryHelper constructor.
+     *
      * @param ManagerInterface $eventManager
      * @param StoreManagerInterface $storeManager
      * @param ResourceConnection $resourceConnection
@@ -72,7 +75,8 @@ class CategoryHelper
         CategoryCollection $categoryCollection,
         Image $imageHelper,
         CategoryResource $categoryResource,
-        CategoryFactory $categoryFactory
+        CategoryFactory $categoryFactory,
+        Manager $moduleManager
     ) {
         $this->eventManager = $eventManager;
         $this->storeManager = $storeManager;
@@ -83,6 +87,7 @@ class CategoryHelper
         $this->imageHelper = $imageHelper;
         $this->categoryResource = $categoryResource;
         $this->categoryFactory = $categoryFactory;
+        $this->moduleManager = $moduleManager;
     }
 
     public function getIndexNameSuffix()
@@ -247,14 +252,14 @@ class CategoryHelper
         }
 
         $data = [
-            'objectID'      => $category->getId(),
-            'name'          => $category->getName(),
-            'path'          => $path,
-            'level'         => $category->getLevel(),
-            'url'           => $this->getUrl($category),
+            'objectID' => $category->getId(),
+            'name' => $category->getName(),
+            'path' => $path,
+            'level' => $category->getLevel(),
+            'url' => $this->getUrl($category),
             'include_in_menu' => $category->getIncludeInMenu(),
-            '_tags'         => ['category'],
-            'popularity'    => 1,
+            '_tags' => ['category'],
+            'popularity' => 1,
             'product_count' => $category->getProductCount(),
         ];
 
@@ -327,7 +332,7 @@ class CategoryHelper
         $unsecureBaseUrl = $category->getUrlInstance()->getBaseUrl(['_secure' => false]);
         $secureBaseUrl = $category->getUrlInstance()->getBaseUrl(['_secure' => true]);
 
-        if (strpos($categoryUrl, $unsecureBaseUrl) === 0) {
+        if (mb_strpos($categoryUrl, $unsecureBaseUrl) === 0) {
             return substr_replace($categoryUrl, $secureBaseUrl, 0, mb_strlen($unsecureBaseUrl));
         }
 
@@ -418,7 +423,7 @@ class CategoryHelper
 
         if ($attribute = $resource->getAttribute('is_active')) {
             $columnId = $this->getCorrectIdColumn();
-            $key = new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend.".$columnId.")");
+            $key = new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend." . $columnId . ')');
 
             $connection = $this->resourceConnection->getConnection();
             $select = $connection->select()
@@ -428,12 +433,12 @@ class CategoryHelper
                                  )
                                  ->join(
                                      ['category' => $resource->getTable('catalog_category_entity')],
-                                     'backend.'.$columnId.' = category.'.$columnId,
+                                     'backend.' . $columnId . ' = category.' . $columnId,
                                      []
                                  )
                                  ->where('backend.attribute_id = ?', $attribute->getAttributeId())
                                  ->order('backend.store_id')
-                                 ->order('backend.'.$columnId);
+                                 ->order('backend.' . $columnId);
 
             $this->activeCategories = $connection->fetchAssoc($select);
         }
@@ -462,7 +467,7 @@ class CategoryHelper
 
             if ($attribute = $categoryModel->getAttribute('name')) {
                 $columnId = $this->getCorrectIdColumn();
-                $expression = new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend.".$columnId.")");
+                $expression = new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend." . $columnId . ')');
 
                 $connection = $this->resourceConnection->getConnection();
                 $select = $connection->select()
@@ -472,7 +477,7 @@ class CategoryHelper
                                      )
                                      ->join(
                                          ['category' => $categoryModel->getTable('catalog_category_entity')],
-                                         'backend.'.$columnId.' = category.'.$columnId,
+                                         'backend.' . $columnId . ' = category.' . $columnId,
                                          []
                                      )
                                      ->where('backend.attribute_id = ?', $attribute->getAttributeId())
@@ -529,7 +534,7 @@ class CategoryHelper
 
     public function isCategoryVisibleInMenu($categoryId, $storeId)
     {
-        $key = $categoryId.' - '.$storeId;
+        $key = $categoryId . ' - ' . $storeId;
         if (isset($this->isCategoryVisibleInMenuCache[$key])) {
             return $this->isCategoryVisibleInMenuCache[$key];
         }
@@ -579,7 +584,7 @@ class CategoryHelper
         $edition = $this->configHelper->getMagentoEdition();
         $version = $this->configHelper->getMagentoVersion();
 
-        if ($edition !== 'Community' && version_compare($version, '2.1.0', '>=')) {
+        if ($edition !== 'Community' && version_compare($version, '2.1.0', '>=') && $this->moduleManager->isEnabled('Magento_Staging')) {
             $this->idColumn = 'row_id';
         }
 

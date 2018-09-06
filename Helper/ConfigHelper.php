@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Magento;
 use Magento\Directory\Model\Currency as DirCurrency;
@@ -92,6 +91,7 @@ class ConfigHelper
         'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode';
     const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
         'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
+    const NON_CASTABLE_ATTRIBUTES = 'algoliasearch_advanced/advanced/non_castable_attributes';
 
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
@@ -127,7 +127,6 @@ class ConfigHelper
         Magento\Framework\Event\ManagerInterface $eventManager,
         Magento\Directory\Model\Currency $currencyManager
     ) {
-    
         $this->objectManager = $objectManager;
         $this->configInterface = $configInterface;
         $this->currency = $currency;
@@ -476,9 +475,9 @@ class ConfigHelper
                 foreach ($groupCollection as $group) {
                     $customerGroupId = (int) $group->getData('customer_group_id');
 
-                    $indexNameSuffix = 'group_'.$customerGroupId;
+                    $indexNameSuffix = 'group_' . $customerGroupId;
 
-                    $indexName = $originalIndexName.'_'.$attr['attribute'].'_'.$indexNameSuffix.'_'.$attr['sort'];
+                    $indexName = $originalIndexName . '_' . $attr['attribute'] . '_' . $indexNameSuffix . '_' . $attr['sort'];
                     $sortAttribute = $attr['attribute'] . '.' . $currency . '.' . $indexNameSuffix;
                 }
             } elseif ($attr['attribute'] === 'price') {
@@ -497,7 +496,7 @@ class ConfigHelper
                 }
 
                 $attr['ranking'] = [
-                    $attr['sort'].'('.$sortAttribute.')',
+                    $attr['sort'] . '(' . $sortAttribute . ')',
                     'typo',
                     'geo',
                     'words',
@@ -654,9 +653,9 @@ class ConfigHelper
 
     public function getExtraSettings($section, $storeId = null)
     {
-        $constant = 'EXTRA_SETTINGS_'.mb_strtoupper($section);
+        $constant = 'EXTRA_SETTINGS_' . mb_strtoupper($section);
 
-        $value = $this->configInterface->getValue(constant('self::'.$constant), ScopeInterface::SCOPE_STORE, $storeId);
+        $value = $this->configInterface->getValue(constant('self::' . $constant), ScopeInterface::SCOPE_STORE, $storeId);
 
         return trim($value);
     }
@@ -692,7 +691,7 @@ class ConfigHelper
 
         foreach ($allowedUserAgents as $allowedUserAgent) {
             $allowedUserAgent = mb_strtolower($allowedUserAgent, 'utf-8');
-            if (strpos($userAgent, $allowedUserAgent) !== false) {
+            if (mb_strpos($userAgent, $allowedUserAgent) !== false) {
                 return false;
             }
         }
@@ -897,7 +896,28 @@ class ConfigHelper
             ),
         ];
     }
-  
+
+    public function getNonCastableAttributes($storeId = null)
+    {
+        $nonCastableAttributes = [];
+
+        $config = $this->unserialize($this->configInterface->getValue(
+            self::NON_CASTABLE_ATTRIBUTES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
+
+        if (is_array($config)) {
+            foreach ($config as $attributeData) {
+                if (isset($attributeData['attribute'])) {
+                    $nonCastableAttributes[] = $attributeData['attribute'];
+                }
+            }
+        }
+
+        return $nonCastableAttributes;
+    }
+
     private function addIndexableAttributes(
         $attributes,
         $addedAttributes,

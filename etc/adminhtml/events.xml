@@ -30,4 +30,8 @@
     <event name="admin_system_config_changed_section_algoliasearch_extra_settings">
         <observer name="algoliasearch_extra_settings_saved" instance="Algolia\AlgoliaSearch\Model\Observer\SaveSettings" />
     </event>
+
+    <event name="catalog_category_save_after">
+        <observer name="algoliasearch_create_merchandising_query_rule" instance="Algolia\AlgoliaSearch\Model\Observer\Merchandising"/>
+    </event>
 </config>

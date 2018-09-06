@@ -2,10 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\ObjectManagerInterface;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\ObjectManagerInterface;
 
 class AdditionalSectionHelper
 {

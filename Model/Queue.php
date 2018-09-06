@@ -166,7 +166,7 @@ class Queue
             // and therefore are not indexed yet in TMP index
             if ($job['method'] === 'moveIndex' && $this->noOfFailedJobs > 0) {
                 // Set pid to NULL so it's not deleted after
-                $this->db->query("UPDATE {$this->table} SET pid = NULL WHERE job_id = ".$job['job_id']);
+                $this->db->query("UPDATE {$this->table} SET pid = NULL WHERE job_id = " . $job['job_id']);
 
                 continue;
             }
@@ -188,15 +188,15 @@ class Queue
                 $this->noOfFailedJobs++;
 
                 // Log error information
-                $logMessage = 'Queue processing '.$job['pid'].' [KO]: 
-                    Class: '.$job['class'].', 
-                    Method: '.$job['method'].', 
-                    Parameters: '.json_encode($job['data']);
+                $logMessage = 'Queue processing ' . $job['pid'] . ' [KO]: 
+                    Class: ' . $job['class'] . ', 
+                    Method: ' . $job['method'] . ', 
+                    Parameters: ' . json_encode($job['data']);
                 $this->logger->log($logMessage);
 
-                $logMessage = date('c').' ERROR: '.get_class($e).': 
-                    '.$e->getMessage().' in '.$e->getFile().':'.$e->getLine().
-                    "\nStack trace:\n".$e->getTraceAsString();
+                $logMessage = date('c') . ' ERROR: ' . get_class($e) . ': 
+                    ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() .
+                    "\nStack trace:\n" . $e->getTraceAsString();
                 $this->logger->log($logMessage);
 
                 // Increment retries, set the job ID back to NULL
@@ -521,24 +521,24 @@ class Queue
         $idsToDelete = $this->db->query("SELECT id 
                                     FROM {$this->logTable} 
                                     ORDER BY started DESC, id DESC 
-                                    LIMIT 25000, ".PHP_INT_MAX)
+                                    LIMIT 25000, " . PHP_INT_MAX)
                                 ->fetchAll(\PDO::FETCH_COLUMN, 0);
 
         if ($idsToDelete) {
-            $this->db->query("DELETE FROM {$this->logTable} WHERE id IN (" . implode(", ", $idsToDelete) . ")");
+            $this->db->query("DELETE FROM {$this->logTable} WHERE id IN (" . implode(', ', $idsToDelete) . ')');
         }
     }
 
-	private function shouldEmptyQueue()
-	{
-		if (getenv('PROCESS_FULL_QUEUE') && getenv('PROCESS_FULL_QUEUE') === '1') {
-			return true;
-		}
+    private function shouldEmptyQueue()
+    {
+        if (getenv('PROCESS_FULL_QUEUE') && getenv('PROCESS_FULL_QUEUE') === '1') {
+            return true;
+        }
 
-		if (getenv('EMPTY_QUEUE') && getenv('EMPTY_QUEUE') === '1') {
-			return true;
-		}
+        if (getenv('EMPTY_QUEUE') && getenv('EMPTY_QUEUE') === '1') {
+            return true;
+        }
 
-		return false;
+        return false;
     }
 }

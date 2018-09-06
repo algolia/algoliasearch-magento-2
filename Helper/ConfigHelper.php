@@ -463,8 +463,9 @@ class ConfigHelper
         ));
 
         $currency = $this->getCurrencyCode($storeId);
+        $attributesToAdd = [];
 
-        foreach ($attrs as &$attr) {
+        foreach ($attrs as $key => $attr) {
             $indexName = false;
             $sortAttribute = false;
 
@@ -475,10 +476,35 @@ class ConfigHelper
                 foreach ($groupCollection as $group) {
                     $customerGroupId = (int) $group->getData('customer_group_id');
 
-                    $indexNameSuffix = 'group_' . $customerGroupId;
+                    $groupIndexNameSuffix = 'group_' . $customerGroupId;
 
-                    $indexName = $originalIndexName . '_' . $attr['attribute'] . '_' . $indexNameSuffix . '_' . $attr['sort'];
-                    $sortAttribute = $attr['attribute'] . '.' . $currency . '.' . $indexNameSuffix;
+                    $groupIndexName =
+                        $originalIndexName . '_' . $attr['attribute'] . '_' . $groupIndexNameSuffix . '_' . $attr['sort'];
+                    $groupSortAttribute = $attr['attribute'] . '.' . $currency . '.' . $groupIndexNameSuffix;
+
+                    $newAttr = [];
+                    $newAttr['name'] = $groupIndexName;
+                    $newAttr['attribute'] = $attr['attribute'];
+                    $newAttr['sort'] = $attr['sort'];
+                    $newAttr['sortLabel'] = $attr['sortLabel'];
+
+                    if (!array_key_exists('label', $newAttr) && array_key_exists('sortLabel', $newAttr)) {
+                        $newAttr['label'] = $newAttr['sortLabel'];
+                    }
+
+                    $newAttr['ranking'] = [
+                        $newAttr['sort'] . '(' . $groupSortAttribute . ')',
+                        'typo',
+                        'geo',
+                        'words',
+                        'filters',
+                        'proximity',
+                        'attribute',
+                        'exact',
+                        'custom',
+                    ];
+
+                    $attributesToAdd[$newAttr['sort']][] = $newAttr;
                 }
             } elseif ($attr['attribute'] === 'price') {
                 $indexName = $originalIndexName . '_' . $attr['attribute'] . '_' . 'default' . '_' . $attr['sort'];
@@ -489,13 +515,13 @@ class ConfigHelper
             }
 
             if ($indexName && $sortAttribute) {
-                $attr['name'] = $indexName;
+                $attrs[$key]['name'] = $indexName;
 
-                if (!array_key_exists('label', $attr) && array_key_exists('sortLabel', $attr)) {
-                    $attr['label'] = $attr['sortLabel'];
+                if (!array_key_exists('label', $attrs[$key]) && array_key_exists('sortLabel', $attrs[$key])) {
+                    $attrs[$key]['label'] = $attrs[$key]['sortLabel'];
                 }
 
-                $attr['ranking'] = [
+                $attrs[$key]['ranking'] = [
                     $attr['sort'] . '(' . $sortAttribute . ')',
                     'typo',
                     'geo',
@@ -507,6 +533,22 @@ class ConfigHelper
                     'custom',
                 ];
             }
+        }
+
+        $attrsToReturn = [];
+
+        if (count($attributesToAdd) > 0) {
+            foreach ($attrs as $key => $attr) {
+                if ($attr['attribute'] == 'price' && isset($attributesToAdd[$attr['sort']])) {
+                    $attrsToReturn = array_merge($attrsToReturn, $attributesToAdd[$attr['sort']]);
+                } else {
+                    $attrsToReturn[] = $attr;
+                }
+            }
+        }
+
+        if (count($attrsToReturn) > 0) {
+            return $attrsToReturn;
         }
 
         if (is_array($attrs)) {
@@ -783,10 +825,14 @@ class ConfigHelper
 
         foreach ($currencies as $currency) {
             $attributes[] = 'price.' . $currency . '.default';
+            $attributes[] = 'price.' . $currency . '.default_tier';
             $attributes[] = 'price.' . $currency . '.default_formated';
             $attributes[] = 'price.' . $currency . '.default_original_formated';
+            $attributes[] = 'price.' . $currency . '.default_tier_formated';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId;
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_tier';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_formated';
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_tier_formated';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_original_formated';
             $attributes[] = 'price.' . $currency . '.special_from_date';
             $attributes[] = 'price.' . $currency . '.special_to_date';

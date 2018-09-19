@@ -358,7 +358,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
-        if (version_compare($context->getVersion(), '1.7.1') < 0) {
+        if (version_compare($context->getVersion(), '1.8.0') < 0) {
             $connection = $setup->getConnection();
             if (!$connection->isTableExists('algoliasearch_queue_archive')) {
                 $table = $connection->newTable($setup->getTable('algoliasearch_queue_archive'));

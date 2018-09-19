@@ -66,8 +66,8 @@ class PriceManager
     public function addPriceDataByProductType($customData, Product $product, $subProducts)
     {
         $priceManager = 'priceManager' . ucfirst($product->getTypeId());
-        if (! $this->{$priceManager}) {
-            throw new \Exception('Unknown Product Type');
+        if (!property_exists($this, $priceManager)) {
+            $priceManager = 'priceManagerSimple';
         }
 
         return $this->{$priceManager}->addPriceData($customData, $product, $subProducts);

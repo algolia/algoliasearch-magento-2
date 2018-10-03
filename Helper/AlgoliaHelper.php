@@ -28,7 +28,7 @@ class AlgoliaHelper extends AbstractHelper
     private $maxRecordSize = 20000;
 
     /** @var array */
-    private $potentiallyLongAttributes = ['description', 'short_description', 'meta_description', 'content'];
+    private $potentiallyLongAttributes;
 
     /** @var array */
     private $nonCastableAttributes = ['sku', 'name', 'description'];
@@ -43,13 +43,15 @@ class AlgoliaHelper extends AbstractHelper
         Context $context,
         ConfigHelper $configHelper,
         ManagerInterface $messageManager,
-        ConsoleOutput $consoleOutput
+        ConsoleOutput $consoleOutput,
+        $potentiallyLongAttributes = ['description', 'short_description', 'meta_description', 'content']
     ) {
         parent::__construct($context);
 
         $this->config = $configHelper;
         $this->messageManager = $messageManager;
         $this->consoleOutput = $consoleOutput;
+        $this->potentiallyLongAttributes = $potentiallyLongAttributes;
 
         $this->resetCredentialsFromConfig();
 

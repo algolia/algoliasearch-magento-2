@@ -122,9 +122,8 @@ class Algolia implements AdapterInterface
                     $documents = $this->algoliaHelper->getSearchResult($algoliaQuery, $storeId);
                 }
 
-                $apiDocuments = array_map(array($this, 'getAlgoliaDocument'), $documents);
+                $apiDocuments = array_map([$this, 'getAlgoliaDocument'], $documents);
                 $table = $temporaryStorage->storeApiDocuments($apiDocuments);
-
             } catch (AlgoliaConnectionException $e) {
                 $useNative = true;
             }
@@ -140,7 +139,7 @@ class Algolia implements AdapterInterface
 
         $response = [
             'documents' => $documents,
-            'aggregations' => $this->aggregationBuilder->build($request, $table, $documents)
+            'aggregations' => $this->aggregationBuilder->build($request, $table, $documents),
         ];
 
         return $this->responseFactory->create($response);

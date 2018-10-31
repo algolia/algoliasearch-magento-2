@@ -1,5 +1,9 @@
 # CHANGE LOG
 
+## 1.8.3
+
+* Removed the default facet query rule (attribute "color") (#600)
+
 ## 1.8.2
 
 * Fixed error which showed Instant search components on checkout page (#572)

@@ -3,7 +3,7 @@
   "description": "Algolia Search integration for Magento 2",
   "type": "magento2-module",
   "license": ["MIT"],
-  "version": "1.8.2",
+  "version": "1.8.3",
   "require": {
     "php": "~5.5.0|~5.6.0|~7.0",
     "magento/framework": "~100.0|~101.0",

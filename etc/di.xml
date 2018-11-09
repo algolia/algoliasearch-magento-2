@@ -16,6 +16,11 @@
     <type name="Magento\Catalog\Model\Category\Action">
         <plugin name="algoliaCategoriesMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\CategoryObserver"/>
     </type>
+
+    <type name="Magento\Search\Helper\Data">
+        <plugin name="algoliaSearchHelperData" type="Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin"/>
+    </type>
+
     <preference for="Magento\Framework\Search\Adapter\Mysql\Adapter" type="Algolia\AlgoliaSearch\Adapter\Algolia" />
 
     <!-- Dependency Injection for new Model -->

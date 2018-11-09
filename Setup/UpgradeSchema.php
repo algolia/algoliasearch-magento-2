@@ -114,7 +114,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'type' => 'disjunctive',
                 'label' => 'Colors',
                 'searchable' => '1',
-                'create_rule' => '1',
+                'create_rule' => '2',
             ],
         ],
         'algoliasearch_instant/instant/sorts' => [

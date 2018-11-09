@@ -31,6 +31,22 @@ class Contact extends AbstractAction
             return $resultRedirect;
         }
 
+        $params = $this->getRequest()->getParams();
+        if (array_key_exists('sent', $params) && $params['sent'] === 'sent') {
+            $processed = $this->supportHelper->processContactForm($params);
+            if ($processed === true) {
+                $this->messageManager->addSuccessMessage('You ticket was successfully sent to Algolia support team.');
+
+                $resultRedirect = $this->resultRedirectFactory->create();
+                $resultRedirect->setPath('*/*/index');
+
+                return $resultRedirect;
+            }
+            else {
+                $this->messageManager->addErrorMessage('There was an error while sending your ticket. Please, try it again.');
+            }
+        }
+
         $breadMain = __('Algolia | Contact Us');
 
         /** @var Page $resultPage */

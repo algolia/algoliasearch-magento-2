@@ -1,0 +1,37 @@
+<?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Contact */ ?>
+
+<form method="post" action="">
+    <input type="hidden" name="form_key" value="<?php echo $this->getFormKey() ?>" />
+
+    <div>
+        <label>
+            You name
+            <input type="text" name="name" value="<?php echo $this->getCurrenctAdmin()->getName(); ?>" />
+        </label>
+    </div>
+
+    <div>
+        <label>
+            E-mail
+            <input type="text" name="email" value="<?php echo $this->getCurrenctAdmin()->getEmail(); ?>" />
+        </label>
+    </div>
+
+    <div>
+        <label>
+            Subject
+            <input type="text" name="subject" />
+        </label>
+    </div>
+
+    <div>
+        <label>
+            Your message
+            <textarea name="message"></textarea>
+        </label>
+    </div>
+
+    <div>
+        <button type="submit" name="sent" value="sent" class="action submit primary algolia-daterange-submit"><?php echo __('Update') ?></button>
+    </div>
+</form>

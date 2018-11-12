@@ -7,8 +7,10 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			apiKey: 'a23cdc99940ffad43a4f98733b845fdf',
 			indexName: 'magento_algolia',
 			searchParameters: {
-				filters: 'NOT tags:m1'
-			}
+				filters: 'NOT tags:m1',
+				hitsPerPage: 10
+			},
+			searchFunction: searchFunction
 		});
 		
 		const discourseSearch = algoliaBundle.instantsearch({
@@ -16,28 +18,61 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			apiKey: '7650ddf6ecb983c7cf3296c1aa225d0a',
 			indexName: 'discourse-posts',
 			searchParameters: {
-				filters: 'topic.tags: magento'
-			}
+				filters: 'topic.tags: magento',
+				hitsPerPage: 10
+			},
+			searchFunction: searchFunction
 		});
 		
-		documentationSearch.addWidget(getSearchBoxWidget());
+		documentationSearch.addWidget(getSearchBoxWidget(false));
 		
 		documentationSearch.addWidget(
 			algoliaBundle.instantsearch.widgets.hits({
-				container: '.search_results.doc',
+				container: '.doc.links',
 				templates: {
-					item: getDocumentationTemplate()
+					item: getDocumentationTemplate(),
+					empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/" target="_blank">documentation</a>.'
 				}
 			})
 		);
 		
-		discourseSearch.addWidget(getSearchBoxWidget());
+		documentationSearch.addWidget(
+			algoliaBundle.instantsearch.widgets.stats({
+				container: '.doc.stats',
+				templates: {
+					body: '{{nbHits}} results'
+				}
+			})
+		);
+		
+		documentationSearch.addWidget(
+			algoliaBundle.instantsearch.widgets.stats({
+				container: '.doc.footer',
+				transformData: function(hit) {
+					hit['morePages'] = hit.nbPages > 1;
+					
+					return hit;
+				},
+				templates: {
+					body: `
+					{{#morePages}}
+				        <a href="https://community.algolia.com/magento/doc/m2/getting-started/" class="footer" target="_blank">
+				            See more Documentation results ...
+				        </a>
+					{{/morePages}}
+					`
+				}
+			})
+		);
+		
+		discourseSearch.addWidget(getSearchBoxWidget(true));
 		
 		discourseSearch.addWidget(
 			algoliaBundle.instantsearch.widgets.hits({
-				container: '.search_results.forum',
+				container: '.links.forum',
 				templates: {
-					item: getDiscourseTemplate()
+					item: getDiscourseTemplate(),
+					empty: 'No results. Please change your search query or visit the <a href="https://discourse.algolia.com/tags/magento2" target="_blank">forum</a>.'
 				},
 				transformData: {
 					item: function(hit) {
@@ -53,8 +88,54 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			})
 		);
 		
+		discourseSearch.addWidget(
+			algoliaBundle.instantsearch.widgets.stats({
+				container: '.forum.stats',
+				templates: {
+					body: '{{nbHits}} results'
+				}
+			})
+		);
+		
+		discourseSearch.addWidget(
+			algoliaBundle.instantsearch.widgets.stats({
+				container: '.forum.footer',
+				transformData: function(hit) {
+					hit['morePages'] = hit.nbPages > 1;
+					
+					return hit;
+				},
+				templates: {
+					body: `
+					{{#morePages}}
+				        <a href="https://discourse.algolia.com/tags/magento2" class="footer" target="_blank">
+				            See more Community results ...
+				        </a>
+					{{/morePages}}
+					`
+				}
+			})
+		);
+		
 		documentationSearch.start();
 		discourseSearch.start();
+		
+		function searchFunction(helper) {
+			var $results = $('#results');
+			var $landing = $('#landing');
+			
+			if (helper.state.query === '') {
+				$results.hide();
+				$landing.show();
+				
+				return;
+			}
+			
+			helper.search();
+			
+			$results.show();
+			$landing.hide();
+		}
 	});
 	
 	function handleLatestVersion($) {
@@ -67,25 +148,19 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		});
 	}
 	
-	function getSearchBoxWidget() {
+	function getSearchBoxWidget(showIcons = false) {
 		return algoliaBundle.instantsearch.widgets.searchBox({
 			container: '#search_box',
-			placeholder: 'Search for help',
-			reset: false,
-			magnifier: false
+			placeholder: 'Start typing your topic, i.e. indexing',
+			reset: showIcons,
+			magnifier: showIcons
 		});
 	}
 	
 	function getDocumentationTemplate() {
 		return `
-		<div class="ais-result">
-			{{#hierarchy.lvl0}}
-				<div class="ais-lvl0">
-					{{{_highlightResult.hierarchy.lvl0.value}}}
-				</div>
-			{{/hierarchy.lvl0}}
-		
-			<div class="ais-lvl1">
+			<a href="{{url}}" target="_blank">
+				<span class="heading">
 				{{#hierarchy.lvl1}}
 					{{{_highlightResult.hierarchy.lvl1.value}}}
 				{{/hierarchy.lvl1}}
@@ -100,50 +175,28 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 				{{#hierarchy.lvl4}}
 					> {{{_highlightResult.hierarchy.lvl4.value}}}
 				{{/hierarchy.lvl4}}
-			</div>
+			</span>
 			
-			<div class="ais-content">
+			<span class="content">
 				{{{#content}}}
 					{{{_highlightResult.content.value}}}
 				{{{/content}}}
-			</div>
+			</span>
 		</div>`;
 	}
 	
 	function getDiscourseTemplate() {
 		return `
-		<div class="result">
-			<a href="https://discourse.algolia.com{{url}}" target="_blank" class="result-link">
-				<div class="result-title">
-					<div>
-						{{{_highlightResult.topic.title.value}}}
-						<img width="12" height="12" src="{{external_link_src}}">
-					</div>
+			<a href="https://discourse.algolia.com{{url}}" target="_blank">
+				<span class="heading">
+					{{{ _highlightResult.topic.title.value }}}
+					<img width="12" height="12" src="{{external_link_src}}">
+				</span>
 				
-					<div>
-						<span class="result-title-tag radius4">
-							{{category.name}}
-						</span>
-						
-						{{#tags}}
-							{{#value}}
-								<span class="result-title-tag radius4">
-									{{{value}}}
-								</span>
-							{{/value}}
-						{{/tags}}
-					</div>
-				</div>
-				
-				<div class="result-hierarchy">
-					{{user.username}}
-				</div>
-				
-				<div class="result-content">
+				<span class="content">
 					{{{content}}}
-				</div>
-			</a>
-		</div>`;
+				</span>
+			</a>`;
 	}
 	
 	function escapeHighlightedString(str, highlightPreTag, highlightPostTag) {

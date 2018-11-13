@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Analytics;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
@@ -17,18 +17,19 @@ class Index extends Template
 {
     const LIMIT_RESULTS = 5;
     const DEFAULT_TYPE = 'products';
+    const DEFAULT_RETENTION_DAYS = 7;
 
     /** @var Context */
     private $backendContext;
-
-    /** @var ConfigHelper */
-    private $configHelper;
 
     /** @var AnalyticsHelper */
     private $analyticsHelper;
 
     /** @var Data */
     private $dataHelper;
+
+    /** @var ConfigHelper */
+    private $configHelper;
 
     /** @var Product */
     private $productHelper;
@@ -47,27 +48,29 @@ class Index extends Template
 
     protected $_analyticsParams = array();
 
+    protected $_clientData;
+
     /**
      * Index constructor.
      * @param Context $context
-     * @param ConfigHelper $configHelper
      * @param AnalyticsHelper $analyticsHelper
      * @param ProductHelper $productHelper
      * @param CategoryHelper $categoryHelper
      * @param PageHelper $pageHelper
      * @param Data $dataHelper
+     * @param ConfigHelper $configHelper
      * @param TimezoneInterface $dateTime
      * @param CollectionFactory $productCollection
      * @param array $data
      */
     public function __construct(
         Context $context,
-        ConfigHelper $configHelper,
         AnalyticsHelper $analyticsHelper,
         ProductHelper $productHelper,
         CategoryHelper $categoryHelper,
         PageHelper $pageHelper,
         Data $dataHelper,
+        ConfigHelper $configHelper,
         TimezoneInterface $dateTime,
         CollectionFactory $productCollection,
         array $data = []
@@ -75,11 +78,13 @@ class Index extends Template
         parent::__construct($context, $data);
 
         $this->backendContext = $context;
-        $this->configHelper = $configHelper;
         $this->dataHelper = $dataHelper;
+        $this->configHelper = $configHelper;
+
         $this->productHelper = $productHelper;
         $this->categoryHelper = $categoryHelper;
         $this->pageHelper = $pageHelper;
+
         $this->analyticsHelper = $analyticsHelper;
         $this->dateTime = $dateTime;
         $this->productCollection = $productCollection;
@@ -151,6 +156,39 @@ class Index extends Template
     }
 
     /**
+     * Click Analytics
+     */
+    public function getClickThroughRate()
+    {
+        return $this->analyticsHelper->getClickThroughRate($this->getAnalyticsParams());
+    }
+
+    public function getClickThroughRateByDates()
+    {
+        return $this->analyticsHelper->getClickThroughRateByDates($this->getAnalyticsParams());
+    }
+
+    public function getConversionRate()
+    {
+        return $this->analyticsHelper->getConversionRate($this->getAnalyticsParams());
+    }
+
+    public function getConversionRateByDates()
+    {
+        return $this->analyticsHelper->getConversionRateByDates($this->getAnalyticsParams());
+    }
+
+    public function getClickPosition()
+    {
+        return $this->analyticsHelper->getAverageClickPosition($this->getAnalyticsParams());
+    }
+
+    public function getClickPositionByDates()
+    {
+        return $this->analyticsHelper->getAverageClickPositionByDates($this->getAnalyticsParams());
+    }
+
+    /**
      * Get aggregated Daily data from three separate calls
      */
     public function getDailySearchData()
@@ -158,10 +196,19 @@ class Index extends Template
         $searches = $this->getSearchesByDates();
         $users = $this->getUsersCountByDates();
         $rates = $this->getResultRateByDates();
+        $clickPosition = $this->getClickPositionByDates();
+        $ctr = $this->getClickThroughRateByDates();
+        $conversion = $this->getConversionRateByDates();
 
         foreach ($searches as &$search) {
             $search['users'] = $this->getDateValue($users, $search['date'], 'count');
             $search['rate'] = $this->getDateValue($rates, $search['date'], 'rate');
+
+            if ($this->isClickAnalyticsEnabled()) {
+                $search['clickPos'] = $this->getDateValue($clickPosition, $search['date'], 'average');
+                $search['ctr'] = $this->getDateValue($ctr, $search['date'], 'rate');
+                $search['conversion'] = $this->getDateValue($conversion, $search['date'], 'rate');
+            }
 
             $date = $this->dateTime->date($search['date']);
             $search['formatted'] = date('M, d', $date->getTimestamp());
@@ -232,13 +279,25 @@ class Index extends Template
 
                 $startDate = $this->dateTime->date($formData['from']);
                 $diff = date_diff($startDate, $this->dateTime->date());
-                if ($diff->days > 7) {
+
+                if ($diff->days > $this->getAnalyticRetentionDays()) {
                     return false;
                 }
             }
         }
 
         return true;
+    }
+
+    public function getAnalyticRetentionDays()
+    {
+        $retention = self::DEFAULT_RETENTION_DAYS;
+        $clientData = $this->getClientData();
+        if (isset($clientData['analytics_retention_days'])) {
+            $retention = (int) $clientData['analytics_retention_days'];
+        }
+
+        return $retention;
     }
 
     public function getCurrentType()
@@ -316,5 +375,29 @@ class Index extends Template
         }
 
         return $storeManager->getDefaultStoreView();
+    }
+    
+    public function isAnalyticsApiEnabled()
+    {
+        $clientData = $this->getClientData();
+        return $clientData && isset($clientData['analytics_api']) ? $clientData['analytics_api'] : 0;
+    }
+
+    public function isClickAnalyticsEnabled()
+    {
+        if (!$this->configHelper->isClickConversionAnalyticsEnabled()) {
+            return false;
+        }
+
+        $clientData = $this->getClientData();
+        return $clientData && isset($clientData['click_analytics']) ? $clientData['click_analytics'] : 0;
+    }    
+
+    public function getClientData()
+    {
+        if (!$this->_clientData) {
+            $this->_clientData = $this->analyticsHelper->getClientSettings();
+        }
+        return $this->_clientData;
     }
 }

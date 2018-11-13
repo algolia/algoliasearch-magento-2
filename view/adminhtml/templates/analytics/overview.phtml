@@ -1,148 +1,189 @@
 <?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Analytics\Index */ ?>
-<?php if (!$this->checkIsValidDateRange()): ?>
-<div class="algoliasearch-notices message message-notice notice">
-    <div class="notice">
-        <?php echo __('The selected date is out of your analytics retention window (7 days), your data might not be present anymore.'); ?>
+<?php if ($this->isAnalyticsApiEnabled()): ?>
+    <?php if (!$this->checkIsValidDateRange()): ?>
+    <div class="algoliasearch-notices message message-notice notice">
+        <div class="notice">
+            <?php echo __('The selected date is out of your analytics retention window (%1 days), your data might not be present anymore.', $this->getAnalyticRetentionDays()); ?>
+        </div>
     </div>
-</div>
+    <?php endif ?>
+    <div class="algoliasearch-analytics-overview">
+        <div class="row section">
+            <strong><?php echo __('Viewing index:'); ?></strong> <?php echo $this->getIndexName() ?>
+        </div>
+        <div class="row section">
+            <div class="row thirds top-thirds">
+                <div class="one-third col-1">
+                    <div class="title">
+                        <h4><?php echo __('Total Searches') ?>
+                            <?php echo $this->getTooltipHtml(__('How many searches were performed. As-you-type searches are aggregated (the queries i, ip, ipa, ipad count as one search).')) ?>
+                        </h4>
+                    </div>
+                    <div class="stat"><?php echo $this->getTotalCountOfSearches() ?></div>
+                </div>
+                <div class="one-third col-2">
+                    <h4><?php echo __('Users') ?>
+                        <?php echo $this->getTooltipHtml(__('How many users performed a search. If you implemented search from your backend, you need to forward the IP address of the user.')); ?>
+                    </h4>
+                    <div class="stat"><?php echo $this->getTotalUsersCount() ?></div>
+                </div>
+                <div class="one-third col-3">
+                    <h4><?php echo __('No Results Rate') ?>
+                        <?php echo $this->getTooltipHtml(__('Percentage of searches that retrieved 0 results.')); ?>
+                    </h4>
+                    <div class="stat"><?php echo $this->getTotalResultRates() ?></div>
+                </div>
+            </div>
+            <?php if ($this->isClickAnalyticsEnabled()): ?>
+            <div class="row thirds top-thirds">
+                <div class="one-third col-1">
+                    <div class="title">
+                        <h4><?php echo __('CTR') ?>
+                            <?php echo $this->getTooltipHtml(__('Click-Through Rate: percentage of tracked searches (searches with clickAnalytics=true) where at least one result was clicked on by the user.')) ?>
+                        </h4>
+                    </div>
+                    <?php $ctr = $this->getClickThroughRate() ?>
+                    <div class="stat"><?php echo round($ctr['rate'] * 100, 2) . '%'; ?></div>
+                    <div class="sub"><?php echo __('from %1 tracked searches', $ctr['trackedSearchCount']) ?></div>
+                </div>
+                <div class="one-third col-2">
+                    <div class="title">
+                        <h4><?php echo __('Conversion Rate') ?>
+                            <?php echo $this->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.',
+                                $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_cc_analytics'))) ?>
+                        </h4>
+                    </div>
+                    <?php $conversion = $this->getConversionRate() ?>
+                    <div class="stat"><?php echo round($conversion['rate'] * 100, 2) . '%'; ?></div>
+                    <div class="sub"><?php echo __('from %1 tracked searches', $conversion['trackedSearchCount']) ?></div>
+                </div>
+                <div class="one-third col-3">
+                    <div class="title">
+                        <h4><?php echo __('Click Position') ?>
+                            <?php echo $this->getTooltipHtml(__('Average position of clicks performed on the search results. A value of one would mean all users clicked on the first result. Smaller values are better.')) ?>
+                        </h4>
+                    </div>
+                    <?php $click = $this->getClickPosition() ?>
+                    <div class="stat"><?php echo round($click['average'], 2); ?></div>
+                    <div class="sub"><?php echo __('from %1 tracked clicks', $click['clickCount']) ?></div>
+                </div>
+            </div>
+            <?php endif ?>
+        </div>
+        <div class="row section daily-search-section">
+            <div class="title">
+                <h3><?php echo __('Daily Searches') ?></h3>
+                <div class="total-search"><?php echo __('Total Searches') ?> <span class="count"><?php echo $this->getTotalCountOfSearches() ?></span></div>
+            </div>
+            <?php echo $this->getDailyChartHtml(); ?>
+        </div>
+        <div class="row thirds analytics-searches">
+            <div class="one-third section popular-searches">
+                <div class="title">
+                    <h3><?php echo __('Popular Searches') ?>
+                        <?php echo $this->getTooltipHtml(__('Searches performed the most often by your users.')) ?>
+                    </h3>
+                </div>
+                <div class="analytics-content">
+                    <?php if (count($this->getTopSearches())): ?>
+                        <table class="data-table admin__table-primary">
+                            <thead>
+                                <tr class="headings">
+                                    <th><?php echo __('Query') ?></th>
+                                    <th><?php echo __('Count') ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($this->getTopSearches() as $search): ?>
+                                <tr>
+                                    <td><?php echo $search['search'] ?></td>
+                                    <td><?php echo $search['count'] ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <p class="no-data"><?php echo __('No searches yet!'); ?></p>
+                    <?php endif ?>
+                </div>
+                <div class="analytics-footer">
+                    <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See More Searches') ?></a>
+                </div>
+            </div>
+            <div class="one-third section no-result-searches">
+                <div class="title">
+                    <h3><?php echo __('Popular Results') ?>
+                        <?php echo $this->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
+                    </h3>
+                </div>
+                <div class="analytics-content">
+                    <?php if (count($this->getPopularResults())): ?>
+                        <table class="data-table admin__table-primary">
+                            <thead>
+                            <tr class="headings">
+                                <th><?php echo __('Results') ?></th>
+                                <th class="a-right"><?php echo __('Impressions') ?></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($this->getPopularResults() as $search): ?>
+                                <tr>
+                                    <td>
+                                        <?php if (isset($search['name'])): ?>
+                                            <a href="<?php echo $this->getTypeEditUrl($search['hit']) ?>">
+                                                <?php echo $search['name'] ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <?php echo $search['hit']; ?>
+                                        <?php endif ?>
+                                    </td>
+                                    <td class="a-right"><?php echo $search['count'] ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <p class="no-data"><?php echo __('No results yet!'); ?></p>
+                    <?php endif ?>
+                </div>
+                <div class="analytics-footer">
+                    <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See More Results') ?></a>
+                </div>
+            </div>
+            <div class="one-third section no-result-searches">
+                <div class="title">
+                    <h3><?php echo __('No Result Searches') ?>
+                        <?php echo $this->getTooltipHtml(__("Searches that retrieved 0 results, either because a word didn't match, or because some filters excluded all of the matching results.")); ?>
+                    </h3>
+                </div>
+                <div class="analytics-content">
+                    <?php if (count($this->getNoResultSearches())): ?>
+                        <table class="data-table admin__table-primary">
+                            <thead>
+                                <tr class="headings">
+                                    <th><?php echo __('Query') ?></th>
+                                    <th class="a-right"><?php echo __('Count') ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($this->getNoResultSearches() as $search): ?>
+                                <tr>
+                                    <td><?php echo $search['search'] ?></td>
+                                    <td class="a-right"><?php echo $search['count'] ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <p class="no-data"><?php echo __('No results yet!'); ?></p>
+                    <?php endif ?>
+                </div>
+                <div class="analytics-footer">
+                    <a href="https://www.algolia.com/analytics/no-results/" target="_blank"><?php echo __('See More No Results') ?></a>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php else: ?>
+    <?php echo __('Analytics is not available with your business plan.') ?>
 <?php endif ?>
-<div class="algoliasearch-analytics-overview">
-    <div class="row section">
-        <strong><?php echo __('Viewing index:'); ?></strong> <?php echo $this->getIndexName() ?>
-    </div>
-    <div class="row thirds clearfix section">
-        <div class="one-third col-1">
-            <div class="title">
-                <h4><?php echo __('Total Searches') ?>
-                    <?php echo $this->getTooltipHtml(__('How many searches were performed. As-you-type searches are aggregated (the queries i, ip, ipa, ipad count as one search).')) ?>
-                </h4>
-            </div>
-            <span class="stat"><?php echo $this->getTotalCountOfSearches() ?></span>
-        </div>
-        <div class="one-third col-2">
-            <h4><?php echo __('Users') ?>
-                <?php echo $this->getTooltipHtml(__('How many users performed a search. If you implemented search from your backend, you need to forward the IP address of the user.')); ?>
-            </h4>
-            <span class="stat"><?php echo $this->getTotalUsersCount() ?></span>
-        </div>
-        <div class="one-third col-3">
-            <h4><?php echo __('No Results Rate') ?>
-                <?php echo $this->getTooltipHtml(__('Percentage of searches that retrieved 0 results.')); ?>
-            </h4>
-            <span class="stat"><?php echo $this->getTotalResultRates() ?></span>
-        </div>
-    </div>
-    <div class="row clearfix section daily-search-section">
-        <div class="title">
-            <h3><?php echo __('Daily Searches') ?></h3>
-            <div class="total-search"><?php echo __('Total Searches') ?> <span class="count"><?php echo $this->getTotalCountOfSearches() ?></span></div>
-        </div>
-        <?php echo $this->getDailyChartHtml(); ?>
-    </div>
-    <div class="row thirds analytics-searches">
-        <div class="one-third section popular-searches">
-            <div class="title">
-                <h3><?php echo __('Popular Searches') ?>
-                    <?php echo $this->getTooltipHtml(__('Searches performed the most often by your users.')) ?>
-                </h3>
-            </div>
-            <div class="analytics-content">
-                <?php if (count($this->getTopSearches())): ?>
-                    <table class="data-table admin__table-primary">
-                        <thead>
-                            <tr class="headings">
-                                <th><?php echo __('Query') ?></th>
-                                <th><?php echo __('Count') ?></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($this->getTopSearches() as $search): ?>
-                            <tr>
-                                <td><?php echo $search['search'] ?></td>
-                                <td><?php echo $search['count'] ?></td>
-                            </tr>
-                        <?php endforeach ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="no-data"><?php echo __('No searches yet!'); ?></p>
-                <?php endif ?>
-            </div>
-            <div class="analytics-footer">
-                <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See More Searches') ?></a>
-            </div>
-        </div>
-        <div class="one-third section no-result-searches">
-            <div class="title">
-                <h3><?php echo __('Popular Results') ?>
-                    <?php echo $this->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
-                </h3>
-            </div>
-            <div class="analytics-content">
-                <?php if (count($this->getPopularResults())): ?>
-                    <table class="data-table admin__table-primary">
-                        <thead>
-                        <tr class="headings">
-                            <th><?php echo __('Results') ?></th>
-                            <th class="a-right"><?php echo __('Impressions') ?></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($this->getPopularResults() as $search): ?>
-                            <tr>
-                                <td>
-                                    <?php if (isset($search['name'])): ?>
-                                        <a href="<?php echo $this->getTypeEditUrl($search['hit']) ?>">
-                                            <?php echo $search['name'] ?>
-                                        </a>
-                                    <?php else: ?>
-                                        <?php echo $search['hit']; ?>
-                                    <?php endif ?>
-                                </td>
-                                <td class="a-right"><?php echo $search['count'] ?></td>
-                            </tr>
-                        <?php endforeach ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="no-data"><?php echo __('No results yet!'); ?></p>
-                <?php endif ?>
-            </div>
-            <div class="analytics-footer">
-                <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See More Results') ?></a>
-            </div>
-        </div>
-        <div class="one-third section no-result-searches">
-            <div class="title">
-                <h3><?php echo __('No Result Searches') ?>
-                    <?php echo $this->getTooltipHtml(__("Searches that retrieved 0 results, either because a word didn't match, or because some filters excluded all of the matching results.")); ?>
-                </h3>
-            </div>
-            <div class="analytics-content">
-                <?php if (count($this->getNoResultSearches())): ?>
-                    <table class="data-table admin__table-primary">
-                        <thead>
-                            <tr class="headings">
-                                <th><?php echo __('Query') ?></th>
-                                <th class="a-right"><?php echo __('Count') ?></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($this->getNoResultSearches() as $search): ?>
-                            <tr>
-                                <td><?php echo $search['search'] ?></td>
-                                <td class="a-right"><?php echo $search['count'] ?></td>
-                            </tr>
-                        <?php endforeach ?>
-                        </tbody>
-                    </table>
-                <?php else: ?>
-                    <p class="no-data"><?php echo __('No results yet!'); ?></p>
-                <?php endif ?>
-            </div>
-            <div class="analytics-footer">
-                <a href="https://www.algolia.com/analytics/no-results/" target="_blank"><?php echo __('See More No Results') ?></a>
-            </div>
-        </div>
-    </div>
-</div>

@@ -40,6 +40,10 @@
     margin-bottom: 3rem;
 }
 
+.algoliasearch-analytics-overview .top-thirds {
+    padding-top: 3rem;
+}
+
 .algoliasearch-analytics-overview .row.halves,
 .algoliasearch-analytics-overview .row.thirds {
     display: flex;
@@ -72,6 +76,11 @@
 .algoliasearch-analytics-overview .stat {
     font-size: 2em;
 }
+
+.algoliasearch-analytics-overview .sub {
+    margin-top: 1rem;
+}
+
 
 .algoliasearch-analytics-overview .admin__field-tooltip {
     margin-top: -1px;

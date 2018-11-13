@@ -49,13 +49,30 @@ class Contact extends Template
         return $this->supportHelper->isExtensionSupportEnabled();
     }
 
+    /** @return string */
     public function getExtensionVersion()
     {
         return $this->moduleList->getOne('Algolia_AlgoliaSearch')['setup_version'];
     }
 
+    /** @return string */
+    public function getDefaultName()
+    {
+        $name = $this->getRequest()->getParam('name');
+
+        return $name ?: $this->getCurrenctAdmin()->getName();
+    }
+
+    /** @return string */
+    public function getDefaultEmail()
+    {
+        $name = $this->getRequest()->getParam('email');
+
+        return $name ?: $this->getCurrenctAdmin()->getEmail();
+    }
+
     /** @return \Magento\User\Model\User|null */
-    public function getCurrenctAdmin()
+    private function getCurrenctAdmin()
     {
         return $this->authSession->getUser();
     }

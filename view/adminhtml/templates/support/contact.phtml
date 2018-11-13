@@ -6,28 +6,28 @@
     <div>
         <label>
             You name
-            <input type="text" name="name" value="<?php echo $this->getCurrenctAdmin()->getName(); ?>" />
+            <input type="text" name="name" value="<?php echo $this->getDefaultName(); ?>" />
         </label>
     </div>
 
     <div>
         <label>
             E-mail
-            <input type="text" name="email" value="<?php echo $this->getCurrenctAdmin()->getEmail(); ?>" />
+            <input type="text" name="email" value="<?php echo $this->getDefaultEmail(); ?>" class="validate-email" />
         </label>
     </div>
 
     <div>
         <label>
             Subject
-            <input type="text" name="subject" />
+            <input type="text" name="subject" value="<?php echo $this->getRequest()->getParam('subject'); ?>" />
         </label>
     </div>
 
     <div>
         <label>
             Your message
-            <textarea name="message"></textarea>
+            <textarea name="message"><?php echo $this->getRequest()->getParam('message'); ?></textarea>
         </label>
     </div>
 

@@ -1,12 +1,6 @@
 <?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Analytics\Index */ ?>
 <?php if ($this->isAnalyticsApiEnabled()): ?>
-    <?php if (!$this->checkIsValidDateRange()): ?>
-    <div class="algoliasearch-notices message message-notice notice">
-        <div class="notice">
-            <?php echo __('The selected date is out of your analytics retention window (%1 days), your data might not be present anymore.', $this->getAnalyticRetentionDays()); ?>
-        </div>
-    </div>
-    <?php endif ?>
+    <?php echo $this->getMessagesHtml(); ?>
     <div class="algoliasearch-analytics-overview">
         <div class="row section">
             <strong><?php echo __('Viewing index:'); ?></strong> <?php echo $this->getIndexName() ?>

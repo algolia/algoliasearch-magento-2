@@ -41,7 +41,12 @@
 }
 
 .algoliasearch-analytics-overview .top-thirds {
-    padding-top: 3rem;
+    padding-top: 2.5rem;
+}
+
+.algoliasearch-analytics-overview .top-thirds h4 {
+    font-size: 1.5rem;
+    padding-left: 35px;
 }
 
 .algoliasearch-analytics-overview .row.halves,

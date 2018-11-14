@@ -23,6 +23,8 @@ class AnalyticsHelper extends Analytics
     protected $_clickThroughs;
     protected $_conversions;
 
+    protected $_errors = array();
+
     /** @var \Algolia\AlgoliaSearch\Helper\AlgoliaHelper */
     private $algoliaHelper;
 
@@ -238,16 +240,27 @@ class AnalyticsHelper extends Analytics
         try {
             // analytics api requires index name for all calls
             if (!isset($params['index'])) {
-                throw new \Exception('Analytics API requires index name.');
+                throw new \Exception('Algolia Analytics API requires an index name.');
             }
 
             $response = $this->request('GET', $path, $params);
 
         } catch (\Exception $e) {
+            $this->addError($e->getMessage());
             $this->logger->log($e->getMessage());
         }
 
         return $response;
+    }
+
+    public function addError($msg)
+    {
+        $this->_errors[] = $msg;
+    }
+
+    public function getErrors()
+    {
+        return $this->_errors;
     }
 
     public function getClientSettings()

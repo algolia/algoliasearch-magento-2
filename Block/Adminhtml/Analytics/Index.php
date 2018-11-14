@@ -400,4 +400,27 @@ class Index extends Template
         }
         return $this->_clientData;
     }
+
+    /**
+     * Messages rendered HTML getter.
+     *
+     * @return string
+     */
+    public function getMessagesHtml()
+    {
+        /** @var $messagesBlock \Magento\Framework\View\Element\Messages */
+        $messagesBlock = $this->_layout->createBlock(\Magento\Framework\View\Element\Messages::class);
+
+        if (!$this->checkIsValidDateRange()) {
+            $messagesBlock->addNotice(__('The selected date is out of your analytics retention window (%1 days), your data might not be present anymore.',
+                $this->getAnalyticRetentionDays()));
+        }
+
+        $errors = $this->analyticsHelper->getErrors();
+        foreach ($errors as $message) {
+            $messagesBlock->addError($message);
+        }
+
+        return $messagesBlock->toHtml();
+    }
 }

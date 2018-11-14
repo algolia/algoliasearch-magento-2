@@ -42,9 +42,8 @@ class Contact extends AbstractAction
 
                 return $resultRedirect;
             }
-            else {
-                $this->messageManager->addErrorMessage('There was an error while sending your ticket. Please, try it again.');
-            }
+
+            $this->messageManager->addErrorMessage('There was an error while sending your ticket. Please, try it again.');
         }
 
         $breadMain = __('Algolia | Contact Us');

@@ -17,6 +17,7 @@ class SupportHelper
 
     /**
      * @param array $data
+     *
      * @return bool
      */
     public function processContactForm($data)
@@ -61,7 +62,7 @@ class SupportHelper
 
         $res = curl_exec($ch);
 
-        curl_close ($ch);
+        curl_close($ch);
 
         if ($res) {
             $res = json_decode($res, true);
@@ -70,9 +71,9 @@ class SupportHelper
         return $res['extension_support'];
     }
 
-
     /**
      * @param array $data
+     *
      * @return array
      */
     private function getMessageData($data)
@@ -90,6 +91,7 @@ class SupportHelper
 
     /**
      * @param string $text
+     *
      * @return string
      */
     private function enrichText($text)
@@ -100,6 +102,7 @@ class SupportHelper
 
     /**
      * @param string $name
+     *
      * @return array
      */
     private function splitName($name)
@@ -109,6 +112,7 @@ class SupportHelper
 
     /**
      * @param array $messageData
+     *
      * @return bool
      */
     private function pushMessage($messageData)
@@ -122,7 +126,7 @@ class SupportHelper
 
         $res = curl_exec($ch);
 
-        curl_close ($ch);
+        curl_close($ch);
 
         if ($res === 'true') {
             return true;

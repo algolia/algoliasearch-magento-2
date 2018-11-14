@@ -7,7 +7,7 @@ use Magento\Framework\Controller\ResultFactory;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /** @var ResultFactory  */
+    /** @var ResultFactory */
     protected $resultFactory;
 
     /**

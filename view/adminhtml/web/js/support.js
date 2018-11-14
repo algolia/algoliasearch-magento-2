@@ -1,6 +1,6 @@
 requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	algoliaBundle.$(function ($) {
-		// handleLatestVersion($);
+		handleLatestVersion($);
 		
 		if ($('#search_box').length > 0) {
 			initDocSearch();
@@ -192,6 +192,9 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			var latestVersion = payload.name;
 			
 			if(compareVersions(algoliaSearchExtentionsVersion, latestVersion) > 0) {
+				$('#current_version').text(algoliaSearchExtentionsVersion);
+				$('#latest_version').text(latestVersion);
+				
 				$('.legacy_version').show();
 			}
 		});

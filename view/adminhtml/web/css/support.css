@@ -1,5 +1,16 @@
 .legacy_version {
-	display: none;
+	display: none; /** Controlled by JS **/
+	background-color: #fffbbb;
+	height: 53px;
+	line-height: 53px;
+	font-size: 14px;
+	border: 1px solid #deddc8;
+	padding-left: 32px;
+	margin-bottom: 30px;
+}
+
+.legacy_version .version {
+	font-weight: bold;
 }
 
 .search-box-wrapper {

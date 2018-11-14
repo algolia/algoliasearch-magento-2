@@ -10,14 +10,12 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 
 ?>
 
-<script>
-	var algoliaSearchExtentionsVersion = "<?php echo $this->getExtensionVersion(); ?>"
-</script>
-
-<div class="legacy_version">
-    You’re running version XYZ. Newest available version is ABC. Updating might help fix some issues automatically.
-    <a href="https://community.algolia.com/magento/doc/m2/upgrade/" target="_blank">How to update?</a>
-</div>
+<?php echo $block
+    ->getLayout()
+    ->createBlock(Algolia\AlgoliaSearch\Block\Adminhtml\Support\Components\LegacyVersion::class)
+    ->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml')
+    ->toHtml();
+?>
 
 <div class="search-box-wrapper">
     <input type="text" name="q" id="search_box" />

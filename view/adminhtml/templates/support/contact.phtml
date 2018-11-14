@@ -1,5 +1,12 @@
 <?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Contact */ ?>
 
+<?php echo $block
+    ->getLayout()
+    ->createBlock(Algolia\AlgoliaSearch\Block\Adminhtml\Support\Components\LegacyVersion::class)
+    ->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml')
+    ->toHtml();
+?>
+
 <form method="post" action="" class="algolia_contact_form">
     <input type="hidden" name="form_key" value="<?php echo $this->getFormKey() ?>" />
 

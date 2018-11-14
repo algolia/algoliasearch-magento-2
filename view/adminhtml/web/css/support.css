@@ -187,3 +187,76 @@ a.footer {
 #results {
 	display: none;
 }
+
+.algolia_contact_form .admin__fieldset>.admin__field>.admin__field-control {
+	width: calc( (100%) * .7 - 30px );
+}
+
+.algolia_contact_form textarea::placeholder {
+	font-size: 12px;
+}
+
+.algolia_contact_form textarea::-webkit-input-placeholder {
+	font-size: 12px;
+}
+
+.algolia_contact_form textarea:-moz-placeholder { /* Firefox 18- */
+	font-size: 12px;
+}
+
+.algolia_contact_form textarea::-moz-placeholder {  /* Firefox 19+ */
+	font-size: 12px;
+}
+
+.algolia_contact_form textarea:-ms-input-placeholder {
+	font-size: 12px;
+}
+
+.algolia_contact_form .admin__field-note {
+	width: 90%;
+	font-size: 12px;
+	color: #303030;
+}
+
+.algolia_contact_form .admin__field-note::after {
+	content: "";
+	clear: both;
+	display: table;
+}
+
+.algolia_contact_form .admin__field-note .note_icon {
+	width: 20px;
+	height: 20px;
+	background-color: #888888;
+	text-align: center;
+	line-height: 20px;
+	display: inline-block;
+	color: #fff;
+	font-weight: bold;
+	border-radius: 10px;
+	opacity: .5;
+	float: left;
+	margin-top: 5px;
+	margin-right: 10px;
+}
+
+.algolia_contact_form .button {
+	margin-top: 20px;
+}
+
+.algolia_contact_form .col-l-4 > .heading {
+	font-size: 14px;
+	text-align: left;
+	text-decoration: none;
+	border: none;
+}
+
+.algolia_contact_form .links a {
+	font-size: 12px;
+}
+
+.algolia_contact_form .links a .content {
+	max-height: 60px;
+	height: unset;
+	white-space: normal;
+}

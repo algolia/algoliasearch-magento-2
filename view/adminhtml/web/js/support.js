@@ -1,124 +1,173 @@
 requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	algoliaBundle.$(function ($) {
-		handleLatestVersion($);
+		// handleLatestVersion($);
 		
-		const documentationSearch = algoliaBundle.instantsearch({
-			appId: 'BH4D9OD16A',
-			apiKey: 'a23cdc99940ffad43a4f98733b845fdf',
-			indexName: 'magento_algolia',
-			searchParameters: {
-				filters: 'NOT tags:m1',
-				hitsPerPage: 10
-			},
-			searchFunction: searchFunction
-		});
+		if ($('#search_box').length > 0) {
+			initDocSearch();
+			initDiscourseSearch();
+		}
 		
-		const discourseSearch = algoliaBundle.instantsearch({
-			appId: 'G25OKIW19Q',
-			apiKey: '7650ddf6ecb983c7cf3296c1aa225d0a',
-			indexName: 'discourse-posts',
-			searchParameters: {
-				filters: 'topic.tags: magento',
-				hitsPerPage: 10
-			},
-			searchFunction: searchFunction
-		});
+		if ($('.algolia_contact_form #subject').length > 0) {
+			initContactDocSearch();
+		}
 		
-		documentationSearch.addWidget(getSearchBoxWidget(false));
-		
-		documentationSearch.addWidget(
-			algoliaBundle.instantsearch.widgets.hits({
-				container: '.doc.links',
-				templates: {
-					item: getDocumentationTemplate(),
-					empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/" target="_blank">documentation</a>.'
-				}
-			})
-		);
-		
-		documentationSearch.addWidget(
-			algoliaBundle.instantsearch.widgets.stats({
-				container: '.doc.stats',
-				templates: {
-					body: '{{nbHits}} results'
-				}
-			})
-		);
-		
-		documentationSearch.addWidget(
-			algoliaBundle.instantsearch.widgets.stats({
-				container: '.doc.footer',
-				transformData: function(hit) {
-					hit['morePages'] = hit.nbPages > 1;
-					
-					return hit;
+		function initDocSearch() {
+			const documentationSearch = algoliaBundle.instantsearch({
+				appId: 'BH4D9OD16A',
+				apiKey: 'a23cdc99940ffad43a4f98733b845fdf',
+				indexName: 'magento_algolia',
+				searchParameters: {
+					filters: 'NOT tags:m1',
+					hitsPerPage: 10
 				},
-				templates: {
-					body: `
+				searchFunction: searchFunction
+			});
+			
+			documentationSearch.addWidget(getSearchBoxWidget(false));
+			
+			documentationSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.hits({
+					container: '.doc.links',
+					templates: {
+						item: getDocumentationTemplate(),
+						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/" target="_blank">documentation</a>.'
+					}
+				})
+			);
+			
+			documentationSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.stats({
+					container: '.doc.stats',
+					templates: {
+						body: '{{nbHits}} results'
+					}
+				})
+			);
+			
+			documentationSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.stats({
+					container: '.doc.footer',
+					transformData: function(hit) {
+						hit['morePages'] = hit.nbPages > 1;
+						
+						return hit;
+					},
+					templates: {
+						body: `
 					{{#morePages}}
 				        <a href="https://community.algolia.com/magento/doc/m2/getting-started/" class="footer" target="_blank">
 				            See more Documentation results ...
 				        </a>
 					{{/morePages}}
 					`
-				}
-			})
-		);
+					}
+				})
+			);
+			
+			documentationSearch.start();
+		}
 		
-		discourseSearch.addWidget(getSearchBoxWidget(true));
-		
-		discourseSearch.addWidget(
-			algoliaBundle.instantsearch.widgets.hits({
-				container: '.links.forum',
-				templates: {
-					item: getDiscourseTemplate(),
-					empty: 'No results. Please change your search query or visit the <a href="https://discourse.algolia.com/tags/magento2" target="_blank">forum</a>.'
+		function initDiscourseSearch() {
+			const discourseSearch = algoliaBundle.instantsearch({
+				appId: 'G25OKIW19Q',
+				apiKey: '7650ddf6ecb983c7cf3296c1aa225d0a',
+				indexName: 'discourse-posts',
+				searchParameters: {
+					filters: 'topic.tags: magento',
+					hitsPerPage: 10
 				},
-				transformData: {
-					item: function(hit) {
-						hit.content = escapeHighlightedString(
-							hit._snippetResult.content.value
-						);
-						
-						hit.tags = hit._highlightResult.topic.tags;
+				searchFunction: searchFunction
+			});
+			
+			discourseSearch.addWidget(getSearchBoxWidget(true));
+			
+			discourseSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.hits({
+					container: '.links.forum',
+					templates: {
+						item: getDiscourseTemplate(),
+						empty: 'No results. Please change your search query or visit the <a href="https://discourse.algolia.com/tags/magento2" target="_blank">forum</a>.'
+					},
+					transformData: {
+						item: function(hit) {
+							hit.content = escapeHighlightedString(
+								hit._snippetResult.content.value
+							);
+							
+							hit.tags = hit._highlightResult.topic.tags;
+							
+							return hit;
+						}
+					}
+				})
+			);
+			
+			discourseSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.stats({
+					container: '.forum.stats',
+					templates: {
+						body: '{{nbHits}} results'
+					}
+				})
+			);
+			
+			discourseSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.stats({
+					container: '.forum.footer',
+					transformData: function(hit) {
+						hit['morePages'] = hit.nbPages > 1;
 						
 						return hit;
-					}
-				}
-			})
-		);
-		
-		discourseSearch.addWidget(
-			algoliaBundle.instantsearch.widgets.stats({
-				container: '.forum.stats',
-				templates: {
-					body: '{{nbHits}} results'
-				}
-			})
-		);
-		
-		discourseSearch.addWidget(
-			algoliaBundle.instantsearch.widgets.stats({
-				container: '.forum.footer',
-				transformData: function(hit) {
-					hit['morePages'] = hit.nbPages > 1;
-					
-					return hit;
-				},
-				templates: {
-					body: `
+					},
+					templates: {
+						body: `
 					{{#morePages}}
 				        <a href="https://discourse.algolia.com/tags/magento2" class="footer" target="_blank">
 				            See more Community results ...
 				        </a>
 					{{/morePages}}
 					`
-				}
-			})
-		);
+					}
+				})
+			);
+			
+			discourseSearch.start();
+		}
 		
-		documentationSearch.start();
-		discourseSearch.start();
+		function initContactDocSearch() {
+			const documentationSearch = algoliaBundle.instantsearch({
+				appId: 'BH4D9OD16A',
+				apiKey: 'a23cdc99940ffad43a4f98733b845fdf',
+				indexName: 'magento_algolia',
+				searchParameters: {
+					filters: 'NOT tags:m1',
+					hitsPerPage: 3
+				}
+			});
+			
+			documentationSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.searchBox({
+					container: '#subject',
+					placeholder: '',
+					reset: false,
+					magnifier: false
+				})
+			);
+			
+			documentationSearch.addWidget(
+				algoliaBundle.instantsearch.widgets.hits({
+					container: '.contact_results',
+					templates: {
+						item: getDocumentationTemplate(),
+						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/" target="_blank">documentation</a>.'
+					}
+				})
+			);
+			
+			console.log(documentationSearch);
+			
+			documentationSearch.start();
+		}
 		
 		function searchFunction(helper) {
 			var $results = $('#results');

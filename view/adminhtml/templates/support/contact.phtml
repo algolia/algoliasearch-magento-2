@@ -1,37 +1,62 @@
 <?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Contact */ ?>
 
-<form method="post" action="">
+<form method="post" action="" class="algolia_contact_form">
     <input type="hidden" name="form_key" value="<?php echo $this->getFormKey() ?>" />
 
-    <div>
-        <label>
-            You name
-            <input type="text" name="name" value="<?php echo $this->getDefaultName(); ?>" />
-        </label>
-    </div>
+    <div class="row">
+        <fieldset class="admin__fieldset col-l-7">
+            <div class="admin__field _required">
+                <label for="name" class="admin__field-label">
+                    <span>Your name</span>
+                </label>
 
-    <div>
-        <label>
-            E-mail
-            <input type="text" name="email" value="<?php echo $this->getDefaultEmail(); ?>" class="validate-email" />
-        </label>
-    </div>
+                <div class="admin__field-control">
+                    <input type="text" name="name" id="name" value="<?php echo $this->getDefaultName(); ?>" class="admin__control-text" />
+                </div>
+            </div>
 
-    <div>
-        <label>
-            Subject
-            <input type="text" name="subject" value="<?php echo $this->getRequest()->getParam('subject'); ?>" />
-        </label>
-    </div>
+            <div class="admin__field _required">
+                <label for="email" class="admin__field-label">
+                    <span>E-mail</span>
+                </label>
+                <div class="admin__field-control">
+                    <input type="text" name="email" id="email" value="<?php echo $this->getDefaultEmail(); ?>" class="validate-email admin__control-text" />
+                </div>
+            </div>
 
-    <div>
-        <label>
-            Your message
-            <textarea name="message"><?php echo $this->getRequest()->getParam('message'); ?></textarea>
-        </label>
-    </div>
+            <div class="admin__field _required">
+                <label for="subject" class="admin__field-label">
+                    <span>Subject</span>
+                </label>
+                <div class="admin__field-control">
+                    <input type="text" name="subject" id="subject" value="<?php echo $this->getRequest()->getParam('subject'); ?>" class="admin__control-text" />
+                </div>
+            </div>
 
-    <div>
-        <button type="submit" name="sent" value="sent" class="action submit primary algolia-daterange-submit"><?php echo __('Update') ?></button>
+            <div class="admin__field _required">
+                <label for="message" class="admin__field-label">
+                    <span>Your message</span>
+                </label>
+                <div class="admin__field-control">
+                    <textarea name="message" id="message" class="admin__control-textarea" placeholder="Please provide us context of your problem or question: what you were trying to achieve, what went wrong, etc."><?php echo $this->getRequest()->getParam('message'); ?></textarea>
+
+                    <div class="admin__field-note">
+                        <div class="note_icon">i</div>
+                        <span>To better identify your problem, we automatically attach information such as your Magento version and user id. No personal information is transmitted.</span>
+                    </div>
+
+                    <div class="button">
+                        <button type="submit" name="sent" value="sent" class="action submit primary algolia-daterange-submit"><?php echo __('Send') ?></button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div class="col-l-1"></div>
+        <div class="col-l-3">
+            <div class="heading">
+                Related to your subject ...
+            </div>
+            <div class="contact_results links"></div>
+        </div>
     </div>
 </form>

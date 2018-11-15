@@ -79,9 +79,6 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 			appId: algoliaConfig.applicationId,
 			apiKey: algoliaConfig.apiKey,
 			indexName: algoliaConfig.indexName + '_products',
-			// urlSync: {
-			// 	trackedParameters: algoliaConfig.instant.urlTrackedParameters
-			// },
 			searchParameters: {
 				hitsPerPage: algoliaConfig.hitsPerPage,
 				ruleContexts: ruleContexts
@@ -101,6 +98,22 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 			// Multivalued facets use "~" as separator
 			// Targeted index is defined by sortBy parameter
 			routing : {
+				router: algoliaBundle.instantsearch.routers.history({
+					parseURL({qsModule, location}) {
+						const queryString = location.hash ? location.hash : location.search;
+						return qsModule.parse(queryString.slice(1))
+					},
+					createURL({ qsModule, routeState, location }) {
+						const { protocol, hostname, port = '', pathname, hash } = location;
+						const queryString = qsModule.stringify(routeState);
+						const portWithPrefix = port === '' ? '' : `:${port}`;
+						// IE <= 11 has no location.origin or buggy. Therefore we don't rely on it
+						if (!routeState || Object.keys(routeState).length === 0)
+							return `${protocol}//${hostname}${portWithPrefix}${pathname}`;
+						else
+							return `${protocol}//${hostname}${portWithPrefix}${pathname}?${queryString}`;
+					},
+				}),
 				stateMapping: {
 					stateToRoute(uiState) {
 						let map = {};
@@ -138,6 +151,7 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 					},
 					routeToState(routeState) {
 						let map = {};
+						routeState = routingBc(routeState);
 						map['query'] = routeState.q == '__empty__' ? '' : routeState.q;
 						map['refinementList'] = {};
 						map['hierarchicalMenu'] = {};
@@ -650,5 +664,50 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 		}
 		
 		return options;
+	}
+
+	// Handle backward compatibility with old routing
+	function routingBc(routeState) {
+		// Handle legacy facets
+		// https://github.com/algolia/algoliasearch-helper-js/blob/39bec1caf24a60acd042eb7bb5d7d7c719fde58b/src/SearchParameters/shortener.js#L6
+		var legacyFacets = ["dFR", "hFR", "fR"];
+		for (i = 0; i < legacyFacets.length; i++) {
+			if (routeState[legacyFacets[i]]) {
+				for (var key in routeState[legacyFacets[i]]) {
+					if (routeState[legacyFacets[i]].hasOwnProperty(key)) {
+						key == "categories.level0" ?
+							routeState["categories"] = routeState[legacyFacets[i]][key][0].split(' /// ').join('~') :
+							routeState[key] = routeState[legacyFacets[i]][key].join('~');
+					}
+				}
+			}
+		}
+
+		// Handle legacy numeric refinements
+		if (routeState.nR) {
+			for (var key in routeState.nR) {
+				if (routeState.nR.hasOwnProperty(key)) {
+					var lt = '', gt = '', eq = '';
+					if (routeState.nR[key]['=']) {
+						eq = routeState.nR[key]['='];
+					}
+					if (routeState.nR[key]['<=']) {
+						lt = routeState.nR[key]['<='];
+					}
+					if (routeState.nR[key]['>=']) {
+						gt = routeState.nR[key]['>='];
+					}
+
+					if (eq != '') {
+						routeState[key] = eq;
+					}
+					if (lt != '' || gt != '') {
+						routeState[key] = gt + ':' + lt;
+					}
+				}
+			}
+		}
+
+		return routeState;
 	}
 });

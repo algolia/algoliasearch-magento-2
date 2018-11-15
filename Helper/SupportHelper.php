@@ -60,13 +60,12 @@ class SupportHelper
     /**
      * @param array $data
      *
-     * @return bool
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return bool
      */
     public function processContactForm($data)
     {
-        $data = $this->getMessageData($data);
-
         list($firstname, $lastname) = $this->splitName($data['name']);
 
         $messageData = [
@@ -75,7 +74,7 @@ class SupportHelper
             'lastname' => $lastname,
             'subject' => $data['subject'],
             'text' => $data['message'],
-            'noteText' => $this->getNoteText(),
+            'noteText' => $this->getNoteText($data['send_additional_info']),
         ];
 
         return $this->pushMessage($messageData);
@@ -115,28 +114,13 @@ class SupportHelper
     }
 
     /**
-     * @param array $data
+     * @param bool $sendAdditionalData
      *
-     * @return array
-     */
-    private function getMessageData($data)
-    {
-        $attributes = ['name', 'email', 'subject', 'message'];
-
-        $cleanData = [];
-
-        foreach ($attributes as $attribute) {
-            $cleanData[$attribute] = $data[$attribute];
-        }
-
-        return $cleanData;
-    }
-
-    /**
-     * @return string
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return string
      */
-    private function getNoteText()
+    private function getNoteText($sendAdditionalData = false)
     {
         $noteText = [];
 
@@ -145,9 +129,10 @@ class SupportHelper
         $noteText[] = $this->getQueueArchiveInfo();
         $noteText[] = $this->getAlgoliaConfiguration();
 
-        // TODO: condition it
-        $noteText[] = $this->getCatalogInfo();
-        $noteText[] = $this->get3rdPartyModules();
+        if ($sendAdditionalData === true) {
+            $noteText[] = $this->getCatalogInfo();
+            $noteText[] = $this->get3rdPartyModules();
+        }
 
         $noteText = implode('<br><br>', $noteText);
 
@@ -167,8 +152,9 @@ class SupportHelper
     }
 
     /**
-     * @return string
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return string
      */
     private function getQueueInfo()
     {
@@ -184,28 +170,28 @@ class SupportHelper
     }
 
     /**
-     * @return string
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return string
      */
     private function getQueueArchiveInfo()
     {
         $queueArchiveInfo = [];
 
         $query = 'SELECT * 
-          FROM '.$this->queueArchiveTable.' 
+          FROM ' . $this->queueArchiveTable . ' 
           ORDER BY created_at DESC
           LIMIT 20';
 
         $archiveRows = $this->dbConnection->query($query)->fetchAll();
-        if ($archiveRows)
-        {
+        if ($archiveRows) {
             $queueArchiveInfo[] = '<b>Queue archive rows (20 newest rows):</b>';
 
             $firstRow = reset($archiveRows);
             $headers = array_keys($firstRow);
             $noteText[] = implode(' || ', $headers);
 
-            $archiveRows = array_map(function($row) {
+            $archiveRows = array_map(function ($row) {
                 return implode(' || ', $row);
             }, $archiveRows);
 
@@ -216,8 +202,9 @@ class SupportHelper
     }
 
     /**
-     * @return string
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return string
      */
     private function getAlgoliaConfiguration()
     {
@@ -261,7 +248,7 @@ class SupportHelper
     }
 
     /**
-     * @param integer|null $storeId
+     * @param int|null $storeId
      *
      * @return string
      */
@@ -279,10 +266,10 @@ class SupportHelper
             path, 
             value 
           FROM 
-            '.$this->configTable.' 
+            ' . $this->configTable . ' 
           WHERE 
-            scope = "'.$scope.'"
-            AND scope_id = '.$scopeId.'
+            scope = "' . $scope . '"
+            AND scope_id = ' . $scopeId . '
             AND path LIKE "algoliasearch_%"
             AND path != "algoliasearch_credentials/credentials/api_key"';
 
@@ -303,8 +290,9 @@ class SupportHelper
     }
 
     /**
-     * @return string
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return string
      */
     private function getCatalogInfo()
     {
@@ -326,15 +314,16 @@ class SupportHelper
     }
 
     /**
-     * @return string
      * @throws \Zend_Db_Statement_Exception
+     *
+     * @return string
      */
     private function get3rdPartyModules()
     {
         $modulesText = [];
 
         $query = 'SELECT * 
-          FROM '.$this->modulesTable.' 
+          FROM ' . $this->modulesTable . ' 
           WHERE module NOT LIKE "Magento\_%"
           ORDER BY module';
 
@@ -345,7 +334,7 @@ class SupportHelper
             $headers = array_keys($firstRow);
             $modulesText[] = implode(' || ', $headers);
 
-            $modules = array_map(function($row) {
+            $modules = array_map(function ($row) {
                 return implode(' || ', $row);
             }, $modules);
 

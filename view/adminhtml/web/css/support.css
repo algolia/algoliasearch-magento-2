@@ -249,6 +249,18 @@ a.footer {
 	float: left;
 	margin-top: 5px;
 	margin-right: 10px;
+	margin-bottom: 60px;
+}
+
+.algolia_contact_form .admin__field-note ul {
+	margin-top: 3px;
+	margin-left: 50px;
+}
+
+.algolia_contact_form .admin__actions-switch-text {
+	font-size: 12px;
+	width: 120%;
+	display: inline-block;
 }
 
 .algolia_contact_form .button {

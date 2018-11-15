@@ -7,7 +7,7 @@
     ->toHtml();
 ?>
 
-<form method="post" action="" class="algolia_contact_form">
+<form method="post" action="" class="algolia_contact_form" data-mage-init='{"validation":{}}'>
     <input type="hidden" name="form_key" value="<?php echo $this->getFormKey() ?>" />
 
     <div class="row">
@@ -18,7 +18,13 @@
                 </label>
 
                 <div class="admin__field-control">
-                    <input type="text" name="name" id="name" value="<?php echo $this->getDefaultName(); ?>" class="admin__control-text" />
+                    <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        value="<?php echo $this->getDefaultName(); ?>"
+                        class="admin__control-text"
+                        data-validate="{required: true}" />
                 </div>
             </div>
 
@@ -27,7 +33,13 @@
                     <span>E-mail</span>
                 </label>
                 <div class="admin__field-control">
-                    <input type="text" name="email" id="email" value="<?php echo $this->getDefaultEmail(); ?>" class="validate-email admin__control-text" />
+                    <input
+                        type="text"
+                        name="email"
+                        id="email"
+                        value="<?php echo $this->getDefaultEmail(); ?>"
+                        class="admin__control-text"
+                        data-validate="{required: true, 'validate-email': true}" />
                 </div>
             </div>
 
@@ -36,7 +48,13 @@
                     <span>Subject</span>
                 </label>
                 <div class="admin__field-control">
-                    <input type="text" name="subject" id="subject" value="<?php echo $this->getRequest()->getParam('subject'); ?>" class="admin__control-text" />
+                    <input
+                        type="text"
+                        name="subject"
+                        id="subject"
+                        value="<?php echo $this->getRequest()->getParam('subject'); ?>"
+                        class="admin__control-text"
+                        data-validate="{required: true}" />
                 </div>
             </div>
 
@@ -45,15 +63,51 @@
                     <span>Your message</span>
                 </label>
                 <div class="admin__field-control">
-                    <textarea name="message" id="message" class="admin__control-textarea" placeholder="Please provide us context of your problem or question: what you were trying to achieve, what went wrong, etc."><?php echo $this->getRequest()->getParam('message'); ?></textarea>
+                    <textarea
+                        name="message"
+                        id="message"
+                        class="admin__control-textarea"
+                        placeholder="Please provide us context of your problem or question: what you were trying to achieve, what went wrong, etc."
+                        data-validate="{required: true}">
+                        <?php echo $this->getRequest()->getParam('message'); ?>
+                    </textarea>
 
                     <div class="admin__field-note">
                         <div class="note_icon">i</div>
-                        <span>To better identify your problem, we automatically attach information such as your Magento version and user id. No personal information is transmitted.</span>
+                        <span>
+                            To better identify your problem, we automatically attach:
+                            <ul>
+                                <li>Magento and Algolia extension version</li>
+                                <li>Information about indexing queue [TOOLTIP]</li>
+                                <li>Algolia extension configuration</li>
+                            </ul>
+                            <b>No personal information is transmitted.</b>
+                        </span>
+                    </div>
+                    <br>
+                    <div class="admin__actions-switch" data-role="switcher">
+                        <input
+                            type="checkbox"
+                            class="admin__actions-switch-checkbox"
+                            id="send_additional_info"
+                            name="send_additional_info"
+                            value="1"
+                            checked />
+                        <label class="admin__actions-switch-label" for="send_additional_info">
+                            <span class="admin__actions-switch-text">
+                                Send list of an installed 3rd party modules and a catalog size [TOOLTIP]
+                            </span>
+                        </label>
                     </div>
 
                     <div class="button">
-                        <button type="submit" name="sent" value="sent" class="action submit primary algolia-daterange-submit"><?php echo __('Send') ?></button>
+                        <button
+                            type="submit"
+                            name="sent"
+                            value="sent"
+                            class="action submit primary algolia-daterange-submit">
+                            <?php echo __('Send') ?>
+                        </button>
                     </div>
                 </div>
             </div>

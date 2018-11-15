@@ -2,36 +2,36 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Support\Components;
 
+use Algolia\AlgoliaSearch\Helper\SupportHelper;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
-use Magento\Framework\Module\ModuleListInterface;
 
 class LegacyVersion extends Template
 {
     /** @var Context */
     private $backendContext;
 
-    /** @var ModuleListInterface */
-    private $moduleList;
+    /** @var SupportHelper */
+    private $supportHelper;
 
     /**
      * @param Context $context
-     * @param ModuleListInterface $moduleList
+     * @param SupportHelper $supportHelper
      * @param array $data
      */
     public function __construct(
         Context $context,
-        ModuleListInterface $moduleList,
+        SupportHelper $supportHelper,
         array $data = []
     ) {
         parent::__construct($context, $data);
 
         $this->backendContext = $context;
-        $this->moduleList = $moduleList;
+        $this->supportHelper = $supportHelper;
     }
 
     public function getExtensionVersion()
     {
-        return $this->moduleList->getOne('Algolia_AlgoliaSearch')['setup_version'];
+        return $this->supportHelper->getExtensionVersion();
     }
 }

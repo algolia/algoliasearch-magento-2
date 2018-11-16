@@ -565,7 +565,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param $object
      * @return int
      */
-    private function calculateObjectSize($object): int
+    private function calculateObjectSize($object)
     {
         return mb_strlen(json_encode($object));
     }

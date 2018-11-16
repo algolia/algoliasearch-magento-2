@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Layout;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Algolia search observer model
@@ -14,11 +15,13 @@ class Observer implements ObserverInterface
 {
     private $config;
     private $registry;
+    private $storeManager;
 
-    public function __construct(ConfigHelper $configHelper, Registry $registry)
+    public function __construct(ConfigHelper $configHelper, Registry $registry, StoreManagerInterface $storeManager)
     {
         $this->config = $configHelper;
         $this->registry = $registry;
+        $this->storeManager = $storeManager;
     }
 
     public function execute(\Magento\Framework\Event\Observer $observer)
@@ -47,6 +50,8 @@ class Observer implements ObserverInterface
 
     private function loadPreventBackendRenderingHandle(Layout $layout)
     {
+        $storeId = $this->storeManager->getStore()->getId();
+
         if ($this->config->preventBackendRendering() === false) {
             return;
         }
@@ -54,6 +59,10 @@ class Observer implements ObserverInterface
         /** @var \Magento\Catalog\Model\Category $category */
         $category = $this->registry->registry('current_category');
         if (!$category) {
+            return;
+        }
+
+        if (!$this->config->replaceCategories($storeId)) {
             return;
         }
 

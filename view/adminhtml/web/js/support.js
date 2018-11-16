@@ -131,6 +131,34 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 				})
 			);
 			
+			discourseSearch.on('render', function() {
+				// Loop over every containers
+				document.querySelectorAll(".ais-hits--item a").forEach(container => {
+					var content = container.querySelector('.content');
+					
+					// 186 - 3 lines, each line 62 chars max
+					if (content.textContent.replace(/\s/g, "").length >= 186) {
+						
+						
+						var style = document.createElement("style");
+						style.innerHTML = `
+							#${container.id} .content:after {
+								display: block;
+								content: "...";
+								position: absolute;
+								bottom: 0;
+								right: 0;
+								background:#FFF;
+								padding: 0 0.5ch;
+							}`;
+							
+						// And then insert this before the current container
+						container.parentNode.insertAdjacentElement("afterbegin", style);
+					}
+				});
+				
+			});
+			
 			discourseSearch.start();
 		}
 		
@@ -163,8 +191,6 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					}
 				})
 			);
-			
-			console.log(documentationSearch);
 			
 			documentationSearch.start();
 		}
@@ -211,7 +237,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	
 	function getDocumentationTemplate() {
 		return `
-			<a href="{{url}}" target="_blank">
+			<a href="{{url}}" target="_blank" id="doc_{{objectID}}">
 				<span class="heading">
 				{{#hierarchy.lvl1}}
 					{{{_highlightResult.hierarchy.lvl1.value}}}
@@ -239,7 +265,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	
 	function getDiscourseTemplate() {
 		return `
-			<a href="https://discourse.algolia.com{{url}}" target="_blank">
+			<a href="https://discourse.algolia.com{{url}}" target="_blank" id="disc_{{objectID}}">
 				<span class="heading">
 					{{{ _highlightResult.topic.title.value }}}
 					<img width="12" height="12" src="{{external_link_src}}">

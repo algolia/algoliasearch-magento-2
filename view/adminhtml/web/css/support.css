@@ -127,10 +127,21 @@
 
 .links a .content {
 	display: block;
+	position: relative;
 	color: #505050;
 	line-height: 20px;
 	margin-top: -4px;
 	height: 20px;
+}
+
+#results .links a {
+	margin-bottom: 25px;
+}
+
+#results .links a .content {
+	height: 60px;
+	max-width: 62ch;
+	white-space: normal;
 }
 
 a.footer {

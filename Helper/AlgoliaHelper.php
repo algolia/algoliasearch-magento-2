@@ -441,17 +441,40 @@ class AlgoliaHelper extends AbstractHelper
 
     private function handleTooBigRecord($object)
     {
-        $size = mb_strlen(json_encode($object));
+        $size = $this->calculateObjectSize($object);
 
         if ($size > $this->maxRecordSize) {
             foreach ($this->potentiallyLongAttributes as $attribute) {
                 if (isset($object[$attribute])) {
                     unset($object[$attribute]);
+
+                    // Recalculate size and check if it fits in Algolia index
+                    $size = $this->calculateObjectSize($object);
+                    if ($size < $this->maxRecordSize) {
+                        return $object;
+                    }
                 }
             }
 
-            $size = mb_strlen(json_encode($object));
+            // If the SKU attribute is the longest, start popping off SKU's to make it fit
+            // This has the downside that some products cannot be found on some of its childrens' SKU's
+            // But at least the config product can be indexed
+            // Always keep the original SKU though
+            if ($this->getLongestAttribute($object) == 'sku' && is_array($object['sku'])) {
+                foreach ($object['sku'] as $sku) {
+                    if (count($object['sku']) === 1) {
+                        break;
+                    }
+                    array_pop($object['sku']);
+                    $size = $this->calculateObjectSize($object);
+                    if ($size < $this->maxRecordSize) {
+                        return $object;
+                    }
+                }
+            }
 
+            // Recalculate size, if it still does not fit, let's skip it
+            $size = $this->calculateObjectSize($object);
             if ($size > $this->maxRecordSize) {
                 $object = false;
             }
@@ -536,5 +559,14 @@ class AlgoliaHelper extends AbstractHelper
     public function getLastTaskId()
     {
         return self::$lastTaskId;
+    }
+
+    /**
+     * @param $object
+     * @return int
+     */
+    private function calculateObjectSize($object): int
+    {
+        return mb_strlen(json_encode($object));
     }
 }

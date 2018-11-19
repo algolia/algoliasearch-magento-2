@@ -196,9 +196,12 @@ class Index extends Template
         $searches = $this->getSearchesByDates();
         $users = $this->getUsersCountByDates();
         $rates = $this->getResultRateByDates();
-        $clickPosition = $this->getClickPositionByDates();
-        $ctr = $this->getClickThroughRateByDates();
-        $conversion = $this->getConversionRateByDates();
+
+        if ($this->isClickAnalyticsEnabled()) {
+            $clickPosition = $this->getClickPositionByDates();
+            $ctr = $this->getClickThroughRateByDates();
+            $conversion = $this->getConversionRateByDates();
+        }
 
         foreach ($searches as &$search) {
             $search['users'] = $this->getDateValue($users, $search['date'], 'count');
@@ -259,6 +262,7 @@ class Index extends Template
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
                     $hit['name'] = $item->getName();
+                    $hit['url'] = $item->getProductUrl();
                 }
             }
         }
@@ -323,18 +327,22 @@ class Index extends Template
         );
     }
 
-    public function getTypeEditUrl($objectId)
+    public function getTypeEditUrl($objectId, $urlKey = null)
     {
         if ($this->getCurrentType() == 'products') {
-            return $this->getUrl('catalog/product/edit', array('id' => $objectId));
+            $links = array('edit' => $this->getUrl('catalog/product/edit', array('id' => $objectId)));
+            if ($urlKey) {
+                $links['view'] = $urlKey;
+            }
+             return $links;
         }
 
         if ($this->getCurrentType() == 'categories') {
-            return $this->getUrl('catalog/category/edit', array('id' => $objectId));
+            return array('edit' => $this->getUrl('catalog/category/edit', array('id' => $objectId)));
         }
 
         if ($this->getCurrentType() == 'pages') {
-            return $this->getUrl('cms/page/edit', array('page_id' => $objectId));
+            return array('edit' => $this->getUrl('cms/page/edit', array('page_id' => $objectId)));
         }
     }
 
@@ -417,8 +425,10 @@ class Index extends Template
         }
 
         $errors = $this->analyticsHelper->getErrors();
-        foreach ($errors as $message) {
-            $messagesBlock->addError($message);
+        if (count($errors)) {
+            foreach ($errors as $message) {
+                $messagesBlock->addError($message);
+            }
         }
 
         return $messagesBlock->toHtml();

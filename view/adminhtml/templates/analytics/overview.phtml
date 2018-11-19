@@ -124,9 +124,13 @@
                                 <tr>
                                     <td>
                                         <?php if (isset($search['name'])): ?>
-                                            <a href="<?php echo $this->getTypeEditUrl($search['hit']) ?>">
-                                                <?php echo $search['name'] ?>
-                                            </a>
+                                            <?php $link = $this->getTypeEditUrl($search['hit'], isset($search['url']) ? $search['url'] : null); ?>
+                                            <?php foreach ($link as $type => $url): ?>
+                                            <a href="<?php echo $url ?>">
+                                                <?php echo ucfirst($type); ?>
+                                            </a> |
+                                            <?php endforeach ?>
+                                            <?php echo $search['name'] ?>
                                         <?php else: ?>
                                             <?php echo $search['hit']; ?>
                                         <?php endif ?>

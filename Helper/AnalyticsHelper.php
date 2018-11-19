@@ -246,16 +246,11 @@ class AnalyticsHelper extends Analytics
             $response = $this->request('GET', $path, $params);
 
         } catch (\Exception $e) {
-            $this->addError($e->getMessage());
+            $this->_errors[] = $e->getMessage();
             $this->logger->log($e->getMessage());
         }
 
         return $response;
-    }
-
-    public function addError($msg)
-    {
-        $this->_errors[] = $msg;
     }
 
     public function getErrors()

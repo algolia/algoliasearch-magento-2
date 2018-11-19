@@ -123,17 +123,13 @@
                             <?php foreach ($this->getPopularResults() as $search): ?>
                                 <tr>
                                     <td>
-                                        <?php if (isset($search['name'])): ?>
-                                            <?php $link = $this->getTypeEditUrl($search['hit'], isset($search['url']) ? $search['url'] : null); ?>
-                                            <?php foreach ($link as $type => $url): ?>
-                                            <a href="<?php echo $url ?>">
+                                        <?php $link = $this->getTypeEditUrl($search); ?>
+                                        <?php foreach ($link as $type => $url): ?>
+                                            <a href="<?php echo $url ?>"<?php if ($type == 'view'): ?> target="_blank"<?php endif ?>>
                                                 <?php echo ucfirst($type); ?>
                                             </a> |
-                                            <?php endforeach ?>
-                                            <?php echo $search['name'] ?>
-                                        <?php else: ?>
-                                            <?php echo $search['hit']; ?>
-                                        <?php endif ?>
+                                        <?php endforeach ?>
+                                        <?php echo isset($search['name']) ? $search['name'] : $search['hit']; ?>
                                     </td>
                                     <td class="a-right"><?php echo $search['count'] ?></td>
                                 </tr>

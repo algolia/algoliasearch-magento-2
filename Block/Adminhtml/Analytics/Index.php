@@ -11,7 +11,9 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollection;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollection;
+use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollection;
 
 class Index extends Template
 {
@@ -43,8 +45,14 @@ class Index extends Template
     /** @var TimezoneInterface */
     private $dateTime;
 
-    /** @var CollectionFactory */
+    /** @var ProductCollection */
     private $productCollection;
+
+    /** @var CategoryCollection */
+    private $categoryCollection;
+
+    /** @var PageCollection */
+    private $pageCollection;
 
     protected $_analyticsParams = array();
 
@@ -60,7 +68,9 @@ class Index extends Template
      * @param Data $dataHelper
      * @param ConfigHelper $configHelper
      * @param TimezoneInterface $dateTime
-     * @param CollectionFactory $productCollection
+     * @param ProductCollection $productCollection
+     * @param CategoryCollection $categoryCollection
+     * @param PageCollection $pageCollection
      * @param array $data
      */
     public function __construct(
@@ -72,7 +82,9 @@ class Index extends Template
         Data $dataHelper,
         ConfigHelper $configHelper,
         TimezoneInterface $dateTime,
-        CollectionFactory $productCollection,
+        ProductCollection $productCollection,
+        CategoryCollection $categoryCollection,
+        PageCollection $pageCollection,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -87,7 +99,10 @@ class Index extends Template
 
         $this->analyticsHelper = $analyticsHelper;
         $this->dateTime = $dateTime;
+
         $this->productCollection = $productCollection;
+        $this->categoryCollection = $categoryCollection;
+        $this->pageCollection = $pageCollection;
     }
 
     /**
@@ -265,6 +280,30 @@ class Index extends Template
                     $hit['url'] = $item->getProductUrl();
                 }
             }
+
+            if ($this->getCurrentType() == 'categories') {
+                $collection = $this->categoryCollection->create();
+                $collection->addAttributeToSelect('name');
+                $collection->addAttributeToFilter('entity_id', array('in' => $objectIds));
+
+                foreach ($hits as &$hit) {
+                    $item = $collection->getItemById($hit['hit']);
+                    $hit['name'] = $item->getName();
+                    $hit['url'] = $item->getUrl();
+                }
+            }
+
+            if ($this->getCurrentType() == 'pages') {
+                $collection = $this->pageCollection->create();
+                $collection->addFieldToSelect(['page_id', 'title', 'identifier']);
+                $collection->addFieldToFilter('page_id', array('in' => $objectIds));
+
+                foreach ($hits as &$hit) {
+                    $item = $collection->getItemByColumnValue('page_id', $hit['hit']);
+                    $hit['name'] = $item->getTitle();
+                    $hit['url'] = $this->_urlBuilder->getUrl(null, ['_direct' => $item->getIdentifier()]);
+                }
+            }
         }
 
         return $hits;
@@ -327,23 +366,26 @@ class Index extends Template
         );
     }
 
-    public function getTypeEditUrl($objectId, $urlKey = null)
+    public function getTypeEditUrl($search)
     {
+        $links = array();
         if ($this->getCurrentType() == 'products') {
-            $links = array('edit' => $this->getUrl('catalog/product/edit', array('id' => $objectId)));
-            if ($urlKey) {
-                $links['view'] = $urlKey;
-            }
-             return $links;
+            $links['edit'] = $this->getUrl('catalog/product/edit', array('id' => $search['hit']));
         }
 
         if ($this->getCurrentType() == 'categories') {
-            return array('edit' => $this->getUrl('catalog/category/edit', array('id' => $objectId)));
+            $links['edit'] = $this->getUrl('catalog/category/edit', array('id' => $search['hit']));
         }
 
         if ($this->getCurrentType() == 'pages') {
-            return array('edit' => $this->getUrl('cms/page/edit', array('page_id' => $objectId)));
+            $links['edit'] = $this->getUrl('cms/page/edit', array('page_id' => $search['hit']));
         }
+
+        if (isset($search['url'])) {
+            $links['view'] = $search['url'];
+        }
+
+        return $links;
     }
 
     /**

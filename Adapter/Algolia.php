@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Adapter;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data as AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use AlgoliaSearch\AlgoliaConnectionException;
 use Magento\CatalogSearch\Helper\Data;
 use Magento\Customer\Model\Session as CustomerSession;
@@ -58,6 +59,9 @@ class Algolia implements AdapterInterface
     /** @var AlgoliaHelper */
     private $algoliaHelper;
 
+    /** @var ProductHelper\ */
+    private $productHelper;
+
     /** @var Http */
     private $request;
 
@@ -76,6 +80,7 @@ class Algolia implements AdapterInterface
      * @param Registry $registry
      * @param CustomerSession $customerSession
      * @param AlgoliaHelper $algoliaHelper
+     * @param ProductHelper $productHelper
      * @param Http $request
      * @param DocumentFactory $documentFactory
      */
@@ -91,6 +96,7 @@ class Algolia implements AdapterInterface
         Registry $registry,
         CustomerSession $customerSession,
         AlgoliaHelper $algoliaHelper,
+        ProductHelper $productHelper,
         Http $request,
         DocumentFactory $documentFactory
     ) {
@@ -105,6 +111,7 @@ class Algolia implements AdapterInterface
         $this->registry = $registry;
         $this->customerSession = $customerSession;
         $this->algoliaHelper = $algoliaHelper;
+        $this->productHelper = $productHelper;
         $this->request = $request;
         $this->documentFactory = $documentFactory;
     }
@@ -229,6 +236,15 @@ class Algolia implements AdapterInterface
                 $this->request->getParam($facet['attribute']) :
                 explode('~', $this->request->getParam($facet['attribute']));
 
+            // Backward compatibility with native Magento filtering
+            if (!$this->config->isInstantEnabled($storeId) && $this->isSearch()) {
+                foreach ($facetValues as $key => $facetValue) {
+                    if (is_numeric($facetValue)) {
+                        $facetValues[$key] = $this->getAttributeOptionLabelFromId($facet['attribute'], $facetValue);
+                    }
+                }
+            }
+
             if ($facet['attribute'] == 'categories') {
                 $level = '.level' . (count($facetValues) - 1);
                 $facetFilters[] = $facet['attribute'] . $level . ':' . implode(' /// ', $facetValues);
@@ -284,6 +300,36 @@ class Algolia implements AdapterInterface
         }
 
         return $searchParams;
+    }
+
+    /**
+     * Get the label of an attribute option from its id
+     *
+     * @param string $attribute
+     * @param int $value
+     *
+     * @return string
+     */
+    private function getAttributeOptionLabelFromId($attribute, $value)
+    {
+        $attributeOptionLabel = '';
+        $attrInfo = $this->productHelper->getAttributeInfo(
+            \Magento\Catalog\Model\Product::ENTITY,
+            $attribute
+        );
+
+        if ($attrInfo->getAttributeId()) {
+            $option = $this->productHelper->getAttributeOptionById(
+                $attrInfo->getAttributeId(),
+                $value
+            );
+
+            if (is_array($option->getData())) {
+                $attributeOptionLabel = $option['value'];
+            }
+        }
+
+        return $attributeOptionLabel;
     }
 
     /**

@@ -18,6 +18,8 @@ use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
+use Magento\Eav\Model\Entity\Attribute as EntityAttribute;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\Collection as AttributeOptionCollection;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -40,6 +42,8 @@ class ProductHelper
     private $categoryHelper;
     private $priceManager;
     private $imageHelper;
+    private $_entityAttribute;
+    private $_entityAttributeOptionCollection;
 
     /**
      * @var Type
@@ -93,7 +97,9 @@ class ProductHelper
         CurrencyHelper $currencyManager,
         CategoryHelper $categoryHelper,
         PriceManager $priceManager,
-        Type $productType
+        Type $productType,
+        EntityAttribute $entityAttribute,
+        AttributeOptionCollection $entityAttributeOptionCollection
     ) {
         $this->eavConfig = $eavConfig;
         $this->configHelper = $configHelper;
@@ -109,6 +115,8 @@ class ProductHelper
         $this->categoryHelper = $categoryHelper;
         $this->priceManager = $priceManager;
         $this->productType = $productType;
+        $this->entityAttribute = $entityAttribute;
+        $this->entityAttributeOptionCollection = $entityAttributeOptionCollection;
 
         $this->imageHelper = $this->objectManager->create(
             'Algolia\AlgoliaSearch\Helper\Image',
@@ -1048,5 +1056,37 @@ class ProductHelper
     private function explodeSynonyms($synonyms)
     {
         return array_map('trim', explode(',', $synonyms));
+    }
+
+    /**
+     * Get attribute info by attribute code and entity type
+     *
+     * @param mixed $entityType can be integer, string, or instance of class Mage\Eav\Model\Entity\Type
+     * @param string $attributeCode
+     *
+     * @return \Magento\Eav\Model\Entity\Attribute
+     */
+    public function getAttributeInfo($entityType, $attributeCode)
+    {
+        return $this->entityAttribute->loadByCode($entityType, $attributeCode);
+    }
+
+    /**
+     * Get particular option's name and value of the attribute
+     *
+     * @param int $attributeId
+     * @param int $optionId
+     *
+     * @return \Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\Collection
+     */
+    public function getAttributeOptionById($attributeId, $optionId)
+    {
+        return $this->entityAttributeOptionCollection
+            ->setPositionOrder('asc')
+            ->setAttributeFilter($attributeId)
+            ->setIdFilter($optionId)
+            ->setStoreFilter()
+            ->load()
+            ->getFirstItem();
     }
 }

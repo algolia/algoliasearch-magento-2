@@ -30,7 +30,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					container: '.doc.links',
 					templates: {
 						item: getDocumentationTemplate(),
-						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/" target="_blank">documentation</a>.'
+						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">documentation</a>.'
 					}
 				})
 			);
@@ -55,7 +55,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					templates: {
 						body: `
 					{{#morePages}}
-				        <a href="https://community.algolia.com/magento/doc/m2/getting-started/" class="footer" target="_blank">
+				        <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
 				            See all documentation ...
 				        </a>
 					{{/morePages}}
@@ -86,7 +86,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					container: '.links.forum',
 					templates: {
 						item: getDiscourseTemplate(),
-						empty: 'No results. Please change your search query or visit the <a href="https://discourse.algolia.com/tags/magento2" target="_blank">forum</a>.'
+						empty: 'No results. Please change your search query or visit the <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">forum</a>.'
 					},
 					transformData: {
 						item: function(hit) {
@@ -122,7 +122,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					templates: {
 						body: `
 					{{#morePages}}
-				        <a href="https://discourse.algolia.com/tags/magento2" class="footer" target="_blank">
+				        <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
 				            See all community forum ... ...
 				        </a>
 					{{/morePages}}
@@ -134,13 +134,13 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			discourseSearch.on('render', function() {
 				// Loop over every containers
 				document.querySelectorAll(".ais-hits--item a").forEach(container => {
-					var content = container.querySelector('.content');
+					const content = container.querySelector('.content');
 					
 					// 186 - 3 lines, each line 62 chars max
 					if (content.textContent.replace(/\s/g, "").length >= 186) {
 						
 						
-						var style = document.createElement("style");
+						let style = document.createElement("style");
 						style.innerHTML = `
 							#${container.id} .content:after {
 								display: block;
@@ -187,7 +187,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					container: '.contact_results',
 					templates: {
 						item: getDocumentationTemplate(),
-						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/" target="_blank">documentation</a>.'
+						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">documentation</a>.'
 					}
 				})
 			);
@@ -196,8 +196,8 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		}
 		
 		function searchFunction(helper) {
-			var $results = $('#results');
-			var $landing = $('#landing');
+			const $results = $('#results');
+			const $landing = $('#landing');
 			
 			if (helper.state.query === '') {
 				$results.hide();
@@ -215,7 +215,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	
 	function handleLatestVersion($) {
 		$.getJSON('https://api.github.com/repos/algolia/algoliasearch-magento-2/releases/latest', function(payload) {
-			var latestVersion = payload.name;
+			const latestVersion = payload.name;
 			
 			if(compareVersions(algoliaSearchExtentionsVersion, latestVersion) > 0) {
 				$('#current_version').text(algoliaSearchExtentionsVersion);
@@ -237,7 +237,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	
 	function getDocumentationTemplate() {
 		return `
-			<a href="{{url}}" target="_blank" id="doc_{{objectID}}">
+			<a href="{{url}}?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank" id="doc_{{objectID}}">
 				<span class="heading">
 				{{#hierarchy.lvl0}}
 					{{{_highlightResult.hierarchy.lvl0.value}}}
@@ -270,7 +270,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	
 	function getDiscourseTemplate() {
 		return `
-			<a href="https://discourse.algolia.com{{url}}" target="_blank" id="disc_{{objectID}}">
+			<a href="https://discourse.algolia.com{{url}}/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank" id="disc_{{objectID}}">
 				<span class="heading">
 					{{{ _highlightResult.topic.title.value }}}
 					<img width="12" height="12" src="{{external_link_src}}">
@@ -284,14 +284,14 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	
 	function escapeHighlightedString(str, highlightPreTag, highlightPostTag) {
 		highlightPreTag = highlightPreTag || '<em>';
-		var pre = document.createElement('div');
+		let pre = document.createElement('div');
 		pre.appendChild(document.createTextNode(highlightPreTag));
 		
 		highlightPostTag = highlightPostTag || '</em>';
-		var post = document.createElement('div');
+		let post = document.createElement('div');
 		post.appendChild(document.createTextNode(highlightPostTag));
 		
-		var div = document.createElement('div');
+		let div = document.createElement('div');
 		div.appendChild(document.createTextNode(str));
 		
 		return div.innerHTML
@@ -307,7 +307,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		left = sanitizeVersion(left);
 		right = sanitizeVersion(right);
 		
-		for (var i = 0; i < Math.max(left.length, right.length); i++) {
+		for (let i = 0; i < Math.max(left.length, right.length); i++) {
 			if (left[i] > right[i]) {
 				return -1;
 			}

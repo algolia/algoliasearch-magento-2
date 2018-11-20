@@ -14,8 +14,8 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		function initDocSearch() {
 			const documentationSearch = algoliaBundle.instantsearch({
 				appId: 'BH4D9OD16A',
-				apiKey: 'a23cdc99940ffad43a4f98733b845fdf',
-				indexName: 'magento_algolia',
+				apiKey: '8e4f2bbd342d977574767948ca5b5c8a',
+				indexName: 'magento2_algolia_support_page',
 				searchParameters: {
 					filters: 'NOT tags:m1',
 					hitsPerPage: 10
@@ -56,7 +56,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 						body: `
 					{{#morePages}}
 				        <a href="https://community.algolia.com/magento/doc/m2/getting-started/" class="footer" target="_blank">
-				            See more Documentation results ...
+				            See all documentation ...
 				        </a>
 					{{/morePages}}
 					`
@@ -71,7 +71,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			const discourseSearch = algoliaBundle.instantsearch({
 				appId: 'G25OKIW19Q',
 				apiKey: '7650ddf6ecb983c7cf3296c1aa225d0a',
-				indexName: 'discourse-posts',
+				indexName: 'discourse-posts_magento_support_page',
 				searchParameters: {
 					filters: 'topic.tags: magento',
 					hitsPerPage: 10
@@ -123,7 +123,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 						body: `
 					{{#morePages}}
 				        <a href="https://discourse.algolia.com/tags/magento2" class="footer" target="_blank">
-				            See more Community results ...
+				            See all community forum ... ...
 				        </a>
 					{{/morePages}}
 					`
@@ -165,8 +165,8 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		function initContactDocSearch() {
 			const documentationSearch = algoliaBundle.instantsearch({
 				appId: 'BH4D9OD16A',
-				apiKey: 'a23cdc99940ffad43a4f98733b845fdf',
-				indexName: 'magento_algolia',
+				apiKey: '8e4f2bbd342d977574767948ca5b5c8a',
+				indexName: 'magento2_algolia_support_page',
 				searchParameters: {
 					filters: 'NOT tags:m1',
 					hitsPerPage: 3
@@ -239,13 +239,18 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		return `
 			<a href="{{url}}" target="_blank" id="doc_{{objectID}}">
 				<span class="heading">
+				{{#hierarchy.lvl0}}
+					{{{_highlightResult.hierarchy.lvl0.value}}}
+				{{/hierarchy.lvl0}}
+				
 				{{#hierarchy.lvl1}}
-					{{{_highlightResult.hierarchy.lvl1.value}}}
+					> {{{_highlightResult.hierarchy.lvl1.value}}}
 				{{/hierarchy.lvl1}}
 				
 				{{#hierarchy.lvl2}}
 					 > {{{_highlightResult.hierarchy.lvl2.value}}}
 				{{/hierarchy.lvl2}}
+				
 				{{#hierarchy.lvl3}}
 					> {{{_highlightResult.hierarchy.lvl3.value}}}
 				{{/hierarchy.lvl3}}

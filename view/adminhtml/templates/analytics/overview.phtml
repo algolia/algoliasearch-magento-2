@@ -1,6 +1,6 @@
 <?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Analytics\Index */ ?>
+<?php echo $this->getMessagesHtml(); ?>
 <?php if ($this->isAnalyticsApiEnabled()): ?>
-    <?php echo $this->getMessagesHtml(); ?>
     <div class="algoliasearch-analytics-overview">
         <div class="row section">
             <strong><?php echo __('Viewing index:'); ?></strong> <?php echo $this->getIndexName() ?>
@@ -22,7 +22,7 @@
                     <div class="stat"><?php echo $this->getTotalUsersCount() ?></div>
                 </div>
                 <div class="one-third col-3">
-                    <h4><?php echo __('No Results Rate') ?>
+                    <h4><?php echo __('No results rate') ?>
                         <?php echo $this->getTooltipHtml(__('Percentage of searches that retrieved 0 results.')); ?>
                     </h4>
                     <div class="stat"><?php echo $this->getTotalResultRates() ?></div>
@@ -42,7 +42,7 @@
                 </div>
                 <div class="one-third col-2">
                     <div class="title">
-                        <h4><?php echo __('Conversion Rate') ?>
+                        <h4><?php echo __('Conversion rate') ?>
                             <?php echo $this->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.',
                                 $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_cc_analytics'))) ?>
                         </h4>
@@ -53,7 +53,7 @@
                 </div>
                 <div class="one-third col-3">
                     <div class="title">
-                        <h4><?php echo __('Click Position') ?>
+                        <h4><?php echo __('Click position') ?>
                             <?php echo $this->getTooltipHtml(__('Average position of clicks performed on the search results. A value of one would mean all users clicked on the first result. Smaller values are better.')) ?>
                         </h4>
                     </div>
@@ -66,15 +66,15 @@
         </div>
         <div class="row section daily-search-section">
             <div class="title">
-                <h3><?php echo __('Daily Searches') ?></h3>
-                <div class="total-search"><?php echo __('Total Searches') ?> <span class="count"><?php echo $this->getTotalCountOfSearches() ?></span></div>
+                <h3><?php echo __('Daily searches') ?></h3>
+                <div class="total-search"><?php echo __('Total searches') ?> <span class="count"><?php echo $this->getTotalCountOfSearches() ?></span></div>
             </div>
             <?php echo $this->getDailyChartHtml(); ?>
         </div>
         <div class="row thirds analytics-searches">
             <div class="one-third section popular-searches">
                 <div class="title">
-                    <h3><?php echo __('Popular Searches') ?>
+                    <h3><?php echo __('Popular searches') ?>
                         <?php echo $this->getTooltipHtml(__('Searches performed the most often by your users.')) ?>
                     </h3>
                 </div>
@@ -101,12 +101,12 @@
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See More Searches') ?></a>
+                    <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See more searches') ?></a>
                 </div>
             </div>
             <div class="one-third section no-result-searches">
                 <div class="title">
-                    <h3><?php echo __('Popular Results') ?>
+                    <h3><?php echo __('Popular results') ?>
                         <?php echo $this->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
                     </h3>
                 </div>
@@ -141,12 +141,12 @@
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See More Results') ?></a>
+                    <a href="https://www.algolia.com/analytics/popular/" target="_blank"><?php echo __('See more results') ?></a>
                 </div>
             </div>
             <div class="one-third section no-result-searches">
                 <div class="title">
-                    <h3><?php echo __('No Result Searches') ?>
+                    <h3><?php echo __('No result searches') ?>
                         <?php echo $this->getTooltipHtml(__("Searches that retrieved 0 results, either because a word didn't match, or because some filters excluded all of the matching results.")); ?>
                     </h3>
                 </div>
@@ -173,7 +173,7 @@
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/no-results/" target="_blank"><?php echo __('See More No Results') ?></a>
+                    <a href="https://www.algolia.com/analytics/no-results/" target="_blank"><?php echo __('See more no results') ?></a>
                 </div>
             </div>
         </div>

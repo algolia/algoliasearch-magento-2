@@ -34,7 +34,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 							<div class="no-results">
 								<img src="` + noResultsIllustration + `" /><br>
 								Sorry, no results found. Try using more general words,<br>
-								fewer words or visit the <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">documentation</a>.
+								fewer words or visit the <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">Algolia documentation</a>.
 							</div>
 						`
 					}
@@ -96,7 +96,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 							<div class="no-results">
 								<img src="` + noResultsIllustration + `" /><br>
 								Sorry, no results found. Try using more general words,<br>
-								fewer words or visit the <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">forum</a>.
+								fewer words or visit the <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">Community forum</a>.
 							</div>
 						`
 					},
@@ -231,7 +231,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			
 			if(compareVersions(algoliaSearchExtentionsVersion, latestVersion) > 0) {
 				$('#current_version').text(algoliaSearchExtentionsVersion);
-				$('#latest_version').text(latestVersion);
+				$('.version.latest_version').text(latestVersion);
 				
 				$('.legacy_version').show();
 			}
@@ -241,7 +241,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	function getSearchBoxWidget(showIcons = false) {
 		return algoliaBundle.instantsearch.widgets.searchBox({
 			container: '#search_box',
-			placeholder: 'Start typing your topic, i.e. indexing',
+			placeholder: 'Search a topic, i.e. "images not showing"',
 			reset: showIcons,
 			magnifier: showIcons
 		});

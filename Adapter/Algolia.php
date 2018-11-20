@@ -215,16 +215,42 @@ class Algolia implements AdapterInterface
         $searchParams = [];
         $searchParams['facetFilters'] = [];
 
+        // Handle pagination
         $page = !is_null($this->request->getParam('page')) ?
             (int) $this->request->getParam('page') - 1 :
             0;
         $searchParams['page'] = $page;
 
+        // Handle category context
         $category = $this->registry->registry('current_category');
         if ($category) {
             $searchParams['facetFilters'][] = 'categoryIds:' . $category->getEntityId();
         }
 
+        // Handle facet filtering
+        $searchParams['facetFilters'] = array_merge(
+            $searchParams['facetFilters'],
+            $this->getFacetFilters($storeId)
+        );
+
+        // Handle price filtering
+        $searchParams = array_merge(
+            $searchParams,
+            $this->getPriceFilters($storeId)
+        );
+
+        return $searchParams;
+    }
+
+    /**
+     * Get the facet filters from the url
+     *
+     * @param int $storeId
+     *
+     * @return array
+     */
+    private function getFacetFilters($storeId)
+    {
         $facetFilters = [];
 
         foreach ($this->config->getFacets($storeId) as $facet) {
@@ -270,7 +296,19 @@ class Algolia implements AdapterInterface
             }
         }
 
-        $searchParams['facetFilters'] = array_merge($searchParams['facetFilters'], $facetFilters);
+        return $facetFilters;
+    }
+
+    /**
+     * Get the price filters from the url
+     *
+     * @param int $storeId
+     *
+     * @return array
+     */
+    private function getPriceFilters($storeId)
+    {
+        $priceFilters = [];
 
         // Handle price filtering
         $currencyCode = $this->storeManager->getStore()->getCurrentCurrencyCode();
@@ -291,15 +329,15 @@ class Algolia implements AdapterInterface
 
             if (count($prices) == 2) {
                 if ($prices[0] != '') {
-                    $searchParams['numericFilters'][] = $priceSlider . '>=' . $prices[0];
+                    $priceFilters['numericFilters'][] = $priceSlider . '>=' . $prices[0];
                 }
                 if ($prices[1] != '') {
-                    $searchParams['numericFilters'][] = $priceSlider . '<=' . $prices[1];
+                    $priceFilters['numericFilters'][] = $priceSlider . '<=' . $prices[1];
                 }
             }
         }
 
-        return $searchParams;
+        return $priceFilters;
     }
 
     /**

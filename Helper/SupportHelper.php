@@ -8,7 +8,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class SupportHelper
 {
-    const INTERNAL_API_PROXY_URL = 'https://lj1hut7upg.execute-api.us-east-2.amazonaws.com/dev/';
+    const INTERNAL_API_PROXY_URL = 'https://aoxhxuxgd0.execute-api.us-east-2.amazonaws.com/1/';
 
     /** @var ConfigHelper */
     private $configHelper;
@@ -97,7 +97,7 @@ class SupportHelper
 
         $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL);
+        curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL . 'get-info/');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

@@ -30,7 +30,13 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					container: '.doc.links',
 					templates: {
 						item: getDocumentationTemplate(),
-						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">documentation</a>.'
+						empty: `
+							<div class="no-results">
+								<img src="` + noResultsIllustration + `" /><br>
+								Sorry, no results found. Try using more general words,<br>
+								fewer words or visit the <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">documentation</a>.
+							</div>
+						`
 					}
 				})
 			);
@@ -86,7 +92,13 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					container: '.links.forum',
 					templates: {
 						item: getDiscourseTemplate(),
-						empty: 'No results. Please change your search query or visit the <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">forum</a>.'
+						empty: `
+							<div class="no-results">
+								<img src="` + noResultsIllustration + `" /><br>
+								Sorry, no results found. Try using more general words,<br>
+								fewer words or visit the <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">forum</a>.
+							</div>
+						`
 					},
 					transformData: {
 						item: function(hit) {
@@ -273,7 +285,6 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			<a href="https://discourse.algolia.com{{url}}/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank" id="disc_{{objectID}}">
 				<span class="heading">
 					{{{ _highlightResult.topic.title.value }}}
-					<img width="12" height="12" src="{{external_link_src}}">
 				</span>
 				
 				<span class="content">

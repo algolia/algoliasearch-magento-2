@@ -144,6 +144,19 @@
 	white-space: normal;
 }
 
+.links .no-results {
+	text-align: center;
+	font-size: 14px;
+}
+
+.links .no-results img {
+	margin: 37px 0;
+}
+
+.links .no-results a {
+	display: inline;
+}
+
 a.footer {
 	display: block;
 	margin-top: 25px;
@@ -293,4 +306,8 @@ a.footer {
 	max-height: 60px;
 	height: unset;
 	white-space: normal;
+}
+
+.contact_results .ais-hits__empty {
+	font-size: 12px;
 }

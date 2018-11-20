@@ -3,6 +3,7 @@
 $docIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-documentation.svg');
 $comIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-community.svg');
 $vidIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-videotutorials.svg');
+$noResultsIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-no-results.svg');
 
 $videoDiscover = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-discover.png');
 $videoQueue = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-queue.png');
@@ -16,6 +17,10 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
     ->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml')
     ->toHtml();
 ?>
+
+<script>
+	const noResultsIllustration = "<?php echo $noResultsIllustration; ?>"
+</script>
 
 <div class="search-box-wrapper">
     <input type="text" name="q" id="search_box" />

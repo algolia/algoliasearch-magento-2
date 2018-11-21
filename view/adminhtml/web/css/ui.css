@@ -1,0 +1,26 @@
+.algoliasearch-tooltip.admin__field-tooltip {
+    margin-top: -1px;
+    width: auto;
+}
+
+.algoliasearch-tooltip.admin__field-tooltip .admin__field-tooltip-action {
+    margin-left: 1rem;
+}
+.algoliasearch-tooltip.admin__field-tooltip .admin__field-tooltip-action:before {
+    color: #3ab2bd;
+    opacity: .5;
+}
+
+.algoliasearch-tooltip.admin__field-tooltip .admin__field-tooltip-content {
+    background: #fff;
+    bottom: 4.2rem;
+    font-weight: normal;
+    font-size: 13px;
+    line-height: 18px;
+    width: 24rem;
+    text-align: left;
+}
+
+.algoliasearch-tooltip.admin__field-tooltip .admin__field-tooltip-content::after {
+    border-top-color: #fff;
+}

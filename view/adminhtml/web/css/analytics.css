@@ -87,33 +87,6 @@
 }
 
 
-.algoliasearch-analytics-overview .admin__field-tooltip {
-    margin-top: -1px;
-    width: auto;
-}
-
-.algoliasearch-analytics-overview .admin__field-tooltip .admin__field-tooltip-action {
-    margin-left: 1rem;
-}
-.algoliasearch-analytics-overview .admin__field-tooltip .admin__field-tooltip-action:before {
-    color: #3ab2bd;
-    opacity: .5;
-}
-
-.algoliasearch-analytics-overview .admin__field-tooltip .admin__field-tooltip-content {
-    background: #fff;
-    bottom: 4.2rem;
-    font-weight: normal;
-    font-size: 13px;
-    line-height: 18px;
-    width: 24rem;
-    text-align: left;
-}
-
-.algoliasearch-analytics-overview .admin__field-tooltip .admin__field-tooltip-content::after {
-    border-top-color: #fff;
-}
-
 .algoliasearch-analytics-overview .analytics-content {
     border-bottom: 1px solid #e5e5e5;
 }

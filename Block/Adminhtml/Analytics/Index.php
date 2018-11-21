@@ -349,7 +349,7 @@ class Index extends Template
     public function getDailyChartHtml()
     {
         $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
-        $block->setTemplate('Algolia_AlgoliaSearch::analytics/ui/graph.phtml');
+        $block->setTemplate('Algolia_AlgoliaSearch::analytics/graph.phtml');
         $block->setData('analytics', $this->getDailySearchData());
         return $block->toHtml();
     }
@@ -362,7 +362,7 @@ class Index extends Template
     public function getTooltipHtml($message)
     {
         $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
-        $block->setTemplate('Algolia_AlgoliaSearch::analytics/ui/tooltips.phtml');
+        $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltips.phtml');
         $block->setData('message', $message);
         return $block->toHtml();
     }

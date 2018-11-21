@@ -3,11 +3,6 @@
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Analytics;
 
 use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
@@ -27,21 +22,6 @@ class Index extends Template
     /** @var AnalyticsHelper */
     private $analyticsHelper;
 
-    /** @var Data */
-    private $dataHelper;
-
-    /** @var ConfigHelper */
-    private $configHelper;
-
-    /** @var Product */
-    private $productHelper;
-
-    /** @var CategoryHelper */
-    private $categoryHelper;
-
-    /** @var PageHelper */
-    private $pageHelper;
-
     /** @var TimezoneInterface */
     private $dateTime;
 
@@ -56,17 +36,10 @@ class Index extends Template
 
     protected $_analyticsParams = array();
 
-    protected $_clientData;
-
     /**
      * Index constructor.
      * @param Context $context
      * @param AnalyticsHelper $analyticsHelper
-     * @param ProductHelper $productHelper
-     * @param CategoryHelper $categoryHelper
-     * @param PageHelper $pageHelper
-     * @param Data $dataHelper
-     * @param ConfigHelper $configHelper
      * @param TimezoneInterface $dateTime
      * @param ProductCollection $productCollection
      * @param CategoryCollection $categoryCollection
@@ -76,11 +49,6 @@ class Index extends Template
     public function __construct(
         Context $context,
         AnalyticsHelper $analyticsHelper,
-        ProductHelper $productHelper,
-        CategoryHelper $categoryHelper,
-        PageHelper $pageHelper,
-        Data $dataHelper,
-        ConfigHelper $configHelper,
         TimezoneInterface $dateTime,
         ProductCollection $productCollection,
         CategoryCollection $categoryCollection,
@@ -90,16 +58,8 @@ class Index extends Template
         parent::__construct($context, $data);
 
         $this->backendContext = $context;
-        $this->dataHelper = $dataHelper;
-        $this->configHelper = $configHelper;
-
-        $this->productHelper = $productHelper;
-        $this->categoryHelper = $categoryHelper;
-        $this->pageHelper = $pageHelper;
-
         $this->analyticsHelper = $analyticsHelper;
         $this->dateTime = $dateTime;
-
         $this->productCollection = $productCollection;
         $this->categoryCollection = $categoryCollection;
         $this->pageCollection = $pageCollection;
@@ -107,7 +67,6 @@ class Index extends Template
 
     /**
      * @return mixed
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getIndexName()
     {
@@ -118,7 +77,6 @@ class Index extends Template
     /**
      * @param array $additional
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getAnalyticsParams($additional = array())
     {
@@ -335,7 +293,7 @@ class Index extends Template
     public function getAnalyticRetentionDays()
     {
         $retention = self::DEFAULT_RETENTION_DAYS;
-        $clientData = $this->getClientData();
+        $clientData = $this->analyticsHelper->getClientData();
         if (isset($clientData['analytics_retention_days'])) {
             $retention = (int) $clientData['analytics_retention_days'];
         }
@@ -359,11 +317,7 @@ class Index extends Template
      */
     public function getSections()
     {
-        return $sections = array(
-            'products' => $this->dataHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $this->getStore()->getId()),
-            'categories' => $this->dataHelper->getIndexName($this->categoryHelper->getIndexNameSuffix(), $this->getStore()->getId()),
-            'pages' => $this->dataHelper->getIndexName($this->pageHelper->getIndexNameSuffix(), $this->getStore()->getId())
-        );
+        return $this->analyticsHelper->getAnalyticsIndices($this->getStore()->getId());
     }
 
     public function getTypeEditUrl($search)
@@ -429,26 +383,12 @@ class Index extends Template
     
     public function isAnalyticsApiEnabled()
     {
-        $clientData = $this->getClientData();
-        return $clientData && isset($clientData['analytics_api']) ? $clientData['analytics_api'] : 0;
+        return $this->analyticsHelper->isAnalyticsApiEnabled();
     }
 
     public function isClickAnalyticsEnabled()
     {
-        if (!$this->configHelper->isClickConversionAnalyticsEnabled()) {
-            return false;
-        }
-
-        $clientData = $this->getClientData();
-        return $clientData && isset($clientData['click_analytics']) ? $clientData['click_analytics'] : 0;
-    }    
-
-    public function getClientData()
-    {
-        if (!$this->_clientData) {
-            $this->_clientData = $this->analyticsHelper->getClientSettings();
-        }
-        return $this->_clientData;
+        return $this->analyticsHelper->isClickAnalyticsEnabled();
     }
 
     /**

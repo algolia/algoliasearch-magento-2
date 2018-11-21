@@ -4,6 +4,10 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 use AlgoliaSearch\Analytics;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Data;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 
 class AnalyticsHelper extends Analytics
 {
@@ -14,6 +18,26 @@ class AnalyticsHelper extends Analytics
 
     const INTERNAL_API_PROXY_URL = 'https://lj1hut7upg.execute-api.us-east-2.amazonaws.com/dev/';
 
+    /** @var \Algolia\AlgoliaSearch\Helper\AlgoliaHelper */
+    private $algoliaHelper;
+
+    /** @var \Algolia\AlgoliaSearch\Helper\ConfigHelper */
+    private $configHelper;
+
+    /** @var Data */
+    private $dataHelper;
+
+    /** @var Product */
+    private $productHelper;
+
+    /** @var CategoryHelper */
+    private $categoryHelper;
+
+    /** @var PageHelper */
+    private $pageHelper;
+
+    private $logger;
+    
     /** Cache variables to prevent excessive calls */
     protected $_searches;
     protected $_users;
@@ -23,26 +47,43 @@ class AnalyticsHelper extends Analytics
     protected $_clickThroughs;
     protected $_conversions;
 
+    protected $_clientData;
+
     protected $_errors = array();
-
-    /** @var \Algolia\AlgoliaSearch\Helper\AlgoliaHelper */
-    private $algoliaHelper;
-
-    /** @var \Algolia\AlgoliaSearch\Helper\ConfigHelper */
-    private $configHelper;
-
-    private $logger;
 
     public function __construct(
         AlgoliaHelper $algoliaHelper,
         ConfigHelper $configHelper,
+        Data $dataHelper,
+        ProductHelper $productHelper,
+        CategoryHelper $categoryHelper,
+        PageHelper $pageHelper,
         Logger $logger
     ) {
         $this->algoliaHelper = $algoliaHelper;
         $this->configHelper = $configHelper;
+
+        $this->dataHelper = $dataHelper;
+        $this->productHelper = $productHelper;
+        $this->categoryHelper = $categoryHelper;
+        $this->pageHelper = $pageHelper;
+
         $this->logger = $logger;
 
         parent::__construct($algoliaHelper->getClient());
+    }
+
+    /**
+     * @param $storeId
+     * @return array
+     */
+    public function getAnalyticsIndices($storeId)
+    {
+        return $sections = array(
+            'products' => $this->dataHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId),
+            'categories' => $this->dataHelper->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
+            'pages' => $this->dataHelper->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId)
+        );
     }
 
     /**
@@ -224,6 +265,35 @@ class AnalyticsHelper extends Analytics
     {
         $conversion = $this->getConversionRate($params);
         return $conversion && isset($conversion['dates']) ? $conversion['dates'] : array();
+    }
+
+    /**
+     * Client Data Check
+     *
+     * @return mixed
+     */
+    public function getClientData()
+    {
+        if (!$this->_clientData) {
+            $this->_clientData = $this->getClientSettings();
+        }
+        return $this->_clientData;
+    }
+
+    public function isAnalyticsApiEnabled()
+    {
+        $clientData = $this->getClientData();
+        return $clientData && isset($clientData['analytics_api']) ? $clientData['analytics_api'] : 0;
+    }
+
+    public function isClickAnalyticsEnabled()
+    {
+        if (!$this->configHelper->isClickConversionAnalyticsEnabled()) {
+            return false;
+        }
+
+        $clientData = $this->getClientData();
+        return $clientData && isset($clientData['click_analytics']) ? $clientData['click_analytics'] : 0;
     }
 
     /**

@@ -46,14 +46,7 @@ class Algolia implements AdapterInterface
      * @param ResourceConnection $resource
      * @param AggregationBuilder $aggregationBuilder
      * @param TemporaryStorageFactory $temporaryStorageFactory
-     * @param ConfigHelper $config
-     * @param Data $catalogSearchHelper
-     * @param StoreManagerInterface $storeManager
-     * @param Registry $registry
-     * @param CustomerSession $customerSession
-     * @param AlgoliaHelper $algoliaHelper
-     * @param ProductHelper $productHelper
-     * @param Http $request
+     * @param AdapterHelper $adapterHelper
      * @param DocumentFactory $documentFactory
      */
     public function __construct(

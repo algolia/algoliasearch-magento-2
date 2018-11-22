@@ -4,7 +4,7 @@
     {{#hasManyResults}}
         {{^hasNoResults}}{{first}}-{{last}} out of{{/hasNoResults}}
         <strong>
-            {{#helpers.formatNumber}}{{nbHits}}{{/helpers.formatNumber}}
+            <span itemprop="numberOfItems">{{#helpers.formatNumber}}{{nbHits}}{{/helpers.formatNumber}}</span>
             <?php echo $block->escapeHtml(__('results found')); ?>
         </strong>
     {{/hasManyResults}}

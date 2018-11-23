@@ -8,7 +8,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class SupportHelper
 {
-    const INTERNAL_API_PROXY_URL = 'https://aoxhxuxgd0.execute-api.us-east-2.amazonaws.com/1/';
+    const INTERNAL_API_PROXY_URL = 'https://magento-proxy.algolia.com/';
 
     /** @var ConfigHelper */
     private $configHelper;

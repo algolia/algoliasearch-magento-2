@@ -344,13 +344,17 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			if (section.name === 'products') {
 				source.templates.footer = function (query, content) {
 					var keys = [];
-					for (var key in content.facets['categories.level0']) {
-						var url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + encodeURIComponent(query.query) + '#q=' + encodeURIComponent(query.query) + '&hFR[categories.level0][0]=' + encodeURIComponent(key) + '&idx=' + algoliaConfig.indexName + '_products';
-						keys.push({
-							key: key,
-							value: content.facets['categories.level0'][key],
-							url: url
-						});
+					for (var i = 0; i<algoliaConfig.facets.length; i++) {
+						if (algoliaConfig.facets[i].attribute == "categories") {
+							for (var key in content.facets['categories.level0']) {
+								var url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + encodeURIComponent(query.query) + '#q=' + encodeURIComponent(query.query) + '&hFR[categories.level0][0]=' + encodeURIComponent(key) + '&idx=' + algoliaConfig.indexName + '_products';
+								keys.push({
+									key: key,
+									value: content.facets['categories.level0'][key],
+									url: url
+								});
+							}
+						}
 					}
 
 					keys.sort(function (a, b) {
@@ -360,11 +364,11 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					var ors = '';
 
 					if (keys.length > 0) {
-						ors += '<span><a href="' + keys[0].url + '">' + keys[0].key + '</a></span>';
-					}
-
-					if (keys.length > 1) {
-						ors += ', <span><a href="' + keys[1].url + '">' + keys[1].key + '</a></span>';
+						var orsTab = [];
+						for (var i = 0; i < keys.length && i < 2; i++) {
+							orsTab.push('<span><a href="' + keys[i].url + '">' + keys[i].key + '</a></span>');
+						}
+						ors = orsTab.join(', ');
 					}
 
 					var allUrl = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + encodeURIComponent(query.query);

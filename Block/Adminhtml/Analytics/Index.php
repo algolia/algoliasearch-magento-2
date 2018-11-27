@@ -65,9 +65,6 @@ class Index extends Template
         $this->pageCollection = $pageCollection;
     }
 
-    /**
-     * @return mixed
-     */
     public function getIndexName()
     {
         $sections = $this->getSections();
@@ -162,7 +159,7 @@ class Index extends Template
     }
 
     /**
-     * Get aggregated Daily data from three separate calls
+     * Get aggregated Daily data from separate calls
      */
     public function getDailySearchData()
     {
@@ -193,12 +190,6 @@ class Index extends Template
         return $searches;
     }
 
-    /**
-     * @param $array
-     * @param $date
-     * @param $valueKey
-     * @return string
-     */
     protected function getDateValue($array, $date, $valueKey)
     {
         $value = '';

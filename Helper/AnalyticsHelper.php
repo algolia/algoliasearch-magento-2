@@ -16,7 +16,7 @@ class AnalyticsHelper extends Analytics
     const ANALYTICS_FILTER_PATH = '/2/filters';
     const ANALYTICS_CLICKS_PATH = '/2/clicks';
 
-    const INTERNAL_API_PROXY_URL = 'https://lj1hut7upg.execute-api.us-east-2.amazonaws.com/dev/';
+    const INTERNAL_API_PROXY_URL = 'https://magento-proxy.algolia.com/';
 
     /** @var \Algolia\AlgoliaSearch\Helper\AlgoliaHelper */
     private $algoliaHelper;
@@ -336,14 +336,15 @@ class AnalyticsHelper extends Analytics
         $token = $appId . ':' . $apiKey;
         $token = base64_encode($token);
         $token = str_replace(["\n", '='], '', $token);
+
         $params = array(
             'appId' => $appId,
             'token' => $token,
-            'type' => 'analytics',
+            'type' => 'analytics'
         );
     
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL);
+        curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL . 'get-info/');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -354,7 +355,7 @@ class AnalyticsHelper extends Analytics
         if ($res) {
             $res = json_decode($res, true);
         }
-        
+
         return $res;
     }
 }

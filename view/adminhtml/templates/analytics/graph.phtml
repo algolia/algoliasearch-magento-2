@@ -1,4 +1,4 @@
-<?php if (count($this->getAnalytics())): ?>
+<?php if (!empty($block->getAnalytics())): ?>
 <div id="algolia-analyatics-diagram"></div>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
@@ -8,7 +8,7 @@
 
         var data = new google.visualization.arrayToDataTable([
             ['Date', 'Searches', {type: 'string', role: 'tooltip', p: {'html': true}}, {role: 'style'}],
-            <?php foreach ($this->getAnalytics() as $item): ?>
+            <?php foreach ($block->getAnalytics() as $item): ?>
             ['<?php echo $item['formatted'] ?>', <?php echo $item['count'] ?>,
                 "<div style='padding: 1.5rem; line-height: 18px;'><strong style='font-size: 14px;'><?php echo $item['formatted'] ?></strong><br/><br/>" +
                 "<p>Searches: <strong style='color: #5468ff; padding-left: 3px;'><?php echo $item['count'] ?></strong></p>" +

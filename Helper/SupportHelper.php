@@ -74,7 +74,7 @@ class SupportHelper
             'lastname' => $lastname,
             'subject' => $data['subject'],
             'text' => $data['message'],
-            'noteText' => $this->getNoteText($data['send_additional_info']),
+            'note' => $this->getNoteData($data['send_additional_info']),
         ];
 
         return $this->pushMessage($messageData);
@@ -118,55 +118,41 @@ class SupportHelper
      *
      * @throws \Zend_Db_Statement_Exception
      *
-     * @return string
+     * @return array
      */
-    private function getNoteText($sendAdditionalData = false)
+    private function getNoteData($sendAdditionalData = false)
     {
-        $noteText = [];
+        $queueInfo = $this->getQueueInfo();
 
-        $noteText[] = $this->getGeneralMagentoInfo();
-        $noteText[] = $this->getQueueInfo();
-        $noteText[] = $this->getQueueArchiveInfo();
-        $noteText[] = $this->getAlgoliaConfiguration();
+        $noteData = [
+            'extension_version' => $this->getExtensionVersion(),
+            'magento_version' => $this->configHelper->getMagentoVersion(),
+            'magento_edition' => $this->configHelper->getMagentoEdition(),
+            'queue_jobs_count' => $queueInfo['count'],
+            'queue_oldest_job' => $queueInfo['oldest'],
+            'queue_archive_rows' => $this->getQueueArchiveInfo(),
+            'algolia_configuration' => $this->getAlgoliaConfiguration(),
+        ];
 
         if ($sendAdditionalData === true) {
-            $noteText[] = $this->getCatalogInfo();
-            $noteText[] = $this->get3rdPartyModules();
+            $noteData['catalog_info'] = $this->getCatalogInfo();
+            $noteData['modules'] = $this->get3rdPartyModules();
         }
 
-        $noteText = implode('<br><br>', $noteText);
-
-        return $noteText;
-    }
-
-    /** @return string */
-    private function getGeneralMagentoInfo()
-    {
-        $magentoInfo = [];
-
-        $magentoInfo[] = '<b>Extension version:</b> ' . $this->getExtensionVersion();
-        $magentoInfo[] = '<b>Magento version:</b> ' . $this->configHelper->getMagentoVersion();
-        $magentoInfo[] = '<b>Magento edition:</b> ' . $this->configHelper->getMagentoEdition();
-
-        return implode('<br>', $magentoInfo);
+        return $noteData;
     }
 
     /**
      * @throws \Zend_Db_Statement_Exception
      *
-     * @return string
+     * @return array
      */
     private function getQueueInfo()
     {
-        $queueInfoText = [];
-
         $query = 'SELECT COUNT(*) as `count`, MIN(created) as `oldest` FROM ' . $this->queueTable;
         $queueInfo = $this->dbConnection->query($query)->fetch();
 
-        $queueInfoText[] = '<b>Number of jobs in indexing queue:</b> ' . $queueInfo['count'];
-        $queueInfoText[] = '<b>Oldest job in indexing queue was created at:</b> ' . $queueInfo['oldest'];
-
-        return implode('<br>', $queueInfoText);
+        return $queueInfo;
     }
 
     /**
@@ -185,7 +171,6 @@ class SupportHelper
 
         $archiveRows = $this->dbConnection->query($query)->fetchAll();
         if ($archiveRows) {
-            $queueArchiveInfo[] = '<b>Queue archive rows (20 newest rows):</b>';
 
             $firstRow = reset($archiveRows);
             $headers = array_keys($firstRow);
@@ -296,7 +281,7 @@ class SupportHelper
      */
     private function getCatalogInfo()
     {
-        $catalogInfoText = ['<b>Catalog size (by product type):</b>'];
+        $catalogInfoText = [];
 
         $query = 'SELECT type_id, COUNT(*) as `count` FROM ' . $this->catalogTable . ' GROUP BY type_id';
         $catalogInfo = $this->dbConnection->query($query)->fetchAll(\PDO::FETCH_KEY_PAIR);
@@ -329,7 +314,6 @@ class SupportHelper
 
         $modules = $this->dbConnection->query($query)->fetchAll();
         if ($modules) {
-            $modulesText[] = '<b>3rd party modules:</b>';
             $firstRow = reset($modules);
             $headers = array_keys($firstRow);
             $modulesText[] = implode(' || ', $headers);

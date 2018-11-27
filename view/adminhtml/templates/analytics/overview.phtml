@@ -125,7 +125,7 @@
                                     <td>
                                         <?php $link = $block->getTypeEditUrl($search); ?>
                                         <?php foreach ($link as $type => $url): ?>
-                                            <a href="<?php echo $url ?>"<?php if ($type == 'view'): ?> target="_blank"<?php endif ?>>
+                                            <a href="<?php echo $url ?>"<?php echo $type == 'view' ? ' target="_blank"' : '' ?>>
                                                 <?php echo ucfirst($type); ?>
                                             </a> |
                                         <?php endforeach ?>

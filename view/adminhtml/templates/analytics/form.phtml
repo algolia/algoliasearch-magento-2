@@ -6,7 +6,7 @@
         <div class="inline-field">
             <select name="type" class="select admin__control-select"<?php echo $isFormDisabled ?>>
                 <?php foreach ($block->getSections() as $key => $section): ?>
-                    <option value="<?php echo $key ?>" <?php if ($key == $block->getFormValue('type')): ?>selected<?php endif ?>>
+                    <option value="<?php echo $key ?>"<?php echo $key == $block->getFormValue('type') ? ' selected' : '' ?>>
                         <?php echo ucwords($key) ?>
                     </option>
                 <?php endforeach; ?>

@@ -226,7 +226,7 @@ class Index extends Template
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
                     $hit['name'] = $item->getName();
-                    $hit['url'] = $item->getProductUrl();
+                    $hit['url'] = $item->getProductUrl(false);
                 }
             }
 

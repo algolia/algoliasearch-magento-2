@@ -1045,6 +1045,10 @@ class ProductHelper
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
                 ]);
+              
+                if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
+                    break;
+                }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
                     $index->deleteRule($hit['objectID'], true);

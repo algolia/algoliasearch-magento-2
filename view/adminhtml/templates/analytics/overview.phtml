@@ -179,5 +179,11 @@
         </div>
     </div>
 <?php else: ?>
-    <?php echo __('Analytics is not available with your business plan.') ?>
+<div class="analytics-not-available">
+    <p><?php echo __('Your current plan doesn\'t make it possible for you to access analytic data from your Magento extension. You can however access it from your Algolia dashboard.') ?></p>
+    <p><?php echo __('Upgrading to a higher plan will give you access to this data and more.') ?></p>
+    <div class="button-wrapper">
+        <a href="https://www.algolia.com/billing/overview/" target="_blank" class="button"><?php echo __('Upgrade') ?></a>
+    </div>
+</div>
 <?php endif ?>

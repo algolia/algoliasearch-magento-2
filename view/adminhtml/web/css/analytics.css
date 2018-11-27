@@ -129,3 +129,28 @@
     min-height: 360px;
 }
 
+.analytics-not-available {
+    box-sizing: border-box;
+    width: 75%;
+    border: 1px solid #adadad;
+    margin: 5rem auto;
+    padding: 2.5rem 2rem;
+}
+.analytics-not-available p {
+    margin-bottom: 2rem;
+}
+
+.analytics-not-available .button-wrapper {
+    text-align: right;
+}
+
+.analytics-not-available .button {
+    padding: 10px 15px;
+    color: #333;
+    font-weight: 500;
+    border: 1px solid #adadad;
+}
+.analytics-not-available .button:hover {
+    text-decoration: none;
+    border-color: #25333A;
+}

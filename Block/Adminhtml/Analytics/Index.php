@@ -392,9 +392,14 @@ class Index extends Template
         /** @var $messagesBlock \Magento\Framework\View\Element\Messages */
         $messagesBlock = $this->_layout->createBlock(\Magento\Framework\View\Element\Messages::class);
 
-        if (!$this->checkIsValidDateRange()) {
-            $messagesBlock->addNotice(__('The selected date is out of your analytics retention window (%1 days), your data might not be present anymore.',
-                $this->getAnalyticRetentionDays()));
+        if (!$this->checkIsValidDateRange() && $this->isAnalyticsApiEnabled()) {
+            $noticeHtml = __('The selected date is out of your analytics retention window (%1 days), your data might not be present anymore.',
+                $this->getAnalyticRetentionDays())
+                . '<br/>'
+                . __('To increase your retention and access more data, you could switch to a <a href="%1" target="_blank">higher plan.</a>',
+                    'https://www.algolia.com/billing/overview/');
+
+            $messagesBlock->addNotice($noticeHtml);
         }
 
         $errors = $this->analyticsHelper->getErrors();

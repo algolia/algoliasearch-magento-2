@@ -34,7 +34,7 @@ class Index extends Template
     /** @var PageCollection */
     private $pageCollection;
 
-    protected $_analyticsParams = array();
+    private $analyticsParams = [];
 
     /**
      * Index constructor.
@@ -77,9 +77,8 @@ class Index extends Template
      */
     public function getAnalyticsParams($additional = array())
     {
-        if (!count($this->_analyticsParams)) {
-
-            $params = array('index' => $this->getIndexName());
+        if (empty($this->analyticsParams)) {
+            $params = ['index' => $this->getIndexName()];
             if ($formData = $this->_backendSession->getAlgoliaAnalyticsFormData()) {
                 if (isset($formData['from']) && $formData['from'] !== '') {
                     $params['startDate'] = date('Y-m-d', $this->dateTime->date($formData['from'])->getTimestamp());
@@ -89,10 +88,10 @@ class Index extends Template
                 }
             }
             
-            $this->_analyticsParams = $params;
+            $this->analyticsParams = $params;
         }
 
-        return array_merge($this->_analyticsParams, $additional);
+        return array_merge($this->analyticsParams, $additional);
     }
 
     public function getTotalCountOfSearches()
@@ -190,7 +189,7 @@ class Index extends Template
         return $searches;
     }
 
-    protected function getDateValue($array, $date, $valueKey)
+    private function getDateValue($array, $date, $valueKey)
     {
         $value = '';
         foreach ($array as $item) {
@@ -204,16 +203,17 @@ class Index extends Template
 
     public function getTopSearches()
     {
-        $topSearches = $this->analyticsHelper->getTopSearches($this->getAnalyticsParams(array('limit' => self::LIMIT_RESULTS)));
-        return isset($topSearches['searches']) ? $topSearches['searches'] : array();
+        $topSearches = $this->analyticsHelper->getTopSearches(
+            $this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS]));
+        return isset($topSearches['searches']) ? $topSearches['searches'] : [];
     }
 
     public function getPopularResults()
     {
-        $popular = $this->analyticsHelper->getTopHits($this->getAnalyticsParams(array('limit' => self::LIMIT_RESULTS)));
-        $hits = isset($popular['hits']) ? $popular['hits'] : array();
+        $popular = $this->analyticsHelper->getTopHits($this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS]));
+        $hits = isset($popular['hits']) ? $popular['hits'] : [];
 
-        if (count($hits)) {
+        if (!empty($hits)) {
             $objectIds = array_map(function($arr) {
                 return $arr['hit'];
             }, $hits);
@@ -221,7 +221,7 @@ class Index extends Template
             if ($this->getCurrentType() == 'products') {
                 $collection = $this->productCollection->create();
                 $collection->addAttributeToSelect('name');
-                $collection->addAttributeToFilter('entity_id', array('in' => $objectIds));
+                $collection->addAttributeToFilter('entity_id', ['in' => $objectIds]);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -233,7 +233,7 @@ class Index extends Template
             if ($this->getCurrentType() == 'categories') {
                 $collection = $this->categoryCollection->create();
                 $collection->addAttributeToSelect('name');
-                $collection->addAttributeToFilter('entity_id', array('in' => $objectIds));
+                $collection->addAttributeToFilter('entity_id', ['in' => $objectIds]);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -245,7 +245,7 @@ class Index extends Template
             if ($this->getCurrentType() == 'pages') {
                 $collection = $this->pageCollection->create();
                 $collection->addFieldToSelect(['page_id', 'title', 'identifier']);
-                $collection->addFieldToFilter('page_id', array('in' => $objectIds));
+                $collection->addFieldToFilter('page_id', ['in' => $objectIds]);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemByColumnValue('page_id', $hit['hit']);
@@ -260,8 +260,9 @@ class Index extends Template
 
     public function getNoResultSearches()
     {
-        $noResults = $this->analyticsHelper->getTopSearchesNoResults($this->getAnalyticsParams(array('limit' => self::LIMIT_RESULTS)));
-        return $noResults && isset($noResults['searches']) ? $noResults['searches'] : array();
+        $noResults = $this->analyticsHelper->getTopSearchesNoResults(
+            $this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS]));
+        return $noResults && isset($noResults['searches']) ? $noResults['searches'] : [];
     }
 
     public function checkIsValidDateRange()
@@ -313,17 +314,17 @@ class Index extends Template
 
     public function getTypeEditUrl($search)
     {
-        $links = array();
+        $links = [];
         if ($this->getCurrentType() == 'products') {
-            $links['edit'] = $this->getUrl('catalog/product/edit', array('id' => $search['hit']));
+            $links['edit'] = $this->getUrl('catalog/product/edit', ['id' => $search['hit']]);
         }
 
         if ($this->getCurrentType() == 'categories') {
-            $links['edit'] = $this->getUrl('catalog/category/edit', array('id' => $search['hit']));
+            $links['edit'] = $this->getUrl('catalog/category/edit', ['id' => $search['hit']]);
         }
 
         if ($this->getCurrentType() == 'pages') {
-            $links['edit'] = $this->getUrl('cms/page/edit', array('page_id' => $search['hit']));
+            $links['edit'] = $this->getUrl('cms/page/edit', ['page_id' => $search['hit']]);
         }
 
         if (isset($search['url'])) {
@@ -393,17 +394,17 @@ class Index extends Template
         $messagesBlock = $this->_layout->createBlock(\Magento\Framework\View\Element\Messages::class);
 
         if (!$this->checkIsValidDateRange() && $this->isAnalyticsApiEnabled()) {
-            $noticeHtml = __('The selected date is out of your analytics retention window (%1 days), your data might not be present anymore.',
-                $this->getAnalyticRetentionDays())
-                . '<br/>'
-                . __('To increase your retention and access more data, you could switch to a <a href="%1" target="_blank">higher plan.</a>',
-                    'https://www.algolia.com/billing/overview/');
+            $noticeHtml = __('The selected date is out of your analytics retention window (%1 days), 
+                your data might not be present anymore.', $this->getAnalyticRetentionDays());
+            $noticeHtml .= '<br/>';
+            $noticeHtml .=  __('To increase your retention and access more data, you could switch to a 
+                <a href="%1" target="_blank">higher plan.</a>', 'https://www.algolia.com/billing/overview/');
 
             $messagesBlock->addNotice($noticeHtml);
         }
 
         $errors = $this->analyticsHelper->getErrors();
-        if (count($errors)) {
+        if (!empty($errors)) {
             foreach ($errors as $message) {
                 $messagesBlock->addError($message);
             }

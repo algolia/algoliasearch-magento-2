@@ -39,17 +39,17 @@ class AnalyticsHelper extends Analytics
     private $logger;
     
     /** Cache variables to prevent excessive calls */
-    protected $_searches;
-    protected $_users;
-    protected $_rateOfNoResults;
+    private $searches;
+    private $users;
+    private $rateOfNoResults;
 
-    protected $_clickPositions;
-    protected $_clickThroughs;
-    protected $_conversions;
+    private $clickPositions;
+    private $clickThroughs;
+    private $conversions;
 
-    protected $_clientData;
+    private $clientData;
 
-    protected $_errors = array();
+    private $errors = [];
 
     public function __construct(
         AlgoliaHelper $algoliaHelper,
@@ -79,11 +79,11 @@ class AnalyticsHelper extends Analytics
      */
     public function getAnalyticsIndices($storeId)
     {
-        return $sections = array(
+        return $sections = [
             'products' => $this->dataHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId),
             'categories' => $this->dataHelper->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
             'pages' => $this->dataHelper->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId)
-        );
+        ];
     }
 
     /**
@@ -99,10 +99,10 @@ class AnalyticsHelper extends Analytics
 
     public function getCountOfSearches(array $params)
     {
-        if (!$this->_searches) {
-            $this->_searches = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/count', $params);
+        if (!$this->searches) {
+            $this->searches = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/count', $params);
         }
-        return $this->_searches;
+        return $this->searches;
     }
 
     public function getTotalCountOfSearches(array $params)
@@ -114,7 +114,7 @@ class AnalyticsHelper extends Analytics
     public function getSearchesByDates(array $params)
     {
         $searches = $this->getCountOfSearches($params);
-        return $searches && isset($searches['dates']) ? $searches['dates'] : array();
+        return $searches && isset($searches['dates']) ? $searches['dates'] : [];
     }
 
     public function getTopSearchesNoResults(array $params)
@@ -124,10 +124,10 @@ class AnalyticsHelper extends Analytics
 
     public function getRateOfNoResults(array $params)
     {
-        if (!$this->_rateOfNoResults) {
-            $this->_rateOfNoResults = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/noResultRate', $params);
+        if (!$this->rateOfNoResults) {
+            $this->rateOfNoResults = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/noResultRate', $params);
         }
-        return $this->_rateOfNoResults;
+        return $this->rateOfNoResults;
     }
 
     public function getTotalResultRates(array $params)
@@ -139,7 +139,7 @@ class AnalyticsHelper extends Analytics
     public function getResultRateByDates(array $params)
     {
         $result = $this->getRateOfNoResults($params);
-        return $result && isset($result['dates']) ? $result['dates'] : array();
+        return $result && isset($result['dates']) ? $result['dates'] : [];
     }
 
     /**
@@ -166,10 +166,10 @@ class AnalyticsHelper extends Analytics
      */
     public function getUsers(array $params)
     {
-        if (!$this->_users) {
-            $this->_users = $this->fetch('/2/users/count', $params);
+        if (!$this->users) {
+            $this->users = $this->fetch('/2/users/count', $params);
         }
-        return $this->_users;
+        return $this->users;
     }
 
     public function getTotalUsersCount(array $params)
@@ -181,7 +181,7 @@ class AnalyticsHelper extends Analytics
     public function getUsersCountByDates(array $params)
     {
         $users = $this->getUsers($params);
-        return $users && isset($users['dates']) ? $users['dates'] : array();
+        return $users && isset($users['dates']) ? $users['dates'] : [];
     }
 
     /**
@@ -224,47 +224,47 @@ class AnalyticsHelper extends Analytics
      */
     public function getAverageClickPosition(array $params)
     {
-        if (!$this->_clickPositions) {
-            $this->_clickPositions = $this->fetch(self::ANALYTICS_CLICKS_PATH . '/averageClickPosition', $params);
+        if (!$this->clickPositions) {
+            $this->clickPositions = $this->fetch(self::ANALYTICS_CLICKS_PATH . '/averageClickPosition', $params);
         }
 
-        return $this->_clickPositions;
+        return $this->clickPositions;
     }
 
     public function getAverageClickPositionByDates(array $params)
     {
         $click = $this->getAverageClickPosition($params);
-        return $click && isset($click['dates']) ? $click['dates'] : array();
+        return $click && isset($click['dates']) ? $click['dates'] : [];
     }
 
     public function getClickThroughRate(array $params)
     {
-        if (!$this->_clickThroughs) {
-            $this->_clickThroughs = $this->fetch(self::ANALYTICS_CLICKS_PATH . '/clickThroughRate', $params);
+        if (!$this->clickThroughs) {
+            $this->clickThroughs = $this->fetch(self::ANALYTICS_CLICKS_PATH . '/clickThroughRate', $params);
         }
 
-        return $this->_clickThroughs;
+        return $this->clickThroughs;
     }
 
     public function getClickThroughRateByDates(array $params)
     {
         $click = $this->getClickThroughRate($params);
-        return $click && isset($click['dates']) ? $click['dates'] : array();
+        return $click && isset($click['dates']) ? $click['dates'] : [];
     }
 
     public function getConversionRate(array $params)
     {
-        if (!$this->_conversions) {
-            $this->_conversions = $this->fetch('/2/conversions/conversionRate', $params);
+        if (!$this->conversions) {
+            $this->conversions = $this->fetch('/2/conversions/conversionRate', $params);
         }
 
-        return $this->_conversions;
+        return $this->conversions;
     }
 
     public function getConversionRateByDates(array $params)
     {
         $conversion = $this->getConversionRate($params);
-        return $conversion && isset($conversion['dates']) ? $conversion['dates'] : array();
+        return $conversion && isset($conversion['dates']) ? $conversion['dates'] : [];
     }
 
     /**
@@ -274,10 +274,10 @@ class AnalyticsHelper extends Analytics
      */
     public function getClientData()
     {
-        if (!$this->_clientData) {
-            $this->_clientData = $this->getClientSettings();
+        if (!$this->clientData) {
+            $this->clientData = $this->getClientSettings();
         }
-        return $this->_clientData;
+        return $this->clientData;
     }
 
     public function isAnalyticsApiEnabled()
@@ -303,20 +303,19 @@ class AnalyticsHelper extends Analytics
      * @param array $params
      * @return mixed
      */
-    protected function fetch($path, array $params)
+    private function fetch($path, array $params)
     {
         $response = false;
 
         try {
             // analytics api requires index name for all calls
             if (!isset($params['index'])) {
-                throw new \Exception('Algolia Analytics API requires an index name.');
+                throw new \Magento\Framework\Exception\LocalizedException('Algolia Analytics API requires an index name.');
             }
 
             $response = $this->request('GET', $path, $params);
-
         } catch (\Exception $e) {
-            $this->_errors[] = $e->getMessage();
+            $this->errors[] = $e->getMessage();
             $this->logger->log($e->getMessage());
         }
 
@@ -325,7 +324,7 @@ class AnalyticsHelper extends Analytics
 
     public function getErrors()
     {
-        return $this->_errors;
+        return $this->errors;
     }
 
     public function getClientSettings()
@@ -337,11 +336,11 @@ class AnalyticsHelper extends Analytics
         $token = base64_encode($token);
         $token = str_replace(["\n", '='], '', $token);
 
-        $params = array(
+        $params = [
             'appId' => $appId,
             'token' => $token,
             'type' => 'analytics'
-        );
+        ];
     
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL . 'get-info/');

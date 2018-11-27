@@ -21,7 +21,7 @@ class Update extends AbstractAction
             ->setTemplate('Algolia_AlgoliaSearch::analytics/overview.phtml')
             ->toHtml();
 
-        $response->setData(array('html_content' => $block));
+        $response->setData(['html_content' => $block]);
 
         return $this->resultJsonFactory->create()->setJsonData($response->toJson());
     }

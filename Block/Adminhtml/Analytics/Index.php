@@ -75,7 +75,7 @@ class Index extends Template
      * @param array $additional
      * @return array
      */
-    public function getAnalyticsParams($additional = array())
+    public function getAnalyticsParams($additional = [])
     {
         if (empty($this->analyticsParams)) {
             $params = ['index' => $this->getIndexName()];

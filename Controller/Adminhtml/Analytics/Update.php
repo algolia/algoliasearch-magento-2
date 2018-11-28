@@ -5,9 +5,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Analytics;
 class Update extends AbstractAction
 {
     /**
-     * Return AJAX Overview Content Section.
-     *
-     * @return \Magento\Framework\View\Result\Page
+     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
      */
     public function execute()
     {

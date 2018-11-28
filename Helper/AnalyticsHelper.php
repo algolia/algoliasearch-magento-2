@@ -2,12 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use AlgoliaSearch\Analytics;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use AlgoliaSearch\Analytics;
 
 class AnalyticsHelper extends Analytics
 {
@@ -37,7 +35,7 @@ class AnalyticsHelper extends Analytics
     private $pageHelper;
 
     private $logger;
-    
+
     /** Cache variables to prevent excessive calls */
     private $searches;
     private $users;
@@ -207,8 +205,8 @@ class AnalyticsHelper extends Analytics
 
     public function getTopFiltersForAttributesAndSearch(array $attributes, $search, array $params)
     {
-        return $this->fetch(self::ANALYTICS_FILTER_PATH . '/' . implode(',',
-                $attributes) . '?search=' . urlencode($search), $params);
+        return $this->fetch(self::ANALYTICS_FILTER_PATH . '/' . implode(',', $attributes)
+            . '?search=' . urlencode($search), $params);
     }
 
     public function getTopFiltersForAttribute($attribute, array $params)
@@ -341,16 +339,16 @@ class AnalyticsHelper extends Analytics
             'token' => $token,
             'type' => 'analytics'
         ];
-    
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL . 'get-info/');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-         
+
         $res = curl_exec($ch);
-        curl_close ($ch);
-        
+        curl_close($ch);
+
         if ($res) {
             $res = json_decode($res, true);
         }

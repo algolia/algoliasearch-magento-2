@@ -3,8 +3,8 @@
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Analytics;
 
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\View\LayoutFactory;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action

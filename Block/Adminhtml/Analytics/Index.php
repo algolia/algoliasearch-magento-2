@@ -5,10 +5,10 @@ namespace Algolia\AlgoliaSearch\Block\Adminhtml\Analytics;
 use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollection;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollection;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 class Index extends Template
 {
@@ -87,7 +87,7 @@ class Index extends Template
                     $params['endDate'] = date('Y-m-d', $this->dateTime->date($formData['to'])->getTimestamp());
                 }
             }
-            
+
             $this->analyticsParams = $params;
         }
 
@@ -198,13 +198,16 @@ class Index extends Template
                 break;
             }
         }
+
         return $value;
     }
 
     public function getTopSearches()
     {
         $topSearches = $this->analyticsHelper->getTopSearches(
-            $this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS]));
+            $this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS])
+        );
+
         return isset($topSearches['searches']) ? $topSearches['searches'] : [];
     }
 
@@ -214,7 +217,7 @@ class Index extends Template
         $hits = isset($popular['hits']) ? $popular['hits'] : [];
 
         if (!empty($hits)) {
-            $objectIds = array_map(function($arr) {
+            $objectIds = array_map(function ($arr) {
                 return $arr['hit'];
             }, $hits);
 
@@ -261,7 +264,9 @@ class Index extends Template
     public function getNoResultSearches()
     {
         $noResults = $this->analyticsHelper->getTopSearchesNoResults(
-            $this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS]));
+            $this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS])
+        );
+
         return $noResults && isset($noResults['searches']) ? $noResults['searches'] : [];
     }
 
@@ -269,7 +274,6 @@ class Index extends Template
     {
         if ($formData = $this->_backendSession->getAlgoliaAnalyticsFormData()) {
             if (isset($formData['from']) && !empty($formData['from'])) {
-
                 $startDate = $this->dateTime->date($formData['from']);
                 $diff = date_diff($startDate, $this->dateTime->date());
 
@@ -287,7 +291,7 @@ class Index extends Template
         $retention = self::DEFAULT_RETENTION_DAYS;
         $clientData = $this->analyticsHelper->getClientData();
         if (isset($clientData['analytics_retention_days'])) {
-            $retention = (int) $clientData['analytics_retention_days'];
+            $retention = (int)$clientData['analytics_retention_days'];
         }
 
         return $retention;
@@ -300,6 +304,7 @@ class Index extends Template
                 return $formData['type'];
             }
         }
+
         return self::DEFAULT_TYPE;
     }
 
@@ -372,7 +377,7 @@ class Index extends Template
 
         return $storeManager->getDefaultStoreView();
     }
-    
+
     public function isAnalyticsApiEnabled()
     {
         return $this->analyticsHelper->isAnalyticsApiEnabled();
@@ -397,7 +402,7 @@ class Index extends Template
             $noticeHtml = __('The selected date is out of your analytics retention window (%1 days), 
                 your data might not be present anymore.', $this->getAnalyticRetentionDays());
             $noticeHtml .= '<br/>';
-            $noticeHtml .=  __('To increase your retention and access more data, you could switch to a 
+            $noticeHtml .= __('To increase your retention and access more data, you could switch to a 
                 <a href="%1" target="_blank">higher plan.</a>', 'https://www.algolia.com/billing/overview/');
 
             $messagesBlock->addNotice($noticeHtml);

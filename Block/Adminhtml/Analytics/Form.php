@@ -27,6 +27,6 @@ class Form extends Index
             $formData['from'] = date('d M Y', strtotime("-7 day"));
         }
 
-        return ($formData && isset($formData[$key])) ? $formData[$key] :  '';
+        return ($formData && isset($formData[$key])) ? $formData[$key] : '';
     }
 }

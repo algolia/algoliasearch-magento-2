@@ -4,9 +4,6 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Analytics;
 
 class Update extends AbstractAction
 {
-    /**
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\Result\Json|\Magento\Framework\Controller\ResultInterface
-     */
     public function execute()
     {
         $response = $this->_objectManager->create(\Magento\Framework\DataObject::class);

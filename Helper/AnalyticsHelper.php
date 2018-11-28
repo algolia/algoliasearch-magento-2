@@ -49,6 +49,16 @@ class AnalyticsHelper extends Analytics
 
     private $errors = [];
 
+    /**
+     * AnalyticsHelper constructor.
+     * @param AlgoliaHelper $algoliaHelper
+     * @param ConfigHelper $configHelper
+     * @param Data $dataHelper
+     * @param ProductHelper $productHelper
+     * @param CategoryHelper $categoryHelper
+     * @param PageHelper $pageHelper
+     * @param Logger $logger
+     */
     public function __construct(
         AlgoliaHelper $algoliaHelper,
         ConfigHelper $configHelper,
@@ -71,10 +81,6 @@ class AnalyticsHelper extends Analytics
         parent::__construct($algoliaHelper->getClient());
     }
 
-    /**
-     * @param $storeId
-     * @return array
-     */
     public function getAnalyticsIndices($storeId)
     {
         return $sections = [
@@ -100,18 +106,21 @@ class AnalyticsHelper extends Analytics
         if (!$this->searches) {
             $this->searches = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/count', $params);
         }
+
         return $this->searches;
     }
 
     public function getTotalCountOfSearches(array $params)
     {
         $searches = $this->getCountOfSearches($params);
+
         return $searches && isset($searches['count']) ? $searches['count'] : 0;
     }
 
     public function getSearchesByDates(array $params)
     {
         $searches = $this->getCountOfSearches($params);
+
         return $searches && isset($searches['dates']) ? $searches['dates'] : [];
     }
 
@@ -125,18 +134,21 @@ class AnalyticsHelper extends Analytics
         if (!$this->rateOfNoResults) {
             $this->rateOfNoResults = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/noResultRate', $params);
         }
+
         return $this->rateOfNoResults;
     }
 
     public function getTotalResultRates(array $params)
     {
         $result = $this->getRateOfNoResults($params);
+
         return $result && isset($result['rate']) ? round($result['rate'] * 100, 2) . '%' : 0;
     }
 
     public function getResultRateByDates(array $params)
     {
         $result = $this->getRateOfNoResults($params);
+
         return $result && isset($result['dates']) ? $result['dates'] : [];
     }
 
@@ -167,18 +179,21 @@ class AnalyticsHelper extends Analytics
         if (!$this->users) {
             $this->users = $this->fetch('/2/users/count', $params);
         }
+
         return $this->users;
     }
 
     public function getTotalUsersCount(array $params)
     {
         $users = $this->getUsers($params);
+
         return $users && isset($users['count']) ? $users['count'] : 0;
     }
 
     public function getUsersCountByDates(array $params)
     {
         $users = $this->getUsers($params);
+
         return $users && isset($users['dates']) ? $users['dates'] : [];
     }
 
@@ -232,6 +247,7 @@ class AnalyticsHelper extends Analytics
     public function getAverageClickPositionByDates(array $params)
     {
         $click = $this->getAverageClickPosition($params);
+
         return $click && isset($click['dates']) ? $click['dates'] : [];
     }
 
@@ -247,6 +263,7 @@ class AnalyticsHelper extends Analytics
     public function getClickThroughRateByDates(array $params)
     {
         $click = $this->getClickThroughRate($params);
+
         return $click && isset($click['dates']) ? $click['dates'] : [];
     }
 
@@ -262,6 +279,7 @@ class AnalyticsHelper extends Analytics
     public function getConversionRateByDates(array $params)
     {
         $conversion = $this->getConversionRate($params);
+
         return $conversion && isset($conversion['dates']) ? $conversion['dates'] : [];
     }
 
@@ -275,12 +293,14 @@ class AnalyticsHelper extends Analytics
         if (!$this->clientData) {
             $this->clientData = $this->getClientSettings();
         }
+
         return $this->clientData;
     }
 
     public function isAnalyticsApiEnabled()
     {
         $clientData = $this->getClientData();
+
         return $clientData && isset($clientData['analytics_api']) ? $clientData['analytics_api'] : 0;
     }
 
@@ -291,6 +311,7 @@ class AnalyticsHelper extends Analytics
         }
 
         $clientData = $this->getClientData();
+
         return $clientData && isset($clientData['click_analytics']) ? $clientData['click_analytics'] : 0;
     }
 
@@ -308,7 +329,8 @@ class AnalyticsHelper extends Analytics
         try {
             // analytics api requires index name for all calls
             if (!isset($params['index'])) {
-                throw new \Magento\Framework\Exception\LocalizedException('Algolia Analytics API requires an index name.');
+                $msg = __('Algolia Analytics API requires an index name.');
+                throw new \Magento\Framework\Exception\LocalizedException($msg);
             }
 
             $response = $this->request('GET', $path, $params);

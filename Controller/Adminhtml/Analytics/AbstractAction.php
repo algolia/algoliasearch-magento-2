@@ -9,13 +9,13 @@ use Magento\Framework\View\LayoutFactory;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /** @var ResultFactory  */
+    /** @var ResultFactory */
     protected $resultFactory;
 
-    /** @var JsonFactory  */
+    /** @var JsonFactory */
     protected $resultJsonFactory;
 
-    /** @var LayoutFactory  */
+    /** @var LayoutFactory */
     protected $layoutFactory;
 
     /**
@@ -37,7 +37,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $this->layoutFactory = $layoutFactory;
     }
 
-    /** @return bool */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');

@@ -68,6 +68,7 @@ class Index extends Template
     public function getIndexName()
     {
         $sections = $this->getSections();
+
         return $sections[$this->getCurrentType()];
     }
 
@@ -291,7 +292,7 @@ class Index extends Template
         $retention = self::DEFAULT_RETENTION_DAYS;
         $clientData = $this->analyticsHelper->getClientData();
         if (isset($clientData['analytics_retention_days'])) {
-            $retention = (int)$clientData['analytics_retention_days'];
+            $retention = (int) $clientData['analytics_retention_days'];
         }
 
         return $retention;
@@ -348,6 +349,7 @@ class Index extends Template
         $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
         $block->setTemplate('Algolia_AlgoliaSearch::analytics/graph.phtml');
         $block->setData('analytics', $this->getDailySearchData());
+
         return $block->toHtml();
     }
 
@@ -361,6 +363,7 @@ class Index extends Template
         $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
         $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltips.phtml');
         $block->setData('message', $message);
+
         return $block->toHtml();
     }
 
@@ -390,7 +393,6 @@ class Index extends Template
 
     /**
      * Messages rendered HTML getter.
-     *
      * @return string
      */
     public function getMessagesHtml()

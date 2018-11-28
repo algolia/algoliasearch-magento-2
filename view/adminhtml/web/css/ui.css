@@ -24,3 +24,20 @@
 .algoliasearch-tooltip.admin__field-tooltip .admin__field-tooltip-content::after {
     border-top-color: #fff;
 }
+
+
+.algoliasearch-admin-icon:after {
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Admin Icons';
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    speak: none;
+}
+
+
+.as-icon-new-window:after {
+    content: '\e644';
+    font-size: 1rem;
+    padding-left: .75rem;
+}

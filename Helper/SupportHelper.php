@@ -108,9 +108,16 @@ class SupportHelper
 
         if ($res) {
             $res = json_decode($res, true);
+
+            if (array_key_exists('extension_support', $res)) {
+                return $res['extension_support'];
+            }
         }
 
-        return $res['extension_support'];
+        // In case the call to API proxy fails,
+        // be "nice" and return true
+
+        return true;
     }
 
     /**
@@ -171,7 +178,6 @@ class SupportHelper
 
         $archiveRows = $this->dbConnection->query($query)->fetchAll();
         if ($archiveRows) {
-
             $firstRow = reset($archiveRows);
             $headers = array_keys($firstRow);
             $noteText[] = implode(' || ', $headers);

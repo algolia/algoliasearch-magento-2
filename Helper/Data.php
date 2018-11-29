@@ -80,6 +80,11 @@ class Data
         $this->storeManager = $storeManager;
     }
 
+    public function getConfigHelper()
+    {
+        return $this->configHelper;
+    }
+
     public function deleteObjects($storeId, $ids, $indexName)
     {
         if ($this->isIndexingEnabled($storeId) === false) {

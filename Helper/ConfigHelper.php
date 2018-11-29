@@ -750,6 +750,11 @@ class ConfigHelper
         );
     }
 
+    public function getStoreId()
+    {
+        return $this->storeManager->getStore()->getId();
+    }
+
     public function getCurrency($storeId = null)
     {
         /** @var Magento\Store\Model\Store $store */

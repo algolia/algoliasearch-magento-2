@@ -52,6 +52,12 @@ class SupportHelper
     }
 
     /** @return string */
+    public function getApplicationId()
+    {
+        return $this->configHelper->getApplicationID();
+    }
+
+    /** @return string */
     public function getExtensionVersion()
     {
         return $this->configHelper->getExtensionVersion();
@@ -83,7 +89,7 @@ class SupportHelper
     /** @return bool */
     public function isExtensionSupportEnabled()
     {
-        $appId = $this->configHelper->getApplicationID();
+        $appId = $this->getApplicationID();
         $apiKey = $this->configHelper->getAPIKey();
 
         $token = $appId . ':' . $apiKey;

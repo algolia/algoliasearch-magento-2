@@ -35,4 +35,10 @@ class Index extends Template
     {
         return $this->supportHelper->isExtensionSupportEnabled();
     }
+
+    /** @return string */
+    public function getApplicationId()
+    {
+        return $this->supportHelper->getApplicationId();
+    }
 }

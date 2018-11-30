@@ -62,7 +62,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 						body: `
 					{{#morePages}}
 				        <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
-				            See all documentation ...
+				            Go to documentation homepage ...
 				        </a>
 					{{/morePages}}
 					`
@@ -135,7 +135,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 						body: `
 					{{#morePages}}
 				        <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
-				            See all community forum ... ...
+				            Browse more forum topics ...
 				        </a>
 					{{/morePages}}
 					`
@@ -229,9 +229,12 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		$.getJSON('https://api.github.com/repos/algolia/algoliasearch-magento-2/releases/latest', function(payload) {
 			const latestVersion = payload.name;
 			
-			if(compareVersions(algoliaSearchExtentionsVersion, latestVersion) > 0) {
+			if(compareVersions(algoliaSearchExtentionsVersion, latestVersion) > 0 || true) {
+				const ghLink = 'https://github.com/algolia/algoliasearch-magento-2/releases/tag/' + latestVersion;
+				const latestVersionLink = '<a href="' + ghLink + '" target="_blank">' + latestVersion + '</a>';
+				
 				$('#current_version').text(algoliaSearchExtentionsVersion);
-				$('.version.latest_version').text(latestVersion);
+				$('.version.latest_version').html(latestVersionLink);
 				
 				$('.legacy_version').show();
 			}

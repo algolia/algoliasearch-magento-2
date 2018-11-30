@@ -454,7 +454,7 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_MENU_DEBUG, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getSortingIndices($originalIndexName, $storeId = null)
+    public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null)
     {
         $attrs = $this->unserialize($this->configInterface->getValue(
             self::SORTING_INDICES,
@@ -475,6 +475,10 @@ class ConfigHelper
 
                 foreach ($groupCollection as $group) {
                     $customerGroupId = (int) $group->getData('customer_group_id');
+
+                    if (!is_null($currentCustomerGroupId) && $customerGroupId != $currentCustomerGroupId) {
+                        continue;
+                    }
 
                     $groupIndexNameSuffix = 'group_' . $customerGroupId;
 

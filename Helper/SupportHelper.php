@@ -89,6 +89,8 @@ class SupportHelper
     /** @return bool */
     public function isExtensionSupportEnabled()
     {
+        return true;
+
         $appId = $this->getApplicationID();
         $apiKey = $this->configHelper->getAPIKey();
 
@@ -165,6 +167,10 @@ class SupportHelper
         $query = 'SELECT COUNT(*) as `count`, MIN(created) as `oldest` FROM ' . $this->queueTable;
         $queueInfo = $this->dbConnection->query($query)->fetch();
 
+        if (!$queueInfo['oldest']) {
+            $queueInfo['oldest'] = '[no jobs in indexing queue]';
+        }
+
         return $queueInfo;
     }
 
@@ -193,6 +199,10 @@ class SupportHelper
             }, $archiveRows);
 
             $queueArchiveInfo = array_merge($queueArchiveInfo, $archiveRows);
+        }
+
+        if ($queueArchiveInfo === []) {
+            return '[no rows in archive table]';
         }
 
         return implode('<br>', $queueArchiveInfo);
@@ -365,8 +375,12 @@ class SupportHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $res = curl_exec($ch);
+        $info = curl_getinfo($ch);
 
         curl_close($ch);
+
+        var_dump($res, $info);
+        exit();
 
         if ($res === 'true') {
             return true;

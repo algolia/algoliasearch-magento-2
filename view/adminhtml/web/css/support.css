@@ -1,11 +1,10 @@
 .legacy_version {
 	display: none; /** Controlled by JS **/
 	background-color: #fffbbb;
-	height: 53px;
-	line-height: 53px;
+	min-height: 53px;
 	font-size: 14px;
 	border: 1px solid #deddc8;
-	padding-left: 32px;
+	padding: 15px 32px;
 	margin-bottom: 30px;
 }
 

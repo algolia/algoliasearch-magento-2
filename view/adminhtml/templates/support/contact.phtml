@@ -1,4 +1,6 @@
-<?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Contact */ ?>
+<?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Contact */
+
+use Magento\Backend\Block\Template; ?>
 
 <?php echo $block
     ->getLayout()
@@ -77,7 +79,19 @@
                             <ul>
                                 <li>Magento and Algolia extension version numbers</li>
                                 <li>Algolia extension configuration</li>
-                                <li>Indexing queue information [TOOLTIP]</li>
+                                <li>
+                                    Indexing queue information
+                                    <?php echo $block
+                                            ->getLayout()
+                                            ->createBlock(Template::class)
+                                            ->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml')
+                                            ->setData('message', __('
+                                                - Number of jobs in indexing queue<br>
+                                                - Information about last 20 failed indexing jobs<br>
+                                                - Creation time of the oldest job in indexing queue
+                                            '))->toHtml();
+                                    ?>
+                                </li>
                             </ul>
                             <b>No personal information will be sent to Algolia.</b>
                         </span>
@@ -93,7 +107,14 @@
                             checked />
                         <label class="admin__actions-switch-label" for="send_additional_info">
                             <span class="admin__actions-switch-text">
-                                Attach list of installed 3rd party modules and catalog size [TOOLTIP this additional data can speed up the support process by providing our team more context on your implementation]
+                                Attach list of installed 3rd party modules and catalog size
+                                <?php echo $block
+                                    ->getLayout()
+                                    ->createBlock(Template::class)
+                                    ->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml')
+                                    ->setData('message', __('The additional data can speed up the support process by providing our team more context on your implementation'))
+                                    ->toHtml();
+                                ?>
                             </span>
                         </label>
                     </div>

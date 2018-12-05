@@ -375,12 +375,8 @@ class SupportHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $res = curl_exec($ch);
-        $info = curl_getinfo($ch);
 
         curl_close($ch);
-
-        var_dump($res, $info);
-        exit();
 
         if ($res === 'true') {
             return true;

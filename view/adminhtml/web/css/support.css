@@ -298,13 +298,30 @@ a.footer {
 }
 
 .algolia_contact_form .links a {
-	font-size: 12px;
+	font-size: 15px;
 }
 
 .algolia_contact_form .links a .content {
 	max-height: 60px;
 	height: unset;
 	white-space: normal;
+}
+
+.algolia_contact_form .admin__field-tooltip .admin__field-tooltip-action:before {
+	font-size: 12px;
+}
+
+.algolia_contact_form .admin__field-tooltip {
+	margin-top: 0;
+}
+
+.algolia_contact_form .admin__field-tooltip .admin__field-tooltip-action {
+	margin-left: 0;
+}
+
+.algolia_contact_form .admin__field-tooltip .admin__field-tooltip-content {
+	right: -44px;
+	bottom: 31px;
 }
 
 .contact_results .ais-hits__empty {

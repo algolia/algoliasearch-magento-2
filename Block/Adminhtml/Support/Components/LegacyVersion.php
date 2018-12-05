@@ -26,6 +26,8 @@ class LegacyVersion extends Template
     ) {
         parent::__construct($context, $data);
 
+        $this->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml');
+
         $this->backendContext = $context;
         $this->supportHelper = $supportHelper;
     }

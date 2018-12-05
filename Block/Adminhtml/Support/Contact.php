@@ -8,7 +8,7 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\Module\ModuleListInterface;
 
-class Contact extends Template
+class Contact extends AbstractSupportTemplate
 {
     /** @var Context */
     private $backendContext;
@@ -19,6 +19,7 @@ class Contact extends Template
     /** @var ModuleListInterface */
     private $moduleList;
 
+    /** @var Session */
     private $authSession;
 
     /**
@@ -69,6 +70,22 @@ class Contact extends Template
         $name = $this->getRequest()->getParam('email');
 
         return $name ?: $this->getCurrenctAdmin()->getEmail();
+    }
+
+    /**
+     * @param string $message
+     * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getTooltipHtml($message)
+    {
+        /** @var Template $block */
+        $block = $this->getLayout()->createBlock(Template::class);
+
+        $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml');
+        $block->setData('message', $message);
+
+        return $block->toHtml();
     }
 
     /** @return \Magento\User\Model\User|null */

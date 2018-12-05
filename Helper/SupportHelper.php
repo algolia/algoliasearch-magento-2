@@ -8,8 +8,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class SupportHelper
 {
-    const INTERNAL_API_PROXY_URL = 'https://magento-proxy.algolia.com/';
-
     /** @var ConfigHelper */
     private $configHelper;
 
@@ -18,6 +16,9 @@ class SupportHelper
 
     /** @var StoreManagerInterface */
     private $storeManager;
+
+    /** @var ProxyHelper */
+    private $proxyHelper;
 
     /** @var string */
     private $queueTable;
@@ -37,12 +38,19 @@ class SupportHelper
     /**
      * @param ConfigHelper $configHelper
      * @param ResourceConnection $resourceConnection
+     * @param StoreManagerInterface $storeManager
+     * @param ProxyHelper $proxyHelper
      */
-    public function __construct(ConfigHelper $configHelper, ResourceConnection $resourceConnection, StoreManagerInterface $storeManager)
-    {
+    public function __construct(
+        ConfigHelper $configHelper,
+        ResourceConnection $resourceConnection,
+        StoreManagerInterface $storeManager,
+        ProxyHelper $proxyHelper
+    ) {
         $this->configHelper = $configHelper;
         $this->dbConnection = $resourceConnection->getConnection('core_read');
         $this->storeManager = $storeManager;
+        $this->proxyHelper = $proxyHelper;
 
         $this->queueTable = $resourceConnection->getTableName('algoliasearch_queue');
         $this->configTable = $resourceConnection->getTableName('core_config_data');
@@ -83,45 +91,19 @@ class SupportHelper
             'note' => $this->getNoteData($data['send_additional_info']),
         ];
 
-        return $this->pushMessage($messageData);
+        return $this->proxyHelper->pushSupportTicket($messageData);
     }
 
     /** @return bool */
     public function isExtensionSupportEnabled()
     {
-        $appId = $this->getApplicationID();
-        $apiKey = $this->configHelper->getAPIKey();
-
-        $token = $appId . ':' . $apiKey;
-        $token = base64_encode($token);
-        $token = str_replace(["\n", '='], '', $token);
-
-        $params = [
-            'appId' => $appId,
-            'token' => $token,
-        ];
-
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL . 'get-info/');
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $res = curl_exec($ch);
-
-        curl_close($ch);
-
-        if ($res) {
-            $res = json_decode($res, true);
-
-            if (array_key_exists('extension_support', $res)) {
-                return $res['extension_support'];
-            }
-        }
+        $info = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_EXTENSION_SUPPORT);
 
         // In case the call to API proxy fails,
         // be "nice" and return true
+        if ($info && array_key_exists('extension_support', $info)) {
+            return $info['extension_support'];
+        }
 
         return true;
     }
@@ -356,30 +338,5 @@ class SupportHelper
     private function splitName($name)
     {
         return explode(' ', $name, 2);
-    }
-
-    /**
-     * @param array $messageData
-     *
-     * @return bool
-     */
-    private function pushMessage($messageData)
-    {
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL . 'hs-push/');
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($messageData));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $res = curl_exec($ch);
-
-        curl_close($ch);
-
-        if ($res === 'true') {
-            return true;
-        }
-
-        return false;
     }
 }

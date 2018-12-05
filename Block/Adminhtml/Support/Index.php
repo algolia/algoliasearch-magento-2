@@ -3,10 +3,9 @@
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Support;
 
 use Algolia\AlgoliaSearch\Helper\SupportHelper;
-use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 
-class Index extends Template
+class Index extends AbstractSupportTemplate
 {
     /** @var Context */
     private $backendContext;

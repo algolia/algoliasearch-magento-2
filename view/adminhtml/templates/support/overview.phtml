@@ -11,12 +11,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 
 ?>
 
-<?php echo $block
-    ->getLayout()
-    ->createBlock(Algolia\AlgoliaSearch\Block\Adminhtml\Support\Components\LegacyVersion::class)
-    ->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml')
-    ->toHtml();
-?>
+<?php echo $this->getLegacyVersionHtml(); ?>
 
 <script>
 	const noResultsIllustration = "<?php echo $noResultsIllustration; ?>"
@@ -79,7 +74,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
             </div>
         </div>
         <div class="links">
-            <a href="https://community.algolia.com/magento/doc/m1/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+            <a href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                 <span class="heading">
                     Indexing
                 </span>
@@ -87,7 +82,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
                     In order to provide fast and relevant search, Algolia restructures your data in a special way, via Indexing.
                 </span>
             </a>
-            <a href="https://community.algolia.com/magento/doc/m1/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+            <a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                 <span class="heading">
                     Indexing Queue
                 </span>
@@ -95,7 +90,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
                     The index queue manages all uploads to Algolia. Before your data can be searched, it must be uploaded to Algolia. This process is called indexing, which the extension does automatically - via the queue.
                 </span>
             </a>
-            <a href="https://community.algolia.com/magento/doc/m1/customize-autocomplete/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+            <a href="https://community.algolia.com/magento/doc/m2/customize-autocomplete/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                 <span class="heading">
                     Autocomplete menu
                 </span>
@@ -103,7 +98,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
                     Customize the autocomplete drop-down menu which appears underneath the search bar on your Magento site.
                 </span>
             </a>
-            <a href="https://community.algolia.com/magento/doc/m1/customize-backend/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+            <a href="https://community.algolia.com/magento/doc/m2/customize-backend/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                 <span class="heading">
                     Customize the extension
                 </span>

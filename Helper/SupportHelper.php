@@ -89,8 +89,6 @@ class SupportHelper
     /** @return bool */
     public function isExtensionSupportEnabled()
     {
-        return true;
-
         $appId = $this->getApplicationID();
         $apiKey = $this->configHelper->getAPIKey();
 

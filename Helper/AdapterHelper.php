@@ -5,8 +5,10 @@ namespace Algolia\AlgoliaSearch\Helper;
 use Algolia\AlgoliaSearch\Helper\Adapter\FiltersHelper;
 use Algolia\AlgoliaSearch\Helper\Data as AlgoliaHelper;
 use Magento\CatalogSearch\Helper\Data;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
 
-class AdapterHelper
+class AdapterHelper extends AbstractHelper
 {
     /** @var Data */
     private $catalogSearchHelper;
@@ -17,19 +19,28 @@ class AdapterHelper
     /** @var FiltersHelper */
     private $filtersHelper;
 
+    /** @var ConfigHelper */
+    private $configHelper;
+
     /**
+     * @param Context $context
      * @param Data $catalogSearchHelper
      * @param AlgoliaHelper $algoliaHelper
      * @param FiltersHelper $filtersHelper
+     * @param ConfigHelper $configHelper
      */
     public function __construct(
+        Context $context,
         Data $catalogSearchHelper,
         AlgoliaHelper $algoliaHelper,
-        FiltersHelper $filtersHelper
+        FiltersHelper $filtersHelper,
+        ConfigHelper $configHelper
     ) {
         $this->catalogSearchHelper = $catalogSearchHelper;
         $this->algoliaHelper = $algoliaHelper;
         $this->filtersHelper = $filtersHelper;
+        $this->configHelper = $configHelper;
+        parent::__construct($context);
     }
 
     /**
@@ -47,8 +58,8 @@ class AdapterHelper
         if ($this->isReplaceCategory($storeId) || $this->isSearch($storeId)) {
             $searchParams = $this->getSearchParams($storeId);
 
-            if (!is_null($this->filtersHelper->getRequest()->getParam('sortBy'))) {
-                $targetedIndex = $this->filtersHelper->getRequest()->getParam('sortBy');
+            if (!is_null($this->_getRequest()->getParam('sortBy'))) {
+                $targetedIndex = $this->_getRequest()->getParam('sortBy');
             }
         }
 
@@ -104,16 +115,16 @@ class AdapterHelper
         $storeId = $this->getStoreId();
 
         return
-            $this->algoliaHelper->getConfigHelper()->getApplicationID($storeId)
-            && $this->algoliaHelper->getConfigHelper()->getAPIKey($storeId)
-            && $this->algoliaHelper->getConfigHelper()->isEnabledFrontEnd($storeId)
-            && $this->algoliaHelper->getConfigHelper()->makeSeoRequest($storeId);
+            $this->configHelper->getApplicationID($storeId)
+            && $this->configHelper->getAPIKey($storeId)
+            && $this->configHelper->isEnabledFrontEnd($storeId)
+            && $this->configHelper->makeSeoRequest($storeId);
     }
 
     /** @return bool */
     public function isSearch()
     {
-        return $this->filtersHelper->getRequest()->getFullActionName() === 'catalogsearch_result_index';
+        return $this->_getRequest()->getFullActionName() === 'catalogsearch_result_index';
     }
 
     /**
@@ -126,9 +137,9 @@ class AdapterHelper
         $storeId = $this->getStoreId();
 
         return
-            $this->filtersHelper->getRequest()->getControllerName() === 'category'
-            && $this->algoliaHelper->getConfigHelper()->replaceCategories($storeId) === true
-            && $this->algoliaHelper->getConfigHelper()->isInstantEnabled($storeId) === true;
+            $this->_getRequest()->getControllerName() === 'category'
+            && $this->configHelper->replaceCategories($storeId) === true
+            && $this->configHelper->isInstantEnabled($storeId) === true;
     }
 
     /**
@@ -139,22 +150,22 @@ class AdapterHelper
     public function isReplaceAdvancedSearch()
     {
         return
-            $this->filtersHelper->getRequest()->getFullActionName() === 'catalogsearch_advanced_result'
-            && $this->algoliaHelper->getConfigHelper()->isInstantEnabled($this->getStoreId()) === true;
+            $this->_getRequest()->getFullActionName() === 'catalogsearch_advanced_result'
+            && $this->configHelper->isInstantEnabled($this->getStoreId()) === true;
     }
 
     private function getStoreId()
     {
-        return $this->algoliaHelper->getConfigHelper()->getStoreId();
+        return $this->configHelper->getStoreId();
     }
 
     public function isInstantEnabled()
     {
-        return $this->algoliaHelper->getConfigHelper()->isInstantEnabled($this->getStoreId());
+        return $this->configHelper->isInstantEnabled($this->getStoreId());
     }
 
     public function makeSeoRequest()
     {
-        return $this->algoliaHelper->getConfigHelper()->makeSeoRequest($this->getStoreId());
+        return $this->configHelper->makeSeoRequest($this->getStoreId());
     }
 }

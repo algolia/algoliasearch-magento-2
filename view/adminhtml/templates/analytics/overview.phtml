@@ -1,63 +1,65 @@
-<?php /** @var $block \Algolia\AlgoliaSearch\Block\Adminhtml\Analytics\Index */ ?>
-<?php echo $block->getMessagesHtml(); ?>
-<?php if ($block->isAnalyticsApiEnabled()): ?>
+<?php /** @var $view Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Index */ ?>
+<?php $view = $block->getViewModel() ?>
+
+<?php echo $view->getMessagesHtml(); ?>
+<?php if ($view->isAnalyticsApiEnabled()): ?>
     <div class="algoliasearch-analytics-overview">
         <div class="row section">
-            <strong><?php echo __('Viewing index:'); ?></strong> <?php echo $block->getIndexName() ?>
+            <strong><?php echo __('Viewing index:'); ?></strong> <?php echo $view->getIndexName() ?>
         </div>
         <div class="row section">
             <div class="row thirds top-thirds">
                 <div class="one-third col-1">
                     <div class="title">
                         <h4><?php echo __('Total searches') ?>
-                            <?php echo $block->getTooltipHtml(__('How many searches were performed. As-you-type searches are aggregated (the queries i, ip, ipa, ipad count as one search).')) ?>
+                            <?php echo $view->getTooltipHtml(__('How many searches were performed. As-you-type searches are aggregated (the queries i, ip, ipa, ipad count as one search).')) ?>
                         </h4>
                     </div>
-                    <div class="stat"><?php echo $block->getTotalCountOfSearches() ?></div>
+                    <div class="stat"><?php echo $view->getTotalCountOfSearches() ?></div>
                 </div>
                 <div class="one-third col-2">
                     <h4><?php echo __('Users') ?>
-                        <?php echo $block->getTooltipHtml(__('How many unique users performed a search.')); ?>
+                        <?php echo $view->getTooltipHtml(__('How many unique users performed a search.')); ?>
                     </h4>
-                    <div class="stat"><?php echo $block->getTotalUsersCount() ?></div>
+                    <div class="stat"><?php echo $view->getTotalUsersCount() ?></div>
                 </div>
                 <div class="one-third col-3">
                     <h4><?php echo __('No results rate') ?>
-                        <?php echo $block->getTooltipHtml(__('Percentage of searches that retrieved 0 results. A lower percentage is better.')); ?>
+                        <?php echo $view->getTooltipHtml(__('Percentage of searches that retrieved 0 results. A lower percentage is better.')); ?>
                     </h4>
-                    <div class="stat"><?php echo $block->getTotalResultRates() ?></div>
+                    <div class="stat"><?php echo $view->getTotalResultRates() ?></div>
                 </div>
             </div>
-            <?php if ($block->isClickAnalyticsEnabled()): ?>
+            <?php if ($view->isClickAnalyticsEnabled()): ?>
             <div class="row thirds top-thirds">
                 <div class="one-third col-1">
                     <div class="title">
                         <h4><?php echo __('CTR') ?>
-                            <?php echo $block->getTooltipHtml(__('Click-Through Rate: percentage of tracked searches (searches with clickAnalytics=true) where at least one results was clicked on by the user.')) ?>
+                            <?php echo $view->getTooltipHtml(__('Click-Through Rate: percentage of tracked searches (searches with clickAnalytics=true) where at least one results was clicked on by the user.')) ?>
                         </h4>
                     </div>
-                    <?php $ctr = $block->getClickThroughRate() ?>
+                    <?php $ctr = $view->getClickThroughRate() ?>
                     <div class="stat"><?php echo round($ctr['rate'] * 100, 2) . '%'; ?></div>
                     <div class="sub"><?php echo __('from %1 tracked searches', $ctr['trackedSearchCount']) ?></div>
                 </div>
                 <div class="one-third col-2">
                     <div class="title">
                         <h4><?php echo __('Conversion rate') ?>
-                            <?php echo $block->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.',
-                                $block->getUrl('adminhtml/system_config/edit/section/algoliasearch_cc_analytics'))) ?>
+                            <?php echo $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.',
+                                $view->getAnalyticsConfigurationUrl())) ?>
                         </h4>
                     </div>
-                    <?php $conversion = $block->getConversionRate() ?>
+                    <?php $conversion = $view->getConversionRate() ?>
                     <div class="stat"><?php echo round($conversion['rate'] * 100, 2) . '%'; ?></div>
                     <div class="sub"><?php echo __('from %1 tracked searches', $conversion['trackedSearchCount']) ?></div>
                 </div>
                 <div class="one-third col-3">
                     <div class="title">
                         <h4><?php echo __('Click position') ?>
-                            <?php echo $block->getTooltipHtml(__('Average position of the clicks performed on the search results. A value of one would mean all users clicked on the first results. Smaller values are better.')) ?>
+                            <?php echo $view->getTooltipHtml(__('Average position of the clicks performed on the search results. A value of one would mean all users clicked on the first results. Smaller values are better.')) ?>
                         </h4>
                     </div>
-                    <?php $click = $block->getClickPosition() ?>
+                    <?php $click = $view->getClickPosition() ?>
                     <div class="stat"><?php echo round($click['average'], 2); ?></div>
                     <div class="sub"><?php echo __('from %1 tracked clicks', $click['clickCount']) ?></div>
                 </div>
@@ -67,19 +69,19 @@
         <div class="row section daily-search-section">
             <div class="title">
                 <h3><?php echo __('Daily searches') ?></h3>
-                <div class="total-search"><?php echo __('Total searches') ?> <span class="count"><?php echo $block->getTotalCountOfSearches() ?></span></div>
+                <div class="total-search"><?php echo __('Total searches') ?> <span class="count"><?php echo $view->getTotalCountOfSearches() ?></span></div>
             </div>
-            <?php echo $block->getDailyChartHtml(); ?>
+            <?php echo $view->getDailyChartHtml(); ?>
         </div>
         <div class="row thirds analytics-searches">
             <div class="one-third section popular-searches">
                 <div class="title">
                     <h3><?php echo __('Popular searches') ?>
-                        <?php echo $block->getTooltipHtml(__('Searches performed the more often by your users.')) ?>
+                        <?php echo $view->getTooltipHtml(__('Searches performed the more often by your users.')) ?>
                     </h3>
                 </div>
                 <div class="analytics-content">
-                    <?php if (count($block->getTopSearches())): ?>
+                    <?php if (count($view->getTopSearches())): ?>
                         <table class="data-table admin__table-primary">
                             <thead>
                                 <tr class="headings">
@@ -88,7 +90,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($block->getTopSearches() as $search): ?>
+                            <?php foreach ($view->getTopSearches() as $search): ?>
                                 <tr>
                                     <td><?php echo $search['search'] ?></td>
                                     <td><?php echo $search['count'] ?></td>
@@ -107,11 +109,11 @@
             <div class="one-third section no-result-searches">
                 <div class="title">
                     <h3><?php echo __('Popular results') ?>
-                        <?php echo $block->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
+                        <?php echo $view->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
                     </h3>
                 </div>
                 <div class="analytics-content">
-                    <?php if (count($block->getPopularResults())): ?>
+                    <?php if (count($view->getPopularResults())): ?>
                         <table class="data-table admin__table-primary">
                             <thead>
                             <tr class="headings">
@@ -120,10 +122,10 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($block->getPopularResults() as $search): ?>
+                            <?php foreach ($view->getPopularResults() as $search): ?>
                                 <tr>
                                     <td>
-                                        <?php $link = $block->getTypeEditUrl($search); ?>
+                                        <?php $link = $view->getTypeEditUrl($search); ?>
                                         <?php foreach ($link as $type => $url): ?>
                                             <a href="<?php echo $url ?>"<?php echo $type == 'view' ? ' target="_blank"' : '' ?>>
                                                 <?php echo ucfirst($type); ?>
@@ -147,11 +149,11 @@
             <div class="one-third section no-result-searches">
                 <div class="title">
                     <h3><?php echo __('No result searches') ?>
-                        <?php echo $block->getTooltipHtml(__("Searches that retrieved 0 results, either because a word didn't match, or because some filters excluded all of the matching results. <br/> <br/>A search with no results can often be optimized by improving keywords used in the dataset, or by adding synonyms.")); ?>
+                        <?php echo $view->getTooltipHtml(__("Searches that retrieved 0 results, either because a word didn't match, or because some filters excluded all of the matching results. <br/> <br/>A search with no results can often be optimized by improving keywords used in the dataset, or by adding synonyms.")); ?>
                     </h3>
                 </div>
                 <div class="analytics-content">
-                    <?php if (count($block->getNoResultSearches())): ?>
+                    <?php if (count($view->getNoResultSearches())): ?>
                         <table class="data-table admin__table-primary">
                             <thead>
                                 <tr class="headings">
@@ -160,7 +162,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($block->getNoResultSearches() as $search): ?>
+                            <?php foreach ($view->getNoResultSearches() as $search): ?>
                                 <tr>
                                     <td><?php echo $search['search'] ?></td>
                                     <td class="a-right"><?php echo $search['count'] ?></td>

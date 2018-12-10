@@ -1,29 +1,26 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Block\Adminhtml\Analytics;
+namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics;
 
+use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
 use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
-use Magento\Backend\Block\Template;
-use Magento\Backend\Block\Template\Context;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollection;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
-class Index extends Template
+class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     const LIMIT_RESULTS = 5;
+
     const DEFAULT_TYPE = 'products';
+
     const DEFAULT_RETENTION_DAYS = 7;
 
-    /** @var Context */
-    private $backendContext;
+    /** @var BackendView */
+    private $backendView;
 
     /** @var AnalyticsHelper */
     private $analyticsHelper;
-
-    /** @var TimezoneInterface */
-    private $dateTime;
 
     /** @var ProductCollection */
     private $productCollection;
@@ -34,37 +31,47 @@ class Index extends Template
     /** @var PageCollection */
     private $pageCollection;
 
+    /** @var array */
     private $analyticsParams = [];
 
     /**
      * Index constructor.
-     * @param Context $context
+     * @param BackendView $backendView
      * @param AnalyticsHelper $analyticsHelper
-     * @param TimezoneInterface $dateTime
      * @param ProductCollection $productCollection
      * @param CategoryCollection $categoryCollection
      * @param PageCollection $pageCollection
      * @param array $data
      */
     public function __construct(
-        Context $context,
+        BackendView $backendView,
         AnalyticsHelper $analyticsHelper,
-        TimezoneInterface $dateTime,
         ProductCollection $productCollection,
         CategoryCollection $categoryCollection,
         PageCollection $pageCollection,
         array $data = []
     ) {
-        parent::__construct($context, $data);
-
-        $this->backendContext = $context;
+        $this->backendView = $backendView;
         $this->analyticsHelper = $analyticsHelper;
-        $this->dateTime = $dateTime;
         $this->productCollection = $productCollection;
         $this->categoryCollection = $categoryCollection;
         $this->pageCollection = $pageCollection;
+
+        $this->getTotalCountOfSearches();
     }
 
+    /**
+     * @return BackendView
+     */
+    public function getBackendView()
+    {
+        return $this->backendView;
+    }
+
+    /**
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return mixed
+     */
     public function getIndexName()
     {
         $sections = $this->getSections();
@@ -74,18 +81,19 @@ class Index extends Template
 
     /**
      * @param array $additional
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @return array
      */
     public function getAnalyticsParams($additional = [])
     {
         if (empty($this->analyticsParams)) {
             $params = ['index' => $this->getIndexName()];
-            if ($formData = $this->_backendSession->getAlgoliaAnalyticsFormData()) {
+            if ($formData = $this->getBackendView()->getBackendSession()->getAlgoliaAnalyticsFormData()) {
                 if (isset($formData['from']) && $formData['from'] !== '') {
-                    $params['startDate'] = date('Y-m-d', $this->dateTime->date($formData['from'])->getTimestamp());
+                    $params['startDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()->date($formData['from'])->getTimestamp());
                 }
                 if (isset($formData['to']) && $formData['to'] !== '') {
-                    $params['endDate'] = date('Y-m-d', $this->dateTime->date($formData['to'])->getTimestamp());
+                    $params['endDate'] = date('Y-m-d', $this->getBackendView()->getDateTime->date($formData['to'])->getTimestamp());
                 }
             }
 
@@ -126,7 +134,8 @@ class Index extends Template
     }
 
     /**
-     * Click Analytics
+     * Click Through Rate
+     * @return mixed
      */
     public function getClickThroughRate()
     {
@@ -160,6 +169,7 @@ class Index extends Template
 
     /**
      * Get aggregated Daily data from separate calls
+     * @return array
      */
     public function getDailySearchData()
     {
@@ -183,13 +193,19 @@ class Index extends Template
                 $search['conversion'] = $this->getDateValue($conversion, $search['date'], 'rate');
             }
 
-            $date = $this->dateTime->date($search['date']);
+            $date = $this->getBackendView()->getDateTime()->date($search['date']);
             $search['formatted'] = date('M, d', $date->getTimestamp());
         }
 
         return $searches;
     }
 
+    /**
+     * @param $array
+     * @param $date
+     * @param $valueKey
+     * @return string
+     */
     private function getDateValue($array, $date, $valueKey)
     {
         $value = '';
@@ -212,6 +228,10 @@ class Index extends Template
         return isset($topSearches['searches']) ? $topSearches['searches'] : [];
     }
 
+    /**
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return array
+     */
     public function getPopularResults()
     {
         $popular = $this->analyticsHelper->getTopHits($this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS]));
@@ -254,7 +274,7 @@ class Index extends Template
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemByColumnValue('page_id', $hit['hit']);
                     $hit['name'] = $item->getTitle();
-                    $hit['url'] = $this->_urlBuilder->getUrl(null, ['_direct' => $item->getIdentifier()]);
+                    $hit['url'] = $this->getBackendView()->getUrlInterface()->getUrl(null, ['_direct' => $item->getIdentifier()]);
                 }
             }
         }
@@ -262,6 +282,10 @@ class Index extends Template
         return $hits;
     }
 
+    /**
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return array
+     */
     public function getNoResultSearches()
     {
         $noResults = $this->analyticsHelper->getTopSearchesNoResults(
@@ -271,12 +295,15 @@ class Index extends Template
         return $noResults && isset($noResults['searches']) ? $noResults['searches'] : [];
     }
 
+    /**
+     * @return bool
+     */
     public function checkIsValidDateRange()
     {
-        if ($formData = $this->_backendSession->getAlgoliaAnalyticsFormData()) {
+        if ($formData = $this->getBackendView()->getBackendSession()->getAlgoliaAnalyticsFormData()) {
             if (isset($formData['from']) && !empty($formData['from'])) {
-                $startDate = $this->dateTime->date($formData['from']);
-                $diff = date_diff($startDate, $this->dateTime->date());
+                $startDate = $this->getBackendView()->getDateTime->date($formData['from']);
+                $diff = date_diff($startDate, $this->getBackendView()->getDateTime->date());
 
                 if ($diff->days > $this->getAnalyticRetentionDays()) {
                     return false;
@@ -287,6 +314,9 @@ class Index extends Template
         return true;
     }
 
+    /**
+     * @return int
+     */
     public function getAnalyticRetentionDays()
     {
         $retention = self::DEFAULT_RETENTION_DAYS;
@@ -298,9 +328,12 @@ class Index extends Template
         return $retention;
     }
 
+    /**
+     * @return string
+     */
     public function getCurrentType()
     {
-        if ($formData = $this->_backendSession->getAlgoliaAnalyticsFormData()) {
+        if ($formData = $this->getBackendView()->getBackendSession()->getAlgoliaAnalyticsFormData()) {
             if (isset($formData['type'])) {
                 return $formData['type'];
             }
@@ -310,27 +343,31 @@ class Index extends Template
     }
 
     /**
-     * @return array
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @return array
      */
     public function getSections()
     {
         return $this->analyticsHelper->getAnalyticsIndices($this->getStore()->getId());
     }
 
+    /**
+     * @param $search
+     * @return array
+     */
     public function getTypeEditUrl($search)
     {
         $links = [];
         if ($this->getCurrentType() == 'products') {
-            $links['edit'] = $this->getUrl('catalog/product/edit', ['id' => $search['hit']]);
+            $links['edit'] = $this->getBackendView()->getUrlInterface()->getUrl('catalog/product/edit', ['id' => $search['hit']]);
         }
 
         if ($this->getCurrentType() == 'categories') {
-            $links['edit'] = $this->getUrl('catalog/category/edit', ['id' => $search['hit']]);
+            $links['edit'] = $this->getBackendView()->getUrlInterface()->getUrl('catalog/category/edit', ['id' => $search['hit']]);
         }
 
         if ($this->getCurrentType() == 'pages') {
-            $links['edit'] = $this->getUrl('cms/page/edit', ['page_id' => $search['hit']]);
+            $links['edit'] = $this->getBackendView()->getUrlInterface()->getUrl('cms/page/edit', ['page_id' => $search['hit']]);
         }
 
         if (isset($search['url'])) {
@@ -342,11 +379,19 @@ class Index extends Template
 
     /**
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getAnalyticsConfigurationUrl()
+    {
+        return $this->getBackendView()->getUrlInterface()
+            ->getUrl('adminhtml/system_config/edit/section/algoliasearch_cc_analytics');
+    }
+
+    /**
+     * @return string
      */
     public function getDailyChartHtml()
     {
-        $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
+        $block = $this->getBackendView()->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
         $block->setTemplate('Algolia_AlgoliaSearch::analytics/graph.phtml');
         $block->setData('analytics', $this->getDailySearchData());
 
@@ -356,11 +401,10 @@ class Index extends Template
     /**
      * @param $message
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getTooltipHtml($message)
     {
-        $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
+        $block = $this->getBackendView()->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
         $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltips.phtml');
         $block->setData('message', $message);
 
@@ -368,24 +412,29 @@ class Index extends Template
     }
 
     /**
-     * @return \Magento\Store\Api\Data\StoreInterface|null
+     * @return \Magento\Store\Api\Data\StoreInterface|null|string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getStore()
     {
-        $storeManager = $this->backendContext->getStoreManager();
-        if ($storeId = $this->getRequest()->getParam('store')) {
-            return $storeManager->getStore($storeId);
+        if ($storeId = $this->getBackendView()->getRequest()->getParam('store')) {
+            return $this->getBackendView()->getStoreManager()->getStore($storeId);
         }
 
-        return $storeManager->getDefaultStoreView();
+        return $this->getBackendView()->getStoreManager()->getDefaultStoreView();
     }
 
+    /**
+     * @return bool|int
+     */
     public function isAnalyticsApiEnabled()
     {
         return $this->analyticsHelper->isAnalyticsApiEnabled();
     }
 
+    /**
+     * @return bool|int
+     */
     public function isClickAnalyticsEnabled()
     {
         return $this->analyticsHelper->isClickAnalyticsEnabled();
@@ -398,7 +447,7 @@ class Index extends Template
     public function getMessagesHtml()
     {
         /** @var $messagesBlock \Magento\Framework\View\Element\Messages */
-        $messagesBlock = $this->_layout->createBlock(\Magento\Framework\View\Element\Messages::class);
+        $messagesBlock = $this->getBackendView()->getLayout()->createBlock(\Magento\Framework\View\Element\Messages::class);
 
         if (!$this->checkIsValidDateRange() && $this->isAnalyticsApiEnabled()) {
             $noticeHtml = __('The selected date is out of your analytics retention window (%1 days), 

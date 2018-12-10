@@ -34,9 +34,9 @@ class AnalyticsHelper extends Analytics
     /** @var PageHelper */
     private $pageHelper;
 
+    /** @var Logger */
     private $logger;
 
-    /** Cache variables to prevent excessive calls */
     private $searches;
     private $users;
     private $rateOfNoResults;
@@ -48,6 +48,8 @@ class AnalyticsHelper extends Analytics
     private $clientData;
 
     private $errors = [];
+
+    private $fetchError = false;
 
     /**
      * AnalyticsHelper constructor.
@@ -86,13 +88,12 @@ class AnalyticsHelper extends Analytics
         return $sections = [
             'products' => $this->dataHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId),
             'categories' => $this->dataHelper->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
-            'pages' => $this->dataHelper->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId)
+            'pages' => $this->dataHelper->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
         ];
     }
 
     /**
      * Search Analytics
-     *
      * @param array $params
      * @return mixed
      */
@@ -154,7 +155,6 @@ class AnalyticsHelper extends Analytics
 
     /**
      * Hits Analytics
-     *
      * @param array $params
      * @return mixed
      */
@@ -170,7 +170,6 @@ class AnalyticsHelper extends Analytics
 
     /**
      * Get Count of Users
-     *
      * @param array $params
      * @return mixed
      */
@@ -199,7 +198,6 @@ class AnalyticsHelper extends Analytics
 
     /**
      * Filter Analytics
-     *
      * @param array $params
      * @return mixed
      */
@@ -285,7 +283,6 @@ class AnalyticsHelper extends Analytics
 
     /**
      * Client Data Check
-     *
      * @return mixed
      */
     public function getClientData()
@@ -317,7 +314,6 @@ class AnalyticsHelper extends Analytics
 
     /**
      * Pass through method for handling API Versions
-     *
      * @param string $path
      * @param array $params
      * @return mixed
@@ -325,6 +321,9 @@ class AnalyticsHelper extends Analytics
     private function fetch($path, array $params)
     {
         $response = false;
+        if ($this->fetchError) {
+            return $response;
+        }
 
         try {
             // analytics api requires index name for all calls
@@ -334,9 +333,12 @@ class AnalyticsHelper extends Analytics
             }
 
             $response = $this->request('GET', $path, $params);
+
         } catch (\Exception $e) {
             $this->errors[] = $e->getMessage();
             $this->logger->log($e->getMessage());
+
+            $this->fetchError = true;
         }
 
         return $response;

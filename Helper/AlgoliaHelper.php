@@ -319,6 +319,12 @@ class AlgoliaHelper extends AbstractHelper
         self::$lastTaskId = $res['taskID'];
     }
 
+    /**
+     * @param $fromIndexName
+     * @param $toIndexName
+     *
+     * @throws AlgoliaException
+     */
     public function copyQueryRules($fromIndexName, $toIndexName)
     {
         $fromIndex = $this->getIndex($fromIndexName);

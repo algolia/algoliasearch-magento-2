@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\Catalog\Model\Product\Url" type="Algolia\AlgoliaSearch\Model\Product\Url" />
+    <preference for="Magento\Config\Controller\Adminhtml\System\Config\Save" type="Algolia\AlgoliaSearch\Controller\Adminhtml\System\Config\Save" />
     <type name="Magento\Catalog\Model\Category">
         <plugin name="algolia_algoliasearch_plugin_category_url" type="Algolia\AlgoliaSearch\Plugin\CategoryUrlPlugin"/>
     </type>

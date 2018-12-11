@@ -1,5 +1,13 @@
 # CHANGE LOG
 
+## 1.8.4
+
+- **Added compatibility with Magento 2.3** (#624)
+- When searching for empty string, search results page displayed "__empty__" as searched query. Now it doesn't display anything (#586)
+- Fixed failing configuration when query rules are not enabled on Algolia application (#591, #604)
+- Removed categories from No results links in autocomplete menu when Categories are not set as attribute for faceting (#592)
+- Fixed issue with serialized arrays when Autocomplete or Instant search features are turned off (#593)
+
 ## 1.8.3
 
 * Removed the default facet query rule (attribute "color") (#600)

@@ -12,12 +12,6 @@ notifications:
 
 matrix:
   include:
-    - name: "Magento 2.0.*"
-      php: 5.5
-      env: MAGENTO_VERSION="2.0"
-      script:
-        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
-        - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
     - name: "Magento 2.1.*"
       env: MAGENTO_VERSION="2.1"
       script:

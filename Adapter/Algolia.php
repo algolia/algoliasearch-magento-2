@@ -98,8 +98,7 @@ class Algolia implements AdapterInterface
     /**
      * {@inheritdoc}
      *
-     * @uses getDocument20
-     * @uses getDocument21
+     * @uses getAlgoliaDocument
      */
     public function query(RequestInterface $request)
     {
@@ -123,14 +122,8 @@ class Algolia implements AdapterInterface
                     $documents = $this->algoliaHelper->getSearchResult($algoliaQuery, $storeId);
                 }
 
-                $getDocumentMethod = $this->getGetDocumentMethod();
-                $storeDocumentsMethod = $this->getStoreDocumentMethod();
-
-                $apiDocuments = array_map(function ($document) use ($getDocumentMethod) {
-                    return $this->{$getDocumentMethod}($document);
-                }, $documents);
-
-                $table = $temporaryStorage->{$storeDocumentsMethod}($apiDocuments);
+                $apiDocuments = array_map([$this, 'getAlgoliaDocument'], $documents);
+                $table = $temporaryStorage->storeApiDocuments($apiDocuments);
             } catch (AlgoliaConnectionException $e) {
                 $useNative = true;
             }
@@ -146,10 +139,15 @@ class Algolia implements AdapterInterface
 
         $response = [
             'documents' => $documents,
-            'aggregations' => $this->getAggregations($request, $table, $documents),
+            'aggregations' => $this->aggregationBuilder->build($request, $table, $documents),
         ];
 
         return $this->responseFactory->create($response);
+    }
+
+    private function getAlgoliaDocument($document)
+    {
+        return $this->documentFactory->create($document);
     }
 
     /**
@@ -188,44 +186,6 @@ class Algolia implements AdapterInterface
             && $this->config->makeSeoRequest($storeId);
     }
 
-    /**
-     * Get aggregations
-     *
-     * @param  RequestInterface $request
-     * @param  Table            $table
-     * @param  array            $documents
-     *
-     * @return array
-     */
-    private function getAggregations($request, $table, $documents)
-    {
-        if (version_compare($this->config->getMagentoVersion(), '2.1.0', '<') === true) {
-            return $this->aggregationBuilder->build($request, $table);
-        }
-
-        return $this->aggregationBuilder->build($request, $table, $documents);
-    }
-
-    /** @return string */
-    private function getGetDocumentMethod()
-    {
-        if (version_compare($this->config->getMagentoVersion(), '2.1.0', '<') === true) {
-            return 'getDocument20';
-        }
-
-        return 'getDocument21';
-    }
-
-    /** @return string */
-    private function getStoreDocumentMethod()
-    {
-        if (version_compare($this->config->getMagentoVersion(), '2.1.0', '<') === true) {
-            return 'storeDocuments';
-        }
-
-        return 'storeApiDocuments';
-    }
-
     /** @return bool */
     private function isSearch()
     {
@@ -259,18 +219,6 @@ class Algolia implements AdapterInterface
         return
             $this->request->getFullActionName() === 'catalogsearch_advanced_result'
             && $this->config->isInstantEnabled($storeId) === true;
-    }
-
-    private function getDocument20($document)
-    {
-        return new \Magento\Framework\Search\Document($document['entity_id'], [
-            'score' => new \Magento\Framework\Search\DocumentField('score', $document['score']),
-        ]);
-    }
-
-    private function getDocument21($document)
-    {
-        return $this->documentFactory->create($document);
     }
 
     /**

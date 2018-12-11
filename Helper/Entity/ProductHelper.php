@@ -372,7 +372,15 @@ class ProductHelper
         }
 
         if ($saveToTmpIndicesToo === true) {
-            $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
+            try {
+                $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
+            } catch (AlgoliaException $e) {
+                // Fail silently if query rules are disabled on the app
+                // If QRs are disabled, nothing will happen and the extension will work as expected
+                if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
+                    throw $e;
+                }
+            }
         }
     }
 
@@ -851,7 +859,7 @@ class ProductHelper
     ) {
         $valueText = null;
 
-        if (!is_array($value)) {
+        if (!is_array($value) && $attributeResource->usesSource()) {
             $valueText = $product->getAttributeText($attribute['attribute']);
         }
 
@@ -1028,25 +1036,33 @@ class ProductHelper
 
     private function clearFacetsQueryRules(Index $index)
     {
-        $hitsPerPage = 100;
-        $page = 0;
-        do {
-            $fetchedQueryRules = $index->searchRules([
-                'context' => 'magento_filters',
-                'page' => $page,
-                'hitsPerPage' => $hitsPerPage,
-            ]);
+        try {
+            $hitsPerPage = 100;
+            $page = 0;
+            do {
+                $fetchedQueryRules = $index->searchRules([
+                    'context' => 'magento_filters',
+                    'page' => $page,
+                    'hitsPerPage' => $hitsPerPage,
+                ]);
 
-            if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
-                break;
+                if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
+                    break;
+                }
+
+                foreach ($fetchedQueryRules['hits'] as $hit) {
+                    $index->deleteRule($hit['objectID'], true);
+                }
+
+                $page++;
+            } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
+        } catch (AlgoliaException $e) {
+            // Fail silently if query rules are disabled on the app
+            // If QRs are disabled, nothing will happen and the extension will work as expected
+            if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
+                throw $e;
             }
-
-            foreach ($fetchedQueryRules['hits'] as $hit) {
-                $index->deleteRule($hit['objectID'], true);
-            }
-
-            $page++;
-        } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
+        }
     }
 
     private function explodeSynonyms($synonyms)

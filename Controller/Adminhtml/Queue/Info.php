@@ -8,7 +8,7 @@ class Info extends Queue
 {
     public function execute()
     {
-        $size = (int) $this->db->query('SELECT COUNT(*) as total_count FROM '.$this->tableName)->fetchColumn(0);
+        $size = (int) $this->db->query('SELECT COUNT(*) as total_count FROM ' . $this->tableName)->fetchColumn(0);
         $maxJobsPerSingleRun = $this->configHelper->getNumberOfJobToRun();
 
         $etaMinutes = ceil($size / $maxJobsPerSingleRun) * 5; // 5 - assuming the queue runner runs every 5 minutes

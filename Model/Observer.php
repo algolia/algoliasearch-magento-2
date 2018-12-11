@@ -25,7 +25,7 @@ class Observer implements ObserverInterface
     {
         if ($this->config->isEnabledFrontEnd()) {
             if ($this->config->getApplicationID() && $this->config->getAPIKey()) {
-                if ($this->config->isPopupEnabled() || $this->config->isInstantEnabled()) {
+                if ($this->config->isAutoCompleteEnabled() || $this->config->isInstantEnabled()) {
                     /** @var Layout $layout */
                     $layout = $observer->getData('layout');
 

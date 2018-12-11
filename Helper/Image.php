@@ -14,6 +14,7 @@ class Image extends \Magento\Catalog\Helper\Image
 
     /**
      * Image constructor.
+     *
      * @param Context $context
      * @param ImageFactory $productImageFactory
      * @param Repository $assetRepo
@@ -33,7 +34,7 @@ class Image extends \Magento\Catalog\Helper\Image
         $this->logger = $logger;
 
         $this->options = array_merge([
-            'shouldRemovePubDir' => false
+            'shouldRemovePubDir' => false,
         ], $options);
     }
 
@@ -83,7 +84,7 @@ class Image extends \Magento\Catalog\Helper\Image
     public function removeDoubleSlashes($url)
     {
         $url = str_replace('//', '/', $url);
-        $url = '/'.$url;
+        $url = '/' . $url;
 
         return $url;
     }

@@ -16,5 +16,29 @@
     <type name="Magento\Catalog\Model\Category\Action">
         <plugin name="algoliaCategoriesMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\CategoryObserver"/>
     </type>
+
+    <type name="Magento\Search\Helper\Data">
+        <plugin name="algoliaSearchHelperData" type="Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin"/>
+    </type>
+
     <preference for="Magento\Framework\Search\Adapter\Mysql\Adapter" type="Algolia\AlgoliaSearch\Adapter\Algolia" />
+
+    <!-- Dependency Injection for new Model -->
+    <preference for="Algolia\AlgoliaSearch\Api\Data\JobInterface" type="Algolia\AlgoliaSearch\Model\Job" />
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="algolia_algoliasearch_job_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">algoliasearch_queue</argument>
+            <argument name="eventPrefix" xsi:type="string">algoliasearch_queue_grid_collection</argument>
+            <argument name="eventObject" xsi:type="string">algoliasearch_queue_grid_collection</argument>
+            <argument name="resourceModel" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Job</argument>
+        </arguments>
+    </type>
 </config>

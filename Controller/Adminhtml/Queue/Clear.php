@@ -2,23 +2,23 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
-use Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
+use Magento\Framework\Controller\ResultFactory;
 
-class Clear extends Queue
+class Clear extends AbstractAction
 {
     public function execute()
     {
-        try {
-            $this->db->query('TRUNCATE TABLE '.$this->tableName);
+        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
+        $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
+        $resultRedirect->setPath('*/*/index');
 
-            $status = ['status' => 'ok'];
+        try {
+            $this->db->query('TRUNCATE TABLE ' . $this->tableName);
+            $this->messageManager->addNoticeMessage(__('Queue has been cleared.'));
         } catch (\Exception $e) {
-            $status = ['status' => 'ko', 'message' => $e->getMessage()];
+            $this->messageManager->addExceptionMessage($e);
         }
 
-        /** @var \Magento\Framework\Controller\Result\Json $result */
-        $result = $this->resultJsonFactory->create();
-
-        return $result->setData($status);
+        return $resultRedirect;
     }
 }

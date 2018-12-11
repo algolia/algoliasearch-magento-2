@@ -10,12 +10,48 @@
             resource="Magento_Backend::stores"
         />
         <add
-            id="Algolia_AlgoliaSearch::config"
-            title="Configuration"
+            id="Algolia_AlgoliaSearch::credentials"
+            title="Credentials and Basic Setup"
             module="Algolia_AlgoliaSearch"
             sortOrder="10"
             parent="Algolia_AlgoliaSearch::manage"
             action="adminhtml/system_config/edit/section/algoliasearch_credentials"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
+        <add
+            id="Algolia_AlgoliaSearch::autocomplete"
+            title="Autocomplete Menu"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="20"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="adminhtml/system_config/edit/section/algoliasearch_autocomplete"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
+        <add
+            id="Algolia_AlgoliaSearch::instant"
+            title="Instant Search Results Page"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="30"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="adminhtml/system_config/edit/section/algoliasearch_instant"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
+        <add
+            id="Algolia_AlgoliaSearch::queue"
+            title="Indexing Queue"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="50"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="algolia_algoliasearch/queue/index"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
+        <add
+            id="Algolia_AlgoliaSearch::reindex"
+            title="Reindex SKU(s)"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="90"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="algolia_algoliasearch/reindex/index"
             resource="Algolia_AlgoliaSearch::manage"
         />
     </menu>

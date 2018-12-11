@@ -292,6 +292,7 @@ a.ais-current-refined-values--link:hover {
   position: absolute;
   background: #FFFFFF;
   top: -2em;
+  left: -50%;
   min-width: 20px;
   text-align: center;
   font-size: .8em;
@@ -329,6 +330,16 @@ a.ais-current-refined-values--link:hover {
 #algolia-autocomplete-container .aa-dropdown-menu .before_special {
   color: #aaaaaa;
   text-decoration: line-through;
+  font-size: 12px;
+}
+
+#algolia-autocomplete-container .aa-dropdown-menu .tier_price {
+  color: #666666;
+  font-size: 10px;
+}
+
+#algolia-autocomplete-container .aa-dropdown-menu .tier_price .tier_value {
+  color: #54A5CD;
   font-size: 12px;
 }
 
@@ -1082,6 +1093,16 @@ a.ais-current-refined-values--link:hover {
   color: #aaaaaa;
   text-decoration: line-through;
   font-size: 12px;
+}
+
+#algolia_instant_selector .tier_price {
+  color: #666666;
+  font-size: 12px;
+}
+
+#algolia_instant_selector .tier_price .tier_value {
+  color: #54A5CD;
+  font-size: 1.4rem;
 }
 
 #algolia_instant_selector button:hover {

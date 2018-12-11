@@ -1,6 +1,6 @@
 Algolia Search for Magento 2
 ==================
-![Latest version](https://img.shields.io/badge/latest-1.7.2-green.svg)
+![Latest version](https://img.shields.io/badge/latest-1.8.4-green.svg)
 ![Magento 2](https://img.shields.io/badge/Magento-%3E=2.0-blue.svg)
 ![PHP >= 5.5.22](https://img.shields.io/badge/PHP-%3E=5.5.22-green.svg)
 [![Build Status](https://travis-ci.org/algolia/algoliasearch-magento-2.svg?branch=master)](https://travis-ci.org/algolia/algoliasearch-magento-2)
@@ -53,3 +53,7 @@ Run the following commands:
 - ```$ bin/magento module:enable Algolia_AlgoliaSearch```
 - ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
 
+Contribution
+------------
+
+To start contribuiting to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).

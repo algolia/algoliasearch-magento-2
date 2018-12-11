@@ -4,6 +4,7 @@
 $priceKey = $block->getPriceKey();
 
 $origFormatedVar = 'price' . $priceKey . '_original_formated';
+$tierFormatedVar = 'price' . $priceKey . '_tier_formated'
 
 ?>
 
@@ -45,6 +46,12 @@ $origFormatedVar = 'price' . $priceKey . '_original_formated';
                         {{<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                     </span>
                 {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                {{#<?php echo $block->escapeHtml($tierFormatedVar); ?>}}
+                    <span class="tier_price">
+                        <?php echo __('As low as') ?>
+                        <span class="tier_value">{{<?php echo $block->escapeHtml($tierFormatedVar); ?>}}</span>
+                    </span>
+                {{/<?php echo $block->escapeHtml($tierFormatedVar); ?>}}
             </div>
         </div>
     </a>

@@ -9,7 +9,7 @@ $configuration = $block->getConfiguration();
 <script>
     <?php
     if ($configuration['instant']['enabled'] === true && $configuration['isSearchPage'] === true) :
-        $css = '<style type="text/css">'.$configuration['instant']['selector'].' {display:none}</style>';
+        $css = '<style type="text/css">' . $configuration['instant']['selector'] . ' {display:none}</style>';
     ?>
 	// Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
 	document.write('<?php /* @noEscape */ echo $css; ?>');

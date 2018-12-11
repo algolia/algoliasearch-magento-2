@@ -3,13 +3,12 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Magento\Cms\Model\Page;
+use Magento\Cms\Model\Template\FilterProvider;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Cms\Model\Page;
-use Magento\Framework\DataObject;
-use Magento\Framework\Url;
 
 class PageHelper
 {
@@ -128,26 +127,13 @@ class PageHelper
 
     private function getStoreUrl($storeId)
     {
-        if ($this->storeUrls === null) {
-            $this->storeUrls = [];
-            $storeIds = $this->getStores();
-
-            foreach ($storeIds as $storeId) {
-                // ObjectManager used instead of UrlFactory because UrlFactory will return UrlInterface which
-                // may cause a backend Url object to be returned
-
-                /** @var Url $url */
-                $url = $this->objectManager->create('Magento\Framework\Url');
-                $url->setData('store', $storeId);
-                $this->storeUrls[$storeId] = $url;
-            }
+        if (!isset($this->storeUrls[$storeId])) {
+            $url = $this->objectManager->create('Magento\Framework\Url');
+            $url->setData('store', $storeId);
+            $this->storeUrls[$storeId] = $url;
         }
 
-        if (array_key_exists($storeId, $this->storeUrls)) {
-            return $this->storeUrls[$storeId];
-        }
-
-        return null;
+        return $this->storeUrls[$storeId];
     }
 
     public function getStores($storeId = null)

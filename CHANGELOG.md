@@ -1,5 +1,59 @@
 # CHANGE LOG
 
+## 1.8.4
+
+- **Added compatibility with Magento 2.3** (#624)
+- When searching for empty string, search results page displayed "__empty__" as searched query. Now it doesn't display anything (#586)
+- Fixed failing configuration when query rules are not enabled on Algolia application (#591, #604)
+- Removed categories from No results links in autocomplete menu when Categories are not set as attribute for faceting (#592)
+- Fixed issue with serialized arrays when Autocomplete or Instant search features are turned off (#593)
+
+## 1.8.3
+
+* Removed the default facet query rule (attribute "color") (#600)
+
+## 1.8.2
+
+* Fixed error which showed Instant search components on checkout page (#572)
+* Fixed administration categories and category merchandising on Magento 2.1 (#573)
+* Fixed indexing queue page on Magento 2.1 (#575)
+* Fixed configurable products' price calculation when parent product has zero price (#580)
+* Fixed processed jobs removal from indexing queue (#582)
+
+## 1.8.1
+
+* Fixed PHP 5.5 support (#562)
+* Fixed `archive` table creation (#566)
+* Fixed PHP notice on not recognised product type (#566)
+
+## 1.8.0
+
+### FEATURES
+- Possibility to [reindex specific SKUs](https://community.algolia.com/doc/m2/sku-reindexing-form/) (#536)
+    - the form will give an option to reindex specific SKU(s)
+    - if the product shouldn't be reindexed, the form shows the exact reason why the product is not indexed 
+- Category visual merchandiser - Magento 2.1 and higher (#510)
+    - the tool gives possibility to visually merchandise products on category pages powered by Algolia
+    - it's placed in category detail in tab "Algolia Merchandising"
+- Indexing queue page (#537)
+    - The page shows the status and remaining jobs in indexing queue
+    - It offers suggestions to improve performance of the queue to get the fastest indexing
+- "Non-castable" attributes can now be specified in configuration (#507)
+- Added support for tier prices (#558)
+
+### UPDATES
+- Configuration page was proofread and enhanced to provide better UX (#526, #529, #531)
+- Values of `sku`s and `color`s are now correctly index within record of main configurable product
+- Price in filter is correctly formatted (#539)
+- Use correct column name (`row_id` vs. `entity_id`) based on staging module availability (#544)
+- Improved `algolia_after_products_collection_build` event to pass all relevant parameters (#546)
+- The extension has improved [Continuous Integration build](https://github.com/algolia/algoliasearch-magento-2/blob/master/.github/CONTRIBUTING.md) checking quality of code, coding standards and tests (#557)
+- Refactored price calculation class (#558)
+
+### FIXES
+- Fixed incorrect replacement of "+" and "-" of toggle button of facet panel (#532)
+- Fixed indexed URLs for CMS pages (#551)
+
 ## 1.7.2
 
 Fixed JavaScript issue causing malfunctioning the extension in IE 11 (#538)

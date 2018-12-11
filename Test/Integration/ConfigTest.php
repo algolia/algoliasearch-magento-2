@@ -17,24 +17,9 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
+        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
 
-        $this->assertEquals(count($facets), count($indexSettings['attributesForFaceting']));
-
-        $attributesMatched = 0;
-        foreach ($facets as $facet) {
-            foreach ($indexSettings['attributesForFaceting'] as $indexFacet) {
-                if ($facet['attribute'] === 'price' && strpos($indexFacet, 'price.') === 0) {
-                    $attributesMatched++;
-                } elseif ($facet['attribute'] === $indexFacet) {
-                    $attributesMatched++;
-                } elseif ($facet['attribute'] === 'color' && 'searchable(color)' === $indexFacet) {
-                    $attributesMatched++;
-                }
-            }
-        }
-
-        $this->assertEquals(count($facets), $attributesMatched);
+        $this->assertEquals(4, count($indexSettings['attributesForFaceting']));
     }
 
     public function testQueryRules()
@@ -45,7 +30,7 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $index = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products');
+        $index = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products');
 
         $matchedRules = [];
 
@@ -65,7 +50,7 @@ class ConfigTest extends TestCase
             $page++;
         } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
 
-        $this->assertEquals(1, count($matchedRules));
+        $this->assertEquals(0, count($matchedRules));
     }
 
     public function testAutomaticalSetOfCategoriesFacet()
@@ -91,9 +76,9 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
+        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
 
-        $this->assertEquals(2, count($indexSettings['attributesForFaceting']));
+        $this->assertEquals(3, count($indexSettings['attributesForFaceting']));
 
         $categoriesAttributeIsIncluded = false;
         foreach ($indexSettings['attributesForFaceting'] as $attribute) {
@@ -112,9 +97,9 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix.'default_products')->getSettings();
+        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
 
-        $this->assertEquals(3, count($indexSettings['attributesForFaceting']));
+        $this->assertEquals(3 + 1, count($indexSettings['attributesForFaceting']));
 
         $categoriesAttributeIsIncluded = false;
         foreach ($indexSettings['attributesForFaceting'] as $attribute) {
@@ -146,7 +131,7 @@ class ConfigTest extends TestCase
 
         $this->assertContains('objectID', $retrievableAttributes);
         $this->assertContains('name', $retrievableAttributes);
-        $this->assertContains('product_count', $retrievableAttributes); // Category attribute
+        $this->assertContains('path', $retrievableAttributes); // Category attribute
     }
 
     public function testReplicaCreationWithoutCustomerGroups()
@@ -193,9 +178,9 @@ class ConfigTest extends TestCase
         $this->setConfig('algoliasearch_advanced/advanced/customer_groups_enable', $enableCustomGroups);
 
         $sortingIndicesWithRankingWhichShouldBeCreated = [
-            $this->indexPrefix.'default_products_price_'.$priceAttribute.'_asc' => 'asc(price.USD.'.$priceAttribute.')',
-            $this->indexPrefix.'default_products_price_'.$priceAttribute.'_desc' => 'desc(price.USD.'.$priceAttribute.')',
-            $this->indexPrefix.'default_products_created_at_desc' => 'desc(created_at)',
+            $this->indexPrefix . 'default_products_price_' . $priceAttribute . '_asc' => 'asc(price.USD.' . $priceAttribute . ')',
+            $this->indexPrefix . 'default_products_price_' . $priceAttribute . '_desc' => 'desc(price.USD.' . $priceAttribute . ')',
+            $this->indexPrefix . 'default_products_created_at_desc' => 'desc(created_at)',
         ];
 
         /** @var Data $helper */
@@ -228,7 +213,7 @@ class ConfigTest extends TestCase
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
-            $indexName = $this->indexPrefix.'default_'.$section;
+            $indexName = $this->indexPrefix . 'default_' . $section;
 
             $this->algoliaHelper->setSettings($indexName, ['exactOnSingleWordQuery' => 'attribute']);
         }
@@ -236,7 +221,7 @@ class ConfigTest extends TestCase
         $this->algoliaHelper->waitLastTask();
 
         foreach ($sections as $section) {
-            $indexName = $this->indexPrefix.'default_'.$section;
+            $indexName = $this->indexPrefix . 'default_' . $section;
 
             $currentSettings = $this->algoliaHelper->getIndex($indexName)->getSettings();
 
@@ -245,14 +230,14 @@ class ConfigTest extends TestCase
         }
 
         foreach ($sections as $section) {
-            $this->setConfig('algoliasearch_extra_settings/extra_settings/'.$section.'_extra_settings', '{"exactOnSingleWordQuery":"word"}');
+            $this->setConfig('algoliasearch_extra_settings/extra_settings/' . $section . '_extra_settings', '{"exactOnSingleWordQuery":"word"}');
         }
 
         $helper->saveConfigurationToAlgolia(1);
         $this->algoliaHelper->waitLastTask();
 
         foreach ($sections as $section) {
-            $indexName = $this->indexPrefix.'default_'.$section;
+            $indexName = $this->indexPrefix . 'default_' . $section;
 
             $currentSettings = $this->algoliaHelper->getIndex($indexName)->getSettings();
 
@@ -269,7 +254,7 @@ class ConfigTest extends TestCase
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
-            $this->setConfig('algoliasearch_extra_settings/extra_settings/'.$section.'_extra_settings', '{"foo":"bar"}');
+            $this->setConfig('algoliasearch_extra_settings/extra_settings/' . $section . '_extra_settings', '{"foo":"bar"}');
         }
 
         try {
@@ -279,7 +264,7 @@ class ConfigTest extends TestCase
 
             // Check if the error message contains error for all sections
             foreach ($sections as $section) {
-                $position = strpos($message, $section);
+                $position = mb_strpos($message, $section);
                 $this->assertTrue($position !== false);
             }
 

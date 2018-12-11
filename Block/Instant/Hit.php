@@ -3,9 +3,9 @@
 namespace Algolia\AlgoliaSearch\Block\Instant;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Magento\Framework\View\Element\Template;
-use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Customer\Model\Context as CustomerContext;
+use Magento\Framework\App\Http\Context as HttpContext;
+use Magento\Framework\View\Element\Template;
 
 class Hit extends Template
 {

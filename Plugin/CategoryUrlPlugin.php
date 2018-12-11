@@ -26,8 +26,8 @@ class CategoryUrlPlugin
     {
         if ($category->getStoreId() === 0) {
             return $proceed();
-        } else {
-            return $this->objectManager->create(self::FRONTEND_URL)->setStoreId($category->getStoreId());
         }
+
+        return $this->objectManager->create(self::FRONTEND_URL)->setStoreId($category->getStoreId());
     }
 }

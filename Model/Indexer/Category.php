@@ -35,7 +35,6 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
         ManagerInterface $messageManager,
         ConsoleOutput $output
     ) {
-    
         $this->fullAction = $helper;
         $this->storeManager = $storeManager;
         $this->categoryHelper = $categoryHelper;

@@ -2,28 +2,27 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
+use Algolia\AlgoliaSearch\Helper\Logger;
 use AlgoliaSearch\AlgoliaException;
 use AlgoliaSearch\Index;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
-use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
-use Magento\Directory\Model\Currency;
-use Magento\Framework\DataObject;
-use Magento\Store\Model\Store;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
-use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\Product\Type\AbstractType;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
 class ProductHelper
 {
@@ -75,6 +74,11 @@ class ProductHelper
         'in_stock',
     ];
 
+    private $attributesToIndexAsArray = [
+        'sku',
+        'color',
+    ];
+
     public function __construct(
         Config $eavConfig,
         ConfigHelper $configHelper,
@@ -111,7 +115,7 @@ class ProductHelper
             [
                 'options' =>[
                     'shouldRemovePubDir' => $this->configHelper->shouldRemovePubDirectory(),
-                ]
+                ],
             ]
         );
     }
@@ -234,13 +238,19 @@ class ProductHelper
             $products = $products->addAttributeToFilter('entity_id', ['in' => $productIds]);
         }
 
-        $this->eventManager->dispatch( // Only for backward compatibility
+        // Only for backward compatibility
+        $this->eventManager->dispatch(
             'algolia_rebuild_store_product_index_collection_load_before',
             ['store' => $storeId, 'collection' => $products]
         );
         $this->eventManager->dispatch(
             'algolia_after_products_collection_build',
-            ['store' => $storeId, 'collection' => $products]
+            [
+                'store' => $storeId,
+                'collection' => $products,
+                'only_visible' => $onlyVisible,
+                'include_not_visible_individually' => $includeNotVisibleIndividually,
+            ]
         );
 
         return $products;
@@ -269,7 +279,8 @@ class ProductHelper
 
         // Additional index settings from event observer
         $transport = new DataObject($indexSettings);
-        $this->eventManager->dispatch( // Only for backward compatibility
+        // Only for backward compatibility
+        $this->eventManager->dispatch(
             'algolia_index_settings_prepare',
             ['store_id' => $storeId, 'index_settings' => $transport]
         );
@@ -361,7 +372,15 @@ class ProductHelper
         }
 
         if ($saveToTmpIndicesToo === true) {
-            $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
+            try {
+                $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
+            } catch (AlgoliaException $e) {
+                // Fail silently if query rules are disabled on the app
+                // If QRs are disabled, nothing will happen and the extension will work as expected
+                if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
+                    throw $e;
+                }
+            }
         }
     }
 
@@ -431,7 +450,11 @@ class ProductHelper
 
         $customData = $this->addAdditionalAttributes($customData, $additionalAttributes, $product, $subProducts);
 
-        $customData = $this->priceManager->addPriceData($customData, $product, $subProducts);
+        // old beheviour
+//        $customData = $this->priceManager->addPriceData($customData, $product, $subProducts);
+
+        // new behaviour
+        $customData = $this->priceManager->addPriceDataByProductType($customData, $product, $subProducts);
 
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
@@ -499,8 +522,10 @@ class ProductHelper
      * Returns all parent product IDs, e.g. when simple product is part of configurable or bundle
      *
      * @param array $productIds
-     * @return array
+     *
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return array
      */
     public function getParentProductIds(array $productIds)
     {
@@ -515,8 +540,10 @@ class ProductHelper
     /**
      * Returns composite product type instances
      *
-     * @return AbstractType[]
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return AbstractType[]
+     *
      * @see \Magento\Catalog\Model\Indexer\Product\Flat\AbstractAction::_getProductTypeInstances
      */
     private function getCompositeTypes()
@@ -528,6 +555,7 @@ class ProductHelper
                 $this->compositeTypes[$typeId] = $this->productType->factory($productEmulator);
             }
         }
+
         return $this->compositeTypes;
     }
 
@@ -547,6 +575,7 @@ class ProductHelper
 
         $categories = [];
         $categoriesWithPath = [];
+        $categoryIds = [];
 
         $_categoryIds = $product->getCategoryIds();
 
@@ -585,6 +614,7 @@ class ProductHelper
 
                     $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
                     if ($name) {
+                        $categoryIds[] = $treeCategoryId;
                         $path[] = $name;
                     }
                 }
@@ -608,6 +638,7 @@ class ProductHelper
 
         $customData['categories'] = $hierarchicalCategories;
         $customData['categories_without_path'] = $categories;
+        $customData['categoryIds'] = array_values(array_unique($categoryIds));
 
         return $customData;
     }
@@ -704,7 +735,9 @@ class ProductHelper
     private function addAdditionalAttributes($customData, $additionalAttributes, Product $product, $subProducts)
     {
         foreach ($additionalAttributes as $attribute) {
-            if (isset($customData[$attribute['attribute']])) {
+            $attributeName = $attribute['attribute'];
+
+            if (isset($customData[$attributeName]) && $attributeName !== 'sku') {
                 continue;
             }
 
@@ -712,18 +745,21 @@ class ProductHelper
             $resource = $product->getResource();
 
             /** @var AttributeResource $attributeResource */
-            $attributeResource = $resource->getAttribute($attribute['attribute']);
+            $attributeResource = $resource->getAttribute($attributeName);
             if (!$attributeResource) {
                 continue;
             }
 
             $attributeResource = $attributeResource->setData('store_id', $product->getStoreId());
 
-            $value = $product->getData($attribute['attribute']);
+            $value = $product->getData($attributeName);
 
             if ($value !== null) {
                 $customData = $this->addNonNullValue($customData, $value, $product, $attribute, $attributeResource);
-                continue;
+
+                if (!in_array($attributeName, $this->attributesToIndexAsArray, true)) {
+                    continue;
+                }
             }
 
             $type = $product->getTypeId();
@@ -739,15 +775,21 @@ class ProductHelper
 
     private function addNullValue($customData, $subProducts, $attribute, AttributeResource $attributeResource)
     {
+        $attributeName = $attribute['attribute'];
+
         $values = [];
         $subProductImages = [];
 
+        if (isset($customData[$attributeName])) {
+            $values[] = $customData[$attributeName];
+        }
+
         /** @var Product $subProduct */
         foreach ($subProducts as $subProduct) {
-            $value = $subProduct->getData($attribute['attribute']);
+            $value = $subProduct->getData($attributeName);
             if ($value) {
                 /** @var string|array $valueText */
-                $valueText = $subProduct->getAttributeText($attribute['attribute']);
+                $valueText = $subProduct->getAttributeText($attributeName);
 
                 $values = array_merge($values, $this->getValues($valueText, $subProduct, $attributeResource));
                 $subProductImages = $this->addSubProductImage($subProductImages, $attribute, $subProduct, $valueText);
@@ -755,7 +797,7 @@ class ProductHelper
         }
 
         if (is_array($values) && count($values) > 0) {
-            $customData[$attribute['attribute']] = array_values(array_unique($values));
+            $customData[$attributeName] = array_values(array_unique($values));
         }
 
         if (count($subProductImages) > 0) {
@@ -912,7 +954,7 @@ class ProductHelper
             } else {
                 $attribute = $facet['attribute'];
                 if (array_key_exists('searchable', $facet) && $facet['searchable'] === '1') {
-                    $attribute = 'searchable('.$attribute.')';
+                    $attribute = 'searchable(' . $attribute . ')';
                 }
 
                 $attributesForFaceting[] = $attribute;
@@ -923,6 +965,9 @@ class ProductHelper
             $attributesForFaceting[] = 'categories';
         }
 
+        // Used for merchandising
+        $attributesForFaceting[] = 'categoryIds';
+
         return $attributesForFaceting;
     }
 
@@ -932,11 +977,11 @@ class ProductHelper
 
         $allIndices = $this->algoliaHelper->listIndexes();
         foreach ($allIndices['items'] as $indexInfo) {
-            if (strpos($indexInfo['name'], $indexName) !== 0 || $indexInfo['name'] === $indexName) {
+            if (mb_strpos($indexInfo['name'], $indexName) !== 0 || $indexInfo['name'] === $indexName) {
                 continue;
             }
 
-            if (strpos($indexInfo['name'], '_tmp') === false && in_array($indexInfo['name'], $replicas) === false) {
+            if (mb_strpos($indexInfo['name'], '_tmp') === false && in_array($indexInfo['name'], $replicas) === false) {
                 $indicesToDelete[] = $indexInfo['name'];
             }
         }
@@ -966,21 +1011,21 @@ class ProductHelper
             $attribute = $facet['attribute'];
 
             $rules[] = [
-                'objectID' => 'filter_'.$attribute,
-                'description' => 'Filter facet "'.$attribute.'"',
+                'objectID' => 'filter_' . $attribute,
+                'description' => 'Filter facet "' . $attribute . '"',
                 'condition' => [
                     'anchoring' => 'contains',
-                    'pattern' => '{facet:'.$attribute.'}',
+                    'pattern' => '{facet:' . $attribute . '}',
                     'context' => 'magento_filters',
                 ],
                 'consequence' => [
                     'params' => [
                         'automaticFacetFilters' => [$attribute],
                         'query' => [
-                            'remove' => ['{facet:'.$attribute.'}']
-                        ]
+                            'remove' => ['{facet:' . $attribute . '}'],
+                        ],
                     ],
-                ]
+                ],
             ];
         }
 
@@ -991,21 +1036,33 @@ class ProductHelper
 
     private function clearFacetsQueryRules(Index $index)
     {
-        $hitsPerPage = 100;
-        $page = 0;
-        do {
-            $fetchedQueryRules = $index->searchRules([
-                'context' => 'magento_filters',
-                'page' => $page,
-                'hitsPerPage' => $hitsPerPage,
-            ]);
+        try {
+            $hitsPerPage = 100;
+            $page = 0;
+            do {
+                $fetchedQueryRules = $index->searchRules([
+                    'context' => 'magento_filters',
+                    'page' => $page,
+                    'hitsPerPage' => $hitsPerPage,
+                ]);
 
-            foreach ($fetchedQueryRules['hits'] as $hit) {
-                $index->deleteRule($hit['objectID'], true);
+                if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
+                    break;
+                }
+
+                foreach ($fetchedQueryRules['hits'] as $hit) {
+                    $index->deleteRule($hit['objectID'], true);
+                }
+
+                $page++;
+            } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
+        } catch (AlgoliaException $e) {
+            // Fail silently if query rules are disabled on the app
+            // If QRs are disabled, nothing will happen and the extension will work as expected
+            if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
+                throw $e;
             }
-
-            $page++;
-        } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
+        }
     }
 
     private function explodeSynonyms($synonyms)

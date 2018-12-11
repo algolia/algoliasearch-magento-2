@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\ObjectManagerInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Queue
 {
@@ -15,7 +16,9 @@ class Queue
     private $db;
     private $table;
     private $logTable;
+    private $archiveTable;
     private $objectManager;
+    private $output;
 
     private $elementsPerPage;
 
@@ -41,17 +44,20 @@ class Queue
         ConfigHelper $configHelper,
         Logger $logger,
         ResourceConnection $resourceConnection,
-        ObjectManagerInterface $objectManager
+        ObjectManagerInterface $objectManager,
+        ConsoleOutput $output
     ) {
         $this->configHelper = $configHelper;
         $this->logger = $logger;
 
         $this->table = $resourceConnection->getTableName('algoliasearch_queue');
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
+        $this->archiveTable = $resourceConnection->getTableName('algoliasearch_queue_archive');
 
         $this->db = $resourceConnection->getConnection('core_write');
 
         $this->objectManager = $objectManager;
+        $this->output = $output;
 
         $this->elementsPerPage = $this->configHelper->getNumberOfElementByPage();
 
@@ -84,6 +90,28 @@ class Queue
         ]);
     }
 
+    /**
+     * Return the average processing time for the 2 last two days
+     * (null if there was less than 100 runs with processed jobs)
+     *
+     * @throws \Zend_Db_Statement_Exception
+     *
+     * @return float|null
+     */
+    public function getAverageProcessingTime()
+    {
+        $data = $this->db->query(
+            $this->db->select()
+                ->from($this->logTable, ['number_of_runs' => 'COUNT(duration)', 'average_time' => 'AVG(duration)'])
+                ->where('processed_jobs > 0 AND with_empty_queue = 0 AND started >= (CURDATE() - INTERVAL 2 DAY)')
+        );
+        $result = $data->fetch();
+
+        return (int) $result['number_of_runs'] >= 100 && isset($result['average_time']) ?
+            (float) $result['average_time'] :
+            null;
+    }
+
     public function runCron($nbJobs = null, $force = false)
     {
         if (!$this->configHelper->isQueueActive() && $force === false) {
@@ -113,6 +141,12 @@ class Queue
 
         $this->logRecord['duration'] = time() - $started;
 
+        if (php_sapi_name() === 'cli') {
+            $this->output->writeln(
+                $this->logRecord['processed_jobs'] . ' jobs processed in ' . $this->logRecord['duration'] . ' seconds.'
+            );
+        }
+
         $this->db->insert($this->logTable, $this->logRecord);
     }
 
@@ -133,7 +167,7 @@ class Queue
             // and therefore are not indexed yet in TMP index
             if ($job['method'] === 'moveIndex' && $this->noOfFailedJobs > 0) {
                 // Set pid to NULL so it's not deleted after
-                $this->db->query("UPDATE {$this->table} SET pid = NULL WHERE job_id = ".$job['job_id']);
+                $this->db->query("UPDATE {$this->table} SET pid = NULL WHERE job_id = " . $job['job_id']);
 
                 continue;
             }
@@ -146,33 +180,37 @@ class Queue
 
                 call_user_func_array([$model, $method], $data);
 
+                // Delete one by one
+                $where = $this->db->quoteInto('job_id IN (?)', $job['merged_ids']);
+                $this->db->delete($this->table, $where);
+
                 $this->logRecord['processed_jobs'] += count($job['merged_ids']);
             } catch (\Exception $e) {
                 $this->noOfFailedJobs++;
 
+                // Log error information
+                $logMessage = 'Queue processing ' . $job['pid'] . ' [KO]: 
+                    Class: ' . $job['class'] . ', 
+                    Method: ' . $job['method'] . ', 
+                    Parameters: ' . json_encode($job['data']);
+                $this->logger->log($logMessage);
+
+                $logMessage = date('c') . ' ERROR: ' . get_class($e) . ': 
+                    ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() .
+                    "\nStack trace:\n" . $e->getTraceAsString();
+                $this->logger->log($logMessage);
+
                 // Increment retries, set the job ID back to NULL
                 $updateQuery = "UPDATE {$this->table} 
-                    SET pid = NULL, retries = retries + 1 
-                    WHERE job_id IN (".implode(', ', (array) $job['merged_ids']).")";
+                    SET pid = NULL, retries = retries + 1 , error_log = '" . addslashes($logMessage) . "' 
+                    WHERE job_id IN (" . implode(', ', (array) $job['merged_ids']) . ')';
                 $this->db->query($updateQuery);
 
-                // Log error information
-                $logMessage = 'Queue processing '.$job['pid'].' [KO]: 
-                    Class: '.$job['class'].', 
-                    Method: '.$job['method'].', 
-                    Parameters: '.json_encode($job['data']);
-                $this->logger->log($logMessage);
-
-                $logMessage = date('c').' ERROR: '.get_class($e).': 
-                    '.$e->getMessage().' in '.$e->getFile().':'.$e->getLine().
-                    "\nStack trace:\n".$e->getTraceAsString();
-                $this->logger->log($logMessage);
+                if (php_sapi_name() === 'cli') {
+                    $this->output->writeln($logMessage);
+                }
             }
         }
-
-        // Delete only when finished to be able to debug the queue if needed
-        $where = $this->db->quoteInto('pid = ?', $pid);
-        $this->db->delete($this->table, $where);
 
         $isFullReindex = ($maxJobs === -1);
         if ($isFullReindex) {
@@ -182,14 +220,26 @@ class Queue
         }
     }
 
+    private function archiveFailedJobs($whereClause)
+    {
+        $this->db->query(
+            "INSERT INTO {$this->archiveTable} (pid, class, method, data, error_log, data_size, created_at) 
+                  SELECT pid, class, method, data, error_log, data_size, NOW()
+                  FROM {$this->table}
+                  WHERE " . $whereClause
+        );
+    }
+
     private function getJobs($maxJobs, $pid)
     {
         // Clear jobs with crossed max retries count
         $retryLimit = $this->configHelper->getRetryLimit();
         if ($retryLimit > 0) {
             $where = $this->db->quoteInto('retries >= ?', $retryLimit);
+            $this->archiveFailedJobs($where);
             $this->db->delete($this->table, $where);
         } else {
+            $this->archiveFailedJobs('retries > max_retries');
             $this->db->delete($this->table, 'retries > max_retries');
         }
 
@@ -250,21 +300,20 @@ class Queue
                 }
             }
 
+            if (isset($firstJobId)) {
+                $lastJobId = $this->maxValueInArray($jobs, 'job_id');
+
+                // Reserve all new jobs since last run
+                $this->db->query("UPDATE {$this->db->quoteIdentifier($this->table, true)} 
+                SET pid = " . $pid . ' 
+                WHERE job_id >= ' . $firstJobId . " AND job_id <= $lastJobId");
+            }
+
             $this->db->commit();
         } catch (\Exception $e) {
             $this->db->rollBack();
 
             throw $e;
-        }
-
-
-        if (isset($firstJobId)) {
-            $lastJobId = $this->maxValueInArray($jobs, 'job_id');
-
-            // Reserve all new jobs since last run
-            $this->db->query("UPDATE {$this->db->quoteIdentifier($this->table, true)} 
-                SET pid = ".$pid.' 
-                WHERE job_id >= '.$firstJobId." AND job_id <= $lastJobId");
         }
 
         return $jobs;
@@ -473,24 +522,24 @@ class Queue
         $idsToDelete = $this->db->query("SELECT id 
                                     FROM {$this->logTable} 
                                     ORDER BY started DESC, id DESC 
-                                    LIMIT 25000, ".PHP_INT_MAX)
+                                    LIMIT 25000, " . PHP_INT_MAX)
                                 ->fetchAll(\PDO::FETCH_COLUMN, 0);
 
         if ($idsToDelete) {
-            $this->db->query("DELETE FROM {$this->logTable} WHERE id IN (" . implode(", ", $idsToDelete) . ")");
+            $this->db->query("DELETE FROM {$this->logTable} WHERE id IN (" . implode(', ', $idsToDelete) . ')');
         }
     }
 
-	private function shouldEmptyQueue()
-	{
-		if (getenv('PROCESS_FULL_QUEUE') && getenv('PROCESS_FULL_QUEUE') === '1') {
-			return true;
-		}
+    private function shouldEmptyQueue()
+    {
+        if (getenv('PROCESS_FULL_QUEUE') && getenv('PROCESS_FULL_QUEUE') === '1') {
+            return true;
+        }
 
-		if (getenv('EMPTY_QUEUE') && getenv('EMPTY_QUEUE') === '1') {
-			return true;
-		}
+        if (getenv('EMPTY_QUEUE') && getenv('EMPTY_QUEUE') === '1') {
+            return true;
+        }
 
-		return false;
+        return false;
     }
 }

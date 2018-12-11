@@ -28,7 +28,6 @@ abstract class AbstractTable extends AbstractFieldArray
         ConfigHelper $configHelper,
         array $data = []
     ) {
-    
         $this->config = $configHelper;
         $this->productHelper = $producthelper;
         $this->categoryHelper = $categoryHelper;
@@ -42,7 +41,7 @@ abstract class AbstractTable extends AbstractFieldArray
             /** @var \Algolia\AlgoliaSearch\Block\System\Form\Field\Select $select */
             $select = $this->getLayout()
                            ->createBlock('Algolia\AlgoliaSearch\Block\System\Form\Field\Select', '', [
-                               'data' => ['is_render_to_js_template' => true]
+                               'data' => ['is_render_to_js_template' => true],
                            ]);
 
             $options = $columnData['values'];

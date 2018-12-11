@@ -1,0 +1,685 @@
+<?php
+
+/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
+
+$configHelper = $block->getConfigHelper();
+
+?>
+
+<?php if ($block->isRootCategory()): ?>
+
+<div class="messages">
+    <div class="message message-info info">
+        The root category is not displayed on Magento's frontend and therefore it's not indexed within Algolia records.
+        <br>To merchandise products, please select any sub-category.
+    </div>
+</div>
+
+<?php return; endif; ?>
+
+
+
+<?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()):
+    $instantSearchLink = $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_instant');
+?>
+
+<div class="messages">
+    <div class="message message-info info">
+        To merchandise products using Algolia
+        you need to enable <b>Instant search</b> with <b>Replace category pages</b> feature.
+        You can do it in Algolia's <a href="<?php echo $instantSearchLink; ?>" target="_blank">Instant Search configuration</a>.
+        <br><br>
+        <b>Instant search</b> with enabled <b>Replace category pages</b> feature gives your customers a great experience
+        while browsing your catalog. It enables your customers to search and filter for products at real time resulting
+        in better customer journey.<br>
+        With the speed and relevancy of Algolia your customers are more likely to purchase
+        and enjoy the shopping on your store(s).
+    </div>
+</div>
+
+<?php return; endif; ?>
+
+<?php
+
+$indexName = $block->getCoreHelper()->getBaseIndexName();
+
+$category = $block->getCategory();
+
+$categoryId = $category->getId();
+$categoryName = $category->getName();
+
+$isConfig = [
+    'appId' => $configHelper->getApplicationID(),
+    'apiKey' => $configHelper->getSearchOnlyAPIKey(),
+    'indexName' => $configHelper->getIndexPrefix() . 'default_products',
+    'routing' => false,
+    'searchParameters' => [
+        'hitsPerPage' => $configHelper->getNumberOfProductResults(),
+        'getRankingInfo' => true,
+        'ruleContexts' => [
+            '',
+            'magento-category-' . $categoryId,
+        ],
+        'facetFilters' => [
+            'categoryIds:' . $block->getCategory()->getId(),
+        ],
+    ],
+];
+
+?>
+
+<div id="algolia_merchandising_search_box"></div>
+<div id="algolia_merchandising_hits"></div>
+
+<input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="category_form" />
+
+<script type="text/template" id="algolia_merchandising_all_items_template">
+    <div>
+        <p>
+            On this page you see the exact products in the exact order
+            as your customers see it on "<?php echo $categoryName; ?>" category page.<br>
+            Drag & drop products to a specific position and pin it there to have the product displayed always in this position.
+        </p>
+        <p class="info">
+            Merchandising will create <a href="https://www.algolia.com/doc/guides/query-rules/query-rules-overview/" target="_blank">1 query rule</a>
+            for each merchandised category. Each Algolia plan has a <a href="https://www.algolia.com/pricing" target="_blank">query rules quota</a>,
+            which cannot be exceeded.<br>
+            Query rule is created only when a category contains at least one "pinned" product.
+            When there are no "pinned" products, no query rule is created.
+        </p>
+    </div>
+    <br>
+    <label for="algolia_merchandising_autocomplete">
+        <input type="text" id="algolia_merchandising_autocomplete" placeholder="Add another item to promote ..." />
+    </label>
+
+    <div class="admin__data-grid-wrap admin__data-grid-wrap-static algolia_merchandising_items_table">
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th class="data-grid-th">Position</th>
+                    <th class="data-grid-th">Image</th>
+                    <th class="data-grid-th">ID</th>
+                    <th class="data-grid-th">SKU</th>
+                    <th class="data-grid-th">Name</th>
+                    <th class="data-grid-th">Price</th>
+                    <th class="data-grid-th">Pin it</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#hits}}
+                    <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
+                        <td class="position_cell">
+                            <span class="padlock"></span>
+                            <span class="draggable-handle"></span>
+                        </td>
+                        <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
+                        <td>{{ objectID }}</td>
+                        <td>{{{ _highlightResult.sku.value }}}</td>
+                        <td>{{{ _highlightResult.name.value }}}</td>
+                        <td>{{ price.USD.default_formated }}</td>
+                        <td class="actions">
+                            <div class="pin_block">
+                                <a class="arrow up" href="#">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                                        <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
+                                    </svg>
+                                ️</a>
+                                <a href="#" class="pinIt">PIN HERE</a>
+                                <a href="#" class="unpinIt">UN-PIN</a>
+                                <a class="arrow down" href="#">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                                        <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {{/hits}}
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<script type="text/template" id="algolia_merchandising_no_results">
+    <div class="algolia_merchandising_no_results messages">
+        <div class="message message-warning warning">
+            Algolia didn't find any products in this category.
+            If there are supposed to be some products, please reindex Products indexer.
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="algolia_merchandisign_table_row">
+    <tr data-objectid="{{ objectID }}">
+        <td class="position_cell">
+            <span class="padlock"></span>
+            <span class="draggable-handle"></span>
+        </td>
+        <td class="image_cell"><img src="{{ image_url }}" width="60" /></td>
+        <td>{{ objectID }}</td>
+        <td>{{{ sku }}}</td>
+        <td>{{{ name }}}</td>
+        <td>{{ price.USD.default_formated }}</td>
+        <td class="actions">
+            <div class="pin_block">
+                <a class="arrow up" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                        <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
+                    </svg>
+                    ️</a>
+                <a href="#" class="pinIt">PIN HERE</a>
+                <a href="#" class="unpinIt">UN-PIN</a>
+                <a class="arrow down" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                        <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
+                    </svg>
+                </a>
+            </div>
+        </td>
+    </tr>
+</script>
+
+<script type="text/template" id="algolia_merchandising_autocomplete_hit">
+    <div class="algoliasearch-autocomplete-hit">
+        <div class="thumb"><img src="{{ image_url }}" /></div>
+
+        <div class="info">
+            {{{ _highlightResult.name.value }}}
+            <div class="price">
+				{{ price.USD.default_formated }}
+			</div>
+        </div>
+
+        <a href="#" class="pinIt">
+            PIN THIS PRODUCT
+        </a>
+        <div class="algolia-clearfix"></div>
+    </div>
+    <hr />
+</script>
+
+<style>
+    #algolia_merchandising_autocomplete {
+        width: 630px;
+        height: 56px;
+        border-radius: 3px;
+        background: #f6f6f6 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><g fill="none" fill-rule="evenodd" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.778" opacity=".4" transform="translate(1 1)"><circle cx="7.111" cy="7.111" r="7.111"/><path d="M16 16l-3.867-3.867"/></g></svg>') no-repeat 24px;
+        padding-left: 64px;
+        border: solid 1px rgba(204, 204, 204, 0.5);
+    }
+
+    #algolia_merchandising_hits p {
+        line-height: 1.71;
+        color: #333333;
+        font-size: 14px;
+    }
+
+    #algolia_merchandising_hits p.info {
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path fill="#888" fill-rule="nonzero" d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9V9h2v6zm0-8H9V5h2v2z" opacity=".5"/></svg>') no-repeat;
+        padding-left: 40px;
+        margin-top: 20px;
+    }
+
+    .algolia_merchandising_items_table td {
+        padding-top: 14px;
+    }
+
+    .algolia_merchandising_items_table em {
+        font-style: normal;
+        font-weight: bold;
+    }
+
+    .algolia_merchandising_items_table .image_cell {
+        width: 73px;
+        height: 73px;
+        text-align: center;
+        vertical-align: middle;
+        padding: 8px 8px 5px 8px;
+    }
+
+    .algolia_merchandising_items_table .actions {
+        text-align: center;
+    }
+
+    .algolia_merchandising_items_table .actions a {
+        display: inline-block;
+        height: 43px;
+        line-height: 43px;
+        background-color: rgba(210, 210, 210, 0.24);
+        border: solid 1px #d2d2d2;
+        color: #767676;
+        font-size: 11px;
+        font-weight: 600;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    .algolia_merchandising_items_table .actions a:hover {
+        text-decoration: none;
+        background-color: rgba(0,0,0,0.08) !important;
+    }
+
+    .algolia_merchandising_items_table .actions a.pinIt, .algolia_merchandising_items_table .actions a.unpinIt {
+        width: 81px;
+    }
+
+    .algolia_merchandising_items_table tr.pinned .pinIt {
+        display: none;
+    }
+
+    .algolia_merchandising_items_table .actions .unpinIt {
+        display: none;
+    }
+
+    .algolia_merchandising_items_table tr.pinned .unpinIt {
+        display: inline-block;
+    }
+
+    .algolia_merchandising_items_table tr:first-child a.up, .algolia_merchandising_items_table tr:last-child a.down {
+        opacity: 0.5;
+        cursor: initial;
+    }
+
+    .algolia_merchandising_items_table td.actions a.arrow {
+        width: 43px;
+    }
+
+    .algolia_merchandising_items_table td.actions a.arrow.up {
+        border-radius: 3px 0 0 3px;
+        border-right: none;
+        margin-right: -4px;
+    }
+
+    .algolia_merchandising_items_table td.actions a.arrow.down {
+        border-radius: 0 3px 3px 0;
+        border-left: none;
+        margin-left: -4px;
+    }
+
+    .algolia_merchandising_items_table {
+        counter-reset: rowNumber;
+    }
+
+    .algolia_merchandising_items_table tr > td:first-child {
+        counter-increment: rowNumber;
+    }
+
+    .algolia_merchandising_items_table tr td:first-child::before {
+        content: counter(rowNumber);
+        min-width: 1em;
+        font-size: 16px;
+        color: #333333;
+        opacity: 0.5;
+        font-weight: 600;
+    }
+
+    .algolia_merchandising_items_table .position_cell {
+        text-align: center;
+        vertical-align: middle;
+        position: relative;
+    }
+
+    .algolia_merchandising_items_table .padlock {
+        display: none;
+    }
+
+    .algolia_merchandising_items_table tr.pinned .padlock {
+        display: inline-block;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="15" viewBox="0 0 12 15"><g fill="none" fill-rule="evenodd"><path d="M-2 0h16v16H-2z"/><path fill="#000" fill-rule="nonzero" d="M10 5.333h-.667V4a3.335 3.335 0 0 0-6.666 0v1.333H2c-.733 0-1.333.6-1.333 1.334v6.666c0 .734.6 1.334 1.333 1.334h8c.733 0 1.333-.6 1.333-1.334V6.667c0-.734-.6-1.334-1.333-1.334zm-4 6c-.733 0-1.333-.6-1.333-1.333S5.267 8.667 6 8.667s1.333.6 1.333 1.333-.6 1.333-1.333 1.333zm2.067-6H3.933V4c0-1.14.927-2.067 2.067-2.067 1.14 0 2.067.927 2.067 2.067v1.333z" opacity=".4"/></g></svg>');
+        width: 12px;
+        height: 15px;
+        position: absolute;
+        left: 10px;
+        top: 29px;
+    }
+
+    .algolia_merchandising_items_table .draggable-handle {
+        cursor: -moz-grab;
+        cursor: -webkit-grab;
+        cursor: move;
+        font-size: 0;
+        vertical-align: middle;
+        display: inline-block;
+        text-decoration: none;
+        margin-top: -3px;
+    }
+
+    .algolia_merchandising_items_table .draggable-handle:before {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-size: 1.8rem;
+        line-height: inherit;
+        color: #9e9e9e;
+        content: '\e617';
+        font-family: 'Admin Icons';
+        vertical-align: middle;
+        display: inline-block;
+        font-weight: normal;
+        overflow: hidden;
+        speak: none;
+        text-align: center;
+    }
+
+    /* AUTOCOMPLETE HIT */
+    .aa-dropdown-menu {
+        position: absolute;
+        margin-top: 5px;
+        right: 0;
+        width: 888px !important;
+        z-index: 10000 !important;
+        border-radius: 3px;
+        background: white;
+        box-shadow: 0 12px 23px 0 rgba(63, 63, 68, 0.1), 0 0 0 1px rgba(63, 63, 68, 0.05);
+    }
+
+    .aa-dropdown-menu .header {
+        height: 34px;
+        line-height: 34px;
+        background-color: rgba(91, 83, 76, 0.12);
+        padding-left: 16px;
+        color: #5b534c;
+    }
+
+    @media (min-width: 992px) {
+        .aa-dropdown-menu {
+            width: 71.1%;
+            min-width: 550px;
+        }
+    }
+
+    .aa-dropdown-menu .aa-dataset-products .aa-suggestion {
+        display: inline-block;
+        width: 100%;
+    }
+
+    @media (min-width: 768px) {
+        .aa-dropdown-menu .aa-dataset-products .aa-suggestion {
+            display: inline-block;
+        }
+    }
+
+    .aa-dataset-products .aa-suggestions:after {
+        content:'';
+        display:block;
+        clear: both;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit {
+        display: block;
+        position: relative;
+        padding: 10px 24px;
+        color: #303030;
+        text-align: left;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .aa-dropdown-menu .aa-cursor .algoliasearch-autocomplete-hit {
+        cursor: pointer;
+        background-color: rgba(0,0,0,0.04);
+    }
+
+    .aa-dropdown-menu .aa-cursor .algoliasearch-autocomplete-hit .pinIt {
+        display: inline-block;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit em {
+        font-weight: bold;
+        font-style: normal;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .thumb {
+        float: left;
+        width: 56px;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .thumb img {
+        width: 56px;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .info {
+        margin-left: 20px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        float: left;
+        height: 56px;
+        line-height: 28px;
+        color: #04143a;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .info .price {
+        color: #212b36;
+        opacity: 0.5;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .pinIt {
+        float: right;
+        display: none;
+        width: 140px;
+        height: 36px;
+        line-height: 36px;
+        border-radius: 2px;
+        background-color: rgba(210, 210, 210, 0.24);
+        border: solid 1px #d2d2d2;
+        color: #333333;
+        opacity: 0.56;
+        text-align: center;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin: 11px 0;
+    }
+
+    .aa-dropdown-menu .algoliasearch-autocomplete-hit .pinIt:hover {
+         text-decoration: none;
+    }
+
+    .aa-dropdown-menu .aa-suggestion hr {
+        border: none;
+        border-top: 1px solid rgba(204, 204, 204, 0.5);
+        width: 838px;
+    }
+
+    .aa-dropdown-menu .aa-suggestion:last-child hr {
+        display: none;
+    }
+
+    .algolia-clearfix {
+        clear: both;
+    }
+</style>
+
+<script>
+    requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
+        algoliaAdminBundle.$(function ($) {
+        	var config = <?php echo json_encode($isConfig); ?>;
+
+            var search = algoliaAdminBundle.instantsearch(<?php echo json_encode($isConfig); ?>);
+
+            // // initialize SearchBox
+            // search.addWidget(
+             //    algoliaAdminBundle.instantsearch.widgets.searchBox({
+             //        container: '#algolia_merchandising_search_box',
+             //        placeholder: 'Search for products',
+             //        reset: false,
+             //        magnifier: false
+             //    })
+            // );
+
+            // initialize hits widget
+            search.addWidget(
+                algoliaAdminBundle.instantsearch.widgets.hits({
+                    container: '#algolia_merchandising_hits',
+                    transformData: {
+                        allItems: function(res) {
+                            var positions = {};
+                            for (var i = 0; i < res.hits.length; i++) {
+                                var hit = res.hits[i],
+                                    pinned = false;
+
+                                if (hit._rankingInfo.promoted === true) {
+                                    positions[hit.objectID] = i;
+                                    pinned = true;
+                                }
+
+                                res.hits[i]['pinned'] = true;
+                            }
+
+                            $('input[name="algolia_merchandising_positions"]').val(JSON.stringify(positions));
+
+                            return res;
+                        }
+                    },
+                    templates: {
+                        allItems: $('#algolia_merchandising_all_items_template').html(),
+                        empty: $('#algolia_merchandising_no_results').html()
+                    },
+                    escapeHits: true
+                })
+            );
+
+            search.on('render', function() {
+	            initAutocomplete();
+
+                initSortableTable();
+            });
+
+            search.start();
+
+            $(document).on('click', '.algolia_merchandising_items_table a.pinIt', function(e) {
+                var $row = $(this).closest('tr');
+                pinIt($row);
+
+                e.preventDefault();
+                return false;
+            });
+
+            $(document).on('click', '.algolia_merchandising_items_table a.unpinIt', function(e) {
+	            $(this).closest('tr').removeClass('pinned');
+
+	            regeneratePositionsValue();
+
+                e.preventDefault();
+                return false;
+            });
+
+	        $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
+		        var $row = $(this).closest('tr'),
+                    $previousRow = $row.prev();
+
+		        if ($previousRow.length > 0) {
+			        $previousRow.insertAfter($row);
+			        pinIt($row);
+		        }
+
+		        e.preventDefault();
+		        return false;
+	        });
+
+	        $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
+		        var $row = $(this).closest('tr'),
+                    $nextRow = $row.next();
+
+		        if ($nextRow.length > 0) {
+		            $nextRow.insertBefore($row);
+		            pinIt($row);
+                }
+
+		        e.preventDefault();
+		        return false;
+	        });
+
+            var initAutocomplete = function() {
+	            var client = algoliaAdminBundle.algoliasearch(config.appId, config.apiKey),
+                    index = client.initIndex(config.indexName),
+                    template = algoliaAdminBundle.Hogan.compile($('#algolia_merchandising_autocomplete_hit').html()),
+                    options = {
+                        hitsPerPage: config.searchParameters.hitsPerPage + 5,
+                        facetFilters: config.searchParameters.facetFilters
+                    },
+                    sources = [{
+                        source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
+                        name: 'products',
+                        templates: {
+                        	header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
+                            suggestion: function (hit) {
+                                return template.render(hit);
+                            }
+                        }
+                    }];
+
+	            $('#algolia_merchandising_autocomplete')
+                    .autocomplete({ debug: false, hint: false }, sources)
+		            .on('autocomplete:selected', function (e, suggestion) {
+		            	var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
+
+		            	if ($existingRow.length > 0) {
+		            		var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+		            		$existingRow.insertBefore($firstRow);
+                        }
+                        else {
+				            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+					            newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+					            rowHtml = newRowTemplate.render(suggestion);
+
+				            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+				            $('.algolia_merchandising_items_table tbody tr').last().remove();
+			            }
+
+			            var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+			            pinIt($firstRow);
+		            });
+            };
+
+            var initSortableTable = function() {
+	            $('.algolia_merchandising_items_table tbody').sortable({
+		            containment: 'parent',
+		            items: 'tr',
+		            tolerance: 'pointer',
+		            helper: sortableHelper,
+		            start: function (event, ui) {
+			            $(ui.item).css('margin-left', '10px');
+		            },
+		            stop: function (event, ui) {
+		            	var $row = $(ui.item[0]);
+		            	pinIt($row);
+		            }
+	            });
+
+	            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+            };
+
+            var pinIt = function($row) {
+            	if ($row.hasClass('pinned') === false) {
+		            $row.addClass('pinned');
+	            }
+
+	            regeneratePositionsValue();
+            };
+
+            var regeneratePositionsValue = function() {
+	            var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
+		            positions = {};
+
+	            $('.algolia_merchandising_items_table tbody tr').each(function(position) {
+		            if ($(this).hasClass('pinned')) {
+			            var objectId = $(this).data('objectid');
+			            positions[objectId] = position;
+		            }
+	            });
+
+	            $positionsInput.val(JSON.stringify(positions));
+            };
+
+            var sortableHelper = function(e, ui) {
+                ui.children().each(function() {
+                    $(this).width($(this).width());
+                });
+
+                return ui;
+            };
+        });
+    });
+</script>

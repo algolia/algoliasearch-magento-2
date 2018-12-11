@@ -15,13 +15,13 @@ abstract class IndexingTestCase extends TestCase
 
     protected function processTest(ActionInterface $indexer, $indexSuffix, $expectedNbHits)
     {
-        $this->algoliaHelper->clearIndex($this->indexPrefix.'default_'.$indexSuffix);
+        $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
 
         $indexer->executeFull();
 
         $this->algoliaHelper->waitLastTask();
 
-        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix.'default_'.$indexSuffix, '', []);
+        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix . 'default_' . $indexSuffix, '', []);
 
         $this->assertEquals($expectedNbHits, $resultsDefault['nbHits']);
     }

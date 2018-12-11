@@ -1,0 +1,16 @@
+<style type="text/css">
+    .algolia-notice { margin-bottom: 2rem; }
+</style>
+
+<?php if ($this->isQueueActive()) : ?>
+    <div class="message message-notice notice algolia-notice">
+        <div data-ui-id="messages-message-notice">
+            <?php /* @escapeNotVerified */ echo __('Status of the queue : <strong>%1</strong>.', $this->getQueueRunnerStatus()); ?>
+            <p><?php /* @escapeNotVerified */ echo __('Last Update : <strong>%1</strong>.', $this->getLastQueueUpdate()); ?></p>
+            <?php $notices = $this->getNotices() ?>
+            <?php foreach ($notices as $notice) : ?>
+                <p><?php echo $notice ?></p>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>

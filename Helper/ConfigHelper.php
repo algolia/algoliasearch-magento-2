@@ -473,13 +473,12 @@ class ConfigHelper
                 /** @var Magento\Customer\Model\ResourceModel\Group\Collection $groupCollection */
                 $groupCollection = $this->objectManager->get('Magento\Customer\Model\ResourceModel\Group\Collection');
 
+                if (!is_null($currentCustomerGroupId)) {
+                    $groupCollection->addFilter('customer_group_id', $currentCustomerGroupId);
+                }
+
                 foreach ($groupCollection as $group) {
                     $customerGroupId = (int) $group->getData('customer_group_id');
-
-                    if (!is_null($currentCustomerGroupId) && $customerGroupId != $currentCustomerGroupId) {
-                        continue;
-                    }
-
                     $groupIndexNameSuffix = 'group_' . $customerGroupId;
 
                     $groupIndexName =

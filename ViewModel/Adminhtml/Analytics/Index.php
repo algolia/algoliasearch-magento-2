@@ -93,7 +93,7 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
                     $params['startDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()->date($formData['from'])->getTimestamp());
                 }
                 if (isset($formData['to']) && $formData['to'] !== '') {
-                    $params['endDate'] = date('Y-m-d', $this->getBackendView()->getDateTime->date($formData['to'])->getTimestamp());
+                    $params['endDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()->date($formData['to'])->getTimestamp());
                 }
             }
 
@@ -302,8 +302,8 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
     {
         if ($formData = $this->getBackendView()->getBackendSession()->getAlgoliaAnalyticsFormData()) {
             if (isset($formData['from']) && !empty($formData['from'])) {
-                $startDate = $this->getBackendView()->getDateTime->date($formData['from']);
-                $diff = date_diff($startDate, $this->getBackendView()->getDateTime->date());
+                $startDate = $this->getBackendView()->getDateTime()->date($formData['from']);
+                $diff = date_diff($startDate, $this->getBackendView()->getDateTime()->date());
 
                 if ($diff->days > $this->getAnalyticRetentionDays()) {
                     return false;

@@ -12,7 +12,10 @@ class Update extends AbstractAction
         $this->_getSession()->setAlgoliaAnalyticsFormData($this->getRequest()->getParams());
 
         $layout = $this->layoutFactory->create();
-        $block = $layout->createBlock('\Algolia\AlgoliaSearch\Block\Adminhtml\Analytics\Index')
+
+        $block = $layout
+            ->createBlock(\Magento\Backend\Block\Template::class)
+            ->setData('view_model', $this->_objectManager->create(\Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Index::class))
             ->setTemplate('Algolia_AlgoliaSearch::analytics/overview.phtml')
             ->toHtml();
 

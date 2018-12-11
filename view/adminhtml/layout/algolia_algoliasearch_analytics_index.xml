@@ -17,7 +17,7 @@
             <block class="Magento\Backend\Block\Template"
                     name="analytics.overview.form" template="Algolia_AlgoliaSearch::analytics/form.phtml">
                 <arguments>
-                    <argument name="viewModel" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form</argument>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form</argument>
                 </arguments>
             </block>
         </referenceContainer>
@@ -25,7 +25,7 @@
             <block class="Magento\Backend\Block\Template"
                    name="analytics_overview" template="Algolia_AlgoliaSearch::analytics/overview.phtml">
                 <arguments>
-                    <argument name="viewModel" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Index</argument>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Index</argument>
                 </arguments>
             </block>
         </referenceContainer>

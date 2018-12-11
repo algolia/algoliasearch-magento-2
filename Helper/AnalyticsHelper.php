@@ -2,10 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use AlgoliaSearch\Analytics;
+use Algolia\AlgoliaSearch\Helper\Entity\AggregatorHelper;
 
 class AnalyticsHelper extends Analytics
 {
@@ -16,23 +14,14 @@ class AnalyticsHelper extends Analytics
 
     const INTERNAL_API_PROXY_URL = 'https://magento-proxy.algolia.com/';
 
-    /** @var \Algolia\AlgoliaSearch\Helper\AlgoliaHelper */
+    /** @var AlgoliaHelper */
     private $algoliaHelper;
 
-    /** @var \Algolia\AlgoliaSearch\Helper\ConfigHelper */
+    /** @var ConfigHelper */
     private $configHelper;
 
-    /** @var Data */
-    private $dataHelper;
-
-    /** @var Product */
-    private $productHelper;
-
-    /** @var CategoryHelper */
-    private $categoryHelper;
-
-    /** @var PageHelper */
-    private $pageHelper;
+    /** @var AggregatorHelper */
+    private $entityHelper;
 
     /** @var Logger */
     private $logger;
@@ -55,40 +44,35 @@ class AnalyticsHelper extends Analytics
      * AnalyticsHelper constructor.
      * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
-     * @param Data $dataHelper
-     * @param ProductHelper $productHelper
-     * @param CategoryHelper $categoryHelper
-     * @param PageHelper $pageHelper
+     * @param AggregatorHelper $entityHelper
      * @param Logger $logger
      */
     public function __construct(
         AlgoliaHelper $algoliaHelper,
         ConfigHelper $configHelper,
-        Data $dataHelper,
-        ProductHelper $productHelper,
-        CategoryHelper $categoryHelper,
-        PageHelper $pageHelper,
+        AggregatorHelper $entityHelper,
         Logger $logger
     ) {
         $this->algoliaHelper = $algoliaHelper;
         $this->configHelper = $configHelper;
 
-        $this->dataHelper = $dataHelper;
-        $this->productHelper = $productHelper;
-        $this->categoryHelper = $categoryHelper;
-        $this->pageHelper = $pageHelper;
+        $this->entityHelper = $entityHelper;
 
         $this->logger = $logger;
 
         parent::__construct($algoliaHelper->getClient());
     }
 
+    /**
+     * @param $storeId
+     * @return array
+     */
     public function getAnalyticsIndices($storeId)
     {
         return $sections = [
-            'products' => $this->dataHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId),
-            'categories' => $this->dataHelper->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
-            'pages' => $this->dataHelper->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
+            'products' => $this->entityHelper->getIndexNameByEntity('products', $storeId),
+            'categories' => $this->entityHelper->getIndexNameByEntity('categories', $storeId),
+            'pages' => $this->entityHelper->getIndexNameByEntity('pages', $storeId),
         ];
     }
 

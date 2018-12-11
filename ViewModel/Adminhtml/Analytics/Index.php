@@ -4,9 +4,8 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics;
 
 use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
 use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollection;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollection;
-use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollection;
+use Algolia\AlgoliaSearch\Helper\Entity\AggregatorHelper;
+use Magento\Framework\ObjectManagerInterface;
 
 class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
@@ -22,14 +21,11 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
     /** @var AnalyticsHelper */
     private $analyticsHelper;
 
-    /** @var ProductCollection */
-    private $productCollection;
+    /** @var AggregatorHelper */
+    private $entityHelper;
 
-    /** @var CategoryCollection */
-    private $categoryCollection;
-
-    /** @var PageCollection */
-    private $pageCollection;
+    /** @var ObjectManagerInterface */
+    private $objectManager;
 
     /** @var array */
     private $analyticsParams = [];
@@ -38,24 +34,19 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
      * Index constructor.
      * @param BackendView $backendView
      * @param AnalyticsHelper $analyticsHelper
-     * @param ProductCollection $productCollection
-     * @param CategoryCollection $categoryCollection
-     * @param PageCollection $pageCollection
-     * @param array $data
+     * @param AggregatorHelper $entityHelper
+     * @param ObjectManagerInterface $objectManager
      */
     public function __construct(
         BackendView $backendView,
         AnalyticsHelper $analyticsHelper,
-        ProductCollection $productCollection,
-        CategoryCollection $categoryCollection,
-        PageCollection $pageCollection,
-        array $data = []
+        AggregatorHelper $entityHelper,
+        ObjectManagerInterface $objectManager
     ) {
         $this->backendView = $backendView;
         $this->analyticsHelper = $analyticsHelper;
-        $this->productCollection = $productCollection;
-        $this->categoryCollection = $categoryCollection;
-        $this->pageCollection = $pageCollection;
+        $this->entityHelper = $entityHelper;
+        $this->objectManager = $objectManager;
 
         $this->getTotalCountOfSearches();
     }
@@ -90,10 +81,12 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
             $params = ['index' => $this->getIndexName()];
             if ($formData = $this->getBackendView()->getBackendSession()->getAlgoliaAnalyticsFormData()) {
                 if (isset($formData['from']) && $formData['from'] !== '') {
-                    $params['startDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()->date($formData['from'])->getTimestamp());
+                    $params['startDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()
+                        ->date($formData['from'])->getTimestamp());
                 }
                 if (isset($formData['to']) && $formData['to'] !== '') {
-                    $params['endDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()->date($formData['to'])->getTimestamp());
+                    $params['endDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()
+                        ->date($formData['to'])->getTimestamp());
                 }
             }
 
@@ -134,7 +127,8 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
     }
 
     /**
-     * Click Through Rate
+     * Click Analytics
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @return mixed
      */
     public function getClickThroughRate()
@@ -242,10 +236,15 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
                 return $arr['hit'];
             }, $hits);
 
+            $storeId = $this->getStore()->getId();
+
             if ($this->getCurrentType() == 'products') {
-                $collection = $this->productCollection->create();
-                $collection->addAttributeToSelect('name');
-                $collection->addAttributeToFilter('entity_id', ['in' => $objectIds]);
+                $collection = $this->objectManager->create(\Magento\Catalog\Model\ResourceModel\Product\Collection::class);
+                $collection
+                    ->setStoreId($storeId)
+                    ->addStoreFilter($storeId)
+                    ->addAttributeToSelect('name')
+                    ->addAttributeToFilter('entity_id', ['in' => $objectIds]);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -255,9 +254,12 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
             }
 
             if ($this->getCurrentType() == 'categories') {
-                $collection = $this->categoryCollection->create();
-                $collection->addAttributeToSelect('name');
-                $collection->addAttributeToFilter('entity_id', ['in' => $objectIds]);
+                $collection = $this->objectManager->create(\Magento\Catalog\Model\ResourceModel\Category\Collection::class);
+                $collection
+                    ->setStoreId($storeId)
+                    ->addStoreFilter($storeId)
+                    ->addAttributeToSelect('name')
+                    ->addAttributeToFilter('entity_id', ['in' => $objectIds]);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -267,14 +269,18 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
             }
 
             if ($this->getCurrentType() == 'pages') {
-                $collection = $this->pageCollection->create();
-                $collection->addFieldToSelect(['page_id', 'title', 'identifier']);
-                $collection->addFieldToFilter('page_id', ['in' => $objectIds]);
+                $collection = $this->objectManager->create(\Magento\Cms\Model\ResourceModel\Page\Collection::class);
+                $collection
+                    ->setStoreId($storeId)
+                    ->addStoreFilter($storeId)
+                    ->addFieldToSelect(['page_id', 'title', 'identifier'])
+                    ->addFieldToFilter('page_id', ['in' => $objectIds]);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemByColumnValue('page_id', $hit['hit']);
                     $hit['name'] = $item->getTitle();
-                    $hit['url'] = $this->getBackendView()->getUrlInterface()->getUrl(null, ['_direct' => $item->getIdentifier()]);
+                    $hit['url'] = $this->getBackendView()->getUrlInterface()
+                        ->getUrl(null, ['_direct' => $item->getIdentifier()]);
                 }
             }
         }
@@ -359,15 +365,18 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
     {
         $links = [];
         if ($this->getCurrentType() == 'products') {
-            $links['edit'] = $this->getBackendView()->getUrlInterface()->getUrl('catalog/product/edit', ['id' => $search['hit']]);
+            $links['edit'] = $this->getBackendView()->getUrlInterface()
+                ->getUrl('catalog/product/edit', ['id' => $search['hit']]);
         }
 
         if ($this->getCurrentType() == 'categories') {
-            $links['edit'] = $this->getBackendView()->getUrlInterface()->getUrl('catalog/category/edit', ['id' => $search['hit']]);
+            $links['edit'] = $this->getBackendView()->getUrlInterface()
+                ->getUrl('catalog/category/edit', ['id' => $search['hit']]);
         }
 
         if ($this->getCurrentType() == 'pages') {
-            $links['edit'] = $this->getBackendView()->getUrlInterface()->getUrl('cms/page/edit', ['page_id' => $search['hit']]);
+            $links['edit'] = $this->getBackendView()->getUrlInterface()
+                ->getUrl('cms/page/edit', ['page_id' => $search['hit']]);
         }
 
         if (isset($search['url'])) {
@@ -447,7 +456,8 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
     public function getMessagesHtml()
     {
         /** @var $messagesBlock \Magento\Framework\View\Element\Messages */
-        $messagesBlock = $this->getBackendView()->getLayout()->createBlock(\Magento\Framework\View\Element\Messages::class);
+        $messagesBlock = $this->getBackendView()->getLayout()
+            ->createBlock(\Magento\Framework\View\Element\Messages::class);
 
         if (!$this->checkIsValidDateRange() && $this->isAnalyticsApiEnabled()) {
             $noticeHtml = __('The selected date is out of your analytics retention window (%1 days), 

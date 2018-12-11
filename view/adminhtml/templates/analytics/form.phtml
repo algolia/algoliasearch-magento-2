@@ -1,6 +1,5 @@
 <?php /** @var $form Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form */ ?>
-<?php $form = $block->getViewModel(); ?>
-
+<?php $form = $block->getViewModel() ?>
 <?php $isFormDisabled = !$form->isAnalyticsApiEnabled() ? ' disabled' : '' ?>
 <div class="algolia-analytics-form" id="algolia-analytics-daterange">
     <form id="algolia-analytics-form" data-mage-init='{"validation":{}}' action="<?php echo $form->getFormAction() ?>"  method="post">

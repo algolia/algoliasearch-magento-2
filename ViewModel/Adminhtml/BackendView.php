@@ -35,8 +35,7 @@ class BackendView implements \Magento\Framework\View\Element\Block\ArgumentInter
         StoreManagerInterface $storeManager,
         TimezoneInterface $dateTime,
         Session $session,
-        UrlInterface $url,
-        array $data = []
+        UrlInterface $url
     ) {
         $this->request = $request;
         $this->layout = $layout;

@@ -18,6 +18,7 @@ class Job extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 
     /**
      * @throws \Zend_Db_Statement_Exception
+     * @throws \Magento\Framework\Exception\LocalizedException
      *
      * @return array
      */

@@ -74,8 +74,10 @@ class Contact extends AbstractSupportTemplate
 
     /**
      * @param string $message
-     * @return string
+     *
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return string
      */
     public function getTooltipHtml($message)
     {

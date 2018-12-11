@@ -2,12 +2,20 @@
 
 namespace Algolia\AlgoliaSearch\Model\ResourceModel;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class NoteBuilder
 {
+    /** @var JobResourceModel */
+    private $jobResourceModel;
+
+    /** @var ConfigHelper */
+    private $configHelper;
+
     /** @var AdapterInterface */
     private $dbConnection;
 
@@ -27,13 +35,19 @@ class NoteBuilder
     private $modulesTable;
 
     /**
+     * @param JobResourceModel $jobResourceModel
+     * @param ConfigHelper $configHelper
      * @param ResourceConnection $resourceConnection
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
+        JobResourceModel $jobResourceModel,
+        ConfigHelper $configHelper,
         ResourceConnection $resourceConnection,
         StoreManagerInterface $storeManager
     ) {
+        $this->jobResourceModel = $jobResourceModel;
+        $this->configHelper = $configHelper;
         $this->dbConnection = $resourceConnection->getConnection('core_read');
         $this->storeManager = $storeManager;
 
@@ -44,11 +58,41 @@ class NoteBuilder
     }
 
     /**
+     * @param bool $sendAdditionalData
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Zend_Db_Statement_Exception
+     *
+     * @return array
+     */
+    public function getNote($sendAdditionalData = false)
+    {
+        $queueInfo = $this->jobResourceModel->getQueueInfo();
+
+        $noteData = [
+            'extension_version' => $this->configHelper->getExtensionVersion(),
+            'magento_version' => $this->configHelper->getMagentoVersion(),
+            'magento_edition' => $this->configHelper->getMagentoEdition(),
+            'queue_jobs_count' => $queueInfo['count'],
+            'queue_oldest_job' => $queueInfo['oldest'],
+            'queue_archive_rows' => $this->getQueueArchiveInfo(),
+            'algolia_configuration' => $this->getAlgoliaConfiguration(),
+        ];
+
+        if ($sendAdditionalData === true) {
+            $noteData['catalog_info'] = $this->getCatalogInfo();
+            $noteData['modules'] = $this->get3rdPartyModules();
+        }
+
+        return $noteData;
+    }
+
+    /**
      * @throws \Zend_Db_Statement_Exception
      *
      * @return string
      */
-    public function getQueueArchiveInfo()
+    private function getQueueArchiveInfo()
     {
         $queueArchiveInfo = [];
 
@@ -82,7 +126,7 @@ class NoteBuilder
      *
      * @return string
      */
-    public function getAlgoliaConfiguration()
+    private function getAlgoliaConfiguration()
     {
         $configurationText = [];
         $defaultConfigValues = [];
@@ -153,7 +197,7 @@ class NoteBuilder
 
         $query = $this->dbConnection->select()
             ->from($this->configTable, ['path', 'value'])
-            ->where('scope = ?', $scopeId)
+            ->where('scope = ?', $scope)
             ->where('scope_id = ?', $scopeId)
             ->where('path LIKE "algoliasearch_%"')
             ->where('path != "algoliasearch_credentials/credentials/api_key"');
@@ -166,7 +210,7 @@ class NoteBuilder
      *
      * @return string
      */
-    public function getCatalogInfo()
+    private function getCatalogInfo()
     {
         $catalogInfoText = [];
 
@@ -193,7 +237,7 @@ class NoteBuilder
      *
      * @return string
      */
-    public function get3rdPartyModules()
+    private function get3rdPartyModules()
     {
         $modulesText = [];
 

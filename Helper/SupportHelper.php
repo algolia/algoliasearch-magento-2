@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
 use Algolia\AlgoliaSearch\Model\ResourceModel\NoteBuilder;
 
 class SupportHelper
@@ -13,27 +12,21 @@ class SupportHelper
     /** @var ProxyHelper */
     private $proxyHelper;
 
-    /** @var JobResourceModel */
-    private $jobResourceModel;
-
     /** @var NoteBuilder */
     private $noteBuilder;
 
     /**
      * @param ConfigHelper $configHelper
      * @param ProxyHelper $proxyHelper
-     * @param JobResourceModel $jobResourceModel
      * @param NoteBuilder $noteBuilder
      */
     public function __construct(
         ConfigHelper $configHelper,
         ProxyHelper $proxyHelper,
-        JobResourceModel $jobResourceModel,
         NoteBuilder $noteBuilder
     ) {
         $this->configHelper = $configHelper;
         $this->proxyHelper = $proxyHelper;
-        $this->jobResourceModel = $jobResourceModel;
         $this->noteBuilder = $noteBuilder;
     }
 
@@ -53,6 +46,7 @@ class SupportHelper
      * @param array $data
      *
      * @throws \Zend_Db_Statement_Exception
+     * @throws \Magento\Framework\Exception\LocalizedException
      *
      * @return bool
      */
@@ -66,7 +60,7 @@ class SupportHelper
             'lastname' => $lastname,
             'subject' => $data['subject'],
             'text' => $data['message'],
-            'note' => $this->getNoteData($data['send_additional_info']),
+            'note' => $this->noteBuilder->getNote($data['send_additional_info']),
         ];
 
         return $this->proxyHelper->pushSupportTicket($messageData);
@@ -84,35 +78,6 @@ class SupportHelper
         }
 
         return true;
-    }
-
-    /**
-     * @param bool $sendAdditionalData
-     *
-     * @throws \Zend_Db_Statement_Exception
-     *
-     * @return array
-     */
-    private function getNoteData($sendAdditionalData = false)
-    {
-        $queueInfo = $this->jobResourceModel->getQueueInfo();
-
-        $noteData = [
-            'extension_version' => $this->getExtensionVersion(),
-            'magento_version' => $this->configHelper->getMagentoVersion(),
-            'magento_edition' => $this->configHelper->getMagentoEdition(),
-            'queue_jobs_count' => $queueInfo['count'],
-            'queue_oldest_job' => $queueInfo['oldest'],
-            'queue_archive_rows' => $this->noteBuilder->getQueueArchiveInfo(),
-            'algolia_configuration' => $this->noteBuilder->getAlgoliaConfiguration(),
-        ];
-
-        if ($sendAdditionalData === true) {
-            $noteData['catalog_info'] = $this->noteBuilder->getCatalogInfo();
-            $noteData['modules'] = $this->noteBuilder->get3rdPartyModules();
-        }
-
-        return $noteData;
     }
 
     /**

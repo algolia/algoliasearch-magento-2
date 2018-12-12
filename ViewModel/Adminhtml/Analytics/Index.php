@@ -2,12 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics;
 
+use Algolia\AlgoliaSearch\DataProvider\Analytics\PopularResultsDataProvider;
 use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
 use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\AggregatorHelper;
-use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\View\Element\Block\ArgumentInterface;
 
-class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
+class Index implements ArgumentInterface
 {
     const LIMIT_RESULTS = 5;
 
@@ -24,8 +25,8 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
     /** @var AggregatorHelper */
     private $entityHelper;
 
-    /** @var ObjectManagerInterface */
-    private $objectManager;
+    /** @var PopularResultsDataProvider */
+    private $popularResultsDataProvider;
 
     /** @var array */
     private $analyticsParams = [];
@@ -35,18 +36,18 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
      * @param BackendView $backendView
      * @param AnalyticsHelper $analyticsHelper
      * @param AggregatorHelper $entityHelper
-     * @param ObjectManagerInterface $objectManager
+     * @param PopularResultsDataProvider $popularResultsDataProvider
      */
     public function __construct(
         BackendView $backendView,
         AnalyticsHelper $analyticsHelper,
         AggregatorHelper $entityHelper,
-        ObjectManagerInterface $objectManager
+        PopularResultsDataProvider $popularResultsDataProvider
     ) {
         $this->backendView = $backendView;
         $this->analyticsHelper = $analyticsHelper;
         $this->entityHelper = $entityHelper;
-        $this->objectManager = $objectManager;
+        $this->popularResultsDataProvider = $popularResultsDataProvider;
 
         $this->getTotalCountOfSearches();
     }
@@ -239,12 +240,7 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
             $storeId = $this->getStore()->getId();
 
             if ($this->getCurrentType() == 'products') {
-                $collection = $this->objectManager->create(\Magento\Catalog\Model\ResourceModel\Product\Collection::class);
-                $collection
-                    ->setStoreId($storeId)
-                    ->addStoreFilter($storeId)
-                    ->addAttributeToSelect('name')
-                    ->addAttributeToFilter('entity_id', ['in' => $objectIds]);
+                $collection = $this->popularResultsDataProvider->getProductCollection($storeId, $objectIds);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -254,12 +250,7 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
             }
 
             if ($this->getCurrentType() == 'categories') {
-                $collection = $this->objectManager->create(\Magento\Catalog\Model\ResourceModel\Category\Collection::class);
-                $collection
-                    ->setStoreId($storeId)
-                    ->addStoreFilter($storeId)
-                    ->addAttributeToSelect('name')
-                    ->addAttributeToFilter('entity_id', ['in' => $objectIds]);
+                $collection = $this->popularResultsDataProvider->getCategoryCollection($storeId, $objectIds);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -269,12 +260,7 @@ class Index implements \Magento\Framework\View\Element\Block\ArgumentInterface
             }
 
             if ($this->getCurrentType() == 'pages') {
-                $collection = $this->objectManager->create(\Magento\Cms\Model\ResourceModel\Page\Collection::class);
-                $collection
-                    ->setStoreId($storeId)
-                    ->addStoreFilter($storeId)
-                    ->addFieldToSelect(['page_id', 'title', 'identifier'])
-                    ->addFieldToFilter('page_id', ['in' => $objectIds]);
+                $collection = $this->popularResultsDataProvider->getPageCollection($storeId, $objectIds);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemByColumnValue('page_id', $hit['hit']);

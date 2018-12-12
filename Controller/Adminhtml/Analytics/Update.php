@@ -2,11 +2,15 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Analytics;
 
+use Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Index;
+use Magento\Backend\Block\Template;
+use Magento\Framework\DataObject;
+
 class Update extends AbstractAction
 {
     public function execute()
     {
-        $response = $this->_objectManager->create(\Magento\Framework\DataObject::class);
+        $response = $this->_objectManager->create(DataObject::class);
         $response->setError(false);
 
         $this->_getSession()->setAlgoliaAnalyticsFormData($this->getRequest()->getParams());
@@ -14,8 +18,8 @@ class Update extends AbstractAction
         $layout = $this->layoutFactory->create();
 
         $block = $layout
-            ->createBlock(\Magento\Backend\Block\Template::class)
-            ->setData('view_model', $this->_objectManager->create(\Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Index::class))
+            ->createBlock(Template::class)
+            ->setData('view_model', $this->_objectManager->create(Index::class))
             ->setTemplate('Algolia_AlgoliaSearch::analytics/overview.phtml')
             ->toHtml();
 

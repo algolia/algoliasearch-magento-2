@@ -466,7 +466,7 @@ class AlgoliaHelper extends AbstractHelper
             // This has the downside that some products cannot be found on some of its childrens' SKU's
             // But at least the config product can be indexed
             // Always keep the original SKU though
-            if ($this->getLongestAttribute($object) == 'sku' && is_array($object['sku'])) {
+            if ($this->getLongestAttribute($object) === 'sku' && is_array($object['sku'])) {
                 foreach ($object['sku'] as $sku) {
                     if (count($object['sku']) === 1) {
                         break;

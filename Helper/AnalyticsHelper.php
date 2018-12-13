@@ -287,7 +287,7 @@ class AnalyticsHelper extends Analytics
     public function getClientData()
     {
         if (!$this->clientData) {
-            $this->clientData = $this->getClientSettings();
+            $this->clientData = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_ANALYTICS);
         }
 
         return $this->clientData;
@@ -349,8 +349,4 @@ class AnalyticsHelper extends Analytics
         return $this->errors;
     }
 
-    public function getClientSettings()
-    {
-        return $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_ANALYTICS);
-    }
 }

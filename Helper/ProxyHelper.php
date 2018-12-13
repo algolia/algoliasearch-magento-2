@@ -5,6 +5,8 @@ namespace Algolia\AlgoliaSearch\Helper;
 class ProxyHelper
 {
     const PROXY_URL = 'https://magento-proxy.algolia.com/';
+    const PROXY_URL_PARAM_GET_INFO = 'get-info/';
+    const PROXY_URL_PARAM_POST_DATA = 'hs-push/';
 
     const INFO_TYPE_EXTENSION_SUPPORT = 'extension_support';
     const INFO_TYPE_ANALYTICS = 'analytics';
@@ -41,7 +43,7 @@ class ProxyHelper
             $params['type'] = 'analytics';
         }
 
-        $info = $this->postRequest($params);
+        $info = $this->postRequest($params, self::PROXY_URL_PARAM_GET_INFO);
 
         if ($info) {
             $info = json_decode($info, true);
@@ -57,7 +59,7 @@ class ProxyHelper
      */
     public function pushSupportTicket($data)
     {
-        $result = $this->postRequest($data);
+        $result = $this->postRequest($data, self::PROXY_URL_PARAM_POST_DATA);
 
         if ($result === 'true') {
             return true;
@@ -68,14 +70,15 @@ class ProxyHelper
 
     /**
      * @param $data
+     * @param $proxyMethod
      *
      * @return bool|string
      */
-    private function postRequest($data)
+    private function postRequest($data, $proxyMethod)
     {
         $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, self::PROXY_URL . 'hs-push/');
+        curl_setopt($ch, CURLOPT_URL, self::PROXY_URL . $proxyMethod);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

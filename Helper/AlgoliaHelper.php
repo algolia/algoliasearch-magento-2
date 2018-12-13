@@ -471,7 +471,9 @@ class AlgoliaHelper extends AbstractHelper
                     if (count($object['sku']) === 1) {
                         break;
                     }
+
                     array_pop($object['sku']);
+                    
                     $size = $this->calculateObjectSize($object);
                     if ($size < $this->maxRecordSize) {
                         return $object;

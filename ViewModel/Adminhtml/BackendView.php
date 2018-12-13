@@ -92,4 +92,19 @@ class BackendView implements \Magento\Framework\View\Element\Block\ArgumentInter
     {
         return $this->url;
     }
+
+    /**
+     * @param $message
+     *
+     * @return string
+     */
+    public function getTooltipHtml($message)
+    {
+        $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
+        $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml');
+        $block->setData('message', $message);
+
+        return $block->toHtml();
+    }
+
 }

@@ -405,11 +405,7 @@ class Index implements ArgumentInterface
      */
     public function getTooltipHtml($message)
     {
-        $block = $this->getBackendView()->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
-        $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltips.phtml');
-        $block->setData('message', $message);
-
-        return $block->toHtml();
+        return $this->getBackendView()->getTooltipHtml($message);
     }
 
     /**

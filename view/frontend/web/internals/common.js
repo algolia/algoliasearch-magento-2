@@ -155,7 +155,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				&& hit['price'][algoliaConfig.currencyCode]['special_to_date']) {
 				var priceExpiration = hit['price'][algoliaConfig.currencyCode]['special_to_date'];
 				
-				if (algoliaConfig.now > priceExpiration) {
+				if (algoliaConfig.now > priceExpiration + 1) {
 					hit['price'][algoliaConfig.currencyCode]['default_formated'] = hit['price'][algoliaConfig.currencyCode]['default_original_formated'];
 					hit['price'][algoliaConfig.currencyCode]['default_original_formated'] = false;
 				}
@@ -344,13 +344,17 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			if (section.name === 'products') {
 				source.templates.footer = function (query, content) {
 					var keys = [];
-					for (var key in content.facets['categories.level0']) {
-						var url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + encodeURIComponent(query.query) + '#q=' + encodeURIComponent(query.query) + '&hFR[categories.level0][0]=' + encodeURIComponent(key) + '&idx=' + algoliaConfig.indexName + '_products';
-						keys.push({
-							key: key,
-							value: content.facets['categories.level0'][key],
-							url: url
-						});
+					for (var i = 0; i<algoliaConfig.facets.length; i++) {
+						if (algoliaConfig.facets[i].attribute == "categories") {
+							for (var key in content.facets['categories.level0']) {
+								var url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + encodeURIComponent(query.query) + '#q=' + encodeURIComponent(query.query) + '&hFR[categories.level0][0]=' + encodeURIComponent(key) + '&idx=' + algoliaConfig.indexName + '_products';
+								keys.push({
+									key: key,
+									value: content.facets['categories.level0'][key],
+									url: url
+								});
+							}
+						}
 					}
 
 					keys.sort(function (a, b) {
@@ -360,11 +364,11 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					var ors = '';
 
 					if (keys.length > 0) {
-						ors += '<span><a href="' + keys[0].url + '">' + keys[0].key + '</a></span>';
-					}
-
-					if (keys.length > 1) {
-						ors += ', <span><a href="' + keys[1].url + '">' + keys[1].key + '</a></span>';
+						var orsTab = [];
+						for (var i = 0; i < keys.length && i < 2; i++) {
+							orsTab.push('<span><a href="' + keys[i].url + '">' + keys[i].key + '</a></span>');
+						}
+						ors = orsTab.join(', ');
 					}
 
 					var allUrl = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + encodeURIComponent(query.query);
@@ -496,6 +500,138 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			var x = window.scrollX, y = window.scrollY;
 			this.focus();
 			window.scrollTo(x, y);
+		};
+
+		// Handle backward compatibility with old routing
+		function routingBc(routeState) {
+			// Handle legacy facets
+			// https://github.com/algolia/algoliasearch-helper-js/blob/39bec1caf24a60acd042eb7bb5d7d7c719fde58b/src/SearchParameters/shortener.js#L6
+			var legacyFacets = ["dFR", "hFR", "fR"];
+			for (i = 0; i < legacyFacets.length; i++) {
+				if (routeState[legacyFacets[i]]) {
+					for (var key in routeState[legacyFacets[i]]) {
+						if (routeState[legacyFacets[i]].hasOwnProperty(key)) {
+							key == "categories.level0" ?
+								routeState["categories"] = routeState[legacyFacets[i]][key][0].split(' /// ').join('~') :
+								routeState[key] = routeState[legacyFacets[i]][key].join('~');
+						}
+					}
+				}
+			}
+
+			// Handle legacy numeric refinements
+			if (routeState.nR) {
+				for (var key in routeState.nR) {
+					if (routeState.nR.hasOwnProperty(key)) {
+						var lt = '', gt = '', eq = '';
+						if (routeState.nR[key]['=']) {
+							eq = routeState.nR[key]['='];
+						}
+						if (routeState.nR[key]['<=']) {
+							lt = routeState.nR[key]['<='];
+						}
+						if (routeState.nR[key]['>=']) {
+							gt = routeState.nR[key]['>='];
+						}
+
+						if (eq != '') {
+							routeState[key] = eq;
+						}
+						if (lt != '' || gt != '') {
+							routeState[key] = gt + ':' + lt;
+						}
+					}
+				}
+			}
+
+			return routeState;
+		}
+
+		// The url is now rendered as follows : http://website.com?q=searchquery&facet1=value&facet2=value1~value2
+		// "?" and "&" are used to be fetched easily inside Magento for the backend rendering
+		// Multivalued facets use "~" as separator
+		// Targeted index is defined by sortBy parameter
+		window.routing = {
+			router: algoliaBundle.instantsearch.routers.history({
+				parseURL({qsModule, location}) {
+					const queryString = location.hash ? location.hash : location.search;
+					return qsModule.parse(queryString.slice(1))
+				},
+				createURL({ qsModule, routeState, location }) {
+					const { protocol, hostname, port = '', pathname, hash } = location;
+					const queryString = qsModule.stringify(routeState);
+					const portWithPrefix = port === '' ? '' : `:${port}`;
+					// IE <= 11 has no location.origin or buggy. Therefore we don't rely on it
+					if (!routeState || Object.keys(routeState).length === 0)
+						return `${protocol}//${hostname}${portWithPrefix}${pathname}`;
+					else
+						return `${protocol}//${hostname}${portWithPrefix}${pathname}?${queryString}`;
+				},
+			}),
+			stateMapping: {
+				stateToRoute(uiState) {
+					let map = {};
+					if (algoliaConfig.isCategoryPage) {
+						map['q'] = uiState.query;
+					} else {
+						map['q'] = uiState.query || '__empty__';
+					}
+					if (algoliaConfig.facets) {
+						for(let i=0; i<algoliaConfig.facets.length; i++) {
+							let currentFacet = algoliaConfig.facets[i];
+							// Handle refinement facets
+							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
+								map[currentFacet.attribute] = (uiState.refinementList &&
+									uiState.refinementList[currentFacet.attribute] &&
+									uiState.refinementList[currentFacet.attribute].join('~'));
+							}
+							// Handle categories
+							if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
+								map[currentFacet.attribute] = (uiState.hierarchicalMenu &&
+									uiState.hierarchicalMenu[currentFacet.attribute+ '.level0'] &&
+									uiState.hierarchicalMenu[currentFacet.attribute+ '.level0'].join('~'));
+							}
+							// Handle sliders
+							if (currentFacet.type == 'slider') {
+								map[currentFacet.attribute] = (uiState.range &&
+									uiState.range[currentFacet.attribute] &&
+									uiState.range[currentFacet.attribute]);
+							}
+						};
+					}
+					map['sortBy'] = uiState.sortBy;
+					map['page'] = uiState.page;
+					return map;
+				},
+				routeToState(routeState) {
+					let map = {};
+					routeState = routingBc(routeState);
+					map['query'] = routeState.q == '__empty__' ? '' : routeState.q;
+					map['refinementList'] = {};
+					map['hierarchicalMenu'] = {};
+					map['range'] = {};
+					if (algoliaConfig.facets) {
+						for(let i=0; i<algoliaConfig.facets.length; i++) {
+							let currentFacet = algoliaConfig.facets[i];
+							// Handle refinement facets
+							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
+								map['refinementList'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute].split('~');
+							}
+							// Handle categories facet
+							if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
+								map['hierarchicalMenu'][currentFacet.attribute+ '.level0'] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute].split('~');
+							}
+							// Handle sliders
+							if (currentFacet.type == 'slider') {
+								map['range'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute];
+							}
+						};
+					}
+					map['sortBy'] = routeState.sortBy;
+					map['page'] = routeState.page;
+					return map;
+				}
+			}
 		};
 	});
 });

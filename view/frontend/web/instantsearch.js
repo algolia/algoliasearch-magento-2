@@ -79,10 +79,6 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 			appId: algoliaConfig.applicationId,
 			apiKey: algoliaConfig.apiKey,
 			indexName: algoliaConfig.indexName + '_products',
-			urlSync: {
-				useHash: true,
-				trackedParameters: algoliaConfig.instant.urlTrackedParameters
-			},
 			searchParameters: {
 				hitsPerPage: algoliaConfig.hitsPerPage,
 				ruleContexts: ruleContexts
@@ -96,7 +92,8 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 					$('.algolia-instant-replaced-content').hide();
 					$('.algolia-instant-selector-results').show();
 				}
-			}
+			},
+			routing : window.routing,
 		};
 		
 		if (algoliaConfig.request.path.length > 0 && window.location.hash.indexOf('categories.level0') === -1) {

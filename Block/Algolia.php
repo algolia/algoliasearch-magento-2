@@ -186,7 +186,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
 
     public function getTimestamp()
     {
-        return $this->date->gmtTimestamp();
+        return $this->date->gmtTimestamp('today midnight');
     }
 
     private function getAddToCartUrl($additional = [])

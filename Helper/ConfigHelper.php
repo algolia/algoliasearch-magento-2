@@ -454,7 +454,7 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_MENU_DEBUG, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getSortingIndices($originalIndexName, $storeId = null)
+    public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null)
     {
         $attrs = $this->unserialize($this->configInterface->getValue(
             self::SORTING_INDICES,
@@ -473,9 +473,12 @@ class ConfigHelper
                 /** @var Magento\Customer\Model\ResourceModel\Group\Collection $groupCollection */
                 $groupCollection = $this->objectManager->get('Magento\Customer\Model\ResourceModel\Group\Collection');
 
+                if (!is_null($currentCustomerGroupId)) {
+                    $groupCollection->addFilter('customer_group_id', $currentCustomerGroupId);
+                }
+
                 foreach ($groupCollection as $group) {
                     $customerGroupId = (int) $group->getData('customer_group_id');
-
                     $groupIndexNameSuffix = 'group_' . $customerGroupId;
 
                     $groupIndexName =
@@ -748,6 +751,11 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+    }
+
+    public function getStoreId()
+    {
+        return $this->storeManager->getStore()->getId();
     }
 
     public function getCurrency($storeId = null)

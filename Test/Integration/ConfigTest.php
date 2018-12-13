@@ -50,7 +50,7 @@ class ConfigTest extends TestCase
             $page++;
         } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
 
-        $this->assertEquals(1, count($matchedRules));
+        $this->assertEquals(0, count($matchedRules));
     }
 
     public function testAutomaticalSetOfCategoriesFacet()

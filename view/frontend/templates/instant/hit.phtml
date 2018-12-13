@@ -11,15 +11,15 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
 
 <script type="text/template" id="instant-hit-template">
     <div class="col-md-4 col-sm-6">
-        <div class="result-wrapper">
-            <a href="{{url}}" class="result" data-objectid="{{objectID}}" data-position="{{__position}}">
+        <div class="result-wrapper" itemprop="itemListElement" itemscope itemtype="http://schema.org/Product">
+            <a itemprop="url" href="{{url}}" class="result" data-objectid="{{objectID}}" data-position="{{__position}}">
                 <div class="result-content">
                     <div class="result-thumbnail">
-                        {{#image_url}}<img src="{{{ image_url }}}" />{{/image_url}}
+                        {{#image_url}}<img itemprop="image" src="{{{ image_url }}}" />{{/image_url}}
                         {{^image_url}}<span class="no-image"></span>{{/image_url}}
                     </div>
                     <div class="result-sub-content">
-                        <h3 class="result-title text-ellipsis">
+                        <h3 itemprop="name" class="result-title text-ellipsis">
                             {{{ _highlightResult.name.value }}}
                         </h3>
                         <div class="ratings">
@@ -35,17 +35,17 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
                                     </div>
                                 </div>
 
-                                <div class="price">
+                                <div itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer" class="price">
                                     <div class="price-wrapper">
                                         <div>
-                                            <span class="after_special
+                                            <span itemprop="lowPrice" class="after_special
                                                     {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                                                         promotion
                                                     {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}">
                                                 {{price<?php echo $block->escapeHtml($priceKey); ?>_formated}}
                                             </span>
                                             {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
-                                                <span class="before_special">
+                                                <span itemprop="highPrice" class="before_special">
                                                     {{<?php echo $block->escapeHtml($origFormatedVar); ?>}}
                                                 </span>
                                             {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}

@@ -1,0 +1,131 @@
+<?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Contact */
+
+?>
+
+<?php echo $this->getLegacyVersionHtml(); ?>
+
+<form method="post" action="" class="algolia_contact_form" data-mage-init='{"validation":{}}'>
+    <input type="hidden" name="form_key" value="<?php echo $this->getFormKey() ?>" />
+
+    <div class="row">
+        <fieldset class="admin__fieldset col-l-7">
+            <div class="admin__field _required">
+                <label for="name" class="admin__field-label">
+                    <span>Your name</span>
+                </label>
+
+                <div class="admin__field-control">
+                    <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        value="<?php echo $this->getDefaultName(); ?>"
+                        class="admin__control-text"
+                        data-validate="{required: true}" />
+                </div>
+            </div>
+
+            <div class="admin__field _required">
+                <label for="email" class="admin__field-label">
+                    <span>E-mail</span>
+                </label>
+                <div class="admin__field-control">
+                    <input
+                        type="text"
+                        name="email"
+                        id="email"
+                        value="<?php echo $this->getDefaultEmail(); ?>"
+                        class="admin__control-text"
+                        data-validate="{required: true, 'validate-email': true}" />
+                </div>
+            </div>
+
+            <div class="admin__field _required">
+                <label for="subject" class="admin__field-label">
+                    <span>Subject</span>
+                </label>
+                <div class="admin__field-control">
+                    <input
+                        type="text"
+                        name="subject"
+                        id="subject"
+                        value="<?php echo $this->getRequest()->getParam('subject'); ?>"
+                        class="admin__control-text"
+                        data-validate="{required: true}" />
+                </div>
+            </div>
+
+            <div class="admin__field _required">
+                <label for="message" class="admin__field-label">
+                    <span>Your message</span>
+                </label>
+                <div class="admin__field-control">
+                    <textarea
+                        name="message"
+                        id="message"
+                        class="admin__control-textarea"
+                        placeholder="Please provide us context of your problem or question: what you were trying to achieve, what went wrong, etc."
+                        data-validate="{required: true}"><?php echo $this->getRequest()->getParam('message'); ?></textarea>
+
+                    <div class="admin__field-note">
+                        <div class="note_icon">i</div>
+                        <span>
+                            To provide a better support, this information will be attached to your request:
+                            <ul>
+                                <li>Magento and Algolia extension version numbers</li>
+                                <li>Algolia extension configuration</li>
+                                <li>
+                                    Indexing queue information
+                                    <?php echo $this->getTooltipHtml(__('
+                                            - Number of jobs in indexing queue<br>
+                                            - Information about last 20 failed indexing jobs<br>
+                                            - Creation time of the oldest job in indexing queue
+                                        '));
+                                    ?>
+                                </li>
+                            </ul>
+                            <b>No personal information will be sent to Algolia.</b>
+                        </span>
+                    </div>
+                    <br>
+                    <div class="admin__actions-switch" data-role="switcher">
+                        <input
+                            type="checkbox"
+                            class="admin__actions-switch-checkbox"
+                            id="send_additional_info"
+                            name="send_additional_info"
+                            value="1"
+                            checked />
+                        <label class="admin__actions-switch-label" for="send_additional_info">
+                            <span class="admin__actions-switch-text">
+                                Attach list of installed 3rd party modules and catalog size
+                                <?php echo $this->getTooltipHtml(__('
+                                        The additional data can speed up the support process 
+                                        by providing Algolia team more context on your implementation.
+                                    '));
+                                ?>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="button">
+                        <button
+                            type="submit"
+                            name="sent"
+                            value="sent"
+                            class="action submit primary algolia-daterange-submit">
+                            <?php echo __('Send') ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div class="col-l-1"></div>
+        <div class="col-l-3">
+            <div class="heading">
+                Related to your subject ...
+            </div>
+            <div class="contact_results links"></div>
+        </div>
+    </div>
+</form>

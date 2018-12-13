@@ -48,6 +48,8 @@ class MerchandisingHelper
             ],
         ];
 
+        // Not catching AlgoliaSearchException for disabled query rules on purpose
+        // It displays correct error message and navigates user to pricing page
         $this->algoliaHelper->saveRule($rule, $productsIndexName);
     }
 
@@ -60,6 +62,8 @@ class MerchandisingHelper
         $productsIndexName = $this->coreHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
         $ruleId = $this->getQueryRuleId($categoryId);
 
+        // Not catching AlgoliaSearchException for disabled query rules on purpose
+        // It displays correct error message and navigates user to pricing page
         $this->algoliaHelper->deleteRule($productsIndexName, $ruleId);
     }
 

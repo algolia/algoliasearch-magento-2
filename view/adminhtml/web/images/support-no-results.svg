@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="121px" height="121px" viewBox="0 0 121 121" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.4 (67378) - http://www.bohemiancoding.com/sketch -->
+    <title>no results icon</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Magento-Support-impl" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01-No-results" transform="translate(-324.000000, -412.000000)">
+            <g id="Group-4" transform="translate(207.000000, 412.000000)">
+                <g id="no-results-icon" transform="translate(117.000000, 0.000000)">
+                    <circle id="Oval" fill="#FBFBFB" cx="60.5" cy="60.5" r="60.5"></circle>
+                    <circle id="Oval" stroke="#CACEE1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" cx="40" cy="37" r="11"></circle>
+                    <path d="M54,51 L48,45" id="Path" stroke="#CACEE1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <g id="Group-3" transform="translate(46.000000, 60.000000)">
+                        <g>
+                            <g id="x" transform="translate(0.000000, 25.187500)" stroke="#DADEFC" stroke-linecap="round" stroke-linejoin="round">
+                                <g id="Path">
+                                    <path d="M6,0 L0,6" stroke-width="2"></path>
+                                    <path d="M0,0 L6,6" stroke-width="2"></path>
+                                </g>
+                            </g>
+                            <g id="x" transform="translate(0.000000, 12.593750)" stroke="#DADEFC" stroke-linecap="round" stroke-linejoin="round">
+                                <g id="Path">
+                                    <path d="M6,0 L0,6" stroke-width="2"></path>
+                                    <path d="M0,0 L6,6" stroke-width="2"></path>
+                                </g>
+                            </g>
+                            <g id="x" stroke="#DADEFC" stroke-linecap="round" stroke-linejoin="round">
+                                <g id="Path">
+                                    <path d="M6,0 L0,6" stroke-width="2"></path>
+                                    <path d="M0,0 L6,6" stroke-width="2"></path>
+                                </g>
+                            </g>
+                            <rect id="Rectangle" fill="#E3E7FC" x="13.78125" y="0" width="49.21875" height="4.84375" rx="2.421875"></rect>
+                            <rect id="Rectangle" fill="#E3E7FC" x="13.78125" y="12.59375" width="29.53125" height="4.84375" rx="2.421875"></rect>
+                            <rect id="Rectangle" fill="#E3E7FC" x="13.78125" y="25.1875" width="41.34375" height="4.84375" rx="2.421875"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

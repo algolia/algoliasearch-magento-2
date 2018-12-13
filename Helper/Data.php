@@ -80,6 +80,11 @@ class Data
         $this->storeManager = $storeManager;
     }
 
+    public function getConfigHelper()
+    {
+        return $this->configHelper;
+    }
+
     public function deleteObjects($storeId, $ids, $indexName)
     {
         if ($this->isIndexingEnabled($storeId) === false) {
@@ -134,16 +139,18 @@ class Data
         $this->setExtraSettings($storeId, $useTmpIndex);
     }
 
-    public function getSearchResult($query, $storeId)
+    public function getSearchResult($query, $storeId, $searchParams = null, $targetedIndex = null)
     {
-        $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
+        $indexName = !is_null($targetedIndex) ?
+            $targetedIndex :
+            $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
 
         $numberOfResults = 1000;
         if ($this->configHelper->isInstantEnabled()) {
             $numberOfResults = min($this->configHelper->getNumberOfProductResults($storeId), 1000);
         }
 
-        $answer = $this->algoliaHelper->query($indexName, $query, [
+        $params = [
             'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
             'attributesToRetrieve'   => 'objectID',
             'attributesToHighlight'  => '',
@@ -151,7 +158,13 @@ class Data
             'numericFilters'         => 'visibility_search=1',
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
             'analyticsTags'          => 'backend-search',
-        ]);
+        ];
+
+        if (is_array($searchParams)) {
+            $params = array_merge($params, $searchParams);
+        }
+
+        $answer = $this->algoliaHelper->query($indexName, $query, $params);
 
         $data = [];
 

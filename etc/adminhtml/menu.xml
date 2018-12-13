@@ -63,5 +63,14 @@
             action="algolia_algoliasearch/analytics/index"
             resource="Algolia_AlgoliaSearch::manage"
         />
+        <add
+            id="Algolia_AlgoliaSearch::support"
+            title="Help &amp; Support"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="120"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="algolia_algoliasearch/support/index"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
     </menu>
 </config>

@@ -2,9 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics;
 
-use Algolia\AlgoliaSearch\DataProvider\Analytics\PopularResultsDataProvider;
+use Algolia\AlgoliaSearch\DataProvider\Analytics\IndexEntityDataProvider;
 use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\AggregatorHelper;
 use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
 use Magento\Framework\View\Element\Block\ArgumentInterface;
 
@@ -22,11 +21,8 @@ class Index implements ArgumentInterface
     /** @var AnalyticsHelper */
     private $analyticsHelper;
 
-    /** @var AggregatorHelper */
-    private $entityHelper;
-
-    /** @var PopularResultsDataProvider */
-    private $popularResultsDataProvider;
+    /** @var IndexEntityDataProvider */
+    private $indexEntityDataProvider;
 
     /** @var array */
     private $analyticsParams = [];
@@ -36,19 +32,16 @@ class Index implements ArgumentInterface
      *
      * @param BackendView $backendView
      * @param AnalyticsHelper $analyticsHelper
-     * @param AggregatorHelper $entityHelper
-     * @param PopularResultsDataProvider $popularResultsDataProvider
+     * @param IndexEntityDataProvider $indexEntityDataProvider
      */
     public function __construct(
         BackendView $backendView,
         AnalyticsHelper $analyticsHelper,
-        AggregatorHelper $entityHelper,
-        PopularResultsDataProvider $popularResultsDataProvider
+        IndexEntityDataProvider $indexEntityDataProvider
     ) {
         $this->backendView = $backendView;
         $this->analyticsHelper = $analyticsHelper;
-        $this->entityHelper = $entityHelper;
-        $this->popularResultsDataProvider = $popularResultsDataProvider;
+        $this->indexEntityDataProvider = $indexEntityDataProvider;
 
         $this->getTotalCountOfSearches();
     }
@@ -249,7 +242,7 @@ class Index implements ArgumentInterface
             $storeId = $this->getStore()->getId();
 
             if ($this->getCurrentType() == 'products') {
-                $collection = $this->popularResultsDataProvider->getProductCollection($storeId, $objectIds);
+                $collection = $this->indexEntityDataProvider->getProductCollection($storeId, $objectIds);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -259,7 +252,7 @@ class Index implements ArgumentInterface
             }
 
             if ($this->getCurrentType() == 'categories') {
-                $collection = $this->popularResultsDataProvider->getCategoryCollection($storeId, $objectIds);
+                $collection = $this->indexEntityDataProvider->getCategoryCollection($storeId, $objectIds);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
@@ -269,7 +262,7 @@ class Index implements ArgumentInterface
             }
 
             if ($this->getCurrentType() == 'pages') {
-                $collection = $this->popularResultsDataProvider->getPageCollection($storeId, $objectIds);
+                $collection = $this->indexEntityDataProvider->getPageCollection($storeId, $objectIds);
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemByColumnValue('page_id', $hit['hit']);

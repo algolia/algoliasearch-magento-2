@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use Algolia\AlgoliaSearch\Helper\Entity\AggregatorHelper;
+use Algolia\AlgoliaSearch\DataProvider\Analytics\IndexEntityDataProvider;
 use AlgoliaSearch\Analytics;
 
 class AnalyticsHelper extends Analytics
@@ -12,16 +12,17 @@ class AnalyticsHelper extends Analytics
     const ANALYTICS_FILTER_PATH = '/2/filters';
     const ANALYTICS_CLICKS_PATH = '/2/clicks';
 
-    const INTERNAL_API_PROXY_URL = 'https://magento-proxy.algolia.com/';
-
     /** @var AlgoliaHelper */
     private $algoliaHelper;
 
     /** @var ConfigHelper */
     private $configHelper;
 
-    /** @var AggregatorHelper */
+    /** @var IndexEntityDataProvider */
     private $entityHelper;
+
+    /** @var ProxyHelper */
+    private $proxyHelper;
 
     /** @var Logger */
     private $logger;
@@ -42,22 +43,24 @@ class AnalyticsHelper extends Analytics
 
     /**
      * AnalyticsHelper constructor.
-     *
      * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
-     * @param AggregatorHelper $entityHelper
+     * @param IndexEntityDataProvider $entityHelper
+     * @param ProxyHelper $proxyHelper
      * @param Logger $logger
      */
     public function __construct(
         AlgoliaHelper $algoliaHelper,
         ConfigHelper $configHelper,
-        AggregatorHelper $entityHelper,
+        IndexEntityDataProvider $entityHelper,
+        ProxyHelper $proxyHelper,
         Logger $logger
     ) {
         $this->algoliaHelper = $algoliaHelper;
         $this->configHelper = $configHelper;
 
         $this->entityHelper = $entityHelper;
+        $this->proxyHelper = $proxyHelper;
 
         $this->logger = $logger;
 
@@ -348,32 +351,6 @@ class AnalyticsHelper extends Analytics
 
     public function getClientSettings()
     {
-        $appId = $this->configHelper->getApplicationID();
-        $apiKey = $this->configHelper->getAPIKey();
-
-        $token = $appId . ':' . $apiKey;
-        $token = base64_encode($token);
-        $token = str_replace(["\n", '='], '', $token);
-
-        $params = [
-            'appId' => $appId,
-            'token' => $token,
-            'type' => 'analytics',
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::INTERNAL_API_PROXY_URL . 'get-info/');
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $res = curl_exec($ch);
-        curl_close($ch);
-
-        if ($res) {
-            $res = json_decode($res, true);
-        }
-
-        return $res;
+        return $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_ANALYTICS);
     }
 }

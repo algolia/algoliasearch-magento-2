@@ -6,9 +6,14 @@
         <script src="Algolia_AlgoliaSearch::js/support.js"/>
     </head>
     <body>
+
         <referenceContainer name="content">
-            <block class="Algolia\AlgoliaSearch\Block\Adminhtml\Support\Index"
-                   name="support_overview" template="support/overview.phtml" />
+            <block class="Magento\Backend\Block\Template"
+                   name="support_overview" template="Algolia_AlgoliaSearch::support/overview.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Index</argument>
+                </arguments>
+            </block>
         </referenceContainer>
     </body>
 </page>

@@ -43,6 +43,7 @@ class AnalyticsHelper extends Analytics
 
     /**
      * AnalyticsHelper constructor.
+     *
      * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
      * @param IndexEntityDataProvider $entityHelper
@@ -348,5 +349,4 @@ class AnalyticsHelper extends Analytics
     {
         return $this->errors;
     }
-
 }

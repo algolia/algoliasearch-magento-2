@@ -26,7 +26,7 @@ class Index extends \Magento\Backend\App\Action
     /** @return \Magento\Framework\View\Result\Page */
     public function execute()
     {
-        $breadMain = __('Algolia Indexing Queue');
+        $breadMain = __('Algolia | Indexing Queue overview');
 
         $this->checkQueueIsActivated();
 

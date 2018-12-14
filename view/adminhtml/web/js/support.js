@@ -229,7 +229,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		$.getJSON('https://api.github.com/repos/algolia/algoliasearch-magento-2/releases/latest', function(payload) {
 			const latestVersion = payload.name;
 			
-			if(compareVersions(algoliaSearchExtentionsVersion, latestVersion) > 0 || true) {
+			if(compareVersions(algoliaSearchExtentionsVersion, latestVersion) > 0) {
 				const ghLink = 'https://github.com/algolia/algoliasearch-magento-2/releases/tag/' + latestVersion;
 				const latestVersionLink = '<a href="' + ghLink + '" target="_blank">' + latestVersion + '</a>';
 				

@@ -1,17 +1,19 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Block\Adminhtml\Support;
+namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support;
 
 use Algolia\AlgoliaSearch\Helper\SupportHelper;
+use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
 use Magento\Backend\Block\Template;
-use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\Module\ModuleListInterface;
+use Magento\Framework\View\Element\Block\ArgumentInterface;
+use Magento\User\Model\User;
 
-class Contact extends AbstractSupportTemplate
+class Contact implements ArgumentInterface
 {
-    /** @var Context */
-    private $backendContext;
+    /** @var BackendView */
+    private $backendView;
 
     /** @var SupportHelper */
     private $supportHelper;
@@ -23,22 +25,18 @@ class Contact extends AbstractSupportTemplate
     private $authSession;
 
     /**
-     * @param Context $context
+     * @param BackendView $backendView
      * @param SupportHelper $supportHelper
      * @param ModuleListInterface $moduleList
      * @param Session $authSession
-     * @param array $data
      */
     public function __construct(
-        Context $context,
+        BackendView $backendView,
         SupportHelper $supportHelper,
         ModuleListInterface $moduleList,
-        Session $authSession,
-        array $data = []
+        Session $authSession
     ) {
-        parent::__construct($context, $data);
-
-        $this->backendContext = $context;
+        $this->backendView = $backendView;
         $this->supportHelper = $supportHelper;
         $this->moduleList = $moduleList;
         $this->authSession = $authSession;
@@ -59,7 +57,7 @@ class Contact extends AbstractSupportTemplate
     /** @return string */
     public function getDefaultName()
     {
-        $name = $this->getRequest()->getParam('name');
+        $name = $this->backendView->getRequest()->getParam('name');
 
         return $name ?: $this->getCurrenctAdmin()->getName();
     }
@@ -67,7 +65,7 @@ class Contact extends AbstractSupportTemplate
     /** @return string */
     public function getDefaultEmail()
     {
-        $name = $this->getRequest()->getParam('email');
+        $name = $this->backendView->getRequest()->getParam('email');
 
         return $name ?: $this->getCurrenctAdmin()->getEmail();
     }
@@ -75,22 +73,28 @@ class Contact extends AbstractSupportTemplate
     /**
      * @param string $message
      *
-     * @throws \Magento\Framework\Exception\LocalizedException
-     *
      * @return string
      */
     public function getTooltipHtml($message)
     {
-        /** @var Template $block */
-        $block = $this->getLayout()->createBlock(Template::class);
+        return $this->backendView->getTooltipHtml($message);
+    }
 
-        $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml');
-        $block->setData('message', $message);
+    /**
+     * @return string
+     */
+    public function getLegacyVersionHtml()
+    {
+        /** @var Template $block */
+        $block = $this->backendView->getLayout()->createBlock(Template::class);
+
+        $block->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml');
+        $block->setData('extension_version', $this->getExtensionVersion());
 
         return $block->toHtml();
     }
 
-    /** @return \Magento\User\Model\User|null */
+    /** @return User|null */
     private function getCurrenctAdmin()
     {
         return $this->authSession->getUser();

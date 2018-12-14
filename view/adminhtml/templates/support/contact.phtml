@@ -1,8 +1,13 @@
-<?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Contact */
+<?php
+
+/** @var $this \Magento\Backend\Block\Template */
+
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Contact $view */
+$view = $block->getViewModel();
 
 ?>
 
-<?php echo $this->getLegacyVersionHtml(); ?>
+<?php echo $view->getLegacyVersionHtml(); ?>
 
 <form method="post" action="" class="algolia_contact_form" data-mage-init='{"validation":{}}'>
     <input type="hidden" name="form_key" value="<?php echo $this->getFormKey() ?>" />
@@ -19,7 +24,7 @@
                         type="text"
                         name="name"
                         id="name"
-                        value="<?php echo $this->getDefaultName(); ?>"
+                        value="<?php echo $view->getDefaultName(); ?>"
                         class="admin__control-text"
                         data-validate="{required: true}" />
                 </div>
@@ -34,7 +39,7 @@
                         type="text"
                         name="email"
                         id="email"
-                        value="<?php echo $this->getDefaultEmail(); ?>"
+                        value="<?php echo $view->getDefaultEmail(); ?>"
                         class="admin__control-text"
                         data-validate="{required: true, 'validate-email': true}" />
                 </div>
@@ -76,7 +81,7 @@
                                 <li>Algolia extension configuration</li>
                                 <li>
                                     Indexing queue information
-                                    <?php echo $this->getTooltipHtml(__('
+                                    <?php echo $view->getTooltipHtml(__('
                                             - Number of jobs in indexing queue<br>
                                             - Information about last 20 failed indexing jobs<br>
                                             - Creation time of the oldest job in indexing queue
@@ -99,7 +104,7 @@
                         <label class="admin__actions-switch-label" for="send_additional_info">
                             <span class="admin__actions-switch-text">
                                 Attach list of installed 3rd party modules and catalog size
-                                <?php echo $this->getTooltipHtml(__('
+                                <?php echo $view->getTooltipHtml(__('
                                         The additional data can speed up the support process 
                                         by providing Algolia team more context on your implementation.
                                     '));

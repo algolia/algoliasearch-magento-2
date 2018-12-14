@@ -1,4 +1,9 @@
-<?php /** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\Support\Index */
+<?php
+
+/** @var $this \Magento\Backend\Block\Template */
+
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Index $view */
+$view = $block->getViewModel();
 
 $docIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-documentation.svg');
 $comIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-community.svg');
@@ -11,7 +16,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 
 ?>
 
-<?php echo $this->getLegacyVersionHtml(); ?>
+<?php echo $view->getLegacyVersionHtml(); ?>
 
 <script>
 	const noResultsIllustration = "<?php echo $noResultsIllustration; ?>"
@@ -63,7 +68,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 <div id="landing" class="row">
     <div class="col-l-4">
         <div class="heading">
-            <img src="<?php echo $docIllustration ?>" />
+            <img src="<?php echo $docIllustration ?>"  alt="Documentation"/>
 
             <div class="main">
                 Documentation
@@ -123,7 +128,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 
     <div class="col-l-4">
         <div class="heading">
-            <img src="<?php echo $comIllustration ?>" />
+            <img src="<?php echo $comIllustration ?>"  alt="Community Forum" />
 
             <div class="main">
                 Community Forum
@@ -183,7 +188,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 
     <div class="col-l-4">
         <div class="heading">
-            <img src="<?php echo $vidIllustration ?>" />
+            <img src="<?php echo $vidIllustration ?>"  alt="Video Tutorials" />
 
             <div class="main">
                 Video Tutorials
@@ -196,7 +201,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
         <div class="videos">
             <a href="https://www.youtube.com/watch?v=1vxnisyxgFU" target="_blank" class="video">
                 <div class="img">
-                    <img src="<?php echo $videoDiscover ?>" />
+                    <img src="<?php echo $videoDiscover ?>"  alt="Discover the extension" />
                 </div>
                 <div class="description">
                     Discover the extension
@@ -204,7 +209,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
             </a>
             <a href="https://www.youtube.com/watch?v=0V1BSKlCm10" target="_blank" class="video">
                 <div class="img">
-                    <img src="<?php echo $videoQueue ?>" />
+                    <img src="<?php echo $videoQueue ?>"  alt="Understand Indexing queue" />
                 </div>
                 <div class="description">
                     Understand Indexing Queue
@@ -212,7 +217,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
             </a>
             <a href="https://www.youtube.com/watch?v=qzaLrHz67U4" target="_blank" class="video">
                 <div class="img">
-                    <img src="<?php echo $videoFeatures ?>" />
+                    <img src="<?php echo $videoFeatures ?>"  alt="See all extra features" />
                 </div>
                 <div class="description">
                     See all extra features
@@ -227,11 +232,11 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 </div>
 
 <div class="contact-us">
-    <?php if ($this->isExtensionSupportEnabled()): ?>
+    <?php if ($view->isExtensionSupportEnabled()): ?>
         Didn't find what you were looking for?
         <a href="<?php echo $this->getUrl('*/*/contact'); ?>">Contact us</a>.
     <?php else: ?>
-        Consider <a href="https://www.algolia.com/apps/<?php echo $this->getApplicationId(); ?>/billing/overview" target="_blank">updating your plan</a>
+        Consider <a href="https://www.algolia.com/apps/<?php echo $view->getApplicationId(); ?>/billing/overview" target="_blank">updating your plan</a>
         to get direct and fast email help by Algolia experts.
     <?php endif; ?>
 </div>

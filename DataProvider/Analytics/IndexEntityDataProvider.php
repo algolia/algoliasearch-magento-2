@@ -3,9 +3,9 @@
 namespace Algolia\AlgoliaSearch\DataProvider\Analytics;
 
 use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollection;
@@ -15,7 +15,7 @@ class IndexEntityDataProvider
     /** @var Data */
     private $dataHelper;
 
-    /** @var Product */
+    /** @var ProductHelper */
     private $productHelper;
 
     /** @var CategoryHelper */

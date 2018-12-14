@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml;
 
+use Magento\Backend\Block\Template;
 use Magento\Backend\Model\Session;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
@@ -45,49 +46,37 @@ class BackendView implements \Magento\Framework\View\Element\Block\ArgumentInter
         $this->url = $url;
     }
 
-    /**
-     * @return RequestInterface
-     */
+    /** @return RequestInterface */
     public function getRequest()
     {
         return $this->request;
     }
 
-    /**
-     * @return LayoutInterface
-     */
+    /** @return LayoutInterface */
     public function getLayout()
     {
         return $this->layout;
     }
 
-    /**
-     * @return StoreManagerInterface
-     */
+    /** @return StoreManagerInterface */
     public function getStoreManager()
     {
         return $this->storeManager;
     }
 
-    /**
-     * @return TimezoneInterface
-     */
+    /** @return TimezoneInterface */
     public function getDateTime()
     {
         return $this->dateTime;
     }
 
-    /**
-     * @return Session
-     */
+    /** @return Session */
     public function getBackendSession()
     {
         return $this->session;
     }
 
-    /**
-     * @return UrlInterface
-     */
+    /** @return UrlInterface */
     public function getUrlInterface()
     {
         return $this->url;
@@ -100,11 +89,12 @@ class BackendView implements \Magento\Framework\View\Element\Block\ArgumentInter
      */
     public function getTooltipHtml($message)
     {
-        $block = $this->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
+        /** @var Template $block */
+        $block = $this->getLayout()->createBlock(Template::class);
+
         $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml');
         $block->setData('message', $message);
 
         return $block->toHtml();
     }
-
 }

@@ -11,7 +11,7 @@ class Index extends AbstractAction
      */
     public function execute()
     {
-        $breadMain = __('Algolia Search | Analytics Overview');
+        $breadMain = __('Algolia | Analytics Overview');
 
         /** @var \Magento\Framework\View\Result\Page $resultPage */
         $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);

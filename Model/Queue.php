@@ -64,6 +64,23 @@ class Queue
         $this->maxSingleJobDataSize = $this->configHelper->getNumberOfElementByPage();
     }
 
+    /**
+     * Check if there is already an item in the queue with the same values
+     */
+    public function alreadyInQueueToProcess($className, $method, $encodedData, $data_size = 1) {
+        $data = $this->db->query(
+            $this->db->select()
+                ->from($this->table, ['jobs_count' => 'COUNT(job_id)'])
+                ->where('class = ?', $className)
+                ->where('method = ?', $method)
+                ->where('data = ?', $encodedData)
+                ->where('data_size = ?', $data_size)
+        );
+        $result = $data->fetch();
+
+        return (int) $result['jobs_count'] > 0 ? true : false;
+    }
+
     public function addToQueue($className, $method, $data, $data_size = 1)
     {
         if (is_object($className)) {
@@ -80,11 +97,15 @@ class Queue
 
     private function insert($class, $method, $data, $data_size)
     {
+        $encodedData = json_encode($data);
+        if ($this->alreadyInQueueToProcess($class, $method, $encodedData, $data_size)) {
+            return;
+        }
         $this->db->insert($this->table, [
             'created'   => date('Y-m-d H:i:s'),
             'class'     => $class,
             'method'    => $method,
-            'data'      => json_encode($data),
+            'data'      => $encodedData,
             'data_size' => $data_size,
             'pid'       => null,
         ]);

@@ -21,7 +21,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		
 		/**
 		 * Initialise Algolia client
-		 * Docs: https://www.algolia.com/doc/javascript
+		 * Docs: https://www.algolia.com/doc/api-client/getting-started/instantiate-client-index/
 		 **/
 		var algolia_client = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
 		algolia_client.addAlgoliaAgent('Magento2 integration (' + algoliaConfig.extensionVersion + ')');

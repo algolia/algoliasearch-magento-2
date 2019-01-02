@@ -568,7 +568,7 @@ class Data
 
         if (!$this->configHelper->getShowOutOfStock($storeId)) {
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
-            if (! $product->isSalable() || ! $stockItem->getIsInStock()) {
+            if (! $stockItem->getIsInStock()) {
                 throw (new ProductOutOfStockException())
                     ->withProduct($product)
                     ->withStoreId($storeId);

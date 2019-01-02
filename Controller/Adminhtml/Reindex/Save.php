@@ -65,6 +65,8 @@ class Save extends \Magento\Backend\App\Action
         $skus = preg_split("/(,|\r\n|\n|\r)/", $this->getRequest()->getParam('skus'));
 
         $stores = $this->storeManager->getStores();
+        $websites = $this->storeManager->getWebsites();
+        $storeGroup = $this->storeManager->getGroups();
 
         foreach ($stores as $storeId => $storeData) {
             if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
@@ -103,16 +105,22 @@ class Save extends \Magento\Backend\App\Action
                 $this->messageManager->addExceptionMessage(
                     $e,
                     __(
-                        'The product "%1" (%2) is disabled in store "%3".',
-                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                        'The product "%1" (%2) is disabled in store "%3 / %4 / %5".',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(),
+                            $websites[$stores[$e->getStoreId()]->getWebsiteId()]->getName(),
+                            $storeGroup[$stores[$e->getStoreId()]->getStoreGroupId()]->getName(),
+                            $stores[$e->getStoreId()]->getName()]
                     )
                 );
             } catch (ProductDeletedException $e) {
                 $this->messageManager->addExceptionMessage(
                     $e,
                     __(
-                        'The product "%1" (%2) is deleted from store "%3".',
-                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                        'The product "%1" (%2) is deleted from store "%3 / %4 / %5".',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(),
+                            $websites[$stores[$e->getStoreId()]->getWebsiteId()]->getName(),
+                            $storeGroup[$stores[$e->getStoreId()]->getStoreGroupId()]->getName(),
+                            $stores[$e->getStoreId()]->getName()]
                     )
                 );
             } catch (ProductNotVisibleException $e) {
@@ -127,7 +135,8 @@ class Save extends \Magento\Backend\App\Action
                         $this->messageManager->addNoticeMessage(
                             __(
                                 'The product "%1" (%2) is not visible but it has a parent product "%3" (%4).',
-                                [$e->getProduct()->getName(), $e->getProduct()->getSku(), $parentProduct->getName(), $parentProduct->getSku()]
+                                [$e->getProduct()->getName(), $e->getProduct()->getSku(), $parentProduct->getName(),
+                                    $parentProduct->getSku()]
                             )
                         );
 
@@ -139,16 +148,22 @@ class Save extends \Magento\Backend\App\Action
                 $this->messageManager->addExceptionMessage(
                     $e,
                     __(
-                        'The product "%1" (%2) is not visible in store "%3".',
-                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                        'The product "%1" (%2) is not visible in store "%3 / %4 / %5".',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(),
+                            $websites[$stores[$e->getStoreId()]->getWebsiteId()]->getName(),
+                            $storeGroup[$stores[$e->getStoreId()]->getStoreGroupId()]->getName(),
+                            $stores[$e->getStoreId()]->getName()]
                     )
                 );
             } catch (ProductOutOfStockException $e) {
                 $this->messageManager->addExceptionMessage(
                     $e,
                     __(
-                        'The product "%1" (%2) is out of stock in store "%3".',
-                        [$e->getProduct()->getName(), $e->getProduct()->getSku(), $stores[$e->getStoreId()]->getName()]
+                        'The product "%1" (%2) is out of stock in store "%3 / %4 / %5".',
+                        [$e->getProduct()->getName(), $e->getProduct()->getSku(),
+                            $websites[$stores[$e->getStoreId()]->getWebsiteId()]->getName(),
+                            $storeGroup[$stores[$e->getStoreId()]->getStoreGroupId()]->getName(),
+                            $stores[$e->getStoreId()]->getName()]
                     )
                 );
             }
@@ -165,12 +180,18 @@ class Save extends \Magento\Backend\App\Action
      */
     private function checkAndReindex($product, $stores)
     {
+        $websites = $this->storeManager->getWebsites();
+        $storeGroup = $this->storeManager->getGroups();
+
         foreach ($stores as $storeId => $storeData) {
             if (! in_array($storeId, array_values($product->getStoreIds()))) {
                 $this->messageManager->addNoticeMessage(
                     __(
-                        'The product "%1" (%2) is not associated with store "%3".',
-                        [$product->getName(), $product->getSku(), $storeData->getName()]
+                        'The product "%1" (%2) is not associated with store "%3 / %4 / %5".',
+                        [$product->getName(), $product->getSku(),
+                            $websites[$storeData->getWebsiteId()]->getName(),
+                            $storeGroup[$storeData->getStoreGroupId()]->getName(),
+                            $storeData->getName()]
                     )
                 );
 
@@ -184,8 +205,11 @@ class Save extends \Magento\Backend\App\Action
             $this->dataHelper->rebuildStoreProductIndex($storeId, $productIds);
             $this->messageManager->addSuccessMessage(
                 __(
-                    'The Product "%1" (%2) has been reindexed for store "%3".',
-                    [$product->getName(), $product->getSku(), $storeData->getName()]
+                    'The Product "%1" (%2) has been reindexed for store "%3 / %4 / %5".',
+                    [$product->getName(), $product->getSku(),
+                        $websites[$storeData->getWebsiteId()]->getName(),
+                        $storeGroup[$storeData->getStoreGroupId()]->getName(),
+                        $storeData->getName()]
                 )
             );
         }

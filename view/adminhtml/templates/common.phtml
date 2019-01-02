@@ -1,3 +1,16 @@
+<?php
+
+/** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate */
+
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
+$viewModel = $this->getViewModel();
+
+var_dump($this->getRequest()->getParam('section'));
+$isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
+$isQueryRulesEnabled = $viewModel->isQueryRulesEnabled();
+
+?>
+
 <style>
     .algolia td {
         padding-top: 1rem !important;
@@ -12,6 +25,9 @@
 </style>
 
 <script>
+var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
+var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
+
 document.addEventListener("DOMContentLoaded", function(event) {
     requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
@@ -39,6 +55,24 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
                 $('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
             }, 1000);
+
+	        /** FEATURE ENABLEMENT **/
+	        var notEnabledText = "<div>Not available.</div>";
+
+            // Click analytics
+
+            if (isClickAnalyticsEnabled === false) {
+            	$('#algoliasearch_cc_analytics_cc_analytics_group').hide();
+            	$('.entry-edit-head.admin__collapsible-block').after(notEnabledText);
+            }
+
+            // Query rules in facets
+
+            if (isQueryRulesEnabled === false) {
+            	$('select[name*=create_rule]').prop('disabled', 'disabled');
+
+            	$('#row_algoliasearch_instant_instant_facets .note').append(notEnabledText);
+            }
 
             // QUEUE INFO
 

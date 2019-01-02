@@ -9,6 +9,7 @@ class ProxyHelper
     const PROXY_URL_PARAM_POST_DATA = 'hs-push/';
 
     const INFO_TYPE_EXTENSION_SUPPORT = 'extension_support';
+    const INFO_TYPE_QUERY_RULES = 'query_rules';
     const INFO_TYPE_ANALYTICS = 'analytics';
 
     /** @var ConfigHelper */
@@ -39,8 +40,8 @@ class ProxyHelper
             'token' => $token,
         ];
 
-        if ($type === self::INFO_TYPE_ANALYTICS) {
-            $params['type'] = 'analytics';
+        if ($type !== self::INFO_TYPE_EXTENSION_SUPPORT) {
+            $params['type'] = $type;
         }
 
         $info = $this->postRequest($params, self::PROXY_URL_PARAM_GET_INFO);

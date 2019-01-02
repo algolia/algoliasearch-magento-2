@@ -1,12 +1,22 @@
 <?php
 
-/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
+/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $this */
 
-$configHelper = $block->getConfigHelper();
+$configHelper = $this->getConfigHelper();
 
 ?>
 
-<?php if ($block->isRootCategory()): ?>
+<?php if (!$this->isQueryRulesEnabled()): ?>
+
+    <div class="messages">
+        <div class="message message-info info">
+            Not available.
+        </div>
+    </div>
+
+<?php return; endif; ?>
+
+<?php if ($this->isRootCategory()): ?>
 
 <div class="messages">
     <div class="message message-info info">
@@ -41,9 +51,9 @@ $configHelper = $block->getConfigHelper();
 
 <?php
 
-$indexName = $block->getCoreHelper()->getBaseIndexName();
+$indexName = $this->getCoreHelper()->getBaseIndexName();
 
-$category = $block->getCategory();
+$category = $this->getCategory();
 
 $categoryId = $category->getId();
 $categoryName = $category->getName();
@@ -61,7 +71,7 @@ $isConfig = [
             'magento-category-' . $categoryId,
         ],
         'facetFilters' => [
-            'categoryIds:' . $block->getCategory()->getId(),
+            'categoryIds:' . $this->getCategory()->getId(),
         ],
     ],
 ];

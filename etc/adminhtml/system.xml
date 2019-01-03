@@ -312,9 +312,16 @@
                             <br><br>
                             Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
                             <br><br>
-                            Create a Query rule for a facet when you want Algolia to automatically filter on a facet when a user searches for its value in a query. For example, when you create a Query rule for a "color" facet and a user is searching "red shorts", Algolia will internally filter results for the color "red" and search only "shorts". It leads to more relevant results. This query rule is applied for both autocomplete and instant search results. Query rules can be used only when you are on Business or higher plan.
-                            <br><br>
-                            Facets' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets">https://community.algolia.com/magento/doc/m2/indexing/#facets</a>
+                            <div class="algolia_help_block">
+                                <b>Create a Query rule</b> for a facet when you want Algolia to automatically filter on a facet
+                                when a user searches for its value in a query. For example, when you create a Query rule
+                                for a "color" facet and a user is searching "red shorts", Algolia will internally filter
+                                results for the color "red" and search only "shorts". It leads to more relevant results.
+                                This query rule is applied for both autocomplete and instant search results.
+                                <br><br>
+                                Find out more about Facets in
+                                <a href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets" target="_blank">documentation</a>.
+                            </div>
                         ]]>
                     </comment>
                     <depends>
@@ -707,14 +714,13 @@
                 <label><![CDATA[Click & Conversion Analytics]]></label>
                 <comment>
                     <![CDATA[
-                        Analyse how your customers behave when searching on your website. With <a target="_blank" href="https://www.algolia.com/doc/guides/analytics/click-analytics/">Click & Conversion analytics</a>,
-                        you can track which products are clicked more, and which search queries lead to more conversions.
-                        Note: this feature is not available on all plans, please refer to <a target="_blank" href="https://www.algolia.com/pricing/">Algolia's pricing page</a> for more details.
-                        <br><br>
-                        Documentation of Click & Conversion analytics: <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/click-analytics/</a>
-                        <br>
-                        <br>
-                        <hr>
+                        <div class="algolia_help_block">
+                            Analyse how your customers behave when searching on your website.
+                            With <a target="_blank" href="https://www.algolia.com/doc/guides/analytics/click-analytics/">Click & Conversion analytics</a>,
+                            you can track which products are clicked more, and which search queries lead to more conversions.
+                            <br><br>
+                            Find out more Click & Conversion Analytics in <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+                        </div>
                     ]]>
                 </comment>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

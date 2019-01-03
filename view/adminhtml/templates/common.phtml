@@ -5,24 +5,20 @@
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
 $viewModel = $this->getViewModel();
 
-var_dump($this->getRequest()->getParam('section'));
-$isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
-$isQueryRulesEnabled = $viewModel->isQueryRulesEnabled();
+$isClickAnalyticsEnabled = true;
+$isQueryRulesEnabled = true;
+
+$section = $this->getRequest()->getParam('section');
+
+if ($section === 'algoliasearch_cc_analytics') {
+    $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
+}
+
+if ($section === 'algoliasearch_instant') {
+    $isQueryRulesEnabled = $viewModel->isQueryRulesEnabled();
+}
 
 ?>
-
-<style>
-    .algolia td {
-        padding-top: 1rem !important;
-    }
-
-    .algolia-config-warning {
-        font-size: 30px;
-        color: #D83900;
-        position: relative;
-        top: 6px;
-    }
-</style>
 
 <script>
 var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
@@ -57,21 +53,23 @@ document.addEventListener("DOMContentLoaded", function(event) {
             }, 1000);
 
 	        /** FEATURE ENABLEMENT **/
-	        var notEnabledText = "<div>Not available.</div>";
+	        var notEnabledText = `
+                <div class="algolia_not_enabled_block">
+                    Unfortunately, you are not eligible to use this Algolia feature.
+                    Please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+                </div>
+            `;
 
             // Click analytics
-
             if (isClickAnalyticsEnabled === false) {
-            	$('#algoliasearch_cc_analytics_cc_analytics_group').hide();
-            	$('.entry-edit-head.admin__collapsible-block').after(notEnabledText);
+            	$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
+            	$('#algoliasearch_cc_analytics_cc_analytics_group .comment').after(notEnabledText);
             }
 
             // Query rules in facets
-
             if (isQueryRulesEnabled === false) {
-            	$('select[name*=create_rule]').prop('disabled', 'disabled');
-
-            	$('#row_algoliasearch_instant_instant_facets .note').append(notEnabledText);
+            	$('select[name*=create_rule]').val('2').prop('disabled', 'disabled');
+            	$('#row_algoliasearch_instant_instant_facets .algolia_help_block').after(notEnabledText);
             }
 
             // QUEUE INFO

@@ -9,16 +9,6 @@ $view = $this->getViewModel();
 
 <?php echo $view->getMessagesHtml(); ?>
 
-<?php if (!$view->isAnalyticsApiEnabled()): ?>
-    <div class="analytics-not-available">
-        <p><?php echo __('Your current plan doesn\'t make it possible for you to access analytic data from your Magento extension. You can however access it from your Algolia dashboard.') ?></p>
-        <p><?php echo __('Upgrading to a higher plan will give you access to this data and more.') ?></p>
-        <div class="button-wrapper">
-            <a href="https://www.algolia.com/billing/overview/" target="_blank" class="button"><?php echo __('Upgrade') ?></a>
-        </div>
-    </div>
-<?php return; endif; ?>
-
 <div class="algoliasearch-analytics-overview">
     <div class="row section">
         <strong><?php echo __('Viewing index:'); ?></strong> <?php echo $view->getIndexName() ?>
@@ -197,6 +187,12 @@ $view = $this->getViewModel();
     </div>
 </div>
 
-<?php if ($view->isClickAnalyticsEnabled()): ?>
-    Click analytics not available message.
+<?php if (!$view->isClickAnalyticsEnabled()): ?>
+    <div class="algolia_help_block">
+        Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
+        like Click-through Rate, Conversion Rate from searches and average click position.
+        Click Analytics are only available for higher plans and require only minor additional settings.
+        <br><br>
+        Find more information in <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+    </div>
 <?php endif ?>

@@ -9,29 +9,52 @@
 	top: 6px;
 }
 
-.algolia_help_block {
+.algolia_blue_block {
 	font-size: 14px;
 	border: 1px solid #e2f0fa;
 	border-radius: 5px;
 	padding: 15px 20px 15px 93px;
 	line-height: 21px;
-	background: #f5fafd url("../images/icon-documentation.svg") no-repeat 25px 20px;
+	background-color: #f5fafd;
 }
 
-.algolia_help_block a {
+.algolia_blue_block a {
 	font-size: 14px !important;
 }
 
-.algolia_not_enabled_block {
+.algolia_white_block {
 	border: 1px solid #e2f0fa;
 	border-radius: 5px;
 	font-size: 16px;
 	line-height: 23px;
 	padding: 15px 20px 15px 93px;
-	background: #fff url("../images/icon-sadface.svg") no-repeat 25px 50%;
 	margin-top: 18px;
 }
 
-.algolia_not_enabled_block a {
+.algolia_white_block a {
 	font-size: 16px !important;
+}
+
+.icon-documentation {
+	background-image: url("../images/icon-documentation.svg");
+	background-repeat: no-repeat;
+	background-position: 25px 20px;
+}
+
+.icon-sadface {
+	background-image: url("../images/icon-sadface.svg");
+	background-repeat: no-repeat;
+	background-position: 28px 50%;
+}
+
+.icon-warning {
+	background-image: url("../images/icon-warning.svg");
+	background-repeat: no-repeat;
+	background-position: 30px 20px;
+}
+
+.icon-bulb {
+	background-image: url("../images/icon-bulb.svg");
+	background-repeat: no-repeat;
+	background-position: 33px 20px;
 }

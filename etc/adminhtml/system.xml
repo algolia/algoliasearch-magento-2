@@ -312,7 +312,7 @@
                             <br><br>
                             Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
                             <br><br>
-                            <div class="algolia_help_block">
+                            <div class="algolia_blue_block icon-documentation">
                                 <b>Create a Query rule</b> for a facet when you want Algolia to automatically filter on a facet
                                 when a user searches for its value in a query. For example, when you create a Query rule
                                 for a "color" facet and a user is searching "red shorts", Algolia will internally filter
@@ -714,7 +714,7 @@
                 <label><![CDATA[Click & Conversion Analytics]]></label>
                 <comment>
                     <![CDATA[
-                        <div class="algolia_help_block">
+                        <div class="algolia_blue_block icon-documentation">
                             Analyse how your customers behave when searching on your website.
                             With <a target="_blank" href="https://www.algolia.com/doc/guides/analytics/click-analytics/">Click & Conversion analytics</a>,
                             you can track which products are clicked more, and which search queries lead to more conversions.

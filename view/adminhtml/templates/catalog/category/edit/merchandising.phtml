@@ -6,7 +6,7 @@ $configHelper = $this->getConfigHelper();
 
 ?>
 
-<div class="algolia_help_block">
+<div class="algolia_blue_block icon-documentation">
     <b>Merchandising tool</b> allows you to promote specific products on your category page.
     It is based on <b>query rules</b>, as it helps you influence the results for a given query
     (here, an empty search on a category). For each category you merchandize, new query rule will be created.
@@ -16,7 +16,7 @@ $configHelper = $this->getConfigHelper();
 
 <?php if (!$this->isQueryRulesEnabled()): ?>
 
-    <div class="algolia_not_enabled_block">
+    <div class="algolia_white_block icon-sadface">
         Unfortunately, you are not eligible to use this Algolia feature.
         Please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
     </div>
@@ -25,7 +25,7 @@ $configHelper = $this->getConfigHelper();
 
 <?php if ($this->isRootCategory()): ?>
 
-<div class="algolia_not_enabled_block">
+<div class="algolia_white_block icon-sadface">
     The root category is not displayed on Magento's frontend and therefore it's not indexed within Algolia records.
     To merchandise products, please select any sub-category.
 </div>
@@ -38,7 +38,7 @@ $configHelper = $this->getConfigHelper();
     $instantSearchLink = $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_instant');
 ?>
 
-<div class="algolia_not_enabled_block">
+<div class="algolia_white_block icon-sadface">
         To merchandise products using Algolia
         you need to enable <b>Instant search</b> with <b>Replace category pages</b> feature.
         You can do it in Algolia's <a href="<?php echo $instantSearchLink; ?>" target="_blank">Instant Search configuration</a>.

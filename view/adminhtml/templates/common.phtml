@@ -18,11 +18,18 @@ if ($section === 'algoliasearch_instant') {
     $isQueryRulesEnabled = $viewModel->isQueryRulesEnabled();
 }
 
+$indexingQueueInfoUrl = $this->getUrl('algolia_algoliasearch/queue/info');
+$indexingQueueConfigUrl = $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_queue');
+$indexingQueuePageUrl = $this->getUrl('algolia_algoliasearch/queue/index');
+
 ?>
 
 <script>
 var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
 var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
+var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>;
+var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
+var indexingQueueInfoUrl = <?php echo json_encode($indexingQueueInfoUrl); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
     requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
@@ -54,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 	        /** FEATURE ENABLEMENT **/
 	        var notEnabledText = `
-                <div class="algolia_white_block icon-sadface">
+                <div class="algolia_block icon-sadface">
                     Unfortunately, you are not eligible to use this Algolia feature.
                     Please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
                 </div>
@@ -69,20 +76,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
             // Query rules in facets
             if (isQueryRulesEnabled === false) {
             	$('select[name*=create_rule]').val('2').prop('disabled', 'disabled');
-            	$('#row_algoliasearch_instant_instant_facets .algolia_blue_block').after(notEnabledText);
+            	$('#row_algoliasearch_instant_instant_facets .algolia_block.blue').after(notEnabledText);
             }
 
             // QUEUE INFO
 
             var url = window.location.href;
             if (url.indexOf('section/algoliasearch_') !== -1) {
-            	var position = url.indexOf('/admin/system_config/edit/section'),
-                    baseUrl = url.substring(0, position);
-
-                $.getJSON(baseUrl + '/algolia_algoliasearch/queue/info/', function(queueInfo) {
+                $.getJSON(indexingQueueInfoUrl, function(queueInfo) {
                 	var message = `
-                        <div class="algolia_white_block icon-warning">
-                            <b><a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Indexing Queue</a> is not enabled</b><br>
+                        <div class="algolia_block icon-warning">
+                            <div class="heading"><a href="` + indexingQueueConfigUrl + `">Indexing Queue</a> is not enabled</div>
                             It is highly recommended that you enable it, especially if you are on a production environment.
                             (here, an empty search on a category). For each category you merchandize, new query rule will be created.
                             <br><br>
@@ -91,53 +95,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
                     if (queueInfo.isEnabled === true) {
                         message = `
-                            <div class="algolia_white_block icon-bulb">
-                                <b><a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Indexing queue</a> information</b><br>
-                                Number of queued jobs: <strong>` + queueInfo.currentSize + `</strong>,
-                                all queued jobs will be processed in appr. <strong>` + queueInfo.eta + `</strong>
-                                <small style="color: #2f2f2f; font-size: .8em;">(assuming your queue runner runs every 5 minutes)</small>.
-                                If you want to clear the queue, hit the button: <button class="algolia_clear_queue">Clear the queue</button>                                <br>
-                                <br>
+                            <div class="algolia_block icon-bulb">
+                                <div class="heading">Queued indexing jobs</div>
+                                Number of queued jobs: <strong>` + queueInfo.currentSize + `</strong>.
+                                Assuming your queue runner runs every 5 minutes, all jobs will be processed
+                                in approx. 5 minutes.
+                                You may want to <a href="` + indexingQueuePageUrl + `">clear the queue</a> or <a href="` + indexingQueueConfigUrl + `">configure indexing queue</a>.
+                                <br><br>
                                 Find out more about Indexing Queue in <a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
                             </div>`;
                     }
 
                     $('.entry-edit').before(message);
                 });
-
-	            $(document).on('click', '.algolia_clear_queue', function(e) {
-		            e.preventDefault();
-
-		            if (!confirm('Are you sure you want to clear the queue? This operation cannot be reverted.')) {
-			            return false;
-		            }
-
-		            $(this).replaceWith('<span class="algolia_clearing" style="font-weight: bold;">Clearing the queue <span id="wait"></span></span>');
-		            var dots = window.setInterval( function() {
-			            var $wait = $('#wait'),
-				            waitText = $wait.text();
-
-			            if (waitText.length > 2) {
-				            $wait.text('');
-			            }
-			            else {
-				            $wait.text(waitText + '.');
-			            }
-		            }, 200);
-
-		            $.getJSON(baseUrl + '/algolia_algoliasearch/queue/clear/', function(payload) {
-			            window.clearInterval(dots);
-
-			            if (payload.status === 'ok') {
-				            $('.algolia_clearing').replaceWith('<span class="algolia_cleared" style="font-weight: bold; color: darkgreen;">The queue has been cleared</span>');
-			            }
-			            else {
-				            $('.algolia_clearing').replaceWith('<span class="algolia_clear_errored" style="font-weight: bold; color: darkred;">There was an error during clearing the queue - <i>'+payload.message+'</i></span>');
-			            }
-		            });
-
-		            return false;
-	            });
             }
 
 

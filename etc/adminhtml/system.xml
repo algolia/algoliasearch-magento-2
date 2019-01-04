@@ -660,7 +660,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/#regular-synonyms" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that will be considered equivalent by the Algolia engine.<br>
+                            <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/#regular-synonyms-default" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that will be considered equivalent by the Algolia engine.<br>
                             For instance: <code>tv, television, tv set</code><br>
                             Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.
                         ]]>

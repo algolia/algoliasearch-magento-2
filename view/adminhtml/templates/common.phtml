@@ -61,9 +61,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 	        /** FEATURE ENABLEMENT **/
 	        var notEnabledText = `
-                <div class="algolia_block icon-sadface">
-                    Unfortunately, you are not eligible to use this Algolia feature.
-                    Please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+                <br>
+                <div class="algolia_block icon-stars">
+                    To get access to this Algolia feature,
+                    please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
                 </div>
             `;
 
@@ -75,6 +76,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
             // Query rules in facets
             if (isQueryRulesEnabled === false) {
+	            var notEnabledText = `
+                    <br>
+                    <div class="algolia_block icon-stars">
+                        To be able to create Query rules for facets,
+                        please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+                    </div>
+                `;
+
             	$('select[name*=create_rule]').val('2').prop('disabled', 'disabled');
             	$('#row_algoliasearch_instant_instant_facets .algolia_block.blue').after(notEnabledText);
             }

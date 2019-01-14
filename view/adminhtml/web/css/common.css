@@ -68,3 +68,9 @@
 	background-repeat: no-repeat;
 	background-position: 33px 20px;
 }
+
+.icon-stars {
+	background-image: url("../images/icon-stars.svg");
+	background-repeat: no-repeat;
+	background-position: 28px 50%;
+}

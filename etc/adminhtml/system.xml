@@ -660,7 +660,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/#regular-synonyms-default" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that will be considered equivalent by the Algolia engine.<br>
+                            <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#regular-synonyms-default" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that will be considered equivalent by the Algolia engine.<br>
                             For instance: <code>tv, television, tv set</code><br>
                             Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.
                         ]]>
@@ -707,7 +707,7 @@
                 <label><![CDATA[Click & Conversion Analytics]]></label>
                 <comment>
                     <![CDATA[
-                        Analyse how your customers behave when searching on your website. With <a target="_blank" href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/click-analytics/">Click & Conversion analytics</a>,
+                        Analyse how your customers behave when searching on your website. With <a target="_blank" href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Click & Conversion analytics</a>,
                         you can track which products are clicked more, and which search queries lead to more conversions.
                         Note: this feature is not available on all plans, please refer to <a target="_blank" href="https://www.algolia.com/pricing/">Algolia's pricing page</a> for more details.
                         <br><br>

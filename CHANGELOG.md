@@ -1,5 +1,12 @@
 # CHANGE LOG
 
+## 1.9.1
+
+- Fixed `beforeAutocompleteSources` front-end hook to correct pass `sources` (#641)
+- Removed legacy `isSearch()` function call from FiltersHelper (#649)
+- Updated links to Algolia documentation (#652)
+- New design and wording displayed when specific features are not enabled for used Algolia plan (#653)
+
 ## 1.9.0
 
 ### FEATURES

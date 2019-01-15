@@ -36,6 +36,9 @@ var algolia = {
 			hookArguments = Array.prototype.slice.call(arguments, 2);
 
 		var data = this.getRegisteredHooks(hookName).reduce(function(currentData, hook) {
+			if (Array.isArray(currentData)) {
+				currentData = [currentData];
+			}
 			var allParameters = [].concat(currentData).concat(hookArguments);
 			return hook.apply(null, allParameters);
 		}, originalData);

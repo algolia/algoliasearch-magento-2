@@ -1,0 +1,172 @@
+<?php
+
+/** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate */
+
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
+$viewModel = $this->getViewModel();
+
+$isClickAnalyticsEnabled = true;
+$isQueryRulesEnabled = true;
+
+$section = $this->getRequest()->getParam('section');
+
+if ($section === 'algoliasearch_cc_analytics') {
+    $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
+}
+
+if ($section === 'algoliasearch_instant') {
+    $isQueryRulesEnabled = $viewModel->isQueryRulesEnabled();
+}
+
+$indexingQueueInfoUrl = $this->getUrl('algolia_algoliasearch/queue/info');
+$indexingQueueConfigUrl = $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_queue');
+$indexingQueuePageUrl = $this->getUrl('algolia_algoliasearch/queue/index');
+
+?>
+
+<script>
+var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
+var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
+var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>;
+var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
+var indexingQueueInfoUrl = <?php echo json_encode($indexingQueueInfoUrl); ?>;
+
+document.addEventListener("DOMContentLoaded", function(event) {
+    requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
+        algoliaAdminBundle.$(function ($) {
+            $('form[action*="algoliasearch"] .accordion .config .label').css('width', 'auto');
+            $('form[action*="algoliasearch"] .accordion .config .value').css('width', 'auto');
+
+            var fixHelper = function(e, ui) {
+                ui.children().each(function() {
+                    $(this).width($(this).width());
+                });
+
+                return ui;
+            };
+
+            setTimeout(function () {
+            	$('form[action*="algoliasearch"] .admin__control-table tbody').sortable({
+                    containment: "parent",
+                    items: 'tr',
+                    tolerance: 'pointer',
+                    helper: fixHelper,
+                    start: function (event, ui) {
+                        $(ui.item).css('margin-left', '10px');
+                    }
+                });
+
+                $('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
+            }, 1000);
+
+	        /** FEATURE ENABLEMENT **/
+	        var notEnabledText = `
+                <br>
+                <div class="algolia_block icon-stars">
+                    To get access to this Algolia feature,
+                    please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+                </div>
+            `;
+
+            // Click analytics
+            if (isClickAnalyticsEnabled === false) {
+            	$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
+            	$('#algoliasearch_cc_analytics_cc_analytics_group .comment').after(notEnabledText);
+            }
+
+            // Query rules in facets
+            if (isQueryRulesEnabled === false) {
+	            var notEnabledText = `
+                    <br>
+                    <div class="algolia_block icon-stars">
+                        To be able to create Query rules for facets,
+                        please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+                    </div>
+                `;
+
+            	$('select[name*=create_rule]').val('2').prop('disabled', 'disabled');
+            	$('#row_algoliasearch_instant_instant_facets .algolia_block.blue').after(notEnabledText);
+            }
+
+            // QUEUE INFO
+
+            var url = window.location.href;
+            if (url.indexOf('section/algoliasearch_') !== -1) {
+                $.getJSON(indexingQueueInfoUrl, function(queueInfo) {
+                	var message = `
+                        <div class="algolia_block icon-warning">
+                            <div class="heading"><a href="` + indexingQueueConfigUrl + `">Indexing Queue</a> is not enabled</div>
+                            It is highly recommended that you enable it, especially if you are on a production environment.
+                            <br><br>
+                            Find out more about Indexing Queue in <a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+                        </div>`;
+
+                    if (queueInfo.isEnabled === true) {
+                        message = `
+                            <div class="algolia_block icon-bulb">
+                                <div class="heading">Queued indexing jobs</div>
+                                Number of queued jobs: <strong>` + queueInfo.currentSize + `</strong>.
+                                Assuming your queue runner runs every 5 minutes, all jobs will be processed
+                                in approx. 5 minutes.
+                                You may want to <a href="` + indexingQueuePageUrl + `">clear the queue</a> or <a href="` + indexingQueueConfigUrl + `">configure indexing queue</a>.
+                                <br><br>
+                                Find out more about Indexing Queue in <a href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+                            </div>`;
+                    }
+
+                    $('.entry-edit').before(message);
+                });
+            }
+
+
+            // SYNONYMS
+
+            handleSynonyms($('#algoliasearch_synonyms_synonyms_group_enable_synonyms').val());
+
+            $(document).on('change', '#algoliasearch_synonyms_synonyms_group_enable_synonyms', function() {
+            	handleSynonyms($(this).val());
+            });
+
+	        function handleSynonyms(enabled) {
+		        var $rows = $('#row_algoliasearch_synonyms_synonyms_group_synonyms, #row_algoliasearch_synonyms_synonyms_group_oneway_synonyms, #row_algoliasearch_synonyms_synonyms_group_synonyms_file');
+
+		        if (enabled === '1') {
+			        $rows.show();
+		        } else {
+			        $rows.hide();
+		        }
+	        }
+
+	        // ORDERED / UNORDERED
+	        var $attributesRows = $('#algoliasearch_products_products_product_additional_attributes, #algoliasearch_categories_categories_category_additional_attributes');
+	        initAttributes($attributesRows);
+
+	        $attributesRows.on('click', 'button[id^="addToEndBtn"]', function (e) {
+		        initAttributes($attributesRows);
+	        });
+
+	        $attributesRows.on('change', 'select[name$="[searchable]"]', function (e) {
+		        handleAttributes($(this));
+	        });
+
+	        function initAttributes($attributesRows) {
+		        $attributesRows.find('select[name$="[searchable]"]').each(function(e) {
+			        handleAttributes($(this));
+		        });
+	        }
+
+	        function handleAttributes($selectBox) {
+		        var selectValue = $selectBox.val(),
+			        $input = $selectBox.parent('td').next().find('select[name$="[order]"]');
+
+		        if(selectValue !== '1') {
+			        $input.hide();
+		        }
+		        else {
+			        $input.show();
+		        }
+	        }
+        });
+    });
+});
+</script>

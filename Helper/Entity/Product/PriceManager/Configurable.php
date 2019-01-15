@@ -7,6 +7,7 @@ class Configurable extends ProductWithChildren
     protected function getRulePrice($groupId, $product)
     {
         $childrenPrices = [];
+
         /** @var \Magento\ConfigurableProduct\Model\Product\Type\Configurable $typeInstance */
         $typeInstance = $product->getTypeInstance();
         $children = $typeInstance->getUsedProducts($product);
@@ -17,6 +18,10 @@ class Configurable extends ProductWithChildren
                 $groupId,
                 $child->getId()
             );
+        }
+
+        if ($childrenPrices === []) {
+            return 0;
         }
 
         return min($childrenPrices);

@@ -31,7 +31,6 @@ class Save extends \Magento\Backend\App\Action
     private $productHelper;
 
     /**
-     * Save constructor.
      * @param Context $context
      * @param ProductRepositoryInterface $productRepository
      * @param StoreManagerInterface $storeManager
@@ -53,10 +52,10 @@ class Save extends \Magento\Backend\App\Action
     }
 
     /**
-     * @throws UnknownSkuException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      *
      * @return \Magento\Backend\Model\View\Result\Redirect
-     *
      */
     public function execute()
     {
@@ -123,7 +122,10 @@ class Save extends \Magento\Backend\App\Action
 
     /**
      * @param \Magento\Catalog\Model\Product $product
-     * @param array                          $stores
+     * @param array $stores
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      *
      * @return void
      */
@@ -137,10 +139,13 @@ class Save extends \Magento\Backend\App\Action
                 $this->messageManager->addNoticeMessage(
                     __(
                         'The product "%1" (%2) is not associated with store "%3 / %4 / %5".',
-                        [$product->getName(), $product->getSku(),
+                        [
+                            $product->getName(),
+                            $product->getSku(),
                             $websites[$storeData->getWebsiteId()]->getName(),
                             $storeGroup[$storeData->getStoreGroupId()]->getName(),
-                            $storeData->getName()]
+                            $storeData->getName(),
+                        ]
                     )
                 );
 
@@ -156,15 +161,17 @@ class Save extends \Magento\Backend\App\Action
                     $e,
                     __(
                         'The product "%1" (%2) is disabled in store "%3 / %4 / %5".',
-                        [$e->getProduct()->getName(), $e->getProduct()->getSku(),
+                        [
+                            $e->getProduct()->getName(),
+                            $e->getProduct()->getSku(),
                             $websites[$stores[$e->getStoreId()]->getWebsiteId()]->getName(),
                             $storeGroup[$stores[$e->getStoreId()]->getStoreGroupId()]->getName(),
-                            $stores[$e->getStoreId()]->getName()]
+                            $stores[$e->getStoreId()]->getName(),
+                        ]
                     )
                 );
 
                 continue;
-
             } catch (ProductNotVisibleException $e) {
                 // Product visibility is a Store specific attribute
                 // If it's a simple product that is not visible, try to index its parent if it exists
@@ -177,8 +184,12 @@ class Save extends \Magento\Backend\App\Action
                         $this->messageManager->addNoticeMessage(
                             __(
                                 'The product "%1" (%2) is not visible but it has a parent product "%3" (%4).',
-                                [$e->getProduct()->getName(), $e->getProduct()->getSku(), $parentProduct->getName(),
-                                    $parentProduct->getSku()]
+                                [
+                                    $e->getProduct()->getName(),
+                                    $e->getProduct()->getSku(),
+                                    $parentProduct->getName(),
+                                    $parentProduct->getSku(),
+                                ]
                             )
                         );
 
@@ -190,10 +201,13 @@ class Save extends \Magento\Backend\App\Action
                         $e,
                         __(
                             'The product "%1" (%2) is not visible in store "%3 / %4 / %5".',
-                            [$e->getProduct()->getName(), $e->getProduct()->getSku(),
+                            [
+                                $e->getProduct()->getName(),
+                                $e->getProduct()->getSku(),
                                 $websites[$stores[$e->getStoreId()]->getWebsiteId()]->getName(),
                                 $storeGroup[$stores[$e->getStoreId()]->getStoreGroupId()]->getName(),
-                                $stores[$e->getStoreId()]->getName()]
+                                $stores[$e->getStoreId()]->getName(),
+                            ]
                         )
                     );
 
@@ -208,10 +222,13 @@ class Save extends \Magento\Backend\App\Action
             $this->messageManager->addSuccessMessage(
                 __(
                     'The Product "%1" (%2) has been reindexed for store "%3 / %4 / %5".',
-                    [$product->getName(), $product->getSku(),
+                    [
+                        $product->getName(),
+                        $product->getSku(),
                         $websites[$storeData->getWebsiteId()]->getName(),
                         $storeGroup[$storeData->getStoreGroupId()]->getName(),
-                        $storeData->getName()]
+                        $storeData->getName(),
+                    ]
                 )
             );
         }

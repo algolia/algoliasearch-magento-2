@@ -160,7 +160,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'areCategoriesInFacets' => $areCategoriesInFacets,
             'hitsPerPage' => (int) $config->getNumberOfProductResults(),
             'sortingIndices' => array_values($config->getSortingIndices(
-                $coreHelper->getIndexName($productHelper->getIndexNameSuffix()), null, $customerGroupId
+                $coreHelper->getIndexName($productHelper->getIndexNameSuffix()),
+                null,
+                $customerGroupId
             )),
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $isCategoryPage,

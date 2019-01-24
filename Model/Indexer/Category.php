@@ -72,8 +72,9 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                 continue;
             }
 
+            $indexName = $this->fullAction->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
+
             if ($categoryIds !== null) {
-                $indexName = $this->fullAction->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
                 $this->queue->addToQueue(
                     $this->fullAction,
                     'deleteObjects',
@@ -81,6 +82,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                     count($categoryIds)
                 );
             } else {
+                $this->algoliaHelper->clearIndex($indexName);
                 $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
             }
 

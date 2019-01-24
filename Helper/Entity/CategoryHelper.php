@@ -560,8 +560,11 @@ class CategoryHelper
         $this->categoryCollection
             ->addIsActiveFilter()
             ->addAttributeToSelect('name')
-            ->addAttributeToFilter('include_in_menu', '1')
             ->addAttributeToFilter('level', ['gt' => 1]);
+
+        if (!$this->configHelper->showCatsNotIncludedInNavigation()) {
+            $this->categoryCollection->addAttributeToFilter('include_in_menu', '1');
+        }
 
         $this->coreCategories = [];
 
@@ -613,6 +616,10 @@ class CategoryHelper
 
     private function resetCategoryCollection()
     {
-        $this->categoryCollection->getSelect()->reset(\Zend_Db_Select::WHERE);
+        $this->categoryCollection
+            ->getSelect()
+                ->reset(\Zend_Db_Select::WHERE)
+                ->reset(\Zend_Db_Select::LIMIT_COUNT)
+                ->reset(\Zend_Db_Select::LIMIT_OFFSET);
     }
 }

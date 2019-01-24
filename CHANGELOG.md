@@ -1,5 +1,9 @@
 # CHANGE LOG
 
+## 1.8.5
+
+- Fixed full category reindexing on Magento EE (#662)
+
 ## 1.8.4
 
 - **Added compatibility with Magento 2.3** (#624)

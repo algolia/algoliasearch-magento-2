@@ -154,7 +154,7 @@ class Save extends \Magento\Backend\App\Action
 
             try {
                 $product = $this->productRepository->get($product->getSku(), false, $storeId);
-                $this->dataHelper->canProductBeReindexed($product, $storeId);
+                $this->productHelper->canProductBeReindexed($product, $storeId);
             } catch (ProductDisabledException $e) {
                 // Product status is a Website specific attribute
                 $this->messageManager->addErrorMessage(

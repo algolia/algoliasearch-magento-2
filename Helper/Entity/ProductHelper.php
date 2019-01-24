@@ -2,12 +2,18 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
+use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
+use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
+use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Logger;
 use AlgoliaSearch\AlgoliaException;
 use AlgoliaSearch\Index;
+use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Type;
@@ -16,6 +22,7 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
@@ -481,37 +488,32 @@ class ProductHelper
 
     private function getSubProducts(Product $product)
     {
-        $subProducts = [];
-        $ids = null;
-
         $type = $product->getTypeId();
-        if ($type === 'configurable' || $type === 'grouped' || $type === 'bundle') {
-            if ($type === 'bundle') {
-                $ids = [];
 
-                /** @var \Magento\Bundle\Model\Product\Type $typeInstance */
-                $typeInstance = $product->getTypeInstance();
+        if (!in_array($type, ['bundle', 'grouped', 'configurable'], true)) {
+            return [];
+        }
 
-                $selection = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product);
-                foreach ($selection as $option) {
-                    $ids[] = $option->getProductId();
-                }
-            }
+        $storeId = $product->getStoreId();
+        $typeInstance = $product->getTypeInstance();
 
-            if ($type === 'configurable' || $type === 'grouped') {
-                $ids = $product->getTypeInstance()->getChildrenIds($product->getId());
-                $ids = call_user_func_array('array_merge', $ids);
-            }
+        if ($typeInstance instanceof Configurable) {
+            $subProducts = $typeInstance->getUsedProducts($product);
+        } elseif ($typeInstance instanceof BundleProductType) {
+            $subProducts = $typeInstance->getOptions($product);
+        } else { // Grouped product
+            $subProducts = $typeInstance->getAssociatedProducts($product);
+        }
 
-            if (count($ids)) {
-                $storeId = $product->getStoreId();
-
-                $onlyVisible = false;
-                if ($this->configHelper->indexOutOfStockOptions($storeId) === false) {
-                    $onlyVisible = true;
-                }
-
-                $subProducts = $this->getProductCollectionQuery($storeId, $ids, $onlyVisible, true)->load();
+        /**
+         * @var int $index
+         * @var Product $subProduct
+         */
+        foreach ($subProducts as $index => $subProduct) {
+            try {
+                $this->canProductBeReindexed($subProduct, $storeId, true);
+            } catch (ProductReindexingException $e) {
+                unset($subProducts[$index]);
             }
         }
 
@@ -522,8 +524,6 @@ class ProductHelper
      * Returns all parent product IDs, e.g. when simple product is part of configurable or bundle
      *
      * @param array $productIds
-     *
-     * @throws \Magento\Framework\Exception\LocalizedException
      *
      * @return array
      */
@@ -539,8 +539,6 @@ class ProductHelper
 
     /**
      * Returns composite product type instances
-     *
-     * @throws \Magento\Framework\Exception\LocalizedException
      *
      * @return AbstractType[]
      *
@@ -1068,5 +1066,50 @@ class ProductHelper
     private function explodeSynonyms($synonyms)
     {
         return array_map('trim', explode(',', $synonyms));
+    }
+
+    /**
+     * Check if product can be index on Algolia
+     *
+     * @param Product $product
+     * @param int $storeId
+     * @param bool $isChildProduct
+     *
+     * @return bool
+     */
+    public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
+    {
+        if ($product->isDeleted() === true) {
+            throw (new ProductDeletedException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if ($product->getStatus() == Status::STATUS_DISABLED) {
+            throw (new ProductDisabledException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if ($isChildProduct === false && !in_array($product->getVisibility(), [
+            Visibility::VISIBILITY_BOTH,
+            Visibility::VISIBILITY_IN_SEARCH,
+            Visibility::VISIBILITY_IN_CATALOG,
+        ])) {
+            throw (new ProductNotVisibleException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if (!$this->configHelper->getShowOutOfStock($storeId)) {
+            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            if (! $stockItem->getIsInStock()) {
+                throw (new ProductOutOfStockException())
+                    ->withProduct($product)
+                    ->withStoreId($storeId);
+            }
+        }
+
+        return true;
     }
 }

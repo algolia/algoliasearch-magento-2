@@ -52,7 +52,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_images/image/type' => 'image',
 
         'algoliasearch_queue/queue/active' => '0',
-        'algoliasearch_queue/queue/number_of_job_to_run' => '10',
+        'algoliasearch_queue/queue/number_of_job_to_run' => '5',
         'algoliasearch_queue/queue/number_of_retries' => '3',
 
         'algoliasearch_cc_analytics/cc_analytics_group/enable' => '0',
@@ -67,7 +67,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
         'algoliasearch_synonyms/synonyms_group/enable_synonyms' => '0',
 
-        'algoliasearch_advanced/advanced/number_of_element_by_page' => '100',
+        'algoliasearch_advanced/advanced/number_of_element_by_page' => '300',
         'algoliasearch_advanced/advanced/remove_words_if_no_result' => 'allOptional',
         'algoliasearch_advanced/advanced/partial_update' => '0',
         'algoliasearch_advanced/advanced/customer_groups_enable' => '0',

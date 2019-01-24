@@ -28,8 +28,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Data
 {
-    const COLLECTION_PAGE_SIZE = 100;
-
     private $algoliaHelper;
 
     private $pageHelper;

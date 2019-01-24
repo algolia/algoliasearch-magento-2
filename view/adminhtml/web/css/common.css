@@ -1,0 +1,76 @@
+.algolia td {
+	padding-top: 1rem !important;
+}
+
+.algolia-config-warning {
+	font-size: 30px;
+	color: #D83900;
+	position: relative;
+	top: 6px;
+}
+
+.algolia_block {
+	font-size: 14px;
+	border: 1px solid #e2f0fa;
+	border-radius: 5px;
+	padding: 15px 20px 15px 93px;
+	line-height: 21px;
+}
+
+.algolia_block.blue {
+	background-color: #f5fafd;
+}
+
+.algolia_block a {
+	font-size: 14px !important;
+}
+
+.algolia_block .heading {
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.algolia_block .heading a {
+	font-size: 16px !important;
+}
+
+.algolia_block.icon-sadface {
+	font-size: 16px;
+	line-height: 23px;
+	margin-top: 18px;
+}
+
+.algolia_block.icon-sadface a {
+	font-size: 16px !important;
+}
+
+.icon-documentation {
+	background-image: url("../images/icon-documentation.svg");
+	background-repeat: no-repeat;
+	background-position: 25px 20px;
+}
+
+.icon-sadface {
+	background-image: url("../images/icon-sadface.svg");
+	background-repeat: no-repeat;
+	background-position: 28px 50%;
+}
+
+.icon-warning {
+	background-image: url("../images/icon-warning.svg");
+	background-repeat: no-repeat;
+	background-position: 28px 20px;
+}
+
+.icon-bulb {
+	background-image: url("../images/icon-bulb.svg");
+	background-repeat: no-repeat;
+	background-position: 33px 20px;
+}
+
+.icon-stars {
+	background-image: url("../images/icon-stars.svg");
+	background-repeat: no-repeat;
+	background-position: 28px 50%;
+}

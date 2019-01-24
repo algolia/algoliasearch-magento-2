@@ -474,14 +474,14 @@ Synonyms,Synonyms
                             Synonyms are defined by a comma-separated list of words that should be considered equivalent by the Algolia engine.<br>
                             For instance: <code>tv, television, tv set</code><br>
                             Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.<br>
-                            Documentation: <a href=""https://www.algolia.com/doc/synonyms#synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#synonyms</a>
+                            Documentation: <a href=""https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link"" target=""_blank"">https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms</a>
                         
                     ","
                         
                             Synonyms are defined by a comma-separated list of words that should be considered equivalent by the Algolia engine.<br>
                             For instance: <code>tv, television, tv set</code><br>
                             Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.<br>
-                            Documentation: <a href=""https://www.algolia.com/doc/synonyms#synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#synonyms</a>
+                            Documentation: <a href=""https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link"" target=""_blank"">https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms</a>
                         
                     "
 "
@@ -489,7 +489,7 @@ Synonyms,Synonyms
                         One-way synonyms allow you to define alternative words for a search term, which are not synonyms to each others.<br>
                         Let’s take an example: when a user searches for “tablet”, you want him to be able to find iPads and Galaxy Note tablets alike, but you might not want Android tablets to show up when he searches for “iPad”.<br>
                         To do this, you’d define a one-way synonyms set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.<br>
-                        Documentation: <a href=""https://www.algolia.com/doc/synonyms#one-way-synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#one-way-synonyms</a>
+                        Documentation: <a href=""https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#one-way-synonyms"" target=""_blank"">https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/#one-way-synonyms</a>
                         <br>
                         <br>
                         Algolia offers more synonymys’ types - placeholders and alternative corrections. These types can be managed directly from your <a href=""https://www.algolia.com/dashboard"" target=""_blank"">Algolia’s dashboard</a>.
@@ -500,7 +500,7 @@ Synonyms,Synonyms
                         One-way synonyms allow you to define alternative words for a search term, which are not synonyms to each others.<br>
                         Let’s take an example: when a user searches for “tablet”, you want him to be able to find iPads and Galaxy Note tablets alike, but you might not want Android tablets to show up when he searches for “iPad”.<br>
                         To do this, you’d define a one-way synonyms set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.<br>
-                        Documentation: <a href=""https://www.algolia.com/doc/synonyms#one-way-synonyms"" target=""_blank"">https://www.algolia.com/doc/synonyms#one-way-synonyms</a>
+                        Documentation: <a href=""https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#one-way-synonyms"" target=""_blank"">https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/#one-way-synonyms</a>
                         <br>
                         <br>
                         Algolia offers more synonymys’ types - placeholders and alternative corrections. These types can be managed directly from your <a href=""https://www.algolia.com/dashboard"" target=""_blank"">Algolia’s dashboard</a>.
@@ -511,14 +511,14 @@ Synonyms,Synonyms
 "
                         
                             If you have large amount of synonyms (appr. more than hundred), you don't have to fill it into inputs above and you can upload a JSON file with synonyms instead.
-                            The documentation with the file structure can be found <a href=""https://www.algolia.com/doc/relevance/synonyms#synonyms"" target=""_blank"">here</a>.<br><br>
+                            The documentation with the file structure can be found <a href=""https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/how-to/managing-synonyms-from-the-dashboard/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link&language=php#importing-synonyms-from-a-file"" target=""_blank"">here</a>.<br><br>
                             <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span>
                             When you upload a JSON file, all the synonyms settings from above will be ignored and only synonyms from the JSON file will be pushed to Algolia.
                         
                     ","
                         
                             If you have large amount of synonyms (appr. more than hundred), you don't have to fill it into inputs above and you can upload a JSON file with synonyms instead.
-                            The documentation with the file structure can be found <a href=""https://www.algolia.com/doc/relevance/synonyms#synonyms"" target=""_blank"">here</a>.<br><br>
+                            The documentation with the file structure can be found <a href=""https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/how-to/managing-synonyms-from-the-dashboard/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link&language=php#importing-synonyms-from-a-file"" target=""_blank"">here</a>.<br><br>
                             <span style=""font-size: 30px; color: #D83900; position: relative; top: 6px;"">&#9888;</span>
                             When you upload a JSON file, all the synonyms settings from above will be ignored and only synonyms from the JSON file will be pushed to Algolia.
                         

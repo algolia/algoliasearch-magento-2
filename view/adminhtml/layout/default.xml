@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Algolia_AlgoliaSearch::css/common.css"/>
+    </head>
+
     <referenceBlock name="before.body.end">
-        <block template="adminjs.phtml" class="Algolia\AlgoliaSearch\Block\Algolia"/>
+        <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="algolia_common" template="Algolia_AlgoliaSearch::common.phtml" />
     </referenceBlock>
 </page>

@@ -104,7 +104,7 @@ class FiltersHelper
                 explode('~', $this->request->getParam($facet['attribute']));
 
             // Backward compatibility with native Magento filtering
-            if (!$this->config->isInstantEnabled($storeId) && $this->isSearch()) {
+            if (!$this->config->isInstantEnabled($storeId)) {
                 foreach ($facetValues as $key => $facetValue) {
                     if (is_numeric($facetValue)) {
                         $facetValues[$key] = $this->getAttributeOptionLabelFromId($facet['attribute'], $facetValue);

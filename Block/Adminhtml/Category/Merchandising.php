@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Block\Adminhtml\Category;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
+use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Magento\Backend\Block\Template\Context;
 use Magento\Catalog\Model\Category;
 use Magento\Framework\Registry;
@@ -22,11 +23,15 @@ class Merchandising extends \Magento\Backend\Block\Template
     /** @var Data */
     private $coreHelper;
 
+    /** @var ProxyHelper */
+    private $proxyHelper;
+
     /**
      * @param Context $context
      * @param Registry $registry
      * @param ConfigHelper $configHelper
      * @param Data $coreHelper
+     * @param ProxyHelper $proxyHelper
      * @param array $data
      */
     public function __construct(
@@ -34,11 +39,13 @@ class Merchandising extends \Magento\Backend\Block\Template
         Registry $registry,
         ConfigHelper $configHelper,
         Data $coreHelper,
+        ProxyHelper $proxyHelper,
         array $data = []
     ) {
         $this->registry = $registry;
         $this->configHelper = $configHelper;
         $this->coreHelper = $coreHelper;
+        $this->proxyHelper = $proxyHelper;
 
         parent::__construct($context, $data);
     }
@@ -76,5 +83,19 @@ class Merchandising extends \Magento\Backend\Block\Template
     public function getCoreHelper()
     {
         return $this->coreHelper;
+    }
+
+    /** @return bool */
+    public function isQueryRulesEnabled()
+    {
+        $info = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_QUERY_RULES);
+
+        // In case the call to API proxy fails,
+        // be "nice" and return true
+        if ($info && array_key_exists('query_rules', $info)) {
+            return $info['query_rules'];
+        }
+
+        return true;
     }
 }

@@ -21,7 +21,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		
 		/**
 		 * Initialise Algolia client
-		 * Docs: https://www.algolia.com/doc/javascript
+		 * Docs: https://www.algolia.com/doc/api-client/getting-started/instantiate-client-index/
 		 **/
 		var algolia_client = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
 		algolia_client.addAlgoliaAgent('Magento2 integration (' + algoliaConfig.extensionVersion + ')');
@@ -81,7 +81,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				options.templates.footer = '<div class="footer_algolia"><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="Search by Algolia" target="_blank"><img src="' +algoliaConfig.urls.logo + '"  alt="Search by Algolia" /></a></div>';
 			}
 			
-			sources = algolia.triggerHooks('beforeAutocompleteSources', sources, algolia_client);
+			sources = algolia.triggerHooks('beforeAutocompleteSources', sources, algolia_client, algoliaBundle);
 			options = algolia.triggerHooks('beforeAutocompleteOptions', options);
 			
 			// Keep for backward compatibility

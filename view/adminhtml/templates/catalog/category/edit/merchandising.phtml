@@ -1,52 +1,62 @@
 <?php
 
-/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
+/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $this */
 
-$configHelper = $block->getConfigHelper();
+$configHelper = $this->getConfigHelper();
 
 ?>
 
-<?php if ($block->isRootCategory()): ?>
-
-<div class="messages">
-    <div class="message message-info info">
-        The root category is not displayed on Magento's frontend and therefore it's not indexed within Algolia records.
-        <br>To merchandise products, please select any sub-category.
-    </div>
+<div class="algolia_block blue icon-documentation">
+    <b>Merchandising tool</b> allows you to promote specific products on your category page.
+    It is based on <b>query rules</b>, as it helps you influence the results for a given query
+    (here, an empty search on a category). For each category you merchandize, a new query rule will be created.
+    <br><br>
+    Find out more about Algolia Merchandising, please refer to <a href="https://community.algolia.com/magento/doc/m2/visual-category-merchandising/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
 </div>
+
+<?php if (!$this->isQueryRulesEnabled()): ?>
+
+    <br>
+    <div class="algolia_block icon-stars">
+        To get access to this Algolia feature,
+        please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+    </div>
 
 <?php return; endif; ?>
 
+<?php if ($this->isRootCategory()): ?>
 
+    <br>
+    <div class="algolia_block icon-bulb">
+        The root category is not displayed on Magento's frontend and therefore it's not indexed within Algolia records.
+        To merchandise products, please select any sub-category.
+    </div>
+
+<?php return; endif; ?>
 
 <?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()):
     $instantSearchLink = $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_instant');
 ?>
 
-<div class="messages">
-    <div class="message message-info info">
-        To merchandise products using Algolia
-        you need to enable <b>Instant search</b> with <b>Replace category pages</b> feature.
-        You can do it in Algolia's <a href="<?php echo $instantSearchLink; ?>" target="_blank">Instant Search configuration</a>.
-        <br><br>
-        <b>Instant search</b> with enabled <b>Replace category pages</b> feature gives your customers a great experience
-        while browsing your catalog. It enables your customers to search and filter for products at real time resulting
-        in better customer journey.<br>
-        With the speed and relevancy of Algolia your customers are more likely to purchase
-        and enjoy the shopping on your store(s).
-    </div>
+<div class="algolia_block icon-stars">
+    To merchandise products using Algolia
+    you need to enable <b>Instant search</b> with <b>Replace category pages</b> feature.
+    You can do it in Algolia's <a href="<?php echo $instantSearchLink; ?>" target="_blank">Instant Search configuration</a>.
+    <br><br>
+    <b>Instant search</b> with enabled <b>Replace category pages</b> feature gives your customers a great experience
+    while browsing your catalog. It enables your customers to search and filter for products at real time resulting
+    in better customer journey. With the speed and relevancy of Algolia your customers are more likely to purchase
+    and enjoy the shopping on your store(s).
 </div>
 
 <?php return; endif; ?>
 
 <?php
 
-$indexName = $block->getCoreHelper()->getBaseIndexName();
+$indexName = $this->getCoreHelper()->getBaseIndexName();
 
-$category = $block->getCategory();
-
+$category = $this->getCategory();
 $categoryId = $category->getId();
-$categoryName = $category->getName();
 
 $isConfig = [
     'appId' => $configHelper->getApplicationID(),
@@ -61,7 +71,7 @@ $isConfig = [
             'magento-category-' . $categoryId,
         ],
         'facetFilters' => [
-            'categoryIds:' . $block->getCategory()->getId(),
+            'categoryIds:' . $categoryId,
         ],
     ],
 ];
@@ -74,20 +84,6 @@ $isConfig = [
 <input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="category_form" />
 
 <script type="text/template" id="algolia_merchandising_all_items_template">
-    <div>
-        <p>
-            On this page you see the exact products in the exact order
-            as your customers see it on "<?php echo $categoryName; ?>" category page.<br>
-            Drag & drop products to a specific position and pin it there to have the product displayed always in this position.
-        </p>
-        <p class="info">
-            Merchandising will create <a href="https://www.algolia.com/doc/guides/query-rules/query-rules-overview/" target="_blank">1 query rule</a>
-            for each merchandised category. Each Algolia plan has a <a href="https://www.algolia.com/pricing" target="_blank">query rules quota</a>,
-            which cannot be exceeded.<br>
-            Query rule is created only when a category contains at least one "pinned" product.
-            When there are no "pinned" products, no query rule is created.
-        </p>
-    </div>
     <br>
     <label for="algolia_merchandising_autocomplete">
         <input type="text" id="algolia_merchandising_autocomplete" placeholder="Add another item to promote ..." />

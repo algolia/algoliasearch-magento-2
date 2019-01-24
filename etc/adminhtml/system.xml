@@ -312,9 +312,16 @@
                             <br><br>
                             Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
                             <br><br>
-                            Create a Query rule for a facet when you want Algolia to automatically filter on a facet when a user searches for its value in a query. For example, when you create a Query rule for a "color" facet and a user is searching "red shorts", Algolia will internally filter results for the color "red" and search only "shorts". It leads to more relevant results. This query rule is applied for both autocomplete and instant search results. Query rules can be used only when you are on Business or higher plan.
-                            <br><br>
-                            Facets' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets">https://community.algolia.com/magento/doc/m2/indexing/#facets</a>
+                            <div class="algolia_block blue icon-documentation">
+                                <b>Create a Query rule</b> for a facet when you want Algolia to automatically filter on a facet
+                                when a user searches for its value in a query. For example, when you create a Query rule
+                                for a "color" facet and a user is searching "red shorts", Algolia will internally filter
+                                results for the color "red" and search only "shorts". It leads to more relevant results.
+                                This query rule is applied for both autocomplete and instant search results.
+                                <br><br>
+                                Find out more about Facets in
+                                <a href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets" target="_blank">documentation</a>.
+                            </div>
                         ]]>
                     </comment>
                     <depends>
@@ -436,7 +443,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            Configure attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/ranking/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - for example, an attribute that reflects popularity of a product (eg. stock status, number of sales).
+                            Configure attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/must-do/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - for example, an attribute that reflects popularity of a product (eg. stock status, number of sales).
                             <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Products indexer after you've modified this panel.
                         ]]>
                     </comment>
@@ -496,7 +503,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            Configure attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/ranking/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - for example, an attribute that reflects popularity of a category (eg. products count, total number of sales of the category).
+                            Configure attributes for <a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/must-do/custom-ranking/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Custom Ranking</a> - for example, an attribute that reflects popularity of a category (eg. products count, total number of sales of the category).
                             <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Categories indexer after you've modified this panel.
                         ]]>
                     </comment>
@@ -636,7 +643,7 @@
                     <table class="algolia">
                         <tr>
                             <td>Synonyms documentation:</td>
-                            <td><a target="_blank" href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://www.algolia.com/doc/guides/textual-relevance/synonyms/</a></td>
+                            <td><a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/</a></td>
                         </tr>
                     </table>
                     <br>
@@ -649,7 +656,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want to manage <a target="_blank" href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">synonyms</a> in Magento?
+                            Do you want to manage <a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">synonyms</a> in Magento?
                             If not, synonyms will be managed only in <a target="_blank" href="https://www.algolia.com/dashboard/">Algolia's dashboard</a> and won't be overridden by Magento.
                         ]]>
                     </comment>
@@ -660,7 +667,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                            <a href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/#regular-synonyms" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that will be considered equivalent by the Algolia engine.<br>
+                            <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#regular-synonyms-default" target="_blank">Synonyms</a> can be defined by a comma-separated list of words that will be considered equivalent by the Algolia engine.<br>
                             For instance: <code>tv, television, tv set</code><br>
                             Using that set, if a record contains “television” and a user searches for “TV”, this record will be returned.
                         ]]>
@@ -672,7 +679,7 @@
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
                         <![CDATA[
-                        <a href="https://www.algolia.com/doc/guides/textual-relevance/synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#one-way-synonyms" target="_blank">One-way synonyms</a>
+                        <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#one-way-synonyms" target="_blank">One-way synonyms</a>
                         allow you to define alternative words for a search term, which are not synonyms to each other.<br>
                         Let’s take an example: when a user searches for “tablet”, you want him to be able to find iPads and Galaxy Note tablets alike, but you might not want Android tablets to show up when he searches for “iPad”.<br>
                         To do this, you’d define a one-way synonym set between <code>tablet</code> (as input) and <code>ipad, galaxy note</code> (as synonyms). When the user types in “tablet”, records containing “iPad” and “Galaxy Note” will be returned. However records containing only “tablet” or “Galaxy Note” won’t be returned if he searches for “iPad”.
@@ -691,7 +698,7 @@
                     <comment>
                         <![CDATA[
                             If you have a large amount of synonyms (more than 1 hundred), you don't have to manually enter them in the inputs above.
-                            You can upload a <a href="https://www.algolia.com/doc/tutorials/full-text-search/relevance/synonyms/managing-synonyms-from-the-dashboard/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link&language=php#importing-synonyms-from-a-file" target="_blank">JSON file</a> with synonyms instead.
+                            You can upload a <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/how-to/managing-synonyms-from-the-dashboard/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link&language=php#importing-synonyms-from-a-file" target="_blank">JSON file</a> with synonyms instead.
                             <br><span class="algolia-config-warning">&#9888;</span>
                             When you upload a JSON file, all the synonyms settings from above will be ignored and only synonyms from the JSON file will be pushed to Algolia.
                         ]]>
@@ -707,14 +714,13 @@
                 <label><![CDATA[Click & Conversion Analytics]]></label>
                 <comment>
                     <![CDATA[
-                        Analyse how your customers behave when searching on your website. With <a target="_blank" href="https://www.algolia.com/doc/guides/analytics/click-analytics/">Click & Conversion analytics</a>,
-                        you can track which products are clicked more, and which search queries lead to more conversions.
-                        Note: this feature is not available on all plans, please refer to <a target="_blank" href="https://www.algolia.com/pricing/">Algolia's pricing page</a> for more details.
-                        <br><br>
-                        Documentation of Click & Conversion analytics: <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/click-analytics/</a>
-                        <br>
-                        <br>
-                        <hr>
+                        <div class="algolia_block blue icon-documentation">
+                            Analyze how your customers behave when searching on your website.
+                            With <a target="_blank" href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Click & Conversion analytics</a>,
+                            you can track which products are clicked more, and which search queries lead to more conversions.
+                            <br><br>
+                            Find out more Click & Conversion Analytics in <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+                        </div>
                     ]]>
                 </comment>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

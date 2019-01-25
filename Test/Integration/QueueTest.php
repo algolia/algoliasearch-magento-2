@@ -32,7 +32,7 @@ class QueueTest extends TestCase
         $indexer->executeFull();
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-        $this->assertEquals(4, count($rows));
+        $this->assertEquals(3, count($rows));
 
         $i = 0;
         foreach ($rows as $row) {
@@ -47,9 +47,9 @@ class QueueTest extends TestCase
                 continue;
             }
 
-            if ($i < 4) {
+            if ($i < 3) {
                 $this->assertEquals('rebuildProductIndex', $row['method']);
-                $this->assertEquals(100, $row['data_size']);
+                $this->assertEquals(300, $row['data_size']);
 
                 continue;
             }
@@ -128,7 +128,7 @@ class QueueTest extends TestCase
         $indexer->executeFull();
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-        $this->assertEquals(12, count($rows));
+        $this->assertEquals(9, count($rows));
 
         // Process the whole queue
         /** @var QueueRunner $queueRunner */

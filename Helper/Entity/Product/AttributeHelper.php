@@ -3,22 +3,22 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity\Product;
 
 use Magento\Eav\Model\Entity\Attribute as EntityAttribute;
-use Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\Collection as AttributeOptionCollection;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\CollectionFactory as AttributeOptionCollectionFactory;
 
 class AttributeHelper
 {
     /** @var EntityAttribute */
     private $entityAttribute;
 
-    /** @var AttributeOptionCollection */
-    private $entityAttributeOptionCollection;
+    /** @var AttributeOptionCollectionFactory */
+    private $entityAttributeOptionCollectionFactory;
 
     public function __construct(
         EntityAttribute $entityAttribute,
-        AttributeOptionCollection $entityAttributeOptionCollection
+        AttributeOptionCollectionFactory $entityAttributeOptionCollectionFactory
     ) {
         $this->entityAttribute = $entityAttribute;
-        $this->entityAttributeOptionCollection = $entityAttributeOptionCollection;
+        $this->entityAttributeOptionCollectionFactory = $entityAttributeOptionCollectionFactory;
     }
 
     /**
@@ -44,7 +44,9 @@ class AttributeHelper
      */
     public function getAttributeOptionById($attributeId, $optionId)
     {
-        return $this->entityAttributeOptionCollection
+        $entityAttributeOptionCollection = $this->entityAttributeOptionCollectionFactory->create();
+
+        return $entityAttributeOptionCollection
             ->setPositionOrder('asc')
             ->setAttributeFilter($attributeId)
             ->setIdFilter($optionId)

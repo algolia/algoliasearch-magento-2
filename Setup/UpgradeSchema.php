@@ -225,6 +225,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'order' => 'unordered',
                 'retrievable' => '1',
             ],
+            [
+                'attribute' => 'product_count',
+                'searchable' => '2',
+                'order' => 'unordered',
+                'retrievable' => '1',
+            ],
         ],
         'algoliasearch_categories/categories/custom_ranking_category_attributes' => [
             [

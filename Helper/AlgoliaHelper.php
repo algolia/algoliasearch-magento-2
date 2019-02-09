@@ -112,6 +112,14 @@ class AlgoliaHelper extends AbstractHelper
         return $this->getIndex($indexName)->getObjects($objectIds);
     }
 
+    /**
+     * @param $indexName
+     * @param $settings
+     * @param bool $forwardToReplicas
+     * @param bool $mergeSettings
+     *
+     * @throws AlgoliaException
+     */
     public function setSettings($indexName, $settings, $forwardToReplicas = false, $mergeSettings = false)
     {
         $this->checkClient(__FUNCTION__);

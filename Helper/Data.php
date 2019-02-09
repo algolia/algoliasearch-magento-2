@@ -8,7 +8,6 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
-use AlgoliaSearch\AlgoliaException;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
@@ -84,51 +83,6 @@ class Data
         }
 
         $this->algoliaHelper->deleteObjects($ids, $indexName);
-    }
-
-    public function saveConfigurationToAlgolia($storeId, $useTmpIndex = false)
-    {
-        if (!($this->configHelper->getApplicationID() && $this->configHelper->getAPIKey())) {
-            return;
-        }
-
-        if ($this->isIndexingEnabled($storeId) === false) {
-            return;
-        }
-
-        $this->algoliaHelper->setSettings(
-            $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
-            $this->categoryHelper->getIndexSettings($storeId),
-            false,
-            true
-        );
-        $this->algoliaHelper->setSettings(
-            $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
-            $this->pageHelper->getIndexSettings($storeId)
-        );
-        $this->algoliaHelper->setSettings(
-            $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId),
-            $this->suggestionHelper->getIndexSettings($storeId)
-        );
-
-        $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
-        foreach ($this->configHelper->getAutocompleteSections() as $section) {
-            if (in_array($section['name'], $protectedSections, true)) {
-                continue;
-            }
-
-            $indexName = $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId);
-            $indexName = $indexName . '_' . $section['name'];
-
-            $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
-        }
-
-        $productsIndexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
-        $productsIndexNameTmp = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, true);
-
-        $this->productHelper->setSettings($productsIndexName, $productsIndexNameTmp, $storeId, $useTmpIndex);
-
-        $this->setExtraSettings($storeId, $useTmpIndex);
     }
 
     public function getSearchResult($query, $storeId, $searchParams = null, $targetedIndex = null)
@@ -669,50 +623,6 @@ class Data
         }
 
         return $toRealRemove;
-    }
-
-    private function setExtraSettings($storeId, $saveToTmpIndicesToo)
-    {
-        $additionalSectionsSuffix = $this->additionalSectionHelper->getIndexNameSuffix();
-
-        $sections = [
-            'products' => $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId),
-            'categories' => $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId),
-            'pages' => $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId),
-            'suggestions' => $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId),
-            'additional_sections' => $this->getIndexName($additionalSectionsSuffix, $storeId),
-        ];
-
-        $error = [];
-        foreach ($sections as $section => $indexName) {
-            try {
-                $extraSettings = $this->configHelper->getExtraSettings($section, $storeId);
-
-                if ($extraSettings) {
-                    $extraSettings = json_decode($extraSettings, true);
-
-                    $this->algoliaHelper->setSettings($indexName, $extraSettings, true);
-
-                    if ($section === 'products' && $saveToTmpIndicesToo === true) {
-                        $this->algoliaHelper->setSettings($indexName . '_tmp', $extraSettings, true);
-                    }
-                }
-            } catch (AlgoliaException $e) {
-                if (mb_strpos($e->getMessage(), 'Invalid object attributes:') === 0) {
-                    $error[] = '
-                        Extra settings for "' . $section . '" indices were not saved. 
-                        Error message: "' . $e->getMessage() . '"';
-
-                    continue;
-                }
-
-                throw $e;
-            }
-        }
-
-        if ($error) {
-            throw new AlgoliaException('<br>' . implode('<br> ', $error));
-        }
     }
 
     private function getSalesData($storeId, Collection $collection)

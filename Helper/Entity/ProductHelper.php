@@ -301,8 +301,10 @@ class ProductHelper
         $indexSettings = $transport->getData();
 
         $this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
+        $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->setSettings($indexNameTmp, $indexSettings, false, true);
+            $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
         $this->setFacetsQueryRules($indexName);
@@ -333,14 +335,23 @@ class ProductHelper
 
         if (count($replicas) > 0) {
             $this->algoliaHelper->setSettings($indexName, ['replicas' => $replicas]);
+
+            $this->logger->log('Setting replicas to "' . $indexName . '" index.');
+            $this->logger->log('Replicas: ' . json_encode($replicas));
             $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
 
             foreach ($sortingIndices as $values) {
+                $replicaName = $values['name'];
                 $indexSettings['ranking'] = $values['ranking'];
-                $this->algoliaHelper->setSettings($values['name'], $indexSettings, false, true);
+
+                $this->algoliaHelper->setSettings($replicaName, $indexSettings, false, true);
+
+                $this->logger->log('Setting settings to "' . $replicaName . '" replica.');
+                $this->logger->log('Settings: ' . json_encode($indexSettings));
             }
         } else {
             $this->algoliaHelper->setSettings($indexName, ['replicas' => []]);
+            $this->logger->log('Removing replicas from "' . $indexName . '" index');
             $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
         }
 
@@ -373,14 +384,26 @@ class ProductHelper
                 }
             }
 
-            $this->algoliaHelper->setSynonyms($saveToTmpIndicesToo ? $indexNameTmp : $indexName, $synonymsToSet);
+            $this->algoliaHelper->setSynonyms($indexName, $synonymsToSet);
+            $this->logger->log('Setting synonyms to "' . $indexName . '"');
+            if ($saveToTmpIndicesToo === true) {
+                $this->algoliaHelper->setSynonyms($indexNameTmp, $synonymsToSet);
+                $this->logger->log('Setting synonyms to "' . $indexNameTmp . '"');
+            }
         } elseif ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
+            $this->logger->log('
+                Synonyms management disabled. 
+                Copying synonyms from production index to TMP one to not to erase them with the index move.
+            ');
         }
 
         if ($saveToTmpIndicesToo === true) {
             try {
                 $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
+                $this->logger->log('
+                    Copying query rules to "' . $indexNameTmp . '" to not to erase them with the index move.
+                ');
             } catch (AlgoliaException $e) {
                 // Fail silently if query rules are disabled on the app
                 // If QRs are disabled, nothing will happen and the extension will work as expected
@@ -1028,6 +1051,7 @@ class ProductHelper
         }
 
         if ($rules) {
+            $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
             $index->batchRules($rules, true);
         }
     }

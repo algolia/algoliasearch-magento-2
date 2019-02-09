@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
+use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
@@ -38,9 +39,8 @@ class QueueTest extends TestCase
         foreach ($rows as $row) {
             $i++;
 
-            $this->assertEquals('Algolia\AlgoliaSearch\Helper\Data', $row['class']);
-
             if ($i === 1) {
+                $this->assertEquals(IndicesConfigurator::class, $row['class']);
                 $this->assertEquals('saveConfigurationToAlgolia', $row['method']);
                 $this->assertEquals(1, $row['data_size']);
 
@@ -48,6 +48,7 @@ class QueueTest extends TestCase
             }
 
             if ($i < 3) {
+                $this->assertEquals('Algolia\AlgoliaSearch\Helper\Data', $row['class']);
                 $this->assertEquals('rebuildProductIndex', $row['method']);
                 $this->assertEquals(300, $row['data_size']);
 
@@ -414,7 +415,7 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 7,
                 'pid' => null,
-                'class' => 'Algolia\AlgoliaSearch\Helper\Data',
+                'class' => IndicesConfigurator::class,
                 'method' => 'saveConfigurationToAlgolia',
                 'data' => '{"store_id":"1","category_ids":["40"]}',
                 'max_retries' => 3,

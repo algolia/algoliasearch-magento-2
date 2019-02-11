@@ -105,6 +105,7 @@ class Merchandising extends \Magento\Backend\Block\Template
 
     /**
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
      * @return \Magento\Store\Api\Data\StoreInterface|null
      */
     public function getCurrentStore()

@@ -556,12 +556,22 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		// Targeted index is defined by sortBy parameter
 		window.routing = {
 			router: algoliaBundle.instantsearch.routers.history({
-				parseURL({qsModule, location}) {
+				parseURL: function (qsObject) {
+					let location = qsObject.location,
+						qsModule = qsObject.qsModule;
 					const queryString = location.hash ? location.hash : location.search;
 					return qsModule.parse(queryString.slice(1))
 				},
-				createURL({ qsModule, routeState, location }) {
-					const { protocol, hostname, port = '', pathname, hash } = location;
+				createURL: function (qsObject) {
+					let qsModule = qsObject.qsModule,
+						routeState = qsObject.routeState,
+						location = qsObject.location;
+					const protocol = location.protocol,
+						hostname = location.hostname,
+						port = location.port ? location.port : '',
+						pathname = location.pathname,
+						hash = location.hash;
+
 					const queryString = qsModule.stringify(routeState);
 					const portWithPrefix = port === '' ? '' : ':' + port;
 					// IE <= 11 has no location.origin or buggy. Therefore we don't rely on it
@@ -572,7 +582,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				},
 			}),
 			stateMapping: {
-				stateToRoute(uiState) {
+				stateToRoute: function (uiState) {
 					let map = {};
 					if (algoliaConfig.isCategoryPage) {
 						map['q'] = uiState.query;
@@ -606,7 +616,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					map['page'] = uiState.page;
 					return map;
 				},
-				routeToState(routeState) {
+				routeToState: function (routeState) {
 					let map = {};
 					routeState = routingBc(routeState);
 					map['query'] = routeState.q == '__empty__' ? '' : routeState.q;

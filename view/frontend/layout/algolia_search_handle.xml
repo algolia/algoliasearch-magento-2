@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
+        <script src="//polyfill.io/v3/polyfill.min.js?features=default%2CArray.prototype.includes%2CPromise" src_type="url" crossorigin/>
+
         <script src="Algolia_AlgoliaSearch::internals/common.js"/>
 
         <script src="Algolia_AlgoliaSearch::instantsearch.js"/>

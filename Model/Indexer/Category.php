@@ -82,6 +82,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                 );
             } else {
                 $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
+                $categoryIds = [];
             }
 
             $this->queue->addToQueue(

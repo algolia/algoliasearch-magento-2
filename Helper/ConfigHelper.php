@@ -198,7 +198,7 @@ class ConfigHelper
 
     public function getNumberOfQueriesSuggestions($storeId = null)
     {
-        return $this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::NB_OF_QUERIES_SUGGESTIONS,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -207,7 +207,7 @@ class ConfigHelper
 
     public function getNumberOfProductsSuggestions($storeId = null)
     {
-        return $this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::NB_OF_PRODUCTS_SUGGESTIONS,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -216,7 +216,7 @@ class ConfigHelper
 
     public function getNumberOfCategoriesSuggestions($storeId = null)
     {
-        return $this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::NB_OF_CATEGORIES_SUGGESTIONS,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -225,7 +225,7 @@ class ConfigHelper
 
     public function showSuggestionsOnNoResultsPage($storeId = null)
     {
-        return $this->configInterface->getValue(
+        return $this->configInterface->isSetFlag(
             self::SHOW_SUGGESTIONS_NO_RESULTS,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -244,7 +244,7 @@ class ConfigHelper
 
     public function makeSeoRequest($storeId = null)
     {
-        return $this->configInterface->getValue(self::MAKE_SEO_REQUEST, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::MAKE_SEO_REQUEST, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isLoggingEnabled($storeId = null)
@@ -254,12 +254,12 @@ class ConfigHelper
 
     public function getShowOutOfStock($storeId = null)
     {
-        return (bool) $this->configInterface->getValue(self::SHOW_OUT_OF_STOCK, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::SHOW_OUT_OF_STOCK, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function useSecureUrlsInFrontend($storeId = null)
     {
-        return (bool) $this->configInterface->getValue(
+        return $this->configInterface->isSetFlag(
             self::USE_SECURE_IN_FRONTEND,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -278,7 +278,7 @@ class ConfigHelper
             return 265;
         }
 
-        return $imageWidth;
+        return (int) $imageWidth;
     }
 
     public function getImageHeight($storeId = null)
@@ -293,7 +293,7 @@ class ConfigHelper
             return 265;
         }
 
-        return $imageHeight;
+        return (int) $imageHeight;
     }
 
     public function getImageType($storeId = null)
@@ -313,7 +313,7 @@ class ConfigHelper
 
     public function isPartialUpdateEnabled($storeId = null)
     {
-        return $this->configInterface->getValue(self::PARTIAL_UPDATES, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::PARTIAL_UPDATES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getAutocompleteSections($storeId = null)
@@ -333,17 +333,17 @@ class ConfigHelper
 
     public function getMinPopularity($storeId = null)
     {
-        return $this->configInterface->getValue(self::MIN_POPULARITY, ScopeInterface::SCOPE_STORE, $storeId);
+        return (int) $this->configInterface->getValue(self::MIN_POPULARITY, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getMinNumberOfResults($storeId = null)
     {
-        return $this->configInterface->getValue(self::MIN_NUMBER_OF_RESULTS, ScopeInterface::SCOPE_STORE, $storeId);
+        return (int) $this->configInterface->getValue(self::MIN_NUMBER_OF_RESULTS, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isAddToCartEnable($storeId = null)
     {
-        return (bool) $this->configInterface->getValue(
+        return $this->configInterface->isSetFlag(
             self::XML_ADD_TO_CART_ENABLE,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -358,22 +358,22 @@ class ConfigHelper
 
     public function isRemoveBranding($storeId = null)
     {
-        return $this->configInterface->getValue(self::REMOVE_BRANDING, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::REMOVE_BRANDING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getMaxValuesPerFacet($storeId = null)
     {
-        return $this->configInterface->getValue(self::MAX_VALUES_PER_FACET, ScopeInterface::SCOPE_STORE, $storeId);
+        return (int) $this->configInterface->getValue(self::MAX_VALUES_PER_FACET, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getNumberOfElementByPage($storeId = null)
     {
-        return $this->configInterface->getValue(self::NUMBER_OF_ELEMENT_BY_PAGE, ScopeInterface::SCOPE_STORE, $storeId);
+        return (int) $this->configInterface->getValue(self::NUMBER_OF_ELEMENT_BY_PAGE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getNumberOfJobToRun($storeId = null)
     {
-        return $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
+        return (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getRetryLimit($storeId = null)

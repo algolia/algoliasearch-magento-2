@@ -717,6 +717,10 @@ class ConfigHelper
             return false;
         }
 
+        if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+            return false;
+        }
+
         $userAgent = mb_strtolower($_SERVER['HTTP_USER_AGENT'], 'utf-8');
 
         $allowedUserAgents = $this->configInterface->getValue(

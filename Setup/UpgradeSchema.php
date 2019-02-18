@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Setup;
 
+use Algolia\AlgoliaSearch\Api\Data\LandingPageInterface;
 use Magento\Framework\App\Config\ConfigResource\ConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\DB\Ddl\Table;
@@ -52,7 +53,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_images/image/type' => 'image',
 
         'algoliasearch_queue/queue/active' => '0',
-        'algoliasearch_queue/queue/number_of_job_to_run' => '10',
+        'algoliasearch_queue/queue/number_of_job_to_run' => '5',
         'algoliasearch_queue/queue/number_of_retries' => '3',
 
         'algoliasearch_cc_analytics/cc_analytics_group/enable' => '0',
@@ -67,7 +68,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
 
         'algoliasearch_synonyms/synonyms_group/enable_synonyms' => '0',
 
-        'algoliasearch_advanced/advanced/number_of_element_by_page' => '100',
+        'algoliasearch_advanced/advanced/number_of_element_by_page' => '300',
         'algoliasearch_advanced/advanced/remove_words_if_no_result' => 'allOptional',
         'algoliasearch_advanced/advanced/partial_update' => '0',
         'algoliasearch_advanced/advanced/customer_groups_enable' => '0',
@@ -225,6 +226,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'order' => 'unordered',
                 'retrievable' => '1',
             ],
+            [
+                'attribute' => 'product_count',
+                'searchable' => '2',
+                'order' => 'unordered',
+                'retrievable' => '1',
+            ],
         ],
         'algoliasearch_categories/categories/custom_ranking_category_attributes' => [
             [
@@ -369,6 +376,103 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $table->addColumn('error_log', $table::TYPE_TEXT, null, ['nullable' => false]);
             $table->addColumn('data_size', $table::TYPE_INTEGER, 11, ['nullable' => true, 'default' => null]);
             $table->addColumn('created_at', $table::TYPE_DATETIME, null, ['nullable' => false]);
+
+            $connection->createTable($table);
+        }
+
+        if (!$connection->isTableExists(LandingPageInterface::TABLE_NAME)) {
+            $table = $connection->newTable($setup->getTable(LandingPageInterface::TABLE_NAME));
+
+            $table->addColumn(
+                LandingPageInterface::FIELD_LANDING_PAGE_ID,
+                $table::TYPE_INTEGER,
+                10,
+                ['identity' => true, 'nullable' => false, 'primary' => true]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_STORE_ID,
+                $table::TYPE_INTEGER,
+                10,
+                ['nullable' => false]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_URL_KEY,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => false]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_IS_ACTIVE,
+                $table::TYPE_BOOLEAN,
+                null,
+                ['nullable' => false, 'default' => 0]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_TITLE,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => false]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_DATE_FROM,
+                $table::TYPE_DATETIME,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_DATE_TO,
+                $table::TYPE_DATETIME,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_META_TITLE,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_META_DESCRIPTION,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_META_KEYWORDS,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_CONTENT,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_QUERY,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_CONFIGURATION,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => false, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_CUSTOM_JS,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
+            $table->addColumn(
+                LandingPageInterface::FIELD_CUSTOM_CSS,
+                $table::TYPE_TEXT,
+                null,
+                ['nullable' => true, 'default' => null]
+            );
 
             $connection->createTable($table);
         }

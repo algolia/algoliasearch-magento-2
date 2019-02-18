@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">algolia_algoliasearch_landingpage_form.landingpage_form_data_source</item>
+            <item name="deps" xsi:type="string">algolia_algoliasearch_landingpage_form.landingpage_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Main Information</item>
+        <item name="config" xsi:type="array">
+            <item name="dataScope" xsi:type="string">data</item>
+            <item name="namespace" xsi:type="string">algolia_algoliasearch_landingpage_form</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+        <item name="buttons" xsi:type="array">
+            <item name="save_and_continue" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit\SaveAndContinueButton</item>
+            <item name="save" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit\SaveButton</item>
+            <item name="view" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit\ViewButton</item>
+            <item name="duplicate" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit\DuplicateButton</item>
+            <item name="delete" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit\DeleteButton</item>
+            <item name="back" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit\BackButton</item>
+        </item>
+    </argument>
+    <dataSource name="landingpage_form_data_source">
+        <argument name="dataProvider" xsi:type="configurableObject">
+            <argument name="class" xsi:type="string">Algolia\AlgoliaSearch\DataProvider\LandingPage\LandingPageDataProvider</argument>
+            <argument name="name" xsi:type="string">landingpage_form_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">landing_page_id</argument>
+            <argument name="requestFieldName" xsi:type="string">id</argument>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="submit_url" xsi:type="url" path="algolia_algoliasearch/landingpage/save"/>
+                </item>
+            </argument>
+        </argument>
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+    </dataSource>
+    <fieldset name="main_information">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string" translate="true">Page settings</item>
+            </item>
+        </argument>
+        <field name="landing_page_id">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string">landing_page_id</item>
+                </item>
+            </argument>
+        </field>
+        <field name="url_key">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="label" xsi:type="string" translate="true">Unique URL key</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="dataScope" xsi:type="string">url_key</item>
+                    <item name="placeholder" xsi:type="string" translate="true">unique-url-key</item>
+                    <item name="notice" xsi:type="string" translate="true">Please ensure that this URL key is unique and not used by another page on your store (products, categories or CMS pages).</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">This is where your new landing page can be found: www.mystore.com/unique-url-key</item>
+                    </item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                        <item name="validate-url-unicity" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="store_id">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Magento\Cms\Ui\Component\Listing\Column\Cms\Options</item>
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="label" xsi:type="string" translate="true">Store view</item>
+                    <item name="default" xsi:type="number">0</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="dataType" xsi:type="string">int</item>
+                    <item name="dataScope" xsi:type="string">store_id</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">Select the store where the landing page is available. "All Store Views" allows the landing page to be displayed in all your stores.</item>
+                    </item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="title">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="label" xsi:type="string" translate="true">Title</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="dataScope" xsi:type="string">title</item>
+                    <item name="placeholder" xsi:type="string" translate="true">My landing page title</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">This is the title that will be displayed on top of the landing page.</item>
+                    </item>
+                    <item name="validation" xsi:type="array">
+                        <item name="required-entry" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="meta_title">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="label" xsi:type="string" translate="true">Meta title</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">The meta title can be customized to enhance your SEO.</item>
+                    </item>
+                    <item name="notice" xsi:type="string" translate="true">If no meta title is set, the page title will be used.</item>
+                    <item name="dataScope" xsi:type="string">meta_title</item>
+                </item>
+            </argument>
+        </field>
+        <field name="meta_description">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">The meta description can be customized to enhance your SEO.</item>
+                    </item>
+                    <item name="label" xsi:type="string" translate="true">Meta description</item>
+                    <item name="dataScope" xsi:type="string">meta_description</item>
+                </item>
+            </argument>
+        </field>
+        <field name="meta_keywords">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="label" xsi:type="string" translate="true">Meta keywords</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">The meta keywords can be customized to enhance your SEO.</item>
+                    </item>
+                    <item name="placeholder" xsi:type="string" translate="true">product, red, woman, accessory</item>
+                    <item name="dataScope" xsi:type="string">meta_keywords</item>
+                </item>
+            </argument>
+        </field>
+        <field name="is_active">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="formElement" xsi:type="string">checkbox</item>
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="default" xsi:type="number">1</item>
+                    <item name="dataType" xsi:type="string">boolean</item>
+                    <item name="prefer" xsi:type="string">toggle</item>
+                    <item name="label" xsi:type="string" translate="true">Published</item>
+                    <item name="notice" xsi:type="string" translate="true">A published landing page is visible to all visitors. An unpublished one is visible only to you.</item>
+                    <item name="dataScope" xsi:type="string">is_active</item>
+                    <item name="valueMap" xsi:type="array">
+                        <item name="true" xsi:type="number">1</item>
+                        <item name="false" xsi:type="number">0</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <!--<container name="date_group">-->
+            <!--<argument name="data" xsi:type="array">-->
+                <!--<item name="type" xsi:type="string">group</item>-->
+                <!--<item name="config" xsi:type="array">-->
+                    <!--<item name="component" xsi:type="string">Magento_Ui/js/form/components/group</item>-->
+                    <!--<item name="additionalClasses" xsi:type="string">admin__control-grouped-date</item>-->
+                    <!--<item name="required" xsi:type="boolean">false</item>-->
+                    <!--<item name="breakLine" xsi:type="boolean">false</item>-->
+                <!--</item>-->
+            <!--</argument>-->
+            <!--<field name="date_from">-->
+                <!--<argument name="data" xsi:type="array">-->
+                    <!--<item name="config" xsi:type="array">-->
+                        <!--<item name="additionalClasses" xsi:type="string">admin__field-date</item>-->
+                        <!--<item name="source" xsi:type="string">landing_page</item>-->
+                        <!--<item name="formElement" xsi:type="string">date</item>-->
+                        <!--<item name="dataType" xsi:type="string">text</item>-->
+                        <!--<item name="label" xsi:type="string" translate="true">Timeframe from</item>-->
+                        <!--<item name="dataScope" xsi:type="string">date_from</item>-->
+                        <!--<item name="notice" xsi:type="string" translate="true">Define a timeframe when the landing page should be published (for a specific campaign for example). If no timeframe is defined, the landing page will be online unless you unpublish it manually.</item>-->
+                        <!--<item name="validation" xsi:type="array">-->
+                            <!--<item name="validate-date" xsi:type="boolean">true</item>-->
+                        <!--</item>-->
+                    <!--</item>-->
+                <!--</argument>-->
+            <!--</field>-->
+            <!--<field name="date_to">-->
+                <!--<argument name="data" xsi:type="array">-->
+                    <!--<item name="config" xsi:type="array">-->
+                        <!--<item name="additionalClasses" xsi:type="string">admin__field-date</item>-->
+                        <!--<item name="source" xsi:type="string">landing_page</item>-->
+                        <!--<item name="formElement" xsi:type="string">date</item>-->
+                        <!--<item name="dataType" xsi:type="string">text</item>-->
+                        <!--<item name="label" xsi:type="string" translate="true">To</item>-->
+                        <!--<item name="dataScope" xsi:type="string">date_to</item>-->
+                        <!--<item name="validation" xsi:type="array">-->
+                            <!--<item name="validate-date" xsi:type="boolean">true</item>-->
+                        <!--</item>-->
+                    <!--</item>-->
+                <!--</argument>-->
+            <!--</field>-->
+        <!--</container>-->
+        <field name="custom_js">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="label" xsi:type="string" translate="true">Custom javascript</item>
+                    <item name="placeholder" xsi:type="string" translate="true">Add some Javascript code to enhance your page.</item>
+                    <item name="dataScope" xsi:type="string">custom_js</item>
+                </item>
+            </argument>
+        </field>
+        <field name="custom_css">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">textarea</item>
+                    <item name="label" xsi:type="string" translate="true">Custom CSS</item>
+                    <item name="placeholder" xsi:type="string" translate="true">Add custom CSS to further improve the style of your page.</item>
+                    <item name="dataScope" xsi:type="string">custom_css</item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+    <fieldset name="content">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="label" xsi:type="string" translate="true">CMS editor</item>
+            </item>
+        </argument>
+        <htmlContent name="html_content">
+            <block class="Magento\Framework\View\Element\Template" name="algolia.cms.notice" template="Algolia_AlgoliaSearch::landingpage/cms-notice.phtml"/>
+        </htmlContent>
+        <field name="content">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="label" xsi:type="string"/>
+                    <item name="formElement" xsi:type="string">wysiwyg</item>
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="wysiwyg" xsi:type="boolean">true</item>
+                    <item name="dataScope" xsi:type="string">content</item>
+                    <item name="additionalClasses" xsi:type="string">admin__field-wide</item>
+                </item>
+            </argument>
+        </field>
+    </fieldset>
+    <fieldset name="search_configuration">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="label" xsi:type="string" translate="true">Merchandised products</item>
+            </item>
+        </argument>
+        <field name="query">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="label" xsi:type="string" translate="true">Search query</item>
+                    <item name="dataScope" xsi:type="string">query</item>
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="placeholder" xsi:type="string" translate="true">Enter the focus keyword of your landing page</item>
+                </item>
+            </argument>
+        </field>
+        <field name="configuration">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">landing_page</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="label" xsi:type="string" translate="true">Configuration</item>
+                    <item name="dataScope" xsi:type="string">configuration</item>
+                    <item name="visible" xsi:type="boolean">false</item>
+                </item>
+            </argument>
+        </field>
+        <container name="algolia_merchandising_container" >
+            <htmlContent name="html_content">
+                <argument name="block" xsi:type="object">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\SearchConfiguration</argument>
+            </htmlContent>
+        </container>
+    </fieldset>
+</form>

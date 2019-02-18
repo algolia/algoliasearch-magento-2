@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <attribute name="class" value="page-products"/>
+        <referenceBlock name="head.additional">
+            <block class="Magento\Framework\View\Element\Text" name="landing_page_custom_js">
+                <arguments>
+                    <argument name="text" xsi:type="string"><![CDATA[&nbsp;]]></argument>
+                </arguments>
+            </block>
+            <block class="Magento\Framework\View\Element\Text" name="landing_page_custom_css">
+                <arguments>
+                    <argument name="text" xsi:type="string"><![CDATA[&nbsp;]]></argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+        <referenceContainer name="columns.top">
+            <container name="landing_page_content_wrapper" htmlTag="div" htmlClass="landing-page-content-wrapper" after="-" >
+                <block class="Magento\Framework\View\Element\Text" name="landing_page_content">
+                    <arguments>
+                        <argument name="text" xsi:type="string"><![CDATA[&nbsp;]]></argument>
+                    </arguments>
+                </block>
+            </container>
+        </referenceContainer>
+        <referenceContainer name="content">
+            <block class="Algolia\AlgoliaSearch\Block\LandingPage" name="algolia_landing_page" template="Magento_CatalogSearch::result.phtml">
+                <block class="Magento\CatalogSearch\Block\SearchResult\ListProduct" name="search_result_list" template="Magento_Catalog::product/list.phtml">
+                    <arguments>
+                        <!-- If argument's position depends on image size changeable in VDE:
+                        positions:list-secondary,grid-secondary,list-actions,grid-actions,list-primary,grid-primary
+                    -->
+                        <argument name="positioned" xsi:type="string">positions:list-secondary</argument>
+                    </arguments>
+                    <block class="Magento\Catalog\Block\Product\ProductList\Toolbar" name="product_list_toolbar" template="Magento_Catalog::product/list/toolbar.phtml">
+                        <block class="Magento\Theme\Block\Html\Pager" name="product_list_toolbar_pager"/>
+                    </block>
+                    <action method="setToolbarBlockName">
+                        <argument name="name" xsi:type="string">product_list_toolbar</argument>
+                    </action>
+                    <block class="Magento\Framework\View\Element\RendererList" name="category.product.type.details.renderers" as="details.renderers">
+                        <block class="Magento\Framework\View\Element\Template" name="category.product.type.details.renderers.default" as="default"/>
+                    </block>
+                </block>
+                <action method="setListOrders"/>
+                <action method="setListModes"/>
+                <action method="setListCollection"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

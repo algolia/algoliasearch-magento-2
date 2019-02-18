@@ -55,6 +55,15 @@
             resource="Algolia_AlgoliaSearch::manage"
         />
         <add
+            id="Algolia_AlgoliaSearch::landingpage"
+            title="Landing Page Builder"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="95"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="algolia_algoliasearch/landingpage/index"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
+        <add
             id="Algolia_AlgoliaSearch::analytics"
             title="Analytics Overview"
             module="Algolia_AlgoliaSearch"

@@ -26,6 +26,9 @@ class Merchandising extends \Magento\Backend\Block\Template
     /** @var ProxyHelper */
     private $proxyHelper;
 
+    /** @var \Magento\Store\Model\StoreManagerInterface */
+    private $storeManager;
+
     /**
      * @param Context $context
      * @param Registry $registry
@@ -46,6 +49,7 @@ class Merchandising extends \Magento\Backend\Block\Template
         $this->configHelper = $configHelper;
         $this->coreHelper = $coreHelper;
         $this->proxyHelper = $proxyHelper;
+        $this->storeManager = $context->getStoreManager();
 
         parent::__construct($context, $data);
     }
@@ -97,5 +101,19 @@ class Merchandising extends \Magento\Backend\Block\Template
         }
 
         return true;
+    }
+
+    /**
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return \Magento\Store\Api\Data\StoreInterface|null
+     */
+    public function getCurrentStore()
+    {
+        if ($storeId = $this->getRequest()->getParam('store')) {
+            return $this->storeManager->getStore($storeId);
+        }
+
+        return $this->storeManager->getDefaultStoreView();
     }
 }

@@ -84,24 +84,68 @@ class FiltersHelper
     }
 
     /**
-     * Get the facet filters from the url
+     * Get current landing page filters
      *
      * @param int $storeId
      *
      * @return array
      */
-    public function getFacetFilters($storeId)
+    public function getLandingPageFilters($storeId)
+    {
+        $landingPageFilter = [];
+        $landingPage = $this->registry->registry('current_landing_page');
+        if ($landingPage) {
+            $landingPageConfiguration = json_decode($landingPage->getConfiguration(), true);
+            $landingPageFilter['facetFilters'] = $this->getFacetFilters($storeId, $landingPageConfiguration);
+            $landingPageFilter = array_merge(
+                $landingPageFilter,
+                $this->getLandingPagePriceFilters($storeId, $landingPageConfiguration)
+            );
+        }
+
+        return $landingPageFilter;
+    }
+
+    /**
+     * Get current landing page query
+     *
+     * @return array
+     */
+    public function getLandingPageQuery()
+    {
+        $landingPage = $this->registry->registry('current_landing_page');
+        $landingPageQuery = '';
+        if ($landingPage) {
+            $landingPageQuery = $landingPage->getQuery();
+        }
+
+        return $landingPageQuery;
+    }
+
+    /**
+     * Get the facet filters from the url or landing page configuration
+     *
+     * @param int $storeId
+     * @param string[] $parameters
+     *
+     * @return array
+     */
+    public function getFacetFilters($storeId, $parameters = null)
     {
         $facetFilters = [];
+        // If the parameters variable is null, fetch them from the request
+        if (is_null($parameters)) {
+            $parameters = $this->request->getParams();
+        }
 
         foreach ($this->config->getFacets($storeId) as $facet) {
-            if (is_null($this->request->getParam($facet['attribute']))) {
+            if (!isset($parameters[$facet['attribute']])) {
                 continue;
             }
 
-            $facetValues = is_array($this->request->getParam($facet['attribute'])) ?
-                $this->request->getParam($facet['attribute']) :
-                explode('~', $this->request->getParam($facet['attribute']));
+            $facetValues = is_array($parameters[$facet['attribute']]) ?
+                $parameters[$facet['attribute']] :
+                explode('~', $parameters[$facet['attribute']]);
 
             // Backward compatibility with native Magento filtering
             if (!$this->config->isInstantEnabled($storeId)) {
@@ -150,19 +194,9 @@ class FiltersHelper
     public function getPriceFilters($storeId)
     {
         $priceFilters = [];
-
-        // Handle price filtering
-        $currencyCode = $this->config->getCurrencyCode($storeId);
-        $priceSlider = 'price.' . $currencyCode . '.default';
-
-        if ($this->config->isCustomerGroupsEnabled($storeId)) {
-            $groupId = $this->customerSession->isLoggedIn() ?
-                $this->customerSession->getCustomer()->getGroupId() :
-                0;
-            $priceSlider = 'price.' . $currencyCode . '.group_' . $groupId;
-        }
-
-        $paramPriceSlider = str_replace('.', '_', $priceSlider);
+        $paramPriceSliderData = $this->getParamPriceSlider($storeId);
+        $priceSlider = $paramPriceSliderData['price_slider'];
+        $paramPriceSlider = $paramPriceSliderData['param'];
 
         if (!is_null($this->request->getParam($paramPriceSlider))) {
             $pricesFilter = $this->request->getParam($paramPriceSlider);
@@ -179,6 +213,68 @@ class FiltersHelper
         }
 
         return $priceFilters;
+    }
+
+    /**
+     * Get the price filters from the landing Page configuration
+     *
+     * @param int $storeId
+     * @param string[] $landingPageConfiguration
+     *
+     * @return array
+     */
+    public function getLandingPagePriceFilters($storeId, $landingPageConfiguration)
+    {
+        $priceFilters = [];
+        $paramPriceSliderData = $this->getParamPriceSlider($storeId);
+        $priceSlider = $paramPriceSliderData['price_slider'];
+        $paramPriceSlider = $paramPriceSliderData['param'];
+
+        if (isset($landingPageConfiguration[$priceSlider])
+            && is_array($landingPageConfiguration[$priceSlider])) {
+            $prices = $landingPageConfiguration[$priceSlider];
+            foreach ($prices as $operator => $price) {
+                $priceFilters['numericFilters'][] = $priceSlider . $operator . $price[0];
+            }
+        }
+
+        return $priceFilters;
+    }
+
+    /**
+     * Get the name of the param price slider (related to the currency and the use of customer groups)
+     *
+     * @param int $storeId
+     *
+     * @return array
+     */
+    private function getParamPriceSlider($storeId)
+    {
+        // Handle price filtering
+        $currencyCode = $this->config->getCurrencyCode($storeId);
+        $priceSlider = 'price.' . $currencyCode . '.default';
+
+        if ($this->config->isCustomerGroupsEnabled($storeId)) {
+            $groupId = $this->customerSession->isLoggedIn() ?
+                $this->customerSession->getCustomer()->getGroupId() :
+                0;
+            $priceSlider = 'price.' . $currencyCode . '.group_' . $groupId;
+        }
+
+        return [
+            'price_slider' => $priceSlider,
+            'param' => str_replace('.', '_', $priceSlider),
+        ];
+    }
+
+    /**
+     * Get the raw query parameter (keeps the "__empty__" value)
+     *
+     * @return string
+     */
+    public function getRawQueryParameter()
+    {
+        return $this->request->getParam('q');
     }
 
     /**

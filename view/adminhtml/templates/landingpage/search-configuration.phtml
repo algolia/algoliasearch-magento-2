@@ -1,0 +1,783 @@
+<?php
+
+/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\SearchConfiguration $block */
+
+$configHelper = $block->getConfigHelper();
+$merchIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-merchtool.svg');
+$starsIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
+$indexName = $block->getCoreHelper()->getBaseIndexName();
+
+$landingPage = $block->getLandingPage();
+$landingPageId = $landingPage->getId();
+
+$isConfig = [
+    'appId' => $configHelper->getApplicationID(),
+    'apiKey' => $configHelper->getSearchOnlyAPIKey(),
+    'indexDataByStoreIds' => $block->getCoreHelper()->getIndexDataByStoreIds(),
+    'routing' => false,
+    'facets' => $configHelper->getFacets(),
+    'maxValuesPerFacet' => (int) $configHelper->getMaxValuesPerFacet(),
+    'landingPageConfig' => json_decode($landingPage->getConfiguration()),
+    'searchParameters' => [
+        'query' => $landingPage->getQuery(),
+        'hitsPerPage' => 10,
+        'getRankingInfo' => true,
+        'ruleContexts' => [
+            '',
+            'magento-landingpage-' . $landingPageId,
+        ],
+    ],
+];
+
+?>
+
+
+<input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="algolia_algoliasearch_landingpage_form" />
+<input type="hidden" name="algolia_query" value="<?php echo htmlentities($landingPage->getQuery()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
+<input type="hidden" name="algolia_configuration" value="<?php echo htmlentities($landingPage->getConfiguration()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
+
+<div class="with-facets" id="algolia_instant_selector">
+    <div class="merchandising-tutorial">
+        <div class="close-box">x</div>
+        <div class="col-left">
+            <h3>How does it work?</h3>
+            <p>1. Enter the search query (keyword) that is the focus of your landing page. For example "weekender bag".</p>
+            <p>2. Pre-select applicable filters, for example a price range that is interesting to your customers.</p>
+        </div>
+        <div class="col-middle">
+            <img src="<?php echo $merchIllustration ?>"/>
+        </div>
+        <div class="col-right">
+            <p>3. You can see which products (and in what order) will be shown on the final landing page. If you're on Algolia's higher plans, you may manually set specific order of products, promote or demote as desired.</p>
+            <p>Read more about Merchandising in our <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/merchandising-and-promoting/" target="_blank">Documentation</a>.</p>
+        </div>
+    </div>
+    <br>
+
+    <div class="algolia_merchandising_items_left_container" id="algolia_merchandising_items_left_container">
+        <div id="search-box">
+            <div class="ais-root ais-current-refined-values facet">
+                <div class="ais-current-refined-values--header ais-header">
+                    <div class="name">Search query</div>
+                </div>
+                <div id="algolia_merchandising_search_box" class="ais-body"></div>
+            </div>
+        </div>
+
+        <div id="filters-box">
+            <div class="ais-root ais-current-refined-values facet">
+                <div class="ais-current-refined-values--header ais-header">
+                    <div class="name">Filters</div>
+                </div>
+                <div id="current-refinements"></div>
+                <div id="algolia_merchandising_facet_wrapper"></div>
+            </div>
+        </div>
+    </div>
+    <div class="algolia_merchandising_items_right_container" id="algolia_merchandising_items_right_container">
+        <h2>Products shown on landing page</h2>
+        <div id="algolia-stats"></div>
+        <?php if ($block->getPlanLevel() == 3) : ?>
+            <label for="algolia_merchandising_autocomplete">
+                <input type="text" id="algolia_merchandising_autocomplete" placeholder="Quickly find an item to promote..." />
+            </label>
+        <?php endif; ?>
+        <div id="algolia_sortby"></div>
+        <div id="algolia_hit_per_page"></div>
+        <div id="algolia_merchandising_hits"></div>
+        <div id="instant-search-pagination-container"></div>
+        <?php if ($block->getPlanLevel() < 3) : ?>
+            <div class="algolia-suggestions-header algolia-suggestions-header-wbg">
+                <img src="<?php echo $starsIllustration ?>" class="stars" />
+                <p>To be able to sort search results in particular order (promote or demote items), please consider <a href="https://www.algolia.com/pricing" target="_blank" >upgrading to a higher plan</a>.</p>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<script type="text/template" id="algolia_merchandising_all_items_template">
+    <div class="admin__data-grid-wrap admin__data-grid-wrap-static algolia_merchandising_items_table">
+        <table class="data-grid">
+            <thead>
+            <tr>
+                <th class="data-grid-th">Position</th>
+                <th class="data-grid-th">Image</th>
+                <th class="data-grid-th">ID</th>
+                <th class="data-grid-th">SKU</th>
+                <th class="data-grid-th">Name</th>
+                <th class="data-grid-th">Price</th>
+                <?php if ($block->getPlanLevel() == 3) : ?>
+                    <th class="data-grid-th">Pin it</th>
+                <?php endif; ?>
+            </tr>
+            </thead>
+            <tbody>
+            {{#hits}}
+            <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
+            <td class="position_cell">
+                <span class="padlock"></span>
+                <?php if ($block->getPlanLevel() == 3) : ?>
+                    <span class="draggable-handle"></span>
+                <?php endif; ?>
+            </td>
+            <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
+            <td>{{ objectID }}</td>
+            <td>{{{ _highlightResult.sku.value }}}</td>
+            <td>{{{ _highlightResult.name.value }}}</td>
+            <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+            <?php if ($block->getPlanLevel() == 3) : ?>
+                <td class="actions">
+                    <div class="pin_block">
+                        <a class="arrow up" href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                                <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
+                            </svg>
+                            ️</a>
+                        <a href="#" class="pinIt">PIN HERE</a>
+                        <a href="#" class="unpinIt">UN-PIN</a>
+                        <a class="arrow down" href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                                <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </td>
+            <?php endif; ?>
+            </tr>
+            {{/hits}}
+            </tbody>
+        </table>
+    </div>
+
+</script>
+
+
+<script type="text/template" id="algolia_merchandising_no_results">
+    <div class="algolia_merchandising_no_results messages">
+        <div class="message message-warning warning">
+            Algolia didn't find any products in this landing page.
+            If there are supposed to be some products, please reindex Products indexer.
+        </div>
+    </div>
+
+    <div class="admin__data-grid-wrap admin__data-grid-wrap-static algolia_merchandising_items_table">
+        <table class="data-grid">
+            <thead>
+            <tr>
+                <th class="data-grid-th">Position</th>
+                <th class="data-grid-th">Image</th>
+                <th class="data-grid-th">ID</th>
+                <th class="data-grid-th">SKU</th>
+                <th class="data-grid-th">Name</th>
+                <th class="data-grid-th">Price</th>
+                <?php if ($block->getPlanLevel() == 3) : ?>
+                    <th class="data-grid-th">Pin it</th>
+                <?php endif; ?>
+            </tr>
+            </thead>
+            <tbody>
+            {{#hits}}
+            <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
+            <td class="position_cell">
+                <span class="padlock"></span>
+                <?php if ($block->getPlanLevel() == 3) : ?>
+                    <span class="draggable-handle"></span>
+                <?php endif; ?>
+            </td>
+            <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
+            <td>{{ objectID }}</td>
+            <td>{{{ _highlightResult.sku.value }}}</td>
+            <td>{{{ _highlightResult.name.value }}}</td>
+            <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+            <?php if ($block->getPlanLevel() == 3) : ?>
+                <td class="actions">
+                    <div class="pin_block">
+                        <a class="arrow up" href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                                <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
+                            </svg>
+                            ️</a>
+                        <a href="#" class="pinIt">PIN HERE</a>
+                        <a href="#" class="unpinIt">UN-PIN</a>
+                        <a class="arrow down" href="#">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                                <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </td>
+            <?php endif; ?>
+            </tr>
+            {{/hits}}
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<script type="text/template" id="algolia_merchandisign_table_row">
+    <tr data-objectid="{{ objectID }}">
+        <td class="position_cell">
+            <span class="padlock"></span>
+            <?php if ($block->getPlanLevel() == 3) : ?>
+                <span class="draggable-handle"></span>
+            <?php endif; ?>
+        </td>
+        <td class="image_cell"><img src="{{ image_url }}" width="60" /></td>
+        <td>{{ objectID }}</td>
+        <td>{{{ sku }}}</td>
+        <td>{{{ name }}}</td>
+        <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+        <?php if ($block->getPlanLevel() == 3) : ?>
+            <td class="actions">
+                <div class="pin_block">
+                    <a class="arrow up" href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                            <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
+                        </svg>
+                        ️</a>
+                    <a href="#" class="pinIt">PIN HERE</a>
+                    <a href="#" class="unpinIt">UN-PIN</a>
+                    <a class="arrow down" href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                            <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
+                        </svg>
+                    </a>
+                </div>
+            </td>
+        <?php endif; ?>
+    </tr>
+</script>
+
+<script type="text/template" id="algolia_merchandising_autocomplete_hit">
+    <div class="algoliasearch-autocomplete-hit">
+        <div class="thumb"><img src="{{ image_url }}" /></div>
+
+        <div class="info">
+            {{{ _highlightResult.name.value }}}
+            <div class="price">
+                {{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}
+            </div>
+        </div>
+
+        <a href="#" class="pinIt">
+            PIN THIS PRODUCT
+        </a>
+        <div class="algolia-clearfix"></div>
+    </div>
+    <hr />
+</script>
+
+<script type="text/template" id="refinements-lists-item-template">
+    <div class="{{cssClasses.label}} {{#isRefined}}checked{{/isRefined}}">
+        <input class="{{cssClasses.checkbox}}" {{#isRefined}}checked{{/isRefined}} type="checkbox">
+        {{value}}
+        <span class="{{cssClasses.count}}">{{count}}</span>
+    </div>
+</script>
+
+<script type="text/template" id="current-refinements-template">
+    <div class="cross-wrapper">
+        <span class="clear-cross clear-refinement"></span>
+    </div>
+    <div class="current-refinement-wrapper">
+        {{#label}}
+        <span class="current-refinement-label">{{label}}{{^operator}}:{{/operator}}</span>
+        {{/label}}
+        {{#operator}}
+        {{{displayOperator}}}
+        {{/operator}}
+        {{#exclude}}-{{/exclude}}
+        <span class="current-refinement-name">{{name}}</span>
+    </div>
+</script>
+
+<script type="text/template" id="instant-stats-template">
+    {{#hasOneResult}}
+        <strong>1</strong> product matches this query / filter
+    {{/hasOneResult}}
+
+    {{#hasManyResults}}
+        <strong><span itemprop="numberOfItems">{{nbHits}}</span></strong> products match this query / filter
+    {{/hasManyResults}}
+</script>
+
+<script>
+  requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
+    algoliaAdminBundle.$(function ($) {
+      var config = <?php echo json_encode($isConfig); ?>;
+      config.indexName = getCurrentIndexName();
+      var search = algoliaAdminBundle.instantsearch(config);
+      var facetWrapper = document.getElementById('algolia_merchandising_facet_wrapper');
+
+      /** Setup attributes for current refinements widget **/
+      var attributes = [];
+      $.each(config.facets, function (i, facet) {
+        var name = facet.attribute;
+
+        if (name === 'categories') {
+          name = 'categories.level0';
+        }
+
+        if (name === 'price') {
+          name = facet.attribute + getCurrentPriceKey()
+        }
+
+        attributes.push({
+          name: name,
+          label: facet.label ? facet.label : facet.attribute
+        });
+      });
+
+      // initialize SearchBox
+      search.addWidget(
+         algoliaAdminBundle.instantsearch.widgets.searchBox({
+             container: '#algolia_merchandising_search_box',
+             placeholder: 'Enter the focus keyword of your landing page',
+             reset: false,
+             magnifier: false,
+             queryHook : function(inputValue, search) {
+               $('input[name="query"]').val(inputValue).change();
+               $('input[name="algolia_query"]').val(inputValue).change();
+               return search(inputValue);
+             }
+         })
+      );
+
+      // initialize SortBy selector
+      var sortingIndices = [];
+      for (var storeId in config.indexDataByStoreIds) {
+        var currentIndexName = config.indexDataByStoreIds[storeId].indexName;
+        if (typeof currentIndexName === "undefined" ) {
+          continue;
+        }
+        sortingIndices.push ({
+          'name': currentIndexName + '_products',
+          'label': currentIndexName
+        });
+      }
+
+      search.addWidget(
+        algoliaAdminBundle.instantsearch.widgets.sortBySelector({
+          container: '#algolia_sortby',
+          indices: sortingIndices
+        })
+      );
+
+      search.addWidget(
+        algoliaAdminBundle.instantsearch.widgets.pagination({
+          container: '#instant-search-pagination-container',
+          cssClass: 'algolia-pagination',
+          maxPages: 1000,
+          scrollTo: false,
+          showFirstLast: false,
+        })
+      );
+
+      search.addWidget(
+        algoliaAdminBundle.instantsearch.widgets.hitsPerPageSelector({
+          container: '#algolia_hit_per_page',
+          items: [
+            {value: 10, label: 'Show 10 per page', default: true},
+            {value: 20, label: 'Show 20 per page'},
+            {value: 50, label: 'Show 50 per page'},
+          ]
+        })
+      );
+
+      search.addWidget(
+        algoliaAdminBundle.instantsearch.widgets.stats({
+          container: '#algolia-stats',
+          templates: {
+            body: $('#instant-stats-template').html()
+          }
+        })
+      );
+
+
+
+      // initialize Current refined values
+      search.addWidget(
+        algoliaAdminBundle.instantsearch.widgets.currentRefinedValues({
+          container: '#current-refinements',
+          cssClasses: {
+            root: 'facet'
+          },
+          templates: {
+            header: '<div class="name">Selected filters</div>',
+            clearAll: "Clear all",
+            item: $('#current-refinements-template').html()
+          },
+          attributes: attributes,
+          onlyListedAttributes: true
+        })
+      );
+
+      // initialize hits widget
+      search.addWidget(
+        algoliaAdminBundle.instantsearch.widgets.hits({
+          container: '#algolia_merchandising_hits',
+          transformData: {
+            allItems: function(res) {
+              var positions = {};
+              for (var i = 0; i < res.hits.length; i++) {
+                var hit = res.hits[i],
+                  pinned = false;
+
+                if (hit._rankingInfo.promoted === true) {
+                  positions[hit.objectID] = i;
+                  pinned = true;
+                }
+
+                res.hits[i]['pinned'] = true;
+              }
+
+              $('input[name="algolia_merchandising_positions"]').val(JSON.stringify(positions));
+              updateConfigInput(res._state);
+
+              return res;
+            }
+          },
+          templates: {
+            allItems: $('#algolia_merchandising_all_items_template').html(),
+            empty: $('#algolia_merchandising_no_results').html()
+          },
+          escapeHits: true
+        })
+      );
+
+      function updateConfigInput(state) {
+        var disjunctiveRefinements = state.disjunctiveFacetsRefinements;
+        var hierarchicalRefinements = state.hierarchicalFacetsRefinements;
+        var refinements = state.facetsRefinements;
+        var numericRefinements = state.numericRefinements;
+        var rawConfig = Object.assign(disjunctiveRefinements, hierarchicalRefinements, refinements);
+
+        var formattedConfig = {};
+        for (var attribute in rawConfig) {
+          if (rawConfig.hasOwnProperty(attribute) || typeof rawConfig[attribute] != "undefined") {
+            formattedConfig[attribute] = rawConfig[attribute].join("~");
+          }
+        }
+
+        var priceFacet = 'price' + getCurrentPriceKey();
+        if (typeof numericRefinements[priceFacet] !== "undefined") {
+          formattedConfig[priceFacet] =  numericRefinements[priceFacet];
+        }
+
+        $('input[name="configuration"]').val(JSON.stringify(formattedConfig)).change();
+        $('input[name="algolia_configuration"]').val(JSON.stringify(formattedConfig)).change();
+      }
+
+      function getCurrentIndexName() {
+        return config.indexDataByStoreIds[$('select[name="store_id"]').val()].indexName + '_products';
+      }
+
+      function getCurrentPriceKey() {
+        return config.indexDataByStoreIds[$('select[name="store_id"]').val()].priceKey;
+      }
+
+      var customAttributeFacet = {
+        categories: function (facet, templates) {
+          var hierarchical_levels = [];
+          for (var l = 0; l < 10; l++)
+            hierarchical_levels.push('categories.level' + l.toString());
+
+          var hierarchicalMenuParams = {
+            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+            attributes: hierarchical_levels,
+            separator: ' /// ',
+            alwaysGetRootLevel: true,
+            limit: config.maxValuesPerFacet,
+            templates: templates,
+            sortBy: ['name:asc'],
+            cssClasses: {
+              list: 'hierarchical',
+              root: 'facet hierarchical'
+            }
+          };
+
+          hierarchicalMenuParams.templates.item = '' +
+            '<div class="ais-hierearchical-link-wrapper">' +
+            '<a class="{{cssClasses.link}}" href="{{url}}">{{label}}' +
+            '{{#isRefined}}<span class="cross-circle"></span>{{/isRefined}}' +
+            '<span class="{{cssClasses.count}}">{{count}}</span></a>' +
+            '</div>';
+
+          return ['hierarchicalMenu', hierarchicalMenuParams];
+        }
+      };
+
+      window.getFacetWidget = function (facet, templates) {
+
+        if (facet.type === 'conjunctive') {
+          var refinementListOptions = {
+            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+            attributeName: facet.attribute,
+            limit: config.maxValuesPerFacet,
+            operator: 'and',
+            templates: templates,
+            sortBy: ['count:desc', 'name:asc'],
+            cssClasses: {
+              root: 'facet conjunctive'
+            }
+          };
+
+          refinementListOptions = addSearchForFacetValues(facet, refinementListOptions);
+
+          return ['refinementList', refinementListOptions];
+        }
+
+        if (facet.type === 'disjunctive') {
+          var refinementListOptions = {
+            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+            attributeName: facet.attribute,
+            limit: config.maxValuesPerFacet,
+            operator: 'or',
+            templates: templates,
+            sortBy: ['count:desc', 'name:asc'],
+            cssClasses: {
+              root: 'facet disjunctive'
+            }
+          };
+
+          refinementListOptions = addSearchForFacetValues(facet, refinementListOptions);
+
+          return ['refinementList', refinementListOptions];
+        }
+
+        if (facet.type === 'slider') {
+          delete templates.item;
+
+          return ['rangeSlider', {
+            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+            attributeName: facet.attribute,
+            templates: templates,
+            cssClasses: {
+              root: 'facet slider'
+            }
+          }];
+        }
+      };
+
+      function addSearchForFacetValues(facet, options) {
+        if (facet.searchable === '1') {
+          options['searchForFacetValues'] = {
+            placeholder: '',
+            templates: {
+              noResults: '<div class="sffv-no-results">No Result</div>'
+            }
+          };
+        }
+
+        return options;
+      }
+
+      $.each(config.facets, function (i, facet) {
+
+        if (facet.attribute.indexOf("price") !== -1)
+          facet.attribute = facet.attribute + getCurrentPriceKey();
+
+        facet.wrapper = facetWrapper;
+
+        var templates = {
+          header: '<div class="name">' + (facet.label ? facet.label : facet.attribute) + '</div>',
+          item: $('#refinements-lists-item-template').html()
+        };
+
+        var widgetInfo = customAttributeFacet[facet.attribute] !== undefined ?
+          customAttributeFacet[facet.attribute](facet, templates) :
+          getFacetWidget(facet, templates);
+
+
+        var widgetType = widgetInfo[0],
+          widgetConfig = widgetInfo[1];
+
+        search.addWidget(algoliaAdminBundle.instantsearch.widgets[widgetType](widgetConfig));
+
+      });
+
+      // Refine according to preselected facets
+      search.addWidget(
+        {
+          init: function (data) {
+            data.helper.addNumericRefinement('visibility_search', '=', 1);
+
+            for (var attribute in config.landingPageConfig) {
+              if (config.landingPageConfig.hasOwnProperty(attribute)) {
+                if (attribute.match(/price/) !== null) {
+                  var values = config.landingPageConfig[attribute];
+                  for (var key in values) {
+                    data.helper.addNumericRefinement(attribute, key, values[key][0]);
+                  }
+                } else {
+                  var values = config.landingPageConfig[attribute].split("~");
+                  for(var i=0; i<values.length; i++) {
+                    data.helper.toggleRefine(attribute, values[i]);
+                  }
+                }
+              }
+            }
+          },
+        }
+      );
+
+      <?php if ($block->getPlanLevel() == 3) : ?>
+        search.on('render', function() {
+          initAutocomplete();
+          initSortableTable();
+        });
+      <?php endif; ?>
+
+      search.start();
+
+      $(document).on('click', '.algolia_merchandising_items_table a.pinIt', function(e) {
+        var $row = $(this).closest('tr');
+        pinIt($row);
+
+        e.preventDefault();
+        return false;
+      });
+
+      $(document).on('click', '.algolia_merchandising_items_table a.unpinIt', function(e) {
+        $(this).closest('tr').removeClass('pinned');
+
+        regeneratePositionsValue();
+
+        e.preventDefault();
+        return false;
+      });
+
+      $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
+        var $row = $(this).closest('tr'),
+          $previousRow = $row.prev();
+
+        if ($previousRow.length > 0) {
+          $previousRow.insertAfter($row);
+          pinIt($row);
+        }
+
+        e.preventDefault();
+        return false;
+      });
+
+      $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
+        var $row = $(this).closest('tr'),
+          $nextRow = $row.next();
+
+        if ($nextRow.length > 0) {
+          $nextRow.insertBefore($row);
+          pinIt($row);
+        }
+
+        e.preventDefault();
+        return false;
+      });
+
+      $('select[name="store_id"]').on('change', function(e) {
+        $('.ais-sort-by-selector').val(config.indexDataByStoreIds[$(this).val()].indexName + '_products').change();
+      });
+
+      var initAutocomplete = function() {
+        var client = algoliaAdminBundle.algoliasearch(config.appId, config.apiKey),
+          index = client.initIndex(getCurrentIndexName()),
+          template = algoliaAdminBundle.Hogan.compile($('#algolia_merchandising_autocomplete_hit').html()),
+          options = {
+            hitsPerPage: config.searchParameters.hitsPerPage + 5,
+            facetFilters: config.searchParameters.facetFilters
+          },
+          sources = [{
+            source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
+            name: 'products',
+            templates: {
+              header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
+              suggestion: function (hit) {
+                return template.render(hit);
+              }
+            }
+          }];
+
+        $('#algolia_merchandising_autocomplete')
+          .autocomplete({ debug: false, hint: false }, sources)
+          .on('autocomplete:selected', function (e, suggestion) {
+            var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
+
+            if ($existingRow.length > 0) {
+              var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+              $existingRow.insertBefore($firstRow);
+            }
+            else {
+              var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+                newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+                rowHtml = newRowTemplate.render(suggestion);
+
+              $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+            }
+
+            var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+            pinIt($firstRow);
+          });
+      };
+
+      var initSortableTable = function() {
+        $('.algolia_merchandising_items_table tbody').sortable({
+          containment: 'parent',
+          items: 'tr',
+          tolerance: 'pointer',
+          helper: sortableHelper,
+          start: function (event, ui) {
+            $(ui.item).css('margin-left', '10px');
+          },
+          stop: function (event, ui) {
+            var $row = $(ui.item[0]);
+            pinIt($row);
+          }
+        });
+
+        $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+      };
+
+      var pinIt = function($row) {
+        if ($row.hasClass('pinned') === false) {
+          $row.addClass('pinned');
+        }
+
+        regeneratePositionsValue();
+      };
+
+      var regeneratePositionsValue = function() {
+        var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
+          positions = {};
+
+        $('.algolia_merchandising_items_table tbody tr').each(function(position) {
+          if ($(this).hasClass('pinned')) {
+            var objectId = $(this).data('objectid');
+            positions[objectId] = position;
+          }
+        });
+
+        $positionsInput.val(JSON.stringify(positions));
+      };
+
+      var sortableHelper = function(e, ui) {
+        ui.children().each(function() {
+          $(this).width($(this).width());
+        });
+
+        return ui;
+      };
+
+      $(".close-box").click(function() {
+        $(this).parent().hide();
+      });
+
+    });
+  });
+
+  var createISWidgetContainer = function (attributeName) {
+    var div = document.createElement('div');
+    div.className = 'is-widget-container-' + attributeName.split('.').join('_');
+
+    return div;
+  };
+
+</script>

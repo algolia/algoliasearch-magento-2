@@ -613,7 +613,7 @@
                     <label>Number of jobs to run each time the cron is run</label>
                     <comment>
                         <![CDATA[
-                            Number of queued jobs to run each time the cron is launched. Default value is 10.
+                            Number of queued jobs to run each time the cron is launched. Default value is 5.
                             <br><span class="algolia-config-warning">&#9888;</span> Each time the cron runs it will process ("Max number of element per indexing job" * "Number of jobs to run each time the cron is run")
                             products.
                         ]]>
@@ -840,7 +840,7 @@
                     <label>Maximal number of elements per indexing job</label>
                     <comment>
                         <![CDATA[
-                            Default value is 100.
+                            Default value is 300.
                         ]]>
                     </comment>
                 </field>

@@ -5,4 +5,9 @@
     <type name="Magento\Catalog\Model\Category">
         <plugin name="algolia_algoliasearch_plugin_category_url" type="Algolia\AlgoliaSearch\Plugin\CategoryUrlPlugin"/>
     </type>
+    <type name="Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit\AbstractButton">
+        <arguments>
+            <argument name="frontendUrlBuilder" xsi:type="object">Magento\Framework\Url</argument>
+        </arguments>
+    </type>
 </config>

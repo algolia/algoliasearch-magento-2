@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Magento;
 use Magento\Framework\Message\ManagerInterface;
@@ -99,7 +100,7 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
 
             $pages = ceil($size / $productsPerPage);
 
-            $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', [
+            $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', [
                 'store_id' => $storeId,
                 'useTmpIndex' => $useTmpIndex,
             ]);

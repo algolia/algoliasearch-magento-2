@@ -51,8 +51,7 @@ $view = $this->getViewModel();
             <div class="one-third col-2">
                 <div class="title">
                     <h4><?php echo __('Conversion rate') ?>
-                        <?php echo $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.',
-                            $view->getAnalyticsConfigurationUrl())) ?>
+                        <?php echo $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.', $view->getAnalyticsConfigurationUrl())) ?>
                     </h4>
                 </div>
                 <?php $conversion = $view->getConversionRate() ?>

@@ -45,12 +45,12 @@ class Merchandising implements ObserverInterface
                 }
 
                 if (!$positions) {
-                    $this->merchandisingHelper->deleteQueryRule($store->getId(), $categoryId);
+                    $this->merchandisingHelper->deleteQueryRule($store->getId(), $categoryId, 'category');
 
                     return;
                 }
 
-                $this->merchandisingHelper->saveQueryRule($store->getId(), $categoryId, $positions);
+                $this->merchandisingHelper->saveQueryRule($store->getId(), $categoryId, $positions, 'category');
             }
         } catch (\AlgoliaSearch\AlgoliaException $e) {
             $message = $e->getMessage();

@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
+use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Magento;
 use Magento\Framework\Message\ManagerInterface;
@@ -81,15 +82,14 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                     count($categoryIds)
                 );
             } else {
-                $this->queue->addToQueue($this->fullAction, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
-                $categoryIds = [];
+                $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
             }
 
             $this->queue->addToQueue(
                 $this->fullAction,
                 'rebuildStoreCategoryIndex',
                 ['store_id' => $storeId, 'category_ids' => $categoryIds],
-                count($categoryIds)
+                is_array($categoryIds) ? count($categoryIds) : 1
             );
 
             if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {

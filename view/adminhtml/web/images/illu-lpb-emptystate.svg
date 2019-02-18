@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="271px" height="166px" viewBox="0 0 271 166" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.6 (67491) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 7</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Landing-Page-Builder" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Landing-page---List" transform="translate(-585.000000, -329.000000)">
+            <g id="Group-10" transform="translate(113.000000, 257.000000)">
+                <g id="Group-7" transform="translate(472.000000, 72.000000)">
+                    <path d="M248.5,43 C189,24 129,-0.5 97.5,39 C66,78.5 11.5,52 1.5,91 C-8.5,130 78,185 123,159 C168,133 260.5,167 242.5,116 C224.5,65 308,62 248.5,43 Z" id="Path-5" fill-opacity="0.220618207" fill="#9D9894"></path>
+                    <g id="Group-6" opacity="0.305408296" transform="translate(53.000000, 0.000000)">
+                        <rect id="Rectangle" stroke="#9D9894" stroke-width="2" fill="#FFFFFF" x="1" y="1" width="98" height="118" rx="5"></rect>
+                        <rect id="Rectangle" stroke="#9D9894" fill="#EAE9E8" x="9.5" y="10.5" width="82" height="15" rx="2"></rect>
+                        <rect id="Rectangle" fill="#9D9894" x="9" y="30" width="61" height="6" rx="1"></rect>
+                        <rect id="Rectangle-Copy-2" fill="#9D9894" x="9" y="50" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-3" fill="#9D9894" opacity="0.396949405" x="39" y="50" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-4" fill="#9D9894" opacity="0.797572545" x="68" y="50" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-7" fill="#9D9894" opacity="0.705822173" x="9" y="72" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-6" fill="#9D9894" opacity="0.597400484" x="39" y="72" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-5" fill="#9D9894" opacity="0.502371652" x="68" y="72" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-10" fill="#9D9894" opacity="0.640950521" x="9" y="93" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-9" fill="#9D9894" x="39" y="93" width="23" height="16" rx="1"></rect>
+                    </g>
+                    <path d="M197.5,47 C207.717268,47 216,38.7172679 216,28.5 C216,18.2827321 207.717268,10 197.5,10 C187.282732,10 179,18.2827321 179,28.5 C179,38.7172679 187.282732,47 197.5,47 Z" id="Oval" stroke="#979797" stroke-width="10" stroke-linejoin="round" stroke-dasharray="2,16"></path>
+                    <g id="Group-6-Copy" transform="translate(100.000000, 25.000000)">
+                        <rect id="Rectangle" stroke="#9D9894" stroke-width="2" fill="#FFFFFF" x="1" y="1" width="98" height="118" rx="5"></rect>
+                        <rect id="Rectangle" stroke="#9D9894" fill="#EAE9E8" x="9.5" y="10.5" width="82" height="31" rx="2"></rect>
+                        <rect id="Rectangle-Copy-2" fill="#9D9894" x="9" y="50" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-3" fill="#9D9894" opacity="0.396949405" x="39" y="50" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-4" fill="#9D9894" opacity="0.797572545" x="68" y="50" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-7" fill="#9D9894" opacity="0.705822173" x="9" y="72" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-6" fill="#9D9894" opacity="0.597400484" x="39" y="72" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-5" fill="#9D9894" opacity="0.502371652" x="68" y="72" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-10" fill="#9D9894" opacity="0.640950521" x="9" y="93" width="23" height="16" rx="1"></rect>
+                        <rect id="Rectangle-Copy-9" fill="#9D9894" x="39" y="93" width="23" height="16" rx="1"></rect>
+                    </g>
+                    <text id="-50%" opacity="0.549804688" font-family="Hind-Medium, Hind" font-size="16" font-weight="400" fill="#2F2F2F">
+                        <tspan x="119" y="53">-50%</tspan>
+                    </text>
+                    <text id="-20%" opacity="0.549804688" font-family="Hind-Medium, Hind" font-size="11" font-weight="400" fill="#2F2F2F">
+                        <tspan x="153" y="62">-20%</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

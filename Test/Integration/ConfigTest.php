@@ -2,18 +2,16 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
-use Algolia\AlgoliaSearch\Helper\Data;
+use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use AlgoliaSearch\AlgoliaException;
 
 class ConfigTest extends TestCase
 {
     public function testFacets()
     {
-        $facets = $this->configHelper->getFacets();
-
-        /** @var Data $helper */
-        $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
-        $helper->saveConfigurationToAlgolia(1);
+        /** @var IndicesConfigurator $indicesConfigurator */
+        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
+        $indicesConfigurator->saveConfigurationToAlgolia(1);
 
         $this->algoliaHelper->waitLastTask();
 
@@ -24,9 +22,9 @@ class ConfigTest extends TestCase
 
     public function testQueryRules()
     {
-        /** @var Data $helper */
-        $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
-        $helper->saveConfigurationToAlgolia(1);
+        /** @var IndicesConfigurator $indicesConfigurator */
+        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
+        $indicesConfigurator->saveConfigurationToAlgolia(1);
 
         $this->algoliaHelper->waitLastTask();
 
@@ -55,8 +53,8 @@ class ConfigTest extends TestCase
 
     public function testAutomaticalSetOfCategoriesFacet()
     {
-        /** @var Data $helper */
-        $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
+        /** @var IndicesConfigurator $indicesConfigurator */
+        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
 
         // Remove categories from facets
         $facets = $this->configHelper->getFacets();
@@ -72,7 +70,7 @@ class ConfigTest extends TestCase
         // Set don't replace category pages with Algolia - categories attribute shouldn't be included in facets
         $this->setConfig('algoliasearch_instant/instant/replace_categories', '0');
 
-        $helper->saveConfigurationToAlgolia(1);
+        $indicesConfigurator->saveConfigurationToAlgolia(1);
 
         $this->algoliaHelper->waitLastTask();
 
@@ -93,7 +91,7 @@ class ConfigTest extends TestCase
         // Set replace category pages with Algolia - categories attribute should be included in facets
         $this->setConfig('algoliasearch_instant/instant/replace_categories', '1');
 
-        $helper->saveConfigurationToAlgolia(1);
+        $indicesConfigurator->saveConfigurationToAlgolia(1);
 
         $this->algoliaHelper->waitLastTask();
 
@@ -183,9 +181,9 @@ class ConfigTest extends TestCase
             $this->indexPrefix . 'default_products_created_at_desc' => 'desc(created_at)',
         ];
 
-        /** @var Data $helper */
-        $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
-        $helper->saveConfigurationToAlgolia(1);
+        /** @var IndicesConfigurator $indicesConfigurator */
+        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
+        $indicesConfigurator->saveConfigurationToAlgolia(1);
 
         $this->algoliaHelper->waitLastTask();
 
@@ -204,10 +202,10 @@ class ConfigTest extends TestCase
 
     public function testExtraSettings()
     {
-        /** @var Data $helper */
-        $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
+        /** @var IndicesConfigurator $indicesConfigurator */
+        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
 
-        $helper->saveConfigurationToAlgolia(1);
+        $indicesConfigurator->saveConfigurationToAlgolia(1);
         $this->algoliaHelper->waitLastTask();
 
         $sections = ['products', 'categories', 'pages', 'suggestions'];
@@ -233,7 +231,7 @@ class ConfigTest extends TestCase
             $this->setConfig('algoliasearch_extra_settings/extra_settings/' . $section . '_extra_settings', '{"exactOnSingleWordQuery":"word"}');
         }
 
-        $helper->saveConfigurationToAlgolia(1);
+        $indicesConfigurator->saveConfigurationToAlgolia(1);
         $this->algoliaHelper->waitLastTask();
 
         foreach ($sections as $section) {
@@ -248,8 +246,8 @@ class ConfigTest extends TestCase
 
     public function testInvalidExtraSettings()
     {
-        /** @var Data $helper */
-        $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
+        /** @var IndicesConfigurator $indicesConfigurator */
+        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
 
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
@@ -258,7 +256,7 @@ class ConfigTest extends TestCase
         }
 
         try {
-            $helper->saveConfigurationToAlgolia(1);
+            $indicesConfigurator->saveConfigurationToAlgolia(1);
         } catch (AlgoliaException $e) {
             $message = $e->getMessage();
 

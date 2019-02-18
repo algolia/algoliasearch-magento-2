@@ -4,4 +4,16 @@
         <plugin name="algolia_rendering_cache_context_plugin"
                 type="Algolia\AlgoliaSearch\Plugin\RenderingCacheContextPlugin" />
     </type>
+
+    <type name="Magento\Framework\App\RouterList">
+        <arguments>
+            <argument name="routerList" xsi:type="array">
+                <item name="algoliasearch" xsi:type="array">
+                    <item name="class" xsi:type="string">Algolia\AlgoliaSearch\Controller\Router</item>
+                    <item name="disable" xsi:type="boolean">false</item>
+                    <item name="sortOrder" xsi:type="string">70</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
 </config>

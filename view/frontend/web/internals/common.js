@@ -556,23 +556,33 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		// Targeted index is defined by sortBy parameter
 		window.routing = {
 			router: algoliaBundle.instantsearch.routers.history({
-				parseURL({qsModule, location}) {
+				parseURL: function (qsObject) {
+					let location = qsObject.location,
+						qsModule = qsObject.qsModule;
 					const queryString = location.hash ? location.hash : location.search;
 					return qsModule.parse(queryString.slice(1))
 				},
-				createURL({ qsModule, routeState, location }) {
-					const { protocol, hostname, port = '', pathname, hash } = location;
+				createURL: function (qsObject) {
+					let qsModule = qsObject.qsModule,
+						routeState = qsObject.routeState,
+						location = qsObject.location;
+					const protocol = location.protocol,
+						hostname = location.hostname,
+						port = location.port ? location.port : '',
+						pathname = location.pathname,
+						hash = location.hash;
+
 					const queryString = qsModule.stringify(routeState);
-					const portWithPrefix = port === '' ? '' : `:${port}`;
+					const portWithPrefix = port === '' ? '' : ':' + port;
 					// IE <= 11 has no location.origin or buggy. Therefore we don't rely on it
 					if (!routeState || Object.keys(routeState).length === 0)
-						return `${protocol}//${hostname}${portWithPrefix}${pathname}`;
+						return protocol + '//' + hostname + portWithPrefix + pathname;
 					else
-						return `${protocol}//${hostname}${portWithPrefix}${pathname}?${queryString}`;
+						return protocol + '//' + hostname + portWithPrefix + pathname + '?' + queryString;
 				},
 			}),
 			stateMapping: {
-				stateToRoute(uiState) {
+				stateToRoute: function (uiState) {
 					let map = {};
 					if (algoliaConfig.isCategoryPage) {
 						map['q'] = uiState.query;
@@ -606,10 +616,18 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					map['page'] = uiState.page;
 					return map;
 				},
-				routeToState(routeState) {
+				routeToState: function (routeState) {
 					let map = {};
 					routeState = routingBc(routeState);
 					map['query'] = routeState.q == '__empty__' ? '' : routeState.q;
+					if (algoliaConfig.isLandingPage && typeof map['query'] === 'undefined' && algoliaConfig.landingPage.query != '') {
+						map['query'] = algoliaConfig.landingPage.query;
+					}
+
+					let landingPageConfig = algoliaConfig.isLandingPage && algoliaConfig.landingPage.configuration ? 
+						JSON.parse(algoliaConfig.landingPage.configuration) : 
+						{};
+
 					map['refinementList'] = {};
 					map['hierarchicalMenu'] = {};
 					map['range'] = {};
@@ -619,14 +637,38 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							// Handle refinement facets
 							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
 								map['refinementList'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute].split('~');
+								if (algoliaConfig.isLandingPage && 
+									typeof map['refinementList'][currentFacet.attribute] === 'undefined' && 
+									currentFacet.attribute in landingPageConfig) {
+									map['refinementList'][currentFacet.attribute] = landingPageConfig[currentFacet.attribute].split('~');
+								}
 							}
 							// Handle categories facet
 							if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-								map['hierarchicalMenu'][currentFacet.attribute+ '.level0'] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute].split('~');
+								map['hierarchicalMenu']['categories.level0'] = routeState['categories'] && routeState['categories'].split('~');
+								if (algoliaConfig.isLandingPage &&
+									typeof map['hierarchicalMenu']['categories.level0'] === 'undefined' &&
+									'categories.level0' in landingPageConfig) {
+									map['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
+								}
 							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
 								map['range'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute];
+								if (algoliaConfig.isLandingPage &&
+									typeof map['range'][currentFacet.attribute] === 'undefined' &&
+									currentFacet.attribute in landingPageConfig) {
+
+									var facetValue = '';
+									if (typeof landingPageConfig[currentFacet.attribute]['>='] !== "undefined") {
+										facetValue = landingPageConfig[currentFacet.attribute]['>='][0];
+									}
+									facetValue += ':';
+									if (typeof landingPageConfig[currentFacet.attribute]['<='] !== "undefined") {
+										facetValue += landingPageConfig[currentFacet.attribute]['<='][0];
+									}
+									map['range'][currentFacet.attribute] = facetValue;
+								}
 							}
 						};
 					}

@@ -11,7 +11,7 @@ class Index extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-        $breadMain = __('Algolia Reindex');
+        $breadMain = __('Algolia | Reindex SKU(s)');
 
         /** @var \Magento\Framework\View\Result\Page $resultPage */
         $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);

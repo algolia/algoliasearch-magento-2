@@ -11,6 +11,7 @@ class ProxyHelper
     const INFO_TYPE_EXTENSION_SUPPORT = 'extension_support';
     const INFO_TYPE_QUERY_RULES = 'query_rules';
     const INFO_TYPE_ANALYTICS = 'analytics';
+    const INFO_TYPE_PLAN_LEVEL = 'plan_level';
 
     /** @var ConfigHelper */
     private $configHelper;

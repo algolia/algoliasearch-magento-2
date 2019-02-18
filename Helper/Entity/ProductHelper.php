@@ -2,12 +2,18 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
+use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
+use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
+use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
+use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Logger;
 use AlgoliaSearch\AlgoliaException;
 use AlgoliaSearch\Index;
+use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Type;
@@ -16,6 +22,7 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
@@ -294,8 +301,10 @@ class ProductHelper
         $indexSettings = $transport->getData();
 
         $this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
+        $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->setSettings($indexNameTmp, $indexSettings, false, true);
+            $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
         $this->setFacetsQueryRules($indexName);
@@ -326,14 +335,23 @@ class ProductHelper
 
         if (count($replicas) > 0) {
             $this->algoliaHelper->setSettings($indexName, ['replicas' => $replicas]);
+
+            $this->logger->log('Setting replicas to "' . $indexName . '" index.');
+            $this->logger->log('Replicas: ' . json_encode($replicas));
             $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
 
             foreach ($sortingIndices as $values) {
+                $replicaName = $values['name'];
                 $indexSettings['ranking'] = $values['ranking'];
-                $this->algoliaHelper->setSettings($values['name'], $indexSettings, false, true);
+
+                $this->algoliaHelper->setSettings($replicaName, $indexSettings, false, true);
+
+                $this->logger->log('Setting settings to "' . $replicaName . '" replica.');
+                $this->logger->log('Settings: ' . json_encode($indexSettings));
             }
         } else {
             $this->algoliaHelper->setSettings($indexName, ['replicas' => []]);
+            $this->logger->log('Removing replicas from "' . $indexName . '" index');
             $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
         }
 
@@ -366,14 +384,26 @@ class ProductHelper
                 }
             }
 
-            $this->algoliaHelper->setSynonyms($saveToTmpIndicesToo ? $indexNameTmp : $indexName, $synonymsToSet);
+            $this->algoliaHelper->setSynonyms($indexName, $synonymsToSet);
+            $this->logger->log('Setting synonyms to "' . $indexName . '"');
+            if ($saveToTmpIndicesToo === true) {
+                $this->algoliaHelper->setSynonyms($indexNameTmp, $synonymsToSet);
+                $this->logger->log('Setting synonyms to "' . $indexNameTmp . '"');
+            }
         } elseif ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
+            $this->logger->log('
+                Synonyms management disabled. 
+                Copying synonyms from production index to TMP one to not to erase them with the index move.
+            ');
         }
 
         if ($saveToTmpIndicesToo === true) {
             try {
                 $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
+                $this->logger->log('
+                    Copying query rules to "' . $indexNameTmp . '" to not to erase them with the index move.
+                ');
             } catch (AlgoliaException $e) {
                 // Fail silently if query rules are disabled on the app
                 // If QRs are disabled, nothing will happen and the extension will work as expected
@@ -481,37 +511,32 @@ class ProductHelper
 
     private function getSubProducts(Product $product)
     {
-        $subProducts = [];
-        $ids = null;
-
         $type = $product->getTypeId();
-        if ($type === 'configurable' || $type === 'grouped' || $type === 'bundle') {
-            if ($type === 'bundle') {
-                $ids = [];
 
-                /** @var \Magento\Bundle\Model\Product\Type $typeInstance */
-                $typeInstance = $product->getTypeInstance();
+        if (!in_array($type, ['bundle', 'grouped', 'configurable'], true)) {
+            return [];
+        }
 
-                $selection = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product);
-                foreach ($selection as $option) {
-                    $ids[] = $option->getProductId();
-                }
-            }
+        $storeId = $product->getStoreId();
+        $typeInstance = $product->getTypeInstance();
 
-            if ($type === 'configurable' || $type === 'grouped') {
-                $ids = $product->getTypeInstance()->getChildrenIds($product->getId());
-                $ids = call_user_func_array('array_merge', $ids);
-            }
+        if ($typeInstance instanceof Configurable) {
+            $subProducts = $typeInstance->getUsedProducts($product);
+        } elseif ($typeInstance instanceof BundleProductType) {
+            $subProducts = $typeInstance->getOptions($product);
+        } else { // Grouped product
+            $subProducts = $typeInstance->getAssociatedProducts($product);
+        }
 
-            if (count($ids)) {
-                $storeId = $product->getStoreId();
-
-                $onlyVisible = false;
-                if ($this->configHelper->indexOutOfStockOptions($storeId) === false) {
-                    $onlyVisible = true;
-                }
-
-                $subProducts = $this->getProductCollectionQuery($storeId, $ids, $onlyVisible, true)->load();
+        /**
+         * @var int $index
+         * @var Product $subProduct
+         */
+        foreach ($subProducts as $index => $subProduct) {
+            try {
+                $this->canProductBeReindexed($subProduct, $storeId, true);
+            } catch (ProductReindexingException $e) {
+                unset($subProducts[$index]);
             }
         }
 
@@ -522,8 +547,6 @@ class ProductHelper
      * Returns all parent product IDs, e.g. when simple product is part of configurable or bundle
      *
      * @param array $productIds
-     *
-     * @throws \Magento\Framework\Exception\LocalizedException
      *
      * @return array
      */
@@ -539,8 +562,6 @@ class ProductHelper
 
     /**
      * Returns composite product type instances
-     *
-     * @throws \Magento\Framework\Exception\LocalizedException
      *
      * @return AbstractType[]
      *
@@ -1030,6 +1051,7 @@ class ProductHelper
         }
 
         if ($rules) {
+            $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
             $index->batchRules($rules, true);
         }
     }
@@ -1068,5 +1090,50 @@ class ProductHelper
     private function explodeSynonyms($synonyms)
     {
         return array_map('trim', explode(',', $synonyms));
+    }
+
+    /**
+     * Check if product can be index on Algolia
+     *
+     * @param Product $product
+     * @param int $storeId
+     * @param bool $isChildProduct
+     *
+     * @return bool
+     */
+    public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
+    {
+        if ($product->isDeleted() === true) {
+            throw (new ProductDeletedException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if ($product->getStatus() == Status::STATUS_DISABLED) {
+            throw (new ProductDisabledException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if ($isChildProduct === false && !in_array($product->getVisibility(), [
+            Visibility::VISIBILITY_BOTH,
+            Visibility::VISIBILITY_IN_SEARCH,
+            Visibility::VISIBILITY_IN_CATALOG,
+        ])) {
+            throw (new ProductNotVisibleException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
+        }
+
+        if (!$this->configHelper->getShowOutOfStock($storeId)) {
+            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            if (! $stockItem->getIsInStock()) {
+                throw (new ProductOutOfStockException())
+                    ->withProduct($product)
+                    ->withStoreId($storeId);
+            }
+        }
+
+        return true;
     }
 }

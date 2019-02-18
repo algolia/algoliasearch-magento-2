@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Context as CustomerContext;
 use Magento\Framework\App\ActionInterface;
@@ -35,6 +36,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
     private $httpContext;
     private $coreHelper;
     private $categoryHelper;
+    private $landingPageHelper;
     private $checkoutSession;
     private $date;
 
@@ -54,6 +56,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         HttpContext $httpContext,
         CoreHelper $coreHelper,
         CategoryHelper $categoryHelper,
+        LandingPageHelper $landingPageHelper,
         CheckoutSession $checkoutSession,
         DateTime $date,
         array $data = []
@@ -70,6 +73,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $this->httpContext = $httpContext;
         $this->coreHelper = $coreHelper;
         $this->categoryHelper = $categoryHelper;
+        $this->landingPageHelper = $landingPageHelper;
         $this->checkoutSession = $checkoutSession;
         $this->date = $date;
 
@@ -204,5 +208,15 @@ class Algolia extends Template implements CollectionDataSourceInterface
         }
 
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
+    }
+
+    protected function getCurrentLandingPage()
+    {
+        $landingPageId = $this->getRequest()->getParam('landing_page_id');
+        if (!$landingPageId) {
+            return null;
+        }
+
+        return $this->landingPageHelper->getLandingPage($landingPageId);
     }
 }

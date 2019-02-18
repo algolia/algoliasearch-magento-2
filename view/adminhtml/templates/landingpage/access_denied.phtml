@@ -1,0 +1,21 @@
+<?php
+/**
+ * @see \Magento\Backend\Block\Denied
+ */
+$emptyStateIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg');
+$bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+$starsIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
+?>
+<hr class="access-denied-hr"/>
+<div class="access-denied-page algolia-denied-page">
+    <span><img src="<?php echo $emptyStateIllustration ?>" /></span>
+    <div class="algolia-suggestions-header">
+        <img src="<?php echo $bookIllustration ?>" class="book" />
+        <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
+        <p>It is a powerful marketing tool to promote products, with a strong focus on SEO.</p>
+    </div>
+    <div class="algolia-suggestions-header algolia-suggestions-header-wbg">
+        <img src="<?php echo $starsIllustration ?>" class="stars" />
+        <p>To get access to this Algolia feature, please consider <a href="https://www.algolia.com/pricing" target="_blank" >upgrading to a higher plan</a>.</p>
+    </div>
+</div>

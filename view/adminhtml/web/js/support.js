@@ -34,7 +34,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 							<div class="no-results">
 								<img src="` + noResultsIllustration + `" /><br>
 								Sorry, no results found. Try using more general words,<br>
-								fewer words or visit the <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">Algolia documentation</a>.
+								fewer words or visit the <a href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">Algolia documentation</a>.
 							</div>
 						`
 					}
@@ -61,7 +61,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					templates: {
 						body: `
 					{{#morePages}}
-				        <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
+				        <a href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
 				            Go to documentation homepage ...
 				        </a>
 					{{/morePages}}
@@ -199,7 +199,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					container: '.contact_results',
 					templates: {
 						item: getDocumentationTemplate(),
-						empty: 'No results. Please change your search query or visit <a href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">documentation</a>.'
+						empty: 'No results. Please change your search query or visit <a href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">documentation</a>.'
 					}
 				})
 			);

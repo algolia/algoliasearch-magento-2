@@ -109,7 +109,7 @@ class Status extends Template
             );
             $notices[] =  __(
                 'To help you, please read our <a href="%1" target="_blank">documentation</a>.',
-                'https://community.algolia.com/magento/doc/m2/indexing-queue/'
+                'https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/'
             );
         }
 

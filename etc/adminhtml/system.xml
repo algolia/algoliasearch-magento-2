@@ -21,15 +21,15 @@
                         <table class="algolia">
                             <tr>
                                 <td>Documentation:</td>
-                                <td><a target="_blank" href="https://community.algolia.com/magento/doc/m2/getting-started/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://community.algolia.com/magento/documentation</a></td>
+                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/</a></td>
                             </tr>
                             <tr>
                                 <td>FAQ: </td>
-                                <td><a target="_blank" href="https://community.algolia.com/magento/faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://community.algolia.com/magento/faq/</a></td>
+                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/</a></td>
                             </tr>
                             <tr>
                                 <td>Issues: </td>
-                                <td><a target="_blank" href="https://github.com/algolia/algoliasearch-magento-2/issues/">https://github.com/algoliasearch-magento/issues</a></td>
+                                <td><a target="_blank" href="https://github.com/algolia/algoliasearch-magento-2/issues/">https://github.com/algoliasearch-magento-2/issues/</a></td>
                             </tr>
                         </table>
                         <br>
@@ -110,9 +110,9 @@
                 <comment>
                     <![CDATA[
                         To customize the autocomplete menu beyond its configuration, you can read tutorials:
-                        <a target="_blank" href="https://community.algolia.com/magento/doc/m2/customize-autocomplete/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize autocomplete</a>,
-                        <a target="_blank" href="https://community.algolia.com/magento/doc/m1/external-autocomplete-source/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to add an external data source</a>,
-                        <a target="_blank" href="https://community.algolia.com/magento/doc/m2/backend/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
+                        <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/autocomplete-menu/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize autocomplete</a>,
+                        <a target="_blank" href="https://www.algolia.com/doc/integration/magento-1/guides/adding-autocomplete-source/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to add an external data source</a>,
+                        <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
                         <br>
                         <br>
                         <hr>
@@ -213,7 +213,7 @@
                     <comment>
                         <![CDATA[
                             Specify pages you don't want to search in.<br>
-                            Pages' indexing documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#pages-indexing">https://community.algolia.com/magento/doc/m2/indexing/#pages-indexing</a>
+                            Pages' indexing documentation: <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#pages-indexing">https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/#pages-indexing</a>
                             <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Pages indexer after you've modified this panel.
                         ]]>
                     </comment>
@@ -258,8 +258,8 @@
                 <comment>
                     <![CDATA[
                         To customize the instant search results page beyond its configuration, you can read these tutorials:<br >
-                         &nbsp; - <a target="_blank" href="https://community.algolia.com/magento/doc/m2/customize-instantsearch/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize InstantSearch</a><br>
-                         &nbsp; - <a target="_blank" href="https://community.algolia.com/magento/doc/m2/backend/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
+                         &nbsp; - <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/instant-search-page/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize InstantSearch</a><br>
+                         &nbsp; - <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
                         <br>
                         <br>
                         <hr>
@@ -320,7 +320,7 @@
                                 This query rule is applied for both autocomplete and instant search results.
                                 <br><br>
                                 Find out more about Facets in
-                                <a href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets" target="_blank">documentation</a>.
+                                <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets" target="_blank">documentation</a>.
                             </div>
                         ]]>
                     </comment>
@@ -348,7 +348,7 @@
                         <![CDATA[
                             Specify different sorting options you want to offer on a search results page.<br>
                             Each sort will significantly increase the number of records you store in Algolia.<br>
-                            Read more in <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#sorting-strategies">documentation</a>.
+                            Read more in <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#sorting-strategies">documentation</a>.
                         ]]>
                     </comment>
                     <depends>
@@ -416,7 +416,7 @@
                         <table class="algolia">
                             <tr>
                                 <td>Products' indexing documentation:</td>
-                                <td><a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#products-indexing">https://community.algolia.com/magento/doc/m2/indexing/#products-indexing</a></td>
+                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#products-indexing">https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/#products-indexing</a></td>
                             </tr>
                         </table>
                         <br>
@@ -432,7 +432,7 @@
                         <![CDATA[
                             Specify a product's attributes your users can search on (searchable) and the ones required to display search results.
                             The order of the searchable attributes matters: a query matching the first searchable attribute of a product will put this product before the others in the results.<br><br>
-                            Searchable attributes' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes">Products' searchable attributes</a>
+                            Searchable attributes' documentation: <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes">Products' searchable attributes</a>
                             <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Products indexer after you've modified this panel.
                         ]]>
                     </comment>
@@ -476,7 +476,7 @@
                         <table class="algolia">
                             <tr>
                                 <td>Categories' indexing documentation:</td>
-                                <td><a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#categories-indexing">https://community.algolia.com/magento/doc/m2/indexing/#categories-indexing</a></td>
+                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#categories-indexing">https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/#categories-indexing</a></td>
                             </tr>
                         </table>
                         <br>
@@ -492,7 +492,7 @@
                         <![CDATA[
                             Specify a category's attributes your users can search on (searchable).
                             The order of the searchable attributes matters: a query matching the first searchable attribute of a category will put this category before the others in the results.<br><br>
-                            Searchable attributes' documentation: <a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes-1">Categories's searchable attributes</a>
+                            Searchable attributes' documentation: <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes-1">Categories's searchable attributes</a>
                             <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Categories indexer after you've modified this panel.
                         ]]>
                     </comment>
@@ -539,7 +539,7 @@
                         <table class="algolia">
                             <tr>
                                 <td>If you have issues with images:</td>
-                                <td><a target="_blank" href="https://community.algolia.com/magento/faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#why-are-images-not-showing-up">https://community.algolia.com/magento/faq/#why-are-images-not-showing-up</a></td>
+                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#why-are-images-not-showing-up">https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/#why-are-images-not-showing-up</a></td>
                             </tr>
                         </table>
                         <br>
@@ -583,11 +583,11 @@
                         <table class="algolia">
                             <tr>
                                 <td>Indexing queue documentation:</td>
-                                <td><a target="_blank" href="https://community.algolia.com/magento/doc/m2/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#general-information">https://community.algolia.com/magento/doc/m2/indexing-queue/#general-information</a></td>
+                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#general-information">https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/#general-information</a></td>
                             </tr>
                             <tr>
                                 <td>Indexing troubleshooting guide:</td>
-                                <td><a target="_blank" href="https://community.algolia.com/magento/doc/m2/faq-support-data/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#general-information">https://community.algolia.com/magento/doc/m2/faq-support-data/#general-information</a></td>
+                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#general-information">https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#general-information</a></td>
                             </tr>
                         </table>
                         <br>
@@ -719,7 +719,7 @@
                             With <a target="_blank" href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Click & Conversion analytics</a>,
                             you can track which products are clicked more, and which search queries lead to more conversions.
                             <br><br>
-                            Find out more Click & Conversion Analytics in <a href="https://community.algolia.com/magento/doc/m2/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+                            Find out more Click & Conversion Analytics in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
                         </div>
                     ]]>
                 </comment>
@@ -776,7 +776,7 @@
                 <label>Google Analytics</label>
                 <comment>
                    <![CDATA[
-                        Documentation of Magento Google analytics: <a href="https://community.algolia.com/magento/doc/m2/analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://community.algolia.com/magento/doc/m2/analytics/</a>
+                        Documentation of Magento Google analytics: <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/google-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://www.algolia.com/doc/integration/magento-2/how-it-works/google-analytics/</a>
                         <br>
                         <br>
                         <hr>
@@ -934,7 +934,7 @@
                         <![CDATA[
                             <span class="algolia-config-warning">&#9888;</span>
                             By preventing your store from backend rendering you might break your SEO and accessibility of your store by search crawlers.
-                            Please, read <a target="_blank" href="https://community.algolia.com/magento/doc/m2/prevent-backend-rendering/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">the documentation</a> before you turn backend rendering off.
+                            Please, read <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/prevent-back-end-rendering/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">the documentation</a> before you turn backend rendering off.
                         ]]>
                     </comment>
                 </field>

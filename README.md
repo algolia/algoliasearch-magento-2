@@ -40,13 +40,13 @@ It's possible to use it for versions >= 2.1.0, but some unexpected issues might 
 Documentation
 --------------
 
-Check out the [Algolia Search for Magento 2 documentation](https://community.algolia.com/magento/doc/m2/getting-started/).
+Check out the [Algolia Search for Magento 2 documentation](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/).
 
 
 Installation
 ------------
 
-The easiest way to install the extension is to use [Composer](https://getcomposer.org/) and follow our [getting started guide](https://community.algolia.com/magento/doc/m2/getting-started/).
+The easiest way to install the extension is to use [Composer](https://getcomposer.org/) and follow our [getting started guide](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/).
 
 Run the following commands:
 

@@ -69,11 +69,4 @@
             </argument>
         </arguments>
     </type>
-    <type name="Magento\Sitemap\Model\ItemProvider\Composite">
-        <arguments>
-            <argument name="itemProviders" xsi:type="array">
-                <item name="landingPageProvider" xsi:type="object">Algolia\AlgoliaSearch\Model\Sitemap\ItemProvider\LandingPage</item>
-            </argument>
-        </arguments>
-    </type>
 </config>

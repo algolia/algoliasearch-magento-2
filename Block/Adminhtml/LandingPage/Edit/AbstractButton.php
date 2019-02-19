@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit;
 
+use Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Renderer\UrlBuilder;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
 use Magento\Backend\Block\Widget\Context;
 
@@ -13,7 +14,7 @@ abstract class AbstractButton
     /** @var LandingPageFactory */
     protected $landingPageFactory;
 
-    /** @var \Magento\Framework\UrlInterface */
+    /** @var UrlBuilder */
     protected $frontendUrlBuilder;
 
     /**
@@ -21,14 +22,14 @@ abstract class AbstractButton
      *
      * @param Context $context
      * @param LandingPageFactory $landingPageFactory
-     * @param \Magento\Framework\UrlInterface $frontendUrlBuilder
+     * @param UrlBuilder $frontendUrlBuilder
      *
      * @return AbstractButton
      */
     public function __construct(
         Context $context,
         LandingPageFactory $landingPageFactory,
-        \Magento\Framework\UrlInterface $frontendUrlBuilder
+        UrlBuilder $frontendUrlBuilder
     ) {
         $this->context = $context;
         $this->landingPageFactory = $landingPageFactory;

@@ -31,13 +31,8 @@ class ViewButton extends AbstractButton implements ButtonProviderInterface
         if ($this->getObject()->getStoreId() != 0) {
             $this->frontendUrlBuilder->setScope($this->getObject()->getStoreId());
         }
-        $href = $this->frontendUrlBuilder->getUrl(
-            $this->getObjectUrlKey(),
-            [
-                '_current' => false,
-                '_nosid' => true,
-            ]
-        );
+
+        $href = $this->frontendUrlBuilder->getUrl($this->getObjectUrlKey());
 
         return $href;
     }

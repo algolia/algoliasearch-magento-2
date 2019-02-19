@@ -4,10 +4,8 @@ namespace Algolia\AlgoliaSearch\Controller\Landingpage;
 
 use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
 use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Action\HttpGetActionInterface;
-use Magento\Framework\App\Action\HttpPostActionInterface;
 
-class View extends Action implements HttpGetActionInterface, HttpPostActionInterface
+class View extends Action
 {
     /** @var \Magento\Framework\Controller\Result\ForwardFactory */
     protected $resultForwardFactory;

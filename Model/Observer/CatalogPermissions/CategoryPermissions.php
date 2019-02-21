@@ -2,11 +2,11 @@
 
 namespace Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions;
 
-use Magento\Framework\Event\Observer;
-use Magento\Framework\Event\ObserverInterface;
-use Magento\Customer\Model\ResourceModel\Group\Collection as CustomerGroupCollection;
 use Algolia\AlgoliaSearch\Factory\CatalogPermissionsFactory;
 use Algolia\AlgoliaSearch\Factory\SharedCatalogFactory;
+use Magento\Customer\Model\ResourceModel\Group\Collection as CustomerGroupCollection;
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
 
 class CategoryPermissions implements ObserverInterface
 {

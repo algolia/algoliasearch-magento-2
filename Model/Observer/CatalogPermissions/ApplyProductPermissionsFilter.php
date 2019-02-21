@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions;
 
+use Algolia\AlgoliaSearch\Factory\CatalogPermissionsFactory;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Algolia\AlgoliaSearch\Factory\CatalogPermissionsFactory;
 use Magento\Store\Model\StoreManager;
 
 class ApplyProductPermissionsFilter implements ObserverInterface

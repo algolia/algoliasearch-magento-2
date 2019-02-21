@@ -4,10 +4,9 @@ namespace Algolia\AlgoliaSearch\Factory;
 
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\SharedCatalog\Model\CatalogPermissionManagement;
 
 class SharedCatalogFactory
 {
@@ -70,6 +69,7 @@ class SharedCatalogFactory
         );
 
         $shared = $connection->fetchRow($select);
+
         return $shared ? true : false;
     }
 
@@ -92,7 +92,7 @@ class SharedCatalogFactory
         );
 
         $shared = $connection->fetchRow($select);
+
         return $shared ? true : false;
     }
-
 }

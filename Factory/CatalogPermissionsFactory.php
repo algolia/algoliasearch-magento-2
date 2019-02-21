@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Factory;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 
 class CatalogPermissionsFactory
 {

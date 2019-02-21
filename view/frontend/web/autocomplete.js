@@ -25,7 +25,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		 **/
 		var algolia_client = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
 		algolia_client.addAlgoliaAgent('Magento2 integration (' + algoliaConfig.extensionVersion + ')');
-
+		
 		/** Add products and categories that are required sections **/
 		/** Add autocomplete menu sections **/
 		if (algoliaConfig.autocomplete.nbOfProductsSuggestions > 0) {
@@ -44,8 +44,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		var sources = [],
 			i = 0;
 		$.each(algoliaConfig.autocomplete.sections, function (name, section) {
-
-            var source = getAutocompleteSource(section, algolia_client, $, i);
+			var source = getAutocompleteSource(section, algolia_client, $, i);
 			
 			if (source) {
 				sources.push(source);

@@ -2,6 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
+use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
+use Algolia\AlgoliaSearch\Exception\CategoryNotIncludedInMenuException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Image;
 use Magento\Catalog\Model\Category;
@@ -200,15 +203,15 @@ class CategoryHelper
     public function canCategoryBeReindexed($category, $storeId)
     {
         if ($this->isCategoryActive($category, $storeId) === false) {
-            return false;
+            throw new CategoryNotActiveException();
         }
 
         if ($this->configHelper->shouldIndexEmptyCategories($storeId) === false && $category->getProductCount() <= 0) {
-            return false;
+            throw new CategoryEmptyException();
         }
 
         if ($this->configHelper->showCatsNotIncludedInNavigation($storeId) === false && !$category->getIncludeInMenu()) {
-            return false;
+            throw new CategoryNotIncludedInMenuException();
         }
 
         return true;

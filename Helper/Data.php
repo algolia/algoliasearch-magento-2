@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
@@ -524,7 +525,9 @@ class Data
                 continue;
             }
 
-            if ($this->categoryHelper->canCategoryBeReindexed($category, $storeId) === false) {
+            try {
+                $this->categoryHelper->canCategoryBeReindexed($category, $storeId);
+            } catch (CategoryReindexingException $e) {
                 $categoriesToRemove[$categoryId] = $categoryId;
                 continue;
             }

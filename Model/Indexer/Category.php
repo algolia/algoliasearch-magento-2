@@ -73,25 +73,9 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                 continue;
             }
 
-            if ($categoryIds !== null) {
-                $indexName = $this->fullAction->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
-                $this->queue->addToQueue(
-                    $this->fullAction,
-                    'deleteObjects',
-                    ['store_id' => $storeId, 'category_ids' => $categoryIds, 'index_name' => $indexName],
-                    count($categoryIds)
-                );
-            } else {
-                $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', ['store_id' => $storeId], 1);
-            }
+            $categoriesPerPage = $this->configHelper->getNumberOfElementByPage();
 
-            $this->queue->addToQueue(
-                $this->fullAction,
-                'rebuildStoreCategoryIndex',
-                ['store_id' => $storeId, 'category_ids' => $categoryIds],
-                is_array($categoryIds) ? count($categoryIds) : 1
-            );
-
+            // Rebuild products in category - change category name withing product's records
             if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
                 $this->queue->addToQueue(
                     $this->fullAction,
@@ -99,6 +83,49 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                     ['store_id' => $storeId, 'product_ids' => self::$affectedProductIds],
                     $affectedProductsCount
                 );
+            }
+
+            // Rebuild specific categories
+            if (is_array($categoryIds) && count($categoryIds) > 0) {
+                $indexName = $this->fullAction->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
+
+                // This should be DEPRECATED and handled directly in the reindex method
+                $this->queue->addToQueue(
+                    $this->fullAction,
+                    'deleteObjects',
+                    ['store_id' => $storeId, 'category_ids' => $categoryIds, 'index_name' => $indexName],
+                    count($categoryIds)
+                );
+
+                foreach (array_chunk($categoryIds, $categoriesPerPage) as $chunk) {
+                    $this->queue->addToQueue(
+                        $this->fullAction,
+                        'rebuildStoreCategoryIndex',
+                        ['store_id' => $storeId, 'category_ids' => $chunk],
+                        count($chunk)
+                    );
+                }
+
+                continue;
+            }
+
+            // FULL REINDEX
+            $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', ['store_id' => $storeId]);
+
+            $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId);
+            $size = $collection->getSize();
+
+            $pages = ceil($size / $categoriesPerPage);
+
+            for ($i = 1; $i <= $pages; $i++) {
+                $data = [
+                    'store_id' => $storeId,
+                    'page' => $i,
+                    'page_size' => $categoriesPerPage,
+                ];
+
+                /** @uses Data::rebuildCategoryIndex */
+                $this->queue->addToQueue($this->fullAction, 'rebuildCategoryIndex', $data, $categoriesPerPage);
             }
         }
     }

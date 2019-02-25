@@ -103,7 +103,7 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
             $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', [
                 'store_id' => $storeId,
                 'useTmpIndex' => $useTmpIndex,
-            ]);
+            ], 1, true);
 
             for ($i = 1; $i <= $pages; $i++) {
                 $data = [
@@ -114,7 +114,7 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
                     'useTmpIndex' => $useTmpIndex,
                 ];
 
-                $this->queue->addToQueue($this->fullAction, 'rebuildProductIndex', $data, $productsPerPage);
+                $this->queue->addToQueue($this->fullAction, 'rebuildProductIndex', $data, $productsPerPage, true);
             }
 
             if ($useTmpIndex) {
@@ -124,7 +124,7 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
                     'tmpIndexName' => $this->fullAction->getIndexName($suffix, $storeId, true),
                     'indexName' => $this->fullAction->getIndexName($suffix, $storeId, false),
                     'store_id' => $storeId,
-                ]);
+                ], 1, true);
             }
         }
     }

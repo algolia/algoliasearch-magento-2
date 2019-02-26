@@ -26,7 +26,7 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
                             <div class="result-sub-content">
                                 <div class="product-reviews-summary short">
                                     <div class="rating-summary">
-                                        <span class="label"><span>Rating:</span></span>
+                                        <span class="label"><span><?php echo __('Rating') ?>:</span></span>
                                         <div class="rating-result" title="{{rating_summary}}%">
                                             <span style="width:{{rating_summary}}%">
                                                 <span>{{rating_summary}}%</span>
@@ -67,8 +67,8 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
                             <input type="hidden" name="product" value="{{objectID}}">
                             <input type="hidden" name="uenc" value="{{ addToCart.uenc }}">
                             <input name="form_key" type="hidden" value="{{ addToCart.formKey }}">
-                            <button type="submit" title="Add to Cart" class="action tocart primary" data-objectid="{{objectID}}" data-position="{{__position}}">
-                                <span>Add to Cart</span>
+                            <button type="submit" title="<?php echo __('Add to Cart') ?>" class="action tocart primary" data-objectid="{{objectID}}" data-position="{{__position}}">
+                                <span><?php echo __('Add to Cart') ?></span>
                             </button>
                         </form>
                         {{/isAddToCartEnabled}}

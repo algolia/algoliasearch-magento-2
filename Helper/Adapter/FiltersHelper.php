@@ -197,11 +197,20 @@ class FiltersHelper
         $paramPriceSliderData = $this->getParamPriceSlider($storeId);
         $priceSlider = $paramPriceSliderData['price_slider'];
         $paramPriceSlider = $paramPriceSliderData['param'];
+        $prices = [];
 
         if (!is_null($this->request->getParam($paramPriceSlider))) {
             $pricesFilter = $this->request->getParam($paramPriceSlider);
             $prices = explode(':', $pricesFilter);
+        }
 
+        // Native Magento facet compatibility
+        if (!$this->config->isInstantEnabled($storeId) && !is_null($this->request->getParam('price'))) {
+            $pricesFilter = $this->request->getParam('price');
+            $prices = explode('-', $pricesFilter);
+        }
+
+        if (count($prices) > 0) {
             if (count($prices) == 2) {
                 if ($prices[0] != '') {
                     $priceFilters['numericFilters'][] = $priceSlider . '>=' . $prices[0];

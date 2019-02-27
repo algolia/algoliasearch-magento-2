@@ -2,7 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Analytics;
 
-use Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Index;
+use Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate;
+use Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Overview;
 use Magento\Backend\Block\Template;
 use Magento\Framework\DataObject;
 
@@ -18,8 +19,8 @@ class Update extends AbstractAction
         $layout = $this->layoutFactory->create();
 
         $block = $layout
-            ->createBlock(Template::class)
-            ->setData('view_model', $this->_objectManager->create(Index::class))
+            ->createBlock(BaseAdminTemplate::class)
+            ->setData('view_model', $this->_objectManager->create(Overview::class))
             ->setTemplate('Algolia_AlgoliaSearch::analytics/overview.phtml')
             ->toHtml();
 

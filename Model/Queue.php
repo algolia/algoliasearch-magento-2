@@ -83,9 +83,9 @@ class Queue
     }
 
     /**
-     * @param $className
-     * @param $method
-     * @param $data
+     * @param string $className
+     * @param string $method
+     * @param array $data
      * @param int $dataSize
      * @param bool $isFullReindex
      */
@@ -177,7 +177,7 @@ class Queue
     }
 
     /**
-     * @param $maxJobs
+     * @param int $maxJobs
      *
      * @throws \Exception
      */

@@ -103,7 +103,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
     {
         $affectedProductsCount = count(self::$affectedProductIds);
         if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
-            /** @uses Data::rebuildStoreProductIndex */
+            /** @uses Data::rebuildStoreProductIndex() */
             $this->queue->addToQueue(
                 Data::class,
                 'rebuildStoreProductIndex',
@@ -146,7 +146,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
      */
     private function processFullReindex($storeId, $categoriesPerPage)
     {
-        /** @uses IndicesConfigurator::saveConfigurationToAlgolia */
+        /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
         $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', ['store_id' => $storeId]);
 
         $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId);
@@ -161,8 +161,8 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                 'page_size' => $categoriesPerPage,
             ];
 
-            /** @uses Data::rebuildCategoryIndex */
-            $this->queue->addToQueue(Data::class, 'rebuildCategoryIndex', $data, $categoriesPerPage);
+            /** @uses Data::rebuildCategoryIndex() */
+            $this->queue->addToQueue(Data::class, 'rebuildCategoryIndex', $data, $categoriesPerPage, true);
         }
     }
 }

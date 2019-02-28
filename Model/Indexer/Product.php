@@ -94,10 +94,6 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $useTmpIndex);
             $size = $collection->getSize();
 
-            if ($productIds && $productIds !== []) {
-                $size = max(count($productIds), $size);
-            }
-
             $pages = ceil($size / $productsPerPage);
 
             $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', [

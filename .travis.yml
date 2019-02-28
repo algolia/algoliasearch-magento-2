@@ -6,10 +6,6 @@ language: php
 php:
   - 7.0
 
-notifications:
-  webhooks:
-    - https://www.travisbuddy.com/
-
 matrix:
   include:
     - name: "Magento 2.1.*"

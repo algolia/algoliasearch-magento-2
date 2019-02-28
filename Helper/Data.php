@@ -493,8 +493,9 @@ class Data
      * @param \Magento\Catalog\Model\ResourceModel\Category\Collection $collection
      * @param array|null $potentiallyDeletedCategoriesIds
      *
-     * @return array
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return array
      */
     private function getCategoryRecords($storeId, $collection, $potentiallyDeletedCategoriesIds = null)
     {

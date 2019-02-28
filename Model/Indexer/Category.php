@@ -130,7 +130,7 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
                 'rebuildStoreCategoryIndex',
                 [
                     'store_id' => $storeId,
-                    'category_ids' => $chunk
+                    'category_ids' => $chunk,
                 ],
                 count($chunk)
             );

@@ -153,9 +153,11 @@ class CategoryHelper
     /**
      * @param $storeId
      * @param null $categoryIds
-     * @return CategoryCollection
+     *
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return CategoryCollection
      */
     public function getCategoryCollectionQuery($storeId, $categoryIds = null)
     {
@@ -196,9 +198,10 @@ class CategoryHelper
      * @param Category $category
      * @param int $storeId
      *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
      * @return bool
      *
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function canCategoryBeReindexed($category, $storeId)
     {
@@ -373,9 +376,10 @@ class CategoryHelper
      * @param Category $category
      * @param int|null $storeId
      *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
      * @return bool
      *
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function isCategoryActive($category, $storeId = null)
     {

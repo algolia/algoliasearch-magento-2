@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Analytics;
 
 use Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate;
 use Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Overview;
-use Magento\Backend\Block\Template;
 use Magento\Framework\DataObject;
 
 class Update extends AbstractAction

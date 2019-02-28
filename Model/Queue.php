@@ -271,9 +271,10 @@ class Queue
     /**
      * @param int $maxJobs
      *
+     * @throws \Exception
+     *
      * @return array
      *
-     * @throws \Exception
      */
     private function getJobs($maxJobs)
     {
@@ -309,9 +310,10 @@ class Queue
      * @param int $jobsLimit
      * @param bool $fetchFullReindexJobs
      *
+     * @throws \Zend_Db_Statement_Exception
+     *
      * @return array
      *
-     * @throws \Zend_Db_Statement_Exception
      */
     private function fetchJobs($jobsLimit, $fetchFullReindexJobs = false)
     {
@@ -376,6 +378,7 @@ class Queue
 
     /**
      * @param array $jobs
+     *
      * @return array
      */
     private function prepareJobs($jobs)
@@ -390,6 +393,7 @@ class Queue
 
     /**
      * @param array $oldJobs
+     *
      * @return array
      */
     private function mergeJobs($oldJobs)
@@ -452,6 +456,7 @@ class Queue
      * Sorts the jobs and preserves the order of jobs with static methods defined in $this->staticJobMethods
      *
      * @param array $oldJobs
+     *
      * @return array
      */
     private function sortJobs($oldJobs)
@@ -605,7 +610,7 @@ class Queue
     {
         $retryLimit = $this->configHelper->getRetryLimit();
 
-        if ($retryLimit > 0 || true) {
+        if ($retryLimit > 0) {
             $retryLimit = 0;
             $where = $this->db->quoteInto('retries >= ?', $retryLimit);
             $this->archiveFailedJobs($where);

@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Queue
 {
-    const REALTIME_TO_FULL_REINDEX_JOBS_RATIO = 0.66;
+    const FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33;
 
     const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
     const ERROR_LOG = 'algoliasearch_queue_errors.log';
@@ -89,7 +89,7 @@ class Queue
      * @param int $dataSize
      * @param bool $isFullReindex
      */
-    public function addToQueue($className, $method, $data, $dataSize = 1, $isFullReindex = false)
+    public function addToQueue($className, $method, array $data, $dataSize = 1, $isFullReindex = false)
     {
         if (is_object($className)) {
             $className = get_class($className);
@@ -280,19 +280,29 @@ class Queue
     {
         $maxJobs = ($maxJobs === -1) ? $this->configHelper->getNumberOfJobToRun() : $maxJobs;
 
-        $realtimeJobsLimit = (int) ceil(self::REALTIME_TO_FULL_REINDEX_JOBS_RATIO * $maxJobs);
+        $fullReindexJobsLimit = (int) ceil(self::FULL_REINDEX_TO_REALTIME_JOBS_RATIO * $maxJobs);
 
         try {
             $this->db->beginTransaction();
 
+            $fullReindexJobs = $this->fetchJobs($fullReindexJobsLimit, true);
+            $fullReindexJobsCount = count($fullReindexJobs);
+
+            $realtimeJobsLimit = (int) $maxJobs - $fullReindexJobsCount;
+
             $realtimeJobs = $this->fetchJobs($realtimeJobsLimit, false);
 
-            $realtimeJobsCount = count($realtimeJobs);
-            $fullReindexJobsLimit = (int) $maxJobs - $realtimeJobsCount;
+            $jobs = array_merge($fullReindexJobs, $realtimeJobs);
+            $jobsCount = count($jobs);
 
-            $fullReindexJobs = $this->fetchJobs($fullReindexJobsLimit, true);
+            if ($jobsCount > 0 && $jobsCount < $maxJobs) {
+                $restLimit = $maxJobs - $jobsCount;
+                $lastFullReindexJobId = max($this->getJobsIdsFromMergedJobs($jobs));
 
-            $jobs = array_merge($realtimeJobs, $fullReindexJobs);
+                $restFullReindexJobs = $this->fetchJobs($restLimit, true, $lastFullReindexJobId);
+
+                $jobs = array_merge($jobs, $restFullReindexJobs);
+            }
 
             $this->lockJobs($jobs);
 
@@ -315,7 +325,7 @@ class Queue
      * @return array
      *
      */
-    private function fetchJobs($jobsLimit, $fetchFullReindexJobs = false)
+    private function fetchJobs($jobsLimit, $fetchFullReindexJobs = false, $lastJobId = null)
     {
         $jobs = [];
 
@@ -328,9 +338,15 @@ class Queue
         $fetchFullReindexJobs = $fetchFullReindexJobs ? 1 : 0;
 
         while ($actualBatchSize < $maxBatchSize) {
+            $where = 'pid IS NULL AND is_full_reindex = ' . $fetchFullReindexJobs;
+
+            if ($lastJobId !== null) {
+                $where .= ' AND job_id > ' . $lastJobId;
+            }
+
             $select = $this->db->select()
                ->from($this->table, '*')
-               ->where('pid IS NULL AND is_full_reindex = ' . $fetchFullReindexJobs)
+               ->where($where)
                ->order(['job_id'])
                ->limit($limit, $offset)
                ->forUpdate();
@@ -381,7 +397,7 @@ class Queue
      *
      * @return array
      */
-    private function prepareJobs($jobs)
+    private function prepareJobs(array $jobs)
     {
         foreach ($jobs as &$job) {
             $job['data'] = json_decode($job['data'], true);
@@ -396,7 +412,7 @@ class Queue
      *
      * @return array
      */
-    private function mergeJobs($oldJobs)
+    private function mergeJobs(array $oldJobs)
     {
         $oldJobs = $this->sortJobs($oldJobs);
 
@@ -459,7 +475,7 @@ class Queue
      *
      * @return array
      */
-    private function sortJobs($oldJobs)
+    private function sortJobs(array $oldJobs)
     {
         $sortedJobs = [];
 
@@ -492,7 +508,7 @@ class Queue
      *
      * @return array
      */
-    private function stackSortedJobs($sortedJobs, $tempSortableJobs, $job = null)
+    private function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, array $job = null)
     {
         if ($tempSortableJobs && $tempSortableJobs !== []) {
             $tempSortableJobs = $this->arrayMultisort(
@@ -523,7 +539,7 @@ class Queue
      *
      * @return bool
      */
-    private function mergeable($j1, $j2)
+    private function mergeable(array $j1, array $j2)
     {
         if ($j1['class'] !== $j2['class']) {
             return false;
@@ -593,17 +609,29 @@ class Queue
     /**
      * @param array $jobs
      */
-    private function lockJobs($jobs)
+    private function lockJobs(array $jobs)
     {
-        $jobsIds = [];
-        foreach ($jobs as $job) {
-            $jobsIds = array_merge($jobsIds, $job['merged_ids']);
-        }
+        $jobsIds = $this->getJobsIdsFromMergedJobs($jobs);
 
         if ($jobsIds !== []) {
             $pid = getmypid();
             $this->db->update($this->table, ['pid' => $pid], ['job_id IN (?)' => $jobsIds]);
         }
+    }
+
+    /**
+     * @param array $mergedJobs
+     *
+     * @return array
+     */
+    private function getJobsIdsFromMergedJobs(array $mergedJobs)
+    {
+        $jobsIds = [];
+        foreach ($mergedJobs as $job) {
+            $jobsIds = array_merge($jobsIds, $job['merged_ids']);
+        }
+
+        return $jobsIds;
     }
 
     private function clearOldFailingJobs()

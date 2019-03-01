@@ -171,7 +171,7 @@ class ConfigTest extends TestCase
             ],
         ];
 
-        $this->setConfig('algoliasearch_credentials/credentials/is_instant_enabled', '1'); // Needed to set replicas to Algolia
+        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', '1'); // Needed to set replicas to Algolia
         $this->setConfig('algoliasearch_instant/instant/sorts', serialize($sortingIndicesData));
         $this->setConfig('algoliasearch_advanced/advanced/customer_groups_enable', $enableCustomGroups);
 

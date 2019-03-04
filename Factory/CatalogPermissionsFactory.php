@@ -30,23 +30,23 @@ class CatalogPermissionsFactory
             self::CATALOG_PERMISSIONS_ENABLED_CONFIG_PATH,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
-        );
+        ) && $this->isCatalogPermissionsModuleEnabled();
     }
 
-    public function isCatalogPermissionsModuleEnabled()
+    private function isCatalogPermissionsModuleEnabled()
     {
         return $this->moduleManager->isEnabled('Magento_CatalogPermissions');
     }
 
-    public function getPermissionsIndex()
+    public function getPermissionsIndexResource()
     {
         return $this->isCatalogPermissionsModuleEnabled() ?
-            $this->objectManager->create('\Magento\CatalogPermissions\Model\Permission\Index') : false;
+            $this->objectManager->create('\Magento\CatalogPermissions\Model\ResourceModel\Permission\Index') : false;
     }
 
-    public function getPermissionsHelper()
+    public function getPermissionsProductTable()
     {
-        return $this->isCatalogPermissionsModuleEnabled() ?
-            $this->objectManager->create('\Magento\CatalogPermissions\Helper\Data') : false;
+        return $this->getPermissionsIndexResource()->getMainTable() . '_product';
     }
+
 }

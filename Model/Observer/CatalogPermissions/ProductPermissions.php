@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions;
 
 use Algolia\AlgoliaSearch\Factory\CatalogPermissionsFactory;
-use Algolia\AlgoliaSearch\Factory\SharedCatalogFactory;
 use Magento\Customer\Model\ResourceModel\Group\Collection as CustomerGroupCollection;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
@@ -12,16 +11,13 @@ class ProductPermissions implements ObserverInterface
 {
     private $permissionsFactory;
     private $customerGroupCollection;
-    private $sharedCatalogFactory;
 
     public function __construct(
         CustomerGroupCollection $customerGroupCollection,
-        CatalogPermissionsFactory $permissionsFactory,
-        SharedCatalogFactory $sharedCatalogFactory
+        CatalogPermissionsFactory $permissionsFactory
     ) {
         $this->customerGroupCollection = $customerGroupCollection;
         $this->permissionsFactory = $permissionsFactory;
-        $this->sharedCatalogFactory = $sharedCatalogFactory;
     }
 
     public function execute(Observer $observer)
@@ -37,32 +33,14 @@ class ProductPermissions implements ObserverInterface
         }
 
         $permissions = [];
+        $collection = $this->customerGroupCollection;
 
-        /** @var \Magento\CatalogPermissions\Model\Permission\Index $permissionsIndex */
-        if ($permissionsIndex = $this->permissionsFactory->getPermissionsIndex()) {
-            $permissionsHelper = $this->permissionsFactory->getPermissionsHelper();
-
-            $collection = $this->customerGroupCollection;
-            foreach ($collection as $customerGroup) {
-                $customerGroupId = $customerGroup->getCustomerGroupId();
-                $permissionsIndex->addIndexToProduct($product, $customerGroupId);
-
-                $permissions['customer_group_' . $customerGroupId] = 1;
-
-                if ($product->getData('grant_catalog_category_view') == -2
-                    || $product->getData('grant_catalog_category_view') != -1
-                    && !$permissionsHelper->isAllowedCategoryView($storeId, $customerGroupId)
-                ) {
-                    $permissions['customer_group_' . $customerGroupId] = 0;
-                }
-
-                if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId)) {
-                    /** @var \Magento\SharedCatalog\Model\ResourceModel\ProductItem $sharedCatalog */
-                    if (!$this->sharedCatalogFactory->isProductInSharedCatalogForCustomerGroup($product, $customerGroupId)) {
-                        $permissions['customer_group_' . $customerGroupId] = 0;
-                    }
-                }
-            }
+        foreach ($collection as $customerGroup) {
+            $customerGroupId = $customerGroup->getCustomerGroupId();
+            $permissions['customer_group_'. $customerGroupId] =
+                !is_null($product->getData('shared_catalog_permission_' . $customerGroupId))
+                ? (int) $product->getData('shared_catalog_permission_' . $customerGroupId)
+                : (int) $product->getData('customer_group_permission_' . $customerGroupId);
         }
 
         if (count($permissions)) {
@@ -71,4 +49,6 @@ class ProductPermissions implements ObserverInterface
 
         return $this;
     }
+
 }
+

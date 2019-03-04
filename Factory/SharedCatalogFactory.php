@@ -16,6 +16,8 @@ class SharedCatalogFactory
     private $moduleManager;
     private $objectManager;
 
+    private $sharedCatalog;
+
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Manager $moduleManager,
@@ -26,16 +28,21 @@ class SharedCatalogFactory
         $this->objectManager = $objectManager;
     }
 
-    public function isSharedCatalogEnabled($storeId)
+    public function isSharedCatalogEnabled($storeId, $customerGroupId)
     {
-        return $this->scopeConfig->isSetFlag(
-            self::SHARED_CATALOG_ENABLED_CONFIG_PATH,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
+        if (!$this->scopeConfig->isSetFlag(self::SHARED_CATALOG_ENABLED_CONFIG_PATH,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId)
+            || !$this->isSharedCatalogModuleEnabled()) {
+            return false;
+        }
+
+        $sharedCollection = $this->getSharedCatalogCollection();
+        $items = $sharedCollection->getItemsByColumnValue('customer_group_id', $customerGroupId);
+
+        return count($items) > 0 ? true : false;
     }
 
-    public function isSharedCatalogModuleEnabled()
+    private function isSharedCatalogModuleEnabled()
     {
         return $this->moduleManager->isEnabled('Magento_SharedCatalog');
     }
@@ -52,47 +59,12 @@ class SharedCatalogFactory
             $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\Permission') : false;
     }
 
-    public function isProductInSharedCatalogForCustomerGroup(Product $product, $customerGroupId)
+    private function getSharedCatalogCollection()
     {
-        /** @var \Magento\SharedCatalog\Model\ResourceModel\ProductItem $resourceModel */
-        $resourceModel = $this->getSharedCatalogProductItemResource();
-        $connection = $resourceModel->getConnection();
+        if (!isset($this->sharedCatalog)) {
+            $this->sharedCatalog = $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection');
+        }
 
-        $select = $connection->select()->from(
-            ['shared_catalog_product' => $resourceModel->getMainTable()]
-        )->where(
-            'customer_group_id = ?',
-            $customerGroupId
-        )->where(
-            'sku = ?',
-            $product->getSku()
-        );
-
-        $shared = $connection->fetchRow($select);
-
-        return $shared ? true : false;
-    }
-
-    public function isCategoryInSharedCatalogForCustomerGroup(Category $category, $customerGroupId)
-    {
-        /** @var \Magento\SharedCatalog\Model\ResourceModel\Permission $resourceModel */
-        $resourceModel = $this->getSharedCatalogCategoryResource();
-        $connection = $resourceModel->getConnection();
-
-        $select = $connection->select()->from(
-            ['shared_catalog_category' => $resourceModel->getMainTable()]
-        )->where(
-            'customer_group_id = ?',
-            $customerGroupId
-        )->where(
-            'category_id = ?',
-            $category->getId()
-        )->where(
-            'permission = ' . \Magento\CatalogPermissions\Model\Permission::PERMISSION_ALLOW
-        );
-
-        $shared = $connection->fetchRow($select);
-
-        return $shared ? true : false;
+        return $this->sharedCatalog;
     }
 }

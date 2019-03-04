@@ -32,7 +32,6 @@ class ApplyProductPermissionsFilter implements ObserverInterface
         $customerGroupId = $observer->getData('customer_group_id');
 
         $transport->setData('catalog_permissions', 'catalog_permissions.customer_group_' . $customerGroupId . ' != 0');
-
         return $this;
     }
 }

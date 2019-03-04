@@ -18,23 +18,7 @@
                 <label>Credentials and Setup</label>
                 <comment>
                     <![CDATA[
-                        <table class="algolia">
-                            <tr>
-                                <td>Documentation:</td>
-                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/</a></td>
-                            </tr>
-                            <tr>
-                                <td>FAQ: </td>
-                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/</a></td>
-                            </tr>
-                            <tr>
-                                <td>Issues: </td>
-                                <td><a target="_blank" href="https://github.com/algolia/algoliasearch-magento-2/issues/">https://github.com/algoliasearch-magento-2/issues/</a></td>
-                            </tr>
-                        </table>
-                        <br>
-                        <hr>
-                        <br>
+                        <div class="algolia-admin-content"></div>
                      ]]>
                 </comment>
                 <field id="application_id" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -115,8 +99,7 @@
                         <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
                         <br>
                         <br>
-                        <hr>
-                        <br>
+                        <div class="algolia-admin-content"></div>
                         ]]>
                 </comment>
                 <field id="is_popup_enabled" translate="label comment" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -262,8 +245,7 @@
                          &nbsp; - <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
                         <br>
                         <br>
-                        <hr>
-                        <br>
+                        <div class="algolia-admin-content"></div>
                         ]]>
                 </comment>
                 <field id="is_instant_enabled" translate="label comment" type="select" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -420,7 +402,8 @@
                             </tr>
                         </table>
                         <br>
-                        <hr>
+                        <br>
+                        <div class="algolia-admin-content"></div>
                         <br>
                         ]]>
                 </comment>
@@ -591,8 +574,8 @@
                             </tr>
                         </table>
                         <br>
-                        <hr>
                         <br>
+                        <div class="algolia-admin-content"></div>
                         ]]>
                 </comment>
                 <field id="active" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

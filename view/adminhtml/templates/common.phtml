@@ -24,6 +24,12 @@ $indexingQueuePageUrl = $this->getUrl('algolia_algoliasearch/queue/index');
 
 $ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
 
+$iconDocs = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg');
+$iconFaq = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-faq.svg');
+$iconIssues = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-issues.svg');
+
+$videoConfig = $viewModel->getVideoConfig($section);
+
 ?>
 
 <script>
@@ -33,6 +39,10 @@ var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>
 var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
 var indexingQueueInfoUrl = <?php echo json_encode($indexingQueueInfoUrl); ?>;
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
+var iconDocs = <?php echo json_encode($iconDocs); ?>;
+var iconFaq = <?php echo json_encode($iconFaq); ?>;
+var iconIssues = <?php echo json_encode($iconIssues); ?>;
+var videoConfig = <?php echo json_encode($videoConfig); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
@@ -119,6 +129,36 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 					$('.entry-edit').before(message);
 				});
+
+				// Admin videos
+                var videoTemplate = '';
+
+                if (videoConfig) {
+                    videoTemplate = `
+                        <div class="algolia-admin-content-videos">
+                            <p>
+                                <span>Related video:</span>
+                                <a target="_blank" href="` + videoConfig.url + `"><img src="` + videoConfig.thumbnail + `"/></a>
+                                <a target="_blank" href="` + videoConfig.url + `">` + videoConfig.title + `</a>
+                            </p>
+                        </div>`;
+                }
+
+                var linksAndVideoTemplate = `
+                    <div class="algolia-admin-content-wrapper">
+                        <div class="algolia-admin-content-links">
+                            <p>
+                                <span><img src="` + iconDocs + `"/><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Documentation</a></span>
+                                <span><img src="` + iconFaq + `"/><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">FAQ</a></span>
+                                <span><img src="` + iconIssues + `"/><a target="_blank" href="https://github.com/algolia/algoliasearch-magento-2/issues/">Issues</a></span>
+                            </p>
+                        </div>
+                        ` + videoTemplate + `
+                    </div>
+                    <br>
+                    <hr>
+                    <br>`;
+                $('.algolia-admin-content').html(linksAndVideoTemplate);
 			}
 
 

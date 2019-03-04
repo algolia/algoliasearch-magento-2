@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
@@ -203,7 +204,8 @@ class Data
                         $storeId,
                         $collection,
                         $page,
-                        $this->configHelper->getNumberOfElementByPage()
+                        $this->configHelper->getNumberOfElementByPage(),
+                        $categoryIds
                     );
 
                     $page++;
@@ -331,6 +333,16 @@ class Data
         $this->rebuildStoreProductIndexPage($storeId, $collection, $page, $pageSize, null, $productIds, $useTmpIndex);
     }
 
+    public function rebuildCategoryIndex($storeId, $page, $pageSize)
+    {
+        if ($this->isIndexingEnabled($storeId) === false) {
+            return;
+        }
+
+        $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId, null);
+        $this->rebuildStoreCategoryIndexPage($storeId, $collection, $page, $pageSize);
+    }
+
     public function rebuildStoreSuggestionIndexPage($storeId, $collectionDefault, $page, $pageSize)
     {
         if ($this->isIndexingEnabled($storeId) === false) {
@@ -369,7 +381,7 @@ class Data
         unset($collection);
     }
 
-    public function rebuildStoreCategoryIndexPage($storeId, $collectionDefault, $page, $pageSize)
+    public function rebuildStoreCategoryIndexPage($storeId, $collectionDefault, $page, $pageSize, $categoryIds = null)
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -382,26 +394,28 @@ class Data
 
         $indexName = $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
 
-        $indexData = [];
+        $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
 
-        /** @var Category $category */
-        foreach ($collection as $category) {
-            if (!$this->categoryHelper->isCategoryActive($category->getId(), $storeId)) {
-                continue;
-            }
+        if ($indexData['toIndex'] && $indexData['toIndex'] !== []) {
+            $this->logger->start('ADD/UPDATE TO ALGOLIA');
 
-            $category->setStoreId($storeId);
+            $this->algoliaHelper->addObjects($indexData['toIndex'], $indexName);
 
-            $categoryObject = $this->categoryHelper->getObject($category);
-
-            if ($this->configHelper->shouldIndexEmptyCategories($storeId) === true
-                || $categoryObject['product_count'] > 0) {
-                array_push($indexData, $categoryObject);
-            }
+            $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
+            $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
 
-        if (count($indexData) > 0) {
-            $this->algoliaHelper->addObjects($indexData, $indexName);
+        if ($indexData['toRemove'] && $indexData['toRemove'] !== []) {
+            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove']);
+
+            if ($toRealRemove && $toRealRemove !== []) {
+                $this->logger->start('REMOVE FROM ALGOLIA');
+
+                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName);
+
+                $this->logger->log('Category IDs: ' . implode(', ', $toRealRemove));
+                $this->logger->stop('REMOVE FROM ALGOLIA');
+            }
         }
 
         unset($indexData);
@@ -471,6 +485,64 @@ class Data
         return [
             'toIndex' => $productsToIndex,
             'toRemove' => array_unique($productsToRemove),
+        ];
+    }
+
+    /**
+     * @param int $storeId
+     * @param \Magento\Catalog\Model\ResourceModel\Category\Collection $collection
+     * @param array|null $potentiallyDeletedCategoriesIds
+     *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return array
+     */
+    private function getCategoryRecords($storeId, $collection, $potentiallyDeletedCategoriesIds = null)
+    {
+        $categoriesToIndex = [];
+        $categoriesToRemove = [];
+
+        // In $potentiallyDeletedCategoriesIds there might be IDs of deleted products which will not be in a collection
+        if (is_array($potentiallyDeletedCategoriesIds)) {
+            $potentiallyDeletedCategoriesIds = array_combine(
+                $potentiallyDeletedCategoriesIds,
+                $potentiallyDeletedCategoriesIds
+            );
+        }
+
+        /** @var Category $category */
+        foreach ($collection as $category) {
+            $category->setStoreId($storeId);
+
+            $categoryId = $category->getId();
+
+            // If $categoryId is in the collection, remove it from $potentiallyDeletedProductsIds
+            // so it's not removed without check
+            if (isset($potentiallyDeletedCategoriesIds[$categoryId])) {
+                unset($potentiallyDeletedCategoriesIds[$categoryId]);
+            }
+
+            if (isset($categorysToIndex[$categoryId]) || isset($categorysToRemove[$categoryId])) {
+                continue;
+            }
+
+            try {
+                $this->categoryHelper->canCategoryBeReindexed($category, $storeId);
+            } catch (CategoryReindexingException $e) {
+                $categoriesToRemove[$categoryId] = $categoryId;
+                continue;
+            }
+
+            $categoriesToIndex[$categoryId] = $this->categoryHelper->getObject($category);
+        }
+
+        if (is_array($potentiallyDeletedCategoriesIds)) {
+            $categoriesToRemove = array_merge($categoriesToRemove, $potentiallyDeletedCategoriesIds);
+        }
+
+        return [
+            'toIndex' => $categoriesToIndex,
+            'toRemove' => array_unique($categoriesToRemove),
         ];
     }
 

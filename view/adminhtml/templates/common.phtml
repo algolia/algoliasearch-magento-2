@@ -24,11 +24,14 @@ $indexingQueuePageUrl = $this->getUrl('algolia_algoliasearch/queue/index');
 
 $ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
 
-$iconDocs = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg');
-$iconFaq = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-faq.svg');
-$iconIssues = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-issues.svg');
+$icons = [
+    'iconDocs' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg'),
+    'iconFaq' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-faq.svg'),
+    'iconIssues' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-issues.svg'),
+];
 
 $videoConfig = $viewModel->getVideoConfig($section);
+$linksConfig = $viewModel->getLinksConfig($section);
 
 ?>
 
@@ -39,10 +42,9 @@ var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>
 var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
 var indexingQueueInfoUrl = <?php echo json_encode($indexingQueueInfoUrl); ?>;
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
-var iconDocs = <?php echo json_encode($iconDocs); ?>;
-var iconFaq = <?php echo json_encode($iconFaq); ?>;
-var iconIssues = <?php echo json_encode($iconIssues); ?>;
+var icons = <?php echo json_encode($icons); ?>;
 var videoConfig = <?php echo json_encode($videoConfig); ?>;
+var linksConfig = <?php echo json_encode($linksConfig); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
@@ -132,6 +134,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 				// Admin videos
                 var videoTemplate = '';
+                // Admin links
+                var linksTemplate = '';
 
                 if (videoConfig) {
                     videoTemplate = `
@@ -144,17 +148,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
                         </div>`;
                 }
 
+                if (linksConfig) {
+                    var links = '';
+                    for (var i=0; i<linksConfig.length; i++) {
+                        links += `<span><img src="` + icons[linksConfig[i].icon] + `"/><a target="_blank" href="` + linksConfig[i].url + `">` + linksConfig[i].title + `</a></span>`;
+                        if (i%2 == 1) {
+                            links += `<br/>`;
+                        }
+                    }
+                    linksTemplate = `<div class="algolia-admin-content-links"><p>` + links + `</p></div>`;
+                }
+
                 var linksAndVideoTemplate = `
                     <div class="algolia-admin-content-wrapper">
-                        <div class="algolia-admin-content-links">
-                            <p>
-                                <span><img src="` + iconDocs + `"/><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Documentation</a></span>
-                                <span><img src="` + iconFaq + `"/><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">FAQ</a></span>
-                                <span><img src="` + iconIssues + `"/><a target="_blank" href="https://github.com/algolia/algoliasearch-magento-2/issues/">Issues</a></span>
-                            </p>
-                        </div>
-                        ` + videoTemplate + `
-                    </div>
+                        ` + linksTemplate +  videoTemplate +
+                    `</div>
                     <br>
                     <hr>
                     <br>`;

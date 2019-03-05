@@ -93,12 +93,6 @@
                 <label>Autocomplete Menu</label>
                 <comment>
                     <![CDATA[
-                        To customize the autocomplete menu beyond its configuration, you can read tutorials:
-                        <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/autocomplete-menu/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize autocomplete</a>,
-                        <a target="_blank" href="https://www.algolia.com/doc/integration/magento-1/guides/adding-autocomplete-source/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to add an external data source</a>,
-                        <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
-                        <br>
-                        <br>
                         <div class="algolia-admin-content"></div>
                         ]]>
                 </comment>
@@ -240,11 +234,6 @@
                 <label>Instant Search Results Page</label>
                 <comment>
                     <![CDATA[
-                        To customize the instant search results page beyond its configuration, you can read these tutorials:<br >
-                         &nbsp; - <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/instant-search-page/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to customize InstantSearch</a><br>
-                         &nbsp; - <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">How to use backend events</a>
-                        <br>
-                        <br>
                         <div class="algolia-admin-content"></div>
                         ]]>
                 </comment>
@@ -395,16 +384,7 @@
                 <label>Products</label>
                 <comment>
                     <![CDATA[
-                        <table class="algolia">
-                            <tr>
-                                <td>Products' indexing documentation:</td>
-                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#products-indexing">https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/#products-indexing</a></td>
-                            </tr>
-                        </table>
-                        <br>
-                        <br>
                         <div class="algolia-admin-content"></div>
-                        <br>
                         ]]>
                 </comment>
                 <field id="product_additional_attributes" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -456,15 +436,7 @@
                 <label>Categories</label>
                 <comment>
                     <![CDATA[
-                        <table class="algolia">
-                            <tr>
-                                <td>Categories' indexing documentation:</td>
-                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#categories-indexing">https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/#categories-indexing</a></td>
-                            </tr>
-                        </table>
-                        <br>
-                        <hr>
-                        <br>
+                        <div class="algolia-admin-content"></div>
                         ]]>
                 </comment>
                 <field id="category_additional_attributes" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -519,15 +491,7 @@
                 <label>Images</label>
                 <comment>
                     <![CDATA[
-                        <table class="algolia">
-                            <tr>
-                                <td>If you have issues with images:</td>
-                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#why-are-images-not-showing-up">https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/#why-are-images-not-showing-up</a></td>
-                            </tr>
-                        </table>
-                        <br>
-                        <hr>
-                        <br>
+                        <div class="algolia-admin-content"></div>
                      ]]>
                 </comment>
                 <field id="width" translate="label comment" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -563,18 +527,6 @@
                 <label>Indexing Queue / Cron</label>
                 <comment>
                     <![CDATA[
-                        <table class="algolia">
-                            <tr>
-                                <td>Indexing queue documentation:</td>
-                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#general-information">https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/#general-information</a></td>
-                            </tr>
-                            <tr>
-                                <td>Indexing troubleshooting guide:</td>
-                                <td><a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#general-information">https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#general-information</a></td>
-                            </tr>
-                        </table>
-                        <br>
-                        <br>
                         <div class="algolia-admin-content"></div>
                         ]]>
                 </comment>
@@ -623,15 +575,7 @@
                 <label>Synonyms</label>
                 <comment>
                     <![CDATA[
-                    <table class="algolia">
-                        <tr>
-                            <td>Synonyms documentation:</td>
-                            <td><a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/</a></td>
-                        </tr>
-                    </table>
-                    <br>
                     <div class="algolia-admin-content"></div>
-                    <br>
                 ]]>
                 </comment>
                 <field id="enable_synonyms" translate="label comment" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -697,16 +641,7 @@
                 <label><![CDATA[Click & Conversion Analytics]]></label>
                 <comment>
                     <![CDATA[
-                        <div class="algolia_block blue icon-documentation">
-                            Analyze how your customers behave when searching on your website.
-                            With <a target="_blank" href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/click-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link">Click & Conversion analytics</a>,
-                            you can track which products are clicked more, and which search queries lead to more conversions.
-                            <br><br>
-                            Find out more Click & Conversion Analytics in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-                        </div>
-                        <br>
                         <div class="algolia-admin-content"></div>
-                        <br>
                     ]]>
                 </comment>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -762,10 +697,7 @@
                 <label>Google Analytics</label>
                 <comment>
                    <![CDATA[
-                        Documentation of Magento Google analytics: <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/google-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">https://www.algolia.com/doc/integration/magento-2/how-it-works/google-analytics/</a>
-                        <br>
-                        <br>
-                        <hr>
+                        <div class="algolia-admin-content"></div>
                     ]]>
                 </comment>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -968,10 +900,9 @@
                     To set extra settings, please fill the right textarea with JSON where you specify the extra settings.<br>
                     Example: <code>{"exactOnSingleWordQuery":"word"}</code>
                     </p>
-
-                    <p>List of possible settings: <a href="https://www.algolia.com/doc/api-reference/settings-api-parameters/#index-settings-parameters" target="_blank">https://www.algolia.com/doc/api-reference/settings-api-parameters/#index-settings-parameters</a></p>
-
                     <p><span class="algolia-config-warning">&#9888;</span> Edit extra settings only when you're sure what you're doing. Bad settings can effect your search functionality and have a bad impact on your relevance.</p>
+                    <br/>
+                    <div class="algolia-admin-content"></div>
                 ]]>
                 </comment>
 

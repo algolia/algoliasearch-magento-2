@@ -38,7 +38,7 @@ class ProductCollectionAddPermissions implements ObserverInterface
             $select = $collection->getSelect();
             foreach ($this->customerGroupCollection as $customerGroup) {
                 $customerGroupId = $customerGroup->getCustomerGroupId();
-                $columnName = 'customer_group_permission_'. $customerGroupId
+                $columnName = 'customer_group_permission_'. $customerGroupId;
 
                 $select->joinLeft(
                     ['cgp_' . $customerGroupId => $this->permissionsFactory->getPermissionsProductTable()],

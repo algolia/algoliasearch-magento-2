@@ -45,7 +45,7 @@ class CategoryCollectionAddPermissions implements ObserverInterface
                     ['cgp_' . $customerGroupId => $permissionsIndex->getMainTable()],
                     'e.entity_id = cgp_' . $customerGroupId . '.category_id
                         AND cgp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId,
-                    [$columnName => 'IF (cgp_' . $customerGroupId . '.grant_catalog_category_view = -1, 1, 0)'],
+                    [$columnName => 'IF (cgp_' . $customerGroupId . '.grant_catalog_category_view = -1, 1, 0)']
                 );
 
                 if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId, $customerGroupId)) {
@@ -56,7 +56,7 @@ class CategoryCollectionAddPermissions implements ObserverInterface
                         ['scp_' . $customerGroupId => $sharedResource->getMainTable()],
                         'e.entity_id = scp_' . $customerGroupId . '.category_id
                         AND scp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId,
-                        [$columnName => 'IF (scp_' . $customerGroupId . '.permission = -1, 1, 0)'],
+                        [$columnName => 'IF (scp_' . $customerGroupId . '.permission = -1, 1, 0)']
                     );
                 }
             }

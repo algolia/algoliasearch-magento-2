@@ -58,6 +58,12 @@
     text-decoration : none;
 }
 
+.algolia-no-lp .algolia-suggestions-header {
+    width: 50%;
+    margin: 45px auto;
+    text-align: left;
+}
+
 /* FORM */
 .merchandising-tutorial {
     background-color : #F5FAFD;

@@ -8,8 +8,6 @@ class Logo extends \Magento\Config\Block\System\Config\Form\Field
 {
     private $proxyHelper;
 
-    protected $showUpsell = false;
-
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         ProxyHelper $proxyHelper,
@@ -45,6 +43,4 @@ class Logo extends \Magento\Config\Block\System\Config\Form\Field
 
         return isset($info['require_logo']) && $info['require_logo'] == 1;
     }
-
 }
-

@@ -62,6 +62,7 @@ class ProxyHelper
         if (!$this->allClientData) {
             $this->allClientData = $this->getInfo(self::INFO_TYPE_ALL);
         }
+
         return $this->allClientData;
     }
 

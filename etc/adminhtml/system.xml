@@ -630,7 +630,7 @@
                         </tr>
                     </table>
                     <br>
-                    <hr>
+                    <div class="algolia-admin-content"></div>
                     <br>
                 ]]>
                 </comment>
@@ -704,6 +704,9 @@
                             <br><br>
                             Find out more Click & Conversion Analytics in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
                         </div>
+                        <br>
+                        <div class="algolia-admin-content"></div>
+                        <br>
                     ]]>
                 </comment>
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">

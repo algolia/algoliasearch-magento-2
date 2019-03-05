@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 
 class Common
@@ -9,12 +10,15 @@ class Common
     /** @var ProxyHelper */
     private $proxyHelper;
 
+    /** @var ConfigHelper */
+    private $configHelper;
+
     /** @var array */
     private $videosConfig = [
         'algoliasearch_credentials' => [
-            'title' => 'Installation & Setup',
-            'url' => 'https://www.youtube.com/watch?v=twEj_VBWxp8',
-            'thumbnail' => 'https://img.youtube.com/vi/twEj_VBWxp8/mqdefault.jpg',
+            'title' => 'How to change a setting',
+            'url' => 'https://www.youtube.com/watch?v=7yqOMb2SHw0',
+            'thumbnail' => 'https://img.youtube.com/vi/7yqOMb2SHw0/mqdefault.jpg',
         ],
         'algoliasearch_autocomplete' => [
             'title' => 'Autocomplete menu configuration',
@@ -36,11 +40,31 @@ class Common
             'url' => 'https://www.youtube.com/watch?v=0V1BSKlCm10',
             'thumbnail' => 'https://img.youtube.com/vi/0V1BSKlCm10/mqdefault.jpg',
         ],
+        'algoliasearch_synonyms' => [
+            'title' => 'Notable features',
+            'url' => 'https://www.youtube.com/watch?v=qzaLrHz67U4',
+            'thumbnail' => 'https://img.youtube.com/vi/qzaLrHz67U4/mqdefault.jpg',
+        ],
+        'algoliasearch_cc_analytics' => [
+            'title' => 'Notable features',
+            'url' => 'https://www.youtube.com/watch?v=qzaLrHz67U4',
+            'thumbnail' => 'https://img.youtube.com/vi/qzaLrHz67U4/mqdefault.jpg',
+        ],
     ];
 
-    public function __construct(ProxyHelper $proxyHelper)
-    {
+    /** @var array */
+    private $videoInstallation = [
+        'title' => 'Installation & Setup',
+        'url' => 'https://www.youtube.com/watch?v=twEj_VBWxp8',
+        'thumbnail' => 'https://img.youtube.com/vi/twEj_VBWxp8/mqdefault.jpg',
+    ];
+
+    public function __construct(
+        ProxyHelper $proxyHelper,
+        ConfigHelper $configHelper
+    ) {
         $this->proxyHelper = $proxyHelper;
+        $this->configHelper = $configHelper;
     }
 
     /** @return bool */
@@ -78,6 +102,13 @@ class Common
 
         if (isset($this->videosConfig[$section])) {
             $config = $this->videosConfig[$section];
+        }
+
+        // If the credentials are not set, display the installation video
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $config = $this->videoInstallation;
         }
 
         return $config;

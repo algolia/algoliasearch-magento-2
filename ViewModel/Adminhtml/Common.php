@@ -168,7 +168,6 @@ class Common
         ],
     ];
 
-
     /** @var array */
     private $videoInstallation = [
         'title' => 'Installation & Setup',

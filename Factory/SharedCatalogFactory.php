@@ -2,8 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Factory;
 
-use Magento\Catalog\Model\Category;
-use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager;
 use Magento\Framework\ObjectManagerInterface;

@@ -39,24 +39,24 @@ class CategoryCollectionAddPermissions implements ObserverInterface
             $select = $collection->getSelect();
             foreach ($this->customerGroupCollection as $customerGroup) {
                 $customerGroupId = $customerGroup->getCustomerGroupId();
+                $columnName = 'customer_group_permission_' . $customerGroupId;
+
                 $select->joinLeft(
                     ['cgp_' . $customerGroupId => $permissionsIndex->getMainTable()],
-                    'e.entity_id = cgp_'. $customerGroupId .'.category_id
-                        AND cgp_'. $customerGroupId . '.customer_group_id = ' . $customerGroupId,
-                    ['customer_group_permission_'. $customerGroupId =>
-                        'IF (cgp_'. $customerGroupId .'.grant_catalog_category_view = -1, 1, 0)']
+                    'e.entity_id = cgp_' . $customerGroupId . '.category_id
+                        AND cgp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId,
+                    [$columnName => 'IF (cgp_' . $customerGroupId . '.grant_catalog_category_view = -1, 1, 0)'],
                 );
 
                 if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId, $customerGroupId)) {
                     $sharedResource = $this->sharedCatalogFactory->getSharedCatalogCategoryResource();
+                    $columnName = 'shared_catalog_permission_' . $customerGroupId;
+
                     $select->joinLeft(
                         ['scp_' . $customerGroupId => $sharedResource->getMainTable()],
                         'e.entity_id = scp_' . $customerGroupId . '.category_id
                         AND scp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId,
-                        [
-                            'shared_catalog_permission_' . $customerGroupId =>
-                                'IF (scp_' . $customerGroupId . '.permission = -1, 1, 0)'
-                        ]
+                        [$columnName => 'IF (scp_' . $customerGroupId . '.permission = -1, 1, 0)'],
                     );
                 }
             }

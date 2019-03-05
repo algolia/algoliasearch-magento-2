@@ -30,9 +30,13 @@ class SharedCatalogFactory
 
     public function isSharedCatalogEnabled($storeId, $customerGroupId)
     {
-        if (!$this->scopeConfig->isSetFlag(self::SHARED_CATALOG_ENABLED_CONFIG_PATH,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId)
-            || !$this->isSharedCatalogModuleEnabled()) {
+        $isEnabled = $this->scopeConfig->isSetFlag(
+            self::SHARED_CATALOG_ENABLED_CONFIG_PATH,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        if (!$isEnabled || !$this->isSharedCatalogModuleEnabled()) {
             return false;
         }
 

@@ -38,23 +38,25 @@ class ProductCollectionAddPermissions implements ObserverInterface
             $select = $collection->getSelect();
             foreach ($this->customerGroupCollection as $customerGroup) {
                 $customerGroupId = $customerGroup->getCustomerGroupId();
+                $columnName = 'customer_group_permission_'. $customerGroupId
+
                 $select->joinLeft(
                     ['cgp_' . $customerGroupId => $this->permissionsFactory->getPermissionsProductTable()],
                     'e.entity_id = cgp_'. $customerGroupId .'.product_id
                         AND cgp_'. $customerGroupId . '.customer_group_id = ' . $customerGroupId
                     .' AND cgp_'. $customerGroupId .'.store_id = '. $storeId,
-                    ['customer_group_permission_'. $customerGroupId =>
-                        'IF (cgp_'. $customerGroupId .'.grant_catalog_category_view = -1, 1, 0)']
+                    [$columnName => 'IF (cgp_'. $customerGroupId .'.grant_catalog_category_view = -1, 1, 0)']
                 );
 
                 if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId, $customerGroupId)) {
                     $sharedResource = $this->sharedCatalogFactory->getSharedCatalogProductItemResource();
+                    $columnName = 'shared_catalog_permission_'. $customerGroupId;
+
                     $select->joinLeft(
                         ['scp_' . $customerGroupId => $sharedResource->getMainTable()],
                         'e.sku = scp_'. $customerGroupId .'.sku 
                             AND scp_'.$customerGroupId .'.customer_group_id = ' . $customerGroupId,
-                        ['shared_catalog_permission_'. $customerGroupId =>
-                            'IF (scp_'. $customerGroupId .'.sku IS NOT NULL, 1, 0)']
+                        [$columnName => 'IF (scp_'. $customerGroupId .'.sku IS NOT NULL, 1, 0)']
                     );
                 }
             }
@@ -62,6 +64,4 @@ class ProductCollectionAddPermissions implements ObserverInterface
 
         return $this;
     }
-
 }
-

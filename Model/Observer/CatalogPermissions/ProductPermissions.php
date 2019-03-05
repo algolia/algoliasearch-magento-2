@@ -49,6 +49,4 @@ class ProductPermissions implements ObserverInterface
 
         return $this;
     }
-
 }
-

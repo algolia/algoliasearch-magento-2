@@ -26,11 +26,13 @@ class CatalogPermissionsFactory
 
     public function isCatalogPermissionsEnabled($storeId)
     {
-        return $this->scopeConfig->isSetFlag(
+        $isEnabled = $this->scopeConfig->isSetFlag(
             self::CATALOG_PERMISSIONS_ENABLED_CONFIG_PATH,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $storeId
-        ) && $this->isCatalogPermissionsModuleEnabled();
+        );
+
+        return $isEnabled && $this->isCatalogPermissionsModuleEnabled();
     }
 
     private function isCatalogPermissionsModuleEnabled()
@@ -48,5 +50,4 @@ class CatalogPermissionsFactory
     {
         return $this->getPermissionsIndexResource()->getMainTable() . '_product';
     }
-
 }

@@ -1,0 +1,7 @@
+.algoliasearch-merchandising-options {
+    display: flex;
+}
+
+.algoliasearch-merchandising-options .column {
+    width: 33%;
+}

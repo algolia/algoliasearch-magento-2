@@ -55,12 +55,12 @@
             resource="Algolia_AlgoliaSearch::manage"
         />
         <add
-            id="Algolia_AlgoliaSearch::landingpage"
-            title="Landing Page Builder"
+            id="Algolia_AlgoliaSearch::merchandising"
+            title="Merchandising"
             module="Algolia_AlgoliaSearch"
             sortOrder="95"
             parent="Algolia_AlgoliaSearch::manage"
-            action="algolia_algoliasearch/landingpage/index"
+            action="algolia_algoliasearch/merchandising/index"
             resource="Algolia_AlgoliaSearch::manage"
         />
         <add

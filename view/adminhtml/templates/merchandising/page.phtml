@@ -1,0 +1,30 @@
+<?php /** @var \Magento\Backend\Block\Template $block */ ?>
+<section class="algoliasearch-merchandising-options clearfix">
+    <div class="column query-merchandising">
+        <img src="" alt="<?php echo  __('Query Merchandiser') ?>" title="<?php echo  __('Query Merchandiser') ?>" />
+        <h3><?php echo __('Query Merchandiser') ?></h3>
+        <div class="std description">
+            <p><?php echo __('') ?></p>
+        </div>
+
+        <a href="" title="<?php echo __('') ?>"><?php echo __('') ?></a>
+    </div>
+    <div class="column category-merchandising">
+        <img src="" alt="<?php echo  __('Category Merchandiser') ?>" title="<?php echo  __('Category Merchandiser') ?>" />
+        <h3><?php echo __('Category Merchandiser') ?></h3>
+        <div class="std description">
+            <p><?php echo __('') ?></p>
+        </div>
+
+        <a href="<?php echo $block->getUrl('catalog/category') ?>" target="_blank" title="<?php echo __('Promote products within a category') ?>"><?php echo __('Promote products within a category') ?></a>
+    </div>
+    <div class="column landing-page-builder">
+        <img src="" alt="<?php echo  __('Landing Page Builder') ?>" title="<?php echo  __('Landing Page Builder') ?>" />
+        <h3><?php echo __('Landing Page Builder') ?></h3>
+        <div class="std description">
+            <p><?php echo __('') ?></p>
+        </div>
+
+        <a href="<?php echo $block->getUrl('algolia_algoliasearch/landingpage') ?>" target="_blank" title="<?php echo __('Create a new landing page') ?>"><?php echo __('Create a new landing page') ?></a>
+    </div>
+</section>

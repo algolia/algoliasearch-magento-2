@@ -33,18 +33,13 @@ class Page {
     /**
      * @return bool
      */
-    public function canAccessCategoryMerchandiser()
+    public function canAccessMerchandisingFeature()
     {
+        $clientData = $this->proxyHelper->getClientConfigurationData();
+        if (isset($clientData['query_rules'])) {
+            return (bool) $clientData['query_rules'];
+        }
 
-        return false;
-    }
-
-    /**
-     * @return bool
-     */
-    public function canAccessQueryMerchandiser()
-    {
-        
         return false;
     }
 }

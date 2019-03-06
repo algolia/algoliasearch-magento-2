@@ -4,15 +4,15 @@
 <section class="algoliasearch-merchandising-options clearfix">
     <div class="merchandising-item query-merchandising">
         <div class="image-container">
-            <img src="" alt="<?php echo  __('Query Merchandiser') ?>" title="<?php echo  __('Query Merchandiser') ?>" />
+            <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg'); ?>" alt="<?php echo  __('Query Merchandiser') ?>" title="<?php echo  __('Query Merchandiser') ?>" />
         </div>
         <h3><?php echo __('Query Merchandiser') ?></h3>
         <div class="std description">
             <p><?php echo __('Easily promote or demote products for a search. Based on Algolia\'s Query rules, the Query merchandiser allows you to enhance the ranking behavior for specific search queries.') ?></p>
         </div>
 
-        <?php if ($viewModel->canAccessQueryMerchandiser()): ?>
-            <a href="<?php echo $block->getUrl('algolia_algoliasearch/querymerchandiser') ?>" title="<?php echo __('Merchandise search results') ?>"><?php echo __('Merchandise search results') ?></a>
+        <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
+            <a href="<?php echo $block->getUrl('algolia_algoliasearch/query') ?>" title="<?php echo __('Merchandise search results') ?>"><?php echo __('Merchandise search results') ?></a>
         <?php else: ?>
             <?php echo $block->getChildHtml('upsell') ?>
         <?php endif ?>
@@ -26,7 +26,7 @@
             <p><?php echo __('Give more visibility to specific products within a category page. Promote or demote displayed items by using a simple drag and drop mechanism.') ?></p>
         </div>
 
-        <?php if ($viewModel->canAccessCategoryMerchandiser()): ?>
+        <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
             <a href="<?php echo $block->getUrl('catalog/category') ?>" target="_blank" title="<?php echo __('Promote products within a category') ?>"><?php echo __('Promote products within a category') ?></a>
         <?php else: ?>
             <?php echo $block->getChildHtml('upsell') ?>

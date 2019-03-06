@@ -1,3 +1,8 @@
+.algolia-algoliasearch-merchandising-index .main-col {
+    border-top: 2px solid #efefef;
+    padding-top: 50px;
+}
+
 .algoliasearch-merchandising-options {
     display: flex;
     justify-content: space-between;
@@ -5,6 +10,7 @@
 .algoliasearch-merchandising-options .merchandising-item {
     width: 33%;
     max-width: 360px;
+    padding: 10px;
 }
 .merchandising-item .image-container {
     display: flex;

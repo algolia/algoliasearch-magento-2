@@ -4,8 +4,8 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising;
 
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 
-class Page {
-
+class Page
+{
     /** @var ProxyHelper */
     private $proxyHelper;
 

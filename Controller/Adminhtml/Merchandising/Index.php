@@ -8,7 +8,6 @@ use Magento\Framework\View\LayoutFactory;
 
 class Index extends \Magento\Backend\App\Action
 {
-
     /** @var ResultFactory */
     protected $resultFactory;
 

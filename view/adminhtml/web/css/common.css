@@ -74,3 +74,55 @@
 	background-repeat: no-repeat;
 	background-position: 28px 50%;
 }
+
+/* Admin videos */
+.algolia-admin-content-wrapper {
+	background-color : #F5FAFD;
+	border : 1px solid #E2F0FA;
+	height : 70px;
+	position : relative;
+}
+
+.algolia-admin-content-links {
+	width : 49%;
+	height: 70px;
+	display: table;
+}
+
+.algolia-admin-content-links p {
+	vertical-align: middle;
+	display: table-cell;
+}
+
+.algolia-admin-content-links span{
+	margin : 0 20px;
+	line-height: 1.8;
+}
+
+.algolia-admin-content-links span img{
+	margin-right : 10px;
+    vertical-align: text-bottom;
+}
+
+.algolia-admin-content-videos {
+	width : 49%;
+	display: inline-block;
+	text-align : right;
+	position : absolute;
+	top : 10px;
+	right : 0;
+}
+
+.algolia-admin-content-videos img{
+	height : 50px;
+	vertical-align: middle;
+	border : 1px solid #CCCCCC
+}
+
+.algolia-admin-content-videos span{
+	margin-right : 10px;
+}
+
+.algolia-admin-content-videos a{
+	margin : 0 10px;
+}

@@ -24,6 +24,15 @@ $indexingQueuePageUrl = $this->getUrl('algolia_algoliasearch/queue/index');
 
 $ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
 
+$icons = [
+    'iconDocs' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg'),
+    'iconFaq' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-faq.svg'),
+    'iconIssues' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-issues.svg'),
+];
+
+$videoConfig = $viewModel->getVideoConfig($section);
+$linksConfig = $viewModel->getLinksConfig($section);
+
 ?>
 
 <script>
@@ -33,6 +42,9 @@ var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>
 var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
 var indexingQueueInfoUrl = <?php echo json_encode($indexingQueueInfoUrl); ?>;
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
+var icons = <?php echo json_encode($icons); ?>;
+var videoConfig = <?php echo json_encode($videoConfig); ?>;
+var linksConfig = <?php echo json_encode($linksConfig); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
@@ -119,6 +131,42 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 					$('.entry-edit').before(message);
 				});
+
+				// Admin videos
+                var videoTemplate = '';
+                // Admin links
+                var linksTemplate = '';
+
+                if (videoConfig) {
+                    videoTemplate = `
+                        <div class="algolia-admin-content-videos">
+                            <p>
+                                <span>Related video:</span>
+                                <a target="_blank" href="` + videoConfig.url + `"><img src="` + videoConfig.thumbnail + `"/></a>
+                                <a target="_blank" href="` + videoConfig.url + `">` + videoConfig.title + `</a>
+                            </p>
+                        </div>`;
+                }
+
+                if (linksConfig) {
+                    var links = '';
+                    for (var i=0; i<linksConfig.length; i++) {
+                        links += `<span><img src="` + icons[linksConfig[i].icon] + `"/><a target="_blank" href="` + linksConfig[i].url + `">` + linksConfig[i].title + `</a></span>`;
+                        if (i%2 == 1) {
+                            links += `<br/>`;
+                        }
+                    }
+                    linksTemplate = `<div class="algolia-admin-content-links"><p>` + links + `</p></div>`;
+                }
+
+                var linksAndVideoTemplate = `
+                    <div class="algolia-admin-content-wrapper">
+                        ` + linksTemplate +  videoTemplate +
+                    `</div>
+                    <br>
+                    <hr>
+                    <br>`;
+                $('.algolia-admin-content').html(linksAndVideoTemplate);
 			}
 
 

@@ -12,9 +12,12 @@ class ProxyHelper
     const INFO_TYPE_QUERY_RULES = 'query_rules';
     const INFO_TYPE_ANALYTICS = 'analytics';
     const INFO_TYPE_PLAN_LEVEL = 'plan_level';
+    const INFO_TYPE_ALL = 'all';
 
     /** @var ConfigHelper */
     private $configHelper;
+
+    private $allClientData;
 
     /** @param ConfigHelper $configHelper */
     public function __construct(ConfigHelper $configHelper)
@@ -52,6 +55,15 @@ class ProxyHelper
         }
 
         return $info;
+    }
+
+    public function getClientConfigurationData()
+    {
+        if (!$this->allClientData) {
+            $this->allClientData = $this->getInfo(self::INFO_TYPE_ALL);
+        }
+
+        return $this->allClientData;
     }
 
     /**

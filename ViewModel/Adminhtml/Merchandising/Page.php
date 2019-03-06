@@ -14,4 +14,37 @@ class Page {
     ) {
         $this->proxyHelper = $proxyHelper;
     }
+
+    /**
+     * @return bool
+     */
+    public function canAccessLandingPageBuilder()
+    {
+        $planLevel = 1;
+
+        $planLevelInfo = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_PLAN_LEVEL);
+        if (isset($planLevelInfo['plan_level'])) {
+            $planLevel = (int) $planLevelInfo['plan_level'];
+        }
+
+        return $planLevel > 1;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canAccessCategoryMerchandiser()
+    {
+
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canAccessQueryMerchandiser()
+    {
+        
+        return false;
+    }
 }

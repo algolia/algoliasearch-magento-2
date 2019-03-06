@@ -41,3 +41,26 @@
     font-size: 1rem;
     padding-left: .75rem;
 }
+
+
+/** Upsell Message **/
+.algolia-suggestions-upsell {
+    width: 100%;
+    /* background-color: #F5FAFD; */
+    border: 1px solid #E2F0FA;
+    padding: 20px;
+    margin: 5px 0 20px;
+    position: relative;
+}
+
+.algolia-suggestions-upsell .stars {
+    float: left;
+    margin-right: 20px;
+    margin-top: 5px;
+}
+
+.algolia-suggestions-upsell p {
+    font-size: 1em;
+    padding: 0 15px 0 60px;
+    line-height: normal;
+}

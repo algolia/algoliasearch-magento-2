@@ -204,7 +204,6 @@ class Queue
             // and therefore are not indexed yet in TMP index
             if ($job->getMethod() === 'moveIndex' && $this->noOfFailedJobs > 0) {
                 // Set pid to NULL so it's not deleted after
-                // TODO: Try to find a way how to persist entity
                 $this->db->update($this->table, ['pid' => null], ['job_id = ?' => $job->getId()]);
 
                 continue;
@@ -357,7 +356,6 @@ class Queue
                 break;
             }
 
-            // $rawJobs = $this->prepareJobs($rawJobs);
             $rawJobs = array_merge($jobs, $rawJobs);
             $rawJobs = $this->mergeJobs($rawJobs);
 

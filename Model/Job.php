@@ -93,13 +93,18 @@ class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInte
      */
     public function prepare()
     {
-        $decodedData = json_decode($this->getData('data'), true);
+        if ($this->getMergedIds() === null) {
+            $this->setMergedIds([$this->getId()]);
+        }
 
-        $this->setMergedIds([$this->getId()]);
-        $this->setDecodedData($decodedData);
+        if ($this->getDecodedData() === null) {
+            $decodedData = json_decode($this->getData('data'), true);
 
-        if (isset($decodedData['store_id'])) {
-            $this->setStoreId($decodedData['store_id']);
+            $this->setDecodedData($decodedData);
+
+            if (isset($decodedData['store_id'])) {
+                $this->setStoreId($decodedData['store_id']);
+            }
         }
 
         return $this;

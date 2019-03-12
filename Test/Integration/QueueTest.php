@@ -327,7 +327,7 @@ class QueueTest extends TestCase
                     1 => '22',
                     2 => '40',
                 ],
-            ]
+            ],
         ];
 
         /** @var Job $categoryJob */
@@ -335,12 +335,12 @@ class QueueTest extends TestCase
         $this->assertEquals($expectedCategoryJob, $categoryJob->toArray());
 
         $expectedProductJob = [
-            'job_id' => '10',
+            'job_id' => '4',
             'created' => '2017-09-01 12:00:00',
             'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreProductIndex',
-            'data' => '{"store_id":"1","product_ids":["405"]}',
+            'data' => '{"store_id":"1","product_ids":["448"]}',
             'max_retries' => '3',
             'retries' => '0',
             'error_log' => '',
@@ -359,7 +359,7 @@ class QueueTest extends TestCase
 
         /** @var Job $productJob */
         $productJob = $mergedJobs[3];
-        $this->assertEquals($expectedProductJob, $productJob);
+        $this->assertEquals($expectedProductJob, $productJob->toArray());
     }
 
     public function testMergingWithStaticMethods()
@@ -498,8 +498,8 @@ class QueueTest extends TestCase
         /** @var Job[] $jobs */
         $jobs = $this->jobsCollectionFactory->create()->getItems();
 
-        $mergedJobs = array_values($this->invokeMethod($queue, 'mergeJobs', ['jobs' => $jobs]));
-        $this->assertEquals(12, count($mergedJobs));
+        $jobs = array_values($this->invokeMethod($queue, 'mergeJobs', ['jobs' => $jobs]));
+        $this->assertEquals(12, count($jobs));
 
         $this->assertEquals('rebuildStoreCategoryIndex', $jobs[0]->getMethod());
         $this->assertEquals('rebuildStoreCategoryIndex', $jobs[1]->getMethod());
@@ -751,7 +751,6 @@ class QueueTest extends TestCase
         $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10, 'pid' => $pid]);
 
         $this->assertEquals(1, count($jobs));
-
 
         $job = reset($jobs);
         $this->assertEquals(5000, $job->getDataSize());

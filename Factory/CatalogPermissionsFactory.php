@@ -57,7 +57,7 @@ class CatalogPermissionsFactory
 
             $query = "
                 SELECT category_id, GROUP_CONCAT(CONCAT(customer_group_id, '_', grant_catalog_category_view) SEPARATOR ',') AS permissions
-                FROM " . $indexResource->etMainTable() ." 
+                FROM {$indexResource->getMainTable()} 
                 GROUP BY category_id;
             ";
 
@@ -77,7 +77,7 @@ class CatalogPermissionsFactory
             $query = "
                 SELECT product_id, 
                 GROUP_CONCAT(CONCAT(store_id, '_', customer_group_id, '_', grant_catalog_category_view) SEPARATOR ', ') AS permissions
-                FROM " . $indexResource->getTable([$indexResource->getMainTable(), 'product']) . "
+                FROM {$indexResource->getTable([$indexResource->getMainTable(), 'product'])}
                 GROUP BY product_id;
             ";
 

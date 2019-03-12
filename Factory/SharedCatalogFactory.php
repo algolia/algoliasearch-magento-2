@@ -66,7 +66,7 @@ class SharedCatalogFactory
 
             $query = "
                 SELECT category_id, GROUP_CONCAT(CONCAT(customer_group_id, '_', permission) SEPARATOR ',') AS permissions
-                FROM " . $indexResource->getMainTable() . " 
+                FROM {$indexResource->getMainTable()} 
                 WHERE customer_group_id IN (SELECT customer_group_id FROM shared_catalog) 
                 GROUP BY category_id;
             ";
@@ -86,10 +86,10 @@ class SharedCatalogFactory
 
             $query = "
                 SELECT cpe.entity_id, GROUP_CONCAT(pi.customer_group_id SEPARATOR ',') as groups
-                FROM " . $indexResource->getMainTable() . " as pi
-                INNER JOIN " . $this->getSharedCatalogResource()->getMainTable() . " AS sc
+                FROM {$indexResource->getMainTable()} as pi
+                INNER JOIN {$this->getSharedCatalogResource()->getMainTable()} AS sc
                 ON sc.customer_group_id = pi.customer_group_id
-                LEFT JOIN " . $indexResource->getTable('catalog_product_entity') . " AS cpe
+                LEFT JOIN {$indexResource->getTable('catalog_product_entity')} AS cpe
                 ON pi.sku = cpe.sku
                 GROUP BY pi.sku
             ";
@@ -115,7 +115,7 @@ class SharedCatalogFactory
     {
         /** @var \Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection $sharedCatalog */
         $sharedCatalog = $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection');
+
         return $sharedCatalog->getColumnValues('customer_group_id');
     }
-
 }

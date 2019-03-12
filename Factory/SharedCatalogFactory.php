@@ -14,7 +14,8 @@ class SharedCatalogFactory
     private $moduleManager;
     private $objectManager;
 
-    private $sharedCatalog;
+    private $sharedCategoryCollection;
+    private $sharedProductItemCollection;
 
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -26,7 +27,7 @@ class SharedCatalogFactory
         $this->objectManager = $objectManager;
     }
 
-    public function isSharedCatalogEnabled($storeId, $customerGroupId)
+    public function isSharedCatalogEnabled($storeId)
     {
         $isEnabled = $this->scopeConfig->isSetFlag(
             self::SHARED_CATALOG_ENABLED_CONFIG_PATH,
@@ -34,14 +35,7 @@ class SharedCatalogFactory
             $storeId
         );
 
-        if (!$isEnabled || !$this->isSharedCatalogModuleEnabled()) {
-            return false;
-        }
-
-        $sharedCollection = $this->getSharedCatalogCollection();
-        $items = $sharedCollection->getItemsByColumnValue('customer_group_id', $customerGroupId);
-
-        return count($items) > 0 ? true : false;
+        return $isEnabled && $this->isSharedCatalogModuleEnabled();
     }
 
     private function isSharedCatalogModuleEnabled()
@@ -51,22 +45,77 @@ class SharedCatalogFactory
 
     public function getSharedCatalogProductItemResource()
     {
-        return $this->isSharedCatalogModuleEnabled() ?
-            $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\ProductItem') : false;
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\ProductItem');
     }
 
     public function getSharedCatalogCategoryResource()
     {
-        return $this->isSharedCatalogModuleEnabled() ?
-            $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\Permission') : false;
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\Permission');
     }
 
-    private function getSharedCatalogCollection()
+    public function getSharedCatalogResource()
     {
-        if (!isset($this->sharedCatalog)) {
-            $this->sharedCatalog = $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection');
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog');
+    }
+
+    public function getSharedCategoryCollection()
+    {
+        if (!$this->sharedCategoryCollection) {
+            $indexResource = $this->getSharedCatalogCategoryResource();
+            $connection = $indexResource->getConnection();
+
+            $query = "
+                SELECT category_id, GROUP_CONCAT(CONCAT(customer_group_id, '_', permission) SEPARATOR ',') AS permissions
+                FROM " . $indexResource->getMainTable() . " 
+                WHERE customer_group_id IN (SELECT customer_group_id FROM shared_catalog) 
+                GROUP BY category_id;
+            ";
+
+            $this->sharedCategoryCollection = $connection->fetchPairs($query);
         }
 
-        return $this->sharedCatalog;
+        return $this->sharedCategoryCollection;
     }
+
+    public function getSharedProductItemCollection()
+    {
+        if (!$this->sharedProductItemCollection) {
+            /** @var \Magento\SharedCatalog\Model\ResourceModel\ProductItem $indexResource */
+            $indexResource = $this->getSharedCatalogProductItemResource();
+            $connection = $indexResource->getConnection();
+
+            $query = "
+                SELECT cpe.entity_id, GROUP_CONCAT(pi.customer_group_id SEPARATOR ',') as groups
+                FROM " . $indexResource->getMainTable() . " as pi
+                INNER JOIN " . $this->getSharedCatalogResource()->getMainTable() . " AS sc
+                ON sc.customer_group_id = pi.customer_group_id
+                LEFT JOIN " . $indexResource->getTable('catalog_product_entity') . " AS cpe
+                ON pi.sku = cpe.sku
+                GROUP BY pi.sku
+            ";
+
+            $productItems = $connection->fetchPairs($query);
+            $groups = $this->getSharedCatalogGroups();
+
+            foreach ($productItems as $productId => $permissions) {
+                $permissions = explode(',', $permissions);
+                $finalPermissions = [];
+                foreach ($groups as $groupId) {
+                    $finalPermissions[] = $groupId . '_' . (in_array($groupId, $permissions) ? '1' : '0');
+                }
+                $productItems[$productId] = implode(',', $finalPermissions);
+            }
+            $this->sharedProductItemCollection = $productItems;
+        }
+
+        return $this->sharedProductItemCollection;
+    }
+
+    public function getSharedCatalogGroups()
+    {
+        /** @var \Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection $sharedCatalog */
+        $sharedCatalog = $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection');
+        return $sharedCatalog->getColumnValues('customer_group_id');
+    }
+
 }

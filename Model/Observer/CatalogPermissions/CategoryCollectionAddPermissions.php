@@ -34,30 +34,31 @@ class CategoryCollectionAddPermissions implements ObserverInterface
             return $this;
         }
 
-        /** @var \Magento\CatalogPermissions\Model\ResourceModel\Permission\Index $permissionsIndex */
-        if ($permissionsIndex = $this->permissionsFactory->getPermissionsIndexResource()) {
-            $select = $collection->getSelect();
-            foreach ($this->customerGroupCollection as $customerGroup) {
-                $customerGroupId = $customerGroup->getCustomerGroupId();
-                $columnName = 'customer_group_permission_' . $customerGroupId;
+        /** @var \Magento\CatalogPermissions\Model\ResourceModel\Permission\Collection $categoryPermissionsCollection */
+        $categoryPermissionsCollection = $this->permissionsFactory->getCategoryPermissionsCollection($collection->getAllIds());
+        if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId)) {
+            $sharedCategoryCollection = $this->sharedCatalogFactory->getSharedCategoryCollection();
+        }
+        if (count($categoryPermissionsCollection)) {
+            foreach ($collection as $category) {
+                if (isset($categoryPermissionsCollection[$category->getId()])) {
+                    $permissions = $categoryPermissionsCollection[$category->getId()];
+                    $permissions = explode(',', $permissions);
+                    foreach ($permissions as $permission) {
+                        list ($customerGroupId, $level) = explode('_', $permission);
+                        $category->setData('customer_group_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
+                    }
+                }
 
-                $select->joinLeft(
-                    ['cgp_' . $customerGroupId => $permissionsIndex->getMainTable()],
-                    'e.entity_id = cgp_' . $customerGroupId . '.category_id
-                        AND cgp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId,
-                    [$columnName => 'IF (cgp_' . $customerGroupId . '.grant_catalog_category_view = -1, 1, 0)']
-                );
-
-                if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId, $customerGroupId)) {
-                    $sharedResource = $this->sharedCatalogFactory->getSharedCatalogCategoryResource();
-                    $columnName = 'shared_catalog_permission_' . $customerGroupId;
-
-                    $select->joinLeft(
-                        ['scp_' . $customerGroupId => $sharedResource->getMainTable()],
-                        'e.entity_id = scp_' . $customerGroupId . '.category_id
-                        AND scp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId,
-                        [$columnName => 'IF (scp_' . $customerGroupId . '.permission = -1, 1, 0)']
-                    );
+                if (isset($sharedCategoryCollection) && is_array($sharedCategoryCollection)) {
+                    if (isset($sharedCategoryCollection[$category->getId()])) {
+                        $sharedPermissions = $sharedCategoryCollection[$category->getId()];
+                        $sharedPermissions = explode(',', $sharedPermissions);
+                        foreach ($sharedPermissions as $permission) {
+                            list ($customerGroupId, $level) = explode('_', $permission);
+                            $category->setData('shared_catalog_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
+                        }
+                    }
                 }
             }
         }

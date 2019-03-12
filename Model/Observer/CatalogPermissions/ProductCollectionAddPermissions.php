@@ -28,39 +28,61 @@ class ProductCollectionAddPermissions implements ObserverInterface
     {
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $observer->getData('collection');
-        $storeId = $observer->getData('store');
+        $storeId = $observer->getData('store_id');
+        /** @var \Magento\Framework\DataObject $additionalData */
+        $additionalData = $observer->getData('additional_data');
 
         if (!$this->permissionsFactory->isCatalogPermissionsEnabled($storeId)) {
             return $this;
         }
 
-        if ($permissionsIndex = $this->permissionsFactory->getPermissionsIndexResource()) {
-            $select = $collection->getSelect();
-            foreach ($this->customerGroupCollection as $customerGroup) {
-                $customerGroupId = $customerGroup->getCustomerGroupId();
-                $columnName = 'customer_group_permission_' . $customerGroupId;
+        $items = [];
+        if ($additionalData->getData('items')) {
+            $items = $additionalData->getData('items');
+        }
 
-                $select->joinLeft(
-                    ['cgp_' . $customerGroupId => $this->permissionsFactory->getPermissionsProductTable()],
-                    'e.entity_id = cgp_' . $customerGroupId . '.product_id
-                        AND cgp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId
-                    . ' AND cgp_' . $customerGroupId . '.store_id = ' . $storeId,
-                    [$columnName => 'IF (cgp_' . $customerGroupId . '.grant_catalog_category_view = -1, 1, 0)']
-                );
+        $productIds = array_flip($collection->getColumnValues('entity_id'));
+        $setPermissions = [];
 
-                if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId, $customerGroupId)) {
-                    $sharedResource = $this->sharedCatalogFactory->getSharedCatalogProductItemResource();
-                    $columnName = 'shared_catalog_permission_' . $customerGroupId;
-
-                    $select->joinLeft(
-                        ['scp_' . $customerGroupId => $sharedResource->getMainTable()],
-                        'e.sku = scp_' . $customerGroupId . '.sku 
-                            AND scp_' . $customerGroupId . '.customer_group_id = ' . $customerGroupId,
-                        [$columnName => 'IF (scp_' . $customerGroupId . '.sku IS NOT NULL, 1, 0)']
-                    );
+        $productPermissionsCollection = $this->permissionsFactory->getProductPermissionsCollection();
+        if (count($productPermissionsCollection)) {
+            $permissionsCollection = array_intersect_key($productPermissionsCollection, $productIds);
+            foreach ($permissionsCollection as $productId => $permissions) {
+                $permissions = explode(',', $permissions);
+                foreach ($permissions as $permission) {
+                    list ($permissionStoreId, $customerGroupId, $level) = explode('_', $permission);
+                    if ($permissionStoreId == $storeId) {
+                        $setPermissions[$productId]['customer_group_permission_' . $customerGroupId] = ($level == -1 ? 1 : 0);
+                    }
                 }
             }
         }
+
+        if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId)) {
+            $sharedCatalogCollection = $this->sharedCatalogFactory->getSharedProductItemCollection();
+            if (count($sharedCatalogCollection)) {
+                $sharedCollection = array_intersect_key($sharedCatalogCollection, $productIds);
+                foreach ($sharedCollection as $productId => $permissions) {
+                    $permissions = explode(',', $permissions);
+                    foreach ($permissions as $permission) {
+                        list ($customerGroupId, $level) = explode('_', $permission);
+                        $setPermissions[$productId]['shared_catalog_permission_' . $customerGroupId] = $level;
+                    }
+                }
+            }
+        }
+
+        if (count($setPermissions)) {
+            foreach ($setPermissions as $productId => $permissions) {
+                if (isset($items[$productId])) {
+                    $items[$productId] = array_merge($permissions, $items[$productId]);
+                } else {
+                    $items[$productId] = $permissions;
+                }
+            }
+        }
+
+        $additionalData->setData('items', $items);
 
         return $this;
     }

@@ -35,7 +35,7 @@
         <observer name="algoliasearch_create_merchandising_query_rule" instance="Algolia\AlgoliaSearch\Model\Observer\Merchandising"/>
     </event>
 
-    <event name="algolia_after_products_collection_build">
+    <event name="algolia_product_collection_add_additional_data">
         <observer name="algoliasearch_product_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\ProductCollectionAddPermissions" />
     </event>
     <event name="algolia_after_create_product_object">

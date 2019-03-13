@@ -45,7 +45,7 @@ class CategoryCollectionAddPermissions implements ObserverInterface
                     $permissions = $categoryPermissionsCollection[$category->getId()];
                     $permissions = explode(',', $permissions);
                     foreach ($permissions as $permission) {
-                        list ($customerGroupId, $level) = explode('_', $permission);
+                        list($customerGroupId, $level) = explode('_', $permission);
                         $category->setData('customer_group_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
                     }
                 }
@@ -55,7 +55,7 @@ class CategoryCollectionAddPermissions implements ObserverInterface
                         $sharedPermissions = $sharedCategoryCollection[$category->getId()];
                         $sharedPermissions = explode(',', $sharedPermissions);
                         foreach ($sharedPermissions as $permission) {
-                            list ($customerGroupId, $level) = explode('_', $permission);
+                            list($customerGroupId, $level) = explode('_', $permission);
                             $category->setData('shared_catalog_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
                         }
                     }

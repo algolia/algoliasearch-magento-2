@@ -707,7 +707,7 @@ class Data
 
         $ordersTableName = $this->resource->getTableName('sales_order_item');
 
-        $ids = $collection->getAllIds();
+        $ids = $collection->getColumnValues('entity_id');
         $ids[] = '0'; // Makes sure the imploded string is not empty
 
         $ids = implode(', ', $ids);

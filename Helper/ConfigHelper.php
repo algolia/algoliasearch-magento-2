@@ -863,8 +863,10 @@ class ConfigHelper
     public function getAttributesToFilter($groupId)
     {
         $transport = new DataObject();
-        $this->eventManager->dispatch('algolia_get_attributes_to_filter',
-            ['filter_object' => $transport, 'customer_group_id' => $groupId]);
+        $this->eventManager->dispatch(
+            'algolia_get_attributes_to_filter',
+            ['filter_object' => $transport, 'customer_group_id' => $groupId]
+        );
         $attributes = $transport->getData();
 
         $attributes = array_unique($attributes);

@@ -9,9 +9,8 @@ class Page
     /** @var ProxyHelper */
     private $proxyHelper;
 
-    public function __construct(
-        ProxyHelper $proxyHelper
-    ) {
+    public function __construct(ProxyHelper $proxyHelper)
+    {
         $this->proxyHelper = $proxyHelper;
     }
 
@@ -20,12 +19,8 @@ class Page
      */
     public function canAccessLandingPageBuilder()
     {
-        $planLevel = 1;
-
-        $planLevelInfo = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_PLAN_LEVEL);
-        if (isset($planLevelInfo['plan_level'])) {
-            $planLevel = (int) $planLevelInfo['plan_level'];
-        }
+        $clientData = $this->proxyHelper->getClientConfigurationData();
+        $planLevel = (isset($clientData['plan_level']) ? (int) $clientData['plan_level'] : 1);
 
         return $planLevel > 1;
     }
@@ -36,10 +31,7 @@ class Page
     public function canAccessMerchandisingFeature()
     {
         $clientData = $this->proxyHelper->getClientConfigurationData();
-        if (isset($clientData['query_rules'])) {
-            return (bool) $clientData['query_rules'];
-        }
 
-        return false;
+        return isset($clientData['query_rules']) ? (bool) $clientData['query_rules'] : false;
     }
 }

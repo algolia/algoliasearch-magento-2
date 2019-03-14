@@ -34,35 +34,54 @@ class CategoryCollectionAddPermissions implements ObserverInterface
             return $this;
         }
 
-        /** @var \Magento\CatalogPermissions\Model\ResourceModel\Permission\Collection $categoryPermissionsCollection */
-        $categoryPermissionsCollection = $this->permissionsFactory->getCategoryPermissionsCollection($collection->getAllIds());
-        if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId)) {
-            $sharedCategoryCollection = $this->sharedCatalogFactory->getSharedCategoryCollection();
-        }
-        if (count($categoryPermissionsCollection)) {
-            foreach ($collection as $category) {
-                if (isset($categoryPermissionsCollection[$category->getId()])) {
-                    $permissions = $categoryPermissionsCollection[$category->getId()];
-                    $permissions = explode(',', $permissions);
-                    foreach ($permissions as $permission) {
-                        list($customerGroupId, $level) = explode('_', $permission);
-                        $category->setData('customer_group_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
-                    }
-                }
+        $categoryIds = array_flip($collection->getColumnValues('entity_id'));
 
-                if (isset($sharedCategoryCollection) && is_array($sharedCategoryCollection)) {
-                    if (isset($sharedCategoryCollection[$category->getId()])) {
-                        $sharedPermissions = $sharedCategoryCollection[$category->getId()];
-                        $sharedPermissions = explode(',', $sharedPermissions);
-                        foreach ($sharedPermissions as $permission) {
-                            list($customerGroupId, $level) = explode('_', $permission);
-                            $category->setData('shared_catalog_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
-                        }
-                    }
+        $this->addCatalogPermissionsData($collection, $categoryIds);
+        $this->addSharedCatalogData($collection, $categoryIds, $storeId);
+
+        return $this;
+    }
+
+    protected function addCatalogPermissionsData($collection, $categoryIds)
+    {
+        $categoryPermissionsCollection = $this->permissionsFactory->getCategoryPermissionsCollection();
+        $permissionsCollection = array_intersect_key($categoryPermissionsCollection, $categoryIds);
+        if (count($permissionsCollection) === 0) {
+            return;
+        }
+
+        foreach ($permissionsCollection as $categoryId => $permissions) {
+            $permissions = explode(',', $permissions);
+            foreach ($permissions as $permission) {
+                list($customerGroupId, $level) = explode('_', $permission);
+                if ($category = $collection->getItemById($categoryId)) {
+                    $category->setData('customer_group_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
                 }
             }
         }
+    }
 
-        return $this;
+    protected function addSharedCatalogData($collection, $categoryIds, $storeId)
+    {
+        if (!$this->sharedCatalogFactory->isSharedCatalogEnabled($storeId)) {
+            return;
+        }
+
+        $sharedCategoryCollection = $this->sharedCatalogFactory->getSharedCategoryCollection();
+        $sharedCollection = array_intersect_key($sharedCategoryCollection, $categoryIds);
+
+        if (count($sharedCollection) === 0) {
+            return;
+        }
+
+        foreach ($sharedCollection as $categoryId => $permissions) {
+            $permissions = explode(',', $permissions);
+            foreach ($permissions as $permission) {
+                list($customerGroupId, $level) = explode('_', $permission);
+                if ($category = $collection->getItemById($categoryId)) {
+                    $category->setData('shared_catalog_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
+                }
+            }
+        }
     }
 }

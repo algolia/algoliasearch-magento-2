@@ -15,7 +15,6 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Search\Model\Query;
 use Magento\Store\Model\App\Emulation;
@@ -445,7 +444,7 @@ class Data
 
         $salesData = $this->getSalesData($storeId, $collection);
 
-        $transport = new DataObject();
+        $transport = new ProductDataArray();
         $this->eventManager->dispatch(
             'algolia_product_collection_add_additional_data',
             ['collection' => $collection, 'store_id' => $storeId, 'additional_data' => $transport]
@@ -480,11 +479,9 @@ class Data
                 $product->setData('total_ordered', $salesData[$productId]['total_ordered']);
             }
 
-            if ($additionalData = $transport->getData('items')) {
-                if (isset($additionalData[$productId])) {
-                    foreach ($additionalData[$productId] as $key => $value) {
-                        $product->setData($key, $value);
-                    }
+            if ($additionalData = $transport->getItem($productId)) {
+                foreach ($additionalData as $key => $value) {
+                    $product->setData($key, $value);
                 }
             }
 

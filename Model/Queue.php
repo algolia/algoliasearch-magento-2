@@ -551,7 +551,6 @@ class Queue
         $retryLimit = $this->configHelper->getRetryLimit();
 
         if ($retryLimit > 0) {
-            $retryLimit = 0;
             $where = $this->db->quoteInto('retries >= ?', $retryLimit);
             $this->archiveFailedJobs($where);
 

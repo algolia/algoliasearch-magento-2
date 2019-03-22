@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 use AlgoliaSearch\AlgoliaException;
 use AlgoliaSearch\Client;
+use AlgoliaSearch\ClientFactory;
 use AlgoliaSearch\Version;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -24,6 +25,9 @@ class AlgoliaHelper extends AbstractHelper
     /** @var ConsoleOutput */
     private $consoleOutput;
 
+    /** @var ClientFactory */
+    private $clientFactory;
+
     /** @var int */
     private $maxRecordSize = 20000;
 
@@ -43,13 +47,15 @@ class AlgoliaHelper extends AbstractHelper
         Context $context,
         ConfigHelper $configHelper,
         ManagerInterface $messageManager,
-        ConsoleOutput $consoleOutput
+        ConsoleOutput $consoleOutput,
+        ClientFactory $clientFactory
     ) {
         parent::__construct($context);
 
         $this->config = $configHelper;
         $this->messageManager = $messageManager;
         $this->consoleOutput = $consoleOutput;
+        $this->clientFactory = $clientFactory;
 
         $this->resetCredentialsFromConfig();
 
@@ -73,7 +79,10 @@ class AlgoliaHelper extends AbstractHelper
     public function resetCredentialsFromConfig()
     {
         if ($this->config->getApplicationID() && $this->config->getAPIKey()) {
-            $this->client = new Client($this->config->getApplicationID(), $this->config->getAPIKey());
+            $this->client = $this->clientFactory->create([
+                "applicationID" => $this->config->getApplicationID(),
+                "apiKey" => $this->config->getAPIKey()
+            ]);
         }
     }
 

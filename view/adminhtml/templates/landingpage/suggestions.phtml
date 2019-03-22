@@ -9,17 +9,22 @@ $emptyStateIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/i
 $bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
 ?>
 
-<div class="algolia-suggestions-header">
-    <div class="close-box">x</div>
-    <img src="<?php echo $bookIllustration ?>" class="book" />
-    <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
-    <p>It is a powerful marketing tool to promote products, with a strong focus on SEO.</p>
-</div>
-
-<?php if ($view->getNbOfLandingPages() === 0) : ?>
+<?php if ($view->getNbOfLandingPages() > 0) : ?>
+    <div class="algolia-suggestions-header">
+        <div class="close-box">x</div>
+        <img src="<?php echo $bookIllustration ?>" class="book" />
+        <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
+        <p>It is a powerful marketing tool to promote products, with a strong focus on SEO.</p>
+    </div>
+<?php else: ?>
     <div class="algolia-no-lp">
         <span><img src="<?php echo $emptyStateIllustration ?>" /></span>
         <p class="bigtext">No landing page yet!</p>
+        <div class="algolia-suggestions-header">
+            <img src="<?php echo $bookIllustration ?>" class="book" />
+            <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
+            <p>It is a powerful marketing tool to promote products, with a strong focus on SEO.</p>
+        </div>
         <p><a class="new-lp" href="<?php echo $this->getUrl('*/*/edit'); ?>" >Create a new landing page</a></p>
     </div>
 <?php endif ?>

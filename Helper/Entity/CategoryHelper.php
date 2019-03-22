@@ -2,13 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
+use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
+use Algolia\AlgoliaSearch\Exception\CategoryNotIncludedInMenuException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Image;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Category as MagentoCategory;
-use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\CategoryRepository;
 use Magento\Catalog\Model\ResourceModel\Category as CategoryResource;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Eav\Model\Config;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DataObject;
@@ -29,8 +33,8 @@ class CategoryHelper
 
     private $configHelper;
 
-    /** @var CategoryCollection */
-    private $categoryCollection;
+    /** @var CategoryCollectionFactory */
+    private $categoryCollectionFactory;
 
     /** @var Image */
     private $imageHelper;
@@ -38,11 +42,8 @@ class CategoryHelper
     /** @var CategoryResource */
     private $categoryResource;
 
-    /** @var CategoryFactory */
-    private $categoryFactory;
-
-    /** @var CategoryCollection */
-    private $baseCategoryCollectionQuery = null;
+    /** @var CategoryRepository */
+    private $categoryRepository;
 
     private $isCategoryVisibleInMenuCache;
     private $coreCategories;
@@ -61,10 +62,10 @@ class CategoryHelper
      * @param ResourceConnection $resourceConnection
      * @param Config $eavConfig
      * @param ConfigHelper $configHelper
-     * @param CategoryCollection $categoryCollection
+     * @param CategoryCollectionFactory $categoryCollectionFactory
      * @param Image $imageHelper
      * @param CategoryResource $categoryResource
-     * @param CategoryFactory $categoryFactory
+     * @param CategoryRepository $categoryRepository
      */
     public function __construct(
         ManagerInterface $eventManager,
@@ -72,10 +73,10 @@ class CategoryHelper
         ResourceConnection $resourceConnection,
         Config $eavConfig,
         ConfigHelper $configHelper,
-        CategoryCollection $categoryCollection,
+        CategoryCollectionFactory $categoryCollectionFactory,
         Image $imageHelper,
         CategoryResource $categoryResource,
-        CategoryFactory $categoryFactory,
+        CategoryRepository $categoryRepository,
         Manager $moduleManager
     ) {
         $this->eventManager = $eventManager;
@@ -83,10 +84,10 @@ class CategoryHelper
         $this->resourceConnection = $resourceConnection;
         $this->eavConfig = $eavConfig;
         $this->configHelper = $configHelper;
-        $this->categoryCollection = $categoryCollection;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->imageHelper = $imageHelper;
         $this->categoryResource = $categoryResource;
-        $this->categoryFactory = $categoryFactory;
+        $this->categoryRepository = $categoryRepository;
         $this->moduleManager = $moduleManager;
     }
 
@@ -149,6 +150,15 @@ class CategoryHelper
         return $this->configHelper->getCategoryAdditionalAttributes($storeId);
     }
 
+    /**
+     * @param $storeId
+     * @param null $categoryIds
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return CategoryCollection
+     */
     public function getCategoryCollectionQuery($storeId, $categoryIds = null)
     {
         /** @var \Magento\Store\Model\Store $store */
@@ -162,15 +172,15 @@ class CategoryHelper
             $additionalAttr[] = $attr['attribute'];
         }
 
-        $categories = $this
-            ->getBaseCategoryCollectionQuery()
+        $categories = $this->categoryCollectionFactory->create()
+            ->distinct(true)
+            ->addNameToResult()
+            ->addUrlRewriteToResult()
+            ->addAttributeToFilter('level', ['gt' => 1])
             ->setStoreId($storeId)
             ->addPathFilter($storeRootCategoryPath)
-            ->addAttributeToSelect(array_merge(['name'], $additionalAttr));
-
-        if (!$this->configHelper->showCatsNotIncludedInNavigation()) {
-            $categories->addAttributeToFilter('include_in_menu', '1');
-        }
+            ->addAttributeToSelect(array_merge(['name', 'is_active', 'include_in_menu'], $additionalAttr))
+            ->addOrderField('entity_id');
 
         if ($categoryIds) {
             $categories->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
@@ -182,6 +192,32 @@ class CategoryHelper
         );
 
         return $categories;
+    }
+
+    /**
+     * @param Category $category
+     * @param int $storeId
+     *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return bool
+     *
+     */
+    public function canCategoryBeReindexed($category, $storeId)
+    {
+        if ($this->isCategoryActive($category, $storeId) === false) {
+            throw new CategoryNotActiveException();
+        }
+
+        if ($this->configHelper->shouldIndexEmptyCategories($storeId) === false && $category->getProductCount() <= 0) {
+            throw new CategoryEmptyException();
+        }
+
+        if ($this->configHelper->showCatsNotIncludedInNavigation($storeId) === false && !$category->getIncludeInMenu()) {
+            throw new CategoryNotIncludedInMenuException();
+        }
+
+        return true;
     }
 
     public function getAllAttributes()
@@ -308,10 +344,7 @@ class CategoryHelper
             return $this->rootCategoryId;
         }
 
-        $this->resetCategoryCollection();
-        $collection = $this->categoryCollection;
-        $collection->addAttributeToFilter('parent_id', '0');
-        $collection->getSelect()->limit(1);
+        $collection = $this->categoryCollectionFactory->create()->addAttributeToFilter('parent_id', '0');
 
         /** @var \Magento\Catalog\Model\Category $rootCategory */
         $rootCategory = $collection->getFirstItem();
@@ -339,113 +372,36 @@ class CategoryHelper
         return $categoryUrl;
     }
 
-    public function isCategoryActive($categoryId, $storeId = null)
+    /**
+     * @param Category $category
+     * @param int|null $storeId
+     *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return bool
+     *
+     */
+    public function isCategoryActive($category, $storeId = null)
     {
-        $storeId = (int) $storeId;
-        $categoryId = (int) $categoryId;
+        $pathIds = $category->getPathIds();
+        array_shift($pathIds);
 
-        if ($path = $this->getCategoryPath($categoryId, $storeId)) {
-            // Check whether the specified category is active
-
-            $isActive = true; // Check whether all parent categories for the current category are active
-            $parentCategoryIds = explode('/', $path);
-
-            if (count($parentCategoryIds) <= 2) { // Exclude root category
+        foreach ($pathIds as $pathId) {
+            $parent = $this->categoryRepository->get($pathId, $storeId);
+            if ($parent && (bool) $parent->getIsActive() === false) {
                 return false;
             }
-
-            array_shift($parentCategoryIds); // Remove root category
-
-            array_pop($parentCategoryIds); // Remove current category as it is already verified
-
-            $parentCategoryIds = array_reverse($parentCategoryIds); // Start from the first parent
-
-            foreach ($parentCategoryIds as $parentCategoryId) {
-                if (!($parentCategoryPath = $this->getCategoryPath($parentCategoryId, $storeId))) {
-                    $isActive = false;
-                    break;
-                }
-            }
-
-            if ($isActive) {
-                return true;
-            }
         }
 
-        return false;
+        return true;
     }
 
-    private function getCategoryPath($categoryId, $storeId = null)
-    {
-        $categories = $this->getCategories();
-        $storeId = (int) $storeId;
-        $categoryId = (int) $categoryId;
-        $path = null;
-
-        $categoryKeyId = $categoryId;
-
-        if ($this->getCorrectIdColumn() === 'row_id') {
-            $category = $this->getCategoryById($categoryId);
-            if ($category) {
-                $categoryKeyId = $category->getRowId();
-            }
-        }
-
-        if ($categoryKeyId === null) {
-            return $path;
-        }
-
-        $key = $storeId . '-' . $categoryKeyId;
-
-        if (isset($categories[$key])) {
-            $path = ($categories[$key]['value'] === '1') ? (string) $categories[$key]['path'] : null;
-        } elseif ($storeId !== 0) {
-            $key = '0-' . $categoryKeyId;
-
-            if (isset($categories[$key])) {
-                $path = ($categories[$key]['value'] === '1') ? (string) $categories[$key]['path'] : null;
-            }
-        }
-
-        return $path;
-    }
-
-    private function getCategories()
-    {
-        if (isset($this->activeCategories)) {
-            return $this->activeCategories;
-        }
-
-        $this->activeCategories = [];
-
-        /** @var CategoryResource $resource */
-        $resource = $this->categoryResource;
-
-        if ($attribute = $resource->getAttribute('is_active')) {
-            $columnId = $this->getCorrectIdColumn();
-            $key = new \Zend_Db_Expr("CONCAT(backend.store_id, '-', backend." . $columnId . ')');
-
-            $connection = $this->resourceConnection->getConnection();
-            $select = $connection->select()
-                                 ->from(
-                                     ['backend' => $attribute->getBackendTable()],
-                                     ['key' => $key, 'category.path', 'backend.value']
-                                 )
-                                 ->join(
-                                     ['category' => $resource->getTable('catalog_category_entity')],
-                                     'backend.' . $columnId . ' = category.' . $columnId,
-                                     []
-                                 )
-                                 ->where('backend.attribute_id = ?', $attribute->getAttributeId())
-                                 ->order('backend.store_id')
-                                 ->order('backend.' . $columnId);
-
-            $this->activeCategories = $connection->fetchAssoc($select);
-        }
-
-        return $this->activeCategories;
-    }
-
+    /**
+     * @param int $categoryId
+     * @param null $storeId
+     *
+     * @return string|null
+     */
     public function getCategoryName($categoryId, $storeId = null)
     {
         if ($categoryId instanceof MagentoCategory) {
@@ -541,9 +497,7 @@ class CategoryHelper
 
         $categoryId = (int) $categoryId;
 
-        /** @var \Magento\Catalog\Model\Category $category */
-        $category = $this->categoryFactory->create();
-        $category = $category->setStoreId($storeId)->load($categoryId);
+        $category = $this->categoryRepository->get($categoryId, $storeId);
 
         $this->isCategoryVisibleInMenuCache[$key] = (bool) $category->getIncludeInMenu();
 
@@ -556,8 +510,9 @@ class CategoryHelper
             return $this->coreCategories;
         }
 
-        $this->resetCategoryCollection();
-        $this->categoryCollection
+        $collection = $this->categoryCollectionFactory->create()
+            ->distinct(true)
+            ->addNameToResult()
             ->addIsActiveFilter()
             ->addAttributeToSelect('name')
             ->addAttributeToFilter('include_in_menu', '1')
@@ -566,7 +521,7 @@ class CategoryHelper
         $this->coreCategories = [];
 
         /** @var \Magento\Catalog\Model\Category $category */
-        foreach ($this->categoryCollection as $category) {
+        foreach ($collection as $category) {
             $this->coreCategories[$category->getId()] = $category;
         }
 
@@ -589,30 +544,5 @@ class CategoryHelper
         }
 
         return $this->idColumn;
-    }
-
-    private function getBaseCategoryCollectionQuery()
-    {
-        if ($this->baseCategoryCollectionQuery !== null) {
-            return $this->baseCategoryCollectionQuery;
-        }
-
-        $this->resetCategoryCollection();
-
-        $categories = $this->categoryCollection
-            ->distinct(true)
-            ->addNameToResult()
-            ->addIsActiveFilter()
-            ->addUrlRewriteToResult()
-            ->addAttributeToFilter('level', ['gt' => 1]);
-
-        $this->baseCategoryCollectionQuery = $categories;
-
-        return $this->baseCategoryCollectionQuery;
-    }
-
-    private function resetCategoryCollection()
-    {
-        $this->categoryCollection->getSelect()->reset(\Zend_Db_Select::WHERE);
     }
 }

@@ -477,6 +477,21 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
+        $algoliaSeachQueueTable = $setup->getTable('algoliasearch_queue');
+        if (!$connection->tableColumnExists($algoliaSeachQueueTable, 'is_full_reindex')) {
+            $connection->addColumn(
+                $algoliaSeachQueueTable,
+                'is_full_reindex',
+                [
+                    'type' => Table::TYPE_INTEGER,
+                    'size' => 1,
+                    'default' => 0,
+                    'nullable' => false,
+                    'comment' => 'Indicates if the job is part of a full reindex',
+                ]
+            );
+        }
+
         $setup->endSetup();
     }
 

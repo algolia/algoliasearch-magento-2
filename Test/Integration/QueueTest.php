@@ -319,6 +319,7 @@ class QueueTest extends TestCase
             'data_size' => 3,
             'merged_ids' => ['1', '7'],
             'store_id' => '1',
+            'is_full_reindex' => 0,
         ];
 
         $this->assertEquals($expectedCategoryJob, $mergedJobs[0]);
@@ -342,6 +343,7 @@ class QueueTest extends TestCase
             'data_size' => 2,
             'merged_ids' => ['4', '10'],
             'store_id' => '1',
+            'is_full_reindex' => 0,
         ];
 
         $this->assertEquals($expectedProductJob, $mergedJobs[3]);
@@ -669,6 +671,7 @@ class QueueTest extends TestCase
             'data_size' => 3,
             'merged_ids' => ['1', '7'],
             'store_id' => '1',
+            'is_full_reindex' => 0,
         ];
 
         $expectedLastJob = [
@@ -690,6 +693,7 @@ class QueueTest extends TestCase
             'data_size' => 2,
             'merged_ids' => ['6', '12'],
             'store_id' => '3',
+            'is_full_reindex' => 0,
         ];
 
         $this->assertEquals($expectedFirstJob, reset($jobs));

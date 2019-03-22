@@ -317,9 +317,13 @@ class ProductHelper
          */
         $sortingIndices = $this->configHelper->getSortingIndices($indexName, $storeId);
 
-        $replicas = array_values(array_map(function ($sortingIndex) {
-            return $sortingIndex['name'];
-        }, $sortingIndices));
+        $replicas = [];
+
+        if ($this->configHelper->isInstantEnabled()) {
+            $replicas = array_values(array_map(function ($sortingIndex) {
+                return $sortingIndex['name'];
+            }, $sortingIndices));
+        }
 
         // Merge current replicas with sorting replicas to not delete A/B testing replica indices
         try {

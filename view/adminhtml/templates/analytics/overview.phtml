@@ -97,7 +97,7 @@ $view = $this->getViewModel();
                         <tbody>
                         <?php foreach ($view->getTopSearches() as $search): ?>
                             <tr>
-                                <td><?php echo $search['search'] ?></td>
+                                <td><?php echo $search['search'] ?: '<i class="empty_search">empty search</i>'; ?></td>
                                 <td><?php echo $search['count'] ?></td>
                             </tr>
                         <?php endforeach ?>
@@ -169,7 +169,7 @@ $view = $this->getViewModel();
                         <tbody>
                         <?php foreach ($view->getNoResultSearches() as $search): ?>
                             <tr>
-                                <td><?php echo $search['search'] ?></td>
+                                <td><?php echo $search['search'] ?: '<i class="empty_search">empty search</i>'; ?></td>
                                 <td class="a-right"><?php echo $search['count'] ?></td>
                             </tr>
                         <?php endforeach ?>
@@ -180,7 +180,7 @@ $view = $this->getViewModel();
                 <?php endif ?>
             </div>
             <div class="analytics-footer">
-                <a href="https://www.algolia.com/analytics/no-results/" class="algoliasearch-admin-icon as-icon-new-window" target="_blank"><?php echo __('See more no results') ?></a>
+                <a href="https://www.algolia.com/analytics/no-results/" class="algoliasearch-admin-icon as-icon-new-window" target="_blank"><?php echo __('See more no results searches') ?></a>
             </div>
         </div>
     </div>

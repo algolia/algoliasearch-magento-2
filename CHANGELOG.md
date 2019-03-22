@@ -1,5 +1,43 @@
 # CHANGE LOG
 
+## 1.10.0
+
+### FEATURES
+
+- Landing Page Builder (#661, #687)
+  * Feature to let you build dynamic merchandised landing pages based on Algolia results
+- Products are reindex when catalog rule is applied (#666)
+  * The extension is now subscribed to to changes in price index
+- Extension's documentation was moved to [official Algolia documentation](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/)
+  * Links inside the extension was changed (#686)
+
+### UPDATES
+
+- Updated Reindex SKU form (#657)
+  * Improved try/catches to allow some store views to continue when one of them doesn't qualify
+  * Updated store name to show from which website/store group/store view
+  * Updated global attributes to not include store since it is not necessary
+- Updated minimal version of PHP API client in Composer.json to meet extension's dependencies (#671)
+- Optimized fetch of child products during reindex of a configurable product (#664)
+  * Improves performance - the indexing time of a configurable product dropped by 60%
+- Optimized indexing queue settings (#665)
+  * The biggest overhead is caused by SQL query to fetch products for a single job
+  * We lowered the number of jobs to run and increased number of processed products, which reduces the overhead of SQL query
+- Refactored `setSettings` method (#675) - **BC Break**
+  * Set settings functionality was moved from `Helper\Data` class to newly created `Model\IndicesConfigurator` class
+  * Added more information to logging to better understand what settings are pushed to Algolia
+- Methods in `Helper\ConfigHelper` class now returns correct types from all its methods
+
+### FIXES
+
+- Fixed IE11 (ES6) compatibility of the extension (#670, #678, #683)
+- Fixed displaying of product count in categories in autocomplete menu (#672)
+- Fixed issue when it was not possible to select more than 2 attribute values for back-end filtering (#669)
+- Fixed failing Visual Category Merchandising tool, when the name of the default store was different from `default` (#674)
+- Fixed failing Prevent Backend Rendering feature, when no user-agent was specified in headers (#680)
+- Fixed failing `count(null)` call in Category indexer on newer PHP versions (#681)
+
+
 ## 1.9.1
 
 - Fixed `beforeAutocompleteSources` front-end hook to correct pass `sources` (#641)

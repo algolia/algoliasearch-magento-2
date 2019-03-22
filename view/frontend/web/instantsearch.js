@@ -111,7 +111,7 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 			}
 		}
 		
-		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions);
+		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions, algoliaBundle);
 		
 		var search = algoliaBundle.instantsearch(instantsearchOptions);
 		
@@ -515,7 +515,7 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 			};
 		}
 		
-		allWidgetConfiguration = algolia.triggerHooks('beforeWidgetInitialization', allWidgetConfiguration);
+		allWidgetConfiguration = algolia.triggerHooks('beforeWidgetInitialization', allWidgetConfiguration, algoliaBundle);
 		
 		$.each(allWidgetConfiguration, function (widgetType, widgetConfig) {
 			if (Array.isArray(widgetConfig) === true) {
@@ -533,11 +533,11 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 				return;
 			}
 			
-			search = algolia.triggerHooks('beforeInstantsearchStart', search);
+			search = algolia.triggerHooks('beforeInstantsearchStart', search, algoliaBundle);
 			
 			search.start();
 			
-			search = algolia.triggerHooks('afterInstantsearchStart', search);
+			search = algolia.triggerHooks('afterInstantsearchStart', search, algoliaBundle);
 			
 			var instant_search_bar = $(instant_selector);
 			if (instant_search_bar.is(":focus") === false) {

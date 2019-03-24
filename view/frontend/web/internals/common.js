@@ -443,9 +443,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		$(algoliaConfig.autocomplete.selector).each(function () {
 			$(this).closest('form').submit(function (e) {
 				var query = $(this).find(algoliaConfig.autocomplete.selector).val();
-				
-				query = encodeURI(query);
-				query = query.replace(/#/g, '%23');
+
+				query = encodeURIComponent(query);
 
 				if (algoliaConfig.instant.enabled && query === '')
 					query = '__empty__';

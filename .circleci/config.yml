@@ -4,8 +4,9 @@ jobs:
     build:
         docker:
             - image: circleci/php:7.1-node-browsers
-        working_directory: ~/build_directory
+        working_directory: ~/build_directory/algoliasearch-magento-2
         steps:
+            - run: composer config --list --global
             - checkout
             - run:
                 name: Install dependencies

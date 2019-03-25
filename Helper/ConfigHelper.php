@@ -762,6 +762,15 @@ class ConfigHelper
         return $this->storeManager->getStore()->getId();
     }
 
+    public function getStoreLocale($storeId)
+    {
+        return $this->configInterface->getValue(
+            \Magento\Directory\Helper\Data::XML_PATH_DEFAULT_LOCALE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
     public function getCurrency($storeId = null)
     {
         /** @var Magento\Store\Model\Store $store */

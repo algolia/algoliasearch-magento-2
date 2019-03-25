@@ -484,10 +484,6 @@ class ProductHelper
 
         $customData = $this->addAdditionalAttributes($customData, $additionalAttributes, $product, $subProducts);
 
-        // old beheviour
-//        $customData = $this->priceManager->addPriceData($customData, $product, $subProducts);
-
-        // new behaviour
         $customData = $this->priceManager->addPriceDataByProductType($customData, $product, $subProducts);
 
         $transport = new DataObject($customData);

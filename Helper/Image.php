@@ -61,21 +61,6 @@ class Image extends \Magento\Catalog\Helper\Image
         return $url;
     }
 
-    protected function initBaseFile()
-    {
-        $model = $this->_getModel();
-        $baseFile = $model->getBaseFile();
-        if (!$baseFile) {
-            if ($this->getImageFile()) {
-                $model->setBaseFile($this->getImageFile());
-            } else {
-                $model->setBaseFile($this->getProduct()->getImage());
-            }
-        }
-
-        return $this;
-    }
-
     public function removeProtocol($url)
     {
         return str_replace(['https://', 'http://'], '//', $url);

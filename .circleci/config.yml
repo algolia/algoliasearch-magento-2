@@ -69,7 +69,8 @@ jobs:
                     cd ~ && git clone https://github.com/magento/magento2-sample-data.git
                     cd ~/magento_directory && MAGENTO_VERSION=$(php -r "echo json_decode(file_get_contents('composer.json'))->version;")
                     cd ~/magento2-sample-data && git checkout $MAGENTO_VERSION
-                    cd ~/magento_directory && php -f ~/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=~/magento_directory
+                    cd ~/magento_directory && php -f ~/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=$HOME/magento_directory
+
             - run:
                 name: Install the Algolia extension
                 command: cd ~/magento_directory && composer require algolia/algoliasearch-magento-2
@@ -87,7 +88,7 @@ jobs:
                     cd ~/magento_directory && php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento20 --db-user=root --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
 
             - run:
-                name: Det the right tests config for DB and administration
+                name: Get the right tests config for DB and administration
                 command: mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
 
             - run:

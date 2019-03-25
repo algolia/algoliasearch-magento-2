@@ -146,7 +146,7 @@ class Queue
      */
     public function runCron($nbJobs = null, $force = false)
     {
-        if (!$this->configHelper->isQueueActive() && $force === false && false) {
+        if (!$this->configHelper->isQueueActive() && $force === false) {
             return;
         }
 

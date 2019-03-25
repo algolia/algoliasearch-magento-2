@@ -6,8 +6,12 @@ jobs:
             - image: circleci/php:7.1-node-browsers
         working_directory: ~/build_directory/algoliasearch-magento-2
         steps:
-            - run: composer config --list --global
             - checkout
+
+            - run:
+                name: Create Auth file for Composer
+                command: AUTH_DIR=/home/circleci/.composer/auth.json php ~/build_directory/algoliasearch-magento-2/dev/bin/createAuthJson.php
+
             - run:
                 name: Install dependencies
                 command: |

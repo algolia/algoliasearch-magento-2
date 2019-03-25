@@ -42,6 +42,10 @@ jobs:
                       sudo docker-php-ext-configure gd --with-jpeg-dir=/usr/lib --with-freetype-dir=/usr/lib64/
                       sudo docker-php-ext-install gd
 
+#            - run:
+#                name: Increase memory limit
+#                command: sudo echo 'memory_limit=512M' > /usr/local/etc/php/conf.d/memory-limit.ini
+
             - run:
                 name: Fix MySQL socket config
                 command: sudo sh -c "echo 'pdo_mysql.default_socket=/var/run/mysqld/mysqld.sock' > /usr/local/etc/php/conf.d/pdo.ini"
@@ -89,7 +93,7 @@ jobs:
             - run:
                 name: Install Magento 2
                 command: |
-                    cd ~/magento_directory && php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento2 --db-user=magento2 --db-password=P4ssw0rd --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
+                    cd ~/magento_directory && php -dmemory_limit=-1 bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento2 --db-user=magento2 --db-password=P4ssw0rd --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
 
             - run:
                 name: Get the right tests config for DB and administration

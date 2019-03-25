@@ -32,6 +32,7 @@ cache:
 before_install:
   - phpenv config-add travis.php.ini
   - mysql -e 'CREATE DATABASE magento20;'
+  - cd $HOME && wget https://alg.li/algolia-keys && chmod +x algolia-keys
 
 install:
   # create auth.json to be able to install Magento store
@@ -39,7 +40,7 @@ install:
 
   # install Magento store to home directory
   - cd $HOME
-  - composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:~${MAGENTO_VERSION}.0 magento20
+  - eval $(./algolia-keys export) && composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:~${MAGENTO_VERSION}.0 magento20
 
   # install Marketplace Extension quality tools
   - composer create-project --repository=https://repo.magento.com magento/marketplace-eqp magento-coding-standard
@@ -49,7 +50,7 @@ install:
 
   # deploy sample data
   - cd $HOME/magento20
-  - php bin/magento sampledata:deploy
+  - eval $(./../algolia-keys export) && php bin/magento sampledata:deploy
 
   # install the Algolia extension
   - composer require algolia/algoliasearch-magento-2
@@ -66,6 +67,3 @@ install:
 
   # set the right tests config for DB and administration
   - mv $TRAVIS_BUILD_DIR/dev/tests/install-config-mysql.php $HOME/magento20/dev/tests/integration/etc/install-config-mysql.php
-
-before_script:
-  - cd $HOME && wget https://alg.li/algolia-keys && chmod +x algolia-keys

@@ -55,7 +55,11 @@ jobs:
 
             - run:
                 name: Create database
-                command: sudo mysql -u root -e "CREATE DATABASE magento20;"
+                command: sudo mysql -u root -e "CREATE DATABASE magento2;"
+
+            - run:
+                name: Create database user
+                command: sudo mysql -u root -e "CREATE USER 'magento2'@'localhost' IDENTIFIED BY 'P4ssw0rd'; GRANT ALL PRIVILEGES ON *.* TO 'magento2'@'localhost'; FLUSH PRIVILEGES;"
 
             - run: sudo composer self-update
 
@@ -85,7 +89,7 @@ jobs:
             - run:
                 name: Install Magento 2
                 command: |
-                    cd ~/magento_directory && php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento20 --db-user=root --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
+                    cd ~/magento_directory && php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento2 --db-user=magento2 --db-password=P4ssw0rd --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
 
             - run:
                 name: Get the right tests config for DB and administration

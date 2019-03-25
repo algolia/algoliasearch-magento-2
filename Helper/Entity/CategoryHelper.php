@@ -408,7 +408,7 @@ class CategoryHelper
             $categoryId = $categoryId->getId();
         }
 
-        if ($storeId instanceof  Store) {
+        if ($storeId instanceof Store) {
             $storeId = $storeId->getId();
         }
 

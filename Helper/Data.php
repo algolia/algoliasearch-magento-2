@@ -164,21 +164,26 @@ class Data
             return;
         }
 
-        $this->startEmulation($storeId);
-
         $indexName = $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId);
+
+        $this->startEmulation($storeId);
 
         $pages = $this->pageHelper->getPages($storeId);
 
+        $this->stopEmulation();
+
         foreach (array_chunk($pages, 100) as $chunk) {
-            $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
+            try {
+                $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
+            } catch (\Exception $e) {
+                $this->logger->log($e->getMessage());
+                continue;
+            }
         }
 
         $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
         $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
-
-        $this->stopEmulation();
     }
 
     public function rebuildStoreCategoryIndex($storeId, $categoryIds = null)

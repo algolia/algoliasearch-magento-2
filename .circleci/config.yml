@@ -4,80 +4,80 @@ jobs:
     build:
         docker:
             - image: circleci/php:7.1-node-browsers
-    working_directory: ~/build_directory
-    steps:
-        - checkout
-        - run:
-            name: Install dependencies
-            command: |
-                sudo apt-get update
-                sudo apt-get install -y libzip-dev
-                sudo apt-get install -y zlib1g-dev libicu-dev g++
-                sudo apt-get install mysql-client
-                sudo apt-get -y install mysql-server
+        working_directory: ~/build_directory
+        steps:
+            - checkout
+            - run:
+                name: Install dependencies
+                command: |
+                    sudo apt-get update
+                    sudo apt-get install -y libzip-dev
+                    sudo apt-get install -y zlib1g-dev libicu-dev g++
+                    sudo apt-get install mysql-client
+                    sudo apt-get -y install mysql-server
 
-        - run:
-            name: Install PHP extensions
-            command: |
-                sudo docker-php-ext-install zip
-                sudo docker-php-ext-configure intl
-                sudo docker-php-ext-install intl
-                sudo docker-php-ext-install pdo_mysql
-        - run:
-            name: Fix MySQL socket config
-            command: sudo sh -c "echo 'pdo_mysql.default_socket=/var/run/mysqld/mysqld.sock' > /usr/local/etc/php/conf.d/pdo.ini"
+            - run:
+                name: Install PHP extensions
+                command: |
+                    sudo docker-php-ext-install zip
+                    sudo docker-php-ext-configure intl
+                    sudo docker-php-ext-install intl
+                    sudo docker-php-ext-install pdo_mysql
+            - run:
+                name: Fix MySQL socket config
+                command: sudo sh -c "echo 'pdo_mysql.default_socket=/var/run/mysqld/mysqld.sock' > /usr/local/etc/php/conf.d/pdo.ini"
 
-        - run:
-            name: Start database server
-            command: |
-                sudo service mysql start
-                sleep 2
-                ps aux | grep mysql
+            - run:
+                name: Start database server
+                command: |
+                    sudo service mysql start
+                    sleep 2
+                    ps aux | grep mysql
 
-        - run:
-            name: Create non-admin user
-            command: sudo mysql -u root -e "CREATE DATABASE magento20;"
+            - run:
+                name: Create non-admin user
+                command: sudo mysql -u root -e "CREATE DATABASE magento20;"
 
-        - run: sudo composer self-update
+            - run: sudo composer self-update
 
-        - run:
-            name: Download Magento 2
-            command: composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:~2.3.0 ~/magento_directory
+            - run:
+                name: Download Magento 2
+                command: composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:~2.3.0 ~/magento_directory
 
-        - run:
-            name: Install sample data
-            command: |
-                cd ~ && git clone https://github.com/magento/magento2-sample-data.git
-                cd ~/magento_directory && MAGENTO_VERSION=$(php -r "echo json_decode(file_get_contents('composer.json'))->version;")
-                cd ~/magento2-sample-data && git checkout $MAGENTO_VERSION
-                cd ~/magento_directory && php -f ~/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=~/magento_directory
-        - run:
-            name: Install the Algolia extension
-            command: cd ~/magento_directory && composer require algolia/algoliasearch-magento-2
+            - run:
+                name: Install sample data
+                command: |
+                    cd ~ && git clone https://github.com/magento/magento2-sample-data.git
+                    cd ~/magento_directory && MAGENTO_VERSION=$(php -r "echo json_decode(file_get_contents('composer.json'))->version;")
+                    cd ~/magento2-sample-data && git checkout $MAGENTO_VERSION
+                    cd ~/magento_directory && php -f ~/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=~/magento_directory
+            - run:
+                name: Install the Algolia extension
+                command: cd ~/magento_directory && composer require algolia/algoliasearch-magento-2
 
-        - run:
-            name: Override the Algolia extension with the cloned one
-            command: |
-                cd ~/magento_directory/vendor/algolia && rm -rf algoliasearch-magento-2
-                cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
-                cd ~/magento_directory && composer dump-autoload
+            - run:
+                name: Override the Algolia extension with the cloned one
+                command: |
+                    cd ~/magento_directory/vendor/algolia && rm -rf algoliasearch-magento-2
+                    cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
+                    cd ~/magento_directory && composer dump-autoload
 
-        - run:
-            name: Install Magento 2
-            command: |
-                cd ~/magento_directory && php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento20 --db-user=root --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
+            - run:
+                name: Install Magento 2
+                command: |
+                    cd ~/magento_directory && php bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento20 --db-user=root --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
 
-        - run:
-            name: Det the right tests config for DB and administration
-            command: mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
+            - run:
+                name: Det the right tests config for DB and administration
+                command: mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
 
-        - run:
-            name: Download Algolia keys
-            command: cd ~ && wget https://alg.li/algolia-keys && chmod +x algolia-keys
+            - run:
+                name: Download Algolia keys
+                command: cd ~ && wget https://alg.li/algolia-keys && chmod +x algolia-keys
 
-        - run:
-            name: Run tests
-            command: |
-                cd ~
-                eval $(./algolia-keys export)
-                cd ~/magento_directory/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+            - run:
+                name: Run tests
+                command: |
+                    cd ~
+                    eval $(./algolia-keys export)
+                    cd ~/magento_directory/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

@@ -11,14 +11,14 @@ matrix:
     - name: "Magento 2.1.*"
       env: MAGENTO_VERSION="2.1"
       script:
-        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+#        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
         - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
-    - name: "Magento 2.2.*"
-      env: MAGENTO_VERSION="2.2"
-      script:
-        - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
-        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
-        - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+#    - name: "Magento 2.2.*"
+#      env: MAGENTO_VERSION="2.2"
+#      script:
+#        - cd $HOME/magento20 && vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --dry-run --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
+#        - cd $HOME && magento-coding-standard/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test magento20/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+#        - cd $HOME && eval $(./algolia-keys export) && cd $HOME/magento20/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 branches:
   only:
@@ -48,8 +48,12 @@ install:
   - AUTH_DIR=$HOME/magento20/var/composer_home/auth.json php $TRAVIS_BUILD_DIR/dev/bin/createAuthJson.php
 
   # deploy sample data
+  - cd $HOME
+  - git clone https://github.com/magento/magento2-sample-data.git
+  - git checkout 2.1.16
   - cd $HOME/magento20
-  - php bin/magento sampledata:deploy
+  - php -f $HOME/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=$HOME/magento20
+  # - php bin/magento sampledata:deploy
 
   # install the Algolia extension
   - composer require algolia/algoliasearch-magento-2

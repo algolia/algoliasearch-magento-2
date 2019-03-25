@@ -20,14 +20,28 @@ jobs:
                     sudo apt-get install -y zlib1g-dev libicu-dev g++
                     sudo apt-get install mysql-client
                     sudo apt-get -y install mysql-server
+                    sudo apt-get install -y libfreetype6-dev
+                    sudo apt-get install -y libicu-dev
+                    sudo apt-get install -y libmcrypt4 libmcrypt-dev
+                    sudo apt-get install -y libpng-dev libjpeg-dev
+                    sudo apt-get install -y libxml2-dev
+                    sudo apt-get install -y libxslt-dev
+                    sudo apt-get install -y unzip
 
             - run:
-                name: Install PHP extensions
-                command: |
-                    sudo docker-php-ext-install zip
-                    sudo docker-php-ext-configure intl
-                    sudo docker-php-ext-install intl
-                    sudo docker-php-ext-install pdo_mysql
+                  name: Install PHP extensions
+                  command: |
+                      sudo docker-php-ext-install calendar
+                      sudo docker-php-ext-install intl
+                      sudo docker-php-ext-install mbstring
+                      sudo docker-php-ext-install pdo_mysql
+                      sudo docker-php-ext-install soap
+                      sudo docker-php-ext-install xsl
+                      sudo docker-php-ext-install zip
+                      sudo docker-php-ext-install bcmath
+                      sudo docker-php-ext-configure gd --with-jpeg-dir=/usr/lib --with-freetype-dir=/usr/lib64/
+                      sudo docker-php-ext-install gd
+
             - run:
                 name: Fix MySQL socket config
                 command: sudo sh -c "echo 'pdo_mysql.default_socket=/var/run/mysqld/mysqld.sock' > /usr/local/etc/php/conf.d/pdo.ini"
@@ -40,7 +54,7 @@ jobs:
                     ps aux | grep mysql
 
             - run:
-                name: Create non-admin user
+                name: Create database
                 command: sudo mysql -u root -e "CREATE DATABASE magento20;"
 
             - run: sudo composer self-update

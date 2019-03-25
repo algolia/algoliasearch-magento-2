@@ -50,9 +50,8 @@ install:
   # deploy sample data
   - cd $HOME
   - git clone https://github.com/magento/magento2-sample-data.git
-  - git checkout 2.1.16
-  - cd $HOME/magento20
-  - php -f $HOME/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=$HOME/magento20
+  - cd $HOME/magento2-sample-data && git checkout 2.1.16
+  - cd $HOME/magento20 && php -f $HOME/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=$HOME/magento20
   # - php bin/magento sampledata:deploy
 
   # install the Algolia extension

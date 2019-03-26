@@ -106,12 +106,10 @@ class PriceManager
                     ->getTaxPrice($product, $price, $withTax, null, null, null, $product->getStore(), null);
 
                 $customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($price);
-                $customData[$field][$currencyCode]['default_formated'] = $this->priceCurrency->format(
+                $customData[$field][$currencyCode]['default_formated'] = $this->formatPrice(
                     $price,
-                    false,
-                    PriceCurrencyInterface::DEFAULT_PRECISION,
-                    $store,
-                    $currencyCode
+                    $currencyCode,
+                    $store
                 );
 
                 $specialPrice = $this->getSpecialPrice(
@@ -331,12 +329,10 @@ class PriceManager
 
                 $customData[$field][$currencyCode]['group_' . $groupId] = $taxPrice;
 
-                $formated = $this->priceCurrency->format(
+                $formated = $this->formatPrice(
                     $customData[$field][$currencyCode]['group_' . $groupId],
-                    false,
-                    PriceCurrencyInterface::DEFAULT_PRECISION,
-                    $store,
-                    $currencyCode
+                    $currencyCode,
+                    $store
                 );
                 $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $formated;
 
@@ -377,12 +373,10 @@ class PriceManager
                     && $specialPrice[$groupId] < $customData[$field][$currencyCode]['group_' . $groupId]) {
                     $customData[$field][$currencyCode]['group_' . $groupId] = $specialPrice[$groupId];
 
-                    $formated = $this->priceCurrency->format(
+                    $formated = $this->formatPrice(
                         $specialPrice[$groupId],
-                        false,
-                        PriceCurrencyInterface::DEFAULT_PRECISION,
-                        $store,
-                        $currencyCode
+                        $currencyCode,
+                        $store
                     );
                     $customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $formated;
 
@@ -401,12 +395,10 @@ class PriceManager
             $defaultOriginalFormated = $customData[$field][$currencyCode]['default_formated'];
             $customData[$field][$currencyCode]['default_original_formated'] = $defaultOriginalFormated;
 
-            $defaultFormated = $this->priceCurrency->format(
+            $defaultFormated = $this->formatPrice(
                 $specialPrice[0],
-                false,
-                PriceCurrencyInterface::DEFAULT_PRECISION,
+                $currencyCode,
                 $store,
-                $currencyCode
             );
 
             $customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($specialPrice[0]);
@@ -475,23 +467,26 @@ class PriceManager
             return '';
         }
 
-        $minFormatted = $this->priceCurrency->format(
+        $minFormatted = $this->formatPrice(
             $min,
-            false,
-            PriceCurrencyInterface::DEFAULT_PRECISION,
-            $store,
-            $currencyCode
+            $currencyCode,
+            $store
         );
 
-        $maxFormatted = $this->priceCurrency->format(
+        $maxFormatted = $this->formatPrice(
             $max,
-            false,
-            PriceCurrencyInterface::DEFAULT_PRECISION,
-            $store,
-            $currencyCode
+            $currencyCode,
+            $store
         );
 
         return $minFormatted . ' - ' . $maxFormatted;
+    }
+
+    private function formatPrice($amount, $currencyCode, $store)
+    {
+        $currency = $this->priceCurrency->getCurrency($store, $currencyCode);
+        $options = ['locale' => $this->configHelper->getStoreLocale($store->getId())];
+        return $currency->formatPrecision($amount, PriceCurrencyInterface::DEFAULT_PRECISION, $options, false);
     }
 
     private function handleNonEqualMinMaxPrices(
@@ -548,12 +543,10 @@ class PriceManager
             $min = $this->priceCurrency->convert($min, $store, $currencyCode);
         }
 
-        $minFormatted = $this->priceCurrency->format(
+        $minFormatted = $this->formatPrice(
             $min,
-            false,
-            PriceCurrencyInterface::DEFAULT_PRECISION,
-            $store,
-            $currencyCode
+            $currencyCode,
+            $store
         );
 
         $customData[$field][$currencyCode]['default'] = $min;

@@ -5,18 +5,25 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
+use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobsCollectionFactory;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 
 class QueueTest extends TestCase
 {
+    /** @var JobsCollectionFactory */
+    private $jobsCollectionFactory;
+
     /** @var AdapterInterface */
     private $connection;
 
     public function setUp()
     {
         parent::setUp();
+
+        $this->jobsCollectionFactory = $this->getObjectManager()->create(JobsCollectionFactory::class);
 
         /** @var ResourceConnection $resouce */
         $resouce = $this->getObjectManager()->create('\Magento\Framework\App\ResourceConnection');
@@ -293,19 +300,27 @@ class QueueTest extends TestCase
         /** @var Queue $queue */
         $queue = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Model\Queue');
 
-        $jobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $jobs = $this->jobsCollectionFactory->create()->getItems();
+        // $jobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
-        $jobs = $this->invokeMethod($queue, 'prepareJobs', ['jobs' => $jobs]);
-        $mergedJobs = $this->invokeMethod($queue, 'mergeJobs', ['jobs' => $jobs]);
+        $mergedJobs = array_values($this->invokeMethod($queue, 'mergeJobs', ['jobs' => $jobs]));
         $this->assertEquals(6, count($mergedJobs));
 
         $expectedCategoryJob = [
-            'job_id' => 7,
+            'job_id' => '1',
             'created' => '2017-09-01 12:00:00',
             'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreCategoryIndex',
-            'data' => [
+            'data' => '{"store_id":"1","category_ids":["9","22"]}',
+            'max_retries' => '3',
+            'retries' => '0',
+            'error_log' => '',
+            'data_size' => 3,
+            'merged_ids' => ['1', '7'],
+            'store_id' => '1',
+            'is_full_reindex' => '0',
+            'decoded_data' => [
                 'store_id' => '1',
                 'category_ids' => [
                     0 => '9',
@@ -313,38 +328,38 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
-            'max_retries' => '3',
-            'retries' => '0',
-            'error_log' => '',
-            'data_size' => 3,
-            'merged_ids' => ['1', '7'],
-            'store_id' => '1',
         ];
 
-        $this->assertEquals($expectedCategoryJob, $mergedJobs[0]);
+        /** @var Job $categoryJob */
+        $categoryJob = $mergedJobs[0];
+        $this->assertEquals($expectedCategoryJob, $categoryJob->toArray());
 
         $expectedProductJob = [
-            'job_id' => 10,
+            'job_id' => '4',
             'created' => '2017-09-01 12:00:00',
             'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreProductIndex',
-            'data' => [
-                'store_id' => '1',
-                'product_ids' => [
-                    0 => '448',
-                    1 => '405',
-                ],
-            ],
+            'data' => '{"store_id":"1","product_ids":["448"]}',
             'max_retries' => '3',
             'retries' => '0',
             'error_log' => '',
             'data_size' => 2,
             'merged_ids' => ['4', '10'],
             'store_id' => '1',
+            'is_full_reindex' => '0',
+            'decoded_data' => [
+                'store_id' => '1',
+                'product_ids' => [
+                    0 => '448',
+                    1 => '405',
+                ],
+            ],
         ];
 
-        $this->assertEquals($expectedProductJob, $mergedJobs[3]);
+        /** @var Job $productJob */
+        $productJob = $mergedJobs[3];
+        $this->assertEquals($expectedProductJob, $productJob->toArray());
     }
 
     public function testMergingWithStaticMethods()
@@ -480,24 +495,24 @@ class QueueTest extends TestCase
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
-        $jobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        /** @var Job[] $jobs */
+        $jobs = $this->jobsCollectionFactory->create()->getItems();
 
-        $jobs = $this->invokeMethod($queue, 'prepareJobs', ['jobs' => $jobs]);
-        $mergedJobs = $this->invokeMethod($queue, 'mergeJobs', ['jobs' => $jobs]);
-        $this->assertEquals(12, count($mergedJobs));
+        $jobs = array_values($this->invokeMethod($queue, 'mergeJobs', ['jobs' => $jobs]));
+        $this->assertEquals(12, count($jobs));
 
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[0]['method']);
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[1]['method']);
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[2]['method']);
-        $this->assertEquals('deleteObjects', $jobs[3]['method']);
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[4]['method']);
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[5]['method']);
-        $this->assertEquals('saveConfigurationToAlgolia', $jobs[6]['method']);
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[7]['method']);
-        $this->assertEquals('moveIndex', $jobs[8]['method']);
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[9]['method']);
-        $this->assertEquals('moveIndex', $jobs[10]['method']);
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[11]['method']);
+        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[0]->getMethod());
+        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[1]->getMethod());
+        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[2]->getMethod());
+        $this->assertEquals('deleteObjects', $jobs[3]->getMethod());
+        $this->assertEquals('rebuildStoreProductIndex', $jobs[4]->getMethod());
+        $this->assertEquals('rebuildStoreProductIndex', $jobs[5]->getMethod());
+        $this->assertEquals('saveConfigurationToAlgolia', $jobs[6]->getMethod());
+        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[7]->getMethod());
+        $this->assertEquals('moveIndex', $jobs[8]->getMethod());
+        $this->assertEquals('rebuildStoreProductIndex', $jobs[9]->getMethod());
+        $this->assertEquals('moveIndex', $jobs[10]->getMethod());
+        $this->assertEquals('rebuildStoreProductIndex', $jobs[11]->getMethod());
     }
 
     public function testGetJobs()
@@ -650,12 +665,20 @@ class QueueTest extends TestCase
         $this->assertEquals(6, count($jobs));
 
         $expectedFirstJob = [
-            'job_id' => 7,
+            'job_id' => '1',
             'created' => '2017-09-01 12:00:00',
             'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreCategoryIndex',
-            'data' => [
+            'data' => '{"store_id":"1","category_ids":["9","22"]}',
+            'max_retries' => '3',
+            'retries' => '0',
+            'error_log' => '',
+            'data_size' => 3,
+            'merged_ids' => ['1', '7'],
+            'store_id' => '1',
+            'is_full_reindex' => 0,
+            'decoded_data' => [
                 'store_id' => '1',
                 'category_ids' => [
                     0 => '9',
@@ -663,37 +686,39 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
-            'max_retries' => '3',
-            'retries' => '0',
-            'error_log' => '',
-            'data_size' => 3,
-            'merged_ids' => ['1', '7'],
-            'store_id' => '1',
         ];
 
         $expectedLastJob = [
-            'job_id' => 12,
+            'job_id' => '6',
             'created' => '2017-09-01 12:00:00',
             'pid' => null,
             'class' => 'Algolia\AlgoliaSearch\Helper\Data',
             'method' => 'rebuildStoreProductIndex',
-            'data' => [
-                'store_id' => '3',
-                'product_ids' => [
-                    0 => '448',
-                    1 => '405',
-                ],
-            ],
+            'data' => '{"store_id":"3","product_ids":["448"]}',
             'max_retries' => '3',
             'retries' => '0',
             'error_log' => '',
             'data_size' => 2,
             'merged_ids' => ['6', '12'],
             'store_id' => '3',
+            'is_full_reindex' => 0,
+            'decoded_data' => [
+                'store_id' => '3',
+                'product_ids' => [
+                    0 => '448',
+                    1 => '405',
+                ],
+            ],
         ];
 
-        $this->assertEquals($expectedFirstJob, reset($jobs));
-        $this->assertEquals($expectedLastJob, end($jobs));
+        /** @var Job $firstJob */
+        $firstJob = reset($jobs);
+
+        /** @var Job $lastJob */
+        $lastJob = end($jobs);
+
+        $this->assertEquals($expectedFirstJob, $firstJob->toArray());
+        $this->assertEquals($expectedLastJob, $lastJob->toArray());
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
@@ -722,13 +747,14 @@ class QueueTest extends TestCase
         $queue = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Model\Queue');
 
         $pid = getmypid();
+        /** @var Job[] $jobs */
         $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10, 'pid' => $pid]);
 
         $this->assertEquals(1, count($jobs));
 
         $job = reset($jobs);
-        $this->assertEquals(5000, $job['data_size']);
-        $this->assertEquals(5000, count($job['data']['product_ids']));
+        $this->assertEquals(5000, $job->getDataSize());
+        $this->assertEquals(5000, count($job->getDecodedData()['product_ids']));
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
@@ -759,6 +785,8 @@ class QueueTest extends TestCase
         $queue = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Model\Queue');
 
         $pid = getmypid();
+
+        /** @var Job[] $jobs */
         $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10, 'pid' => $pid]);
 
         $this->assertEquals(2, count($jobs));
@@ -766,11 +794,11 @@ class QueueTest extends TestCase
         $firstJob = reset($jobs);
         $lastJob = end($jobs);
 
-        $this->assertEquals(99, $firstJob['data_size']);
-        $this->assertEquals(99, count($firstJob['data']['product_ids']));
+        $this->assertEquals(99, $firstJob->getDataSize());
+        $this->assertEquals(99, count($firstJob->getDecodedData()['product_ids']));
 
-        $this->assertEquals(2, $lastJob['data_size']);
-        $this->assertEquals(2, count($lastJob['data']['product_ids']));
+        $this->assertEquals(2, $lastJob->getDataSize());
+        $this->assertEquals(2, count($lastJob->getDecodedData()['product_ids']));
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 

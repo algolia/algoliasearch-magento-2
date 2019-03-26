@@ -105,7 +105,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
 
-            if ($this->customData[$field][$currencyCode]['group_' . $groupId] === 0) {
+            if ($this->customData[$field][$currencyCode]['group_' . $groupId] == 0) {
                 $this->customData[$field][$currencyCode]['group_' . $groupId] = $min;
 
                 if ($min === $max) {

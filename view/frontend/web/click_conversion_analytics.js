@@ -51,13 +51,13 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function(algoliaBundle, algolia
 		}
 	});
 	
-	algolia.registerHook('beforeInstantsearchInit', function (instantsearchOptions) {
+	algolia.registerHook('beforeInstantsearchInit', function (instantsearchOptions, algoliaBundle) {
 		instantsearchOptions.searchParameters['clickAnalytics'] = true;
 		
 		return instantsearchOptions;
 	});
 	
-	algolia.registerHook('beforeInstantsearchStart', function (search) {
+	algolia.registerHook('beforeInstantsearchStart', function (search, algoliaBundle) {
 		search.once('render', function() {
 			algoliaAnalytics.initSearch({
 				getQueryID: function() {

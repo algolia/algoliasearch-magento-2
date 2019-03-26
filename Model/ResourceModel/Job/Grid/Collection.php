@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid;
 
+use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection as JobCollection;
 use Magento\Framework\Api\Search\AggregationInterface;
 use Magento\Framework\Api\Search\SearchResultInterface;
@@ -51,6 +52,20 @@ class Collection extends JobCollection implements SearchResultInterface
         $this->_eventObject = $eventObject;
         $this->_init($model, $resourceModel);
         $this->setMainTable($mainTable);
+
+        $this->addStatusToCollection();
+    }
+
+    private function addStatusToCollection()
+    {
+        $this->addExpressionFieldToSelect('status', "IF({{retries}} >= {{max_retries}}, '{{error}}', IF({{pid}} IS NULL, '{{new}}', '{{progress}}'))", [
+            'pid' => JobInterface::FIELD_PID,
+            'retries' => JobInterface::FIELD_RETRIES,
+            'max_retries' => JobInterface::FIELD_MAX_RETRIES,
+            'new' => JobInterface::STATUS_NEW,
+            'error' => JobInterface::STATUS_ERROR,
+            'progress' => JobInterface::STATUS_PROCESSING,
+        ]);
     }
 
     /** @return AggregationInterface */

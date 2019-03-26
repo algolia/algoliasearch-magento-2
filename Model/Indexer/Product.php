@@ -78,8 +78,9 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
 
             if (is_array($productIds) && count($productIds) > 0) {
                 foreach (array_chunk($productIds, $productsPerPage) as $chunk) {
+                    /** @uses Data::rebuildStoreProductIndex() */
                     $this->queue->addToQueue(
-                        $this->fullAction,
+                        Data::class,
                         'rebuildStoreProductIndex',
                         ['store_id' => $storeId, 'product_ids' => $chunk],
                         count($chunk)
@@ -94,16 +95,13 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $useTmpIndex);
             $size = $collection->getSize();
 
-            if ($productIds && $productIds !== []) {
-                $size = max(count($productIds), $size);
-            }
-
             $pages = ceil($size / $productsPerPage);
 
+            /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
             $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', [
                 'store_id' => $storeId,
                 'useTmpIndex' => $useTmpIndex,
-            ]);
+            ], 1, true);
 
             for ($i = 1; $i <= $pages; $i++) {
                 $data = [
@@ -114,17 +112,19 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
                     'useTmpIndex' => $useTmpIndex,
                 ];
 
-                $this->queue->addToQueue($this->fullAction, 'rebuildProductIndex', $data, $productsPerPage);
+                /** @uses Data::rebuildProductIndex() */
+                $this->queue->addToQueue(Data::class, 'rebuildProductIndex', $data, $productsPerPage, true);
             }
 
             if ($useTmpIndex) {
                 $suffix = $this->productHelper->getIndexNameSuffix();
 
-                $this->queue->addToQueue($this->fullAction, 'moveIndex', [
+                /** @uses Data::moveIndex() */
+                $this->queue->addToQueue(Data::class, 'moveIndex', [
                     'tmpIndexName' => $this->fullAction->getIndexName($suffix, $storeId, true),
                     'indexName' => $this->fullAction->getIndexName($suffix, $storeId, false),
                     'store_id' => $storeId,
-                ]);
+                ], 1, true);
             }
         }
     }

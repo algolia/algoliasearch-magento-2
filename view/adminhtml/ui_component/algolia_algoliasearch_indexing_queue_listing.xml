@@ -57,6 +57,7 @@
             </argument>
         </filters>
         <paging name="listing_paging"/>
+        <exportButton name="export_button"/>
     </listingToolbar>
 
     <columns name="algolia_algoliasearch_job_columns">
@@ -88,12 +89,11 @@
                 </item>
             </argument>
         </column>
-        <column name="status" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\Status">
+        <column name="status">
             <argument name="data" xsi:type="array">
                 <item name="options" xsi:type="object">Algolia\AlgoliaSearch\Model\Source\JobStatuses</item>
                 <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">text</item>
-                    <item name="sortable" xsi:type="string">false</item>
+                    <item name="filter" xsi:type="string">select</item>
                     <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/select</item>
                     <item name="dataType" xsi:type="string">select</item>
                     <item name="editor" xsi:type="string">select</item>

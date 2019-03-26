@@ -34,4 +34,17 @@
     <event name="catalog_category_save_after">
         <observer name="algoliasearch_create_merchandising_query_rule" instance="Algolia\AlgoliaSearch\Model\Observer\Merchandising"/>
     </event>
+
+    <event name="algolia_product_collection_add_additional_data">
+        <observer name="algoliasearch_product_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\ProductCollectionAddPermissions" />
+    </event>
+    <event name="algolia_after_create_product_object">
+        <observer name="algoliasearch_product_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\ProductPermissions" />
+    </event>
+    <event name="algolia_after_categories_collection_build">
+        <observer name="algoliasearch_category_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\CategoryCollectionAddPermissions" />
+    </event>
+    <event name="algolia_after_create_category_object">
+        <observer name="algoliasearch_category_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\CategoryPermissions" />
+    </event>
 </config>

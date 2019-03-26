@@ -398,7 +398,7 @@ class PriceManager
             $defaultFormated = $this->formatPrice(
                 $specialPrice[0],
                 $currencyCode,
-                $store,
+                $store
             );
 
             $customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($specialPrice[0]);

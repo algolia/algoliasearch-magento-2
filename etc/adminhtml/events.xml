@@ -31,9 +31,6 @@
         <observer name="algoliasearch_extra_settings_saved" instance="Algolia\AlgoliaSearch\Model\Observer\SaveSettings" />
     </event>
     <event name="controller_action_predispatch_indexer_indexer_list">
-        <observer name="show_warning_mismatch_indexer_type" instance="Algolia\AlgoliaSearch\Model\Observer\IndexerMismatchWarning" />
-    </event>
-    <event name="controller_action_predispatch_indexer_indexer_list">
         <observer name="show_warning_mismatch_indexer_type_indexer_list" instance="Algolia\AlgoliaSearch\Model\Observer\IndexerMismatchWarning" />
     </event>
     <event name="controller_action_predispatch_adminhtml_dashboard_index">

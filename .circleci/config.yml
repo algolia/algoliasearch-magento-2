@@ -108,4 +108,4 @@ jobs:
                 command: |
                     cd ~
                     eval $(./algolia-keys export)
-                    cd ~/magento_directory/dev/tests/integration && ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+                    cd ~/magento_directory/dev/tests/integration && php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

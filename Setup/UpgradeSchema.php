@@ -478,6 +478,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         }
 
         $algoliaSeachQueueTable = $setup->getTable('algoliasearch_queue');
+
         if (!$connection->tableColumnExists($algoliaSeachQueueTable, 'is_full_reindex')) {
             $connection->addColumn(
                 $algoliaSeachQueueTable,
@@ -488,6 +489,20 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     'default' => 0,
                     'nullable' => false,
                     'comment' => 'Indicates if the job is part of a full reindex',
+                ]
+            );
+        }
+
+        if (!$connection->tableColumnExists($algoliaSeachQueueTable, 'locked_at')) {
+            $connection->addColumn(
+                $algoliaSeachQueueTable,
+                'locked_at',
+                [
+                    'type' => Table::TYPE_DATETIME,
+                    'default' => null,
+                    'nullable' => true,
+                    'comment' => 'Indicates time where PID was assigned to the job',
+                    'after' => 'created',
                 ]
             );
         }

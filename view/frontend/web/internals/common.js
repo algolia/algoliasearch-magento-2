@@ -307,7 +307,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 								hit.category = hit.facet.value;
 							}
 
-							if (hit.facet && hit.facet.value !== 'All departments') {
+							if (hit.facet && hit.facet.value !== algoliaConfig.translations.allDepartments) {
 								hit.url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + hit.query + '#q=' + hit.query + '&hFR[categories.level0][0]=' + encodeURIComponent(hit.category) + '&idx=' + algoliaConfig.indexName + '_products';
 							} else {
 								hit.url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + hit.query;

@@ -92,6 +92,7 @@ class ConfigHelper
     const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
         'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
     const NON_CASTABLE_ATTRIBUTES = 'algoliasearch_advanced/advanced/non_castable_attributes';
+    const MAX_RECORD_SIZE_LIMIT = 'algoliasearch_advanced/advanced/max_record_size_limit';
 
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
@@ -103,6 +104,8 @@ class ConfigHelper
     const EXTRA_SETTINGS_SUGGESTIONS = 'algoliasearch_extra_settings/extra_settings/suggestions_extra_settings';
     const EXTRA_SETTINGS_ADDITIONAL_SECTIONS =
         'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
+
+    const DEFAULT_MAX_RECORD_SIZE = 10000;
 
     private $configInterface;
     private $objectManager;
@@ -998,6 +1001,16 @@ class ConfigHelper
         }
 
         return $nonCastableAttributes;
+    }
+
+    public function getDefaultMaxRecordSize()
+    {
+        return self::DEFAULT_MAX_RECORD_SIZE;
+    }
+
+    public function getMaxRecordSizeLimit($storeId = null)
+    {
+        return $this->configInterface->getValue(self::MAX_RECORD_SIZE_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     private function addIndexableAttributes(

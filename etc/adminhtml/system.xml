@@ -878,6 +878,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="max_record_size_limit" translate="label comment" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Max Record Size Limit</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\MaxRecordSize</source_model>
+                    <comment>
+                        <![CDATA[
+                        You can set the max record size limit in bytes here. If you are receiving "Record is too big" errors during indexing, try increasing your limit if it is available for your plan. To learn more, please read <a href="https://www.algolia.com/doc/faq/basics/is-there-a-size-limit-for-my-index-records/" target="_blank">this documentation</a>.
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_extra_settings" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">

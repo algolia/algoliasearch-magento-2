@@ -37,6 +37,8 @@ class MaxRecordSize implements \Magento\Framework\Option\ArrayInterface
             }
         }
 
+        rsort($options);
+
         $formattedOptions = [];
         foreach ($options as $option) {
             $formattedOptions[] = [

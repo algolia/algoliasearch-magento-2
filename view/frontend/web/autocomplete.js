@@ -97,8 +97,10 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 			
 			/** Bind autocomplete feature to the input */
-			$(this)
-				.autocomplete(options, sources)
+			var algoliaAutocompleteInstance = $(this).autocomplete(options, sources);
+			algoliaAutocompleteInstance = algolia.triggerHooks('afterAutocompleteStart', algoliaAutocompleteInstance);
+
+			algoliaAutocompleteInstance
 				.parent()
 				.attr('id', 'algolia-autocomplete-tt')
 				.on('autocomplete:updated', function (e) {

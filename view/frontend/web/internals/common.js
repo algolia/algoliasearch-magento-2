@@ -2,6 +2,7 @@ var algolia = {
 	allowedHooks: [
 		'beforeAutocompleteSources',
 		'beforeAutocompleteOptions',
+		'afterAutocompleteStart',
 		'beforeInstantsearchInit',
 		'beforeWidgetInitialization',
 		'beforeInstantsearchStart',

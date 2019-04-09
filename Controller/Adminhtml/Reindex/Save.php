@@ -158,7 +158,6 @@ class Save extends \Magento\Backend\App\Action
             } catch (ProductDisabledException $e) {
                 // Product status is a Website specific attribute
                 $this->messageManager->addErrorMessage(
-                    $e,
                     __(
                         'The product "%1" (%2) is disabled in store "%3 / %4 / %5".',
                         [
@@ -198,7 +197,6 @@ class Save extends \Magento\Backend\App\Action
                     }
                 } else {
                     $this->messageManager->addErrorMessage(
-                        $e,
                         __(
                             'The product "%1" (%2) is not visible in store "%3 / %4 / %5".',
                             [

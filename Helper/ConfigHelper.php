@@ -117,6 +117,7 @@ class ConfigHelper
     private $productMetadata;
     private $eventManager;
     private $currencyManager;
+    private $maxRecordSize;
 
     public function __construct(
         Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
@@ -1003,16 +1004,6 @@ class ConfigHelper
         return $nonCastableAttributes;
     }
 
-    public function getDefaultMaxRecordSize()
-    {
-        return self::DEFAULT_MAX_RECORD_SIZE;
-    }
-
-    public function getMaxRecordSizeLimit($storeId = null)
-    {
-        return $this->configInterface->getValue(self::MAX_RECORD_SIZE_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
     private function addIndexableAttributes(
         $attributes,
         $addedAttributes,
@@ -1047,5 +1038,39 @@ class ConfigHelper
         }
 
         return unserialize($value);
+    }
+
+    public function getDefaultMaxRecordSize()
+    {
+        return self::DEFAULT_MAX_RECORD_SIZE;
+    }
+
+    public function getMaxRecordSizeLimit($storeId = null)
+    {
+
+        if ($this->maxRecordSize) {
+            return $this->maxRecordSize;
+        }
+
+        $configValue = $this->configInterface->getValue(self::MAX_RECORD_SIZE_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
+        if ($configValue) {
+
+            $this->maxRecordSize = $configValue;
+            return $this->_maxRecordSize;
+        } else {
+            /** @var \Algolia\AlgoliaSearch\Helper\ProxyHelper $proxyHelper */
+            $proxyHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\ProxyHelper');
+            $clientData = $proxyHelper->getClientConfigurationData();
+            if ($clientData && isset($clientData['max_record_size'])) {
+                /** @var \Magento\Framework\App\Config\Storage\Writer $configWriter */
+                $configWriter = $this->objectManager->create('Magento\Framework\App\Config\Storage\Writer');
+                $configWriter->save(self::MAX_RECORD_SIZE_LIMIT, $clientData['max_record_size']);
+                $this->maxRecordSize = $clientData['max_record_size'];
+            } else {
+                $this->maxRecordSize = self::getDefaultMaxRecordSize();
+            }
+        }
+
+        return $this->maxRecordSize;
     }
 }

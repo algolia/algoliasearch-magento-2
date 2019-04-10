@@ -272,7 +272,7 @@ class ProductHelper
     {
         $searchableAttributes = $this->getSearchableAttributes($storeId);
         $customRanking = $this->getCustomRanking($storeId);
-        $unretrievableAttributes = $this->getUnretrieveableAttributes();
+        $unretrievableAttributes = $this->getUnretrieveableAttributes($storeId);
         $attributesForFaceting = $this->getAttributesForFaceting($storeId);
 
         $indexSettings = [
@@ -934,11 +934,11 @@ class ProductHelper
         return $customRanking;
     }
 
-    private function getUnretrieveableAttributes()
+    private function getUnretrieveableAttributes($storeId = null)
     {
         $unretrievableAttributes = [];
 
-        foreach ($this->getAdditionalAttributes() as $attribute) {
+        foreach ($this->getAdditionalAttributes($storeId) as $attribute) {
             if ($attribute['retrievable'] !== '1') {
                 $unretrievableAttributes[] = $attribute['attribute'];
             }

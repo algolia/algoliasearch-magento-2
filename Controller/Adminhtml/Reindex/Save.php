@@ -12,6 +12,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Save extends \Magento\Backend\App\Action
@@ -96,6 +97,8 @@ class Save extends \Magento\Backend\App\Action
                 }
 
                 $this->checkAndReindex($product, $stores);
+            } catch (NoSuchEntityException $e) {
+                $this->messageManager->addExceptionMessage($e, __('Product with SKU "%1" was not found.', $sku));
             } catch (UnknownSkuException $e) {
                 $this->messageManager->addExceptionMessage($e, $e->getMessage());
             } catch (ProductDeletedException $e) {

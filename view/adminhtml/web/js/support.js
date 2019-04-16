@@ -152,7 +152,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					if (content.textContent.replace(/\s/g, "").length >= 186) {
 						
 						
-						let style = document.createElement("style");
+						var style = document.createElement("style");
 						style.innerHTML = `
 							#${container.id} .content:after {
 								display: block;
@@ -298,14 +298,14 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	
 	function escapeHighlightedString(str, highlightPreTag, highlightPostTag) {
 		highlightPreTag = highlightPreTag || '<em>';
-		let pre = document.createElement('div');
+		var pre = document.createElement('div');
 		pre.appendChild(document.createTextNode(highlightPreTag));
 		
 		highlightPostTag = highlightPostTag || '</em>';
-		let post = document.createElement('div');
+		var post = document.createElement('div');
 		post.appendChild(document.createTextNode(highlightPostTag));
 		
-		let div = document.createElement('div');
+		var div = document.createElement('div');
 		div.appendChild(document.createTextNode(str));
 		
 		return div.innerHTML
@@ -321,7 +321,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		left = sanitizeVersion(left);
 		right = sanitizeVersion(right);
 		
-		for (let i = 0; i < Math.max(left.length, right.length); i++) {
+		for (var i = 0; i < Math.max(left.length, right.length); i++) {
 			if (left[i] > right[i]) {
 				return -1;
 			}

@@ -328,6 +328,7 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         /** @var Job $categoryJob */
@@ -355,6 +356,7 @@ class QueueTest extends TestCase
                     1 => '405',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         /** @var Job $productJob */
@@ -686,6 +688,7 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         $expectedLastJob = [
@@ -709,6 +712,7 @@ class QueueTest extends TestCase
                     1 => '405',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         /** @var Job $firstJob */

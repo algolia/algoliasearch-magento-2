@@ -468,6 +468,7 @@ class AlgoliaHelper extends AbstractHelper
             $this->maxRecordSize = $this->config->getMaxRecordSizeLimit()
                 ? $this->config->getMaxRecordSizeLimit() : $this->config->getDefaultMaxRecordSize();
         }
+
         return $this->maxRecordSize;
     }
 

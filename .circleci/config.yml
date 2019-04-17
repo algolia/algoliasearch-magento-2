@@ -3,52 +3,19 @@ version: 2
 jobs:
     build:
         docker:
-            - image: circleci/php:7.1-node-browsers
+            - image: garrgysek/magento2_circleci:2.3.0
         working_directory: ~/build_directory/algoliasearch-magento-2
         steps:
             - checkout
 
             - run:
-                name: Create Auth file for Composer
-                command: AUTH_DIR=/home/circleci/.composer/auth.json php ~/build_directory/algoliasearch-magento-2/dev/bin/createAuthJson.php
-
-            - run:
-                name: Install dependencies
+                name: Override the Algolia extension with the cloned one
                 command: |
-                    sudo apt-get update
-                    sudo apt-get install -y libzip-dev
-                    sudo apt-get install -y zlib1g-dev libicu-dev g++
-                    sudo apt-get install mysql-client
-                    sudo apt-get -y install mysql-server
-                    sudo apt-get install -y libfreetype6-dev
-                    sudo apt-get install -y libicu-dev
-                    sudo apt-get install -y libmcrypt4 libmcrypt-dev
-                    sudo apt-get install -y libpng-dev libjpeg-dev
-                    sudo apt-get install -y libxml2-dev
-                    sudo apt-get install -y libxslt-dev
-                    sudo apt-get install -y unzip
-
-            - run:
-                  name: Install PHP extensions
-                  command: |
-                      sudo docker-php-ext-install calendar
-                      sudo docker-php-ext-install intl
-                      sudo docker-php-ext-install mbstring
-                      sudo docker-php-ext-install pdo_mysql
-                      sudo docker-php-ext-install soap
-                      sudo docker-php-ext-install xsl
-                      sudo docker-php-ext-install zip
-                      sudo docker-php-ext-install bcmath
-                      sudo docker-php-ext-configure gd --with-jpeg-dir=/usr/lib --with-freetype-dir=/usr/lib64/
-                      sudo docker-php-ext-install gd
-
-#            - run:
-#                name: Increase memory limit
-#                command: sudo echo 'memory_limit=512M' > /usr/local/etc/php/conf.d/memory-limit.ini
-
-            - run:
-                name: Fix MySQL socket config
-                command: sudo sh -c "echo 'pdo_mysql.default_socket=/var/run/mysqld/mysqld.sock' > /usr/local/etc/php/conf.d/pdo.ini"
+                    cd ~/magento_directory/vendor/algolia
+                    rm -rf algoliasearch-magento-2
+                    cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
+                    cd ~/magento_directory
+                    composer dump-autoload
 
             - run:
                 name: Start database server
@@ -58,54 +25,19 @@ jobs:
                     ps aux | grep mysql
 
             - run:
-                name: Create database
-                command: sudo mysql -u root -e "CREATE DATABASE magento2;"
-
-            - run:
-                name: Create database user
-                command: sudo mysql -u root -e "CREATE USER 'magento2'@'localhost' IDENTIFIED BY 'P4ssw0rd'; GRANT ALL PRIVILEGES ON *.* TO 'magento2'@'localhost'; FLUSH PRIVILEGES;"
-
-            - run: sudo composer self-update
-
-            - run:
-                name: Download Magento 2
-                command: composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition:~2.3.0 ~/magento_directory
-
-            - run:
-                name: Install sample data
+                name: Install the extension
                 command: |
-                    cd ~ && git clone https://github.com/magento/magento2-sample-data.git
-                    cd ~/magento_directory && MAGENTO_VERSION=$(php -r "echo json_decode(file_get_contents('composer.json'))->version;")
-                    cd ~/magento2-sample-data && git checkout $MAGENTO_VERSION
-                    cd ~/magento_directory && php -f ~/magento2-sample-data/dev/tools/build-sample-data.php -- --ce-source=$HOME/magento_directory
-
-            - run:
-                name: Install the Algolia extension
-                command: cd ~/magento_directory && composer require algolia/algoliasearch-magento-2
-
-            - run:
-                name: Override the Algolia extension with the cloned one
-                command: |
-                    cd ~/magento_directory/vendor/algolia && rm -rf algoliasearch-magento-2
-                    cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
-                    cd ~/magento_directory && composer dump-autoload
-
-            - run:
-                name: Install Magento 2
-                command: |
-                    cd ~/magento_directory && php -dmemory_limit=-1 bin/magento setup:install --base-url=http://localhost/magento20/ --db-host="127.0.0.1" --db-name=magento2 --db-user=magento2 --db-password=P4ssw0rd --admin-firstname=Admin --admin-lastname=Admin --admin-email=dummy@email.com --admin-user=admin --admin-password=tests123 --language=en_US --currency=USD --timezone=Europe/Paris --use-rewrites=1 --session-save=db
+                    cd ~/magento_directory
+                    php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
+                    php -dmemory_limit=-1 bin/magento setup:upgrade
 
             - run:
                 name: Get the right tests config for DB and administration
-                command: mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
-
-            - run:
-                name: Download Algolia keys
-                command: cd ~ && wget https://alg.li/algolia-keys && chmod +x algolia-keys
+                command: |
+                    mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
 
             - run:
                 name: Run tests
                 command: |
-                    cd ~
-                    eval $(./algolia-keys export)
-                    cd ~/magento_directory/dev/tests/integration && php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+                    cd ~/magento_directory/dev/tests/integration
+                    php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test

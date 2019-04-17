@@ -443,7 +443,54 @@ class CategoryHelper
             $this->activeCategories = $connection->fetchAssoc($select);
         }
 
+        $this->activeCategories = $this->fixStorePrefixForActiveCategories($this->activeCategories);
+
         return $this->activeCategories;
+    }
+
+    /**
+     * The problem is that the extension expects that all categories are available in the default scope (0).
+     *
+     * This isn't always the case since we can set a website to a separate category root with completely different
+     * category structure.
+     *
+     * The current situation causes ALL categories to show up in ALL stores, a lot of them without a rewrite
+     * since the rewrite doesn't exist since the category isn't associated to that store.
+     *
+     * This method walks through all active store groups and fetches the category root ID. It then walks through
+     * the activeCategories array looking for categories that are assigned to that root ID and then changes the prefix
+     * (which is almost certainly `0-`) to the correct prefix, causing these categories only to show up in that store.
+     *
+     * @param $categories
+     */
+    public function fixStorePrefixForActiveCategories($categories)
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $rootCategoryIds = $connection->fetchPairs(
+            $connection->select()
+                ->from([$connection->getTableName('store'), 'store'], ['store_id', 'store_group.root_category_id'])
+                ->joinInner([$connection->getTableName('store_group'), 'store_group'], 'store.group_id = store_group.group_id')
+                ->where('store.store_id != ?', 0)
+        );
+
+        $fixedCategories = [];
+
+        foreach ($categories as $key => $category) {
+            $pathParts = explode('/', $category['path']);
+            $categoryRootId = $pathParts[1];
+
+            if (in_array($categoryRootId, $rootCategoryIds)) {
+                $key = $category['key'];
+                list($storeId, $categoryId) = explode('-', $key);
+                $correctStoreId = array_search($categoryRootId, $rootCategoryIds);
+                if ($storeId == 0 && $correctStoreId) {
+                    $key = implode('-', [$correctStoreId, $categoryId]);
+                }
+            }
+            $fixedCategories[$key] = $category;
+        }
+
+        return $fixedCategories;
     }
 
     public function getCategoryName($categoryId, $storeId = null)

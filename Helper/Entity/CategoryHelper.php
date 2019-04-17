@@ -471,6 +471,7 @@ class CategoryHelper
                 ->from([$connection->getTableName('store'), 'store'], ['store_id', 'store_group.root_category_id'])
                 ->joinInner([$connection->getTableName('store_group'), 'store_group'], 'store.group_id = store_group.group_id')
                 ->where('store.store_id != ?', 0)
+                ->where('store_group.root_category_id != ?', 2)
         );
 
         $fixedCategories = [];

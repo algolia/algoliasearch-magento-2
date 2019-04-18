@@ -1,0 +1,64 @@
+version: 2
+
+shared: &shared
+    working_directory: ~/build_directory/algoliasearch-magento-2
+    steps:
+        - checkout
+
+        - run:
+            name: Override the Algolia extension with the cloned one
+            command: |
+                cd ~/magento_directory/vendor/algolia
+                rm -rf algoliasearch-magento-2
+                cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
+                cd ~/magento_directory
+                composer dump-autoload
+
+        - run:
+            name: Start database server
+            command: |
+                sudo service mysql start
+                sleep 2
+                ps aux | grep mysql
+
+        - run:
+            name: Install the extension
+            command: |
+                cd ~/magento_directory
+                php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
+                php -dmemory_limit=-1 bin/magento setup:upgrade
+
+        - run:
+            name: Get the right tests config for DB and administration
+            command: |
+                mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
+
+        - run:
+            name: Run tests
+            command: |
+                cd ~/magento_directory/dev/tests/integration
+                php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+
+jobs:
+    "magento-2.1.17":
+        <<: *shared
+        docker:
+            - image: garrgysek/magento2_circleci:2.1.17
+
+    "magento-2.2.8":
+        <<: *shared
+        docker:
+            - image: garrgysek/magento2_circleci:2.2.8
+
+    "magento-2.3.0":
+        <<: *shared
+        docker:
+            - image: garrgysek/magento2_circleci:2.3.0
+
+workflows:
+    version: 2
+    build:
+        jobs:
+            - "magento-2.1.17"
+            - "magento-2.2.8"
+            - "magento-2.3.0"

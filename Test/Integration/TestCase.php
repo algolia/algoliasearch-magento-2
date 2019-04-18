@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\UpgradeSchema;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_01;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_2;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_3;
 use AlgoliaSearch\AlgoliaException;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -101,8 +102,10 @@ abstract class TestCase extends \TC
 
         if (version_compare($this->getMagentoVersion(), '2.2.0', '<')) {
             $this->assertValues = new Magento_2_01();
-        } else {
+        } elseif (version_compare($this->getMagentoVersion(), '2.3.0', '<')) {
             $this->assertValues = new Magento_2_2();
+        } else {
+            $this->assertValues = new Magento_2_3();
         }
 
         $this->algoliaHelper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\AlgoliaHelper');

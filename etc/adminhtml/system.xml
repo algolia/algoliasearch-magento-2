@@ -831,11 +831,11 @@
                     </comment>
                 </field>
                 <field id="index_product_on_category_products_update" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Update product on category products update</label>
+                    <label>Update products in changed category?</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
-                            Do you want the extension to automatically update the product index when a product is added to or removed from a category via the "Catalog > Categories" menu?
+                            Do you want the extension to automatically update the product index when a category is changed?
                         ]]>
                     </comment>
                 </field>

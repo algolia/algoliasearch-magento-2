@@ -45,6 +45,7 @@ class CategoryCollectionAddPermissions implements ObserverInterface
     protected function addCatalogPermissionsData($collection, $categoryIds)
     {
         $categoryPermissionsCollection = $this->permissionsFactory->getCategoryPermissionsCollection();
+        $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         $permissionsCollection = array_intersect_key($categoryPermissionsCollection, $categoryIds);
         if (count($permissionsCollection) === 0) {
             return;
@@ -55,7 +56,8 @@ class CategoryCollectionAddPermissions implements ObserverInterface
             foreach ($permissions as $permission) {
                 list($customerGroupId, $level) = explode('_', $permission);
                 if ($category = $collection->getItemById($categoryId)) {
-                    $category->setData('customer_group_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
+                    $category->setData('customer_group_permission_' . $customerGroupId, (($level == -2 || $level != -1
+                        && !$catalogPermissionsHelper->isAllowedCategoryView()) ? 0 : 1));
                 }
             }
         }

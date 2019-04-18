@@ -54,6 +54,7 @@ class ProductCollectionAddPermissions implements ObserverInterface
     protected function addProductPermissionsData($additionalData, $productIds, $storeId)
     {
         $productPermissionsCollection = $this->permissionsFactory->getProductPermissionsCollection();
+        $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         if (count($productPermissionsCollection) === 0) {
             return;
         }
@@ -64,8 +65,10 @@ class ProductCollectionAddPermissions implements ObserverInterface
             foreach ($permissions as $permission) {
                 list($permissionStoreId, $customerGroupId, $level) = explode('_', $permission);
                 if ($permissionStoreId == $storeId) {
+
                     $additionalData->addProductData($productId, [
-                        'customer_group_permission_' . $customerGroupId => ($level == -1 ? 1 : 0),
+                        'customer_group_permission_' . $customerGroupId => (($level == -2 || $level != -1
+                        && !$catalogPermissionsHelper->isAllowedCategoryView()) ? 0 : 1),
                     ]);
                 }
             }

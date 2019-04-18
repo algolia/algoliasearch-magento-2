@@ -48,6 +48,11 @@ class CatalogPermissionsFactory
         return $this->objectManager->create('\Magento\CatalogPermissions\Model\ResourceModel\Permission\Index');
     }
 
+    public function getCatalogPermissionsHelper()
+    {
+        return $this->objectManager->create('\Magento\CatalogPermissions\Helper\Data');
+    }
+
     public function getCategoryPermissionsCollection()
     {
         if (!$this->categoryPermissionsCollection) {

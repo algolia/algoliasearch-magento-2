@@ -2,8 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Algolia\AlgoliaSearch\Model\Indexer\Category as CategoryIndexer;
+use Closure;
+use Magento\Catalog\Model\Category as Category;
+use Magento\Catalog\Model\ResourceModel\Category as CategoryResourceModel;
+use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Framework\Indexer\IndexerRegistry;
-use Magento\Framework\Model\AbstractModel;
 
 class CategoryObserver
 {
@@ -14,14 +18,24 @@ class CategoryObserver
         $this->indexer = $indexerRegistry->get('algolia_categories');
     }
 
+    /**
+     * @param CategoryResourceModel $categoryResource
+     * @param Closure $proceed
+     * @param Category $category
+     *
+     * @return mixed
+     */
     public function aroundSave(
-        \Magento\Catalog\Model\ResourceModel\Category $categoryResource,
-        \Closure $proceed,
-        AbstractModel $category
+        CategoryResourceModel $categoryResource,
+        Closure $proceed,
+        Category $category
     ) {
         $categoryResource->addCommitCallback(function () use ($category) {
             if (!$this->indexer->isScheduled()) {
-                Category::$affectedProductIds = (array) $category->getData('affected_product_ids');
+                /** @var ProductCollection $productCollection */
+                $productCollection = $category->getProductCollection();
+                CategoryIndexer::$affectedProductIds = (array) $productCollection->getAllIds();
+
                 $this->indexer->reindexRow($category->getId());
             }
         });
@@ -29,14 +43,24 @@ class CategoryObserver
         return $proceed($category);
     }
 
+    /**
+     * @param CategoryResourceModel $categoryResource
+     * @param Closure $proceed
+     * @param Category $category
+     *
+     * @return mixed
+     */
     public function aroundDelete(
-        \Magento\Catalog\Model\ResourceModel\Category $categoryResource,
-        \Closure $proceed,
-        AbstractModel $category
+        CategoryResourceModel $categoryResource,
+        Closure $proceed,
+        Category $category
     ) {
         $categoryResource->addCommitCallback(function () use ($category) {
             if (!$this->indexer->isScheduled()) {
-                Category::$affectedProductIds = (array) $category->getData('affected_product_ids');
+                /** @var ProductCollection $productCollection */
+                $productCollection = $category->getProductCollection();
+                CategoryIndexer::$affectedProductIds = (array) $productCollection->getAllIds();
+
                 $this->indexer->reindexRow($category->getId());
             }
         });

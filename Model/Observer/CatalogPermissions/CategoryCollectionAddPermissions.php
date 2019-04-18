@@ -45,12 +45,12 @@ class CategoryCollectionAddPermissions implements ObserverInterface
     protected function addCatalogPermissionsData($collection, $categoryIds)
     {
         $categoryPermissionsCollection = $this->permissionsFactory->getCategoryPermissionsCollection();
-        $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         $permissionsCollection = array_intersect_key($categoryPermissionsCollection, $categoryIds);
         if (count($permissionsCollection) === 0) {
             return;
         }
 
+        $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         foreach ($permissionsCollection as $categoryId => $permissions) {
             $permissions = explode(',', $permissions);
             foreach ($permissions as $permission) {

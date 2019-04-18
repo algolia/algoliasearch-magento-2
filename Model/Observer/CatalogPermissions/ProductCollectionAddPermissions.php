@@ -54,12 +54,12 @@ class ProductCollectionAddPermissions implements ObserverInterface
     protected function addProductPermissionsData($additionalData, $productIds, $storeId)
     {
         $productPermissionsCollection = $this->permissionsFactory->getProductPermissionsCollection();
-        $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         if (count($productPermissionsCollection) === 0) {
             return;
         }
 
         $permissionsCollection = array_intersect_key($productPermissionsCollection, $productIds);
+        $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         foreach ($permissionsCollection as $productId => $permissions) {
             $permissions = explode(',', $permissions);
             foreach ($permissions as $permission) {

@@ -119,13 +119,10 @@ abstract class ProductWithoutChildren
 
     protected function formatPrice($amount, $currencyCode)
     {
-        return $this->priceCurrency->format(
-            $amount,
-            false,
-            PriceCurrencyInterface::DEFAULT_PRECISION,
-            $this->store,
-            $currencyCode
-        );
+        $currency = $this->priceCurrency->getCurrency($this->store, $currencyCode);
+        $options = ['locale' => $this->configHelper->getStoreLocale($this->store->getId())];
+
+        return $currency->formatPrecision($amount, PriceCurrencyInterface::DEFAULT_PRECISION, $options, false);
     }
 
     protected function convertPrice($amount, $currencyCode)

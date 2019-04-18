@@ -1,5 +1,43 @@
 # CHANGE LOG
 
+## 1.11.0
+
+### FEATURES
+- Tutorial videos inside the admin configuration (#704)
+  * Added Youtube tutorial videos on top of each relevant configuration page of the extension.
+- B2B Catalog Permissions (#695)
+  * Added support for Magento Commerce (EE) edition features: Catalog Permissions and B2B Shared Catalog.
+- Query merchandiser (#739) 
+  * Feature to let you promote or demote products for a search. Based on Algolia's Query rules.
+
+### UPDATES
+- Refactor categories to be indexed by batches (#696)
+- Translate HTML text in hit template (#702) 
+- Refactored Queue mechanism (#698 #713 #740)
+- Add native price facet handling (#700) 
+- Branding Logo Upsell (#705)
+- Better UX and copy on Analytics overview page (#712) 
+- Use factory to create new AlgoliaSearch\Client (#722)
+- Add an export button to the indexing queue grid for troubleshooting (#717)
+- Update indexing queue grid collection to add status column for sortability (#718)
+- Add "algoliaBundle" as parameter for instant search hooks (#725) 
+- Encode search query sent to the backend from JS (#721) 
+- "algolia_pages indexer" emulation restructure and added try/catch for debugging (#728)
+- Show indexer warning when type mismatch between Algolia Products and Price Indexer (#734)
+- Add afterAutocompleteStart hook (#747) 
+- Add Max Record Size Limit (#746) 
+- Change "let" for "var" in javascript files (#754)
+
+### FIXES
+- Keep ruleContexts when algoliaConfig.areCategoriesInFacets is false (#693)
+- Fix Analytic Overview Update Action (#703)
+- Prevents replicas to be created if InstantSearch Result Page is disabled (#694)
+- Fix customer group prices on grouped products (#726) 
+- Pull URLs of correct image types (#727)
+- Fix SVG icons (#738) 
+- Fix suggestions functionality when "All Departments" string is translated (#744)
+- Fix Searchable attributes / Unretrieveable attributes configuration not saving correct scope (#750)
+
 ## 1.10.0
 
 ### FEATURES

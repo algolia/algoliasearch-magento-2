@@ -12,6 +12,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Save extends \Magento\Backend\App\Action
@@ -96,6 +97,8 @@ class Save extends \Magento\Backend\App\Action
                 }
 
                 $this->checkAndReindex($product, $stores);
+            } catch (NoSuchEntityException $e) {
+                $this->messageManager->addExceptionMessage($e, __('Product with SKU "%1" was not found.', $sku));
             } catch (UnknownSkuException $e) {
                 $this->messageManager->addExceptionMessage($e, $e->getMessage());
             } catch (ProductDeletedException $e) {
@@ -158,7 +161,6 @@ class Save extends \Magento\Backend\App\Action
             } catch (ProductDisabledException $e) {
                 // Product status is a Website specific attribute
                 $this->messageManager->addErrorMessage(
-                    $e,
                     __(
                         'The product "%1" (%2) is disabled in store "%3 / %4 / %5".',
                         [
@@ -198,7 +200,6 @@ class Save extends \Magento\Backend\App\Action
                     }
                 } else {
                     $this->messageManager->addErrorMessage(
-                        $e,
                         __(
                             'The product "%1" (%2) is not visible in store "%3 / %4 / %5".',
                             [

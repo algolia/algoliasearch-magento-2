@@ -26,12 +26,14 @@
     <!-- Dependency Injection for new Model -->
     <preference for="Algolia\AlgoliaSearch\Api\Data\JobInterface" type="Algolia\AlgoliaSearch\Model\Job" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" type="Algolia\AlgoliaSearch\Model\LandingPage" />
+    <preference for="Algolia\AlgoliaSearch\Api\Data\QueryInterface" type="Algolia\AlgoliaSearch\Model\Query" />
 
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">
                 <item name="algolia_algoliasearch_job_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid\Collection</item>
                 <item name="algolia_algoliasearch_landingpage_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage\Grid\Collection</item>
+                <item name="algolia_algoliasearch_query_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Query\Grid\Collection</item>
             </argument>
         </arguments>
     </type>
@@ -52,12 +54,25 @@
         </arguments>
     </type>
 
+    <type name="Algolia\AlgoliaSearch\Model\ResourceModel\Query\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">algoliasearch_query</argument>
+            <argument name="eventPrefix" xsi:type="string">algoliasearch_query_grid_collection</argument>
+            <argument name="eventObject" xsi:type="string">algoliasearch_query_grid_collection</argument>
+            <argument name="resourceModel" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Query</argument>
+        </arguments>
+    </type>
+
     <type name="Magento\Framework\EntityManager\MetadataPool">
         <arguments>
             <argument name="metadata" xsi:type="array">
                 <item name="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" xsi:type="array">
                     <item name="entityTableName" xsi:type="string">algoliasearch_landing_page</item>
                     <item name="identifierField" xsi:type="string">landing_page_id</item>
+                </item>
+                <item name="Algolia\AlgoliaSearch\Api\Data\QueryInterface" xsi:type="array">
+                    <item name="entityTableName" xsi:type="string">algoliasearch_query</item>
+                    <item name="identifierField" xsi:type="string">query_id</item>
                 </item>
             </argument>
         </arguments>
@@ -66,7 +81,25 @@
         <arguments>
             <argument name="hydrators" xsi:type="array">
                 <item name="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" xsi:type="string">Magento\Framework\EntityManager\AbstractModelHydrator</item>
+                <item name="Algolia\AlgoliaSearch\Api\Data\QueryInterface" xsi:type="string">Magento\Framework\EntityManager\AbstractModelHydrator</item>
             </argument>
+        </arguments>
+    </type>
+    <virtualType name="Algolia\AlgoliaSearch\QueryImageUpload" type="Algolia\AlgoliaSearch\Model\ImageUploader">
+        <arguments>
+            <argument name="baseTmpPath" xsi:type="string">algolia_img/tmp</argument>
+            <argument name="basePath" xsi:type="string">algolia_img</argument>
+            <argument name="allowedExtensions" xsi:type="array">
+                <item name="jpg" xsi:type="string">jpg</item>
+                <item name="jpeg" xsi:type="string">jpeg</item>
+                <item name="gif" xsi:type="string">gif</item>
+                <item name="png" xsi:type="string">png</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Algolia\AlgoliaSearch\Controller\Adminhtml\Query\Imageupload">
+        <arguments>
+            <argument name="imageUploader" xsi:type="object">Algolia\AlgoliaSearch\QueryImageUpload</argument>
         </arguments>
     </type>
 </config>

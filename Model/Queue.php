@@ -4,18 +4,26 @@ namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
+use Exception;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\ObjectManagerInterface;
+use PDO;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Zend_Db_Expr;
+use Zend_Db_Statement_Exception;
 
 class Queue
 {
     const FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33;
+    const UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
 
     const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
     const ERROR_LOG = 'algoliasearch_queue_errors.log';
 
-    /** @var \Magento\Framework\DB\Adapter\AdapterInterface */
+    /** @var AdapterInterface */
     private $db;
 
     /** @var string */
@@ -42,6 +50,8 @@ class Queue
     /** @var Logger */
     private $logger;
 
+    private $jobCollectionFactory;
+
     /** @var int */
     private $maxSingleJobDataSize;
 
@@ -61,12 +71,14 @@ class Queue
     public function __construct(
         ConfigHelper $configHelper,
         Logger $logger,
+        JobCollectionFactory $jobCollectionFactory,
         ResourceConnection $resourceConnection,
         ObjectManagerInterface $objectManager,
         ConsoleOutput $output
     ) {
         $this->configHelper = $configHelper;
         $this->logger = $logger;
+        $this->jobCollectionFactory = $jobCollectionFactory;
 
         $this->table = $resourceConnection->getTableName('algoliasearch_queue');
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
@@ -115,7 +127,7 @@ class Queue
      * Return the average processing time for the 2 last two days
      * (null if there was less than 100 runs with processed jobs)
      *
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      *
      * @return float|null
      */
@@ -136,7 +148,7 @@ class Queue
      * @param int|null $nbJobs
      * @param bool $force
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function runCron($nbJobs = null, $force = false)
     {
@@ -145,6 +157,7 @@ class Queue
         }
 
         $this->clearOldLogRecords();
+        $this->unlockStackedJobs();
 
         $this->logRecord = [
             'started' => date('Y-m-d H:i:s'),
@@ -179,7 +192,7 @@ class Queue
     /**
      * @param int $maxJobs
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function run($maxJobs)
     {
@@ -196,33 +209,28 @@ class Queue
             // If there are some failed jobs before move, we want to skip the move
             // as most probably not all products have prices reindexed
             // and therefore are not indexed yet in TMP index
-            if ($job['method'] === 'moveIndex' && $this->noOfFailedJobs > 0) {
+            if ($job->getMethod() === 'moveIndex' && $this->noOfFailedJobs > 0) {
                 // Set pid to NULL so it's not deleted after
-                $this->db->update($this->table, ['pid' => null], ['job_id = ?' => $job['job_id']]);
+                $this->db->update($this->table, ['pid' => null], ['job_id = ?' => $job->getId()]);
 
                 continue;
             }
 
             try {
-                $model = $this->objectManager->get($job['class']);
-
-                $method = $job['method'];
-                $data = $job['data'];
-
-                call_user_func_array([$model, $method], $data);
+                $job->execute();
 
                 // Delete one by one
-                $this->db->delete($this->table, ['job_id IN (?)' => $job['merged_ids']]);
+                $this->db->delete($this->table, ['job_id IN (?)' => $job->getMergedIds()]);
 
-                $this->logRecord['processed_jobs'] += count($job['merged_ids']);
-            } catch (\Exception $e) {
+                $this->logRecord['processed_jobs'] += count($job->getMergedIds());
+            } catch (Exception $e) {
                 $this->noOfFailedJobs++;
 
                 // Log error information
-                $logMessage = 'Queue processing ' . $job['pid'] . ' [KO]: 
-                    Class: ' . $job['class'] . ', 
-                    Method: ' . $job['method'] . ', 
-                    Parameters: ' . json_encode($job['data']);
+                $logMessage = 'Queue processing ' . $job->getPid() . ' [KO]: 
+                    Class: ' . $job->getClass() . ', 
+                    Method: ' . $job->getMethod() . ', 
+                    Parameters: ' . json_encode($job->getDecodedData());
                 $this->logger->log($logMessage);
 
                 $logMessage = date('c') . ' ERROR: ' . get_class($e) . ': 
@@ -232,9 +240,9 @@ class Queue
 
                 $this->db->update($this->table, [
                     'pid' => null,
-                    'retries' => new \Zend_Db_Expr('retries + 1'),
+                    'retries' => new Zend_Db_Expr('retries + 1'),
                     'error_log' => $logMessage,
-                ], ['job_id IN (?)' => $job['merged_ids']]);
+                ], ['job_id IN (?)' => $job->getMergedIds()]);
 
                 if (php_sapi_name() === 'cli') {
                     $this->output->writeln($logMessage);
@@ -271,9 +279,9 @@ class Queue
     /**
      * @param int $maxJobs
      *
-     * @throws \Exception
+     * @throws Exception
      *
-     * @return array
+     * @return Job[]
      *
      */
     private function getJobs($maxJobs)
@@ -307,7 +315,7 @@ class Queue
             $this->lockJobs($jobs);
 
             $this->db->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->db->rollBack();
 
             throw $e;
@@ -319,11 +327,9 @@ class Queue
     /**
      * @param int $jobsLimit
      * @param bool $fetchFullReindexJobs
+     * @param int|null $lastJobId
      *
-     * @throws \Zend_Db_Statement_Exception
-     *
-     * @return array
-     *
+     * @return Job[]
      */
     private function fetchJobs($jobsLimit, $fetchFullReindexJobs = false, $lastJobId = null)
     {
@@ -338,28 +344,25 @@ class Queue
         $fetchFullReindexJobs = $fetchFullReindexJobs ? 1 : 0;
 
         while ($actualBatchSize < $maxBatchSize) {
-            $where = 'pid IS NULL AND is_full_reindex = ' . $fetchFullReindexJobs;
+            $jobsCollection = $this->jobCollectionFactory->create();
+            $jobsCollection
+                ->addFieldToFilter('pid', ['null' => true])
+                ->addFieldToFilter('is_full_reindex', $fetchFullReindexJobs)
+                ->setOrder('job_id', Collection::SORT_ORDER_ASC)
+                ->getSelect()
+                    ->limit($limit, $offset)
+                    ->forUpdate();
 
             if ($lastJobId !== null) {
-                $where .= ' AND job_id > ' . $lastJobId;
+                $jobsCollection->addFieldToFilter('job_id', ['gt' => $lastJobId]);
             }
 
-            $select = $this->db->select()
-               ->from($this->table, '*')
-               ->where($where)
-               ->order(['job_id'])
-               ->limit($limit, $offset)
-               ->forUpdate();
+            $rawJobs = $jobsCollection->getItems();
 
-            $data = $this->db->query($select);
-            $rawJobs = $data->fetchAll();
-            $rowsCount = count($rawJobs);
-
-            if ($rowsCount <= 0) {
+            if ($rawJobs === []) {
                 break;
             }
 
-            $rawJobs = $this->prepareJobs($rawJobs);
             $rawJobs = array_merge($jobs, $rawJobs);
             $rawJobs = $this->mergeJobs($rawJobs);
 
@@ -378,7 +381,7 @@ class Queue
             }
 
             foreach ($rawJobs as $job) {
-                $jobSize = (int) $job['data_size'];
+                $jobSize = (int) $job->getDataSize();
 
                 if ($actualBatchSize + $jobSize <= $maxBatchSize || !$jobs) {
                     $jobs[] = $job;
@@ -393,72 +396,30 @@ class Queue
     }
 
     /**
-     * @param array $jobs
+     * @param Job[] $unmergedJobs
      *
-     * @return array
+     * @return Job[]
      */
-    private function prepareJobs(array $jobs)
+    private function mergeJobs(array $unmergedJobs)
     {
-        foreach ($jobs as &$job) {
-            $job['data'] = json_decode($job['data'], true);
-            $job['merged_ids'][] = $job['job_id'];
-        }
-
-        return $jobs;
-    }
-
-    /**
-     * @param array $oldJobs
-     *
-     * @return array
-     */
-    private function mergeJobs(array $oldJobs)
-    {
-        $oldJobs = $this->sortJobs($oldJobs);
+        $unmergedJobs = $this->sortJobs($unmergedJobs);
 
         $jobs = [];
 
-        $currentJob = array_shift($oldJobs);
+        /** @var Job $currentJob */
+        $currentJob = array_shift($unmergedJobs);
         $nextJob = null;
 
         while ($currentJob !== null) {
-            if (count($oldJobs) > 0) {
-                $nextJob = array_shift($oldJobs);
+            if (count($unmergedJobs) > 0) {
+                $nextJob = array_shift($unmergedJobs);
 
-                if ($this->mergeable($currentJob, $nextJob)) {
-                    // Use the job_id of the the very last job to properly mark processed jobs
-                    $currentJob['job_id'] = max((int) $currentJob['job_id'], (int) $nextJob['job_id']);
-
-                    $currentJob['merged_ids'][] = $nextJob['job_id'];
-
-                    if (isset($currentJob['data']['product_ids'])) {
-                        $currentJob['data']['product_ids'] = array_merge(
-                            $currentJob['data']['product_ids'],
-                            $nextJob['data']['product_ids']
-                        );
-
-                        $currentJob['data_size'] = count($currentJob['data']['product_ids']);
-                    } elseif (isset($currentJob['data']['category_ids'])) {
-                        $currentJob['data']['category_ids'] = array_merge(
-                            $currentJob['data']['category_ids'],
-                            $nextJob['data']['category_ids']
-                        );
-
-                        $currentJob['data_size'] = count($currentJob['data']['category_ids']);
-                    }
-
+                if ($currentJob->canMerge($nextJob, $this->maxSingleJobDataSize)) {
+                    $currentJob->merge($nextJob);
                     continue;
                 }
             } else {
                 $nextJob = null;
-            }
-
-            if (isset($currentJob['data']['product_ids'])) {
-                $currentJob['data']['product_ids'] = array_unique($currentJob['data']['product_ids']);
-            }
-
-            if (isset($currentJob['data']['category_ids'])) {
-                $currentJob['data']['category_ids'] = array_unique($currentJob['data']['category_ids']);
             }
 
             $jobs[] = $currentJob;
@@ -471,26 +432,25 @@ class Queue
     /**
      * Sorts the jobs and preserves the order of jobs with static methods defined in $this->staticJobMethods
      *
-     * @param array $oldJobs
+     * @param Job[] $jobs
      *
-     * @return array
+     * @return Job[]
      */
-    private function sortJobs(array $oldJobs)
+    private function sortJobs(array $jobs)
     {
         $sortedJobs = [];
 
         $tempSortableJobs = [];
-        foreach ($oldJobs as $job) {
-            if (in_array($job['method'], $this->staticJobMethods, true)) {
+
+        /** @var Job $job */
+        foreach ($jobs as $job) {
+            $job->prepare();
+
+            if (in_array($job->getMethod(), $this->staticJobMethods, true)) {
                 $sortedJobs = $this->stackSortedJobs($sortedJobs, $tempSortableJobs, $job);
                 $tempSortableJobs = [];
 
                 continue;
-            }
-
-            // This one is needed for proper sorting
-            if (isset($job['data']['store_id'])) {
-                $job['store_id'] = $job['data']['store_id'];
             }
 
             $tempSortableJobs[] = $job;
@@ -502,16 +462,16 @@ class Queue
     }
 
     /**
-     * @param array $sortedJobs
-     * @param array $tempSortableJobs
-     * @param array|null $job
+     * @param Job[] $sortedJobs
+     * @param Job[] $tempSortableJobs
+     * @param Job|null $job
      *
      * @return array
      */
-    private function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, array $job = null)
+    private function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, Job $job = null)
     {
         if ($tempSortableJobs && $tempSortableJobs !== []) {
-            $tempSortableJobs = $this->arrayMultisort(
+            $tempSortableJobs = $this->jobSort(
                 $tempSortableJobs,
                 'class',
                 SORT_ASC,
@@ -534,54 +494,9 @@ class Queue
     }
 
     /**
-     * @param array $j1
-     * @param array $j2
-     *
-     * @return bool
-     */
-    private function mergeable(array $j1, array $j2)
-    {
-        if ($j1['class'] !== $j2['class']) {
-            return false;
-        }
-
-        if ($j1['method'] !== $j2['method']) {
-            return false;
-        }
-
-        if (isset($j1['data']['store_id'])
-            && isset($j2['data']['store_id'])
-            && $j1['data']['store_id'] !== $j2['data']['store_id']) {
-            return false;
-        }
-
-        if ((!isset($j1['data']['product_ids']) || count($j1['data']['product_ids']) <= 0)
-            && (!isset($j1['data']['category_ids']) || count($j1['data']['category_ids']) < 0)) {
-            return false;
-        }
-
-        if ((!isset($j2['data']['product_ids']) || count($j2['data']['product_ids']) <= 0)
-            && (!isset($j2['data']['category_ids']) || count($j2['data']['category_ids']) < 0)) {
-            return false;
-        }
-
-        if (isset($j1['data']['product_ids'])
-            && count($j1['data']['product_ids']) + count($j2['data']['product_ids']) > $this->maxSingleJobDataSize) {
-            return false;
-        }
-
-        if (isset($j1['data']['category_ids'])
-            && count($j1['data']['category_ids']) + count($j2['data']['category_ids']) > $this->maxSingleJobDataSize) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * @return array
      */
-    private function arrayMultisort()
+    private function jobSort()
     {
         $args = func_get_args();
 
@@ -591,8 +506,12 @@ class Queue
             if (is_string($field)) {
                 $tmp = [];
 
+                /**
+                 * @var int $key
+                 * @var Job $row
+                 */
                 foreach ($data as $key => $row) {
-                    $tmp[$key] = $row[$field];
+                    $tmp[$key] = $row->getData($field);
                 }
 
                 $args[$n] = $tmp;
@@ -607,7 +526,7 @@ class Queue
     }
 
     /**
-     * @param array $jobs
+     * @param Job[] $jobs
      */
     private function lockJobs(array $jobs)
     {
@@ -615,20 +534,23 @@ class Queue
 
         if ($jobsIds !== []) {
             $pid = getmypid();
-            $this->db->update($this->table, ['pid' => $pid], ['job_id IN (?)' => $jobsIds]);
+            $this->db->update($this->table, [
+                'locked_at' => date('Y-m-d H:i:s'),
+                'pid' => $pid,
+            ], ['job_id IN (?)' => $jobsIds]);
         }
     }
 
     /**
-     * @param array $mergedJobs
+     * @param Job[] $mergedJobs
      *
-     * @return array
+     * @return string[]
      */
     private function getJobsIdsFromMergedJobs(array $mergedJobs)
     {
         $jobsIds = [];
         foreach ($mergedJobs as $job) {
-            $jobsIds = array_merge($jobsIds, $job['merged_ids']);
+            $jobsIds = array_merge($jobsIds, $job->getMergedIds());
         }
 
         return $jobsIds;
@@ -639,7 +561,6 @@ class Queue
         $retryLimit = $this->configHelper->getRetryLimit();
 
         if ($retryLimit > 0) {
-            $retryLimit = 0;
             $where = $this->db->quoteInto('retries >= ?', $retryLimit);
             $this->archiveFailedJobs($where);
 
@@ -651,7 +572,7 @@ class Queue
     }
 
     /**
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      */
     private function clearOldLogRecords()
     {
@@ -660,11 +581,19 @@ class Queue
            ->order(['started DESC', 'id DESC'])
            ->limit(PHP_INT_MAX, 25000);
 
-        $idsToDelete = $this->db->query($select)->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $idsToDelete = $this->db->query($select)->fetchAll(PDO::FETCH_COLUMN, 0);
 
         if ($idsToDelete) {
             $this->db->delete($this->logTable, ['id IN (?)' => $idsToDelete]);
         }
+    }
+
+    private function unlockStackedJobs()
+    {
+        $this->db->update($this->table, [
+            'locked_at' => null,
+            'pid' => null,
+        ], ['locked_at < (NOW() - INTERVAL ' . self::UNLOCK_STACKED_JOBS_AFTER_MINUTES . ' MINUTE)']);
     }
 
     /**

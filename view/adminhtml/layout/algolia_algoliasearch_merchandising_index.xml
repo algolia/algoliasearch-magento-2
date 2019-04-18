@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Algolia_AlgoliaSearch::css/ui.css"/>
+        <css src="Algolia_AlgoliaSearch::css/merchandising.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="merchandising_page" template="Algolia_AlgoliaSearch::merchandising/page.phtml">
+                <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="upsell" template="ui/upsell-plan.phtml" />
+            </block>
+        </referenceContainer>
+    </body>
+</page>

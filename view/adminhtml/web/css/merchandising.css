@@ -1,0 +1,52 @@
+.algolia-algoliasearch-merchandising-index .main-col {
+    border-top: 2px solid #efefef;
+    padding-top: 50px;
+}
+
+.algoliasearch-merchandising-options {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px auto 50px;
+}
+.algoliasearch-merchandising-options .merchandising-item {
+    width: 33%;
+    max-width: 360px;
+    padding: 10px;
+}
+.merchandising-item .image-container {
+    display: flex;
+    align-items: flex-end;
+    min-height: 175px;
+}
+.merchandising-item img {
+    display: block;
+    margin: 0 auto;
+}
+
+.merchandising-item h3 {
+    margin-top: 1.5em;
+}
+
+.merchandising-item .description {
+    min-height: 90px;
+    margin-bottom: 1.5em;
+}
+
+.merchandising-item .description p {
+    line-height: 1.5;
+    font-size: 1em;
+    margin-bottom: 0;
+
+}
+.merchandising-item a {
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+
+@media only screen and (min-width: 1400px) {
+
+    .algoliasearch-merchandising-options {
+        max-width: 1400px;
+    }
+
+}

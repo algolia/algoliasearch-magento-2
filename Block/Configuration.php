@@ -131,6 +131,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             }
         }
 
+        $attributesToFilter = $config->getAttributesToFilter($customerGroupId);
+
         $algoliaJsConfig = [
             'instant' => [
                 'enabled' => $config->isInstantEnabled(),
@@ -158,8 +160,12 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'indexName' => $coreHelper->getBaseIndexName(),
             'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
                 $config->getSearchOnlyAPIKey(),
-                $config->getAttributesToRetrieve($customerGroupId)
+                array_merge(
+                    $config->getAttributesToRetrieve($customerGroupId),
+                    $attributesToFilter
+                )
             ),
+            'attributeFilter' => $attributesToFilter,
             'facets' => $facets,
             'areCategoriesInFacets' => $areCategoriesInFacets,
             'hitsPerPage' => (int) $config->getNumberOfProductResults(),

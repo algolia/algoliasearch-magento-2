@@ -1281,3 +1281,11 @@ a.ais-current-refined-values--link:hover {
   clear: both;
   content: '';
 }
+
+#algolia-banner {
+  margin: 0 15px;
+}
+
+#algolia-banner img {
+  padding-top: 15px;
+}

@@ -26,7 +26,7 @@ class MerchandisingHelper
         $this->algoliaHelper = $algoliaHelper;
     }
 
-    public function saveQueryRule($storeId, $entityId, $rawPositions, $entityType, $query = null)
+    public function saveQueryRule($storeId, $entityId, $rawPositions, $entityType, $query = null, $banner = null)
     {
         if ($this->coreHelper->isIndexingEnabled($storeId) === false) {
             return;
@@ -51,6 +51,14 @@ class MerchandisingHelper
 
         if (!is_null($query) && $query != '') {
             $rule['condition']['pattern'] = $query;
+        }
+
+        if (! is_null($banner)) {
+            $rule['consequence']['userData']['banner'] = $banner;
+        }
+
+        if ($entityType == 'query') {
+            unset($rule['condition']['context']);
         }
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose

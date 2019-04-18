@@ -449,6 +449,12 @@ class Data
 
         $salesData = $this->getSalesData($storeId, $collection);
 
+        $transport = new ProductDataArray();
+        $this->eventManager->dispatch(
+            'algolia_product_collection_add_additional_data',
+            ['collection' => $collection, 'store_id' => $storeId, 'additional_data' => $transport]
+        );
+
         /** @var Product $product */
         foreach ($collection as $product) {
             $product->setStoreId($storeId);
@@ -476,6 +482,12 @@ class Data
             if (isset($salesData[$productId])) {
                 $product->setData('ordered_qty', $salesData[$productId]['ordered_qty']);
                 $product->setData('total_ordered', $salesData[$productId]['total_ordered']);
+            }
+
+            if ($additionalData = $transport->getItem($productId)) {
+                foreach ($additionalData as $key => $value) {
+                    $product->setData($key, $value);
+                }
             }
 
             $productsToIndex[$productId] = $this->productHelper->getObject($product);

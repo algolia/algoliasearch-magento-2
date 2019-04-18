@@ -29,7 +29,7 @@ class AlgoliaHelper extends AbstractHelper
     private $clientFactory;
 
     /** @var int */
-    private $maxRecordSize = 20000;
+    private $maxRecordSize;
 
     /** @var array */
     private $potentiallyLongAttributes = ['description', 'short_description', 'meta_description', 'content'];
@@ -462,18 +462,28 @@ class AlgoliaHelper extends AbstractHelper
         }
     }
 
+    private function getMaxRecordSize()
+    {
+        if (!$this->maxRecordSize) {
+            $this->maxRecordSize = $this->config->getMaxRecordSizeLimit()
+                ? $this->config->getMaxRecordSizeLimit() : $this->config->getDefaultMaxRecordSize();
+        }
+
+        return $this->maxRecordSize;
+    }
+
     private function handleTooBigRecord($object)
     {
         $size = $this->calculateObjectSize($object);
 
-        if ($size > $this->maxRecordSize) {
+        if ($size > $this->getMaxRecordSize()) {
             foreach ($this->potentiallyLongAttributes as $attribute) {
                 if (isset($object[$attribute])) {
                     unset($object[$attribute]);
 
                     // Recalculate size and check if it fits in Algolia index
                     $size = $this->calculateObjectSize($object);
-                    if ($size < $this->maxRecordSize) {
+                    if ($size < $this->getMaxRecordSize()) {
                         return $object;
                     }
                 }
@@ -492,7 +502,7 @@ class AlgoliaHelper extends AbstractHelper
                     array_pop($object['sku']);
 
                     $size = $this->calculateObjectSize($object);
-                    if ($size < $this->maxRecordSize) {
+                    if ($size < $this->getMaxRecordSize()) {
                         return $object;
                     }
                 }
@@ -500,7 +510,7 @@ class AlgoliaHelper extends AbstractHelper
 
             // Recalculate size, if it still does not fit, let's skip it
             $size = $this->calculateObjectSize($object);
-            if ($size > $this->maxRecordSize) {
+            if ($size > $this->getMaxRecordSize()) {
                 $object = false;
             }
         }

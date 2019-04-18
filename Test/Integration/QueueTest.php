@@ -835,6 +835,6 @@ class QueueTest extends TestCase
         $lastJob = end($dbJobs);
 
         $this->assertEquals(100, (int) $firstJob['data_size']);
-        $this->assertEquals(49, (int) $lastJob['data_size']);
+        $this->assertEquals($this->assertValues->lastJobDataSize, (int) $lastJob['data_size']);
     }
 }

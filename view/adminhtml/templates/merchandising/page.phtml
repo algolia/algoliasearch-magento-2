@@ -1,0 +1,50 @@
+<?php /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate $block */ ?>
+<?php /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising\Page $viewModel */ ?>
+<?php $viewModel = $block->getViewModel() ?>
+<section class="algoliasearch-merchandising-options clearfix">
+    <div class="merchandising-item query-merchandising">
+        <div class="image-container">
+            <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-querymerchandiser.svg'); ?>" alt="<?php echo  __('Query Merchandiser') ?>" title="<?php echo  __('Query Merchandiser') ?>" />
+        </div>
+        <h3><?php echo __('Query Merchandiser') ?></h3>
+        <div class="std description">
+            <p><?php echo __('Easily promote or demote products for a search. Based on Algolia\'s Query rules, the Query merchandiser allows you to enhance the ranking behavior for specific search queries.') ?></p>
+        </div>
+
+        <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
+            <a href="<?php echo $block->getUrl('algolia_algoliasearch/query') ?>" title="<?php echo __('Merchandise search results') ?>"><?php echo __('Merchandise search results') ?></a>
+        <?php else: ?>
+            <?php echo $block->getChildHtml('upsell') ?>
+        <?php endif ?>
+    </div>
+    <div class="merchandising-item category-merchandising">
+        <div class="image-container">
+            <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-categorymerchandiser.svg'); ?>" alt="<?php echo  __('Category Merchandiser') ?>" title="<?php echo  __('Category Merchandiser') ?>" />
+        </div>
+        <h3><?php echo __('Category Merchandiser') ?></h3>
+        <div class="std description">
+            <p><?php echo __('Give more visibility to specific products within a category page. Promote or demote displayed items by using a simple drag and drop mechanism.') ?></p>
+        </div>
+
+        <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
+            <a href="<?php echo $block->getUrl('catalog/category') ?>" title="<?php echo __('Promote products within a category') ?>"><?php echo __('Promote products within a category') ?></a>
+        <?php else: ?>
+            <?php echo $block->getChildHtml('upsell') ?>
+        <?php endif ?>
+    </div>
+    <div class="merchandising-item landing-page-builder">
+        <div class="image-container">
+            <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg'); ?>" alt="<?php echo  __('Landing Page Builder') ?>" title="<?php echo  __('Landing Page Builder') ?>" />
+        </div>
+        <h3><?php echo __('Landing Page Builder') ?></h3>
+        <div class="std description">
+            <p><?php echo __('The Landing Page Builder allows you to easily create customised landing pages out of search queries. It is a powerful marketing tool to promote products, with a strong focus on SEO.') ?></p>
+        </div>
+
+        <?php if ($viewModel->canAccessLandingPageBuilder()): ?>
+            <a href="<?php echo $block->getUrl('algolia_algoliasearch/landingpage') ?>" title="<?php echo __('Create a new landing page') ?>"><?php echo __('Create a new landing page') ?></a>
+        <?php else: ?>
+            <?php echo $block->getChildHtml('upsell') ?>
+        <?php endif ?>
+    </div>
+</section>

@@ -23,6 +23,7 @@ $indexingQueueConfigUrl = $this->getUrl('adminhtml/system_config/edit/section/al
 $indexingQueuePageUrl = $this->getUrl('algolia_algoliasearch/queue/index');
 
 $ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
+$ajaxCheckQuery = $this->getUrl('algolia_algoliasearch/query/checkQuery');
 
 $icons = [
     'iconDocs' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg'),
@@ -42,6 +43,7 @@ var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>
 var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
 var indexingQueueInfoUrl = <?php echo json_encode($indexingQueueInfoUrl); ?>;
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
+var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
 var icons = <?php echo json_encode($icons); ?>;
 var videoConfig = <?php echo json_encode($videoConfig); ?>;
 var linksConfig = <?php echo json_encode($linksConfig); ?>;
@@ -223,7 +225,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs([
 		'jquery',
 		'Magento_Ui/js/lib/validation/validator',
-		'mage/translate'
+		'mage/translate',
+        'prototype'
 	], function ($, validator, mage) {
 		'use strict';
 
@@ -231,30 +234,73 @@ document.addEventListener("DOMContentLoaded", function(event) {
         $(this).parent().hide();
       });
 
-		validator.addRule(
-			'validate-url-unicity',
-			function (value) {
-				var isValid = false;
-				var storeId = $('select[name="store_id"]').val();
-				var landingPageId = $('input[name="landing_page_id"]').val();
-				var url = ajaxCheckUrl;
+      validator.addRule(
+        'validate-query-usage',
+        function (value) {
+          var isValid = true;
+          var storeId = $('select[name="store_id"]').val();
+          var queryId = $('input[name="query_id"]').val();
 
-				new Ajax.Request(
-					url,
-					{
-						parameters: {'store_id': storeId, 'url_key': value, 'landing_page_id': landingPageId},
-						method: 'post',
-						asynchronous: false,
-						onComplete: function (transport) {
-							var response = JSON.parse(transport.responseText);
-							isValid = response.isValid;
-						}
-					}
-				);
-				return isValid;
-			},
-			$.mage.__('This URL key is already in use. Please find another one.')
-		);
+          var url = ajaxCheckQuery;
+
+          // Only check if the focus is not on the search
+          if ($(':focus').attr('name') != 'query_text') {
+              new Ajax.Request(
+                url,
+                {
+                    parameters: {'store_id': storeId, 'query_text': value, 'query_id': queryId},
+                    method: 'post',
+                    asynchronous: false,
+                    onComplete: function (transport) {
+                    var response = JSON.parse(transport.responseText);
+                    isValid = response.isValid;
+                }
+              }
+            );
+          }
+
+          return isValid;
+        },
+        $.mage.__('This query is already connected to another query rule. Please enter a different query or edit the existing one.')
+      );
+
+      validator.addRule(
+        'validate-algolia-index',
+        function (value) {
+
+          if (typeof window.algoliaSearchConfig.indexDataByStoreIds[value]== "undefined") {
+            return false;
+          }
+
+          return true;
+        },
+        $.mage.__('The index corresponding to the store you selected doesn\'t exist.')
+      );
+
+        validator.addRule(
+            'validate-url-unicity',
+            function (value) {
+                var isValid = false;
+                var storeId = $('select[name="store_id"]').val();
+                var landingPageId = $('input[name="landing_page_id"]').val();
+                var url = ajaxCheckUrl;
+
+                new Ajax.Request(
+                    url,
+                    {
+                        parameters: {'store_id': storeId, 'url_key': value, 'landing_page_id': landingPageId},
+                        method: 'post',
+                        asynchronous: false,
+                        onComplete: function (transport) {
+                            var response = JSON.parse(transport.responseText);
+                            isValid = response.isValid;
+                        }
+                    }
+                );
+                return isValid;
+            },
+            $.mage.__('This URL key is already in use. Please find another one.')
+        );
 	});
 });
 </script>

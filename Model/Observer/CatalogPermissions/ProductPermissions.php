@@ -37,10 +37,11 @@ class ProductPermissions implements ObserverInterface
 
         foreach ($collection as $customerGroup) {
             $customerGroupId = $customerGroup->getCustomerGroupId();
+
             $permissions['customer_group_' . $customerGroupId] =
-                !is_null($product->getData('shared_catalog_permission_' . $customerGroupId))
-                ? (int) $product->getData('shared_catalog_permission_' . $customerGroupId)
-                : (int) $product->getData('customer_group_permission_' . $customerGroupId);
+                !is_null($product->getData('customer_group_permission_' . $customerGroupId))
+                    ? (int) $product->getData('customer_group_permission_' . $customerGroupId)
+                    : (int) $product->getData('shared_catalog_permission_' . $customerGroupId);
         }
 
         if (count($permissions)) {

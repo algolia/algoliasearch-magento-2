@@ -248,9 +248,11 @@
                 <item name="label" xsi:type="string" translate="true">CMS editor</item>
             </item>
         </argument>
-        <htmlContent name="html_content">
-            <block class="Magento\Framework\View\Element\Template" name="algolia.cms.notice" template="Algolia_AlgoliaSearch::landingpage/cms-notice.phtml"/>
-        </htmlContent>
+        <container name="algolia_notice_container" >
+            <htmlContent name="html_content">
+                <argument name="block" xsi:type="object">Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\CmsNotice</argument>
+            </htmlContent>
+        </container>
         <field name="content">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">

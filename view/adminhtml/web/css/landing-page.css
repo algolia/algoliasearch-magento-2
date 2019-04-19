@@ -21,6 +21,10 @@
     margin-top: 5px;
 }
 
+.algolia-suggestions-header p{
+    margin-left : 70px;
+}
+
 .algolia-suggestions-header .close-box {
     position : absolute;
     right : 15px;
@@ -185,6 +189,7 @@
 
 .algolia_merchandising_items_table .actions {
     text-align: center;
+    min-width: 190px;
 }
 
 .algolia_merchandising_items_table .actions a {
@@ -304,6 +309,10 @@
     overflow: hidden;
     speak: none;
     text-align: center;
+}
+
+.algolia_merchandising_items_table tbody tr td {
+    cursor : move;
 }
 
 /** SEARCH BOX */
@@ -1220,4 +1229,50 @@ a.ais-current-refined-values--link:hover {
 
 .form-inline .algolia-suggestions-header {
     width : auto;
+}
+
+/* QUERY MERCH */
+.admin__fieldset .admin__field-merch {
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.admin__fieldset .admin__field-merch > .admin__field-label {
+    width: calc( (100%) * 0.25 - 30px );
+    float: left;
+    margin-left: 30px;
+}
+
+.admin__fieldset .admin__field-merch > .admin__field-label label {
+    margin-right: 20px;
+}
+
+.admin__fieldset .admin__field-merch > .admin__field-control {
+    float: left;
+    margin-left: 7px;
+}
+
+.admin__fieldset .admin__field-merch > .admin__field-control #algolia-stats {
+    margin-top : 9px;
+}
+
+.admin__fieldset .admin__field-merch #algolia_hit_per_page {
+    margin-top : 17px;
+}
+
+.form-inline .algolia-banner-help {
+    width : calc(50% - 30px);
+    margin-left : 25%;
+}
+
+.form-inline .algolia-banner-help .book {
+    margin-top : 0px;
+}
+
+.form-inline .algolia-banner-help p {
+    margin-top : 7px;
+}
+
+.algolia-no-lp .algolia-suggestions-header .book {
+    margin: 5px 20px 40px 0;
 }

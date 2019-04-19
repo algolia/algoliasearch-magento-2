@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Ui\Component\Listing\Column;
 
+use Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Renderer\UrlBuilder;
 use Magento\Framework\Escaper;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
@@ -20,11 +21,15 @@ class LandingPageActions extends Column
     /** @var Escaper */
     protected $escaper;
 
+    /** @var UrlBuilder */
+    protected $frontendUrlBuilder;
+
     /**
      * @param ContextInterface $context
      * @param UiComponentFactory $uiComponentFactory
      * @param UrlInterface $urlBuilder
      * @param Escaper $escaper
+     * @param UrlBuilder $frontendUrlBuilder
      * @param array $components
      * @param array $data
      */
@@ -33,11 +38,13 @@ class LandingPageActions extends Column
         UiComponentFactory $uiComponentFactory,
         UrlInterface $urlBuilder,
         Escaper $escaper,
+        UrlBuilder $frontendUrlBuilder,
         array $components = [],
         array $data = []
     ) {
         $this->urlBuilder = $urlBuilder;
         $this->escaper = $escaper;
+        $this->frontendUrlBuilder = $frontendUrlBuilder;
 
         parent::__construct($context, $uiComponentFactory, $components, $data);
     }
@@ -52,7 +59,15 @@ class LandingPageActions extends Column
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
                 $title = $this->escaper->escapeHtml($item['title']);
+                if (isset($item['store_id_num']) && $item['store_id_num'] != 0) {
+                    $this->frontendUrlBuilder->setScope($item['store_id_num']);
+                }
                 $item[$this->getData('name')] = [
+                    'view' => [
+                        'href' => $this->frontendUrlBuilder->getUrl($item['url_key']),
+                        'label' => __('View'),
+                        'target' => '_blank',
+                    ],
                     'edit' => [
                         'href' => $this->urlBuilder->getUrl(
                             static::URL_PATH_EDIT,

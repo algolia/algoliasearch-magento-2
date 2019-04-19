@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">algolia_algoliasearch_query_form.query_form_data_source</item>
+            <item name="deps" xsi:type="string">algolia_algoliasearch_query_form.query_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Main Information</item>
+        <item name="config" xsi:type="array">
+            <item name="dataScope" xsi:type="string">data</item>
+            <item name="namespace" xsi:type="string">algolia_algoliasearch_query_form</item>
+        </item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+        <item name="buttons" xsi:type="array">
+            <item name="save_and_continue" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\Query\Edit\SaveAndContinueButton</item>
+            <item name="save" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\Query\Edit\SaveButton</item>
+            <item name="view" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\Query\Edit\ViewButton</item>
+            <item name="delete" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\Query\Edit\DeleteButton</item>
+            <item name="back" xsi:type="string">Algolia\AlgoliaSearch\Block\Adminhtml\Query\Edit\BackButton</item>
+        </item>
+    </argument>
+    <dataSource name="query_form_data_source">
+        <argument name="dataProvider" xsi:type="configurableObject">
+            <argument name="class" xsi:type="string">Algolia\AlgoliaSearch\DataProvider\Query\QueryDataProvider</argument>
+            <argument name="name" xsi:type="string">query_form_data_source</argument>
+            <argument name="primaryFieldName" xsi:type="string">query_id</argument>
+            <argument name="requestFieldName" xsi:type="string">id</argument>
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="submit_url" xsi:type="url" path="algolia_algoliasearch/query/save"/>
+                </item>
+            </argument>
+        </argument>
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+    </dataSource>
+    <fieldset name="main_information">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string" translate="true">Merchandised products</item>
+            </item>
+        </argument>
+        <field name="query_id">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="source" xsi:type="string">query</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="visible" xsi:type="boolean">false</item>
+                    <item name="dataScope" xsi:type="string">query_id</item>
+                </item>
+            </argument>
+        </field>
+        <field name="query_text">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">query</item>
+                    <item name="label" xsi:type="string" translate="true">Query</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="dataScope" xsi:type="string">query_text</item>
+                    <item name="placeholder" xsi:type="string" translate="true">Search term</item>
+                    <item name="elementTmpl" xsi:type="string">Algolia_AlgoliaSearch/query-text</item>
+                    <item name="notice" xsi:type="string" translate="true">Please ensure that this query has not already been merchandised on your store.</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">Results for this search term will be affected by the merchandising and the banner defined in this page.</item>
+                    </item>
+                    <item name="validation" xsi:type="array">
+                        <item name="validate-query-usage" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="store_id">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Magento\Cms\Ui\Component\Listing\Column\Cms\Options</item>
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">query</item>
+                    <item name="label" xsi:type="string" translate="true">Store view</item>
+                    <item name="default" xsi:type="number">0</item>
+                    <item name="formElement" xsi:type="string">select</item>
+                    <item name="dataType" xsi:type="string">int</item>
+                    <item name="dataScope" xsi:type="string">store_id</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">Select the store where the merchandised query is available. "All Store Views" allows the query to be displayed in all your stores.</item>
+                    </item>
+                    <item name="validation" xsi:type="array">
+                        <item name="validate-algolia-index" xsi:type="boolean">true</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <container name="algolia_merchandising_query" >
+            <htmlContent name="html_content">
+                <argument name="block" xsi:type="object">Algolia\AlgoliaSearch\Block\Adminhtml\Query\Merchandising</argument>
+            </htmlContent>
+        </container>
+        <container name="js_container">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="sortOrder" xsi:type="number">1</item>
+                    <item name="component" xsi:type="string">Algolia_AlgoliaSearch/js/components/query-merchandising</item>
+                </item>
+            </argument>
+        </container>
+    </fieldset>
+    <fieldset name="banner">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="collapsible" xsi:type="boolean">false</item>
+                <item name="label" xsi:type="string" translate="true">Banner</item>
+            </item>
+        </argument>
+        <container name="algolia_notice_container" >
+            <htmlContent name="html_content">
+                <argument name="block" xsi:type="object">Algolia\AlgoliaSearch\Block\Adminhtml\Query\BannerNotice</argument>
+            </htmlContent>
+        </container>
+        <field name="banner_image">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="dataType" xsi:type="string">string</item>
+                    <item name="source" xsi:type="string">banner_image</item>
+                    <item name="label" xsi:type="string" translate="true">Image</item>
+                    <item name="visible" xsi:type="boolean">true</item>
+                    <item name="formElement" xsi:type="string">fileUploader</item>
+                    <item name="elementTmpl" xsi:type="string">ui/form/element/uploader/image</item>
+                    <item name="previewTmpl" xsi:type="string">Algolia_AlgoliaSearch/image-preview</item>
+                    <item name="required" xsi:type="boolean">false</item>
+                    <item name="notice" xsi:type="string" translate="true">This banner will be displayed on top of the search results in the pages powered by Algolia. Please ensure that the dimensions of your banner respect the design of your website.</item>
+                    <item name="uploaderConfig" xsi:type="array">
+                        <item name="url" xsi:type="url" path="algolia_algoliasearch/query/imageupload"/>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="banner_alt">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">query</item>
+                    <item name="label" xsi:type="string" translate="true">Alt text</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="dataScope" xsi:type="string">banner_alt</item>
+                    <item name="placeholder" xsi:type="string" translate="true">Alternative description for the image</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">This is the "alt" attribute that will be applied on the img tag of the banner.</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <field name="banner_url">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">query</item>
+                    <item name="label" xsi:type="string" translate="true">URL</item>
+                    <item name="dataType" xsi:type="string">text</item>
+                    <item name="formElement" xsi:type="string">input</item>
+                    <item name="dataScope" xsi:type="string">banner_url</item>
+                    <item name="placeholder" xsi:type="string" translate="true">https://www.example.com</item>
+                    <item name="tooltip" xsi:type="array">
+                        <item name="description" xsi:type="string">The user will be redirected to this URL in a new tab.</item>
+                    </item>
+                </item>
+            </argument>
+        </field>
+        <!--<field name="banner_content">-->
+            <!--<argument name="data" xsi:type="array">-->
+                <!--<item name="config" xsi:type="array">-->
+                    <!--<item name="source" xsi:type="string">query</item>-->
+                    <!--<item name="label" xsi:type="string" translate="true">Content</item>-->
+                    <!--<item name="dataType" xsi:type="string">text</item>-->
+                    <!--<item name="formElement" xsi:type="string">textarea</item>-->
+                    <!--<item name="template" xsi:type="string">ui/form/field</item>-->
+                    <!--<item name="wysiwyg" xsi:type="boolean">false</item>-->
+                    <!--<item name="dataScope" xsi:type="string">banner_content</item>-->
+                    <!--<item name="placeholder" xsi:type="string" translate="true">Additional text displayed below the banner</item>-->
+                <!--</item>-->
+            <!--</argument>-->
+        <!--</field>-->
+    </fieldset>
+</form>

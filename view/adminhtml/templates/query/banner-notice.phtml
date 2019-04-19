@@ -1,0 +1,15 @@
+<?php
+$bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+?>
+
+<div class="algolia-suggestions-header algolia-banner-help">
+    <div class="close-box">x</div>
+    <img src="<?php echo $bookIllustration ?>" class="book" />
+    <p>Depending on what users search for, you may want to display ads or promotional banners.</p>
+</div>
+
+<script type="text/javascript">
+  jQuery(".close-box").click(function() {
+    jQuery(this).parent().hide();
+  });
+</script>

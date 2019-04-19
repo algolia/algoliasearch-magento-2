@@ -6,18 +6,24 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
+use Exception;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\ObjectManagerInterface;
+use PDO;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Zend_Db_Expr;
+use Zend_Db_Statement_Exception;
 
 class Queue
 {
     const FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33;
+    const UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
 
     const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
     const ERROR_LOG = 'algoliasearch_queue_errors.log';
 
-    /** @var \Magento\Framework\DB\Adapter\AdapterInterface */
+    /** @var AdapterInterface */
     private $db;
 
     /** @var string */
@@ -121,7 +127,7 @@ class Queue
      * Return the average processing time for the 2 last two days
      * (null if there was less than 100 runs with processed jobs)
      *
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      *
      * @return float|null
      */
@@ -142,7 +148,7 @@ class Queue
      * @param int|null $nbJobs
      * @param bool $force
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function runCron($nbJobs = null, $force = false)
     {
@@ -151,6 +157,7 @@ class Queue
         }
 
         $this->clearOldLogRecords();
+        $this->unlockStackedJobs();
 
         $this->logRecord = [
             'started' => date('Y-m-d H:i:s'),
@@ -185,7 +192,7 @@ class Queue
     /**
      * @param int $maxJobs
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function run($maxJobs)
     {
@@ -216,7 +223,7 @@ class Queue
                 $this->db->delete($this->table, ['job_id IN (?)' => $job->getMergedIds()]);
 
                 $this->logRecord['processed_jobs'] += count($job->getMergedIds());
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->noOfFailedJobs++;
 
                 // Log error information
@@ -233,7 +240,7 @@ class Queue
 
                 $this->db->update($this->table, [
                     'pid' => null,
-                    'retries' => new \Zend_Db_Expr('retries + 1'),
+                    'retries' => new Zend_Db_Expr('retries + 1'),
                     'error_log' => $logMessage,
                 ], ['job_id IN (?)' => $job->getMergedIds()]);
 
@@ -272,7 +279,7 @@ class Queue
     /**
      * @param int $maxJobs
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return Job[]
      *
@@ -308,7 +315,7 @@ class Queue
             $this->lockJobs($jobs);
 
             $this->db->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->db->rollBack();
 
             throw $e;
@@ -527,7 +534,10 @@ class Queue
 
         if ($jobsIds !== []) {
             $pid = getmypid();
-            $this->db->update($this->table, ['pid' => $pid], ['job_id IN (?)' => $jobsIds]);
+            $this->db->update($this->table, [
+                'locked_at' => date('Y-m-d H:i:s'),
+                'pid' => $pid,
+            ], ['job_id IN (?)' => $jobsIds]);
         }
     }
 
@@ -562,7 +572,7 @@ class Queue
     }
 
     /**
-     * @throws \Zend_Db_Statement_Exception
+     * @throws Zend_Db_Statement_Exception
      */
     private function clearOldLogRecords()
     {
@@ -571,11 +581,19 @@ class Queue
            ->order(['started DESC', 'id DESC'])
            ->limit(PHP_INT_MAX, 25000);
 
-        $idsToDelete = $this->db->query($select)->fetchAll(\PDO::FETCH_COLUMN, 0);
+        $idsToDelete = $this->db->query($select)->fetchAll(PDO::FETCH_COLUMN, 0);
 
         if ($idsToDelete) {
             $this->db->delete($this->logTable, ['id IN (?)' => $idsToDelete]);
         }
+    }
+
+    private function unlockStackedJobs()
+    {
+        $this->db->update($this->table, [
+            'locked_at' => null,
+            'pid' => null,
+        ], ['locked_at < (NOW() - INTERVAL ' . self::UNLOCK_STACKED_JOBS_AFTER_MINUTES . ' MINUTE)']);
     }
 
     /**

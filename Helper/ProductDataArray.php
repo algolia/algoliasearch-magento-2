@@ -13,7 +13,7 @@ class ProductDataArray extends DataObject
 
     public function setItems(array $items)
     {
-        $this->setData($items);
+        $this->setData('items', $items);
     }
 
     /**

@@ -328,6 +328,7 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         /** @var Job $categoryJob */
@@ -355,6 +356,7 @@ class QueueTest extends TestCase
                     1 => '405',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         /** @var Job $productJob */
@@ -686,6 +688,7 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         $expectedLastJob = [
@@ -709,6 +712,7 @@ class QueueTest extends TestCase
                     1 => '405',
                 ],
             ],
+            'locked_at' => null,
         ];
 
         /** @var Job $firstJob */
@@ -831,6 +835,6 @@ class QueueTest extends TestCase
         $lastJob = end($dbJobs);
 
         $this->assertEquals(100, (int) $firstJob['data_size']);
-        $this->assertEquals(49, (int) $lastJob['data_size']);
+        $this->assertEquals($this->assertValues->lastJobDataSize, (int) $lastJob['data_size']);
     }
 }

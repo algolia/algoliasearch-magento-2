@@ -270,9 +270,9 @@ class ProductHelper
 
     public function setSettings($indexName, $indexNameTmp, $storeId, $saveToTmpIndicesToo = false)
     {
-        $searchableAttributes = $this->getSearchableAttributes();
+        $searchableAttributes = $this->getSearchableAttributes($storeId);
         $customRanking = $this->getCustomRanking($storeId);
-        $unretrievableAttributes = $this->getUnretrieveableAttributes();
+        $unretrievableAttributes = $this->getUnretrieveableAttributes($storeId);
         $attributesForFaceting = $this->getAttributesForFaceting($storeId);
 
         $indexSettings = [
@@ -898,11 +898,11 @@ class ProductHelper
         return $customData;
     }
 
-    private function getSearchableAttributes()
+    private function getSearchableAttributes($storeId = null)
     {
         $searchableAttributes = [];
 
-        foreach ($this->getAdditionalAttributes() as $attribute) {
+        foreach ($this->getAdditionalAttributes($storeId) as $attribute) {
             if ($attribute['searchable'] === '1') {
                 if (!isset($attribute['order']) || $attribute['order'] === 'ordered') {
                     $searchableAttributes[] = $attribute['attribute'];
@@ -934,11 +934,11 @@ class ProductHelper
         return $customRanking;
     }
 
-    private function getUnretrieveableAttributes()
+    private function getUnretrieveableAttributes($storeId = null)
     {
         $unretrievableAttributes = [];
 
-        foreach ($this->getAdditionalAttributes() as $attribute) {
+        foreach ($this->getAdditionalAttributes($storeId) as $attribute) {
             if ($attribute['retrievable'] !== '1') {
                 $unretrievableAttributes[] = $attribute['attribute'];
             }

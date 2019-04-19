@@ -92,6 +92,7 @@ class ConfigHelper
     const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
         'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
     const NON_CASTABLE_ATTRIBUTES = 'algoliasearch_advanced/advanced/non_castable_attributes';
+    const MAX_RECORD_SIZE_LIMIT = 'algoliasearch_advanced/advanced/max_record_size_limit';
 
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
@@ -104,6 +105,8 @@ class ConfigHelper
     const EXTRA_SETTINGS_ADDITIONAL_SECTIONS =
         'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
 
+    const DEFAULT_MAX_RECORD_SIZE = 10000;
+
     private $configInterface;
     private $objectManager;
     private $currency;
@@ -114,6 +117,7 @@ class ConfigHelper
     private $productMetadata;
     private $eventManager;
     private $currencyManager;
+    private $maxRecordSize;
 
     public function __construct(
         Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
@@ -1034,5 +1038,37 @@ class ConfigHelper
         }
 
         return unserialize($value);
+    }
+
+    public function getDefaultMaxRecordSize()
+    {
+        return self::DEFAULT_MAX_RECORD_SIZE;
+    }
+
+    public function getMaxRecordSizeLimit($storeId = null)
+    {
+        if ($this->maxRecordSize) {
+            return $this->maxRecordSize;
+        }
+
+        $configValue = $this->configInterface->getValue(self::MAX_RECORD_SIZE_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
+        if ($configValue) {
+            $this->maxRecordSize = $configValue;
+
+            return $this->maxRecordSize;
+        }
+        /** @var \Algolia\AlgoliaSearch\Helper\ProxyHelper $proxyHelper */
+        $proxyHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\ProxyHelper');
+        $clientData = $proxyHelper->getClientConfigurationData();
+        if ($clientData && isset($clientData['max_record_size'])) {
+            /** @var \Magento\Framework\App\Config\Storage\Writer $configWriter */
+            $configWriter = $this->objectManager->create('Magento\Framework\App\Config\Storage\Writer');
+            $configWriter->save(self::MAX_RECORD_SIZE_LIMIT, $clientData['max_record_size']);
+            $this->maxRecordSize = $clientData['max_record_size'];
+        } else {
+            $this->maxRecordSize = self::getDefaultMaxRecordSize();
+        }
+
+        return $this->maxRecordSize;
     }
 }

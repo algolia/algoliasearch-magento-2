@@ -11,9 +11,8 @@ class CategoryObserver
 {
     private $indexer;
 
-    public function __construct(
-        IndexerRegistry $indexerRegistry
-    ) {
+    public function __construct(IndexerRegistry $indexerRegistry)
+    {
         $this->indexer = $indexerRegistry->get('algolia_categories');
     }
 
@@ -25,7 +24,7 @@ class CategoryObserver
         if (!$this->indexer->isScheduled()) {
             /** @var Magento\Catalog\Model\ResourceModel\Product\Collection $productCollection */
             $productCollection = $category->getProductCollection();
-            CategoryIndexer::$affectedProductIds = $ids = (array) $productCollection->getColumnValues('entity_id');
+            CategoryIndexer::$affectedProductIds = (array) $productCollection->getColumnValues('entity_id');
 
             $this->indexer->reindexRow($category->getId());
         }
@@ -38,7 +37,7 @@ class CategoryObserver
         if (!$this->indexer->isScheduled()) {
             /* we are using products position because getProductCollection() does use correct store */
             $productCollection = $category->getProductsPosition();
-            CategoryIndexer::$affectedProductIds = $ids = array_keys($productCollection);
+            CategoryIndexer::$affectedProductIds = array_keys($productCollection);
 
             $this->indexer->reindexRow($category->getId());
         }

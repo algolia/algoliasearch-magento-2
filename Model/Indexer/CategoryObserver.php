@@ -10,11 +10,9 @@ use Magento\Framework\Indexer\IndexerRegistry;
 class CategoryObserver
 {
     private $indexer;
-    private $logger;
 
     public function __construct(
-        IndexerRegistry $indexerRegistry,
-        Logger $logger
+        IndexerRegistry $indexerRegistry
     ) {
         $this->indexer = $indexerRegistry->get('algolia_categories');
     }

@@ -37,8 +37,8 @@ class IndexerMismatchWarning implements ObserverInterface
     public function execute(Observer $observer)
     {
         if (
-            $this->mviewState->loadByView('algolia_products')->getMode() == $this->mviewState::MODE_DISABLED &&
-            $this->mviewState->loadByView(PriceProcessor::INDEXER_ID)->getMode() == $this->mviewState::MODE_ENABLED
+            $this->mviewState->loadByView('algolia_products')->getMode() == StateInterface::MODE_DISABLED &&
+            $this->mviewState->loadByView(PriceProcessor::INDEXER_ID)->getMode() == StateInterface::MODE_ENABLED
         ) {
             $this->messageManager->addWarningMessage(__('Warning; Algolia Product indexer is set to "Update on Save", but Catalog Product Price indexer is set to "Update on Schedule". This might cause problems with the pricing being synced to Algolia. Please set both to the same setting.'));
         }

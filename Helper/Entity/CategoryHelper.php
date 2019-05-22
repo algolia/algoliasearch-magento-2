@@ -179,7 +179,7 @@ class CategoryHelper
             ->addAttributeToFilter('level', ['gt' => 1])
             ->setStoreId($storeId)
             ->addPathFilter($storeRootCategoryPath)
-            ->addAttributeToSelect(array_merge(['name', 'is_active', 'include_in_menu'], $additionalAttr))
+            ->addAttributeToSelect(array_merge(['name', 'is_active', 'include_in_menu', 'image'], $additionalAttr))
             ->addOrderField('entity_id');
 
         if ($categoryIds) {

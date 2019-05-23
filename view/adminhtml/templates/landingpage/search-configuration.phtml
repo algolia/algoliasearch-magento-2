@@ -16,6 +16,7 @@ $isConfig = [
     'indexDataByStoreIds' => $block->getCoreHelper()->getIndexDataByStoreIds(),
     'routing' => false,
     'facets' => $configHelper->getFacets(),
+    'currencyCode' => $configHelper->getCurrencyCode(),
     'maxValuesPerFacet' => (int) $configHelper->getMaxValuesPerFacet(),
     'landingPageConfig' => json_decode($landingPage->getConfiguration()),
     'searchParameters' => [
@@ -30,7 +31,6 @@ $isConfig = [
 ];
 
 ?>
-
 
 <input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="algolia_algoliasearch_landingpage_form" />
 <input type="hidden" name="algolia_query" value="<?php echo htmlentities($landingPage->getQuery()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
@@ -529,6 +529,24 @@ $isConfig = [
       };
 
       window.getFacetWidget = function (facet, templates) {
+
+        if (facet.type === 'priceRanges') {
+          delete templates.item;
+
+          return ['priceRanges', {
+            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+            attributeName: facet.attribute,
+            labels: {
+              currency: config.currencyCode,
+              separator: 'to',
+              button: 'go'
+            },
+            templates: templates,
+            cssClasses: {
+              root: 'facet conjunctive'
+            }
+          }];
+        }
 
         if (facet.type === 'conjunctive') {
           var refinementListOptions = {

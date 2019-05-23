@@ -503,6 +503,10 @@ input::-ms-clear {
     font-size: inherit;
 }
 
+.ais-price-ranges--list .ais-price-ranges--link {
+    display: block;
+}
+
 .ais-hierarchical-menu--item__active > div > .ais-hierearchical-link-wrapper > .ais-hierarchical-menu--link,
 .ais-refinement-list--item__active > div > .ais-hierarchical-list--link,
 .ais-refinement-list--item__active > div > .ais-refinement-list--label,

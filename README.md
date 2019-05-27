@@ -1,9 +1,9 @@
 Algolia Search for Magento 2
 ==================
 
-![Latest version](https://img.shields.io/badge/latest-1.11.0-green.svg)
+![Latest version](https://img.shields.io/badge/latest-1.11.1-green.svg)
 ![Magento 2](https://img.shields.io/badge/Magento-%3E=2.1-blue.svg)
-![PHP >= 5.6.5](https://img.shields.io/badge/PHP-%3E=5.6.5-green.svg)
+![PHP >= 5.6.5](https://img.shields.io/badge/PHP-%3E=5.6-green.svg)
 [![Build Status](https://travis-ci.org/algolia/algoliasearch-magento-2.svg?branch=master)](https://travis-ci.org/algolia/algoliasearch-magento-2)
 
 -------

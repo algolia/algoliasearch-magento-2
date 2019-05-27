@@ -1,5 +1,11 @@
 # CHANGE LOG
 
+## 1.11.1
+
+- Fixed compatibility with PHP 5.6 (#776, #780) 
+- Category plugin now uses "before" and "after" merhods instead of "around" methods (#775)
+- Fetch "image" attribute for Product object during indexing (#772)
+
 ## 1.11.0
 
 ### FEATURES

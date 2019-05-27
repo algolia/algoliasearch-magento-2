@@ -2,73 +2,89 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\Product\Action;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\Framework\Indexer\IndexerRegistry;
-use Magento\Framework\Model\AbstractModel;
 
 class ProductObserver
 {
+    /** @var Product */
     private $indexer;
 
-    public function __construct(IndexerRegistry $indexerRegistry)
+    /** @var ProductResource */
+    private $productResource;
+
+    public function __construct(IndexerRegistry $indexerRegistry, ProductResource $productResource)
     {
         $this->indexer = $indexerRegistry->get('algolia_products');
+        $this->productResource = $productResource;
     }
 
-    public function aroundSave(
-        \Magento\Catalog\Model\ResourceModel\Product $productResource,
-        \Closure $proceed,
-        AbstractModel $product
-    ) {
-        $productResource->addCommitCallback(function () use ($product) {
+    /**
+     * @param ProductResource $subject
+     * @param ProductResource $result
+     * @param ProductModel $product
+     *
+     * @return ProductResource
+     */
+    public function afterSave(ProductResource $subject, ProductResource $result, ProductModel $product) {
+        $this->productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
                 $this->indexer->reindexRow($product->getId());
             }
         });
-
-        return $proceed($product);
-    }
-
-    public function aroundDelete(
-        \Magento\Catalog\Model\ResourceModel\Product $productResource,
-        \Closure $proceed,
-        AbstractModel $product
-    ) {
-        $productResource->addCommitCallback(function () use ($product) {
-            if (!$this->indexer->isScheduled()) {
-                $this->indexer->reindexRow($product->getId());
-            }
-        });
-
-        return $proceed($product);
-    }
-
-    public function aroundUpdateAttributes(
-        Action $subject,
-        \Closure $closure,
-        array $productIds,
-        array $attrData,
-        $storeId
-    ) {
-        $result = $closure($productIds, $attrData, $storeId);
-        if (!$this->indexer->isScheduled()) {
-            $this->indexer->reindexList(array_unique($productIds));
-        }
 
         return $result;
     }
 
-    public function aroundUpdateWebsites(
-        Action $subject,
-        \Closure $closure,
-        array $productIds,
-        array $websiteIds,
-        $type
-    ) {
-        $result = $closure($productIds, $websiteIds, $type);
-        if (!$this->indexer->isScheduled()) {
-            $this->indexer->reindexList(array_unique($productIds));
-        }
+    /**
+     * @param ProductResource $subject
+     * @param ProductResource $result
+     * @param ProductModel $product
+     *
+     * @return ProductResource
+     */
+    public function afterDelete(ProductResource $subject, ProductResource $result, ProductModel $product) {
+        $this->productResource->addCommitCallback(function () use ($product) {
+            if (!$this->indexer->isScheduled()) {
+                $this->indexer->reindexRow($product->getId());
+            }
+        });
+
+        return $result;
+    }
+
+    /**
+     * @param Action $subject
+     * @param Action $result
+     * @param array $productIds
+     *
+     * @return Action
+     */
+    public function afterUpdateAttributes(Action $subject, Action $result, $productIds) {
+        $this->productResource->addCommitCallback(function () use ($productIds) {
+            if (!$this->indexer->isScheduled()) {
+                $this->indexer->reindexList(array_unique($productIds));
+            }
+        });
+
+        return $result;
+    }
+
+    /**
+     * @param Action $subject
+     * @param Action $result
+     * @param array $productIds
+     *
+     * @return mixed
+     */
+    public function afterUpdateWebsites(Action $subject, Action $result, array $productIds) {
+        $this->productResource->addCommitCallback(function () use ($productIds) {
+            if (!$this->indexer->isScheduled()) {
+                $this->indexer->reindexList(array_unique($productIds));
+            }
+        });
 
         return $result;
     }

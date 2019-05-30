@@ -62,7 +62,7 @@ class QueueTest extends TestCase
                 continue;
             }
 
-            $this->assertEquals('moveIndex', $row['method']);
+            $this->assertEquals('moveIndexWithSetSettings', $row['method']);
             $this->assertEquals(1, $row['data_size']);
         }
     }
@@ -452,8 +452,8 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 9,
                 'pid' => null,
-                'class' => 'Algolia\AlgoliaSearch\Helper\Data',
-                'method' => 'moveIndex',
+                'class' => 'Algolia\AlgoliaSearch\Model\IndexMover',
+                'method' => 'moveIndexWithSetSettings',
                 'data' => '{"store_id":"3","category_ids":["40"]}',
                 'max_retries' => 3,
                 'retries' => 0,
@@ -472,8 +472,8 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 11,
                 'pid' => null,
-                'class' => 'Algolia\AlgoliaSearch\Helper\Data',
-                'method' => 'moveIndex',
+                'class' => 'Algolia\AlgoliaSearch\Model\IndexMover',
+                'method' => 'moveIndexWithSetSettings',
                 'data' => '{"store_id":"2","product_ids":["405"]}',
                 'max_retries' => 3,
                 'retries' => 0,
@@ -511,9 +511,9 @@ class QueueTest extends TestCase
         $this->assertEquals('rebuildStoreProductIndex', $jobs[5]->getMethod());
         $this->assertEquals('saveConfigurationToAlgolia', $jobs[6]->getMethod());
         $this->assertEquals('rebuildStoreCategoryIndex', $jobs[7]->getMethod());
-        $this->assertEquals('moveIndex', $jobs[8]->getMethod());
+        $this->assertEquals('moveIndexWithSetSettings', $jobs[8]->getMethod());
         $this->assertEquals('rebuildStoreProductIndex', $jobs[9]->getMethod());
-        $this->assertEquals('moveIndex', $jobs[10]->getMethod());
+        $this->assertEquals('moveIndexWithSetSettings', $jobs[10]->getMethod());
         $this->assertEquals('rebuildStoreProductIndex', $jobs[11]->getMethod());
     }
 

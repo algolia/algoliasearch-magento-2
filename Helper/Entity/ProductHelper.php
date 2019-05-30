@@ -303,7 +303,7 @@ class ProductHelper
         $this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
         $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo === true) {
-            $this->algoliaHelper->setSettings($indexNameTmp, $indexSettings, false, true);
+            $this->algoliaHelper->setSettings($indexNameTmp, $indexSettings, false, true, $indexName);
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 

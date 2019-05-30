@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Magento;
@@ -119,10 +120,10 @@ class Product implements Magento\Framework\Indexer\ActionInterface, Magento\Fram
             if ($useTmpIndex) {
                 $suffix = $this->productHelper->getIndexNameSuffix();
 
-                /** @uses Data::moveIndex() */
-                $this->queue->addToQueue(Data::class, 'moveIndex', [
+                /** @uses IndexMover::moveIndexWithSetSettings() */
+                $this->queue->addToQueue(IndexMover::class, 'moveIndexWithSetSettings', [
                     'tmpIndexName' => $this->fullAction->getIndexName($suffix, $storeId, true),
-                    'indexName' => $this->fullAction->getIndexName($suffix, $storeId, false),
+                    'indexName' => $this->fullAction->getIndexName($suffix, $storeId),
                     'store_id' => $storeId,
                 ], 1, true);
             }

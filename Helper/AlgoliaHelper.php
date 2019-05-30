@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 use AlgoliaSearch\AlgoliaException;
 use AlgoliaSearch\Client;
 use AlgoliaSearch\ClientFactory;
+use AlgoliaSearch\Index;
 use AlgoliaSearch\Version;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -413,6 +414,9 @@ class AlgoliaHelper extends AbstractHelper
     {
         if ($lastUsedIndexName === null && isset(self::$lastUsedIndexName)) {
             $lastUsedIndexName = self::$lastUsedIndexName;
+            if ($lastUsedIndexName instanceof Index) {
+                $lastUsedIndexName = $lastUsedIndexName->indexName;
+            }
         }
 
         if ($lastTaskId === null && isset(self::$lastTaskId)) {

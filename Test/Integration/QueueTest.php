@@ -32,6 +32,11 @@ class QueueTest extends TestCase
 
     public function testFill()
     {
+        $this->resetConfigs([
+            'algoliasearch_queue/queue/number_of_job_to_run',
+            'algoliasearch_advanced/advanced/number_of_element_by_page',
+        ]);
+
         $this->setConfig('algoliasearch_queue/queue/active', '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
@@ -120,6 +125,8 @@ class QueueTest extends TestCase
     public function testSettings()
     {
         $this->resetConfigs([
+            'algoliasearch_queue/queue/number_of_job_to_run',
+            'algoliasearch_advanced/advanced/number_of_element_by_page',
             'algoliasearch_instant/instant/facets',
             'algoliasearch_products/products/product_additional_attributes',
         ]);
@@ -170,10 +177,12 @@ class QueueTest extends TestCase
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertCount(3, $rows);
 
-        $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->setSettings(['disableTypoToleranceOnAttributes' => ['sku']]);
-        $this->algoliaHelper->waitLastTask();
+        $productionIndexName = $this->indexPrefix . 'default_products';
 
-        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $res = $this->algoliaHelper->getIndex($productionIndexName)->setSettings(['disableTypoToleranceOnAttributes' => ['sku']]);
+        $this->algoliaHelper->waitLastTask($productionIndexName, $res['taskID']);
+
+        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         /** @var QueueRunner $queueRunner */
@@ -188,7 +197,7 @@ class QueueTest extends TestCase
         $queueRunner->executeFull();
         $queueRunner->executeFull();
 
-        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
     }
 
@@ -854,6 +863,11 @@ class QueueTest extends TestCase
 
     public function testMaxSingleJobsSizeOnProductReindex()
     {
+        $this->resetConfigs([
+            'algoliasearch_queue/queue/number_of_job_to_run',
+            'algoliasearch_advanced/advanced/number_of_element_by_page',
+        ]);
+
         $this->setConfig('algoliasearch_queue/queue/active', '1');
 
         $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);

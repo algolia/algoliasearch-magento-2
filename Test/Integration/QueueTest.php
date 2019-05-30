@@ -155,6 +155,43 @@ class QueueTest extends TestCase
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
 
+    public function testMergeSettings()
+    {
+        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 1);
+        $this->setConfig('algoliasearch_advanced/advanced/number_of_element_by_page', 300);
+
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+
+        /** @var Product $productIndexer */
+        $productIndexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $productIndexer->executeFull();
+
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertCount(3, $rows);
+
+        $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->setSettings(['disableTypoToleranceOnAttributes' => ['sku']]);
+        $this->algoliaHelper->waitLastTask();
+
+        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
+
+        /** @var QueueRunner $queueRunner */
+        $queueRunner = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\QueueRunner');
+        $queueRunner->executeFull();
+
+        $this->algoliaHelper->waitLastTask();
+
+        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products_tmp')->getSettings();
+        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
+
+        $queueRunner->executeFull();
+        $queueRunner->executeFull();
+
+        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
+    }
+
     public function testMerging()
     {
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');

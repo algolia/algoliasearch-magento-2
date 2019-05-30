@@ -61,7 +61,7 @@ class Queue
     /** @var array */
     private $staticJobMethods = [
         'saveConfigurationToAlgolia',
-        'moveIndex',
+        'moveIndexWithSetSettings',
         'deleteObjects',
     ];
 

@@ -103,7 +103,7 @@ class Algolia implements AdapterInterface
         $response = [
             'documents' => $documents,
             'aggregations' => $aggregations,
-       	    'total' => 0
+            'total' => 0
 	];
 
         return $this->responseFactory->create($response);
@@ -121,7 +121,7 @@ class Algolia implements AdapterInterface
         $response = [
             'documents' => $documents,
             'aggregations' => $aggregations,
-	    'total' => 0
+            'total' => 0
         ];
 
         return $this->responseFactory->create($response);

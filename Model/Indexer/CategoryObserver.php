@@ -28,6 +28,8 @@ class CategoryObserver
 
             $this->indexer->reindexRow($category->getId());
         }
+
+        return $result;
     }
 
     public function beforeDelete(
@@ -35,7 +37,7 @@ class CategoryObserver
         CategoryModel $category
     ) {
         if (!$this->indexer->isScheduled()) {
-            /* we are using products position because getProductCollection() does use correct store */
+            /* we are using products position because getProductCollection() doesn't use correct store */
             $productCollection = $category->getProductsPosition();
             CategoryIndexer::$affectedProductIds = array_keys($productCollection);
 

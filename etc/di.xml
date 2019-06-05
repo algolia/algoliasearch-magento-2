@@ -13,9 +13,6 @@
     <type name="Magento\Catalog\Model\ResourceModel\Category">
         <plugin name="algoliaCategories" type="Algolia\AlgoliaSearch\Model\Indexer\CategoryObserver"/>
     </type>
-    <type name="Magento\Catalog\Model\Category\Action">
-        <plugin name="algoliaCategoriesMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\CategoryObserver"/>
-    </type>
 
     <type name="Magento\Search\Helper\Data">
         <plugin name="algoliaSearchHelperData" type="Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin"/>

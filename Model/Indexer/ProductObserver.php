@@ -12,13 +12,9 @@ class ProductObserver
     /** @var Product */
     private $indexer;
 
-    /** @var ProductResource */
-    private $productResource;
-
-    public function __construct(IndexerRegistry $indexerRegistry, ProductResource $productResource)
+    public function __construct(IndexerRegistry $indexerRegistry)
     {
         $this->indexer = $indexerRegistry->get('algolia_products');
-        $this->productResource = $productResource;
     }
 
     /**
@@ -28,8 +24,9 @@ class ProductObserver
      *
      * @return ProductResource
      */
-    public function afterSave(ProductResource $subject, ProductResource $result, ProductModel $product) {
-        $this->productResource->addCommitCallback(function () use ($product) {
+    public function afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product)
+    {
+        $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
                 $this->indexer->reindexRow($product->getId());
             }
@@ -45,8 +42,9 @@ class ProductObserver
      *
      * @return ProductResource
      */
-    public function afterDelete(ProductResource $subject, ProductResource $result, ProductModel $product) {
-        $this->productResource->addCommitCallback(function () use ($product) {
+    public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product)
+    {
+        $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
                 $this->indexer->reindexRow($product->getId());
             }
@@ -57,34 +55,32 @@ class ProductObserver
 
     /**
      * @param Action $subject
-     * @param Action $result
+     * @param Action|null $result
      * @param array $productIds
      *
      * @return Action
      */
-    public function afterUpdateAttributes(Action $subject, Action $result, $productIds) {
-        $this->productResource->addCommitCallback(function () use ($productIds) {
-            if (!$this->indexer->isScheduled()) {
-                $this->indexer->reindexList(array_unique($productIds));
-            }
-        });
+    public function afterUpdateAttributes(Action $action, $result = null, $productIds)
+    {
+        if (!$this->indexer->isScheduled()) {
+            $this->indexer->reindexList(array_unique($productIds));
+        }
 
         return $result;
     }
 
     /**
      * @param Action $subject
-     * @param Action $result
+     * @param null $result
      * @param array $productIds
      *
      * @return mixed
      */
-    public function afterUpdateWebsites(Action $subject, Action $result, array $productIds) {
-        $this->productResource->addCommitCallback(function () use ($productIds) {
-            if (!$this->indexer->isScheduled()) {
-                $this->indexer->reindexList(array_unique($productIds));
-            }
-        });
+    public function afterUpdateWebsites(Action $action, $result = null, array $productIds)
+    {
+        if (!$this->indexer->isScheduled()) {
+            $this->indexer->reindexList(array_unique($productIds));
+        }
 
         return $result;
     }

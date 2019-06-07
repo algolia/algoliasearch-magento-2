@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\Product\Action;
 use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
@@ -12,13 +13,17 @@ class ProductObserver
     /** @var Product */
     private $indexer;
 
-    public function __construct(IndexerRegistry $indexerRegistry)
+    /** @var ConfigHelper */
+    private $configHelper;
+
+    public function __construct(IndexerRegistry $indexerRegistry, ConfigHelper $configHelper)
     {
         $this->indexer = $indexerRegistry->get('algolia_products');
+        $this->configHelper = $configHelper;
     }
 
     /**
-     * @param ProductResource $subject
+     * @param ProductResource $productResource
      * @param ProductResource $result
      * @param ProductModel $product
      *
@@ -27,7 +32,7 @@ class ProductObserver
     public function afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
-            if (!$this->indexer->isScheduled()) {
+            if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
                 $this->indexer->reindexRow($product->getId());
             }
         });
@@ -36,7 +41,7 @@ class ProductObserver
     }
 
     /**
-     * @param ProductResource $subject
+     * @param ProductResource $productResource
      * @param ProductResource $result
      * @param ProductModel $product
      *
@@ -45,7 +50,7 @@ class ProductObserver
     public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
-            if (!$this->indexer->isScheduled()) {
+            if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
                 $this->indexer->reindexRow($product->getId());
             }
         });
@@ -54,7 +59,7 @@ class ProductObserver
     }
 
     /**
-     * @param Action $subject
+     * @param Action $action
      * @param Action|null $result
      * @param array $productIds
      *
@@ -62,7 +67,7 @@ class ProductObserver
      */
     public function afterUpdateAttributes(Action $action, $result = null, $productIds)
     {
-        if (!$this->indexer->isScheduled()) {
+        if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
             $this->indexer->reindexList(array_unique($productIds));
         }
 
@@ -70,7 +75,7 @@ class ProductObserver
     }
 
     /**
-     * @param Action $subject
+     * @param Action $action
      * @param null $result
      * @param array $productIds
      *
@@ -78,7 +83,7 @@ class ProductObserver
      */
     public function afterUpdateWebsites(Action $action, $result = null, array $productIds)
     {
-        if (!$this->indexer->isScheduled()) {
+        if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
             $this->indexer->reindexList(array_unique($productIds));
         }
 

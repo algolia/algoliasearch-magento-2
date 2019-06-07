@@ -16,6 +16,10 @@ class ProductObserver
     /** @var ConfigHelper */
     private $configHelper;
 
+    /**
+     * @param IndexerRegistry $indexerRegistry
+     * @param ConfigHelper $configHelper
+     */
     public function __construct(IndexerRegistry $indexerRegistry, ConfigHelper $configHelper)
     {
         $this->indexer = $indexerRegistry->get('algolia_products');
@@ -23,13 +27,16 @@ class ProductObserver
     }
 
     /**
+     * Using "before" method here instead of "after", because M2.1 doesn't pass "$product" argument
+     * to "after" methods. When M2.1 support will be removed, this method can be rewriten to:
+     * afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product)
+     *
      * @param ProductResource $productResource
-     * @param ProductResource $result
      * @param ProductModel $product
      *
-     * @return ProductResource
+     * @return ProductModel[]
      */
-    public function afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product)
+    public function beforeSave(ProductResource $productResource, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
@@ -37,17 +44,20 @@ class ProductObserver
             }
         });
 
-        return $result;
+        return [$product];
     }
 
     /**
+     * Using "before" method here instead of "after", because M2.1 doesn't pass "$product" argument
+     * to "after" methods. When M2.1 support will be removed, this method can be rewriten to:
+     * public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product)
+     *
      * @param ProductResource $productResource
-     * @param ProductResource $result
      * @param ProductModel $product
      *
-     * @return ProductResource
+     * @return ProductModel[]
      */
-    public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product)
+    public function beforeDelete(ProductResource $productResource, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
@@ -55,17 +65,17 @@ class ProductObserver
             }
         });
 
-        return $result;
+        return [$product];
     }
 
     /**
-     * @param Action $action
+     * @param Action $subject
      * @param Action|null $result
      * @param array $productIds
      *
      * @return Action
      */
-    public function afterUpdateAttributes(Action $action, $result = null, $productIds)
+    public function afterUpdateAttributes(Action $subject, Action $result = null, $productIds)
     {
         if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
             $this->indexer->reindexList(array_unique($productIds));
@@ -75,13 +85,13 @@ class ProductObserver
     }
 
     /**
-     * @param Action $action
-     * @param null $result
+     * @param Action $subject
+     * @param Action|null $result
      * @param array $productIds
      *
      * @return mixed
      */
-    public function afterUpdateWebsites(Action $action, $result = null, array $productIds)
+    public function afterUpdateWebsites(Action $subject, Action $result = null, array $productIds)
     {
         if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
             $this->indexer->reindexList(array_unique($productIds));

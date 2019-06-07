@@ -6,7 +6,7 @@ class JobMethods implements \Magento\Framework\Data\OptionSourceInterface
 {
     private $methods = [
         'saveConfigurationToAlgolia' => 'Save Configuration',
-        'moveIndex' => 'Move Index',
+        'moveIndexWithSetSettings' => 'Move Index',
         'deleteObjects' => 'Object deletion',
         'rebuildStoreCategoryIndex' => 'Category Reindex',
         'rebuildStoreProductIndex' => 'Product Reindex',

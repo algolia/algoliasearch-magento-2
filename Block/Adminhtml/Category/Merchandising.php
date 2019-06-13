@@ -116,4 +116,24 @@ class Merchandising extends \Magento\Backend\Block\Template
 
         return $this->storeManager->getDefaultStoreView();
     }
+
+    /**
+     * @return string
+     */
+    public function getPageModeOnly()
+    {
+        return Category::DM_PAGE;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canDisplayProducts()
+    {
+        if ($this->getCategory()->getDisplayMode() == $this->getPageModeOnly()) {
+            return false;
+        }
+
+        return true;
+    }
 }

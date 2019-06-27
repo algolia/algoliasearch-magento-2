@@ -113,7 +113,6 @@ class Data
         $params = [
             'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
             'attributesToRetrieve'   => 'objectID',
-            'attributesToHighlight'  => '',
             'attributesToSnippet'    => '',
             'numericFilters'         => 'visibility_search=1',
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),

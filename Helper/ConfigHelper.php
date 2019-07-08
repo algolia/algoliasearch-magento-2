@@ -1071,4 +1071,17 @@ class ConfigHelper
 
         return $this->maxRecordSize;
     }
+
+    public function getWebsitesHosts()
+    {
+        $urls = [];
+        foreach ($this->storeManager->getStores() as $store) {
+            if ($store->getData('is_active')) {
+                $url = parse_url($store->getBaseUrl());
+                $urls[] = $url['host'];
+            }
+        }
+
+        return array_unique($urls);
+    }
 }

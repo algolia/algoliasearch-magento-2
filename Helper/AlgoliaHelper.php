@@ -83,6 +83,7 @@ class AlgoliaHelper extends AbstractHelper
             $this->client = $this->clientFactory->create([
                 'applicationID' => $this->config->getApplicationID(),
                 'apiKey' => $this->config->getAPIKey(),
+                'hostsArray' => $this->config->getWebsitesHosts()
             ]);
         }
     }

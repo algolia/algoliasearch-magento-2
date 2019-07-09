@@ -21,7 +21,7 @@ use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
-use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -35,7 +35,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class ProductHelper
 {
-    public $productCollection;
+    public $productCollectionFactory;
     public $groupCollection;
     private $eavConfig;
     private $configHelper;
@@ -104,7 +104,7 @@ class ProductHelper
      * @param CategoryHelper $categoryHelper
      * @param PriceManager $priceManager
      * @param Type $productType
-     * @param Collection $productCollection
+     * @param CollectionFactory $productCollectionFactory
      * @param GroupCollection $groupCollection
      * @param ImageHelper $imageHelper
      */
@@ -122,7 +122,7 @@ class ProductHelper
         CategoryHelper $categoryHelper,
         PriceManager $priceManager,
         Type $productType,
-        Collection $productCollection,
+        CollectionFactory $productCollectionFactory,
         GroupCollection $groupCollection,
         ImageHelper $imageHelper
     ) {
@@ -139,7 +139,7 @@ class ProductHelper
         $this->categoryHelper = $categoryHelper;
         $this->priceManager = $priceManager;
         $this->productType = $productType;
-        $this->productCollection = $productCollection;
+        $this->productCollectionFactory = $productCollectionFactory;
         $this->groupCollection = $groupCollection;
         $this->imageHelper = $imageHelper;
     }
@@ -218,7 +218,8 @@ class ProductHelper
         $onlyVisible = true,
         $includeNotVisibleIndividually = false
     ) {
-        $products = $this->productCollection
+        $productCollection = $this->productCollectionFactory->create();
+        $products = $productCollection    
             ->setStoreId($storeId)
             ->addStoreFilter($storeId)
             ->distinct(true);

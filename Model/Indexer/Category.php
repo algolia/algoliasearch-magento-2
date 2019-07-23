@@ -101,18 +101,23 @@ class Category implements Magento\Framework\Indexer\ActionInterface, Magento\Fra
      */
     private function rebuildAffectedProducts($storeId)
     {
-        $affectedProductsCount = count(self::$affectedProductIds);
+        $affectedProducts = self::$affectedProductIds;
+        $affectedProductsCount = count($affectedProducts);
+
         if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
-            /** @uses Data::rebuildStoreProductIndex() */
-            $this->queue->addToQueue(
-                Data::class,
-                'rebuildStoreProductIndex',
-                [
-                    'store_id' => $storeId,
-                    'product_ids' => self::$affectedProductIds,
-                ],
-                $affectedProductsCount
-            );
+            $productsPerPage = $this->configHelper->getNumberOfElementByPage();
+            foreach (array_chunk($affectedProducts, $productsPerPage) as $chunk) {
+                /** @uses Data::rebuildStoreProductIndex() */
+                $this->queue->addToQueue(
+                    Data::class,
+                    'rebuildStoreProductIndex',
+                    [
+                        'store_id' => $storeId,
+                        'product_ids' => $chunk,
+                    ],
+                    count($chunk)
+                );
+            }
         }
     }
 

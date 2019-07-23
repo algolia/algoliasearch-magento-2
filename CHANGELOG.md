@@ -1,5 +1,11 @@
 # CHANGE LOG
 
+## 1.11.3
+
+### UPDATES
+- Add compatibility with Magento 2.3.2 Search Adapter (#806)
+- Batch size proccess of affected products after category update (#811) 
+
 ## 1.11.2
 
 ### UPDATES

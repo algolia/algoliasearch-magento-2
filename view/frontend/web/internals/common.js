@@ -450,7 +450,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				if (algoliaConfig.instant.enabled && query === '')
 					query = '__empty__';
 
-				window.location = $(this).attr('action') + '?q=' + query;
+				window.location = $(this).attr('action') + '?q=' + encodeURIComponent(query);
 
 				return false;
 			});

@@ -86,15 +86,28 @@ class Data
         $this->algoliaHelper->deleteObjects($ids, $indexName);
     }
 
+    /**
+     * @param string $query
+     * @param int $storeId
+     * @param array|null $searchParams
+     * @param string|null $targetedIndex
+     *
+     * @return array
+     */
     public function getSearchResult($query, $storeId, $searchParams = null, $targetedIndex = null)
     {
-        $indexName = !is_null($targetedIndex) ?
+        $indexName = $targetedIndex !== null ?
             $targetedIndex :
             $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
 
         $numberOfResults = 1000;
         if ($this->configHelper->isInstantEnabled()) {
             $numberOfResults = min($this->configHelper->getNumberOfProductResults($storeId), 1000);
+        }
+
+        $facetsToRetrieve = [];
+        foreach ($this->configHelper->getFacets($storeId) as $facet) {
+            $facetsToRetrieve[] = $facet['attribute'];
         }
 
         $params = [
@@ -105,6 +118,8 @@ class Data
             'numericFilters'         => 'visibility_search=1',
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
             'analyticsTags'          => 'backend-search',
+            'facets'                 => $facetsToRetrieve,
+            'maxValuesPerFacet'      => 100,
         ];
 
         if (is_array($searchParams)) {
@@ -126,7 +141,7 @@ class Data
             }
         }
 
-        return $data;
+        return [$data, $answer['nbHits'], $answer['facets']];
     }
 
     public function rebuildStoreAdditionalSectionsIndex($storeId)
@@ -335,8 +350,12 @@ class Data
             return;
         }
 
+        $this->startEmulation($storeId);
+
         $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId, null);
         $this->rebuildStoreCategoryIndexPage($storeId, $collection, $page, $pageSize);
+
+        $this->stopEmulation();
     }
 
     public function rebuildStoreSuggestionIndexPage($storeId, $collectionDefault, $page, $pageSize)

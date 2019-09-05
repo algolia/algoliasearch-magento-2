@@ -3,6 +3,12 @@
     <module name="Algolia_AlgoliaSearch" setup_version="1.11.2">
         <sequence>
             <module name="Magento_Theme"/>
+            <module name="Magento_Search" />
+            <module name="Magento_CatalogSearch" />
+            <module name="Magento_LayeredNavigation" />
+            <module name="Magento_CatalogInventory" />
+            <module name="Magento_LayeredNavigationStaging" />
+            <module name="Magento_Swatches" />
         </sequence>
     </module>
 </config>

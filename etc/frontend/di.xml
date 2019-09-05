@@ -16,4 +16,71 @@
             </argument>
         </arguments>
     </type>
+
+    <!-- Backend rendering / START -->
+    <virtualType name="Algolia\AlgoliaSearch\Model\Layer\Filter\Item\AttributeFactory" type="Magento\Catalog\Model\Layer\Filter\ItemFactory">
+        <arguments>
+            <argument name="instanceName" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Item\Attribute</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Algolia\AlgoliaSearch\Model\Layer\Filter\Attribute">
+        <arguments>
+            <argument name="filterItemFactory" xsi:type="object">Algolia\AlgoliaSearch\Model\Layer\Filter\Item\AttributeFactory</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="categoryFilterList" type="Magento\Catalog\Model\Layer\FilterList">
+        <arguments>
+            <argument name="filterableAttributes" xsi:type="object">Algolia\AlgoliaSearch\Model\Layer\Category\FilterableAttributeList</argument>
+            <argument name="filters" xsi:type="array">
+                <item name="attribute" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Attribute</item>
+                <item name="price" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Price</item>
+                <item name="decimal" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Decimal</item>
+                <item name="category" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Category</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="searchFilterList" type="Magento\Catalog\Model\Layer\FilterList">
+        <arguments>
+            <argument name="filterableAttributes" xsi:type="object">Algolia\AlgoliaSearch\Model\Layer\Search\FilterableAttributeList</argument>
+            <argument name="filters" xsi:type="array">
+                <item name="attribute" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Attribute</item>
+                <item name="price" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Price</item>
+                <item name="decimal" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Decimal</item>
+                <item name="category" xsi:type="string">Algolia\AlgoliaSearch\Model\Layer\Filter\Category</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Algolia\AlgoliaSearch\Block\Navigation\Category" type="Algolia\AlgoliaSearch\Block\Navigation">
+        <arguments>
+            <argument name="filterList" xsi:type="object">categoryFilterList</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Algolia\AlgoliaSearch\Block\Navigation\Search" type="Algolia\AlgoliaSearch\Block\Navigation">
+        <arguments>
+            <argument name="filterList" xsi:type="object">searchFilterList</argument>
+        </arguments>
+    </virtualType>
+
+    <preference for="Magento\LayeredNavigation\Block\Navigation\Category" type="Algolia\AlgoliaSearch\Block\Navigation\Category" />
+    <preference for="Magento\LayeredNavigation\Block\Navigation\Search" type="Algolia\AlgoliaSearch\Block\Navigation\Search" />
+
+    <type name="Magento\LayeredNavigation\Block\Navigation\FilterRenderer">
+        <plugin name="algolia_layered_renderer" type="Algolia\AlgoliaSearch\Plugin\BackendFilterRendererPlugin" sortOrder="0" />
+    </type>
+
+    <type name="Magento\Catalog\Block\Product\ProductList\Toolbar">
+        <plugin name="algolia_toolbar" type="Algolia\AlgoliaSearch\Plugin\ToolbarPlugin" />
+    </type>
+
+    <type name="Magento\Catalog\Model\Layer">
+        <plugin name="algolia_collection_ordering" type="Algolia\AlgoliaSearch\Plugin\LayerPlugin" />
+    </type>
+
+    <!-- Backend rendering / END -->
+
 </config>

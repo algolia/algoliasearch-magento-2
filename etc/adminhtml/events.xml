@@ -41,6 +41,10 @@
         <observer name="algoliasearch_create_merchandising_query_rule" instance="Algolia\AlgoliaSearch\Model\Observer\Merchandising"/>
     </event>
 
+    <event name="catalog_category_move_after">
+        <observer name="algoliasearch_category_move_after" instance="Algolia\AlgoliaSearch\Model\Observer\CategoryMoveAfter"/>
+    </event>
+
     <event name="algolia_product_collection_add_additional_data">
         <observer name="algoliasearch_product_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\ProductCollectionAddPermissions" />
     </event>

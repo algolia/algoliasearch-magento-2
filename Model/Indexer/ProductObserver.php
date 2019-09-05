@@ -3,8 +3,8 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\Product\Action;
+use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\Framework\Indexer\IndexerRegistry;
 
@@ -39,7 +39,7 @@ class ProductObserver
     public function beforeSave(ProductResource $productResource, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
-            if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
+            if (!$this->indexer->isScheduled()) {
                 $this->indexer->reindexRow($product->getId());
             }
         });
@@ -60,7 +60,7 @@ class ProductObserver
     public function beforeDelete(ProductResource $productResource, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
-            if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
+            if (!$this->indexer->isScheduled()) {
                 $this->indexer->reindexRow($product->getId());
             }
         });
@@ -77,7 +77,7 @@ class ProductObserver
      */
     public function afterUpdateAttributes(Action $subject, Action $result = null, $productIds)
     {
-        if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
+        if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));
         }
 
@@ -93,7 +93,7 @@ class ProductObserver
      */
     public function afterUpdateWebsites(Action $subject, Action $result = null, array $productIds)
     {
-        if (!$this->indexer->isScheduled() || $this->configHelper->isQueueActive()) {
+        if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));
         }
 

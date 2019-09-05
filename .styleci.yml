@@ -1,4 +1,1 @@
 preset: PSR2
-finder:
-  path:
-      - "code"

@@ -217,11 +217,11 @@ class ProductHelper
                     ->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()]);
             }
 
-            $products = $this->addStockFilter($products, $storeId);
+            $this->addStockFilter($products, $storeId);
         }
 
         /* @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
-        $products = $this->addMandatoryAttributes($products);
+        $this->addMandatoryAttributes($products);
 
         $additionalAttr = $this->getAdditionalAttributes($storeId);
 
@@ -261,8 +261,6 @@ class ProductHelper
         if ($this->configHelper->getShowOutOfStock($storeId) === false) {
             $this->stockHelper->addInStockFilterToCollection($products);
         }
-
-        return $products;
     }
 
     protected function addMandatoryAttributes($products)
@@ -274,8 +272,6 @@ class ProductHelper
             ->addAttributeToSelect('special_to_date')
             ->addAttributeToSelect('visibility')
             ->addAttributeToSelect('status');
-
-        return $products;
     }
 
     public function getAdditionalAttributes($storeId = null)

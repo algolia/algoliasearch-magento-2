@@ -2,8 +2,29 @@
 
 namespace Algolia\AlgoliaSearch\Model\Source;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Helper\ProxyHelper;
+use Magento\Backend\Block\Template\Context;
+
 class Facets extends AbstractTable
 {
+    protected $proxyHelper;
+
+    public function __construct(
+        Context $context,
+        ProductHelper $producthelper,
+        CategoryHelper $categoryHelper,
+        ConfigHelper $configHelper,
+        ProxyHelper $proxyHelper,
+        array $data = []
+    ) {
+        $this->proxyHelper = $proxyHelper;
+
+        parent::__construct($context, $producthelper, $categoryHelper, $configHelper, $data);
+    }
+
     protected function getTableData()
     {
         $productHelper = $this->productHelper;

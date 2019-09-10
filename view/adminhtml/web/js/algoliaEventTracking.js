@@ -15,7 +15,7 @@ define(["jquery"], function($) {
             {
                 // Update dates on analytics overview page
                 selector: '#algolia-analytics-form button.algolia-daterange-submit',
-                name: 'Updated the Dates',
+                name: 'Updated Dates',
                 data: {
                     source: 'magento2.analytics'
                 }
@@ -23,7 +23,7 @@ define(["jquery"], function($) {
             {
                 // Click on "See more popular searches"
                 selector: '.popular-searches .analytics-footer a',
-                name: 'Clicked for More Data',
+                name: 'Clicked More Data',
                 data: {
                     source: 'magento2.analytics'
                 }
@@ -31,7 +31,7 @@ define(["jquery"], function($) {
             {
                 // Click on "See more popular results"
                 selector: '.popular-results .analytics-footer a',
-                name: 'Clicked for More Results',
+                name: 'Clicked More Results',
                 data: {
                     source: 'magento2.analytics'
                 }
@@ -39,7 +39,7 @@ define(["jquery"], function($) {
             {
                 // Click on "See more no results searches"
                 selector: '.no-result-searches .analytics-footer a',
-                name: 'Clicked for More No Results',
+                name: 'Clicked More No Results',
                 data: {
                     source: 'magento2.analytics'
                 }
@@ -255,7 +255,7 @@ define(["jquery"], function($) {
             {
                 // Click on "View" on landing page builder overview page
                 selector: '.algolia-algoliasearch-landingpage-index a[data-action="item-view"]',
-                name: 'Viewed a page on the store',
+                name: 'Viewed Page on Store',
                 data: {
                     source: 'magento2.landing.listing'
                 }
@@ -263,7 +263,7 @@ define(["jquery"], function($) {
             {
                 // Click on "Duplicate" on landing page builder overview page
                 selector: '.algolia-algoliasearch-landingpage-index a[data-action="item-duplicate"]',
-                name: 'Duplicated a page',
+                name: 'Duplicated Page',
                 data: {
                     source: 'magento2.landing.listing'
                 }
@@ -279,7 +279,7 @@ define(["jquery"], function($) {
             {
                 // Click on "View" on landing page builder edit page
                 selector: '.algolia-algoliasearch-landingpage-edit #view',
-                name: 'Viewed a page on the store',
+                name: 'Viewed Page on Store',
                 data: {
                     source: 'magento2.landing.edit'
                 }
@@ -287,7 +287,7 @@ define(["jquery"], function($) {
             {
                 // Click on "Duplicate" on landing page builder edit page
                 selector: '.algolia-algoliasearch-landingpage-edit #duplicate',
-                name: 'Duplicated a page',
+                name: 'Duplicated Page',
                 data: {
                     source: 'magento2.landing.edit'
                 }
@@ -295,7 +295,7 @@ define(["jquery"], function($) {
             {
                 // Click on "Save" on landing page builder edit page
                 selector: '.algolia-algoliasearch-landingpage-edit #save',
-                name: 'Saved page',
+                name: 'Saved Page',
                 data: {
                     source: 'magento2.landing.edit'
                 }
@@ -303,7 +303,7 @@ define(["jquery"], function($) {
             {
                 // Click on "Save & Continue" on landing page builder edit page
                 selector: '.algolia-algoliasearch-landingpage-edit #save_and_continue',
-                name: 'Saved page and stayed',
+                name: 'Saved Page and Stayed',
                 data: {
                     source: 'magento2.landing.edit'
                 }

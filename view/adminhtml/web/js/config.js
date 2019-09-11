@@ -15,7 +15,7 @@ require(
 			];
 
 			var rowWarning = '<div class="algolia_dashboard_warning">';
-			rowWarning += '<p>You can find this setting also in the Algolia Dashboard. We advise you to manage it from here, because Algolia settings will be overriden once you save Magento settings.</p>';
+			rowWarning += '<p>This setting is also available in the Algolia Dashboard. We advise you to manage it from this page, because saving Magento settings will override the Algolia settings.</p>';
 			rowWarning += '</div>';
 
 			for (var i=0; i < rowIds.length; i++) {
@@ -34,7 +34,7 @@ require(
 			];
 
 			var pageWarning = '<div class="algolia_dashboard_warning algolia_dashboard_warning_page">';
-			pageWarning += '<p>You can find these settings also in the Algolia Dashboard. We advise you to manage it from here, because Algolia settings will be overriden once you save Magento settings.</p>';
+			pageWarning += '<p>These settings are also available in the Algolia Dashboard. We advise you to manage it from this page, because saving Magento settings will override the Algolia settings.</p>';
 			pageWarning += '</div>';
 
 			for (var i=0; i < pageIds.length; i++) {

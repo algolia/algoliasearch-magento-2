@@ -7,7 +7,7 @@ $view = $this->getViewModel();
 
 ?>
 
-<h3>Contact Algolia</h3>
+<h3><?php echo __('Contact Algolia') ?></h3>
 
 <?php if ($view->isExtensionSupportEnabled()) : ?>
     <form method="post" action="<?php echo $this->getUrl('*/*/contact') ?>" class="algolia_contact_form" data-mage-init='{"validation":{}}'>

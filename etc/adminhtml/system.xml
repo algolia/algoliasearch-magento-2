@@ -285,7 +285,7 @@
                 <field id="facets" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Facets</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\Facets</frontend_model>
-                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Facets</backend_model>
                     <comment>
                         <![CDATA[
                             Specify the filtering options you want to offer on a search results page.<br>

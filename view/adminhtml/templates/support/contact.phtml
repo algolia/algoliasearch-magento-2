@@ -17,7 +17,7 @@ $view = $this->getViewModel();
             <fieldset class="admin__fieldset col-l-7">
                 <div class="admin__field _required">
                     <label for="name" class="admin__field-label">
-                        <span>Your name</span>
+                        <span><?php echo __('Your name') ?></span>
                     </label>
 
                     <div class="admin__field-control">
@@ -33,7 +33,7 @@ $view = $this->getViewModel();
 
                 <div class="admin__field _required">
                     <label for="email" class="admin__field-label">
-                        <span>E-mail</span>
+                        <span><?php echo __('E-mail') ?></span>
                     </label>
                     <div class="admin__field-control">
                         <input
@@ -48,7 +48,7 @@ $view = $this->getViewModel();
 
                 <div class="admin__field _required">
                     <label for="subject" class="admin__field-label">
-                        <span>Subject</span>
+                        <span><?php echo __('Subject') ?></span>
                     </label>
                     <div class="admin__field-control">
                         <input
@@ -63,7 +63,7 @@ $view = $this->getViewModel();
 
                 <div class="admin__field _required">
                     <label for="message" class="admin__field-label">
-                        <span>Your message</span>
+                        <span><?php echo __('Your message') ?></span>
                     </label>
                     <div class="admin__field-control">
                         <textarea

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Adapter;
 
+use Algolia\AlgoliaSearch\Adapter\Aggregation\Builder as AlgoliaAggregationBuilder;
 use Algolia\AlgoliaSearch\Helper\AdapterHelper;
 use AlgoliaSearch\AlgoliaConnectionException;
 use Magento\Framework\App\ResourceConnection;
@@ -38,6 +39,9 @@ class Algolia implements AdapterInterface
     /** @var AdapterHelper */
     private $adapterHelper;
 
+    /** @var AlgoliaAggregationBuilder */
+    private $algoliaAggregationBuilder;
+
     /** @var DocumentFactory */
     private $documentFactory;
 
@@ -53,6 +57,7 @@ class Algolia implements AdapterInterface
      * @param AggregationBuilder $aggregationBuilder
      * @param TemporaryStorageFactory $temporaryStorageFactory
      * @param AdapterHelper $adapterHelper
+     * @param AlgoliaAggregationBuilder $algoliaAggregationBuilder
      * @param DocumentFactory $documentFactory
      */
     public function __construct(
@@ -62,6 +67,7 @@ class Algolia implements AdapterInterface
         AggregationBuilder $aggregationBuilder,
         TemporaryStorageFactory $temporaryStorageFactory,
         AdapterHelper $adapterHelper,
+        AlgoliaAggregationBuilder $algoliaAggregationBuilder,
         DocumentFactory $documentFactory
     ) {
         $this->mapper = $mapper;
@@ -70,6 +76,7 @@ class Algolia implements AdapterInterface
         $this->aggregationBuilder = $aggregationBuilder;
         $this->temporaryStorageFactory = $temporaryStorageFactory;
         $this->adapterHelper = $adapterHelper;
+        $this->algoliaAggregationBuilder = $algoliaAggregationBuilder;
         $this->documentFactory = $documentFactory;
     }
 
@@ -93,11 +100,12 @@ class Algolia implements AdapterInterface
         $documents = [];
         $totalHits = 0;
         $table = null;
+        $facetsFromAlgolia = null;
 
         try {
             // If instant search is on, do not make a search query unless SEO request is set to 'Yes'
             if (!$this->adapterHelper->isInstantEnabled() || $this->adapterHelper->makeSeoRequest()) {
-                list($documents, $totalHits) = $this->adapterHelper->getDocumentsFromAlgolia();
+                list($documents, $totalHits, $facetsFromAlgolia) = $this->adapterHelper->getDocumentsFromAlgolia();
             }
 
             $apiDocuments = array_map([$this, 'getApiDocument'], $documents);
@@ -106,7 +114,8 @@ class Algolia implements AdapterInterface
             return $this->nativeQuery($request);
         }
 
-        $aggregations = $this->aggregationBuilder->build($request, $table, $documents);
+        $aggregations = $this->algoliaAggregationBuilder->build($request, $table, $documents, $facetsFromAlgolia);
+
         $response = [
             'documents' => $documents,
             'aggregations' => $aggregations,
@@ -167,6 +176,7 @@ class Algolia implements AdapterInterface
      * Get rows size
      *
      * @param Select $query
+     *
      * @return int
      */
     private function getSize(Select $query)
@@ -185,6 +195,7 @@ class Algolia implements AdapterInterface
      * Reset limit and offset
      *
      * @param Select $query
+     *
      * @return Select
      */
     private function getSelectCountSql(Select $query)

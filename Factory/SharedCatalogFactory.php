@@ -8,8 +8,6 @@ use Magento\Framework\ObjectManagerInterface;
 
 class SharedCatalogFactory
 {
-    const SHARED_CATALOG_ENABLED_CONFIG_PATH = 'btob/website_configuration/sharedcatalog_active';
-
     private $scopeConfig;
     private $moduleManager;
     private $objectManager;
@@ -29,13 +27,11 @@ class SharedCatalogFactory
 
     public function isSharedCatalogEnabled($storeId)
     {
-        $isEnabled = $this->scopeConfig->isSetFlag(
-            self::SHARED_CATALOG_ENABLED_CONFIG_PATH,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-
-        return $isEnabled && $this->isSharedCatalogModuleEnabled();
+        return $this->isSharedCatalogModuleEnabled()
+            && $this->getSharedCatalogConfig()->isActive(
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                $storeId
+            );
     }
 
     private function isSharedCatalogModuleEnabled()
@@ -56,6 +52,11 @@ class SharedCatalogFactory
     public function getSharedCatalogResource()
     {
         return $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog');
+    }
+
+    public function getSharedCatalogConfig()
+    {
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\Config');
     }
 
     public function getSharedCategoryCollection()

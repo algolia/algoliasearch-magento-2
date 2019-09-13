@@ -20,6 +20,12 @@
             <module name="Magento_Tax"/>
             <module name="Magento_MediaStorage"/>
             <module name="Magento_UrlRewrite"/>
+            <module name="Magento_Search" />
+            <module name="Magento_CatalogSearch" />
+            <module name="Magento_LayeredNavigation" />
+            <module name="Magento_CatalogInventory" />
+            <module name="Magento_LayeredNavigationStaging" />
+            <module name="Magento_Swatches" />
         </sequence>
     </module>
 </config>

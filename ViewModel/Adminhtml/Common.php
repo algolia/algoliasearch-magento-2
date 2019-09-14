@@ -42,13 +42,13 @@ class Common
         ],
         'algoliasearch_synonyms' => [
             'title' => 'Notable features',
-            'url' => 'https://www.youtube.com/watch?v=qzaLrHz67U4',
-            'thumbnail' => 'https://img.youtube.com/vi/qzaLrHz67U4/mqdefault.jpg',
+            'url' => 'https://www.youtube.com/watch?v=45NKJbrs1Z4',
+            'thumbnail' => 'https://img.youtube.com/vi/45NKJbrs1Z4/mqdefault.jpg',
         ],
         'algoliasearch_cc_analytics' => [
             'title' => 'Notable features',
-            'url' => 'https://www.youtube.com/watch?v=qzaLrHz67U4',
-            'thumbnail' => 'https://img.youtube.com/vi/qzaLrHz67U4/mqdefault.jpg',
+            'url' => 'https://www.youtube.com/watch?v=45NKJbrs1Z4',
+            'thumbnail' => 'https://img.youtube.com/vi/45NKJbrs1Z4/mqdefault.jpg',
         ],
     ];
 

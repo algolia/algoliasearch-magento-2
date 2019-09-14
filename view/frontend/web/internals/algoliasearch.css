@@ -1289,3 +1289,161 @@ a.ais-current-refined-values--link:hover {
 #algolia-banner img {
   padding-top: 15px;
 }
+
+/** BACKEND RENDERING CSS */
+
+.algolia-filter-list  .filter-actions {
+  margin-bottom : 0;
+  float: right;
+  margin-top: 8px;
+}
+
+.algolia-filter-list .filter-current {
+  border: solid 1px #efefef;
+  margin-bottom: 15px;
+}
+
+.algolia-filter-list .filter-current .item {
+  display: inline-block;
+  background-color: #f4f4f4;
+  padding: 5px 7px 5px 35px;
+  margin: 5px 0;
+  border: solid 1px #DDDDDD;
+  border-radius: 2px;
+  color: #636363;
+}
+
+.algolia-filter-list .filter-current .block-subtitle {
+  color: #757575;
+  font-weight: 500;
+  text-transform: uppercase;
+  background-color: #f4f4f4;
+}
+
+.algolia-filter-list .filter-current .action.remove {
+  background-color: #DDDDDD;
+}
+
+.algolia-filter-list .filter-current .action.remove:hover {
+  background-color: #DDDDDD;
+}
+
+.algolia-filter-list .filter-current .action.remove::before {
+  font-size: 18px;
+  margin: 8px 5px;
+  font-weight: 600;
+}
+
+.algolia-filter-list .filter-options-content{
+  padding: 5px;
+}
+
+.algolia-filter-list .filter-options-title{
+  background-color: #f4f4f4;
+  color: #757575;
+  font-weight: 500;
+  padding: 4px 40px 4px 10px;
+}
+
+.algolia-filter-list .filter-options-item{
+  border: solid 1px #efefef;
+  margin-bottom: 15px;
+  padding-bottom: 0;
+}
+
+.algolia-filter-list .filter-options-title::after {
+  top: 5px;
+}
+
+.algolia-filter-list .items .item {
+  position: relative;
+}
+
+.algolia-filter-list .items .item .filter-label,
+.algolia-filter-list .items .item .filter-value {
+  color: #006bb4;
+}
+
+.algolia-filter-list .items .item a label {
+  cursor: pointer;
+}
+
+.algolia-filter-list .items .item a:hover {
+  background-color: white;
+}
+
+.algolia-filter-list .items .item a:hover label span:first-child {
+  text-decoration: underline;
+}
+
+.algolia-filter-list .items .item input {
+  top : 0;
+}
+
+.algolia-filter-list .items .item a .count {
+  position : absolute;
+  right: 0;
+  font-weight: 500;
+}
+
+.algolia-filter-list .items .item a .count::before,
+.algolia-filter-list .items .item a .count::after {
+  content : '';
+}
+
+/* SLIDER */
+.algolia-filter-list .algolia-range-slider [data-role=from-label] {
+  display: block;
+  float: left;
+  padding: 5px 0 10px;
+  font-size: .8em;
+  min-width: 20px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.algolia-filter-list .algolia-range-slider [data-role=to-label] {
+  display: block;
+  float: right;
+  padding: 5px 0 10px;
+  font-size: .8em;
+  min-width: 20px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.algolia-filter-list .algolia-range-slider .actions-toolbar {
+  margin: 17px 8px 5px;
+  display: block;
+}
+
+.algolia-filter-list .algolia-range-slider .actions-primary {
+  float: right;
+}
+
+.algolia-filter-list .algolia-range-slider .actions-primary .primary {
+  padding: 5px;
+}
+
+.algolia-filter-list .algolia-range-slider .ui-slider {
+  height: 2px;
+  margin: 10px;
+  clear: both;
+  background-color: #F3F4F7;
+  border: 1px solid #DDD;
+}
+
+.algolia-filter-list .algolia-range-slider .ui-slider-handle {
+  background-color: grey;
+  padding: 0;
+  margin: -8px 0 0 -10px;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  background-color: #FFFFFF;
+  border: 1px solid #c8c8c8;
+}
+
+.algolia-rendering .sorter-action {
+  display: none;
+}

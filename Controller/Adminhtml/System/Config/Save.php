@@ -16,15 +16,6 @@ class Save extends \Magento\Config\Controller\Adminhtml\System\Config\Save
 
     private function handleDeactivatedSerializedArrays($groups)
     {
-        if (isset($groups['instant']['fields']['is_instant_enabled']['value'])
-                && $groups['instant']['fields']['is_instant_enabled']['value'] == '0') {
-            foreach ($this->instantSerializedValues as $field) {
-                if (isset($groups['instant']['fields'][$field])) {
-                    unset($groups['instant']['fields'][$field]);
-                }
-            }
-        }
-
         if (isset($groups['autocomplete']['fields']['is_popup_enabled']['value'])
                 && $groups['autocomplete']['fields']['is_popup_enabled']['value'] == '0') {
             foreach ($this->autocompleteSerializedValues as $field) {

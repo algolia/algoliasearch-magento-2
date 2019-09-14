@@ -105,6 +105,11 @@ class Data
             $numberOfResults = min($this->configHelper->getNumberOfProductResults($storeId), 1000);
         }
 
+        $facetsToRetrieve = [];
+        foreach ($this->configHelper->getFacets($storeId) as $facet) {
+            $facetsToRetrieve[] = $facet['attribute'];
+        }
+
         $params = [
             'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
             'attributesToRetrieve'   => 'objectID',
@@ -113,6 +118,8 @@ class Data
             'numericFilters'         => 'visibility_search=1',
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
             'analyticsTags'          => 'backend-search',
+            'facets'                 => $facetsToRetrieve,
+            'maxValuesPerFacet'      => 100,
         ];
 
         if (is_array($searchParams)) {
@@ -134,7 +141,7 @@ class Data
             }
         }
 
-        return [$data, $answer['nbHits']];
+        return [$data, $answer['nbHits'], $answer['facets']];
     }
 
     public function rebuildStoreAdditionalSectionsIndex($storeId)
@@ -343,8 +350,12 @@ class Data
             return;
         }
 
+        $this->startEmulation($storeId);
+
         $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId, null);
         $this->rebuildStoreCategoryIndexPage($storeId, $collection, $page, $pageSize);
+
+        $this->stopEmulation();
     }
 
     public function rebuildStoreSuggestionIndexPage($storeId, $collectionDefault, $page, $pageSize)

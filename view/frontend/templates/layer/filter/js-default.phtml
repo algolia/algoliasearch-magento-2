@@ -1,0 +1,13 @@
+<?php
+$datascope = $this->getFilter()->getRequestVar() . 'Filter';
+?>
+<?php if (!empty($filterItems)) : ?>
+    <div data-bind="scope: '<?php echo /* @escapeNotVerified */ $datascope; ?>'">
+        <!-- ko template: getTemplate() --> <!-- /ko -->
+    </div>
+
+    <script type="text/x-magento-init">
+    {"*" : {"Magento_Ui/js/core/app": {"components": {"<?php echo /* @escapeNotVerified */ $datascope; ?>": <?php echo /* @escapeNotVerified */ $this->getJsLayout(); ?>}}}}
+    </script>
+
+<?php endif; ?>

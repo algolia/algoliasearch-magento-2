@@ -248,6 +248,20 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="backend_rendering_enable" translate="label comment" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Backend Facet Rendering?</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If you don't want to use Instant Search, you can still activate the Algolia's facet backend rendering.
+                            Magento native facets behaviour will be replaced by the extension according to the configuration you define below.
+                            <br><span class="algolia-config-warning">&#9888;</span> If you turn on this feature, please make sure that every attribute you choose in the facet listing below is configured as "<strong>Use in Layered Navigation</strong>" for categories and "<strong>Use in Search Result Layered Navigation</strong>" for Catalog Search in <strong>Stores > Attributes > Product > "Storefront Properties" panel of attribute configuration</strong>.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_instant_enabled">0</field>
+                    </depends>
+                </field>
                 <field id="instant_selector" translate="label comment" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>DOM Selector</label>
                     <comment>
@@ -267,14 +281,11 @@
                             The number of products displayed on the instant search results page. Default value is 9.
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="facets" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Facets</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\Facets</frontend_model>
-                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Facets</backend_model>
                     <comment>
                         <![CDATA[
                             Specify the filtering options you want to offer on a search results page.<br>
@@ -295,9 +306,6 @@
                             </div>
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="max_values_per_facet" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
@@ -307,9 +315,6 @@
                             The number of values each facet can display. Default value is 10.
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="sorts" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sorts</label>
@@ -322,9 +327,6 @@
                             Read more in <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#sorting-strategies">documentation</a>.
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="replace_categories" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Replace categories page</label>

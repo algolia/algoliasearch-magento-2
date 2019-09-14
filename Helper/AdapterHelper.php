@@ -8,6 +8,9 @@ use Magento\CatalogSearch\Helper\Data as CatalogSearchDataHelper;
 
 class AdapterHelper
 {
+    const INSTANTSEARCH_ORDER_PARAM = 'sortBy';
+    const BACKEND_ORDER_PARAM = 'product_list_order';
+
     /** @var CatalogSearchDataHelper */
     private $catalogSearchHelper;
 
@@ -50,7 +53,6 @@ class AdapterHelper
         $algoliaQuery = $query !== '__empty__' ? $query : '';
         $searchParams = [];
         $targetedIndex = null;
-
         if ($this->isReplaceCategory() || $this->isSearch() || $this->isLandingPage()) {
             $searchParams = $this->getSearchParams($storeId);
 
@@ -63,12 +65,28 @@ class AdapterHelper
                 $algoliaQuery = $this->filtersHelper->getLandingPageQuery();
             }
 
+            $orderParam = $this->getOrderParam($storeId);
             if ($this->filtersHelper->getRequest()->getParam('sortBy') !== null) {
-                $targetedIndex = $this->filtersHelper->getRequest()->getParam('sortBy');
+                $targetedIndex = $this->filtersHelper->getRequest()->getParam($orderParam);
             }
         }
 
         return $this->algoliaHelper->getSearchResult($algoliaQuery, $storeId, $searchParams, $targetedIndex);
+    }
+
+    /**
+     * Get the sort order parameter
+     *
+     * @param int $storeId
+     *
+     * @return string
+     */
+    private function getOrderParam($storeId)
+    {
+        return !$this->configHelper->isInstantEnabled($storeId)
+            && $this->configHelper->isBackendRenderingEnabled($storeId) ?
+            self::BACKEND_ORDER_PARAM :
+            self::INSTANTSEARCH_ORDER_PARAM;
     }
 
     /**
@@ -92,13 +110,19 @@ class AdapterHelper
         // Handle category context
         $searchParams = array_merge(
             $searchParams,
-            $this->filtersHelper->getCategoryFilters()
+            $this->filtersHelper->getCategoryFilters($storeId)
         );
 
         // Handle facet filtering
         $searchParams['facetFilters'] = array_merge(
             $searchParams['facetFilters'],
             $this->filtersHelper->getFacetFilters($storeId)
+        );
+
+        // Handle disjunctive facets
+        $searchParams = array_merge(
+            $searchParams,
+            $this->filtersHelper->getDisjunctiveFacets($storeId)
         );
 
         // Handle price filtering
@@ -154,7 +178,8 @@ class AdapterHelper
         return
             $this->filtersHelper->getRequest()->getControllerName() === 'category'
             && $this->configHelper->replaceCategories($storeId) === true
-            && $this->configHelper->isInstantEnabled($storeId) === true;
+            && ($this->configHelper->isInstantEnabled($storeId) === true
+                || $this->configHelper->isBackendRenderingEnabled($storeId) === true);
     }
 
     /**

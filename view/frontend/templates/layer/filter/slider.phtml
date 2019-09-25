@@ -1,0 +1,16 @@
+<div class="algolia-range-slider" data-role="<?php /* @noEscape */ echo $block->getDataRole(); ?>">
+    <div data-role="from-label"></div>
+    <div data-role="to-label"></div>
+    <div data-role="slider-bar"></div>
+    <div class="actions-toolbar">
+        <div class="actions-primary">
+            <a class="action primary small" data-role="apply-range">
+                <span><?php /* @noEscape */ echo __('OK'); ?></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script type="text/x-magento-init">
+    { "[data-role=<?php /* @noEscape */ echo $block->getDataRole(); ?>]" : { "rangeSlider" : <?php echo  /* @noEscape */ $block->getJsonConfig(); ?> } }
+</script>

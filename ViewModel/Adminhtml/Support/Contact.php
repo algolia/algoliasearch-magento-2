@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support;
 
 use Algolia\AlgoliaSearch\Helper\SupportHelper;
 use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
-use Magento\Backend\Block\Template;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\Module\ModuleListInterface;
 use Magento\User\Model\User;
@@ -77,20 +76,6 @@ class Contact
     public function getTooltipHtml($message)
     {
         return $this->backendView->getTooltipHtml($message);
-    }
-
-    /**
-     * @return string
-     */
-    public function getLegacyVersionHtml()
-    {
-        /** @var Template $block */
-        $block = $this->backendView->getLayout()->createBlock(Template::class);
-
-        $block->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml');
-        $block->setData('extension_version', $this->getExtensionVersion());
-
-        return $block->toHtml();
     }
 
     /** @return User|null */

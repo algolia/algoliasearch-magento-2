@@ -10,7 +10,11 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		if ($('.algolia_contact_form #subject').length > 0) {
 			initContactDocSearch();
 		}
-		
+
+		if ($('#algolia_support_tab').length > 0) {
+			handleSupportTabs();
+		}
+
 		function initDocSearch() {
 			const documentationSearch = algoliaBundle.instantsearch({
 				appId: 'BH4D9OD16A',
@@ -222,6 +226,30 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 			
 			$results.show();
 			$landing.hide();
+		}
+
+		function handleSupportTabs() {
+			const supportTabs = $('#algolia_support_tab li');
+			const supportPanels = $('.algolia_support_panel');
+
+			supportTabs.each(function(index){
+				$(this).on('click', function(){
+					resetTabs(supportTabs, supportPanels);
+					$(this).addClass('tab-active');
+					var divToShow = '#' + $(this).attr('aria-controls');
+					$(divToShow).show();
+				});
+			});
+		}
+
+		function resetTabs(supportTabs, supportPanels) {
+			supportTabs.each(function(index){
+				$(this).removeClass('tab-active');
+			});
+
+			supportPanels.each(function(index){
+				$(this).hide();
+			});
 		}
 	});
 	

@@ -70,14 +70,26 @@ class FiltersHelper
     /**
      * Get the category filters from the context
      *
+     * @param int $storeId
+     *
      * @return array
      */
-    public function getCategoryFilters()
+    public function getCategoryFilters($storeId)
     {
         $categoryFilter = [];
+        $categoryId = null;
         $category = $this->registry->registry('current_category');
+
         if ($category) {
-            $categoryFilter['facetFilters'][] = 'categoryIds:' . $category->getEntityId();
+            $categoryId = $category->getEntityId();
+        }
+
+        if (!is_null($this->request->getParam('cat')) && $this->config->isBackendRenderingEnabled($storeId)) {
+            $categoryId = $this->request->getParam('cat');
+        }
+
+        if (!is_null($categoryId)) {
+            $categoryFilter['facetFilters'][] = 'categoryIds:' . $categoryId;
         }
 
         return $categoryFilter;
@@ -134,7 +146,7 @@ class FiltersHelper
     {
         $facetFilters = [];
         // If the parameters variable is null, fetch them from the request
-        if (is_null($parameters)) {
+        if ($parameters === null) {
             $parameters = $this->request->getParams();
         }
 
@@ -182,6 +194,31 @@ class FiltersHelper
         }
 
         return $facetFilters;
+    }
+
+    /**
+     * Get the disjunctive facets
+     *
+     * @param int $storeId
+     * @param string[] $parameters
+     *
+     * @return array
+     */
+    public function getDisjunctiveFacets($storeId, $parameters = null)
+    {
+        $disjunctiveFacets = [];
+        // If the parameters variable is null, fetch them from the request
+        if ($parameters === null) {
+            $parameters = $this->request->getParams();
+        }
+
+        foreach ($this->config->getFacets($storeId) as $facet) {
+            if (isset($parameters[$facet['attribute']]) && $facet['type'] == 'disjunctive') {
+                $disjunctiveFacets['disjunctiveFacets'][] = $facet['attribute'];
+            }
+        }
+
+        return $disjunctiveFacets;
     }
 
     /**

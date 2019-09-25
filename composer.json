@@ -13,6 +13,15 @@
     "ext-mbstring": "*",
     "ext-dom": "*"
   },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://repo.magento.com/"
+    }
+  ],
+  "require-dev": {
+    "phpcompatibility/php-compatibility": "^9.2"
+  },
   "autoload": {
     "files": [ "registration.php" ],
     "psr-4": {

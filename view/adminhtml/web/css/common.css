@@ -418,3 +418,18 @@
 .algolia-clearfix {
 	clear: both;
 }
+
+/* Warning blocks on configuration */
+.algolia_dashboard_warning {
+	background-image: url("../images/icon-magento-settings.svg");
+	background-repeat: no-repeat;
+	background-position: 25px 20px;
+	background-color : #FDFAF5;
+	border : 1px solid #F8E5C4;
+	padding : 20px 20px 10px 90px;
+	margin-bottom : 20px;
+}
+
+.algolia_dashboard_warning_page {
+	margin-bottom : 0;
+}

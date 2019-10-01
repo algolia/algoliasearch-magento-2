@@ -19,6 +19,7 @@
 
 ## 1.11.0
 
+
 ### FEATURES
 - Tutorial videos inside the admin configuration (#704)
   * Added Youtube tutorial videos on top of each relevant configuration page of the extension.

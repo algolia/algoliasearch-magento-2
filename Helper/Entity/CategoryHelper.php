@@ -490,7 +490,7 @@ class CategoryHelper
 
     public function isCategoryVisibleInMenu($categoryId, $storeId)
     {
-        $key = $categoryId . ' - ' . $storeId;
+        $key = $categoryId . '-' . $storeId;
         if (isset($this->isCategoryVisibleInMenuCache[$key])) {
             return $this->isCategoryVisibleInMenuCache[$key];
         }

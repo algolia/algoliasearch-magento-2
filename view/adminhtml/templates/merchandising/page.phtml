@@ -1,6 +1,25 @@
 <?php /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate $block */ ?>
 <?php /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising\Page $viewModel */ ?>
 <?php $viewModel = $block->getViewModel() ?>
+<div class="algolia-admin-content">
+    <div class="algolia-admin-content-wrapper">
+        <div class="algolia-admin-content-links">
+            <p>
+                <span>
+                    <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg') ?>">
+                    <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/merchandising/visual-merchandising/?utm_source=magento&amp;utm_medium=extension&amp;utm_campaign=magento_2&amp;utm_term=shop-owner&amp;utm_content=doc-link">Merchandising features</a>
+                </span>
+            </p>
+        </div>
+        <div class="algolia-admin-content-videos">
+            <p>
+                <span>Related video:</span>
+                <a target="_blank" href="https://www.youtube.com/watch?v=qrgmtMMxj6o"><img src="https://img.youtube.com/vi/qrgmtMMxj6o/mqdefault.jpg"></a>
+                <a target="_blank" href="https://www.youtube.com/watch?v=qrgmtMMxj6o">Merchandising features</a>
+            </p>
+        </div>
+    </div>
+</div>
 <section class="algoliasearch-merchandising-options clearfix">
     <div class="merchandising-item query-merchandising">
         <div class="image-container">

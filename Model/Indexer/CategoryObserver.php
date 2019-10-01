@@ -128,4 +128,27 @@ class CategoryObserver
             }
         }
     }
+
+    /**
+     * @param array $productIds
+     */
+    private function updateCategoryProducts(array $productIds)
+    {
+        $productIndexer = $this->indexerRegistry->get('algolia_products');
+        if (!$productIndexer->isScheduled()) {
+            // if the product index is not schedule, it should still index these products
+            $productIndexer->reindexList($productIds);
+        } else {
+            $view = $productIndexer->getView();
+            $changelogTableName = $this->resource->getTableName($view->getChangelog()->getName());
+            $connection = $this->resource->getConnection();
+            if ($connection->isTableExists($changelogTableName)) {
+                $data = [];
+                foreach ($productIds as $productId) {
+                    $data[] = ['entity_id' => $productId];
+                }
+                $connection->insertMultiple($changelogTableName, $data);
+            }
+        }
+    }
 }

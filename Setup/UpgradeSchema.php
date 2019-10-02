@@ -563,6 +563,12 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
+        if (version_compare($context->getVersion(), '1.11.3', '<')) {
+            $connection->dropTrigger('trg_catalog_product_index_price_after_delete');
+            $connection->dropTrigger('trg_catalog_product_index_price_after_insert');
+            $connection->dropTrigger('trg_catalog_product_index_price_after_update');
+        }
+
         $setup->endSetup();
     }
 

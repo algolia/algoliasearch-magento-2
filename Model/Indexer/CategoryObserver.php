@@ -42,17 +42,17 @@ class CategoryObserver
     }
 
     /**
-     * Using "before" method here instead of "after", because M2.1 doesn't pass "$product" argument
-     * to "after" methods. When M2.1 support will be removed, this method can be rewriten to:
-     * afterSave(CategoryResourceModel $categoryResource, CategoryResourceModel $result, CategoryModel $category)
-     *
      * @param CategoryResourceModel $categoryResource
+     * @param CategoryResourceModel $result
      * @param CategoryModel $category
      *
-     * @return CategoryModel[]
+     * @return CategoryResourceModel
      */
-    public function beforeSave(CategoryResourceModel $categoryResource, CategoryModel $category)
-    {
+    public function afterSave(
+        CategoryResourceModel $categoryResource,
+        CategoryResourceModel $result,
+        CategoryModel $category
+    ) {
         $categoryResource->addCommitCallback(function() use ($category) {
             $collectionIds = [];
             // To reduce the indexing operation for products, only update if these values have changed
@@ -77,17 +77,21 @@ class CategoryObserver
             }
         });
 
-        return [$category];
+        return $result;
     }
 
     /**
      * @param CategoryResourceModel $categoryResource
+     * @param CategoryResourceModel $result
      * @param CategoryModel $category
      *
-     * @return CategoryModel[]
+     * @return CategoryResourceModel
      */
-    public function beforeDelete(CategoryResourceModel $categoryResource, CategoryModel $category)
-    {
+    public function afterDelete(
+        CategoryResourceModel $categoryResource,
+        CategoryResourceModel $result,
+        CategoryModel $category
+    ) {
         $categoryResource->addCommitCallback(function() use ($category) {
             // mview should be able to handle the changes for catalog_category_product relationship
             if (!$this->indexer->isScheduled()) {
@@ -99,7 +103,7 @@ class CategoryObserver
             }
         });
 
-        return [$category];
+        return $result;
     }
 
     /**

@@ -73,6 +73,7 @@ class Image extends \Magento\Catalog\Helper\Image
                 $model->setBaseFile($this->getProductImage());
             }
         }
+
         return $this;
     }
 

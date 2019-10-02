@@ -1,0 +1,8 @@
+parameters:
+    level: 0
+    excludes_analyse:
+        - %currentWorkingDirectory%/vendor/*
+        - %currentWorkingDirectory%/Test/*
+    ignoreErrors:
+        - '#(class|type) Magento\\\S*Factory#i'
+        - '#(class|type) Algolia\\\S*Factory#i'

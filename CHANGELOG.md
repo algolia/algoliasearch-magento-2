@@ -20,6 +20,7 @@
 - Making PHPCompatibility assess no funky <7.1 PHP is used in our project
 - Magento Cloud Development setup teardown (#860) 
 - Add type checking tool configuration (#861) 
+- Add notice when users have access to C&C Analytics but they haven't turned it on (#867)
 
 ### FIXES
 - Add Store emulation for full category reindexing (#826) 

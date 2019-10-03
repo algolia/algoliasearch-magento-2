@@ -1,6 +1,7 @@
 <?php
 
 use Magento\Framework\App\Bootstrap;
+
 require '/app/app/bootstrap.php';
 
 $bootstrap = Bootstrap::create(BP, $_SERVER);

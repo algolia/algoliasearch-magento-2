@@ -211,6 +211,12 @@ class Common
         return true;
     }
 
+    /** @return bool */
+    public function isClickAnalyticsTurnedOnInAdmin()
+    {
+        return $this->configHelper->isClickConversionAnalyticsEnabled();
+    }
+
     /** @return array|void */
     public function getVideoConfig($section)
     {

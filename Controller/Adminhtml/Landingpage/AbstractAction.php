@@ -86,7 +86,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         return parent::dispatch($request);
     }
 
-    /** @return Algolia\AlgoliaSearch\Model\LandingPage */
+    /** @return \Algolia\AlgoliaSearch\Model\LandingPage */
     protected function initLandingPage()
     {
         $landingPageId = (int) $this->getRequest()->getParam('id');

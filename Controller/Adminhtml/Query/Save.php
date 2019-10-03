@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Query;
 
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
+use Algolia\AlgoliaSearch\Model\ImageUploader;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Controller\ResultFactory;
@@ -18,6 +19,11 @@ class Save extends AbstractAction
     protected $dataPersistor;
 
     /**
+     * @var ImageUploader
+     */
+    protected $imageUploader;
+
+    /**
      * PHP Constructor
      *
      * @param \Magento\Backend\App\Action\Context $context
@@ -27,6 +33,7 @@ class Save extends AbstractAction
      * @param ProxyHelper $proxyHelper
      * @param StoreManagerInterface $storeManager
      * @param DataPersistorInterface $dataPersistor
+     * @param ImageUploader $imageUploader
      *
      * @return Save
      */
@@ -37,9 +44,11 @@ class Save extends AbstractAction
         MerchandisingHelper $merchandisingHelper,
         ProxyHelper $proxyHelper,
         StoreManagerInterface $storeManager,
-        DataPersistorInterface $dataPersistor
+        DataPersistorInterface $dataPersistor,
+        ImageUploader $imageUploader
     ) {
         $this->dataPersistor = $dataPersistor;
+        $this->imageUploader = $imageUploader;
 
         parent::__construct(
             $context,
@@ -84,9 +93,6 @@ class Save extends AbstractAction
 
             if (isset($data['banner_image'][0]['name']) && isset($data['banner_image'][0]['tmp_name'])) {
                 $data['banner_image'] = $data['banner_image'][0]['name'];
-                $this->imageUploader = \Magento\Framework\App\ObjectManager::getInstance()->get(
-                    'Algolia\AlgoliaSearch\QueryImageUpload'
-                );
                 $this->imageUploader->moveFileFromTmp($data['banner_image']);
             } elseif (isset($data['banner_image'][0]['image']) && !isset($data['banner_image'][0]['tmp_name'])) {
                 $data['banner_image'] = $data['banner_image'][0]['image'];

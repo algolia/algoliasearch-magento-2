@@ -58,7 +58,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model */
+    /** @return \Algolia\AlgoliaSearch\Model\Job */
     protected function initJob()
     {
         $jobId = (int) $this->getRequest()->getParam('id');
@@ -68,7 +68,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
             return null;
         }
 
-        /** @var \Algolia\AlgoliaSearch\Model $model */
+        /** @var \Algolia\AlgoliaSearch\Model\Job $model */
         $model = $this->jobFactory->create();
         $this->jobResourceModel->load($model, $jobId);
         if (!$model->getId()) {

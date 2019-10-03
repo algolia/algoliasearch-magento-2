@@ -3,7 +3,7 @@
 ## 1.12.0
 
 ### FEATURES
--  Algolia's facets backend rendering (#802) 
+-  Algolia's facets backend rendering for Mysql Engine (#802) 
 
 ### UPDATES
 - The extension no longer supports Magento 2.1 **BC Break**

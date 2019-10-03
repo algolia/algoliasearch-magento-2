@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Cms\Model\ResourceModel\Page">
+        <plugin name="algoliaPages" type="Algolia\AlgoliaSearch\Model\Indexer\PageObserver"/>
+    </type>    
     <type name="Magento\Catalog\Model\ResourceModel\Product">
         <plugin name="algoliaProducts" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>
     </type>

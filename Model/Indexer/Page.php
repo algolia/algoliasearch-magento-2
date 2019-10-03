@@ -45,11 +45,7 @@ class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framewo
 
     public function execute($ids)
     {
-    }
-
-    public function executeFull()
-    {
-        if (!$this->configHelper->getApplicationID()
+      if (!$this->configHelper->getApplicationID()
             || !$this->configHelper->getAPIKey()
             || !$this->configHelper->getSearchOnlyAPIKey()) {
             $errorMessage = 'Algolia reindexing failed: 
@@ -74,17 +70,29 @@ class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framewo
             }
 
             if ($this->isPagesInAdditionalSections($storeId)) {
-                $this->queue->addToQueue($this->fullAction, 'rebuildStorePageIndex', ['store_id' => $storeId], 1);
+                $this->queue->addToQueue(
+                    $this->fullAction,
+                    'rebuildStorePageIndex',
+                    ['store_id' => $storeId, 'page_ids' => $ids],
+                    is_array($ids) ? count($ids) : 1
+                );
             }
         }
     }
 
+    public function executeFull()
+    {
+        $this->execute(null);
+    }
+
     public function executeList(array $ids)
     {
+        $this->execute($ids);
     }
 
     public function executeRow($id)
     {
+        $this->execute([$id]);
     }
 
     private function isPagesInAdditionalSections($storeId)

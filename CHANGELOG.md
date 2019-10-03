@@ -16,7 +16,7 @@
 - Add facet query rules management + dashboard warnings (#844)
 - Update video links in admin (#850) 
 - Add new support page with tabs (#845) 
-- Prepare MSI's handling (#841)
+- Adjust the extension to be ready for upcoming MSI optional support that will come through another extension. (#841)
 - Making PHPCompatibility assess no funky <7.1 PHP is used in our project
 - Magento Cloud Development setup teardown (#860) 
 - Add type checking tool configuration (#861) 

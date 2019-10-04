@@ -71,7 +71,7 @@ jobs:
       steps:
         - checkout
         - restore_cache:
-          keys:
+            keys:
               - composer-v1-{{ checksum "composer.json" }}
               - composer-v1-
         - run:

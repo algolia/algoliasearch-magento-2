@@ -13,9 +13,9 @@ class StockItemObserver
         $this->indexer = $indexerRegistry->get('algolia_products');
     }
 
-    public function aroundSave(
+    public function afterSave(
         \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $stockItemModel,
-        \Closure $proceed,
+        \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $result,
         \Magento\CatalogInventory\Api\Data\StockItemInterface $stockItem
     ) {
         $stockItemModel->addCommitCallback(function () use ($stockItem) {
@@ -24,12 +24,12 @@ class StockItemObserver
             }
         });
 
-        return $proceed($stockItem);
+        return $result;
     }
 
-    public function aroundDelete(
+    public function afterDelete(
         \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $stockItemResource,
-        \Closure $proceed,
+        \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $result,
         \Magento\CatalogInventory\Api\Data\StockItemInterface $stockItem
     ) {
         $stockItemResource->addCommitCallback(function () use ($stockItem) {
@@ -38,6 +38,6 @@ class StockItemObserver
             }
         });
 
-        return $proceed($stockItem);
+        return $result;
     }
 }

@@ -11,7 +11,6 @@ use Magento\Framework\Indexer\IndexerRegistry;
 
 class CategoryMoveAfter implements ObserverInterface
 {
-
     /** @var IndexerRegistry */
     private $indexerRegistry;
 
@@ -41,6 +40,7 @@ class CategoryMoveAfter implements ObserverInterface
      * is not able to process the products that need updating.
      *
      * @param Observer $observer
+     *
      * @return bool|void
      */
     public function execute(Observer $observer)

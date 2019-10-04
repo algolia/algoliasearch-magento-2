@@ -7,7 +7,7 @@
         <plugin name="algoliaProductsMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>
     </type>
     <type name="Magento\CatalogInventory\Model\ResourceModel\Stock\Item">
-        <plugin name="algoliaProducts" type="Algolia\AlgoliaSearch\Model\Indexer\StockItemObserver"/>
+        <plugin name="algoliaStockItems" type="Algolia\AlgoliaSearch\Model\Indexer\StockItemObserver"/>
     </type>
 
     <type name="Magento\Catalog\Model\ResourceModel\Category">

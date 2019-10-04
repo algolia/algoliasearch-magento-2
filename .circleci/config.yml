@@ -92,7 +92,7 @@ jobs:
         - run:
             name: PHPstan
             command: |
-                echo 'export PATH=~/.composer/vendor/bin/:$PATH' >> $BASH_ENV
+                echo 'export PATH=/root/.composer/vendor/bin/:$PATH' >> $BASH_ENV
                 source $BASH_ENV
                 magento2-test ~/magento_directory/vendor/algolia/algoliasearch-magento-2
 

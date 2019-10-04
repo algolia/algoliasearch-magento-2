@@ -72,7 +72,6 @@ jobs:
         - checkout
         - run: sudo composer self-update
         - run: composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
-        - run: ls -la
         - restore_cache:
             keys:
             - composer-v1-{{ checksum "composer.json" }}
@@ -88,6 +87,19 @@ jobs:
               ./vendor/bin/phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility/PHPCompatibility/
               # vendor/ is large and seems to break phpcs, ls+grep+xargs hack is used to send folders to phpcs
               ls -d */ | grep -vE 'dev|Test|vendor' | xargs ./vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true
+        - run:
+            name: Prepare PHPstan
+            command: |
+                cd ~/build_directory
+                git clone https://github.com/algolia/magento2-tools
+                cd magento2-tools
+                # Goes to latest stable:
+                git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
+                composer install
+        - run:
+            name: PHPstan
+            command: |
+                ~/build_directory/magento2-tools/bin/magento2-test ~/build_directory/algoliasearch-magento-2
 
 workflows:
     version: 2

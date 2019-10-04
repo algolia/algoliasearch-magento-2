@@ -70,7 +70,7 @@ jobs:
       working_directory: ~/build_directory/algoliasearch-magento-2
       steps:
         - checkout
-        - run: composer self-update
+        - run: sudo composer self-update
         - run: composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
         - restore_cache:
             keys:

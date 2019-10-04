@@ -68,6 +68,7 @@ jobs:
       docker: # run the steps with Docker with PHP 7.2
       - image: circleci/php:7.2
       steps:
+        - working_directory: ~/build_directory/algoliasearch-magento-2
         - checkout
         - run: sudo composer self-update
         - run: composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}

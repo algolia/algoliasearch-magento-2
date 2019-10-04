@@ -95,13 +95,7 @@ jobs:
             - vendor
             - ~/.composer/vendor
         - run:
-            name: PHPCS PHPCompatibility
-            command: |
-              ./vendor/bin/phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility/PHPCompatibility/
-              # vendor/ is large and seems to break phpcs, ls+grep+xargs hack is used to send folders to phpcs
-              ls -d */ | grep -vE 'dev|Test|vendor' | xargs ./vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true
-        - run:
-            name: PHPstan
+            name: Quality tools
             command: |
                 sudo ~/.composer/vendor/bin/magento2-test ~/magento_directory/vendor/algolia/algoliasearch-magento-2 ~/.composer/vendor/bin/
 

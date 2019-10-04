@@ -77,8 +77,7 @@ jobs:
             - composer-v1-{{ checksum "composer.json" }}
             - composer-v1-
         - run: composer install -n --prefer-dist --ignore-platform-reqs --no-progress
-        - run: composer global require algolia/magento2-tools
-        - run: echo $PATH
+        - run: sudo composer global require algolia/magento2-tools
         - save_cache:
             key: composer-v1-{{ checksum "composer.json" }}
             paths:
@@ -95,7 +94,7 @@ jobs:
             command: |
                 echo 'export PATH=~/.composer/vendor/bin/:$PATH' >> $BASH_ENV
                 source $BASH_ENV
-                magento2-test ~/build_directory/algoliasearch-magento-2
+                magento2-test ~/magento_directory/vendor/algolia/algoliasearch-magento-2
 
 workflows:
     version: 2

@@ -65,6 +65,8 @@ jobs:
             - image: algolia/magento2-circleci:2.3.0
 
     "phpcompatibility":
+        environment:
+            BASH_ENV: "~/.bashrc"
       docker: # run the steps with Docker with PHP 7.2
       - image: circleci/php:7.2
       working_directory: ~/build_directory/algoliasearch-magento-2
@@ -77,7 +79,8 @@ jobs:
             - composer-v1-{{ checksum "composer.json" }}
             - composer-v1-
         - run: composer install -n --prefer-dist --ignore-platform-reqs --no-progress
-        - run: composer global require algolia/magento2-tools
+        - run: composer global require algolia/magento2-tools && echo 'export PATH=~/.composer/vendor/bin/:$PATH' >> ~/.bashrc # We need to add the vendor directory to our path
+        - run: echo $PATH
         - save_cache:
             key: composer-v1-{{ checksum "composer.json" }}
             paths:
@@ -92,9 +95,6 @@ jobs:
         - run:
             name: PHPstan
             command: |
-                # We need to add some commands to our path in order for the tools to properly work.
-                echo 'export PATH=~/.composer/vendor/bin/:$PATH' >> ~/.bashrc
-                source ~/.bashrc
                 echo $PATH
                 ~/.composer/vendor/bin/magento2-test ~/build_directory/algoliasearch-magento-2
 

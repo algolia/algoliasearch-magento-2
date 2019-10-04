@@ -77,7 +77,7 @@ jobs:
             - composer-v1-{{ checksum "composer.json" }}
             - composer-v1-
         - run: composer install -n --prefer-dist --ignore-platform-reqs --no-progress
-        - run: sudo composer global require algolia/magento2-tools
+        - run: composer global require algolia/magento2-tools
         - save_cache:
             key: composer-v1-{{ checksum "composer.json" }}
             paths:

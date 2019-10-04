@@ -91,7 +91,7 @@ jobs:
         - run:
             name: PHPstan
             command: |
-                /home/circleci/.composer/vendor/bin/magento2-test ~/build_directory/algoliasearch-magento-2
+                ~/.composer/vendor/bin/magento2-test ~/build_directory/algoliasearch-magento-2
 
 workflows:
     version: 2

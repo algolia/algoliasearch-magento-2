@@ -95,6 +95,7 @@ jobs:
                 # We need to add some commands to our path in order for the tools to properly work.
                 echo 'export PATH=~/.composer/vendor/bin/:$PATH' >> ~/.bashrc
                 source ~/.bashrc
+                php-cs-fixer -v
                 ~/.composer/vendor/bin/magento2-test ~/build_directory/algoliasearch-magento-2
 
 workflows:

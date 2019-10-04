@@ -70,14 +70,25 @@ jobs:
       working_directory: ~/build_directory/algoliasearch-magento-2
       steps:
         - checkout
-        - run: sudo composer self-update
-        - run: composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
         - restore_cache:
-            keys:
-            - composer-v1-{{ checksum "composer.json" }}
-            - composer-v1-
-        - run: composer install -n --prefer-dist --ignore-platform-reqs --no-progress
-        - run: sudo chown circleci:circleci ~/.composer/ && composer global require algolia/magento2-tools
+          keys:
+              - composer-v1-{{ checksum "composer.json" }}
+              - composer-v1-
+        - run:
+            name: Prepare environment
+            command: |
+                sudo composer self-update
+                composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
+                composer install -n --prefer-dist --ignore-platform-reqs --no-progress
+                sudo chown circleci:circleci ~/.composer/
+                composer global require algolia/magento2-tools
+
+                # We have to do this again because we restore the cache above, overwriting the vendor with the original.
+                cd ~/magento_directory/vendor/algolia
+                rm -rf algoliasearch-magento-2
+                cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
+                cd ~/magento_directory
+                composer dump-autoload
         - save_cache:
             key: composer-v1-{{ checksum "composer.json" }}
             paths:

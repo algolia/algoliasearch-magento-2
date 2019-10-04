@@ -72,7 +72,7 @@ jobs:
         - checkout
         - run: sudo composer self-update
         - run: composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
-        - run: pwd
+        - run: ls -la
         - restore_cache:
             keys:
             - composer-v1-{{ checksum "composer.json" }}

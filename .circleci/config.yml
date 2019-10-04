@@ -65,8 +65,8 @@ jobs:
             - image: algolia/magento2-circleci:2.3.0
 
     "phpcompatibility":
-        environment:
-            BASH_ENV: "~/.bashrc"
+      environment:
+        BASH_ENV: "~/.bashrc"
       docker: # run the steps with Docker with PHP 7.2
       - image: circleci/php:7.2
       working_directory: ~/build_directory/algoliasearch-magento-2

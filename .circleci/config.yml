@@ -92,9 +92,7 @@ jobs:
         - run:
             name: PHPstan
             command: |
-                echo 'export PATH=/root/.composer/vendor/bin/:$PATH' >> $BASH_ENV
-                source $BASH_ENV
-                sudo /root/circleci/.composer/vendor/bin/magento2-test ~/magento_directory/vendor/algolia/algoliasearch-magento-2 /root/circleci/.composer/vendor/bin/
+                sudo ~/.composer/vendor/bin/magento2-test ~/magento_directory/vendor/algolia/algoliasearch-magento-2 ~/.composer/vendor/bin/
 
 workflows:
     version: 2

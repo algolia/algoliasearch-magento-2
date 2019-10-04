@@ -72,16 +72,17 @@ jobs:
         - checkout
         - run: sudo composer self-update
         - run: composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
-        - run: sudo composer global require algolia/magento2-tools
         - restore_cache:
             keys:
             - composer-v1-{{ checksum "composer.json" }}
             - composer-v1-
         - run: composer install -n --prefer-dist --ignore-platform-reqs --no-progress
+        - run: sudo composer global require algolia/magento2-tools
         - save_cache:
             key: composer-v1-{{ checksum "composer.json" }}
             paths:
             - vendor
+            - ~/.composer/vendor
         - run:
             name: PHPCS PHPCompatibility
             command: |

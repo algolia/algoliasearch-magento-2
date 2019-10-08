@@ -24,7 +24,7 @@ class AttributeHelper
     /**
      * Get attribute info by attribute code and entity type
      *
-     * @param int|string|Mage\Eav\Model\Entity\Type $entityType
+     * @param int|string|\Magento\Eav\Model\Entity\Type $entityType
      * @param string $attributeCode
      *
      * @return \Magento\Eav\Model\Entity\Attribute

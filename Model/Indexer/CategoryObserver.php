@@ -26,6 +26,7 @@ class CategoryObserver
 
     /**
      * CategoryObserver constructor.
+     *
      * @param IndexerRegistry $indexerRegistry
      * @param ConfigHelper $configHelper
      * @param ResourceConnection $resource
@@ -53,7 +54,7 @@ class CategoryObserver
         CategoryResourceModel $result,
         CategoryModel $category
     ) {
-        $categoryResource->addCommitCallback(function() use ($category) {
+        $categoryResource->addCommitCallback(function () use ($category) {
             $collectionIds = [];
             // To reduce the indexing operation for products, only update if these values have changed
             if ($category->getOrigData('name') !== $category->getData('name')
@@ -92,7 +93,7 @@ class CategoryObserver
         CategoryResourceModel $result,
         CategoryModel $category
     ) {
-        $categoryResource->addCommitCallback(function() use ($category) {
+        $categoryResource->addCommitCallback(function () use ($category) {
             // mview should be able to handle the changes for catalog_category_product relationship
             if (!$this->indexer->isScheduled()) {
                 /* we are using products position because getProductCollection() doesn't use correct store */

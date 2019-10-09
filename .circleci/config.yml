@@ -64,28 +64,40 @@ jobs:
         docker:
             - image: algolia/magento2-circleci:2.3.0
 
-    "phpcompatibility":
-      docker: # run the steps with Docker with PHP 7.2
-      - image: circleci/php:7.2
-      steps:
-        - checkout
-        - run: sudo composer self-update
-        - run: composer config http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
-        - restore_cache:
-            keys:
-            - composer-v1-{{ checksum "composer.lock" }}
-            - composer-v1-
-        - run: composer install -n --prefer-dist --ignore-platform-reqs --no-progress
-        - save_cache:
-            key: composer-v1-{{ checksum "composer.lock" }}
-            paths:
-            - vendor
-        - run:
-            name: PHPCS PHPCompatibility
-            command: |
-              ./vendor/bin/phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility/PHPCompatibility/
-              # vendor/ is large and seems to break phpcs, ls+grep+xargs hack is used to send folders to phpcs
-              ls -d */ | grep -vE 'dev|Test|vendor' | xargs ./vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion 7.1- --runtime-set ignore_warnings_on_exit true
+    "quality-tools":
+        docker:
+            - image: algolia/magento2-circleci:2.3.0
+        working_directory: ~/build_directory/algoliasearch-magento-2
+        steps:
+            - checkout
+            - restore_cache:
+                  keys:
+                      - composer-v1-{{ checksum "composer.json" }}
+                      - composer-v1-
+            - run:
+                  name: Prepare environment
+                  command: |
+                      sudo composer self-update
+                      composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
+                      composer install -n --prefer-dist --ignore-platform-reqs --no-progress
+                      sudo chown circleci:circleci ~/.composer/
+                      composer global require algolia/magento2-tools
+
+                      # We have to do this again because we restore the cache above, overwriting the vendor with the original.
+                      cd ~/magento_directory/vendor/algolia
+                      rm -rf algoliasearch-magento-2
+                      cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
+                      cd ~/magento_directory
+                      composer dump-autoload
+            - save_cache:
+                  key: composer-v1-{{ checksum "composer.json" }}
+                  paths:
+                      - vendor
+                      - ~/.composer/vendor
+            - run:
+                  name: Quality tools
+                  command: |
+                      sudo ~/.composer/vendor/bin/magento2-test ~/magento_directory/vendor/algolia/algoliasearch-magento-2 ~/.composer/vendor/bin/
 
 workflows:
     version: 2
@@ -93,4 +105,4 @@ workflows:
         jobs:
             - "magento-2.2"
             - "magento-2.3"
-            - "phpcompatibility"
+            - "quality-tools"

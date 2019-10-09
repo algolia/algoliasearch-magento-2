@@ -64,7 +64,7 @@ jobs:
         docker:
             - image: algolia/magento2-circleci:2.3.0
 
-    "phpcompatibility":
+    "quality-tools":
         docker:
             - image: algolia/magento2-circleci:2.3.0
         working_directory: ~/build_directory/algoliasearch-magento-2

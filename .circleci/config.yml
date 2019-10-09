@@ -105,4 +105,4 @@ workflows:
         jobs:
             - "magento-2.2"
             - "magento-2.3"
-            - "phpcompatibility"
+            - "quality-tools"

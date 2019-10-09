@@ -1,5 +1,38 @@
 # CHANGE LOG
 
+## 1.12.0
+
+### FEATURES
+-  Algolia's facets backend rendering for Mysql Engine (#802) 
+
+### UPDATES
+- The extension no longer supports Magento 2.1 **BC Break**
+- B2B Feature : add condition for allow catalog browsing for enabling and add count check for list() (#820)
+- Updated enabled logic to pull from the config helper class  (#820)
+- Add ACL for Algolia Search configuration section (#829)
+- Remove the isQueueActive() check for the product plugin (#830) 
+- Update get product images (#823) 
+- Remove Circle CI 2.1 check (#849) 
+- Add facet query rules management + dashboard warnings (#844)
+- Update video links in admin (#850) 
+- Add new support page with tabs (#845) 
+- Adjust the extension to be ready for upcoming MSI optional support that will come through another extension. (#841)
+- Making PHPCompatibility assess no funky <7.1 PHP is used in our project
+- Magento Cloud Development setup teardown (#860) 
+- Add type checking tool configuration (#861) 
+- Add notice when users have access to C&C Analytics but they haven't turned it on (#867)
+
+### FIXES
+- Add Store emulation for full category reindexing (#826) 
+- Category Product Updates for Update on Schedule (#819) 
+- Fix disabled autocomplete with active facet query rule) (#866)
+
+## 1.11.3
+
+### UPDATES
+- Add compatibility with Magento 2.3.2 Search Adapter (#806)
+- Batch size proccess of affected products after category update (#811) 
+
 ## 1.11.2
 
 ### UPDATES

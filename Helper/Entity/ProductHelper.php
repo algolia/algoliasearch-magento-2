@@ -219,7 +219,7 @@ class ProductHelper
         $includeNotVisibleIndividually = false
     ) {
         $productCollection = $this->productCollectionFactory->create();
-        $products = $productCollection    
+        $products = $productCollection
             ->setStoreId($storeId)
             ->addStoreFilter($storeId)
             ->distinct(true);

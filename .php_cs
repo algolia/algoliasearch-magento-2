@@ -1,7 +1,11 @@
 <?php
 
 /** @var PhpCsFixer\Config $config */
-$config = require __DIR__ . '/../../../.php_cs.dist';
+if (isset($_SERVER['argv']) && $_SERVER['argv'][3]) {
+    $config = require dirname($_SERVER['argv'][3], 3) . '/.php_cs.dist';
+} else {
+    $config = require __DIR__ . '/../../../.php_cs.dist';
+}
 
 $originalRules = $config->getRules();
 

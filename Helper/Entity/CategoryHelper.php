@@ -175,9 +175,9 @@ class CategoryHelper
         $categories = $this->categoryCollectionFactory->create()
             ->distinct(true)
             ->addNameToResult()
+            ->setStoreId($storeId)
             ->addUrlRewriteToResult()
             ->addAttributeToFilter('level', ['gt' => 1])
-            ->setStoreId($storeId)
             ->addPathFilter($storeRootCategoryPath)
             ->addAttributeToSelect(array_merge(['name', 'is_active', 'include_in_menu', 'image'], $additionalAttr))
             ->addOrderField('entity_id');

@@ -64,9 +64,45 @@ jobs:
         docker:
             - image: algolia/magento2-circleci:2.3.0
 
+    "quality-tools":
+        docker:
+            - image: algolia/magento2-circleci:2.3.0
+        working_directory: ~/build_directory/algoliasearch-magento-2
+        steps:
+            - checkout
+            - restore_cache:
+                  keys:
+                      - composer-v1-{{ checksum "composer.json" }}
+                      - composer-v1-
+            - run:
+                  name: Prepare environment
+                  command: |
+                      sudo composer self-update
+                      composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
+                      composer install -n --prefer-dist --ignore-platform-reqs --no-progress
+                      sudo chown circleci:circleci ~/.composer/
+                      composer global require algolia/magento2-tools
+
+                      # We have to do this again because we restore the cache above, overwriting the vendor with the original.
+                      cd ~/magento_directory/vendor/algolia
+                      rm -rf algoliasearch-magento-2
+                      cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
+                      cd ~/magento_directory
+                      composer dump-autoload
+            - save_cache:
+                  key: composer-v1-{{ checksum "composer.json" }}
+                  paths:
+                      - vendor
+                      - ~/.composer/vendor
+            - run:
+                  name: Quality tools
+                  command: |
+                      sudo ~/.composer/vendor/bin/magento2-test ~/magento_directory/vendor/algolia/algoliasearch-magento-2 ~/.composer/vendor/bin/
+
 workflows:
     version: 2
     build:
         jobs:
             - "magento-2.2"
             - "magento-2.3"
+            - "quality-tools"

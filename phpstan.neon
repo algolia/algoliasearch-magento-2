@@ -1,0 +1,33 @@
+parameters:
+    level: 0
+    reportUnmatchedIgnoredErrors: false
+    paths:
+        - vendor/algolia/algoliasearch-magento-2/Adapter
+        - vendor/algolia/algoliasearch-magento-2/Api
+        - vendor/algolia/algoliasearch-magento-2/Block
+        - vendor/algolia/algoliasearch-magento-2/Controller
+        - vendor/algolia/algoliasearch-magento-2/DataProvider
+        - vendor/algolia/algoliasearch-magento-2/Exception
+        - vendor/algolia/algoliasearch-magento-2/Factory
+        - vendor/algolia/algoliasearch-magento-2/Helper
+        - vendor/algolia/algoliasearch-magento-2/Model
+        - vendor/algolia/algoliasearch-magento-2/Plugin
+        - vendor/algolia/algoliasearch-magento-2/Setup
+        - vendor/algolia/algoliasearch-magento-2/Test
+        - vendor/algolia/algoliasearch-magento-2/Ui
+        - vendor/algolia/algoliasearch-magento-2/ViewModel
+        - vendor/algolia/algoliasearch-magento-2/registration.php
+    ignoreErrors:
+        - '#(class|type) Magento\\\S*Factory#i'
+        - '#(class|type) Algolia\\\S*Factory#i'
+        - '#Call to static method getObjectManager\(\) on an unknown class Magento\\TestFramework\\Helper\\Bootstrap.#'
+        - '#Access to an undefined property Algolia\\AlgoliaSearch\\Plugin\\BackendFilterRendererPlugin::\$storeManager.#'
+        - '#Method Algolia\\AlgoliaSearch\\Model\\Layer\\Filter\\Price::prepareData\(\) invoked with 3 parameters, 2 required.#'
+        - '#Method Algolia\\AlgoliaSearch\\Model\\Layer\\Filter\\Decimal::prepareData\(\) invoked with 3 parameters, 2 required.#'
+        - '#Parameter \$clientFactory of method Algolia\\AlgoliaSearch\\Helper\\AlgoliaHelper::__construct\(\) has invalid typehint type AlgoliaSearch\\ClientFactory.#'
+        - '#Return typehint of method Algolia\\AlgoliaSearch\\Controller\\Adminhtml\\Queue\\AbstractAction::initJob\(\) has invalid type Algolia\\AlgoliaSearch\\Model.#'
+        - '#Access to an undefined property Algolia\\AlgoliaSearch\\Controller\\Adminhtml\\Query\\Save::\$imageUploader.#'
+        - '#Undefined variable: \$data#'
+        - '#Access to an undefined property Algolia\\AlgoliaSearch\\Block\\Navigation\\Renderer\\SliderRenderer::\$filter.#'
+        - '#Access to an undefined property Algolia\\AlgoliaSearch\\Block\\Navigation\\Renderer\\DefaultRenderer::\$filter.#'
+        - '#Access to an undefined property Algolia\\AlgoliaSearch\\Block\\Navigation\\Renderer\\CategoryRenderer::\$filter.#'

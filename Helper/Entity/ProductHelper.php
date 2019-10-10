@@ -232,18 +232,11 @@ class ProductHelper
                     ->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()]);
             }
 
-            if ($this->configHelper->getShowOutOfStock($storeId) === false) {
-                $this->stockHelper->addInStockFilterToCollection($products);
-            }
+            $this->addStockFilter($products, $storeId);
         }
 
         /* @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
-        $products = $products->addFinalPrice()
-            ->addAttributeToSelect('special_price')
-            ->addAttributeToSelect('special_from_date')
-            ->addAttributeToSelect('special_to_date')
-            ->addAttributeToSelect('visibility')
-            ->addAttributeToSelect('status');
+        $this->addMandatoryAttributes($products);
 
         $additionalAttr = $this->getAdditionalAttributes($storeId);
 
@@ -276,6 +269,24 @@ class ProductHelper
         );
 
         return $products;
+    }
+
+    protected function addStockFilter($products, $storeId)
+    {
+        if ($this->configHelper->getShowOutOfStock($storeId) === false) {
+            $this->stockHelper->addInStockFilterToCollection($products);
+        }
+    }
+
+    protected function addMandatoryAttributes($products)
+    {
+        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $products */
+        $products->addFinalPrice()
+            ->addAttributeToSelect('special_price')
+            ->addAttributeToSelect('special_from_date')
+            ->addAttributeToSelect('special_to_date')
+            ->addAttributeToSelect('visibility')
+            ->addAttributeToSelect('status');
     }
 
     public function getAdditionalAttributes($storeId = null)
@@ -743,7 +754,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function addInStock($defaultData, $customData, Product $product)
+    protected function addInStock($defaultData, $customData, Product $product)
     {
         if (isset($defaultData['in_stock']) === false) {
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
@@ -1137,15 +1148,24 @@ class ProductHelper
                 ->withStoreId($storeId);
         }
 
+        $isInStock = true;
         if (!$this->configHelper->getShowOutOfStock($storeId)) {
-            $stockItem = $this->stockRegistry->getStockItem($product->getId());
-            if (! $stockItem->getIsInStock()) {
-                throw (new ProductOutOfStockException())
-                    ->withProduct($product)
-                    ->withStoreId($storeId);
-            }
+            $isInStock = $this->productIsInStock($product, $storeId);
+        }
+
+        if (!$isInStock) {
+            throw (new ProductOutOfStockException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
         }
 
         return true;
+    }
+
+    public function productIsInStock($product, $storeId)
+    {
+        $stockItem = $this->stockRegistry->getStockItem($product->getId());
+
+        return $stockItem->getIsInStock();
     }
 }

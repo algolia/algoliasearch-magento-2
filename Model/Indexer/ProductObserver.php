@@ -27,16 +27,13 @@ class ProductObserver
     }
 
     /**
-     * Using "before" method here instead of "after", because M2.1 doesn't pass "$product" argument
-     * to "after" methods. When M2.1 support will be removed, this method can be rewriten to:
-     * afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product)
-     *
      * @param ProductResource $productResource
+     * @param ProductResource $result
      * @param ProductModel $product
      *
      * @return ProductModel[]
      */
-    public function beforeSave(ProductResource $productResource, ProductModel $product)
+    public function afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
@@ -44,20 +41,17 @@ class ProductObserver
             }
         });
 
-        return [$product];
+        return $result;
     }
 
     /**
-     * Using "before" method here instead of "after", because M2.1 doesn't pass "$product" argument
-     * to "after" methods. When M2.1 support will be removed, this method can be rewriten to:
-     * public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product)
-     *
      * @param ProductResource $productResource
+     * @param ProductResource $result
      * @param ProductModel $product
      *
      * @return ProductModel[]
      */
-    public function beforeDelete(ProductResource $productResource, ProductModel $product)
+    public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product)
     {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
@@ -65,7 +59,7 @@ class ProductObserver
             }
         });
 
-        return [$product];
+        return $result;
     }
 
     /**

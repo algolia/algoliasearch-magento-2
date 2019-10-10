@@ -319,3 +319,98 @@ a.footer {
 .contact_results .ais-hits__empty {
 	font-size: 12px;
 }
+
+/* Tab display */
+#algolia_support_tab ul {
+	margin: 0;
+	padding: 0;
+}
+
+#algolia_support_tab li {
+	display: inline-block;
+	float: none;
+	background: #e3e3e3;
+	border: 0.1rem solid #adadad;
+	border-bottom-color: #e3e3e3;
+	letter-spacing: .0183em;
+	list-style: none;
+	margin-right: .4rem;
+}
+#algolia_support_tab li.tab-active {
+	background: #ffffff;
+	border-bottom: 0;
+	font-weight: 600;
+	letter-spacing: normal;
+	margin-bottom: -.1rem;
+}
+
+#algolia_support_tab li a {
+	color: #41362f;
+	display: block;
+	padding: 1.5rem 1.8rem 1.3rem;
+	text-decoration: none;
+}
+
+#algolia_support_tab li.tab-active a {
+	border-bottom: 0.2rem solid #ffffff;
+	border-top: 0.4rem solid #eb5202;
+	padding-top: 1.1rem;
+}
+
+#algolia_support_tab_content {
+	border-top: 1px solid #adadad;
+	padding-top: 20px;
+}
+
+#algolia-contact-panel {
+	display: none;
+}
+
+/* access denied */
+.algolia-suggestions-header {
+	width : 100%;
+	background-color : #F5FAFD;
+	border : 1px solid #E2F0FA;
+	padding : 20px;
+	margin : 5px 0 20px;
+	position:relative;
+}
+
+.algolia-suggestions-header .book{
+	float : left;
+	margin-right : 20px;
+	margin-top: 5px;
+}
+
+.algolia-suggestions-header p{
+	margin-left : 70px;
+}
+
+.algolia-denied-page {
+	width : 50%;
+	margin: 50px auto;
+	text-align: center;
+}
+
+.algolia-denied-page img{
+	margin : 40px 0 40px;
+}
+
+.algolia-denied-page .algolia-suggestions-header{
+	text-align: left;
+	padding : 25px;
+}
+
+.algolia-suggestions-header-wbg{
+	background: none;
+	width : auto;
+}
+
+.algolia-suggestions-header-wbg p{
+	font-size : 1.6rem;
+}
+
+.algolia-suggestions-header-wbg .stars{
+	float: left;
+	margin: 0 20px 0 0;
+}

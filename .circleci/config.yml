@@ -76,8 +76,8 @@ jobs:
                     sudo chown circleci:circleci ~/.composer/
             - restore_cache:
                   keys:
-                      - composer-v1-{{ checksum "composer.json" }}
-                      - composer-v1-
+                      - composer-v2-{{ checksum "composer.json" }}
+                      - composer-v2-
             - run:
                   name: Prepare environment
                   command: |
@@ -94,7 +94,7 @@ jobs:
                       cd ~/magento_directory
                       composer dump-autoload
             - save_cache:
-                  key: composer-v1-{{ checksum "composer.json" }}
+                  key: composer-v2-{{ checksum "composer.json" }}
                   paths:
                       - vendor
                       - ~/.composer/vendor

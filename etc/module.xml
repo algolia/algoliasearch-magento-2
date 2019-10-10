@@ -3,6 +3,23 @@
     <module name="Algolia_AlgoliaSearch" setup_version="1.12.0">
         <sequence>
             <module name="Magento_Theme"/>
+            <module name="Magento_Backend"/>
+            <module name="Magento_Catalog"/>
+            <module name="Magento_Indexer"/>
+            <module name="Magento_Search"/>
+            <module name="Magento_Checkout"/>
+            <module name="Magento_Customer"/>
+            <module name="Magento_Cms"/>
+            <module name="Magento_Config"/>
+            <module name="Magento_Config"/>
+            <module name="Magento_Store"/>
+            <module name="Magento_Ui"/>
+            <module name="Magento_Directory"/>
+            <module name="Magento_Eav"/>
+            <module name="Magento_Bundle"/>
+            <module name="Magento_Tax"/>
+            <module name="Magento_MediaStorage"/>
+            <module name="Magento_UrlRewrite"/>
             <module name="Magento_Search" />
             <module name="Magento_CatalogSearch" />
             <module name="Magento_LayeredNavigation" />

@@ -75,8 +75,6 @@ class Duplicate extends AbstractAction
                     $stores[] = $store->getId();
                 }
             }
-        } else {
-            $stores[] = $data['store_id'];
         }
 
         foreach ($stores as $storeId) {

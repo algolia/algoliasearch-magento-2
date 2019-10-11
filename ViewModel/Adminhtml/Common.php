@@ -4,6 +4,8 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
+use Magento\Framework\Module\Manager as ModuleManager;
+use Magento\Framework\ObjectManagerInterface;
 
 class Common
 {
@@ -12,6 +14,12 @@ class Common
 
     /** @var ConfigHelper */
     private $configHelper;
+
+    /** @var ModuleManager */
+    private $moduleManager;
+
+    /** @var ObjectManagerInterface */
+    private $objectManager;
 
     /** @var array */
     private $videosConfig = [
@@ -177,10 +185,14 @@ class Common
 
     public function __construct(
         ProxyHelper $proxyHelper,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        ModuleManager $moduleManager,
+        ObjectManagerInterface $objectManager
     ) {
         $this->proxyHelper = $proxyHelper;
         $this->configHelper = $configHelper;
+        $this->moduleManager = $moduleManager;
+        $this->objectManager = $objectManager;
     }
 
     /** @return bool */
@@ -215,6 +227,44 @@ class Common
     public function isClickAnalyticsTurnedOnInAdmin()
     {
         return $this->configHelper->isClickConversionAnalyticsEnabled();
+    }
+
+    public function isMysqlUsed()
+    {
+        $isMysql = false;
+        if ($this->configHelper->getBackendSearchEngine() === 'mysql') {
+            $isMysql = true;
+        }
+
+        return $isMysql;
+    }
+
+    public function isEsWarningNeeded()
+    {
+        return !$this->isMysqlUsed();
+    }
+
+    public function isMsiExternalModuleNeeded()
+    {
+        // If Magento Inventory is not installed, no need for the external module
+        $hasMsiModule = $this->moduleManager->isEnabled('Magento_Inventory');
+        if (! $hasMsiModule) {
+            return false;
+        }
+
+        // If the external module is already installed, no need to do it again
+        $hasMsiExternalModule = $this->moduleManager->isEnabled('Algolia_AlgoliaSearchInventory');
+        if ($hasMsiExternalModule) {
+            return false;
+        }
+
+        // Module installation is only needed if there's more than one source
+        $sourceCollection = $this->objectManager->create('\Magento\Inventory\Model\ResourceModel\Source\Collection');
+        if ($sourceCollection->getSize() <= 1) {
+            return false;
+        }
+
+        return true;
     }
 
     /** @return array|void */

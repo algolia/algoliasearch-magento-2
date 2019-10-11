@@ -28,7 +28,7 @@ define(function () {
         if (Array.isArray(hit.color)) {
             var colors = [];
 
-            hit._highlightResult.color.forEach(hit._highlightResult.color, function (color, i) {
+            hit._highlightResult.color.forEach(function (color) {
                 if (color.matchLevel === 'none') {
                     return;
                 }
@@ -60,7 +60,7 @@ define(function () {
         }
 
         if (algoliaConfig.useAdaptiveImage === true) {
-            matchedColors.forEach(matchedColors, function (color, i) {
+            matchedColors.forEach(function (color) {
                 color = color.toLowerCase();
 
                 if (hit.images_data[color]) {

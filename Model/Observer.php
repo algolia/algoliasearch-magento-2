@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Layout;
+use Magento\Framework\View\Page\Config as PageConfig;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -16,12 +17,18 @@ class Observer implements ObserverInterface
     private $config;
     private $registry;
     private $storeManager;
+    private $pageConfig;
 
-    public function __construct(ConfigHelper $configHelper, Registry $registry, StoreManagerInterface $storeManager)
-    {
+    public function __construct(
+        ConfigHelper $configHelper,
+        Registry $registry,
+        StoreManagerInterface $storeManager,
+        PageConfig $pageConfig
+    ) {
         $this->config = $configHelper;
         $this->registry = $registry;
         $this->storeManager = $storeManager;
+        $this->pageConfig = $pageConfig;
     }
 
     public function execute(\Magento\Framework\Event\Observer $observer)
@@ -43,6 +50,8 @@ class Observer implements ObserverInterface
                     $this->loadPreventBackendRenderingHandle($layout);
 
                     $this->loadAnalyticsHandle($layout);
+
+                    $this->addBodyCss();
                 }
             }
         }
@@ -81,5 +90,13 @@ class Observer implements ObserverInterface
         }
 
         $layout->getUpdate()->addHandle('algolia_search_handle_click_conversion_analytics');
+    }
+
+    private function addBodyCss()
+    {
+        $storeId = $this->storeManager->getStore()->getId();
+        if ($this->config->isBackendRenderingEnabled($storeId)) {
+            $this->pageConfig->addBodyClass('algolia-rendering');
+        }
     }
 }

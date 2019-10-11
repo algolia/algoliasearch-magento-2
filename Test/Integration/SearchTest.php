@@ -17,7 +17,7 @@ class SearchTest extends TestCase
 
         /** @var Data $helper */
         $helper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Data');
-        list($results, $totalHits) = $helper->getSearchResult('', 1);
+        list($results, $totalHits, $facetsFromAlgolia) = $helper->getSearchResult('', 1);
 
         $this->assertNotEmpty($results);
     }

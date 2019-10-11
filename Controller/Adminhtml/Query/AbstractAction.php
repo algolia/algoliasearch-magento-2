@@ -86,7 +86,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         return parent::dispatch($request);
     }
 
-    /** @return Algolia\AlgoliaSearch\Model\Query */
+    /** @return \Algolia\AlgoliaSearch\Model\Query */
     protected function initQuery()
     {
         $queryId = (int) $this->getRequest()->getParam('id');

@@ -14,6 +14,7 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\Area;
+use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Search\Model\Query;
@@ -36,6 +37,7 @@ class Data
     private $emulation;
     private $resource;
     private $eventManager;
+    private $scopeCodeResolver;
     private $storeManager;
 
     private $emulationRuns = false;
@@ -53,6 +55,7 @@ class Data
         Logger $logger,
         ResourceConnection $resource,
         ManagerInterface $eventManager,
+        ScopeCodeResolver $scopeCodeResolver,
         StoreManagerInterface $storeManager
     ) {
         $this->algoliaHelper = $algoliaHelper;
@@ -69,6 +72,7 @@ class Data
         $this->emulation = $emulation;
         $this->resource = $resource;
         $this->eventManager = $eventManager;
+        $this->scopeCodeResolver = $scopeCodeResolver;
         $this->storeManager = $storeManager;
     }
 
@@ -105,6 +109,11 @@ class Data
             $numberOfResults = min($this->configHelper->getNumberOfProductResults($storeId), 1000);
         }
 
+        $facetsToRetrieve = [];
+        foreach ($this->configHelper->getFacets($storeId) as $facet) {
+            $facetsToRetrieve[] = $facet['attribute'];
+        }
+
         $params = [
             'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
             'attributesToRetrieve'   => 'objectID',
@@ -113,6 +122,8 @@ class Data
             'numericFilters'         => 'visibility_search=1',
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
             'analyticsTags'          => 'backend-search',
+            'facets'                 => $facetsToRetrieve,
+            'maxValuesPerFacet'      => 100,
         ];
 
         if (is_array($searchParams)) {
@@ -134,7 +145,7 @@ class Data
             }
         }
 
-        return [$data, $answer['nbHits']];
+        return [$data, $answer['nbHits'], $answer['facets']];
     }
 
     public function rebuildStoreAdditionalSectionsIndex($storeId)
@@ -343,8 +354,12 @@ class Data
             return;
         }
 
+        $this->startEmulation($storeId);
+
         $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId, null);
         $this->rebuildStoreCategoryIndexPage($storeId, $collection, $page, $pageSize);
+
+        $this->stopEmulation();
     }
 
     public function rebuildStoreSuggestionIndexPage($storeId, $collectionDefault, $page, $pageSize)
@@ -665,6 +680,7 @@ class Data
         $this->logger->start('START EMULATION');
 
         $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
+        $this->scopeCodeResolver->clean();
         $this->emulationRuns = true;
 
         $this->logger->stop('START EMULATION');

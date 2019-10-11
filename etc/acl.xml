@@ -4,7 +4,14 @@
         <resources>
             <resource id="Magento_Backend::admin">
                 <resource id="Magento_Backend::system">
-                    <resource id="Algolia_AlgoliaSearch::manage" title="Algolia Algoliasearch" sortOrder="99999" />
+                    <resource id="Algolia_AlgoliaSearch::manage" title="Algolia Search" sortOrder="99999" />
+                </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Algolia_AlgoliaSearch::algolia_algoliasearch" title="Algolia Search"/>
+                        </resource>
+                    </resource>
                 </resource>
             </resource>
         </resources>

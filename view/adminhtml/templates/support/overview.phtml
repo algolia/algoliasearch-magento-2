@@ -18,225 +18,241 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
 
 <?php echo $view->getLegacyVersionHtml(); ?>
 
-<script>
-	const noResultsIllustration = "<?php echo $noResultsIllustration; ?>"
-</script>
-
-<div class="search-box-wrapper">
-    <input type="text" name="q" id="search_box" />
+<div id="algolia_support_tab">
+    <ul role="tablist">
+        <li class="tab-active" role="tab" aria-controls="algolia-documentation-panel" aria-selected="true">
+            <a href="javascript:;">
+                <span><?php echo __('Search Documentation') ?></span>
+            </a>
+        </li>
+        <li role="tab" aria-controls="algolia-contact-panel" aria-selected="false">
+            <a href="javascript:;">
+                <span><?php echo __('Contact Us') ?></span>
+            </a>
+        </li>
+    </ul>
 </div>
 
-<div id="results" class="row">
-    <div class="col-l-5">
-        <div class="heading">
-            <div class="main">
-                Documentation
+<div id="algolia_support_tab_content">
+
+    <div class="algolia_support_panel" id="algolia-documentation-panel">
+
+        <script>
+            const noResultsIllustration = "<?php echo $noResultsIllustration; ?>"
+        </script>
+
+        <div class="search-box-wrapper">
+            <input type="text" name="q" id="search_box" />
+        </div>
+
+        <div id="results" class="row">
+            <div class="col-l-5">
+                <div class="heading">
+                    <div class="main">
+                        Documentation
+                    </div>
+
+                    <div class="sub">
+                        The official Algolia for Magento documentation
+                    </div>
+                </div>
+
+                <div class="stats doc"></div>
+
+                <div class="links doc"></div>
+
+                <div class="footer doc">
+                </div>
             </div>
 
-            <div class="sub">
-                The official Algolia for Magento documentation
+            <div class="col-l-5">
+                <div class="heading">
+                    <div class="main">
+                        Community Forum
+                    </div>
+
+                    <div class="sub">
+                        Questions and answers from the Algolia community
+                    </div>
+                </div>
+
+                <div class="stats forum"></div>
+
+                <div class="links forum"></div>
+
+                <div class="footer forum"></div>
             </div>
         </div>
 
-        <div class="stats doc"></div>
+        <div id="landing" class="row">
+            <div class="col-l-4">
+                <div class="heading">
+                    <img src="<?php echo $docIllustration ?>"  alt="Documentation"/>
 
-        <div class="links doc"></div>
+                    <div class="main">
+                        Documentation
+                    </div>
 
-        <div class="footer doc">
+                    <div class="sub">
+                        Documentation for all things Algolia for Magento
+                    </div>
+                </div>
+                <div class="links">
+                    <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Indexing
+                        </span>
+                        <span class="content">
+                            In order to provide fast and relevant search, Algolia restructures your data in a special way, via Indexing.
+                        </span>
+                    </a>
+                    <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Indexing Queue
+                        </span>
+                        <span class="content">
+                            The index queue manages all uploads to Algolia. Before your data can be searched, it must be uploaded to Algolia. This process is called indexing, which the extension does automatically - via the queue.
+                        </span>
+                    </a>
+                    <a href="https://www.algolia.com/doc/integration/magento-2/customize/autocomplete-menu/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Autocomplete menu
+                        </span>
+                        <span class="content">
+                            Customize the autocomplete drop-down menu which appears underneath the search bar on your Magento site.
+                        </span>
+                    </a>
+                    <a href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Customize the extension
+                        </span>
+                        <span class="content">
+                            In this guide you’ll learn how to attach hooks to the events fired by the Algolia extension. It should only take a few minutes. Let’s get started!
+                        </span>
+                    </a>
+                    <a href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Troubleshooting
+                        </span>
+                        <span class="content">
+                            Let’s say you’re getting an error with your data or search results. It may be an error that other Magento/Algolia users experience.
+                        </span>
+                    </a>
+                </div>
+
+                <a href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
+                    Go to documentation homepage ...
+                </a>
+            </div>
+
+            <div class="col-l-4">
+                <div class="heading">
+                    <img src="<?php echo $comIllustration ?>"  alt="Community Forum" />
+
+                    <div class="main">
+                        Community Forum
+                    </div>
+
+                    <div class="sub">
+                        Questions and answers from the Algolia community
+                    </div>
+                </div>
+                <div class="links">
+                    <a href="https://discourse.algolia.com/t/magento-2-autocomplete-results-configurable-product-prices-showing-0-00/5477/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Autocomplete results configurable product prices showing £0.00
+                        </span>
+                        <span class="content">
+                            We are using the official Algolia extension 1.7.0 on Magento 2.2.4 CE. For some reason our Magento 2 store’s autocomplete search results (the dropdown box below the search input field) is now showing zero prices for some Configurable products (where until the day before yesterday) it would show a range from lowest to highest.
+                        </span>
+                    </a>
+                    <a href="https://discourse.algolia.com/t/magento2-custom-searchable-attributes/1833/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Custom Searchable attributes
+                        </span>
+                        <span class="content">
+                            As per instructions found at Algolia we've tried to set a list of Indexable attributes to sent from Magento 2.1.7 to Algolia.
+                        </span>
+                    </a>
+                    <a href="https://discourse.algolia.com/t/m2-1-7-js-error-on-clean-install/2034/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            M2.1.7 JS Error on Clean install
+                        </span>
+                        <span class="content">
+                            Just installed Algolia for Magento 2 via composer, run setup:upgrade and deployed files and cleared caches (site is still in developer mode).
+                        </span>
+                    </a>
+                    <a href="https://discourse.algolia.com/t/layered-navigation-on-search-result-pages/4619/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Layered Navigation on search result pages
+                        </span>
+                        <span class="content">
+                            I have an issue with layered navigation (Filters) on Search result pages within Magento where Instant search is not being used.
+                        </span>
+                    </a>
+                    <a href="https://discourse.algolia.com/t/magento-in-the-url/2364/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
+                        <span class="heading">
+                            Magento in the URL
+                        </span>
+                        <span class="content">
+                            My Algolia dashboard indexed URL’s not updated after 6 hours - still contain ref to “bad” URL’s. Have performed magento indexer:reindex.
+                        </span>
+                    </a>
+                </div>
+
+                <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
+                    Browse more forum topics ...
+                </a>
+            </div>
+
+            <div class="col-l-4">
+                <div class="heading">
+                    <img src="<?php echo $vidIllustration ?>"  alt="Video Tutorials" />
+
+                    <div class="main">
+                        Video Tutorials
+                    </div>
+
+                    <div class="sub">
+                        An introduction to the Magento extension in video
+                    </div>
+                </div>
+                <div class="videos">
+                    <a href="https://www.youtube.com/watch?v=1vxnisyxgFU" target="_blank" class="video">
+                        <div class="img">
+                            <img src="<?php echo $videoDiscover ?>"  alt="Discover the extension" />
+                        </div>
+                        <div class="description">
+                            Discover the extension
+                        </div>
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=0V1BSKlCm10" target="_blank" class="video">
+                        <div class="img">
+                            <img src="<?php echo $videoQueue ?>"  alt="Understand Indexing queue" />
+                        </div>
+                        <div class="description">
+                            Understand Indexing Queue
+                        </div>
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=qzaLrHz67U4" target="_blank" class="video">
+                        <div class="img">
+                            <img src="<?php echo $videoFeatures ?>"  alt="See all extra features" />
+                        </div>
+                        <div class="description">
+                            See all extra features
+                        </div>
+                    </a>
+                </div>
+
+                <a href="https://www.youtube.com/playlist?list=PLuHdbqhRgWHLZ8pIwBT0B2JNxdoSfCWKY&disable_polymer=true" class="footer" target="_blank">
+                    View more tutorials ...
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="col-l-5">
-        <div class="heading">
-            <div class="main">
-                Community Forum
-            </div>
-
-            <div class="sub">
-                Questions and answers from the Algolia community
-            </div>
-        </div>
-
-        <div class="stats forum"></div>
-
-        <div class="links forum"></div>
-
-        <div class="footer forum"></div>
-    </div>
-</div>
-
-<div id="landing" class="row">
-    <div class="col-l-4">
-        <div class="heading">
-            <img src="<?php echo $docIllustration ?>"  alt="Documentation"/>
-
-            <div class="main">
-                Documentation
-            </div>
-
-            <div class="sub">
-                Documentation for all things Algolia for Magento
-            </div>
-        </div>
-        <div class="links">
-            <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Indexing
-                </span>
-                <span class="content">
-                    In order to provide fast and relevant search, Algolia restructures your data in a special way, via Indexing.
-                </span>
-            </a>
-            <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Indexing Queue
-                </span>
-                <span class="content">
-                    The index queue manages all uploads to Algolia. Before your data can be searched, it must be uploaded to Algolia. This process is called indexing, which the extension does automatically - via the queue.
-                </span>
-            </a>
-            <a href="https://www.algolia.com/doc/integration/magento-2/customize/autocomplete-menu/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Autocomplete menu
-                </span>
-                <span class="content">
-                    Customize the autocomplete drop-down menu which appears underneath the search bar on your Magento site.
-                </span>
-            </a>
-            <a href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Customize the extension
-                </span>
-                <span class="content">
-                    In this guide you’ll learn how to attach hooks to the events fired by the Algolia extension. It should only take a few minutes. Let’s get started!
-                </span>
-            </a>
-            <a href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Troubleshooting
-                </span>
-                <span class="content">
-                    Let’s say you’re getting an error with your data or search results. It may be an error that other Magento/Algolia users experience.
-                </span>
-            </a>
-        </div>
-
-        <a href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
-            Go to documentation homepage ...
-        </a>
+    <div class="algolia_support_panel" id="algolia-contact-panel">
+        <?php echo $view->getContactHtml(); ?>
     </div>
 
-    <div class="col-l-4">
-        <div class="heading">
-            <img src="<?php echo $comIllustration ?>"  alt="Community Forum" />
-
-            <div class="main">
-                Community Forum
-            </div>
-
-            <div class="sub">
-                Questions and answers from the Algolia community
-            </div>
-        </div>
-        <div class="links">
-            <a href="https://discourse.algolia.com/t/magento-2-autocomplete-results-configurable-product-prices-showing-0-00/5477/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Autocomplete results configurable product prices showing £0.00
-                </span>
-                <span class="content">
-                    We are using the official Algolia extension 1.7.0 on Magento 2.2.4 CE. For some reason our Magento 2 store’s autocomplete search results (the dropdown box below the search input field) is now showing zero prices for some Configurable products (where until the day before yesterday) it would show a range from lowest to highest.
-                </span>
-            </a>
-            <a href="https://discourse.algolia.com/t/magento2-custom-searchable-attributes/1833/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Custom Searchable attributes
-                </span>
-                <span class="content">
-                    As per instructions found at Algolia we've tried to set a list of Indexable attributes to sent from Magento 2.1.7 to Algolia.
-                </span>
-            </a>
-            <a href="https://discourse.algolia.com/t/m2-1-7-js-error-on-clean-install/2034/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    M2.1.7 JS Error on Clean install
-                </span>
-                <span class="content">
-                    Just installed Algolia for Magento 2 via composer, run setup:upgrade and deployed files and cleared caches (site is still in developer mode).
-                </span>
-            </a>
-            <a href="https://discourse.algolia.com/t/layered-navigation-on-search-result-pages/4619/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Layered Navigation on search result pages
-                </span>
-                <span class="content">
-                    I have an issue with layered navigation (Filters) on Search result pages within Magento where Instant search is not being used.
-                </span>
-            </a>
-            <a href="https://discourse.algolia.com/t/magento-in-the-url/2364/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
-                <span class="heading">
-                    Magento in the URL
-                </span>
-                <span class="content">
-                    My Algolia dashboard indexed URL’s not updated after 6 hours - still contain ref to “bad” URL’s. Have performed magento indexer:reindex.
-                </span>
-            </a>
-        </div>
-
-        <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
-            Browse more forum topics ...
-        </a>
-    </div>
-
-    <div class="col-l-4">
-        <div class="heading">
-            <img src="<?php echo $vidIllustration ?>"  alt="Video Tutorials" />
-
-            <div class="main">
-                Video Tutorials
-            </div>
-
-            <div class="sub">
-                An introduction to the Magento extension in video
-            </div>
-        </div>
-        <div class="videos">
-            <a href="https://www.youtube.com/watch?v=1vxnisyxgFU" target="_blank" class="video">
-                <div class="img">
-                    <img src="<?php echo $videoDiscover ?>"  alt="Discover the extension" />
-                </div>
-                <div class="description">
-                    Discover the extension
-                </div>
-            </a>
-            <a href="https://www.youtube.com/watch?v=0V1BSKlCm10" target="_blank" class="video">
-                <div class="img">
-                    <img src="<?php echo $videoQueue ?>"  alt="Understand Indexing queue" />
-                </div>
-                <div class="description">
-                    Understand Indexing Queue
-                </div>
-            </a>
-            <a href="https://www.youtube.com/watch?v=qzaLrHz67U4" target="_blank" class="video">
-                <div class="img">
-                    <img src="<?php echo $videoFeatures ?>"  alt="See all extra features" />
-                </div>
-                <div class="description">
-                    See all extra features
-                </div>
-            </a>
-        </div>
-
-        <a href="https://www.youtube.com/playlist?list=PLuHdbqhRgWHLZ8pIwBT0B2JNxdoSfCWKY&disable_polymer=true" class="footer" target="_blank">
-            View more tutorials ...
-        </a>
-    </div>
-</div>
-
-<div class="contact-us">
-    <?php if ($view->isExtensionSupportEnabled()): ?>
-        Didn't find what you were looking for?
-        <a href="<?php echo $this->getUrl('*/*/contact'); ?>">Contact us</a>.
-    <?php else: ?>
-        Consider <a href="https://www.algolia.com/apps/<?php echo $view->getApplicationId(); ?>/billing/overview" target="_blank">updating your plan</a>
-        to get direct and fast email help by Algolia experts.
-    <?php endif; ?>
 </div>

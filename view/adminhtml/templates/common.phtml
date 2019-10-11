@@ -6,12 +6,14 @@
 $viewModel = $this->getViewModel();
 
 $isClickAnalyticsEnabled = true;
+$isClickAnalyticsTurnedOnInAdmin = true;
 $isQueryRulesEnabled = true;
 
 $section = $this->getRequest()->getParam('section');
 
 if ($section === 'algoliasearch_cc_analytics') {
     $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
+    $isClickAnalyticsTurnedOnInAdmin = $viewModel->isClickAnalyticsTurnedOnInAdmin();
 }
 
 if ($section === 'algoliasearch_instant') {
@@ -38,6 +40,7 @@ $linksConfig = $viewModel->getLinksConfig($section);
 
 <script>
 var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
+var isClickAnalyticsTurnedOnInAdmin = <?php echo json_encode($isClickAnalyticsTurnedOnInAdmin); ?>;
 var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
 var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>;
 var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
@@ -85,10 +88,29 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				</div>
 			`;
 
+			/** FEATURE ACTIVATION **/
+			var notActivatedText = `
+			<tr>
+				<td colspan="3">
+					<div class="algolia_block blue icon-stars">
+					Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
+					like Click-through Rate, Conversion Rate from searches and average click position.
+					Click Analytics are only available for higher plans and require only minor additional settings.
+					<br><br>
+					Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+					</div>
+				</td>
+			</tr>
+			`;
+
 			// Click analytics
 			if (isClickAnalyticsEnabled === false) {
 				$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
 				$('#algoliasearch_cc_analytics_cc_analytics_group .comment').after(notEnabledText);
+			}
+
+			if (isClickAnalyticsEnabled === true && isClickAnalyticsTurnedOnInAdmin === false) {
+				$('#row_algoliasearch_cc_analytics_cc_analytics_group_enable').before(notActivatedText);
 			}
 
 			// Query rules in facets

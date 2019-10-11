@@ -70,7 +70,7 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 		 * Docs: https://community.algolia.com/instantsearch.js/
 		 **/
 		
-		var ruleContexts = ['']; // Empty context to keep BC for already create rules in dashboard
+		var ruleContexts = ['magento_filters', '']; // Empty context to keep BC for already create rules in dashboard
 		if (algoliaConfig.request.categoryId.length > 0) {
 			ruleContexts.push('magento-category-' + algoliaConfig.request.categoryId);
 		}
@@ -175,7 +175,7 @@ requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBu
 					},
 					render: function (data) {
 						if (!algoliaConfig.isSearchPage) {
-							if (data.results.query.length === 0) {
+							if (data.results.query.length === 0 && data.results.nbHits === 0) {
 								$('.algolia-instant-replaced-content').show();
 								$('.algolia-instant-selector-results').hide();
 							}

@@ -35,8 +35,8 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class ProductHelper
 {
-    public $productCollectionFactory;
-    public $groupCollection;
+    protected $productCollectionFactory;
+    protected $groupCollection;
     private $eavConfig;
     private $configHelper;
     private $algoliaHelper;

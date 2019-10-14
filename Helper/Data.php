@@ -14,6 +14,7 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\App\Area;
+use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Search\Model\Query;
@@ -36,6 +37,7 @@ class Data
     private $emulation;
     private $resource;
     private $eventManager;
+    private $scopeCodeResolver;
     private $storeManager;
 
     private $emulationRuns = false;
@@ -53,6 +55,7 @@ class Data
         Logger $logger,
         ResourceConnection $resource,
         ManagerInterface $eventManager,
+        ScopeCodeResolver $scopeCodeResolver,
         StoreManagerInterface $storeManager
     ) {
         $this->algoliaHelper = $algoliaHelper;
@@ -69,6 +72,7 @@ class Data
         $this->emulation = $emulation;
         $this->resource = $resource;
         $this->eventManager = $eventManager;
+        $this->scopeCodeResolver = $scopeCodeResolver;
         $this->storeManager = $storeManager;
     }
 
@@ -676,6 +680,7 @@ class Data
         $this->logger->start('START EMULATION');
 
         $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
+        $this->scopeCodeResolver->clean();
         $this->emulationRuns = true;
 
         $this->logger->stop('START EMULATION');

@@ -231,12 +231,7 @@ class Common
 
     public function isMysqlUsed()
     {
-        $isMysql = false;
-        if ($this->configHelper->getBackendSearchEngine() === 'mysql') {
-            $isMysql = true;
-        }
-
-        return $isMysql;
+        return $this->configHelper->getBackendSearchEngine() === 'mysql';
     }
 
     public function isEsWarningNeeded()

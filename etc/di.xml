@@ -99,4 +99,9 @@
             <argument name="imageUploader" xsi:type="object">Algolia\AlgoliaSearch\QueryImageUpload</argument>
         </arguments>
     </type>
+    <type name="Algolia\AlgoliaSearch\Controller\Adminhtml\Query\Save">
+        <arguments>
+            <argument name="imageUploader" xsi:type="object">Algolia\AlgoliaSearch\QueryImageUpload</argument>
+        </arguments>
+    </type>    
 </config>

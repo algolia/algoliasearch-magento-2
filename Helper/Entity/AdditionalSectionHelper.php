@@ -65,12 +65,12 @@ class AdditionalSectionHelper
             implode(',', $usedAttributeValues)
         );
 
-        if (!$values || count($values) === 0) {
-            $values = array_unique($products->getColumnValues($attributeCode));
-        }
-
         if ($values && is_array($values) === false) {
             $values = [$values];
+        }
+
+        if (!$values || count($values) === 0) {
+            $values = array_unique($products->getColumnValues($attributeCode));
         }
 
         $values = array_map(function ($value) use ($section, $storeId) {

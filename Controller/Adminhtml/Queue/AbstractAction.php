@@ -58,7 +58,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return Algolia\AlgoliaSearch\Model */
+    /** @return \Algolia\AlgoliaSearch\Model */
     protected function initJob()
     {
         $jobId = (int) $this->getRequest()->getParam('id');

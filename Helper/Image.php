@@ -13,7 +13,7 @@ class Image extends \Magento\Catalog\Helper\Image
     /**
      * @var ConfigHelper
      */
-    public $configHelper;
+    protected $configHelper;
     private $logger;
 
     /**

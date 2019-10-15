@@ -49,5 +49,4 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
 
         return $block->toHtml();
     }
-
 }

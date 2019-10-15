@@ -91,7 +91,7 @@ class ProductHelper
 
     /**
      * ProductHelper constructor.
-     * 
+     *
      * @param Config $eavConfig
      * @param ConfigHelper $configHelper
      * @param AlgoliaHelper $algoliaHelper

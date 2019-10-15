@@ -76,7 +76,7 @@ class Decimal extends \Magento\CatalogSearch\Model\Layer\Filter\Decimal
                 if (mb_strpos($key, '_') === false) {
                     continue;
                 }
-                $data[] = $this->prepareData($key, $count, $data);
+                $data[] = $this->prepareData($key, $count);
             }
         }
 

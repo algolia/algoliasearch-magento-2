@@ -57,7 +57,4 @@
     <event name="algolia_after_create_category_object">
         <observer name="algoliasearch_category_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\CategoryPermissions" />
     </event>
-    <event name="backend_auth_user_login_success">
-        <observer name="algoliasearch_extension_notification" instance="Algolia\AlgoliaSearch\Model\Observer\ExtensionNotification" />
-    </event>
 </config>

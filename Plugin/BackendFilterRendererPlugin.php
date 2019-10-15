@@ -11,6 +11,12 @@ class BackendFilterRendererPlugin
     /** @var LayoutInterface */
     protected $layout;
 
+    /** @var StoreManagerInterface */
+    protected $storeManager;
+
+    /** @var ConfigHelper */
+    protected $configHelper;
+
     /** @var string */
     protected $defaultBlock = \Algolia\AlgoliaSearch\Block\Navigation\Renderer\DefaultRenderer::class;
 
@@ -23,9 +29,6 @@ class BackendFilterRendererPlugin
     /** @var string */
     protected $sliderBlock = \Algolia\AlgoliaSearch\Block\Navigation\Renderer\SliderRenderer::class;
 
-    /** @var ConfigHelper */
-    private $configHelper;
-
     /**
      * @param LayoutInterface $layout
      * @param StoreManagerInterface $storeManager
@@ -37,8 +40,8 @@ class BackendFilterRendererPlugin
         ConfigHelper $configHelper
     ) {
         $this->layout = $layout;
-        $this->configHelper = $configHelper;
         $this->storeManager = $storeManager;
+        $this->configHelper = $configHelper;
     }
 
     /**

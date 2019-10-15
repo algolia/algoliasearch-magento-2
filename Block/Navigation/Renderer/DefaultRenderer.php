@@ -24,6 +24,9 @@ class DefaultRenderer extends Template implements FilterRendererInterface
     /** @var ConfigHelper */
     private $configHelper;
 
+    /** @var FilterInterface */
+    protected $filter;
+
     /**
      * Constructor.
      *

@@ -24,7 +24,7 @@ class Save extends AbstractAction
      */
     protected $configHelper;
 
-    /** 
+    /**
      * @var ImageUploader
      */
     protected $imageUploader;

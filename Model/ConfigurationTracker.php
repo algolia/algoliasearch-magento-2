@@ -9,7 +9,6 @@ use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage\Collection as LandingP
 use Algolia\AlgoliaSearch\Model\ResourceModel\Query\Collection as QueryCollection;
 use Algolia\AlgoliaSearch\Setup\UpgradeSchema;
 
-
 class ConfigurationTracker
 {
     /** @var Data */

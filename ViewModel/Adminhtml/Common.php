@@ -175,7 +175,10 @@ class Common
         'thumbnail' => 'https://img.youtube.com/vi/twEj_VBWxp8/mqdefault.jpg',
     ];
 
-    public function __construct(ProxyHelper $proxyHelper, ConfigHelper $configHelper) {
+    public function __construct(
+        ProxyHelper $proxyHelper,
+        ConfigHelper $configHelper
+    ) {
         $this->proxyHelper = $proxyHelper;
         $this->configHelper = $configHelper;
     }

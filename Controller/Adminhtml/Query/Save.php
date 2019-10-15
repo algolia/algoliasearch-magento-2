@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Query;
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\ImageUploader;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Controller\ResultFactory;
@@ -23,6 +24,9 @@ class Save extends AbstractAction
      */
     protected $configHelper;
 
+    /** 
+     * @var ImageUploader
+     */
     protected $imageUploader;
 
     /**
@@ -36,6 +40,7 @@ class Save extends AbstractAction
      * @param StoreManagerInterface $storeManager
      * @param DataPersistorInterface $dataPersistor
      * @param ConfigHelper $configHelper
+     * @param ImageUploader $imageUploader
      *
      * @return Save
      */
@@ -47,10 +52,12 @@ class Save extends AbstractAction
         ProxyHelper $proxyHelper,
         StoreManagerInterface $storeManager,
         DataPersistorInterface $dataPersistor,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        ImageUploader $imageUploader
     ) {
         $this->dataPersistor = $dataPersistor;
         $this->configHelper = $configHelper;
+        $this->imageUploader = $imageUploader;
 
         parent::__construct(
             $context,
@@ -95,9 +102,6 @@ class Save extends AbstractAction
 
             if (isset($data['banner_image'][0]['name']) && isset($data['banner_image'][0]['tmp_name'])) {
                 $data['banner_image'] = $data['banner_image'][0]['name'];
-                $this->imageUploader = \Magento\Framework\App\ObjectManager::getInstance()->get(
-                    'Algolia\AlgoliaSearch\QueryImageUpload'
-                );
                 $this->imageUploader->moveFileFromTmp($data['banner_image']);
             } elseif (isset($data['banner_image'][0]['image']) && !isset($data['banner_image'][0]['tmp_name'])) {
                 $data['banner_image'] = $data['banner_image'][0]['image'];

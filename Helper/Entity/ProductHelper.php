@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
+use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
 use AlgoliaSearch\AlgoliaException;
 use AlgoliaSearch\Index;
@@ -20,19 +21,22 @@ use Magento\Catalog\Model\Product\Type;
 use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 
 class ProductHelper
 {
+    protected $productCollectionFactory;
+    protected $groupCollection;
     private $eavConfig;
     private $configHelper;
     private $algoliaHelper;
@@ -42,7 +46,6 @@ class ProductHelper
     private $visibility;
     private $stockHelper;
     private $stockRegistry;
-    private $objectManager;
     private $currencyManager;
     private $categoryHelper;
     private $priceManager;
@@ -86,6 +89,26 @@ class ProductHelper
         'color',
     ];
 
+    /**
+     * ProductHelper constructor.
+     *
+     * @param Config $eavConfig
+     * @param ConfigHelper $configHelper
+     * @param AlgoliaHelper $algoliaHelper
+     * @param Logger $logger
+     * @param StoreManagerInterface $storeManager
+     * @param ManagerInterface $eventManager
+     * @param Visibility $visibility
+     * @param Stock $stockHelper
+     * @param StockRegistryInterface $stockRegistry
+     * @param CurrencyHelper $currencyManager
+     * @param CategoryHelper $categoryHelper
+     * @param PriceManager $priceManager
+     * @param Type $productType
+     * @param CollectionFactory $productCollectionFactory
+     * @param GroupCollection $groupCollection
+     * @param ImageHelper $imageHelper
+     */
     public function __construct(
         Config $eavConfig,
         ConfigHelper $configHelper,
@@ -96,11 +119,13 @@ class ProductHelper
         Visibility $visibility,
         Stock $stockHelper,
         StockRegistryInterface $stockRegistry,
-        ObjectManagerInterface $objectManager,
         CurrencyHelper $currencyManager,
         CategoryHelper $categoryHelper,
         PriceManager $priceManager,
-        Type $productType
+        Type $productType,
+        CollectionFactory $productCollectionFactory,
+        GroupCollection $groupCollection,
+        ImageHelper $imageHelper
     ) {
         $this->eavConfig = $eavConfig;
         $this->configHelper = $configHelper;
@@ -111,20 +136,13 @@ class ProductHelper
         $this->visibility = $visibility;
         $this->stockHelper = $stockHelper;
         $this->stockRegistry = $stockRegistry;
-        $this->objectManager = $objectManager;
         $this->currencyManager = $currencyManager;
         $this->categoryHelper = $categoryHelper;
         $this->priceManager = $priceManager;
         $this->productType = $productType;
-
-        $this->imageHelper = $this->objectManager->create(
-            'Algolia\AlgoliaSearch\Helper\Image',
-            [
-                'options' =>[
-                    'shouldRemovePubDir' => $this->configHelper->shouldRemovePubDirectory(),
-                ],
-            ]
-        );
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->groupCollection = $groupCollection;
+        $this->imageHelper = $imageHelper;
     }
 
     public function getIndexNameSuffix()
@@ -201,10 +219,8 @@ class ProductHelper
         $onlyVisible = true,
         $includeNotVisibleIndividually = false
     ) {
-        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $products */
-        $products = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Product\Collection');
-
-        $products = $products
+        $productCollection = $this->productCollectionFactory->create();
+        $products = $productCollection
             ->setStoreId($storeId)
             ->addStoreFilter($storeId)
             ->distinct(true);
@@ -217,18 +233,11 @@ class ProductHelper
                     ->addAttributeToFilter('visibility', ['in' => $this->visibility->getVisibleInSiteIds()]);
             }
 
-            if ($this->configHelper->getShowOutOfStock($storeId) === false) {
-                $this->stockHelper->addInStockFilterToCollection($products);
-            }
+            $this->addStockFilter($products, $storeId);
         }
 
         /* @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
-        $products = $products->addFinalPrice()
-            ->addAttributeToSelect('special_price')
-            ->addAttributeToSelect('special_from_date')
-            ->addAttributeToSelect('special_to_date')
-            ->addAttributeToSelect('visibility')
-            ->addAttributeToSelect('status');
+        $this->addMandatoryAttributes($products);
 
         $additionalAttr = $this->getAdditionalAttributes($storeId);
 
@@ -261,6 +270,24 @@ class ProductHelper
         );
 
         return $products;
+    }
+
+    protected function addStockFilter($products, $storeId)
+    {
+        if ($this->configHelper->getShowOutOfStock($storeId) === false) {
+            $this->stockHelper->addInStockFilterToCollection($products);
+        }
+    }
+
+    protected function addMandatoryAttributes($products)
+    {
+        /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $products */
+        $products->addFinalPrice()
+            ->addAttributeToSelect('special_price')
+            ->addAttributeToSelect('special_from_date')
+            ->addAttributeToSelect('special_to_date')
+            ->addAttributeToSelect('visibility')
+            ->addAttributeToSelect('status');
     }
 
     public function getAdditionalAttributes($storeId = null)
@@ -728,7 +755,7 @@ class ProductHelper
         return $customData;
     }
 
-    private function addInStock($defaultData, $customData, Product $product)
+    protected function addInStock($defaultData, $customData, Product $product)
     {
         if (isset($defaultData['in_stock']) === false) {
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
@@ -960,10 +987,7 @@ class ProductHelper
                     $facet['attribute'] = 'price.' . $currency_code . '.default';
 
                     if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
-                        $groupCollection = $this->objectManager
-                            ->create('Magento\Customer\Model\ResourceModel\Group\Collection');
-
-                        foreach ($groupCollection as $group) {
+                        foreach ($this->groupCollection as $group) {
                             $group_id = (int) $group->getData('customer_group_id');
 
                             $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $group_id;
@@ -1125,15 +1149,24 @@ class ProductHelper
                 ->withStoreId($storeId);
         }
 
+        $isInStock = true;
         if (!$this->configHelper->getShowOutOfStock($storeId)) {
-            $stockItem = $this->stockRegistry->getStockItem($product->getId());
-            if (! $stockItem->getIsInStock()) {
-                throw (new ProductOutOfStockException())
-                    ->withProduct($product)
-                    ->withStoreId($storeId);
-            }
+            $isInStock = $this->productIsInStock($product, $storeId);
+        }
+
+        if (!$isInStock) {
+            throw (new ProductOutOfStockException())
+                ->withProduct($product)
+                ->withStoreId($storeId);
         }
 
         return true;
+    }
+
+    public function productIsInStock($product, $storeId)
+    {
+        $stockItem = $this->stockRegistry->getStockItem($product->getId());
+
+        return $stockItem->getIsInStock();
     }
 }

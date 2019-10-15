@@ -334,7 +334,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					name: i,
 					templates: {
 						suggestion: function (hit, payload) {
-							hit.url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + hit.value + '&refinement_key=' + section.name;
+							hit.url = algoliaConfig.baseUrl + '/catalogsearch/result/?q=' + hit.value + '&refinement_key=' + encodeURIComponent(section.name);
 
 							hit.__queryID = payload.queryID;
 							hit.__position = payload.hits.indexOf(hit) + 1;

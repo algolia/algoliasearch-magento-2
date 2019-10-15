@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support;
 
-use Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate;
 use Algolia\AlgoliaSearch\Helper\SupportHelper;
 use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
 use Magento\Backend\Block\Template;
@@ -51,12 +50,4 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
         return $block->toHtml();
     }
 
-    public function getContactHtml()
-    {
-        /** @var BaseAdminTemplate $block */
-        $block = $this->backendView->getLayout()->createBlock(BaseAdminTemplate::class);
-        $block->setTemplate('Algolia_AlgoliaSearch::support/contact.phtml');
-
-        return $block->toHtml();
-    }
 }

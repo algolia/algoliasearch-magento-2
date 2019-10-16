@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
+use Algolia\AlgoliaSearch\Model\ExtensionNotification;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Search\EngineResolverInterface;
@@ -25,6 +26,9 @@ class Common
 
     /** @var EngineResolverInterface */
     private $engineResolver;
+
+    /** @var ExtensionNotification */
+    private $extensionNotification;
 
     /** @var array */
     private $videosConfig = [
@@ -193,13 +197,15 @@ class Common
         ConfigHelper $configHelper,
         ModuleManager $moduleManager,
         ObjectManagerInterface $objectManager,
-        EngineResolverInterface $engineResolver
+        EngineResolverInterface $engineResolver,
+        ExtensionNotification $extensionNotification
     ) {
         $this->proxyHelper = $proxyHelper;
         $this->configHelper = $configHelper;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
         $this->engineResolver = $engineResolver;
+        $this->extensionNotification = $extensionNotification;
     }
 
     /** @return bool */
@@ -298,5 +304,11 @@ class Common
         }
 
         return $config;
+    }
+
+    /** @return array|null */
+    public function getNewVersionNotification()
+    {
+        return $this->extensionNotification->checkVersion();
     }
 }

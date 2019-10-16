@@ -10,7 +10,7 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Search\EngineResolverInterface;
 use Magento\Search\Model\EngineResolver;
 
-class Common
+class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     /** @var ProxyHelper */
     private $proxyHelper;

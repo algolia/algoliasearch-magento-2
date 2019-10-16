@@ -6,11 +6,11 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block
-                class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate"
-                name="query_suggestions"
-                template="Algolia_AlgoliaSearch::query/suggestions.phtml"
-            />
+            <block class="Magento\Backend\Block\Template" name="query_suggestions" template="Algolia_AlgoliaSearch::query/suggestions.phtml" >
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Query\Suggestions</argument>
+                </arguments>
+            </block>
             <uiComponent name="algolia_algoliasearch_query_listing"/>
         </referenceContainer>
     </body>

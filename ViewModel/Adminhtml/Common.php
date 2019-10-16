@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
+use Algolia\AlgoliaSearch\Model\ExtensionNotification;
 
 class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
@@ -12,6 +13,9 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
 
     /** @var ConfigHelper */
     private $configHelper;
+
+    /** @var ExtensionNotification */
+    private $extensionNotification;
 
     /** @var array */
     private $videosConfig = [
@@ -177,10 +181,12 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
 
     public function __construct(
         ProxyHelper $proxyHelper,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        ExtensionNotification $extensionNotification
     ) {
         $this->proxyHelper = $proxyHelper;
         $this->configHelper = $configHelper;
+        $this->extensionNotification = $extensionNotification;
     }
 
     /** @return bool */
@@ -246,5 +252,11 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
         }
 
         return $config;
+    }
+
+    /** @return array|null */
+    public function getNewVersionNotification()
+    {
+        return $this->extensionNotification->checkVersion();
     }
 }

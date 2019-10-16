@@ -36,6 +36,8 @@ $icons = [
 $videoConfig = $viewModel->getVideoConfig($section);
 $linksConfig = $viewModel->getLinksConfig($section);
 
+$newVersionNotification = $viewModel->getNewVersionNotification();
+
 ?>
 
 <script>
@@ -50,6 +52,7 @@ var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
 var icons = <?php echo json_encode($icons); ?>;
 var videoConfig = <?php echo json_encode($videoConfig); ?>;
 var linksConfig = <?php echo json_encode($linksConfig); ?>;
+var newVersionNotification = <?php echo json_encode($newVersionNotification); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
@@ -155,6 +158,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 					$('.entry-edit').before(message);
 				});
+				// New version notification
+				if (newVersionNotification) {
+					notification = `
+						<div class="algolia_block icon-warning">
+							<div class="heading">Algolia Extension update</div>
+							You are using old version of Algolia extension. Latest version of the extension is v <b>` + newVersionNotification.version + `</b><br />
+							It is highly recommended to update your version to avoid any unexpecting issues and to get new features.<br />
+							See details on our <a target="_blank" href="` + newVersionNotification.url + `">Github repository</a>.
+						</div>`;
+					$('.entry-edit').before(notification);
+				}
 
 				// Admin videos
                 var videoTemplate = '';

@@ -6,6 +6,8 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Search\EngineResolverInterface;
+use Magento\Search\Model\EngineResolver;
 
 class Common
 {
@@ -20,6 +22,9 @@ class Common
 
     /** @var ObjectManagerInterface */
     private $objectManager;
+
+    /** @var EngineResolverInterface */
+    private $engineResolver;
 
     /** @var array */
     private $videosConfig = [
@@ -187,12 +192,14 @@ class Common
         ProxyHelper $proxyHelper,
         ConfigHelper $configHelper,
         ModuleManager $moduleManager,
-        ObjectManagerInterface $objectManager
+        ObjectManagerInterface $objectManager,
+        EngineResolverInterface $engineResolver
     ) {
         $this->proxyHelper = $proxyHelper;
         $this->configHelper = $configHelper;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
+        $this->engineResolver = $engineResolver;
     }
 
     /** @return bool */
@@ -231,7 +238,7 @@ class Common
 
     public function isMysqlUsed()
     {
-        return $this->configHelper->getBackendSearchEngine() === 'mysql';
+        return $this->engineResolver->getCurrentSearchEngine() === EngineResolver::CATALOG_SEARCH_MYSQL_ENGINE;
     }
 
     public function isEsWarningNeeded()

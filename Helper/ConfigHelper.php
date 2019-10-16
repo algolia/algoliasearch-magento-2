@@ -98,7 +98,6 @@ class ConfigHelper
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
     const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
-    const BACKEND_SEARCH_ENGINE = 'catalog/search/engine';
 
     const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
     const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
@@ -270,11 +269,6 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
-    }
-
-    public function getBackendSearchEngine($storeId = null)
-    {
-        return $this->configInterface->getValue(self::BACKEND_SEARCH_ENGINE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getImageWidth($storeId = null)

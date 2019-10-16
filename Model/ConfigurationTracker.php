@@ -69,7 +69,7 @@ class ConfigurationTracker
             'noOfMerchandisingQRs' => (int) $this->getCountMerchandisingQueries(),
             'landingPageCreated' => $this->getCountLandingPages() > 0,
             'noOfLandingPages' => (int) $this->getCountLandingPages(),
-            'storeId' => $storeId
+            'storeId' => $storeId,
         ]);
     }
 
@@ -113,6 +113,7 @@ class ConfigurationTracker
 
     /**
      * @param string $path
+     *
      * @return mixed|null
      */
     private function getDefaultConfigurationFromPath($path)

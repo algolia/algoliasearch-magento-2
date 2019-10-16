@@ -703,6 +703,7 @@ class ConfigHelper
 
     /**
      * @param int|null $storeId
+     *
      * @return mixed
      */
     public function getRawProductCustomRanking($storeId = null)
@@ -716,6 +717,7 @@ class ConfigHelper
 
     /**
      * @param int|null $storeId
+     *
      * @return array|mixed
      */
     public function getProductCustomRanking($storeId = null)

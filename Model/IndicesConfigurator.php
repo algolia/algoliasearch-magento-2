@@ -11,7 +11,6 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
-use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use AlgoliaSearch\AlgoliaException;
 
 class IndicesConfigurator

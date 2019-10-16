@@ -17,6 +17,7 @@ class ExtensionNotification
             'header' => [
                 'User-Agent: PHP',
             ],
+            'timeout' => 10,
         ],
     ];
 

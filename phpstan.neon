@@ -1,5 +1,5 @@
 parameters:
-    level: 0
+    level: 1
     reportUnmatchedIgnoredErrors: false
     paths:
         - vendor/algolia/algoliasearch-magento-2/Adapter

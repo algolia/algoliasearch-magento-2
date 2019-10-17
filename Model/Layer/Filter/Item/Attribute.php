@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model\Layer\Filter\Item;
 
- /**
+/**
   * @method bool getIsSelected()
   * @method mixed getValue()
   * @method mixed getApplyFilterValue()

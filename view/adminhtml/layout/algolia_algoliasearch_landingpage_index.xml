@@ -6,11 +6,11 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block
-                class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate"
-                name="landingpage_suggestions"
-                template="Algolia_AlgoliaSearch::landingpage/suggestions.phtml"
-            />
+            <block class="Magento\Backend\Block\Template" name="landingpage_suggestions" template="Algolia_AlgoliaSearch::landingpage/suggestions.phtml" >
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Landingpage\Suggestions</argument>
+                 </arguments>
+            </block>
             <uiComponent name="algolia_algoliasearch_landingpage_listing"/>
         </referenceContainer>
     </body>

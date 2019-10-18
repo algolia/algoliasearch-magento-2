@@ -9,7 +9,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
 
-class Overview
+class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     const LIMIT_RESULTS = 5;
 

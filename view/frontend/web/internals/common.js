@@ -72,7 +72,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			if (Array.isArray(hit.categories))
 				hit.categories = hit.categories.join(', ');
 
-			if (hit._highlightResult.categories_without_path && Array.isArray(hit.categories_without_path)) {
+			if (hit._highlightResult && hit._highlightResult.categories_without_path && Array.isArray(hit.categories_without_path)) {
 				hit.categories_without_path = $.map(hit._highlightResult.categories_without_path, function (category) {
 					return category.value;
 				});
@@ -92,39 +92,41 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				}
 			}
 
-			if (Array.isArray(hit.color)) {
-				var colors = [];
+			if (hit._highlightResult && hit._highlightResult.color) {
+				if (Array.isArray(hit.color)) {
+					var colors = [];
 
-				$.each(hit._highlightResult.color, function (i, color) {
-					if (color.matchLevel === 'none') {
-						return;
-					}
-
-					colors.push(color.value);
-
-					if (algoliaConfig.useAdaptiveImage === true) {
-						var re = /<em>(.*?)<\/em>/g;
-						var matchedWords = color.value.match(re).map(function (val) {
-							return val.replace(/<\/?em>/g, '');
-						});
-
-						var matchedColor = matchedWords.join(' ');
-
-						if (hit.images_data && color.fullyHighlighted && color.fullyHighlighted === true) {
-							matchedColors.push(matchedColor);
+					$.each(hit._highlightResult.color, function (i, color) {
+						if (color.matchLevel === 'none') {
+							return;
 						}
-					}
-				});
 
-				colors = colors.join(', ');
+						colors.push(color.value);
 
-				hit._highlightResult.color = { value: colors };
-			}
-			else {
-				if (hit._highlightResult.color && hit._highlightResult.color.matchLevel === 'none') {
-					hit._highlightResult.color = { value: '' };
+						if (algoliaConfig.useAdaptiveImage === true) {
+							var re = /<em>(.*?)<\/em>/g;
+							var matchedWords = color.value.match(re).map(function (val) {
+								return val.replace(/<\/?em>/g, '');
+							});
+
+							var matchedColor = matchedWords.join(' ');
+
+							if (hit.images_data && color.fullyHighlighted && color.fullyHighlighted === true) {
+								matchedColors.push(matchedColor);
+							}
+						}
+					});
+
+					colors = colors.join(', ');
+
+					hit._highlightResult.color = { value: colors };
 				}
-			}
+				else {
+					if (hit._highlightResult.color && hit._highlightResult.color.matchLevel === 'none') {
+						hit._highlightResult.color = { value: '' };
+					}
+				}
+		    }
 
 			if (algoliaConfig.useAdaptiveImage === true) {
 				$.each(matchedColors, function (i, color) {
@@ -139,13 +141,13 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				});
 			}
 
-			if (hit._highlightResult.color && hit._highlightResult.color.value && hit.categories_without_path) {
+			if (hit._highlightResult && hit._highlightResult.color && hit._highlightResult.color.value && hit.categories_without_path) {
 				if (hit.categories_without_path.indexOf('<em>') === -1 && hit._highlightResult.color.value.indexOf('<em>') !== -1) {
 					hit.categories_without_path = '';
 				}
 			}
 
-			if (Array.isArray(hit._highlightResult.name))
+			if (hit._highlightResult && Array.isArray(hit._highlightResult.name))
 				hit._highlightResult.name = hit._highlightResult.name[0];
 
 			if (Array.isArray(hit.price))

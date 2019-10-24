@@ -98,6 +98,7 @@ class ConfigHelper
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
     const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
+    const CATALOG_SEARCH_ENGINE = 'catalog/search/engine';
 
     const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
     const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
@@ -1076,5 +1077,10 @@ class ConfigHelper
         }
 
         return $this->maxRecordSize;
+    }
+
+    public function getCatalogSearchEngine($storeId = null)
+    {
+        return $this->configInterface->getValue(self::CATALOG_SEARCH_ENGINE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

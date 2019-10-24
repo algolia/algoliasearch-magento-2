@@ -7,11 +7,11 @@ use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Algolia\AlgoliaSearch\Model\ExtensionNotification;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\Search\EngineResolverInterface;
-use Magento\Search\Model\EngineResolver;
 
 class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
+    const CATALOG_SEARCH_MYSQL_ENGINE = 'mysql';
+
     /** @var ProxyHelper */
     private $proxyHelper;
 
@@ -23,9 +23,6 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
 
     /** @var ObjectManagerInterface */
     private $objectManager;
-
-    /** @var EngineResolverInterface */
-    private $engineResolver;
 
     /** @var ExtensionNotification */
     private $extensionNotification;
@@ -197,14 +194,12 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
         ConfigHelper $configHelper,
         ModuleManager $moduleManager,
         ObjectManagerInterface $objectManager,
-        EngineResolverInterface $engineResolver,
         ExtensionNotification $extensionNotification
     ) {
         $this->proxyHelper = $proxyHelper;
         $this->configHelper = $configHelper;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
-        $this->engineResolver = $engineResolver;
         $this->extensionNotification = $extensionNotification;
     }
 
@@ -244,7 +239,7 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
 
     public function isMysqlUsed()
     {
-        return $this->engineResolver->getCurrentSearchEngine() === EngineResolver::CATALOG_SEARCH_MYSQL_ENGINE;
+        return $this->configHelper->getCatalogSearchEngine() === self::CATALOG_SEARCH_MYSQL_ENGINE;
     }
 
     public function isEsWarningNeeded()

@@ -173,6 +173,9 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
         $searches = $this->getSearchesByDates();
         $users = $this->getUsersCountByDates();
         $rates = $this->getResultRateByDates();
+        $clickPosition = null;
+        $conversion = null;
+        $ctr = null;
 
         if ($this->isClickAnalyticsEnabled()) {
             $clickPosition = $this->getClickPositionByDates();
@@ -452,10 +455,10 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
             ->createBlock(\Magento\Framework\View\Element\Messages::class);
 
         if (!$this->checkIsValidDateRange() && $this->isAnalyticsApiEnabled()) {
-            $noticeHtml = __('The selected date is out of your analytics retention window (%1 days), 
+            $noticeHtml = __('The selected date is out of your analytics retention window (%1 days),
                 your data might not be present anymore.', $this->getAnalyticRetentionDays());
             $noticeHtml .= '<br/>';
-            $noticeHtml .= __('To increase your retention and access more data, you could switch to a 
+            $noticeHtml .= __('To increase your retention and access more data, you could switch to a
                 <a href="%1" target="_blank">higher plan.</a>', 'https://www.algolia.com/billing/overview/');
 
             $messagesBlock->addNotice($noticeHtml);

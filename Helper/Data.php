@@ -553,6 +553,10 @@ class Data
                 unset($potentiallyDeletedCategoriesIds[$categoryId]);
             }
 
+            if (isset($categoriesToIndex[$categoryId]) || isset($categoriesToRemove[$categoryId])) {
+                continue;
+            }
+
             try {
                 $this->categoryHelper->canCategoryBeReindexed($category, $storeId);
             } catch (CategoryReindexingException $e) {

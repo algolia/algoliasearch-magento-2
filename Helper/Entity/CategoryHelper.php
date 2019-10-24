@@ -213,9 +213,9 @@ class CategoryHelper
             throw new CategoryEmptyException();
         }
 
-        if ($this->configHelper->showCatsNotIncludedInNavigation($storeId) === false && !$category->getIncludeInMenu()) {
+        /*if ($this->configHelper->showCatsNotIncludedInNavigation($storeId) === false && !$category->getIncludeInMenu()) {
             throw new CategoryNotIncludedInMenuException();
-        }
+        }*/
 
         return true;
     }
@@ -504,10 +504,12 @@ class CategoryHelper
         return $this->isCategoryVisibleInMenuCache[$key];
     }
 
-    public function getCoreCategories()
+    public function getCoreCategories($filterNotIncludedCategories = true)
     {
-        if (isset($this->coreCategories)) {
-            return $this->coreCategories;
+        $key = $filterNotIncludedCategories ? 'filtered' : 'non_filtered';
+
+        if (isset($this->coreCategories[$key])) {
+            return $this->coreCategories[$key];
         }
 
         $collection = $this->categoryCollectionFactory->create()
@@ -515,17 +517,20 @@ class CategoryHelper
             ->addNameToResult()
             ->addIsActiveFilter()
             ->addAttributeToSelect('name')
-            ->addAttributeToFilter('include_in_menu', '1')
             ->addAttributeToFilter('level', ['gt' => 1]);
 
-        $this->coreCategories = [];
+        if ($filterNotIncludedCategories) {
+            $collection->addAttributeToFilter('include_in_menu', '1');
+        }
+
+        $this->coreCategories[$key] = [];
 
         /** @var \Magento\Catalog\Model\Category $category */
         foreach ($collection as $category) {
-            $this->coreCategories[$category->getId()] = $category;
+            $this->coreCategories[$key][$category->getId()] = $category;
         }
 
-        return $this->coreCategories;
+        return $this->coreCategories[$key];
     }
 
     private function getCorrectIdColumn()

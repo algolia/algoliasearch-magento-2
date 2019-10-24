@@ -1,5 +1,5 @@
 parameters:
-    level: 0
+    level: 1
     reportUnmatchedIgnoredErrors: false
     paths:
         - vendor/algolia/algoliasearch-magento-2/Adapter
@@ -18,7 +18,4 @@ parameters:
         - vendor/algolia/algoliasearch-magento-2/ViewModel
         - vendor/algolia/algoliasearch-magento-2/registration.php
     ignoreErrors:
-        - '#(class|type) Magento\\\S*Factory#i'
-        - '#(class|type) Algolia\\\S*Factory#i'
         - '#Call to static method getObjectManager\(\) on an unknown class Magento\\TestFramework\\Helper\\Bootstrap.#'
-        - '#Parameter \$clientFactory of method Algolia\\AlgoliaSearch\\Helper\\AlgoliaHelper::__construct\(\) has invalid typehint type AlgoliaSearch\\ClientFactory.#'

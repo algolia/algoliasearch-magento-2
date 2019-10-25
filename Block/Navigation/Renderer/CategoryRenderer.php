@@ -11,6 +11,9 @@ class CategoryRenderer extends Template implements FilterRendererInterface
     /** @var string */
     protected $_template = 'Algolia_AlgoliaSearch::layer/filter/category.phtml';
 
+    /** @var FilterInterface */
+    protected $filter;
+
     public function isMultipleSelectEnabled()
     {
         return false;

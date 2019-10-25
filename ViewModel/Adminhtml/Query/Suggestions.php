@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Query;
 
 use Algolia\AlgoliaSearch\Model\ResourceModel\Query\CollectionFactory as QueryCollectionFactory;
 
-class Suggestions
+class Suggestions implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     /** @var QueryCollectionFactory */
     private $queryCollectionFactory;

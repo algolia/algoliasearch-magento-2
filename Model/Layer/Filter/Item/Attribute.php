@@ -2,6 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Model\Layer\Filter\Item;
 
+/**
+  * @method bool getIsSelected()
+  * @method mixed getValue()
+  * @method mixed getApplyFilterValue()
+  * @method string getLabel()
+  */
 class Attribute extends \Magento\Catalog\Model\Layer\Filter\Item
 {
     /**
@@ -41,9 +47,12 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Item
                 }
             }
 
+            $resetValue = null;
+
             if (!is_null($idToRemove)) {
                 $resetValue = array_diff($this->getApplyValue(), [$idToRemove]);
             }
+
             $query = [$this->getFilter()->getRequestVar() => implode('~', $resetValue)];
         }
 

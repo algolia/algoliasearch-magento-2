@@ -17,6 +17,7 @@ use Magento\Framework\DataObject\IdentityInterface;
  * @method int getMaxRetries()
  * @method array getDecodedData()
  * @method array getMergedIds()
+ * @method $this setErrorLog(string $message)
  * @method $this setPid($pid)
  * @method $this setRetries($retries)
  * @method $this setStoreId($storeId)

@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics;
 
-class Form extends Overview
+class Form extends Overview implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     /**
      * @return string

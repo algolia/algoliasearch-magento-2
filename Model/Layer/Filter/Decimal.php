@@ -4,6 +4,12 @@ namespace Algolia\AlgoliaSearch\Model\Layer\Filter;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
+/**
+ * @method $this setMinValue(float $value)
+ * @method $this setMaxValue(float $value)
+ * @method string getFrom(string $value)
+ * @method string getTo(string $value)
+ */
 class Decimal extends \Magento\CatalogSearch\Model\Layer\Filter\Decimal
 {
     /** @var \Magento\Catalog\Model\Layer\Filter\DataProvider\Price */

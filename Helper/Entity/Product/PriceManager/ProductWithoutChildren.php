@@ -215,11 +215,13 @@ abstract class ProductWithoutChildren
             }
 
             if (isset($tierPrices[$groupId]) && $tierPrices[$groupId] !== []) {
-                $currentTierPrice = min($currentTierPrice, $tierPrices[$groupId]);
+                $currentTierPrice = $currentTierPrice === null ?
+                    $tierPrices[$groupId] :
+                    min($currentTierPrice, $tierPrices[$groupId]);
             }
 
             if ($currencyCode !== $this->baseCurrencyCode) {
-                $tierPrices[$groupId] =
+                $currentTierPrice =
                     $this->priceCurrency->round($this->convertPrice($currentTierPrice, $currencyCode));
             }
             $tierPrice[$groupId] = $this->getTaxPrice($product, $currentTierPrice, $withTax);

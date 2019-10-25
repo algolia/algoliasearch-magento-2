@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising;
 
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 
-class Page
+class Page implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     /** @var ProxyHelper */
     private $proxyHelper;

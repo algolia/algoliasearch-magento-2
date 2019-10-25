@@ -8,7 +8,16 @@
     <body>
 
         <referenceContainer name="content">
-            <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="support_overview" template="Algolia_AlgoliaSearch::support/overview.phtml" />
+            <block class="Magento\Backend\Block\Template" name="support_overview" template="Algolia_AlgoliaSearch::support/overview.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Overview</argument>
+                </arguments>
+                <block class="Magento\Backend\Block\Template" name="support_contact" template="Algolia_AlgoliaSearch::support/contact.phtml">
+                    <arguments>
+                        <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Contact</argument>
+                    </arguments>
+                </block>
+            </block>
         </referenceContainer>
     </body>
 </page>

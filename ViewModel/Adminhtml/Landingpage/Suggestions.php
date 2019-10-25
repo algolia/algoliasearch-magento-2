@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\ViewModel\Adminhtml\Landingpage;
 
 use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage\CollectionFactory as LandingPageCollectionFactory;
 
-class Suggestions
+class Suggestions implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     /** @var LandingPageCollectionFactory */
     private $landingPageCollectionFactory;

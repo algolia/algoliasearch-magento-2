@@ -553,7 +553,7 @@ class Data
                 unset($potentiallyDeletedCategoriesIds[$categoryId]);
             }
 
-            if (isset($categorysToIndex[$categoryId]) || isset($categorysToRemove[$categoryId])) {
+            if (isset($categoriesToIndex[$categoryId]) || isset($categoriesToRemove[$categoryId])) {
                 continue;
             }
 

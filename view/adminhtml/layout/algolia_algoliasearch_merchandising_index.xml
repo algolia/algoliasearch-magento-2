@@ -7,9 +7,14 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="merchandising_page" template="Algolia_AlgoliaSearch::merchandising/page.phtml">
-                <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="upsell" template="ui/upsell-plan.phtml" />
+
+            <block class="Magento\Backend\Block\Template" name="merchandising_page" template="Algolia_AlgoliaSearch::merchandising/page.phtml" >
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising\Page</argument>
+                </arguments>
+                <block class="Magento\Backend\Block\Template" name="upsell" template="Algolia_AlgoliaSearch::ui/upsell-plan.phtml" ></block>
             </block>
+
         </referenceContainer>
     </body>
 </page>

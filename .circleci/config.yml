@@ -86,7 +86,9 @@ jobs:
                       composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
                       composer install -n --prefer-dist --ignore-platform-reqs --no-progress
                       sudo chown circleci:circleci ~/.composer/
-                      composer global require algolia/magento2-tools
+                      composer global config prefer-stable true
+                      composer global config minimum-stability dev
+                      composer global require algolia/magento2-tools --ignore-platform-reqs
 
                       # We have to do this again because we restore the cache above, overwriting the vendor with the original.
                       cd ~/magento_directory/vendor/algolia

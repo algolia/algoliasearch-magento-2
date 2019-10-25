@@ -1,6 +1,6 @@
 <?php
 
-/** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate */
+/** @var $this \Magento\Backend\Block\Template */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Overview $view */
 $view = $this->getViewModel();
@@ -252,7 +252,7 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
     </div>
 
     <div class="algolia_support_panel" id="algolia-contact-panel">
-        <?php echo $view->getContactHtml(); ?>
+        <?php echo $block->getChildHtml('support_contact') ?>
     </div>
 
 </div>

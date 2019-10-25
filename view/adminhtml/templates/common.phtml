@@ -62,7 +62,7 @@ var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
 var newVersionNotification = <?php echo json_encode($newVersionNotification); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
-	requirejs(['algoliaAdminBundle', 'algoliaEventTracking'], function(algoliaAdminBundle, algoliaEvents) {
+	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
 		algoliaAdminBundle.$(function ($) {
 			$('form[action*="algoliasearch"] .accordion .config .label').css('width', 'auto');
 			$('form[action*="algoliasearch"] .accordion .config .value').css('width', 'auto');
@@ -284,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			}
 
 			// EVENT TRACKING
-			algoliaEvents.track();
+            algoliaEventsTracking.track();
 
 		});
 	});

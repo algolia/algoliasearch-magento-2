@@ -1,4 +1,4 @@
-requirejs(['algoliaAdminBundle', 'algoliaEventTracking'], function(algoliaBundle, algoliaEvents) {
+requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 	algoliaBundle.$(function ($) {
 		handleLatestVersion($);
 		
@@ -26,7 +26,7 @@ requirejs(['algoliaAdminBundle', 'algoliaEventTracking'], function(algoliaBundle
 				},
 				searchFunction: function(helper) {
 					if (helper.state.query !== '') {
-						algoliaEvents.postEvent('Performed Search', {
+						algoliaEventsTracking.postEvent('Performed Search', {
 							source: 'magento2.help.search',
 							search: helper.state.query
 						});

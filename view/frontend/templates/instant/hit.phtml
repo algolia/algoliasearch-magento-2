@@ -15,7 +15,7 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
             <a itemprop="url" href="{{url}}" class="result" data-objectid="{{objectID}}" data-position="{{__position}}">
                 <div class="result-content">
                     <div class="result-thumbnail">
-                        {{#image_url}}<img itemprop="image" src="{{{ image_url }}}" />{{/image_url}}
+                        {{#image_url}}<img itemprop="image" src="{{{image_url}}}" alt="{{{name}}}" />{{/image_url}}
                         {{^image_url}}<span class="no-image"></span>{{/image_url}}
                     </div>
                     <div class="result-sub-content">

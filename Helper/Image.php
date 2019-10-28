@@ -70,7 +70,7 @@ class Image extends \Magento\Catalog\Helper\Image
             if ($this->getImageFile()) {
                 $model->setBaseFile($this->getImageFile());
             } else {
-                $model->setBaseFile($this->getProductImage());
+                $model->setBaseFile($this->getProductImage($model));
             }
         }
 
@@ -81,14 +81,16 @@ class Image extends \Magento\Catalog\Helper\Image
      * Configurable::setImageFromChildProduct() only pulls 'image' type
      * and not the type set by the imageHelper
      *
-     * @return string
+     * @param \Magento\Catalog\Model\Product\Image $model
+     *
+     * @return mixed|string|null
      */
-    private function getProductImage()
+    private function getProductImage(\Magento\Catalog\Model\Product\Image $model)
     {
-        $imageUrl = $this->getProduct()->getImage();
-        if (!$this->getImageFile() && $this->getType() !== 'image'
-            && $this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
-            $imageUrl = $this->getConfigurableProductImage() ?: $imageUrl;
+        $imageUrl = $this->getProduct()->getData($model->getDestinationSubdir());
+        if ($this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
+            $imageUrl = $this->getType() !== 'image' && $this->getConfigurableProductImage() ?
+                $this->getConfigurableProductImage() : $this->getProduct()->getImage();
         }
 
         return $imageUrl;

@@ -587,7 +587,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
-        if (version_compare($context->getVersion(), '1.12.0', '<')) {
+        if (version_compare($context->getVersion(), '1.12.1', '<')) {
             // @see \Magento\Framework\Mview\View::unsubscribe
             /** @var \Magento\Framework\Indexer\IndexerInterface $indexer */
             $indexer = $this->indexerFactory->create()->load('algolia_products');

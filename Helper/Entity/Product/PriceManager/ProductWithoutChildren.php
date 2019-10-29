@@ -65,7 +65,7 @@ abstract class ProductWithoutChildren
             foreach ($currencies as $currencyCode) {
                 $this->customData[$field][$currencyCode] = [];
 
-                $price = $product->getPrice();
+                $price = $product->getPriceInfo()->getPrice('regular_price')->getValue();
                 if ($currencyCode !== $this->baseCurrencyCode) {
                     $price = $this->convertPrice($price, $currencyCode);
                 }

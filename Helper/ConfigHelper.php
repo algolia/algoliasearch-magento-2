@@ -8,6 +8,7 @@ use Magento\Directory\Model\Currency as DirCurrency;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\DataObject;
 use Magento\Framework\Locale\Currency;
+use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -119,6 +120,7 @@ class ConfigHelper
     private $productMetadata;
     private $eventManager;
     private $currencyManager;
+    private $serializer;
     private $maxRecordSize;
 
     public function __construct(
@@ -131,7 +133,8 @@ class ConfigHelper
         Magento\Framework\Module\ResourceInterface $moduleResource,
         Magento\Framework\App\ProductMetadataInterface $productMetadata,
         Magento\Framework\Event\ManagerInterface $eventManager,
-        Magento\Directory\Model\Currency $currencyManager
+        Magento\Directory\Model\Currency $currencyManager,
+        SerializerInterface $serializer
     ) {
         $this->objectManager = $objectManager;
         $this->configInterface = $configInterface;
@@ -143,6 +146,7 @@ class ConfigHelper
         $this->productMetadata = $productMetadata;
         $this->eventManager = $eventManager;
         $this->currencyManager = $currencyManager;
+        $this->serializer = $serializer;
     }
 
     public function indexOutOfStockOptions($storeId = null)
@@ -1063,13 +1067,17 @@ class ConfigHelper
 
     private function unserialize($value)
     {
+        if (false === $value || null === $value || '' === $value) {
+            return false;
+        }
+
         $unserialized = json_decode($value, true);
 
         if (json_last_error() === JSON_ERROR_NONE) {
             return $unserialized;
         }
 
-        return unserialize($value);
+        return $this->serializer->unserialize($value);
     }
 
     public function getDefaultMaxRecordSize()

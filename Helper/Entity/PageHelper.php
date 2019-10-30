@@ -162,22 +162,24 @@ class PageHelper
     {
         if ($completeRemoveTags && $completeRemoveTags !== [] && $s) {
             $dom = new \DOMDocument();
-            if (@$dom->loadHTML(mb_convert_encoding($s, 'HTML-ENTITIES', 'UTF-8'))) {
-                $toRemove = [];
-                foreach ($completeRemoveTags as $tag) {
-                    $removeTags = $dom->getElementsByTagName($tag);
+            libxml_use_internal_errors(true);
+            $dom->loadHTML(mb_convert_encoding($s, 'HTML-ENTITIES', 'UTF-8'));
+            libxml_use_internal_errors(false);
 
-                    foreach ($removeTags as $item) {
-                        $toRemove[] = $item;
-                    }
+            $toRemove = [];
+            foreach ($completeRemoveTags as $tag) {
+                $removeTags = $dom->getElementsByTagName($tag);
+
+                foreach ($removeTags as $item) {
+                    $toRemove[] = $item;
                 }
-
-                foreach ($toRemove as $item) {
-                    $item->parentNode->removeChild($item);
-                }
-
-                $s = $dom->saveHTML();
             }
+
+            foreach ($toRemove as $item) {
+                $item->parentNode->removeChild($item);
+            }
+
+            $s = $dom->saveHTML();
         }
 
         $s = html_entity_decode($s, null, 'UTF-8');

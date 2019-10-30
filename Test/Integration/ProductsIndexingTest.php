@@ -33,7 +33,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
     public function testDefaultIndexableAttributes()
     {
-        $empty = serialize([]);
+        $empty = $this->getSerializer()->serialize([]);
 
         $this->setConfig('algoliasearch_products/products/product_additional_attributes', $empty);
         $this->setConfig('algoliasearch_instant/instant/facets', $empty);
@@ -89,7 +89,10 @@ class ProductsIndexingTest extends IndexingTestCase
             'order' => 'unordered',
         ];
 
-        $this->setConfig('algoliasearch_products/products/product_additional_attributes', serialize($additionAttributes));
+        $this->setConfig(
+            'algoliasearch_products/products/product_additional_attributes',
+            $this->getSerializer()->serialize($additionAttributes)
+        );
 
         /** @var Product $indexer */
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');

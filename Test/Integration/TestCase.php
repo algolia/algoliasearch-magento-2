@@ -149,4 +149,9 @@ abstract class TestCase extends \TC
 
         return $productMetadata->getVersion();
     }
+
+    protected function getSerializer()
+    {
+        return $this->getObjectManager()->get('Magento\Framework\Serialize\SerializerInterface');
+    }
 }

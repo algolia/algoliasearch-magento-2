@@ -1,5 +1,56 @@
 # CHANGE LOG
 
+## 1.12.1
+
+This release has been made possible thanks to the involvement of the community, with about half of the pull requests merged coming from the Magento ecosystem.
+
+The Magento team at Algolia really wanted to thank our amazing community for its help.
+For this release, a big shout out for:
+
+- @DavidLambauer
+- @JosephMaxwell
+- @peterjaap
+- @unicoder88
+- @VincentMarmiesse
+- @vmalyk
+
+Thanks A LOT for your PRs, we really appreciate!
+
+What this release brings:
+
+### FEATURES
+- Add extension notifier (#868)
+
+### UPDATES
+- Removed objectManager from ProductHelper (#814) (by @peterjaap)
+- Removing the BaseAdminTemplate block (#822)
+- Add config warnings for ES and MSI (#889)
+- Remove catalog index price update by schedule subscription (#870) (by @unicoder88)
+- Added alt attribute for img tags (#896) (by @vmalyk)
+- Add "suggest" section modules in composer.json (#898) (by @vmalyk)
+- Create replicas if Backend Facet Rendering is enabled (#902) (by @VincentMarmiesse)
+
+### FIXES
+- Fixed the dependency list (#843) (by @DavidLambauer)
+- Pass set product website_id to load catalogrule prices with enabled customer groups (#853) (by @unicoder88)
+- Clean scope code resolver when starting environment emulation (#857) (by @unicoder88)
+- Fixing order of setting parameters (#859) (by @JosephMaxwell)
+- Fixed Composer requirements and README.md (#884) (by @vmalyk)
+- Fix Tier Price calculation (#887)
+- Fix autocomplete additional sections link URL (#891)
+- Fix errors in code instead ignore in PHPStan (#878) (by @vmalyk)
+- Fix product image helper method to return set images (#899)
+- Fix version to 1.12.1 for unsubscribe Mview migration (PR #870) (#910) (by @vmalyk)
+
+### TOOLING
+- Events tracking (#805)
+- chore: fixes styleci configuration (#847)
+- chore(ignores-phpstan-fixed-errors): sets reportUnmatchedIgnoredError (#877)
+- ci: quality assurance tools  (#882)
+- Ci/quality tools (#886)
+- chore: increases phpstan level to 1  (#892)
+- Make changes to pass new Marketplace test expectations (#906)
+
 ## 1.12.0
 
 ### FEATURES

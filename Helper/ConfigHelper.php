@@ -8,6 +8,7 @@ use Magento\Directory\Model\Currency as DirCurrency;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\DataObject;
 use Magento\Framework\Locale\Currency;
+use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -98,6 +99,7 @@ class ConfigHelper
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
     const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
+    const CATALOG_SEARCH_ENGINE = 'catalog/search/engine';
 
     const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
     const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
@@ -118,6 +120,7 @@ class ConfigHelper
     private $productMetadata;
     private $eventManager;
     private $currencyManager;
+    private $serializer;
     private $maxRecordSize;
 
     public function __construct(
@@ -130,7 +133,8 @@ class ConfigHelper
         Magento\Framework\Module\ResourceInterface $moduleResource,
         Magento\Framework\App\ProductMetadataInterface $productMetadata,
         Magento\Framework\Event\ManagerInterface $eventManager,
-        Magento\Directory\Model\Currency $currencyManager
+        Magento\Directory\Model\Currency $currencyManager,
+        SerializerInterface $serializer
     ) {
         $this->objectManager = $objectManager;
         $this->configInterface = $configInterface;
@@ -142,6 +146,7 @@ class ConfigHelper
         $this->productMetadata = $productMetadata;
         $this->eventManager = $eventManager;
         $this->currencyManager = $currencyManager;
+        $this->serializer = $serializer;
     }
 
     public function indexOutOfStockOptions($storeId = null)
@@ -464,13 +469,23 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_MENU_DEBUG, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null)
+    public function getRawSortingValue($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(
+        return $this->configInterface->getValue(
             self::SORTING_INDICES,
             ScopeInterface::SCOPE_STORE,
             $storeId
-        ));
+        );
+    }
+
+    public function getSorting($storeId = null)
+    {
+        return $this->unserialize($this->getRawSortingValue($storeId));
+    }
+
+    public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null)
+    {
+        $attrs = $this->getSorting($storeId);
 
         $currency = $this->getCurrencyCode($storeId);
         $attributesToAdd = [];
@@ -691,13 +706,28 @@ class ConfigHelper
         return [];
     }
 
-    public function getProductCustomRanking($storeId = null)
+    /**
+     * @param int|null $storeId
+     *
+     * @return mixed
+     */
+    public function getRawProductCustomRanking($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(
+        return $this->configInterface->getValue(
             self::PRODUCT_CUSTOM_RANKING,
             ScopeInterface::SCOPE_STORE,
             $storeId
-        ));
+        );
+    }
+
+    /**
+     * @param int|null $storeId
+     *
+     * @return array|mixed
+     */
+    public function getProductCustomRanking($storeId = null)
+    {
+        $attrs = $this->unserialize($this->getRawProductCustomRanking($storeId));
 
         if (is_array($attrs)) {
             return $attrs;
@@ -1037,13 +1067,17 @@ class ConfigHelper
 
     private function unserialize($value)
     {
+        if (false === $value || null === $value || '' === $value) {
+            return false;
+        }
+
         $unserialized = json_decode($value, true);
 
         if (json_last_error() === JSON_ERROR_NONE) {
             return $unserialized;
         }
 
-        return unserialize($value);
+        return $this->serializer->unserialize($value);
     }
 
     public function getDefaultMaxRecordSize()
@@ -1076,5 +1110,10 @@ class ConfigHelper
         }
 
         return $this->maxRecordSize;
+    }
+
+    public function getCatalogSearchEngine($storeId = null)
+    {
+        return $this->configInterface->getValue(self::CATALOG_SEARCH_ENGINE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

@@ -9,7 +9,10 @@ class PagesIndexingTest extends IndexingTestCase
 {
     public function testOnlyOnStockProducts()
     {
-        $this->setConfig('algoliasearch_autocomplete/autocomplete/excluded_pages', serialize([]));
+        $this->setConfig(
+            'algoliasearch_autocomplete/autocomplete/excluded_pages',
+            $this->getSerializer()->serialize([])
+        );
 
         /** @var Page $indexer */
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Page');
@@ -23,7 +26,10 @@ class PagesIndexingTest extends IndexingTestCase
             ['attribute' => 'no-route'],
             ['attribute' => 'home'],
         ];
-        $this->setConfig('algoliasearch_autocomplete/autocomplete/excluded_pages', serialize($excludedPages));
+        $this->setConfig(
+            'algoliasearch_autocomplete/autocomplete/excluded_pages',
+            $this->getSerializer()->serialize($excludedPages)
+        );
 
         /** @var Page $indexer */
         $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Page');

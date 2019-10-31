@@ -23,6 +23,9 @@ class SliderRenderer extends Template implements FilterRendererInterface
     /** @var FormatInterface */
     protected $localeFormat;
 
+    /** @var FilterInterface */
+    protected $filter;
+
     /**
      *
      * @param Context $context

@@ -10,6 +10,9 @@ use Magento\CatalogSearch\Helper\Data;
 use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Search\Model\QueryFactory;
 
+/**
+ * @method int getPageId()
+ */
 class LandingPage extends Result
 {
     /** @var FilterProvider */

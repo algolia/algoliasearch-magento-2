@@ -8,7 +8,7 @@ use Magento\Backend\Model\Auth\Session;
 use Magento\Framework\Module\ModuleListInterface;
 use Magento\User\Model\User;
 
-class Contact
+class Contact implements \Magento\Framework\View\Element\Block\ArgumentInterface
 {
     /** @var BackendView */
     private $backendView;

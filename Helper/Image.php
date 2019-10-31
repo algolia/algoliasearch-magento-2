@@ -10,8 +10,11 @@ use Magento\Framework\View\ConfigInterface;
 
 class Image extends \Magento\Catalog\Helper\Image
 {
+    /**
+     * @var ConfigHelper
+     */
+    protected $configHelper;
     private $logger;
-    private $options;
 
     /**
      * Image constructor.
@@ -21,7 +24,7 @@ class Image extends \Magento\Catalog\Helper\Image
      * @param Repository $assetRepo
      * @param ConfigInterface $viewConfig
      * @param Logger $logger
-     * @param array $options
+     * @param ConfigHelper $configHelper
      */
     public function __construct(
         Context $context,
@@ -29,14 +32,11 @@ class Image extends \Magento\Catalog\Helper\Image
         Repository $assetRepo,
         ConfigInterface $viewConfig,
         Logger $logger,
-        $options = []
+        ConfigHelper $configHelper
     ) {
         parent::__construct($context, $productImageFactory, $assetRepo, $viewConfig);
         $this->logger = $logger;
-
-        $this->options = array_merge([
-            'shouldRemovePubDir' => false,
-        ], $options);
+        $this->configHelper = $configHelper;
     }
 
     public function getUrl()
@@ -55,7 +55,7 @@ class Image extends \Magento\Catalog\Helper\Image
         $url = $this->removeProtocol($url);
         $url = $this->removeDoubleSlashes($url);
 
-        if ($this->options['shouldRemovePubDir']) {
+        if ($this->configHelper->shouldRemovePubDirectory()) {
             $url = $this->removePubDirectory($url);
         }
 
@@ -70,7 +70,7 @@ class Image extends \Magento\Catalog\Helper\Image
             if ($this->getImageFile()) {
                 $model->setBaseFile($this->getImageFile());
             } else {
-                $model->setBaseFile($this->getProductImage());
+                $model->setBaseFile($this->getProductImage($model));
             }
         }
 
@@ -81,14 +81,16 @@ class Image extends \Magento\Catalog\Helper\Image
      * Configurable::setImageFromChildProduct() only pulls 'image' type
      * and not the type set by the imageHelper
      *
-     * @return string
+     * @param \Magento\Catalog\Model\Product\Image $model
+     *
+     * @return mixed|string|null
      */
-    private function getProductImage()
+    private function getProductImage(\Magento\Catalog\Model\Product\Image $model)
     {
-        $imageUrl = $this->getProduct()->getImage();
-        if (!$this->getImageFile() && $this->getType() !== 'image'
-            && $this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
-            $imageUrl = $this->getConfigurableProductImage() ?: $imageUrl;
+        $imageUrl = $this->getProduct()->getData($model->getDestinationSubdir());
+        if ($this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
+            $imageUrl = $this->getType() !== 'image' && $this->getConfigurableProductImage() ?
+                $this->getConfigurableProductImage() : $this->getProduct()->getImage();
         }
 
         return $imageUrl;

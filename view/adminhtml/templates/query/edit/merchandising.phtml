@@ -189,8 +189,17 @@ $isConfig = [
     requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
         	var config = <?php echo json_encode($isConfig); ?>;
+            config.searchFunction = function(helper) {
+                if (helper.state.query !== '') {
+                    algoliaEventsTracking.postEvent('Searched Keyword', {
+                        source: 'magento2.querymerch.edit',
+                        search: helper.state.query
+                    });
+                }
+                helper.search();
+            };
 
-            var search = algoliaAdminBundle.instantsearch(<?php echo json_encode($isConfig); ?>);
+            var search = algoliaAdminBundle.instantsearch(config);
 
             // initialize hits widget
             search.addWidget(

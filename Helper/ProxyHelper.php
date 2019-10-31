@@ -5,8 +5,10 @@ namespace Algolia\AlgoliaSearch\Helper;
 class ProxyHelper
 {
     const PROXY_URL = 'https://magento-proxy.algolia.com/';
+
     const PROXY_URL_PARAM_GET_INFO = 'get-info/';
     const PROXY_URL_PARAM_POST_DATA = 'hs-push/';
+    const PROXY_URL_PARAM_TRACK_EVENT = 'event/';
 
     const INFO_TYPE_EXTENSION_SUPPORT = 'extension_support';
     const INFO_TYPE_QUERY_RULES = 'query_rules';
@@ -57,6 +59,22 @@ class ProxyHelper
         return $info;
     }
 
+    /**
+     * @param string $appId
+     * @param string $eventName
+     * @param array $data
+     */
+    public function trackEvent($appId, $eventName, $data)
+    {
+        $params = [
+            'appId' => $appId,
+            'eventName' => $eventName,
+            'data' => $data,
+        ];
+
+        $this->postRequest($params, self::PROXY_URL_PARAM_TRACK_EVENT);
+    }
+
     public function getClientConfigurationData()
     {
         if (!$this->allClientData) {
@@ -75,11 +93,7 @@ class ProxyHelper
     {
         $result = $this->postRequest($data, self::PROXY_URL_PARAM_POST_DATA);
 
-        if ($result === 'true') {
-            return true;
-        }
-
-        return false;
+        return $result === 'true';
     }
 
     /**

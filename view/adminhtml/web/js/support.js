@@ -24,7 +24,15 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 					filters: 'NOT tags:m1',
 					hitsPerPage: 10
 				},
-				searchFunction: searchFunction
+				searchFunction: function(helper) {
+					if (helper.state.query !== '') {
+						algoliaEventsTracking.postEvent('Performed Search', {
+							source: 'magento2.help.search',
+							search: helper.state.query
+						});
+					}
+					helper.search();
+				}
 			});
 			
 			documentationSearch.addWidget(getSearchBoxWidget(false));
@@ -273,7 +281,7 @@ requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
 		return algoliaBundle.instantsearch.widgets.searchBox({
 			container: '#search_box',
 			placeholder: 'Search a topic, i.e. "images not showing"',
-			reset: showIcons,
+			reset: false,
 			magnifier: showIcons
 		});
 	}

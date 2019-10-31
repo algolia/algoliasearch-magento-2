@@ -15,7 +15,10 @@ class CategoriesIndexingTest extends IndexingTestCase
 
     public function testDefaultIndexableAttributes()
     {
-        $this->setConfig('algoliasearch_categories/categories/category_additional_attributes', serialize([]));
+        $this->setConfig(
+            'algoliasearch_categories/categories/category_additional_attributes',
+            $this->getSerializer()->serialize([])
+        );
 
         /** @var Category $categoriesIndexer */
         $categoriesIndexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Category');

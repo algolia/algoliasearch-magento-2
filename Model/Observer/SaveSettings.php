@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model\Observer;
 
+use Algolia\AlgoliaSearch\Model\ConfigurationTracker;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use AlgoliaSearch\AlgoliaException;
 use Magento\Framework\Event\Observer;
@@ -16,10 +17,17 @@ class SaveSettings implements ObserverInterface
     /** @var IndicesConfigurator */
     private $indicesConfigurator;
 
-    public function __construct(StoreManagerInterface $storeManager, IndicesConfigurator $indicesConfigurator)
-    {
+    /** @var ConfigurationTracker */
+    private $configurationTracker;
+
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        IndicesConfigurator $indicesConfigurator,
+        ConfigurationTracker $configurationTracker
+    ) {
         $this->storeManager = $storeManager;
         $this->indicesConfigurator = $indicesConfigurator;
+        $this->configurationTracker = $configurationTracker;
     }
 
     /**
@@ -29,10 +37,11 @@ class SaveSettings implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        foreach ($this->storeManager->getStores() as $store) {
-            if ($store->getIsActive()) {
-                $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
-            }
+        $storeIds = array_keys($this->storeManager->getStores());
+
+        foreach ($storeIds as $storeId) {
+            $this->indicesConfigurator->saveConfigurationToAlgolia($storeId);
+            $this->configurationTracker->trackConfiguration($storeId);
         }
     }
 }

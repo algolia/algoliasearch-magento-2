@@ -14,10 +14,18 @@
                     <argument name="default_selection_name" xsi:type="string" translate="true">Default Store View</argument>
                 </arguments>
             </block>
-            <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="analytics.overview.form" template="Algolia_AlgoliaSearch::analytics/form.phtml" />
+            <block class="Magento\Backend\Block\Template" name="analytics.overview.form" template="Algolia_AlgoliaSearch::analytics/form.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form</argument>
+                </arguments>
+            </block>
         </referenceContainer>
         <referenceContainer name="content">
-            <block class="Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate" name="analytics_overview" template="Algolia_AlgoliaSearch::analytics/overview.phtml" />
+            <block class="Magento\Backend\Block\Template" name="analytics_overview" template="Algolia_AlgoliaSearch::analytics/overview.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Overview</argument>
+                </arguments>
+            </block>
         </referenceContainer>
     </body>
 </page>

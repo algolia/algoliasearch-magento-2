@@ -7,6 +7,7 @@ use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Search\Model\Query;
 
 class SuggestionHelper
@@ -19,18 +20,22 @@ class SuggestionHelper
 
     private $configHelper;
 
+    private $serializer;
+
     private $popularQueriesCacheId = 'algoliasearch_popular_queries_cache_tag';
 
     public function __construct(
         ManagerInterface $eventManager,
         ObjectManagerInterface $objectManager,
         ConfigCache $cache,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        SerializerInterface $serializer
     ) {
         $this->eventManager = $eventManager;
         $this->objectManager = $objectManager;
         $this->cache = $cache;
         $this->configHelper = $configHelper;
+        $this->serializer = $serializer;
     }
 
     public function getIndexNameSuffix()
@@ -81,7 +86,7 @@ class SuggestionHelper
     {
         $queries = $this->cache->load($this->popularQueriesCacheId);
         if ($queries !== false) {
-            return unserialize($queries);
+            return $this->serializer->unserialize($queries);
         }
 
         $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
@@ -111,7 +116,7 @@ class SuggestionHelper
 
         $queries = array_slice($suggestions, 0, 9);
 
-        $this->cache->save(serialize($queries), $this->popularQueriesCacheId, [], 24*3600);
+        $this->cache->save($this->serializer->serialize($queries), $this->popularQueriesCacheId, [], 24*3600);
 
         return $queries;
     }

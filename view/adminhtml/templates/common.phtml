@@ -1,9 +1,11 @@
 <?php
 
-/** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate */
+/** @var $this \Magento\Backend\Block\Template */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
 $viewModel = $this->getViewModel();
+
+$applicationId = $viewModel->getApplicationId();
 
 $isClickAnalyticsEnabled = true;
 $isClickAnalyticsTurnedOnInAdmin = true;
@@ -36,9 +38,14 @@ $icons = [
 $videoConfig = $viewModel->getVideoConfig($section);
 $linksConfig = $viewModel->getLinksConfig($section);
 
+$isMsiExternalModuleNeeded = $viewModel->isMsiExternalModuleNeeded();
+$isEsWarningNeeded = $viewModel->isEsWarningNeeded();
+$newVersionNotification = $viewModel->getNewVersionNotification();
+
 ?>
 
 <script>
+var applicationId = <?php echo json_encode($applicationId); ?>;
 var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
 var isClickAnalyticsTurnedOnInAdmin = <?php echo json_encode($isClickAnalyticsTurnedOnInAdmin); ?>;
 var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
@@ -50,6 +57,9 @@ var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
 var icons = <?php echo json_encode($icons); ?>;
 var videoConfig = <?php echo json_encode($videoConfig); ?>;
 var linksConfig = <?php echo json_encode($linksConfig); ?>;
+var isMsiExternalModuleNeeded = <?php echo json_encode($isMsiExternalModuleNeeded); ?>;
+var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
+var newVersionNotification = <?php echo json_encode($newVersionNotification); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
@@ -154,7 +164,38 @@ document.addEventListener("DOMContentLoaded", function(event) {
 					}
 
 					$('.entry-edit').before(message);
+
+					if (isMsiExternalModuleNeeded === true) {
+						var msiMessage = `
+						<div class="algolia_block icon-warning">
+							<div class="heading">Magento Multi-source Inventory compatibility</div>
+							Your store is using Magento Multi-source Inventory and for Algolia to be fully compatible with it, you should install the module <a target="_blank" href="https://github.com/algolia/algoliasearch-inventory-magento-2/">Algoliasearch Inventory</a>.<br>
+							More information in <a href="https://www.algolia.com/doc/integration/magento-2/guides/multi-source-inventory/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+							<br>
+						</div>`;
+						$('.entry-edit').before(msiMessage);
+					}
 				});
+				// New version notification
+				if (newVersionNotification) {
+					notification = `
+						<div class="algolia_block icon-warning">
+							<div class="heading">Algolia Extension update</div>
+							You are using old version of Algolia extension. Latest version of the extension is v <b>` + newVersionNotification.version + `</b><br />
+							It is highly recommended to update your version to avoid any unexpecting issues and to get new features.<br />
+							See details on our <a target="_blank" href="` + newVersionNotification.url + `">Github repository</a>.
+						</div>`;
+					$('.entry-edit').before(notification);
+				}
+
+				// ES compatibility warning
+				if (isEsWarningNeeded) {
+					var esMessage = `<span class="algolia-config-warning">&#9888;</span>This feature is currently  supported only for MySQL search engine.`;
+				} else {
+					var esMessage = `<span class="algolia-config-warning">&#9888;</span> If you turn on this feature, please make sure that every attribute you choose in the facet listing below is configured as "<strong>Use in Layered Navigation</strong>" for categories and "<strong>Use in Search Result Layered Navigation</strong>" for Catalog Search in <strong>Stores > Attributes > Product > "Storefront Properties" panel of attribute configuration</strong>.
+						`;
+				}
+				$('#row_algoliasearch_instant_instant_backend_rendering_enable .note').append(esMessage);
 
 				// Admin videos
                 var videoTemplate = '';
@@ -241,6 +282,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 					$input.show();
 				}
 			}
+
+			// EVENT TRACKING
+            algoliaEventsTracking.track();
+
 		});
 	});
 
@@ -323,6 +368,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
             },
             $.mage.__('This URL key is already in use. Please find another one.')
         );
+        if (isEsWarningNeeded) {
+        	$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
+	        $('#algoliasearch_instant_instant_is_instant_enabled').on('change', function(){
+				$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
+			});
+		}
 	});
 });
 </script>

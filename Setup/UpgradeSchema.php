@@ -7,15 +7,33 @@ use Algolia\AlgoliaSearch\Api\Data\QueryInterface;
 use Magento\Framework\App\Config\ConfigResource\ConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\DB\Ddl\Table;
+use Magento\Framework\Indexer\IndexerInterfaceFactory;
+use Magento\Framework\Mview\View\SubscriptionFactory;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\Setup\UpgradeSchemaInterface;
 
 class UpgradeSchema implements UpgradeSchemaInterface
 {
+    /**
+     * @var ConfigInterface
+     */
     private $config;
 
+    /**
+     * @var IndexerInterfaceFactory
+     */
+    private $indexerFactory;
+
+    /**
+     * @var ProductMetadataInterface
+     */
     private $productMetadata;
+
+    /**
+     * @var SubscriptionFactory
+     */
+    private $subscriptionFactory;
 
     private $defaultConfigData = [
         'algoliasearch_credentials/credentials/enable_backend' => '1',
@@ -242,10 +260,16 @@ class UpgradeSchema implements UpgradeSchemaInterface
         ],
     ];
 
-    public function __construct(ConfigInterface $config, ProductMetadataInterface $productMetadata)
-    {
+    public function __construct(
+        ConfigInterface $config,
+        IndexerInterfaceFactory $indexerFactory,
+        ProductMetadataInterface $productMetadata,
+        SubscriptionFactory $subscriptionFactory
+    ) {
         $this->config = $config;
+        $this->indexerFactory = $indexerFactory;
         $this->productMetadata = $productMetadata;
+        $this->subscriptionFactory = $subscriptionFactory;
 
         $this->serializeDefaultArrayConfigData();
         $this->mergeDefaultDataWithArrayData();
@@ -561,6 +585,20 @@ class UpgradeSchema implements UpgradeSchemaInterface
             );
 
             $connection->createTable($table);
+        }
+
+        if (version_compare($context->getVersion(), '1.12.1', '<')) {
+            // @see \Magento\Framework\Mview\View::unsubscribe
+            /** @var \Magento\Framework\Indexer\IndexerInterface $indexer */
+            $indexer = $this->indexerFactory->create()->load('algolia_products');
+            $subscriptionInstance = $this->subscriptionFactory->create(
+                [
+                    'view' => $indexer->getView(),
+                    'tableName' => 'catalog_product_index_price',
+                    'columnName' => 'entity_id',
+                ]
+            );
+            $subscriptionInstance->remove();
         }
 
         $setup->endSetup();

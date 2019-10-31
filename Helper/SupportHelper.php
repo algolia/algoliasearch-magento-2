@@ -63,6 +63,10 @@ class SupportHelper
             'note' => $this->noteBuilder->getNote($data['send_additional_info']),
         ];
 
+        $this->proxyHelper->trackEvent($this->configHelper->getApplicationID(), 'Sent Contact Form', [
+            'source' => 'magento2.help.contact',
+        ]);
+
         return $this->proxyHelper->pushSupportTicket($messageData);
     }
 

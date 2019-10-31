@@ -1,6 +1,6 @@
 <?php
 
-/** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate */
+/** @var $this \Magento\Backend\Block\Template */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Landingpage\Suggestions $view */
 $view = $this->getViewModel();
@@ -25,6 +25,6 @@ $bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-bo
             <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
             <p>It is a powerful marketing tool to promote products, with a strong focus on SEO. To find out more about the Landing Page Builder, please see our <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/landing-page-builder/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.</p>
         </div>
-        <p><a class="new-lp" href="<?php echo $this->getUrl('*/*/edit'); ?>" >Create a new landing page</a></p>
+        <p><a class="new-lp algolia-landing-page-builder-create" href="<?php echo $this->getUrl('*/*/edit'); ?>" >Create a new landing page</a></p>
     </div>
 <?php endif ?>

@@ -4,6 +4,11 @@ namespace Algolia\AlgoliaSearch\Model\Layer\Filter;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
+/**
+ * @method $this setMinValue(float $value)
+ * @method $this setMaxValue(float $value)
+ * @method $this setCurrentValue(array<string, float> $value)
+ */
 class Price extends \Magento\CatalogSearch\Model\Layer\Filter\Price
 {
     /** @var \Magento\Catalog\Model\Layer\Filter\DataProvider\Price */
@@ -111,7 +116,7 @@ class Price extends \Magento\CatalogSearch\Model\Layer\Filter\Price
                 if (mb_strpos($key, '_') === false) {
                     continue;
                 }
-                $data[] = $this->prepareData($key, $count, $data);
+                $data[] = $this->prepareData($key, $count);
             }
         }
 

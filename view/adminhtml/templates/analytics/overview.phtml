@@ -1,6 +1,6 @@
 <?php
 
-/** @var $this \Algolia\AlgoliaSearch\Block\Adminhtml\BaseAdminTemplate */
+/** @var $this \Magento\Backend\Block\Template */
 
 /** @var Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Overview $view */
 $view = $this->getViewModel();
@@ -111,7 +111,7 @@ $view = $this->getViewModel();
                 <a href="https://www.algolia.com/analytics/popular/" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?php echo __('See more searches') ?></a>
             </div>
         </div>
-        <div class="one-third section no-result-searches">
+        <div class="one-third section popular-results">
             <div class="title">
                 <h3><?php echo __('Popular results') ?>
                     <?php echo $view->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
@@ -192,6 +192,6 @@ $view = $this->getViewModel();
         like Click-through Rate, Conversion Rate from searches and average click position.
         Click Analytics are only available for higher plans and require only minor additional settings.
         <br><br>
-        Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+        Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" class="algolia-analytics-overview-docs" target="_blank">documentation</a>.
     </div>
 <?php endif ?>

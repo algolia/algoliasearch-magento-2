@@ -1,4 +1,4 @@
-requirejs(['algoliaBundle','Magento_Catalog/js/price-utils'], function(algoliaBundle, priceUtils) {
+requirejs(['algoliaBundle', 'transformHit', 'Magento_Catalog/js/price-utils'], function(algoliaBundle, transformHit, priceUtils) {
 	algoliaBundle.$(function ($) {
 
 		/** We have nothing to do here if instantsearch is not enabled **/

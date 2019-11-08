@@ -1,0 +1,321 @@
+/**
+ * we have to add this because magento default style applies `display: inline-block`
+ * on button and other tags, which overrides the HTML5 standard [hidden] attribute
+ */
+[hidden] {
+    display: none !important;
+}
+
+#refine-toggle {
+    text-align: center;
+    line-height: 40px;
+    border: solid 1px #ededed;
+    margin: 10px 0 20px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* infos */
+.algolia-infos {
+    padding: 6px 10px;
+    color: #aaa;
+    text-align: center;
+    background: #f4f4f4;
+    font-size: 12px;
+    clear: both;
+    line-height: 32px;
+}
+
+/* SearchBox */
+.ais-SearchBox {
+    margin-bottom: 1em;
+}
+
+.ais-SearchBox-submit {
+    display: none;
+}
+
+.ais-SearchBox-form {
+    position: relative;
+}
+
+.ais-SearchBox-reset {
+    position: absolute;
+    right: 0;
+}
+
+button.ais-SearchBox-reset {
+    box-shadow: none;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    background: transparent;
+}
+
+button.ais-SearchBox-reset:focus,
+button.ais-SearchBox-reset:active,
+button.ais-SearchBox-reset:hover {
+    border: 0;
+}
+
+input.ais-SearchBox-input {
+    padding-right: 2em;
+}
+
+.ais-SearchBox-reset,
+input.ais-SearchBox-input {
+    height: 32px;
+}
+
+/* Hits & InfiniteHits */
+.ais-InfiniteHits,
+.ais-Hits {
+    text-align: center;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.ais-InfiniteHits--empty,
+.ais-Hits--empty {
+    margin: 40px 0;
+    color: #636363;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.ais-InfiniteHits--empty q:before,
+.ais-InfiniteHits--empty q:after,
+.ais-Hits--empty q:before,
+.ais-Hits--empty q:after {
+    content: '"';
+}
+
+.ais-InfiniteHits-item a:hover,
+.ais-Hits-item a:hover {
+    color: #666666;
+    text-decoration: none;
+}
+
+.ais-InfiniteHits-list .no-results .clear-button,
+.ais-Hits-list .no-results .clear-button {
+    cursor: pointer;
+}
+
+.ais-InfiniteHits-list .no-results .popular-searches,
+.ais-Hits-list .no-results .popular-searches {
+    text-align: left;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.ais-InfiniteHits-item .result-wrapper,
+.ais-Hits-item .result-wrapper {
+    padding: 25px 0;
+}
+
+.ais-InfiniteHits-list::after,
+.ais-Hits-list::after {
+    content: ' ';
+    clear: both;
+    display: block;
+}
+.ais-InfiniteHits-loadMore {
+    background: #f4f4f4;
+    border-color: transparent;
+    color: #666666;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 19px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.ais-InfiniteHits-loadPrevious--disabled,
+.ais-InfiniteHits-loadMore--disabled {
+    display: none !important;
+}
+
+.result-wrapper .tocart {
+    background: #f4f4f4;
+    border-color: transparent;
+    color: #666666;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 19px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: nowrap;
+    margin-top: 10px;
+}
+
+.result-wrapper .price {
+    text-align: center;
+    font-size: 1.2em;
+    color: #54A5CD;
+}
+
+.result-wrapper .before_special {
+    color: #aaaaaa;
+    text-decoration: line-through;
+    font-size: 12px;
+}
+
+.result-wrapper .text-ellipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* HierarchicalMenu */
+.ais-HierarchicalMenu-item {
+    margin: 0;
+    line-height: 1.8em;
+}
+
+.ais-HierarchicalMenu-link--selected {
+    font-weight: bold;
+}
+
+.ais-HierarchicalMenu-link--selected .cross-circle {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    background: url("data:image/svg+xml;utf8,<svg width='34' height='34' viewBox='0 0 34 34' xmlns='http://www.w3.org/2000/svg'><title>testvg</title><g fill='%23000' fill-rule='evenodd'><path d='M17.163 0C7.95 0 .41 7.578.353 16.893c-.03 4.542 1.693 8.82 4.847 12.053 3.156 3.23 7.367 5.026 11.857 5.054h.11c9.21 0 16.75-7.578 16.81-16.893C34.035 7.735 26.54.06 17.163 0zm.015 30.842v1.08l-.09-1.08c-3.656-.023-7.085-1.485-9.654-4.115-2.57-2.63-3.97-6.116-3.948-9.814C3.533 9.33 9.673 3.158 17.262 3.158c7.548.048 13.65 6.297 13.605 13.93-.05 7.585-6.19 13.754-13.69 13.754z'/><path d='M22.362 10.23l-5.186 5.245-5.186-5.244c-.417-.42-1.092-.42-1.51 0-.416.422-.416 1.105 0 1.526L15.668 17l-5.186 5.244c-.416.42-.416 1.104 0 1.525.21.21.483.316.755.316.273 0 .546-.106.755-.317l5.186-5.245 5.186 5.244c.208.21.482.316.754.316.273 0 .546-.106.755-.317.417-.422.417-1.105 0-1.526L18.685 17l5.187-5.244c.417-.42.417-1.104 0-1.525-.416-.42-1.09-.42-1.508 0z'/></g></svg>") no-repeat center center / contain;
+    opacity: 0;
+}
+
+.ais-HierarchicalMenu-link--selected:hover .cross-circle {
+    opacity: 1;
+}
+
+.ais-HierarchicalMenu-count::before {
+    content: '('
+}
+
+.ais-HierarchicalMenu-count::after {
+    content: ')'
+}
+/* RefinementList */
+.ais-RefinementList-searchBox .ais-SearchBox-input {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.ais-RefinementList-searchBox .ais-SearchBox-input[disabled] {
+    display: none;
+}
+
+.ais-RefinementList-count::before {
+    content: '('
+}
+
+.ais-RefinementList-count::after {
+    content: ')'
+}
+
+/* Panel */
+.ais-Panel {
+    border: solid 1px #efefef;
+    margin-bottom: 15px;
+}
+
+.ais-Panel-header {
+    background-color: #efefef;
+    padding: 7px;
+}
+
+.ais-Panel-body {
+    padding: 4px 7px;
+}
+
+/* RangeSlider */
+.ais-RangeSlider {
+    margin: 0 20px;
+}
+
+.ais-RangeSlider .rheostat-background {
+    border: 0;
+    background-color: #efefef;
+}
+
+.ais-RangeSlider .rheostat-progress {
+    background-color: #006bb4;
+}
+
+/* Pagination */
+.ais-Pagination-list {
+    margin: 2em 0;
+    justify-content: center;
+}
+
+.ais-Pagination-item {
+    padding: 1em;
+}
+
+.ais-Pagination-item--selected {
+    color: black;
+    font-weight: bold;
+}
+
+.ais-Pagination-item--disabled {
+    display: none;
+}
+
+/* CurrentRefinements */
+.ais-CurrentRefinements-list:not(:empty) {
+    margin-bottom: 10px;
+}
+
+.ais-CurrentRefinements-item {
+    color: #636363;
+    border-radius: 2px;
+    border: solid 1px #ddd;
+    background-color: #f4f4f4;
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    padding: 0.2em 0.5em;
+    overflow: hidden;
+    margin-right: 0.4em;
+    margin-bottom: 0;
+}
+
+.ais-CurrentRefinements-label {
+    font-weight: bold;
+}
+
+.ais-CurrentRefinements-category {
+    margin: 0 0.5em;
+}
+
+.ais-CurrentRefinements-categoryLabel {
+}
+
+button.ais-CurrentRefinements-delete {
+    line-height: inherit;
+    box-shadow: none;
+    margin-left: 0.2em;
+}
+
+button.ais-CurrentRefinements-delete:hover,
+button.ais-CurrentRefinements-delete:active,
+button.ais-CurrentRefinements-delete:focus {
+    box-shadow: none;
+    background: none;
+    border: none;
+}
+
+/* CurrentRefinements */
+.ais-ClearRefinements-button {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.ais-ClearRefinements-button--disabled {
+    display: none !important;
+}
+
+.no-results {
+    padding: 3em 0;
+    text-align: center;
+}

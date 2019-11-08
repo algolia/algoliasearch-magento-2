@@ -1,0 +1,128 @@
+#algolia_instant_selector,
+#algolia_instant_selector *,
+#search_mini_form,
+#search_mini_form * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#algolia_instant_selector:before,
+#algolia_instant_selector:after,
+#algolia_instant_selector *:before,
+#algolia_instant_selector *:after,
+#search_mini_form:before,
+#search_mini_form:after,
+#search_mini_form *:before,
+#search_mini_form *:after {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#search_mini_form label {
+    display: none;
+}
+
+#algolia_instant_selector .row {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+#algolia_instant_selector .col-md-3,
+#algolia_instant_selector .col-md-4,
+#algolia_instant_selector .col-md-9,
+#algolia_instant_selector .col-md-12 {
+    position: relative;
+    min-height: 1px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+@media (min-width: 768px) {
+    #algolia_instant_selector .col-sm-6 {
+        width: 50%;
+        float: left;
+    }
+}
+
+@media (min-width: 992px) {
+    #algolia_instant_selector .col-md-3,
+    #algolia_instant_selector .col-md-4,
+    #algolia_instant_selector .col-md-9,
+    #algolia_instant_selector .col-md-12 {
+        float: left;
+    }
+
+    #algolia_instant_selector .col-md-12 {
+        width: 100%;
+    }
+
+    #algolia_instant_selector .col-md-9 {
+        width: 75%;
+    }
+
+    #algolia_instant_selector .col-md-4 {
+        width: 33.33333333%;
+    }
+
+    #algolia_instant_selector .col-md-3 {
+        width: 25%;
+    }
+}
+
+#algolia_instant_selector .row:before,
+#algolia_instant_selector .row:after {
+    content: " ";
+    display: table;
+}
+
+#algolia_instant_selector .row:after {
+    clear: both;
+}
+
+#algolia_instant_selector .visible-xs,
+#algolia_instant_selector .visible-sm {
+    display: none !important;
+}
+
+#algolia_instant_selector .hidden-xs,
+#algolia_instant_selector .hidden-sm {
+    display: block !important;
+}
+
+@media (max-width: 767px) {
+    #algolia_instant_selector .visible-xs {
+        display: block !important;
+    }
+
+    #algolia_instant_selector .hidden-xs {
+        display: none !important;
+    }
+
+    .algolia-search-block {
+        clear: both;
+    }
+}
+
+@media (max-width: 992px) {
+    #algolia_instant_selector .visible-sm {
+        display: block !important;
+    }
+
+    #algolia_instant_selector .hidden-sm {
+        display: none !important;
+    }
+}
+
+#algolia_instant_selector .pull-left {
+    float: left;
+}
+
+#algolia_instant_selector .pull-right {
+    float: right;
+}
+
+.algolia-clearfix {
+    clear: both;
+}

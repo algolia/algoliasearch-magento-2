@@ -655,7 +655,7 @@
                     <label>DOM selector of a result container on the instant search page</label>
                     <comment>
                         <![CDATA[
-                            The element must contain attributes <code>data-objectid</code> and <code>data-position</code>.
+                            The element must contain attributes <code>data-objectid</code>, <code>data-indexname</code>, <code>data-position</code>, and <code>data-queryid</code>.
                         ]]>
                     </comment>
                     <depends>

@@ -50,8 +50,7 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
         return ! $this->noticeHelper->isMysqlUsed();
     }
 
-    /** @return array|void */
-    public function getVideoConfig($section, $configNotSet = false)
+    public function getLinksAndVideoTemplate($section, $configNotSet = false)
     {
         // Check if all the mandatory credentials have been set
         if (!$this->configHelper->getApplicationID()
@@ -60,15 +59,8 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
             $configNotSet = true;
         }
 
-        return $this->assetHelper->getVideoConfig($section, $configNotSet);
+        return $this->assetHelper->getLinksAndVideoTemplate($section, $configNotSet);
     }
-
-    /** @return array|void */
-    public function getLinksConfig($section)
-    {
-        return $this->assetHelper->getLinksConfig($section);
-    }
-
 
     public function getExtensionNotices()
     {

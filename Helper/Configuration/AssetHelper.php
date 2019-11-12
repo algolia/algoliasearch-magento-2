@@ -2,8 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Configuration;
 
+use Magento\Framework\View\Asset\Repository as AssetRepository;
+
 class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    /** @var AssetRepository */
+    private $assetRepository;
+
     /** @var array */
     private $videosConfig = [
         'algoliasearch_credentials' => [
@@ -159,6 +164,8 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
         ],
     ];
 
+    private $icons = [];
+
     /** @var array */
     private $videoInstallation = [
         'title' => 'Installation & Setup',
@@ -166,8 +173,20 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'thumbnail' => 'https://img.youtube.com/vi/twEj_VBWxp8/mqdefault.jpg',
     ];
 
+    public function __construct(
+        AssetRepository $assetRepository
+    ) {
+        $this->assetRepository = $assetRepository;
+
+        $this->icons = [
+            'iconDocs' => $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/icon-docs.svg'),
+            'iconFaq' => $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/icon-faq.svg'),
+            'iconIssues' => $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/icon-issues.svg'),
+        ];
+    }
+
     /** @return array|void */
-    public function getVideoConfig($section, $configNotSet)
+    protected function getVideoConfig($section, $configNotSet)
     {
         $config = null;
 
@@ -184,7 +203,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /** @return array|void */
-    public function getLinksConfig($section)
+    protected function getLinksConfig($section)
     {
         $config = null;
 
@@ -193,5 +212,57 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         return $config;
+    }
+
+    public function getLinksAndVideoTemplate($section, $configNotSet)
+    {
+        $linksTemplate = $this->getLinksTemplate($section);
+        $videoTemplate = $this->getVideoTemplate($section, $configNotSet);
+        $template  = '<div class="algolia-admin-content-wrapper">';
+        $template .= $linksTemplate;
+        $template .= $videoTemplate;
+        $template .= '</div><br><hr><br>';
+
+        return $template;
+    }
+
+    protected function getVideoTemplate($section, $configNotSet)
+    {
+        $config = $this->getVideoConfig($section, $configNotSet);
+        $template = '';
+
+        if (is_array($config)) {
+            $template = '<div class="algolia-admin-content-videos">
+                            <p>
+                                <span>Related video:</span>
+                                <a target="_blank" href="' . $config['url'] . '"><img src="' . $config['thumbnail'] . '"/></a>
+                                <a target="_blank" href="' . $config['url'] . '">' . $config['title'] . '</a>
+                            </p>
+                        </div>';
+        }
+
+        return $template;
+    }
+
+    protected function getLinksTemplate($section)
+    {
+        $config = $this->getLinksConfig($section);
+        $template = '';
+
+        if (is_array($config)) {
+            $links = '';
+            $i = 0;
+            foreach ($config as $link) {
+                $links .= '<span><img src="' . $this->icons[$link['icon']] . '"/><a target="_blank" href="' . $link['url'] . '">' . $link['title'] . '</a></span>';
+                if ($i%2 == 1) {
+                    $links .= '<br/>';
+                }
+                $i++;
+            }
+
+            $template = '<div class="algolia-admin-content-links"><p>' . $links . '</p></div>';
+        }
+
+        return $template;
     }
 }

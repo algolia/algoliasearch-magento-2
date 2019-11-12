@@ -32,7 +32,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var JobCollectionFactory */
     private $jobCollectionFactory;
 
-    /**  @var UrlInterface */
+    /** @var UrlInterface */
     protected $urlBuilder;
 
     /** @var string[] */
@@ -92,7 +92,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $indexingQueueConfigUrl = $this->urlBuilder->getUrl('adminhtml/system_config/edit/section/algoliasearch_queue');
         $indexingQueuePageUrl = $this->urlBuilder->getUrl('algolia_algoliasearch/queue/index');
 
-
         if (!$this->configHelper->isQueueActive()) {
             $icon = 'icon-warning';
             $noticeTitle = '<a href="' . $indexingQueueConfigUrl . '">Indexing Queue</a> is not enabled';
@@ -102,7 +101,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         } else {
             $icon = 'icon-bulb';
             $noticeTitle = 'Queued indexing jobs';
-            $noticeContent = 'Number of queued jobs: <strong>' . $size  . '</strong>.
+            $noticeContent = 'Number of queued jobs: <strong>' . $size . '</strong>.
                                 Assuming your queue runner runs every 5 minutes, all jobs will be processed
                                 in approx. ' . $eta . '.
                                 You may want to <a href="' . $indexingQueuePageUrl . '">clear the queue</a> or <a href="' . $indexingQueueConfigUrl . '">configure indexing queue</a>.

@@ -23,16 +23,7 @@ if ($section === 'algoliasearch_instant') {
 $ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
 $ajaxCheckQuery = $this->getUrl('algolia_algoliasearch/query/checkQuery');
 
-$icons = [
-    'iconDocs' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg'),
-    'iconFaq' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-faq.svg'),
-    'iconIssues' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-issues.svg'),
-];
-
-$videoConfig = $viewModel->getVideoConfig($section);
-$linksConfig = $viewModel->getLinksConfig($section);
-
-
+$linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
 $isEsWarningNeeded = $viewModel->isEsWarningNeeded();
 $extensionNotices = $viewModel->getExtensionNotices();
 
@@ -45,9 +36,7 @@ var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
 
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
 var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
-var icons = <?php echo json_encode($icons); ?>;
-var videoConfig = <?php echo json_encode($videoConfig); ?>;
-var linksConfig = <?php echo json_encode($linksConfig); ?>;
+var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
 
 var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
 var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
@@ -131,42 +120,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			var url = window.location.href;
 			if (url.indexOf('section/algoliasearch_') !== -1) {
 
-				// Admin videos
-                var videoTemplate = '';
-                // Admin links
-                var linksTemplate = '';
-
-                if (videoConfig) {
-                    videoTemplate = `
-                        <div class="algolia-admin-content-videos">
-                            <p>
-                                <span>Related video:</span>
-                                <a target="_blank" href="` + videoConfig.url + `"><img src="` + videoConfig.thumbnail + `"/></a>
-                                <a target="_blank" href="` + videoConfig.url + `">` + videoConfig.title + `</a>
-                            </p>
-                        </div>`;
-                }
-
-                if (linksConfig) {
-                    var links = '';
-                    for (var i=0; i<linksConfig.length; i++) {
-                        links += `<span><img src="` + icons[linksConfig[i].icon] + `"/><a target="_blank" href="` + linksConfig[i].url + `">` + linksConfig[i].title + `</a></span>`;
-                        if (i%2 == 1) {
-                            links += `<br/>`;
-                        }
-                    }
-                    linksTemplate = `<div class="algolia-admin-content-links"><p>` + links + `</p></div>`;
-                }
-
-                var linksAndVideoTemplate = `
-                    <div class="algolia-admin-content-wrapper">
-                        ` + linksTemplate +  videoTemplate +
-                    `</div>
-                    <br>
-                    <hr>
-                    <br>`;
+				// Adding links and videos to the config panel
                 $('.algolia-admin-content').html(linksAndVideoTemplate);
-
 
             	// New notice management
             	extensionNotices.each(function(notice){
@@ -178,7 +133,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
             	});
 
 			}
-
 
 			// SYNONYMS
 
@@ -230,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 			// EVENT TRACKING
             algoliaEventsTracking.track();
-            
+
 		});
 	});
 

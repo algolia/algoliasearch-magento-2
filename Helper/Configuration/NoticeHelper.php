@@ -41,6 +41,8 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'getMsiNotice',
         'getEsNotice',
         'getVersionNotice',
+        'getClickAnalyticsNotice',
+        'getQueryRulesNotice',
     ];
 
     /** @var array[] */
@@ -165,6 +167,71 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
             'selector' => '.entry-edit',
             'method' => 'before',
             'message' => $this->formatNotice($noticeTitle, $noticeContent),
+        ];
+    }
+
+    protected function getClickAnalyticsNotice()
+    {
+        // If the feature is enabled both in Magento Admin and Algolia dashboard, no need to display a notice
+        if ($this->isClickAnalyticsEnabled() && $this->configHelper->isClickConversionAnalyticsEnabled()) {
+            return;
+        }
+
+        $noticeContent = '';
+        $selector = '';
+        $method = 'before';
+
+        // If the feature is not enabled in the Algolia dashboard
+        if (! $this->isClickAnalyticsEnabled()) {
+            $noticeContent = '<br>
+				<div class="algolia_block icon-stars">
+					To get access to this Algolia feature,
+					please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+				</div>';
+            $selector = '#algoliasearch_cc_analytics_cc_analytics_group .comment';
+            $method = 'after';
+        }
+
+        // If the feature is enabled in the Algolia dashboard but not activated on the Magento Admin
+        if ($this->isClickAnalyticsEnabled() && ! $this->configHelper->isClickConversionAnalyticsEnabled()) {
+            $noticeContent = '<tr>
+				<td colspan="3">
+					<div class="algolia_block blue icon-stars">
+					Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
+					like Click-through Rate, Conversion Rate from searches and average click position.
+					Click Analytics are only available for higher plans and require only minor additional settings.
+					<br><br>
+					Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+					</div>
+				</td>
+			</tr>';
+            $selector = '#row_algoliasearch_cc_analytics_cc_analytics_group_enable';
+            $method = 'before';
+        }
+
+        $this->notices[] = [
+            'selector' => $selector,
+            'method' => $method,
+            'message' => $noticeContent,
+        ];
+    }
+
+    protected function getQueryRulesNotice()
+    {
+        if ($this->isQueryRulesEnabled()) {
+            return;
+        }
+
+        $noticeContent = '<br>
+                <div class="algolia_block icon-stars">
+                    To be able to create Query rules for facets,
+                    please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
+                </div>';
+
+        $this->notices[] = [
+            'selector' => '#row_algoliasearch_instant_instant_facets .algolia_block.blue',
+            'method' => 'after',
+            'message' => $noticeContent,
         ];
     }
 

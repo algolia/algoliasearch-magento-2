@@ -6,18 +6,11 @@
 $viewModel = $this->getViewModel();
 
 $isClickAnalyticsEnabled = true;
-$isClickAnalyticsTurnedOnInAdmin = true;
-$isQueryRulesEnabled = true;
 
 $section = $this->getRequest()->getParam('section');
 
 if ($section === 'algoliasearch_cc_analytics') {
     $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
-    $isClickAnalyticsTurnedOnInAdmin = $viewModel->isClickAnalyticsTurnedOnInAdmin();
-}
-
-if ($section === 'algoliasearch_instant') {
-    $isQueryRulesEnabled = $viewModel->isQueryRulesEnabled();
 }
 
 $ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
@@ -31,8 +24,6 @@ $extensionNotices = $viewModel->getExtensionNotices();
 
 <script>
 var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
-var isClickAnalyticsTurnedOnInAdmin = <?php echo json_encode($isClickAnalyticsTurnedOnInAdmin); ?>;
-var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
 
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
 var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
@@ -69,56 +60,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				$('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
 			}, 1000);
 
-			/** FEATURE ENABLEMENT **/
-			var notEnabledText = `
-				<br>
-				<div class="algolia_block icon-stars">
-					To get access to this Algolia feature,
-					please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
-				</div>
-			`;
-
-			/** FEATURE ACTIVATION **/
-			var notActivatedText = `
-			<tr>
-				<td colspan="3">
-					<div class="algolia_block blue icon-stars">
-					Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
-					like Click-through Rate, Conversion Rate from searches and average click position.
-					Click Analytics are only available for higher plans and require only minor additional settings.
-					<br><br>
-					Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-					</div>
-				</td>
-			</tr>
-			`;
-
-			// Click analytics
-			if (isClickAnalyticsEnabled === false) {
-				$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
-				$('#algoliasearch_cc_analytics_cc_analytics_group .comment').after(notEnabledText);
-			}
-
-			if (isClickAnalyticsEnabled === true && isClickAnalyticsTurnedOnInAdmin === false) {
-				$('#row_algoliasearch_cc_analytics_cc_analytics_group_enable').before(notActivatedText);
-			}
-
-			// Query rules in facets
-			if (isQueryRulesEnabled === false) {
-				var notEnabledText = `
-					<br>
-					<div class="algolia_block icon-stars">
-						To be able to create Query rules for facets,
-						please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
-					</div>
-				`;
-
-				$('select[name*=create_rule]').val('2').prop('disabled', 'disabled');
-				$('#row_algoliasearch_instant_instant_facets .algolia_block.blue').after(notEnabledText);
-			}
 
 			var url = window.location.href;
 			if (url.indexOf('section/algoliasearch_') !== -1) {
+
+				// Hide click analytics config if not available
+				if (isClickAnalyticsEnabled === false) {
+					$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
+				}
 
 				// Adding links and videos to the config panel
                 $('.algolia-admin-content').html(linksAndVideoTemplate);
@@ -129,9 +78,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         				$(notice.selector).before(notice.message);
         			} else if (notice.method === 'append') {
 						$(notice.selector).append(notice.message);
+        			} else if (notice.method === 'after') {
+						$(notice.selector).after(notice.message);
         			}
             	});
-
 			}
 
 			// SYNONYMS

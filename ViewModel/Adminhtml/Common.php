@@ -28,21 +28,9 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
     }
 
     /** @return bool */
-    public function isQueryRulesEnabled()
-    {
-        return $this->noticeHelper->isQueryRulesEnabled();
-    }
-
-    /** @return bool */
     public function isClickAnalyticsEnabled()
     {
         return $this->noticeHelper->isClickAnalyticsEnabled();
-    }
-
-    /** @return bool */
-    public function isClickAnalyticsTurnedOnInAdmin()
-    {
-        return $this->configHelper->isClickConversionAnalyticsEnabled();
     }
 
     public function isEsWarningNeeded()

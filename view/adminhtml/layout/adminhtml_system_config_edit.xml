@@ -4,4 +4,11 @@
     <head>
         <link src="Algolia_AlgoliaSearch::js/config.js"/>
     </head>
+    <referenceBlock name="before.body.end">
+        <block class="Magento\Backend\Block\Template" name="algolia_configuration" template="Algolia_AlgoliaSearch::configuration.phtml">
+            <arguments>
+                <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration</argument>
+            </arguments>
+        </block>
+    </referenceBlock>
 </page>

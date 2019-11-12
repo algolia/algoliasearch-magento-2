@@ -2,10 +2,14 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Configuration;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\View\Asset\Repository as AssetRepository;
 
 class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    /** @var ConfigHelper */
+    private $configHelper;
+
     /** @var AssetRepository */
     private $assetRepository;
 
@@ -174,8 +178,10 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
     ];
 
     public function __construct(
+        ConfigHelper $configHelper,
         AssetRepository $assetRepository
     ) {
+        $this->configHelper = $configHelper;
         $this->assetRepository = $assetRepository;
 
         $this->icons = [
@@ -214,8 +220,16 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
         return $config;
     }
 
-    public function getLinksAndVideoTemplate($section, $configNotSet)
+    public function getLinksAndVideoTemplate($section)
     {
+        $configNotSet = false;
+        // Check if all the mandatory credentials have been set
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            $configNotSet = true;
+        }
+
         $linksTemplate = $this->getLinksTemplate($section);
         $videoTemplate = $this->getVideoTemplate($section, $configNotSet);
         $template  = '<div class="algolia-admin-content-wrapper">';

@@ -125,17 +125,25 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				}
 			}
 
-			if (isEsWarningNeeded) {
-	        	$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
-		        $('#algoliasearch_instant_instant_is_instant_enabled').on('change', function(){
-					$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
-				});
-			}
-
 			// EVENT TRACKING
             algoliaEventsTracking.track();
 
 		});
+	});
+
+	requirejs([
+		'jquery',
+		'Magento_Ui/js/lib/validation/validator',
+		'mage/translate',
+		'prototype'
+	], function ($, validator, mage) {
+		'use strict';
+		if (isEsWarningNeeded) {
+        	$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
+	        $('#algoliasearch_instant_instant_is_instant_enabled').on('change', function(){
+				$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
+			});
+		}
 	});
 });
 </script>

@@ -104,4 +104,9 @@
             <argument name="imageUploader" xsi:type="object">Algolia\AlgoliaSearch\QueryImageUpload</argument>
         </arguments>
     </type>    
+    
+    <!-- Click and Conversion Analytics -->
+    <type name="Magento\Quote\Model\Quote\Item\ToOrderItem">
+        <plugin name="algoliasearch_query_quote_item_conversion" type="Algolia\AlgoliaSearch\Plugin\QuoteItem"/>
+    </type>
 </config>

@@ -12,7 +12,14 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
 <script type="text/template" id="instant-hit-template">
     <div class="col-md-4 col-sm-6">
         <div class="result-wrapper" itemprop="itemListElement" itemscope itemtype="http://schema.org/Product">
-            <a itemprop="url" href="{{url}}" class="result" data-objectid="{{objectID}}" data-position="{{__position}}">
+            <a itemprop="url"
+                class="result"
+                {{^__queryID}} href="{{url}}" {{/__queryID}}
+                {{#__queryID}} href="{{urlForInsights}}" {{/__queryID}}
+                data-objectid="{{objectID}}"
+                data-indexname="{{__indexName}}"
+                data-position="{{__position}}"
+                data-queryid="{{__queryID}}">
                 <div class="result-content">
                     <div class="result-thumbnail">
                         {{#image_url}}<img itemprop="image" src="{{{image_url}}}" alt="{{{name}}}" />{{/image_url}}
@@ -67,7 +74,12 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
                             <input type="hidden" name="product" value="{{objectID}}">
                             <input type="hidden" name="uenc" value="{{ addToCart.uenc }}">
                             <input name="form_key" type="hidden" value="{{ addToCart.formKey }}">
-                            <button type="submit" title="<?php echo __('Add to Cart') ?>" class="action tocart primary" data-objectid="{{objectID}}" data-position="{{__position}}">
+                            <button type="submit" title="<?php echo __('Add to Cart') ?>" class="action tocart primary"
+                            data-objectid="{{objectID}}"
+                            data-indexname="{{__indexName}}"
+                            data-position="{{__position}}"
+                            data-queryid="{{__queryID}}"
+                            >
                                 <span><?php echo __('Add to Cart') ?></span>
                             </button>
                         </form>

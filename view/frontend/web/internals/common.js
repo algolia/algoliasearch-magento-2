@@ -103,12 +103,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					colors.push(color.value);
 
 					if (algoliaConfig.useAdaptiveImage === true) {
-						var re = /<em>(.*?)<\/em>/g;
-						var matchedWords = color.value.match(re).map(function (val) {
-							return val.replace(/<\/?em>/g, '');
-						});
-
-						var matchedColor = matchedWords.join(' ');
+						var matchedColor = color.matchedWords.join(' ');
 
 						if (hit.images_data && color.fullyHighlighted && color.fullyHighlighted === true) {
 							matchedColors.push(matchedColor);
@@ -154,11 +149,11 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			if (hit['price'] !== undefined && price_key !== '.' + algoliaConfig.currencyCode + '.default' && hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_formated'] !== hit['price'][algoliaConfig.currencyCode]['default_formated']) {
 				hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_original_formated'] = hit['price'][algoliaConfig.currencyCode]['default_formated'];
 			}
-			
+
 			if (hit['price'][algoliaConfig.currencyCode]['default_original_formated']
 				&& hit['price'][algoliaConfig.currencyCode]['special_to_date']) {
 				var priceExpiration = hit['price'][algoliaConfig.currencyCode]['special_to_date'];
-				
+
 				if (algoliaConfig.now > priceExpiration + 1) {
 					hit['price'][algoliaConfig.currencyCode]['default_formated'] = hit['price'][algoliaConfig.currencyCode]['default_original_formated'];
 					hit['price'][algoliaConfig.currencyCode]['default_original_formated'] = false;
@@ -179,6 +174,19 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				'uenc': AlgoliaBase64.mageEncode(action),
 				'formKey': algoliaConfig.instant.addToCartParams.formKey
 			};
+
+			if (hit.__queryID) {
+				var insightsDataUrlString = $.param({
+					queryID: hit.__queryID,
+					objectID: hit.objectID,
+					indexName: hit.__indexName
+				});
+				if (hit.url.indexOf('?') > -1) {
+					hit.urlForInsights = hit.url + insightsDataUrlString
+				} else {
+					hit.urlForInsights = hit.url + '?' + insightsDataUrlString;
+				}
+			}
 
 			return hit;
 		};
@@ -227,12 +235,13 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							return template;
 						},
 						suggestion: function (hit, payload) {
+							hit.__indexName = algoliaConfig.indexName + "_" + section.name;
+							hit.__queryID = payload.queryID;
+							hit.__position = payload.hits.indexOf(hit) + 1;
+
 							hit = transformHit(hit, algoliaConfig.priceKey);
 
 							hit.displayKey = hit.displayKey || hit.name;
-
-							hit.__queryID = payload.queryID;
-							hit.__position = payload.hits.indexOf(hit) + 1;
 
 							return algoliaConfig.autocomplete.templates[section.name].render(hit);
 						}
@@ -467,16 +476,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 		}
 
-		window.focusInstantSearchBar = function (search, instant_search_bar) {
-			if ($(window).width() > 992) {
-				instant_search_bar.focusWithoutScrolling();
-				if (algoliaConfig.autofocus === false) {
-					instant_search_bar.focus().val('');
-				}
-			}
-			instant_search_bar.val(search.helper.state.query);
-		};
-
 		window.createISWidgetContainer = function (attributeName) {
 			var div = document.createElement('div');
 			div.className = 'is-widget-container-' + attributeName.split('.').join('_');
@@ -501,12 +500,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			else
 				$(this).html('+ ' + algoliaConfig.translations.refine);
 		});
-
-		$.fn.focusWithoutScrolling = function(){
-			var x = window.scrollX, y = window.scrollY;
-			this.focus();
-			window.scrollTo(x, y);
-		};
 
 		// Handle backward compatibility with old routing
 		function routingBc(routeState) {
@@ -628,7 +621,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					}
 
 					var landingPageConfig = algoliaConfig.isLandingPage && algoliaConfig.landingPage.configuration ?
-						JSON.parse(algoliaConfig.landingPage.configuration) : 
+						JSON.parse(algoliaConfig.landingPage.configuration) :
 						{};
 
 					map['refinementList'] = {};
@@ -640,8 +633,8 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							// Handle refinement facets
 							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
 								map['refinementList'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute].split('~');
-								if (algoliaConfig.isLandingPage && 
-									typeof map['refinementList'][currentFacet.attribute] === 'undefined' && 
+								if (algoliaConfig.isLandingPage &&
+									typeof map['refinementList'][currentFacet.attribute] === 'undefined' &&
 									currentFacet.attribute in landingPageConfig) {
 									map['refinementList'][currentFacet.attribute] = landingPageConfig[currentFacet.attribute].split('~');
 								}

@@ -152,7 +152,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $specialPrice = 29;
         $from = 1452556800;
-        $to = 1573516800;
+        $to = 1699920000;
         $product->setCustomAttributes([
             'special_price' => $specialPrice,
             'special_from_date' => date('m/d/Y', $from),

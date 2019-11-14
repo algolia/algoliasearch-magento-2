@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
 use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
-use Algolia\AlgoliaSearch\Exception\CategoryNotIncludedInMenuException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Image;
 use Magento\Catalog\Model\Category;
@@ -212,10 +211,6 @@ class CategoryHelper
         if ($this->configHelper->shouldIndexEmptyCategories($storeId) === false && $category->getProductCount() <= 0) {
             throw new CategoryEmptyException();
         }
-
-        /*if ($this->configHelper->showCatsNotIncludedInNavigation($storeId) === false && !$category->getIncludeInMenu()) {
-            throw new CategoryNotIncludedInMenuException();
-        }*/
 
         return true;
     }

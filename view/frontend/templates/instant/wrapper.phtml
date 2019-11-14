@@ -14,6 +14,7 @@
                     + <?php echo $block->escapeHtml(__('Refine')); ?>
                 </div>
                 <div class="hidden-xs hidden-sm" id="instant-search-facets-container">
+                    <div id="clear-refinements"></div>
                     <div id="current-refinements"></div>
                 </div>
             </div>
@@ -23,44 +24,26 @@
                     <div class="col-md-12">
                         <div>
                             {{#second_bar}}
-                            <div id="instant-search-bar-container">
-                                <div id="instant-search-box">
-                                    <div class="instant-search-bar-label">
-                                        <span><?php echo $block->escapeHtml(__('Current search')); ?></span>
-                                    </div>
-                                    <div class="instant-search-bar-wrapper">
-                                        <label for="instant-search-bar">
-                                            <?php echo $block->escapeHtml(__('Search :')); ?>
-                                        </label>
-
-                                        <input placeholder="<?php echo $block->escapeHtml(__('Search for products')) ?>"
-                                               id="instant-search-bar"
-                                               type="text"
-                                               autocomplete="off"
-                                               spellcheck="false"
-                                               autocorrect="off"
-                                               autocapitalize="off" />
-                                    </div>
-                                </div>
-                            </div>
+                               <div id="instant-search-bar"></div>
                             {{/second_bar}}
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div>
+                    <div class="col-md-12">
                         <div itemscope itemtype="http://schema.org/ItemList" class="hits">
-                            <div class="infos">
+                            <div class="algolia-infos">
                                 <div class="pull-left" id="algolia-stats"></div>
                                 <div class="pull-right">
                                     <div class="sort-by-label pull-left">
-                                        <?php echo $block->escapeHtml(__('SORT BY')); ?>
+                                        <?php echo $block->escapeHtml(__('SORT BY')); ?> &nbsp;
                                     </div>
                                     <div class="pull-left" id="algolia-sorts"></div>
                                 </div>
                                 <div class="algolia-clearfix"></div>
                             </div>
                             <div id="algolia-banner"></div>
+                            <div id="instant-empty-results-container"></div>
                             <div id="instant-search-results-container"></div>
                         </div>
                     </div>

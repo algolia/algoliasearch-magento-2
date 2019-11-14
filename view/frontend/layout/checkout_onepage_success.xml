@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="order.success.additional.info">
+            <block ifconfig="algoliasearch_cc_analytics/cc_analytics_group/enable"
+                   class="Algolia\AlgoliaSearch\Block\Checkout\Conversion"
+                   name="algoliasearch.analytics.order.conversion"
+                   template="Algolia_AlgoliaSearch::checkout/conversion.phtml"
+                   after="-">
+            </block>
+        </referenceContainer>
+    </body>
+</page>

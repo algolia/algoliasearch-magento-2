@@ -6,4 +6,12 @@
     <event name="algolia_get_attributes_to_filter">
         <observer name="algoliasearch_apply_product_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\ApplyProductPermissionsFilter" />
     </event>
+
+    <!-- Click and Conversion Analytics -->
+    <event name="catalog_controller_product_init_before">
+        <observer name="algoliasearch_set_parameters_to_session" instance="Algolia\AlgoliaSearch\Model\Observer\ClickAnalytics\CatalogControllerProductInitBefore" />
+    </event>
+    <event name="checkout_cart_product_add_after">
+        <observer name="algoliasearch_add_request_to_quote_item" instance="Algolia\AlgoliaSearch\Model\Observer\ClickAnalytics\CheckoutCartProductAddAfter" />
+    </event>
 </config>

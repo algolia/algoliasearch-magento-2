@@ -49,6 +49,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     protected $notices;
 
     public function __construct(
+        \Magento\Framework\App\Helper\Context $context,
         ConfigHelper $configHelper,
         ProxyHelper $proxyHelper,
         ModuleManager $moduleManager,
@@ -68,6 +69,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         foreach ($this->noticeFunctions as $noticeFunction) {
             call_user_func([$this, $noticeFunction]);
         }
+        parent::__construct($context);
     }
 
     public function getExtensionNotices()

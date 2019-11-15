@@ -178,6 +178,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
     ];
 
     public function __construct(
+        \Magento\Framework\App\Helper\Context $context,
         ConfigHelper $configHelper,
         AssetRepository $assetRepository
     ) {
@@ -189,6 +190,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
             'iconFaq' => $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/icon-faq.svg'),
             'iconIssues' => $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/icon-issues.svg'),
         ];
+        parent::__construct($context);
     }
 
     /** @return array|void */

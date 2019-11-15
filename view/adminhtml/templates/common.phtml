@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 		'jquery',
 		'Magento_Ui/js/lib/validation/validator',
 		'mage/translate',
-        'prototype'
+    'prototype'
 	], function ($, validator, mage) {
 		'use strict';
 
@@ -37,15 +37,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
           // Only check if the focus is not on the search
           if ($(':focus').attr('name') != 'query_text') {
-              new Ajax.Request(
-                url,
-                {
-                    parameters: {'store_id': storeId, 'query_text': value, 'query_id': queryId},
-                    method: 'post',
-                    asynchronous: false,
-                    onComplete: function (transport) {
-                    var response = JSON.parse(transport.responseText);
-                    isValid = response.isValid;
+            new Ajax.Request(
+              url,
+              {
+                parameters: {'store_id': storeId, 'query_text': value, 'query_id': queryId},
+                method: 'post',
+                asynchronous: false,
+                onComplete: function (transport) {
+                  var response = JSON.parse(transport.responseText);
+                  isValid = response.isValid;
                 }
               }
             );

@@ -13,5 +13,12 @@
             </block>
             <uiComponent name="algolia_algoliasearch_landingpage_listing"/>
         </referenceContainer>
+        <referenceBlock name="before.body.end">
+            <block class="Magento\Backend\Block\Template" name="algolia_common" template="Algolia_AlgoliaSearch::common.phtml">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
     </body>
 </page>

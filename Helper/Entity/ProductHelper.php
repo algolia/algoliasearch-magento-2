@@ -1164,9 +1164,12 @@ class ProductHelper
     }
 
     /**
+     * Returns is product in stock
+     *
      * @param Product $product
      * @param int $storeId
-     * @return bool|int
+     *
+     * @return bool
      */
     public function productIsInStock($product, $storeId)
     {

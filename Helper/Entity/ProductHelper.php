@@ -1163,10 +1163,15 @@ class ProductHelper
         return true;
     }
 
+    /**
+     * @param Product $product
+     * @param int $storeId
+     * @return bool|int
+     */
     public function productIsInStock($product, $storeId)
     {
         $stockItem = $this->stockRegistry->getStockItem($product->getId());
 
-        return $stockItem->getIsInStock();
+        return ($product->isSaleable() && $stockItem->getIsInStock());
     }
 }

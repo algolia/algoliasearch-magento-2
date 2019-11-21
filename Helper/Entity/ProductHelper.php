@@ -1172,6 +1172,6 @@ class ProductHelper
     {
         $stockItem = $this->stockRegistry->getStockItem($product->getId());
 
-        return ($product->isSaleable() && $stockItem->getIsInStock());
+        return $product->isSaleable() && $stockItem->getIsInStock();
     }
 }

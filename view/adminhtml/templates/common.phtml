@@ -17,8 +17,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs([
 		'jquery',
 		'Magento_Ui/js/lib/validation/validator',
-		'mage/translate',
-    'prototype'
+		'mage/translate'
 	], function ($, validator, mage) {
 		'use strict';
 
@@ -33,22 +32,20 @@ document.addEventListener("DOMContentLoaded", function(event) {
           var storeId = $('select[name="store_id"]').val();
           var queryId = $('input[name="query_id"]').val();
 
-          var url = ajaxCheckQuery;
+          var checkUrl = ajaxCheckQuery;
 
           // Only check if the focus is not on the search
           if ($(':focus').attr('name') != 'query_text') {
-            new Ajax.Request(
-              url,
-              {
-                parameters: {'store_id': storeId, 'query_text': value, 'query_id': queryId},
-                method: 'post',
-                asynchronous: false,
-                onComplete: function (transport) {
-                  var response = JSON.parse(transport.responseText);
-                  isValid = response.isValid;
-                }
+            $.ajax({
+              url: checkUrl,
+              method: 'POST',
+              data: {'store_id': storeId, 'query_text': value, 'query_id': queryId},
+              async: false,
+              complete: function (transport) {
+                var response = JSON.parse(transport.responseText);
+                isValid = response.isValid;
               }
-            );
+            });
           }
 
           return isValid;
@@ -75,20 +72,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 var isValid = false;
                 var storeId = $('select[name="store_id"]').val();
                 var landingPageId = $('input[name="landing_page_id"]').val();
-                var url = ajaxCheckUrl;
+                var checkUrl = ajaxCheckUrl;
 
-                new Ajax.Request(
-                    url,
-                    {
-                        parameters: {'store_id': storeId, 'url_key': value, 'landing_page_id': landingPageId},
-                        method: 'post',
-                        asynchronous: false,
-                        onComplete: function (transport) {
-                            var response = JSON.parse(transport.responseText);
-                            isValid = response.isValid;
-                        }
-                    }
-                );
+                $.ajax({
+                  url: checkUrl,
+                  method: 'POST',
+                  data: {'store_id': storeId, 'url_key': value, 'landing_page_id': landingPageId},
+                  async: false,
+                  complete: function (transport) {
+                    var response = JSON.parse(transport.responseText);
+                    isValid = response.isValid;
+                  }
+                });
+
                 return isValid;
             },
             $.mage.__('This URL key is already in use. Please find another one.')

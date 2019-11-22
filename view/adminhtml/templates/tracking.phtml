@@ -369,4 +369,13 @@ var algoliaEventsTracking = {
 
 };
 
+document.addEventListener("DOMContentLoaded", function(event) {
+    requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
+        algoliaAdminBundle.$(function ($) {
+            // EVENT TRACKING
+            algoliaEventsTracking.track();
+        });
+    });
+});
+
 </script>

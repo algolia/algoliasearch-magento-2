@@ -447,7 +447,7 @@ class ProductHelper
 
     public function getAllCategories($categoryIds)
     {
-        $categories = $this->categoryHelper->getCoreCategories();
+        $categories = $this->categoryHelper->getCoreCategories(false);
 
         $selectedCategories = [];
         foreach ($categoryIds as $id) {
@@ -653,13 +653,6 @@ class ProductHelper
                 $path = [];
 
                 foreach ($category->getPathIds() as $treeCategoryId) {
-                    if (!$this->configHelper->showCatsNotIncludedInNavigation($storeId)
-                        && !$this->categoryHelper->isCategoryVisibleInMenu($treeCategoryId, $storeId)) {
-                        // If the category should not be included in menu - skip it
-                        $path[] = null;
-                        continue;
-                    }
-
                     $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
                     if ($name) {
                         $categoryIds[] = $treeCategoryId;

@@ -12,6 +12,12 @@
                 <item name="class" xsi:type="string">primary</item>
                 <item name="url" xsi:type="string">*/*/clear</item>
             </item>
+            <item name="logs" xsi:type="array">
+                <item name="name" xsi:type="string">logs</item>
+                <item name="label" xsi:type="string" translate="true">See Run Logs</item>
+                <item name="class" xsi:type="string">secondary</item>
+                <item name="url" xsi:type="string">*/*/log</item>
+            </item>
         </item>
     </argument>
 

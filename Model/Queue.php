@@ -19,6 +19,7 @@ class Queue
 {
     const FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33;
     const UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
+    const CLEAR_ARCHIVE_LOGS_AFTER_DAYS = 30;
 
     const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
     const ERROR_LOG = 'algoliasearch_queue_errors.log';
@@ -157,6 +158,7 @@ class Queue
         }
 
         $this->clearOldLogRecords();
+        $this->clearOldArchiveRecords();
         $this->unlockStackedJobs();
 
         $this->logRecord = [
@@ -586,6 +588,14 @@ class Queue
         if ($idsToDelete) {
             $this->db->delete($this->logTable, ['id IN (?)' => $idsToDelete]);
         }
+    }
+
+    private function clearOldArchiveRecords()
+    {
+        $this->db->delete(
+            $this->archiveTable,
+            'created_at < (NOW() - INTERVAL ' . self::CLEAR_ARCHIVE_LOGS_AFTER_DAYS . ' DAY)'
+        );
     }
 
     private function unlockStackedJobs()

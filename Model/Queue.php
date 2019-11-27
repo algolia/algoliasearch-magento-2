@@ -19,6 +19,7 @@ class Queue
 {
     const FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33;
     const UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
+    const CLEAR_ARCHIVE_LOGS_AFTER_DAYS = 30;
 
     const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
     const ERROR_LOG = 'algoliasearch_queue_errors.log';
@@ -592,6 +593,10 @@ class Queue
     private function clearOldArchiveRecords()
     {
         $archiveLogClearLimit = $this->configHelper->getArchiveLogClearLimit();
+        // Adding a fallback in case this configuration was not set in a consistent way
+        if ($archiveLogClearLimit < 1) {
+            $archiveLogClearLimit = self::CLEAR_ARCHIVE_LOGS_AFTER_DAYS;
+        }
 
         $this->db->delete(
             $this->archiveTable,

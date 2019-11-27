@@ -880,7 +880,7 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="archive_clear_Limit" translate="label comment" type="text" sortOrder="95" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="archive_clear_limit" translate="label comment" type="text" sortOrder="95" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Archive log clean limit</label>
                     <comment>
                         <![CDATA[

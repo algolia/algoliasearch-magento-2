@@ -6,5 +6,5 @@ class Magento_2_3
 {
     public $productsOnStockCount = 186;
     public $productsOutOfStockCount = 187;
-    public $lastJobDataSize = 48;
+    public $lastJobDataSize = 13;
 }

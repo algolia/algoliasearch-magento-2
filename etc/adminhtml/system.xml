@@ -336,9 +336,6 @@
                             Do you want to replace default Magento category pages (PLPs) by an instant search results page?
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="show_suggestions_on_no_result_page" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Show query suggestions when no results</label>

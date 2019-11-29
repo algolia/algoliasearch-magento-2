@@ -8,7 +8,7 @@
         <item name="buttons" xsi:type="array">
             <item name="back" xsi:type="array">
                 <item name="name" xsi:type="string">logs</item>
-                <item name="label" xsi:type="string" translate="true">Back to Indexing Queue overview</item>
+                <item name="label" xsi:type="string" translate="true">Back to Indexing Queue</item>
                 <item name="class" xsi:type="string">secondary</item>
                 <item name="url" xsi:type="string">*/*/index</item>
             </item>
@@ -80,7 +80,7 @@
                 </item>
             </argument>
         </column>
-        <column name="duration" >
+        <column name="duration">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">int</item>
@@ -91,7 +91,7 @@
                 </item>
             </argument>
         </column>
-        <column name="processed_jobs" >
+        <column name="processed_jobs">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">int</item>
@@ -102,7 +102,7 @@
                 </item>
             </argument>
         </column>
-        <column name="with_empty_queue" >
+        <column name="with_empty_queue">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="filter" xsi:type="string">int</item>

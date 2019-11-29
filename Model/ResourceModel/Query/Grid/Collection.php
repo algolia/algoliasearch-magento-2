@@ -13,6 +13,7 @@ class Collection extends QueryCollection implements SearchResultInterface
 
     /**
      * @param \Magento\Framework\Data\Collection\EntityFactoryInterface $entityFactory
+     * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Framework\Data\Collection\Db\FetchStrategyInterface $fetchStrategy
      * @param \Magento\Framework\Event\ManagerInterface $eventManager
      * @param mixed|null $mainTable

@@ -25,6 +25,11 @@ class Save extends \Magento\Config\Controller\Adminhtml\System\Config\Save
             }
         }
 
+        if (isset($groups['instant']['fields']['is_instant_enabled']['value'])
+            && $groups['instant']['fields']['is_instant_enabled']['value'] == '1') {
+            $groups['instant']['fields']['backend_rendering_enable']['value'] = '0';
+        }
+
         return $groups;
     }
 }

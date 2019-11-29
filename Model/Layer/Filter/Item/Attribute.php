@@ -47,7 +47,7 @@ class Attribute extends \Magento\Catalog\Model\Layer\Filter\Item
                 }
             }
 
-            $resetValue = null;
+            $resetValue = [];
 
             if (!is_null($idToRemove)) {
                 $resetValue = array_diff($this->getApplyValue(), [$idToRemove]);

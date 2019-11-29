@@ -98,6 +98,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_advanced/advanced/prevent_backend_rendering' => '0',
         'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode' => 'all',
         'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents' => "Googlebot\nBingbot",
+        'algoliasearch_advanced/advanced/archive_clear_limit' => '30',
     ];
 
     private $defaultArrayConfigData = [

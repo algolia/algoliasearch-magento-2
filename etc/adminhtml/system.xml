@@ -877,6 +877,14 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="archive_clear_limit" translate="label comment" type="text" sortOrder="95" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Archive log clean limit</label>
+                    <comment>
+                        <![CDATA[
+                            (In days - default value is 30) Sets the limit when the oldest records should be cleared from the archive logs (algoliasearch_queue_archive).
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_extra_settings" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">

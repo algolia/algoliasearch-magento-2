@@ -145,7 +145,9 @@ class Data
             }
         }
 
-        return [$data, $answer['nbHits'], $answer['facets']];
+        $facetsFromAnswer = isset($answer['facets']) ? $answer['facets'] : [];
+
+        return [$data, $answer['nbHits'], $facetsFromAnswer];
     }
 
     public function rebuildStoreAdditionalSectionsIndex($storeId)

@@ -336,9 +336,6 @@
                             Do you want to replace default Magento category pages (PLPs) by an instant search results page?
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="show_suggestions_on_no_result_page" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Show query suggestions when no results</label>
@@ -877,6 +874,14 @@
                     <comment>
                         <![CDATA[
                             Choose here the textfield attributes that you don't want to be turned into numeric values (i.e. : if you don't want "00123" turned into "123")
+                        ]]>
+                    </comment>
+                </field>
+                <field id="archive_clear_limit" translate="label comment" type="text" sortOrder="95" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Archive log clean limit</label>
+                    <comment>
+                        <![CDATA[
+                            (In days - default value is 30) Sets the limit when the oldest records should be cleared from the archive logs (algoliasearch_queue_archive).
                         ]]>
                     </comment>
                 </field>

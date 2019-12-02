@@ -84,7 +84,7 @@ class PageHelper
     public function getPages($storeId)
     {
         /** @var \Magento\Cms\Model\ResourceModel\Page\Collection $magentoPages */
-        $magentoPages = $this->pageCollectionFactory->getCollection()
+        $magentoPages = $this->pageCollectionFactory->create()
             ->addStoreFilter($storeId)
             ->addFieldToFilter('is_active', 1);
 

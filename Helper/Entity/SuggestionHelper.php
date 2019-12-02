@@ -27,6 +27,15 @@ class SuggestionHelper
 
     private $popularQueriesCacheId = 'algoliasearch_popular_queries_cache_tag';
 
+    /**
+     * SuggestionHelper constructor.
+     *
+     * @param ManagerInterface $eventManager
+     * @param QueryCollectionFactory $queryCollectionFactory
+     * @param ConfigCache $cache
+     * @param ConfigHelper $configHelper
+     * @param SerializerInterface $serializer
+     */
     public function __construct(
         ManagerInterface $eventManager,
         QueryCollectionFactory $queryCollectionFactory,

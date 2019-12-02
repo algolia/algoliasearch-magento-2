@@ -43,6 +43,16 @@ class PageHelper
      */
     private $frontendUrlBuilder;
 
+    /**
+     * PageHelper constructor.
+     *
+     * @param ManagerInterface $eventManager
+     * @param PageCollectionFactory $pageCollectionFactory
+     * @param ConfigHelper $configHelper
+     * @param FilterProvider $filterProvider
+     * @param StoreManagerInterface $storeManager
+     * @param UrlInterface $frontendUrlBuilder
+     */
     public function __construct(
         ManagerInterface $eventManager,
         PageCollectionFactory $pageCollectionFactory,

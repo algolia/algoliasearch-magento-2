@@ -24,7 +24,7 @@ class JobMethods implements \Magento\Framework\Data\OptionSourceInterface
         foreach ($this->methods as $key => $value) {
             $options[] = [
                 'value' => $key,
-                'label' => $value,
+                'label' => __($value),
             ];
         }
 

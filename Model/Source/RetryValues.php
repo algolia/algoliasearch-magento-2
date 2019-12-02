@@ -17,7 +17,7 @@ class RetryValues implements ArrayInterface
             ['value' => '20', 'label' => '20'],
             ['value' => '50', 'label' => '50'],
             ['value' => '100', 'label' => '100'],
-            ['value' => '9999999', 'label' => 'unlimited'],
+            ['value' => '9999999', 'label' => __('unlimited')],
         ];
     }
 }

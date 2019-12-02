@@ -9,7 +9,7 @@ class CustomPages extends AbstractTable
     protected function getTableData()
     {
         $objectManager = ObjectManager::getInstance();
-        $pageCollection = $objectManager->create('Magento\Cms\Model\ResourceModel\Page\Collection');
+        $pageCollection = $objectManager->create(\Magento\Cms\Model\ResourceModel\Page\Collection::class);
 
         return [
             'attribute' => [

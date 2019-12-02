@@ -13,7 +13,6 @@ use Magento\Framework\ObjectManagerInterface;
  */
 class CategoryUrlPlugin
 {
-    const FRONTEND_URL = 'Magento\Framework\Url';
     private $objectManager;
 
     public function __construct(
@@ -28,6 +27,7 @@ class CategoryUrlPlugin
             return $proceed();
         }
 
-        return $this->objectManager->create(self::FRONTEND_URL)->setStoreId($category->getStoreId());
+        return $this->objectManager->create(\Magento\Framework\Url::class)
+            ->setStoreId($category->getStoreId());
     }
 }

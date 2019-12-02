@@ -21,9 +21,6 @@ use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
  */
 class Url extends ProductUrl
 {
-    const FRONTEND_URL = 'Magento\Framework\Url';
-    const BACKEND_URL = 'Magento\Backend\Model\Url';
-
     private $objectManager;
 
     public function __construct(
@@ -131,10 +128,10 @@ class Url extends ProductUrl
     public function getStoreScopeUrlInstance($storeId)
     {
         if (!$storeId) {
-            return $this->objectManager->create(self::BACKEND_URL);
+            return $this->objectManager->create(\Magento\Backend\Model\Url::class);
         }
 
-        return $this->objectManager->create(self::FRONTEND_URL);
+        return $this->objectManager->create(\Magento\Framework\Url::class);
     }
 
     private function getCategoryId(Product $product, $params)

@@ -18,8 +18,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         $this->_init(
-            'Algolia\AlgoliaSearch\Model\Job',
-            'Algolia\AlgoliaSearch\Model\ResourceModel\Job'
+            \Algolia\AlgoliaSearch\Model\Job::class,
+            \Algolia\AlgoliaSearch\Model\ResourceModel\Job::class
         );
     }
 }

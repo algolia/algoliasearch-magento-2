@@ -4,6 +4,7 @@
         <add
             id="Algolia_AlgoliaSearch::manage"
             title="Algolia Search"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="999"
             parent="Magento_Backend::stores"
@@ -12,6 +13,7 @@
         <add
             id="Algolia_AlgoliaSearch::credentials"
             title="Credentials and Basic Setup"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="10"
             parent="Algolia_AlgoliaSearch::manage"
@@ -21,6 +23,7 @@
         <add
             id="Algolia_AlgoliaSearch::autocomplete"
             title="Autocomplete Menu"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="20"
             parent="Algolia_AlgoliaSearch::manage"
@@ -30,6 +33,7 @@
         <add
             id="Algolia_AlgoliaSearch::instant"
             title="Instant Search Results Page"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="30"
             parent="Algolia_AlgoliaSearch::manage"
@@ -39,6 +43,7 @@
         <add
             id="Algolia_AlgoliaSearch::queue"
             title="Indexing Queue"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="50"
             parent="Algolia_AlgoliaSearch::manage"
@@ -48,6 +53,7 @@
         <add
             id="Algolia_AlgoliaSearch::reindex"
             title="Reindex SKU(s)"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="90"
             parent="Algolia_AlgoliaSearch::manage"
@@ -57,6 +63,7 @@
         <add
             id="Algolia_AlgoliaSearch::merchandising"
             title="Merchandising"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="95"
             parent="Algolia_AlgoliaSearch::manage"
@@ -66,6 +73,7 @@
         <add
             id="Algolia_AlgoliaSearch::analytics"
             title="Analytics Overview"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="110"
             parent="Algolia_AlgoliaSearch::manage"
@@ -75,6 +83,7 @@
         <add
             id="Algolia_AlgoliaSearch::support"
             title="Help &amp; Support"
+            translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="120"
             parent="Algolia_AlgoliaSearch::manage"

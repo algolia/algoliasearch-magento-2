@@ -28,7 +28,7 @@ class AdditionalSectionHelper
      * AdditionalSectionHelper constructor.
      *
      * @param ManagerInterface $eventManager
-     * @param CollectionFactory $productCollectionFactory
+     * @param CollectionFactory $collectionFactory
      * @param Config $eavConfig
      */
     public function __construct(

@@ -41,22 +41,22 @@ class SharedCatalogFactory
 
     public function getSharedCatalogProductItemResource()
     {
-        return $this->objectManager->create(\Magento\SharedCatalog\Model\ResourceModel\ProductItem::class);
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\ProductItem');
     }
 
     public function getSharedCatalogCategoryResource()
     {
-        return $this->objectManager->create(\Magento\SharedCatalog\Model\ResourceModel\Permission::class);
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\Permission');
     }
 
     public function getSharedCatalogResource()
     {
-        return $this->objectManager->create(\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog::class);
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog');
     }
 
     public function getSharedCatalogConfig()
     {
-        return $this->objectManager->create(\Magento\SharedCatalog\Model\Config::class);
+        return $this->objectManager->create('\Magento\SharedCatalog\Model\Config');
     }
 
     public function getSharedCategoryCollection()
@@ -115,7 +115,7 @@ class SharedCatalogFactory
     public function getSharedCatalogGroups()
     {
         /** @var \Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection $sharedCatalog */
-        $sharedCatalog = $this->objectManager->create(\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection::class);
+        $sharedCatalog = $this->objectManager->create('\Magento\SharedCatalog\Model\ResourceModel\SharedCatalog\Collection');
 
         return $sharedCatalog->getColumnValues('customer_group_id');
     }

@@ -128,7 +128,7 @@ class SuggestionHelper
     public function getSuggestionCollectionQuery($storeId)
     {
         /** @var \Magento\Search\Model\ResourceModel\Query\Collection $collection */
-        $collection = $collection = $this->queryCollectionFactory->create()
+        $collection = $this->queryCollectionFactory->create()
             ->addStoreFilter($storeId)
             ->setStoreId($storeId);
 

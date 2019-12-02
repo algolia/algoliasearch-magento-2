@@ -24,15 +24,15 @@ class SortOrderProduct extends AbstractTable
             ],
             'searchable' => [
                 'label'  => 'Searchable?',
-                'values' => ['1' => 'Yes', '2' => 'No'],
+                'values' => ['1' => __('Yes'), '2' => __('No')],
             ],
             'order' => [
                 'label'  => 'Ordered?',
-                'values' => ['unordered' => 'Unordered', 'ordered' => 'Ordered'],
+                'values' => ['unordered' => __('Unordered'), 'ordered' => __('Ordered')],
             ],
             'retrievable' => [
                 'label'  => 'Retrievable?',
-                'values' => ['1' => 'Yes', '2' => 'No'],
+                'values' => ['1' => __('Yes'), '2' => __('No')],
             ],
         ];
     }

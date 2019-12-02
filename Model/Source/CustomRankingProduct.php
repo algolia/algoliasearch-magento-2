@@ -25,7 +25,7 @@ class CustomRankingProduct extends AbstractTable
             ],
             'order' => [
                 'label'  => 'Order',
-                'values' => ['asc' => 'Ascending', 'desc' => 'Descending'],
+                'values' => ['asc' => __('Ascending'), 'desc' => __('Descending')],
             ],
         ];
     }

@@ -38,7 +38,7 @@ class CatalogPermissionsFactory
 
     public function getPermissionsIndexResource()
     {
-        return $this->objectManager->create(\Magento\CatalogPermissions\Model\ResourceModel\Permission\Index:class);
+        return $this->objectManager->create(\Magento\CatalogPermissions\Model\ResourceModel\Permission\Index::class);
     }
 
     public function getCatalogPermissionsHelper()

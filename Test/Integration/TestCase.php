@@ -108,7 +108,7 @@ abstract class TestCase extends \TC
         } else {
             $this->assertValues = new Magento_2_3();
         }
-        
+
         $this->algoliaHelper = $this->getObjectManager()->create(AlgoliaHelper::class);
 
         $this->configHelper = $config = $this->getObjectManager()->create(ConfigHelper::class);

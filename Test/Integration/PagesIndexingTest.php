@@ -121,7 +121,7 @@ class PagesIndexingTest extends IndexingTestCase
     public function testUtf8()
     {
         $utf8Content = 'příliš žluťoučký kůň';
-        
+
         /** @var PageFactory $pageFactory */
         $pageFactory = $this->getObjectManager()->create(PageFactory::class);
         $testPage = $pageFactory->create();

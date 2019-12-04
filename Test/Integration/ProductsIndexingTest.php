@@ -14,7 +14,7 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->setOneProductOutOfStock();
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $indexer = $this->getObjectManager()->create(Product::class);
 
         $this->processTest($indexer, 'products', $this->assertValues->productsOnStockCount);
     }
@@ -26,7 +26,7 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->setOneProductOutOfStock();
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $indexer = $this->getObjectManager()->create(Product::class);
 
         $this->processTest($indexer, 'products', $this->assertValues->productsOutOfStockCount);
     }
@@ -41,7 +41,7 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->setConfig('algoliasearch_products/products/custom_ranking_product_attributes', $empty);
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $indexer = $this->getObjectManager()->create(Product::class);
         $indexer->executeRow(994);
 
         $this->algoliaHelper->waitLastTask();
@@ -95,7 +95,7 @@ class ProductsIndexingTest extends IndexingTestCase
         );
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $indexer = $this->getObjectManager()->create(Product::class);
         $indexer->executeRow(994);
 
         $this->algoliaHelper->waitLastTask();
@@ -120,7 +120,7 @@ class ProductsIndexingTest extends IndexingTestCase
     public function testNoSpecialPrice()
     {
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $indexer = $this->getObjectManager()->create(Product::class);
         $indexer->execute([9]);
 
         $this->algoliaHelper->waitLastTask();
@@ -140,14 +140,14 @@ class ProductsIndexingTest extends IndexingTestCase
     public function testSpecialPrice()
     {
         /** @var \Magento\Framework\App\ProductMetadataInterface $productMetadata */
-        $productMetadata = $this->getObjectManager()->create('\Magento\Framework\App\ProductMetadataInterface');
+        $productMetadata = $this->getObjectManager()->create(\Magento\Framework\App\ProductMetadataInterface::class);
         $version = $productMetadata->getVersion();
         if (version_compare($version, '2.1', '<') === true) {
             $this->markTestSkipped();
         }
 
         /** @var \Magento\Catalog\Model\Product $product */
-        $product = $this->getObjectManager()->create('\Magento\Catalog\Model\Product');
+        $product = $this->getObjectManager()->create(\Magento\Catalog\Model\Product::class);
         $product->load(9);
 
         $specialPrice = 29;
@@ -162,7 +162,7 @@ class ProductsIndexingTest extends IndexingTestCase
         $product->save();
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Product');
+        $indexer = $this->getObjectManager()->create(Product::class);
         $indexer->execute([9]);
 
         $this->algoliaHelper->waitLastTask();
@@ -178,7 +178,7 @@ class ProductsIndexingTest extends IndexingTestCase
     private function setOneProductOutOfStock()
     {
         /** @var StockRegistry $stockRegistry */
-        $stockRegistry = $this->getObjectManager()->create('Magento\CatalogInventory\Model\StockRegistry');
+        $stockRegistry = $this->getObjectManager()->create(\Magento\CatalogInventory\Model\StockRegistry::class);
         $stockItem = $stockRegistry->getStockItemBySku('24-MB01');
         $stockItem->setIsInStock(false);
         $stockRegistry->updateStockItemBySku('24-MB01', $stockItem);

@@ -1,299 +1,23 @@
 <?php
-
 /** @var $this \Magento\Backend\Block\Template */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
 $viewModel = $this->getViewModel();
 
-$applicationId = $viewModel->getApplicationId();
-
-$isClickAnalyticsEnabled = true;
-$isClickAnalyticsTurnedOnInAdmin = true;
-$isQueryRulesEnabled = true;
-
-$section = $this->getRequest()->getParam('section');
-
-if ($section === 'algoliasearch_cc_analytics') {
-    $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
-    $isClickAnalyticsTurnedOnInAdmin = $viewModel->isClickAnalyticsTurnedOnInAdmin();
-}
-
-if ($section === 'algoliasearch_instant') {
-    $isQueryRulesEnabled = $viewModel->isQueryRulesEnabled();
-}
-
-$indexingQueueInfoUrl = $this->getUrl('algolia_algoliasearch/queue/info');
-$indexingQueueConfigUrl = $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_queue');
-$indexingQueuePageUrl = $this->getUrl('algolia_algoliasearch/queue/index');
-
 $ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
 $ajaxCheckQuery = $this->getUrl('algolia_algoliasearch/query/checkQuery');
 
-$icons = [
-    'iconDocs' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg'),
-    'iconFaq' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-faq.svg'),
-    'iconIssues' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-issues.svg'),
-];
-
-$videoConfig = $viewModel->getVideoConfig($section);
-$linksConfig = $viewModel->getLinksConfig($section);
-
-$isMsiExternalModuleNeeded = $viewModel->isMsiExternalModuleNeeded();
-$isEsWarningNeeded = $viewModel->isEsWarningNeeded();
-$newVersionNotification = $viewModel->getNewVersionNotification();
-
+$applicationId = $viewModel->getApplicationId();
 ?>
-
 <script>
 var applicationId = <?php echo json_encode($applicationId); ?>;
-var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
-var isClickAnalyticsTurnedOnInAdmin = <?php echo json_encode($isClickAnalyticsTurnedOnInAdmin); ?>;
-var isQueryRulesEnabled = <?php echo json_encode($isQueryRulesEnabled); ?>;
-var indexingQueueConfigUrl = <?php echo json_encode($indexingQueueConfigUrl); ?>;
-var indexingQueuePageUrl = <?php echo json_encode($indexingQueuePageUrl); ?>;
-var indexingQueueInfoUrl = <?php echo json_encode($indexingQueueInfoUrl); ?>;
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
 var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
-var icons = <?php echo json_encode($icons); ?>;
-var videoConfig = <?php echo json_encode($videoConfig); ?>;
-var linksConfig = <?php echo json_encode($linksConfig); ?>;
-var isMsiExternalModuleNeeded = <?php echo json_encode($isMsiExternalModuleNeeded); ?>;
-var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
-var newVersionNotification = <?php echo json_encode($newVersionNotification); ?>;
-
 document.addEventListener("DOMContentLoaded", function(event) {
-	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
-		algoliaAdminBundle.$(function ($) {
-			$('form[action*="algoliasearch"] .accordion .config .label').css('width', 'auto');
-			$('form[action*="algoliasearch"] .accordion .config .value').css('width', 'auto');
-
-			var fixHelper = function(e, ui) {
-				ui.children().each(function() {
-					$(this).width($(this).width());
-				});
-
-				return ui;
-			};
-
-			setTimeout(function () {
-				$('form[action*="algoliasearch"] .admin__control-table tbody').sortable({
-					containment: "parent",
-					items: 'tr',
-					tolerance: 'pointer',
-					helper: fixHelper,
-					start: function (event, ui) {
-						$(ui.item).css('margin-left', '10px');
-					}
-				});
-
-				$('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
-			}, 1000);
-
-			/** FEATURE ENABLEMENT **/
-			var notEnabledText = `
-				<br>
-				<div class="algolia_block icon-stars">
-					To get access to this Algolia feature,
-					please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
-				</div>
-			`;
-
-			/** FEATURE ACTIVATION **/
-			var notActivatedText = `
-			<tr>
-				<td colspan="3">
-					<div class="algolia_block blue icon-stars">
-					Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
-					like Click-through Rate, Conversion Rate from searches and average click position.
-					Click Analytics are only available for higher plans and require only minor additional settings.
-					<br><br>
-					Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-					</div>
-				</td>
-			</tr>
-			`;
-
-			// Click analytics
-			if (isClickAnalyticsEnabled === false) {
-				$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
-				$('#algoliasearch_cc_analytics_cc_analytics_group .comment').after(notEnabledText);
-			}
-
-			if (isClickAnalyticsEnabled === true && isClickAnalyticsTurnedOnInAdmin === false) {
-				$('#row_algoliasearch_cc_analytics_cc_analytics_group_enable').before(notActivatedText);
-			}
-
-			// Query rules in facets
-			if (isQueryRulesEnabled === false) {
-				var notEnabledText = `
-					<br>
-					<div class="algolia_block icon-stars">
-						To be able to create Query rules for facets,
-						please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
-					</div>
-				`;
-
-				$('select[name*=create_rule]').val('2').prop('disabled', 'disabled');
-				$('#row_algoliasearch_instant_instant_facets .algolia_block.blue').after(notEnabledText);
-			}
-
-			// QUEUE INFO
-
-			var url = window.location.href;
-			if (url.indexOf('section/algoliasearch_') !== -1) {
-				$.getJSON(indexingQueueInfoUrl, function(queueInfo) {
-					var message = `
-						<div class="algolia_block icon-warning">
-							<div class="heading"><a href="` + indexingQueueConfigUrl + `">Indexing Queue</a> is not enabled</div>
-							It is highly recommended that you enable it, especially if you are on a production environment.
-							<br><br>
-							Find out more about Indexing Queue in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-						</div>`;
-
-					if (queueInfo.isEnabled === true) {
-						message = `
-							<div class="algolia_block icon-bulb">
-								<div class="heading">Queued indexing jobs</div>
-								Number of queued jobs: <strong>` + queueInfo.currentSize + `</strong>.
-								Assuming your queue runner runs every 5 minutes, all jobs will be processed
-								in approx. ` + queueInfo.eta + `.
-								You may want to <a href="` + indexingQueuePageUrl + `">clear the queue</a> or <a href="` + indexingQueueConfigUrl + `">configure indexing queue</a>.
-								<br><br>
-								Find out more about Indexing Queue in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-							</div>`;
-					}
-
-					$('.entry-edit').before(message);
-
-					if (isMsiExternalModuleNeeded === true) {
-						var msiMessage = `
-						<div class="algolia_block icon-warning">
-							<div class="heading">Magento Multi-source Inventory compatibility</div>
-							Your store is using Magento Multi-source Inventory and for Algolia to be fully compatible with it, you should install the module <a target="_blank" href="https://github.com/algolia/algoliasearch-inventory-magento-2/">Algoliasearch Inventory</a>.<br>
-							More information in <a href="https://www.algolia.com/doc/integration/magento-2/guides/multi-source-inventory/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-							<br>
-						</div>`;
-						$('.entry-edit').before(msiMessage);
-					}
-				});
-				// New version notification
-				if (newVersionNotification) {
-					notification = `
-						<div class="algolia_block icon-warning">
-							<div class="heading">Algolia Extension update</div>
-							You are using old version of Algolia extension. Latest version of the extension is v <b>` + newVersionNotification.version + `</b><br />
-							It is highly recommended to update your version to avoid any unexpecting issues and to get new features.<br />
-							See details on our <a target="_blank" href="` + newVersionNotification.url + `">Github repository</a>.
-						</div>`;
-					$('.entry-edit').before(notification);
-				}
-
-				// ES compatibility warning
-				if (isEsWarningNeeded) {
-					var esMessage = `<span class="algolia-config-warning">&#9888;</span>This feature is currently  supported only for MySQL search engine.`;
-				} else {
-					var esMessage = `<span class="algolia-config-warning">&#9888;</span> If you turn on this feature, please make sure that every attribute you choose in the facet listing below is configured as "<strong>Use in Layered Navigation</strong>" for categories and "<strong>Use in Search Result Layered Navigation</strong>" for Catalog Search in <strong>Stores > Attributes > Product > "Storefront Properties" panel of attribute configuration</strong>.
-						`;
-				}
-				$('#row_algoliasearch_instant_instant_backend_rendering_enable .note').append(esMessage);
-
-				// Admin videos
-                var videoTemplate = '';
-                // Admin links
-                var linksTemplate = '';
-
-                if (videoConfig) {
-                    videoTemplate = `
-                        <div class="algolia-admin-content-videos">
-                            <p>
-                                <span>Related video:</span>
-                                <a target="_blank" href="` + videoConfig.url + `"><img src="` + videoConfig.thumbnail + `"/></a>
-                                <a target="_blank" href="` + videoConfig.url + `">` + videoConfig.title + `</a>
-                            </p>
-                        </div>`;
-                }
-
-                if (linksConfig) {
-                    var links = '';
-                    for (var i=0; i<linksConfig.length; i++) {
-                        links += `<span><img src="` + icons[linksConfig[i].icon] + `"/><a target="_blank" href="` + linksConfig[i].url + `">` + linksConfig[i].title + `</a></span>`;
-                        if (i%2 == 1) {
-                            links += `<br/>`;
-                        }
-                    }
-                    linksTemplate = `<div class="algolia-admin-content-links"><p>` + links + `</p></div>`;
-                }
-
-                var linksAndVideoTemplate = `
-                    <div class="algolia-admin-content-wrapper">
-                        ` + linksTemplate +  videoTemplate +
-                    `</div>
-                    <br>
-                    <hr>
-                    <br>`;
-                $('.algolia-admin-content').html(linksAndVideoTemplate);
-			}
-
-
-			// SYNONYMS
-
-			handleSynonyms($('#algoliasearch_synonyms_synonyms_group_enable_synonyms').val());
-
-			$(document).on('change', '#algoliasearch_synonyms_synonyms_group_enable_synonyms', function() {
-				handleSynonyms($(this).val());
-			});
-
-			function handleSynonyms(enabled) {
-				var $rows = $('#row_algoliasearch_synonyms_synonyms_group_synonyms, #row_algoliasearch_synonyms_synonyms_group_oneway_synonyms, #row_algoliasearch_synonyms_synonyms_group_synonyms_file');
-
-				if (enabled === '1') {
-					$rows.show();
-				} else {
-					$rows.hide();
-				}
-			}
-
-			// ORDERED / UNORDERED
-			var $attributesRows = $('#algoliasearch_products_products_product_additional_attributes, #algoliasearch_categories_categories_category_additional_attributes');
-			initAttributes($attributesRows);
-
-			$attributesRows.on('click', 'button[id^="addToEndBtn"]', function (e) {
-				initAttributes($attributesRows);
-			});
-
-			$attributesRows.on('change', 'select[name$="[searchable]"]', function (e) {
-				handleAttributes($(this));
-			});
-
-			function initAttributes($attributesRows) {
-				$attributesRows.find('select[name$="[searchable]"]').each(function(e) {
-					handleAttributes($(this));
-				});
-			}
-
-			function handleAttributes($selectBox) {
-				var selectValue = $selectBox.val(),
-					$input = $selectBox.parent('td').next().find('select[name$="[order]"]');
-
-				if(selectValue !== '1') {
-					$input.hide();
-				}
-				else {
-					$input.show();
-				}
-			}
-
-			// EVENT TRACKING
-            algoliaEventsTracking.track();
-
-		});
-	});
-
 	requirejs([
 		'jquery',
 		'Magento_Ui/js/lib/validation/validator',
-		'mage/translate',
-        'prototype'
+		'mage/translate'
 	], function ($, validator, mage) {
 		'use strict';
 
@@ -308,22 +32,20 @@ document.addEventListener("DOMContentLoaded", function(event) {
           var storeId = $('select[name="store_id"]').val();
           var queryId = $('input[name="query_id"]').val();
 
-          var url = ajaxCheckQuery;
+          var checkUrl = ajaxCheckQuery;
 
           // Only check if the focus is not on the search
           if ($(':focus').attr('name') != 'query_text') {
-              new Ajax.Request(
-                url,
-                {
-                    parameters: {'store_id': storeId, 'query_text': value, 'query_id': queryId},
-                    method: 'post',
-                    asynchronous: false,
-                    onComplete: function (transport) {
-                    var response = JSON.parse(transport.responseText);
-                    isValid = response.isValid;
-                }
+            $.ajax({
+              url: checkUrl,
+              method: 'POST',
+              data: {'store_id': storeId, 'query_text': value, 'query_id': queryId},
+              async: false,
+              complete: function (transport) {
+                var response = JSON.parse(transport.responseText);
+                isValid = response.isValid;
               }
-            );
+            });
           }
 
           return isValid;
@@ -350,30 +72,23 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 var isValid = false;
                 var storeId = $('select[name="store_id"]').val();
                 var landingPageId = $('input[name="landing_page_id"]').val();
-                var url = ajaxCheckUrl;
+                var checkUrl = ajaxCheckUrl;
 
-                new Ajax.Request(
-                    url,
-                    {
-                        parameters: {'store_id': storeId, 'url_key': value, 'landing_page_id': landingPageId},
-                        method: 'post',
-                        asynchronous: false,
-                        onComplete: function (transport) {
-                            var response = JSON.parse(transport.responseText);
-                            isValid = response.isValid;
-                        }
-                    }
-                );
+                $.ajax({
+                  url: checkUrl,
+                  method: 'POST',
+                  data: {'store_id': storeId, 'url_key': value, 'landing_page_id': landingPageId},
+                  async: false,
+                  complete: function (transport) {
+                    var response = JSON.parse(transport.responseText);
+                    isValid = response.isValid;
+                  }
+                });
+
                 return isValid;
             },
             $.mage.__('This URL key is already in use. Please find another one.')
         );
-        if (isEsWarningNeeded) {
-        	$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
-	        $('#algoliasearch_instant_instant_is_instant_enabled').on('change', function(){
-				$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
-			});
-		}
 	});
 });
 </script>

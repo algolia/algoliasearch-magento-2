@@ -33,7 +33,7 @@ $isConfig = [
 ?>
 
 <input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="algolia_algoliasearch_landingpage_form" />
-<input type="hidden" name="algolia_query" value="<= htmlentities($landingPage->getQuery()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
+<input type="hidden" name="algolia_query" value="<?php echo htmlentities($landingPage->getQuery()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
 <input type="hidden" name="algolia_configuration" value="<?php echo htmlentities($landingPage->getConfiguration()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
 
 <div class="with-facets" id="algolia_instant_selector">
@@ -325,7 +325,7 @@ $isConfig = [
 <script>
   requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
     algoliaAdminBundle.$(function ($) {
-      var config = <?php echo $block->escapeJs(json_encode($isConfig)); ?>;
+      var config = <?php echo json_encode($isConfig); ?>;
       config.indexName = getCurrentIndexName();
       var search = algoliaAdminBundle.instantsearch(config);
       var facetWrapper = document.getElementById('algolia_merchandising_facet_wrapper');

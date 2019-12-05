@@ -189,7 +189,7 @@ $isConfig = [
 <script>
     requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
-        	var config = <?php echo $block->escapeJs(json_encode($isConfig)); ?>;
+        	var config = <?php echo json_encode($isConfig); ?>;
             config.searchFunction = function(helper) {
                 if (helper.state.query !== '') {
                     algoliaEventsTracking.postEvent('Searched Keyword', {

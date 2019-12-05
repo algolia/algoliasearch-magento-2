@@ -1,13 +1,13 @@
 <?php
 
-/** @var $this \Magento\Backend\Block\Template */
+/** @var \Magento\Backend\Block\Template $block */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
-$viewModel = $this->getViewModel();
+$viewModel = $block->getViewModel();
 
 $isClickAnalyticsEnabled = true;
 
-$section = $this->getRequest()->getParam('section');
+$section = $block->getRequest()->getParam('section');
 
 if ($section === 'algoliasearch_cc_analytics') {
     $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
@@ -20,10 +20,10 @@ $extensionNotices = $viewModel->getExtensionNotices();
 ?>
 
 <script>
-var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
-var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
-var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
-var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
+var isClickAnalyticsEnabled = <?php echo $block->escapeJs(json_encode($isClickAnalyticsEnabled)); ?>;
+var linksAndVideoTemplate = <?php echo $block->escapeJs(json_encode($linksAndVideoTemplate)); ?>;
+var isEsWarningNeeded = <?php echo $block->escapeJs(json_encode($isEsWarningNeeded)); ?>;
+var extensionNotices = <?php echo $block->escapeJs(json_encode($extensionNotices)); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {

@@ -1,4 +1,7 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+?>
 <div class="algolia-suggestions-upsell">
-    <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg'); ?>" class="stars">
+    <img src="<?php echo $block->escapeUrl($block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg')); ?>" class="stars">
     <p>To get access to this Algolia feature, please consider <a href="https://www.algolia.com/billing/overview" target="_blank" class="algolia-upgrade-plan">upgrading to a higher plan</a>.</p>
 </div>

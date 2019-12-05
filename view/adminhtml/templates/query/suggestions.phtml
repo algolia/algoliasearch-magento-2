@@ -1,30 +1,29 @@
 <?php
 
-/** @var $this \Magento\Backend\Block\Template */
-
+/** @var \Magento\Backend\Block\Template $block */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Query\Suggestions $view */
-$view = $this->getViewModel();
+$view = $block->getViewModel();
 
-$emptyStateIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-querymerchandiser.svg');
-$bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+$emptyStateIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-querymerchandiser.svg');
+$bookIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
 ?>
 
 <?php if ($view->getNbOfQueries() > 0) : ?>
     <div class="algolia-suggestions-header">
         <div class="close-box">x</div>
-        <img src="<?php echo $bookIllustration ?>" class="book" />
+        <img src="<?php echo $block->escapeUrl($bookIllustration) ?>" class="book" />
         <p>Easily promote or demote products for a search. Based on Algolia's Query rules, the Query Merchandiser allows you to enchance the ranking behaviour for specific search queries.</p>
         <p>Merchandising a query will create a new query rule (which are part of your Algolia plan). To find out more about the Query Merchandiser, please see our <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/query-merchandiser/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.</p>
     </div>
 <?php else: ?>
     <div class="algolia-no-lp">
-        <span><img src="<?php echo $emptyStateIllustration ?>" /></span>
+        <span><img src="<?php echo $block->escapeUrl($emptyStateIllustration) ?>" /></span>
         <p class="bigtext">No merchandised query yet!</p>
         <div class="algolia-suggestions-header">
-            <img src="<?php echo $bookIllustration ?>" class="book" />
+            <img src="<?php echo $block->escapeUrl($bookIllustration) ?>" class="book" />
             <p>Easily promote or demote products for a search. Based on Algolia's Query rules, the Query Merchandiser allows you to enchance the ranking behaviour for specific search queries.</p>
             <p>Merchandising a query will create a new query rule (which are part of your Algolia plan). To find out more about the Query Merchandiser, please see our <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/query-merchandiser/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" class="algolia-query-merchandiser-docs" target="_blank">documentation</a>.</p>
         </div>
-        <p><a class="new-lp algolia-query-merchandiser-create" href="<?php echo $this->getUrl('*/*/edit'); ?>" >Merchandise a new query</a></p>
+        <p><a class="new-lp algolia-query-merchandiser-create" href="<?php echo $block->escapeUrl($block->getUrl('*/*/edit')); ?>" >Merchandise a new query</a></p>
     </div>
 <?php endif ?>

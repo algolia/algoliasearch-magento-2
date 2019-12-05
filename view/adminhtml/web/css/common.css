@@ -433,3 +433,37 @@
 .algolia_dashboard_warning_page {
 	margin-bottom : 0;
 }
+
+.algolia-notice {
+	margin-bottom: 2rem;
+}
+
+.algolia-admin-content {
+	margin-bottom: 2rem;
+}
+
+.algolia-setup-fieldset .admin__fieldset-wrapper-title { 
+	padding-top: 0;
+	margin-bottom: 0;
+}
+
+.algolia-setup-fieldset .admin__field {
+	margin-bottom: 0;
+	margin-top: 0;
+}
+
+.algolia-setup-fieldset .admin__field-label {
+	width: calc(100% * 0.17 - 30px) !important;
+}
+
+.algolia-setup-fieldset .admin__field-control {
+	width: calc(100% * 0.83 - 30px) !important;
+}
+
+.algolia-setup-fieldset .admin__field-pre {
+    overflow: scroll;
+    border: solid 1px grey;
+    color: #FFF;
+    background-color: #111;
+    width: 850px;
+}

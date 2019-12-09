@@ -110,6 +110,7 @@ class ExtensionNotification
             $versionFromRepository = $this->getLatestVersionFromRepository()->name;
         } catch (\Exception $e) {
             $this->logger->log(LogLevel::INFO, $e->getMessage());
+
             return $newVersion;
         }
 

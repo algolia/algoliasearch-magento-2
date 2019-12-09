@@ -3,29 +3,25 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use GuzzleHttp\Client;
 use Magento\Framework\App\CacheInterface;
 
 class ExtensionNotification
 {
     const CHECK_FREQUENCY = 86400; // one day
 
-    const REPOSITORY_URL = 'https://api.github.com/repos/algolia/algoliasearch-magento-2/releases/latest';
+    const REPOSITORY_URI = '/repos/algolia/algoliasearch-magento-2/releases/latest';
 
-    const CURL_OPT = [
-        'http' => [
-            'method' => 'GET',
-            'header' => [
-                'User-Agent: PHP',
-            ],
-            'timeout' => 10,
-        ],
-    ];
+    const APPLICATION_JSON_HEADER = ['Content-Type' => 'application/json'];
 
     /** @var CacheInterface */
     protected $cacheManager;
 
     /** @var ConfigHelper */
     private $configHelper;
+
+    /** @var Client */
+    private $guzzleClient;
 
     private $repoData = null;
 
@@ -39,6 +35,10 @@ class ExtensionNotification
     ) {
         $this->cacheManager = $cacheManager;
         $this->configHelper = $configHelper;
+        $this->guzzleClient = new Client([
+            'base_uri' => 'https://api.github.com',
+            'timeout' => 10.0,
+        ]);
     }
 
     /**
@@ -128,12 +128,19 @@ class ExtensionNotification
     private function getLatestVersionFromRepository()
     {
         if ($this->repoData === null) {
-            $json = file_get_contents(
-                self::REPOSITORY_URL,
-                false,
-                stream_context_create(self::CURL_OPT)
+            $response = $this->guzzleClient->request(
+                'GET',
+                self::REPOSITORY_URI,
+                [
+                    'headers' => self::APPLICATION_JSON_HEADER,
+                ]
             );
-            $this->repoData = json_decode($json);
+
+            if ($response->getStatusCode() != 200) {
+                throw new \Exception($response->getReasonPhrase());
+            }
+
+            $this->repoData = json_decode($response->getBody()->getContents());
         }
 
         return $this->repoData;

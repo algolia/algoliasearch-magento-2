@@ -5,6 +5,8 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use GuzzleHttp\Client;
 use Magento\Framework\App\CacheInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 class ExtensionNotification
 {
@@ -20,6 +22,9 @@ class ExtensionNotification
     /** @var ConfigHelper */
     private $configHelper;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     /** @var Client */
     private $guzzleClient;
 
@@ -28,13 +33,16 @@ class ExtensionNotification
     /**
      * @param CacheInterface $cacheManager
      * @param ConfigHelper $configHelper
+     * @param LoggerInterface $logger
      */
     public function __construct(
         CacheInterface $cacheManager,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        LoggerInterface $logger
     ) {
         $this->cacheManager = $cacheManager;
         $this->configHelper = $configHelper;
+        $this->logger = $logger;
         $this->guzzleClient = new Client([
             'base_uri' => 'https://api.github.com',
             'timeout' => 10.0,
@@ -101,6 +109,7 @@ class ExtensionNotification
         try {
             $versionFromRepository = $this->getLatestVersionFromRepository()->name;
         } catch (\Exception $e) {
+            $this->logger->log(LogLevel::INFO, $e->getMessage());
             return $newVersion;
         }
 

@@ -22,6 +22,9 @@
       "url": "https://repo.magento.com/"
     }
   ],
+  "require": {
+    "guzzlehttp/guzzle": "^6.3.3"
+  },
   "require-dev": {
     "phpcompatibility/php-compatibility": "^9.2"
   },

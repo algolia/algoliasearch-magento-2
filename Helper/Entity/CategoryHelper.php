@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
 use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
-use Algolia\AlgoliaSearch\Exception\CategoryNotIncludedInMenuException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Image;
 use Magento\Catalog\Model\Category;
@@ -211,10 +210,6 @@ class CategoryHelper
 
         if ($this->configHelper->shouldIndexEmptyCategories($storeId) === false && $category->getProductCount() <= 0) {
             throw new CategoryEmptyException();
-        }
-
-        if ($this->configHelper->showCatsNotIncludedInNavigation($storeId) === false && !$category->getIncludeInMenu()) {
-            throw new CategoryNotIncludedInMenuException();
         }
 
         return true;
@@ -490,7 +485,7 @@ class CategoryHelper
 
     public function isCategoryVisibleInMenu($categoryId, $storeId)
     {
-        $key = $categoryId . ' - ' . $storeId;
+        $key = $categoryId . '-' . $storeId;
         if (isset($this->isCategoryVisibleInMenuCache[$key])) {
             return $this->isCategoryVisibleInMenuCache[$key];
         }
@@ -504,10 +499,11 @@ class CategoryHelper
         return $this->isCategoryVisibleInMenuCache[$key];
     }
 
-    public function getCoreCategories()
+    public function getCoreCategories($filterNotIncludedCategories = true)
     {
-        if (isset($this->coreCategories)) {
-            return $this->coreCategories;
+        $key = $filterNotIncludedCategories ? 'filtered' : 'non_filtered';
+        if (isset($this->coreCategories[$key])) {
+            return $this->coreCategories[$key];
         }
 
         $collection = $this->categoryCollectionFactory->create()
@@ -515,17 +511,19 @@ class CategoryHelper
             ->addNameToResult()
             ->addIsActiveFilter()
             ->addAttributeToSelect('name')
-            ->addAttributeToFilter('include_in_menu', '1')
             ->addAttributeToFilter('level', ['gt' => 1]);
 
-        $this->coreCategories = [];
+        if ($filterNotIncludedCategories) {
+            $collection->addAttributeToFilter('include_in_menu', '1');
+        }
+        $this->coreCategories[$key] = [];
 
         /** @var \Magento\Catalog\Model\Category $category */
         foreach ($collection as $category) {
-            $this->coreCategories[$category->getId()] = $category;
+            $this->coreCategories[$key][$category->getId()] = $category;
         }
 
-        return $this->coreCategories;
+        return $this->coreCategories[$key];
     }
 
     private function getCorrectIdColumn()

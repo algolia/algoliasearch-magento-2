@@ -80,10 +80,13 @@ class ExtensionNotification
      */
     private function getLastCheck()
     {
-        $notificationData = $this->serializer->unserialize(
-            $this->cacheManager->load('algoliasearch_notification_lastcheck'),
-            true
-        );
+        $notificationData = null;
+        $cachedLastCheck = $this->cacheManager->load('algoliasearch_notification_lastcheck');
+
+        if ($cachedLastCheck !== false) {
+            $notificationData = $this->serializer->unserialize($cachedLastCheck, true);
+        }
+
         if ($notificationData === null || !is_array($notificationData)) {
             $notificationData = [
                 'time' => 0,
@@ -117,7 +120,9 @@ class ExtensionNotification
     {
         $newVersion = null;
         try {
-            $versionFromRepository = $this->getLatestVersionFromRepository()->name;
+            $versionFromRepository = $this->getLatestVersionFromRepository();
+            $versionName = $versionFromRepository['name'];
+            $versionUrl = $versionFromRepository['html_url'];
         } catch (\Exception $e) {
             $this->logger->log(LogLevel::INFO, $e->getMessage());
 
@@ -127,13 +132,13 @@ class ExtensionNotification
         $newVersion = [
             'time' => time(),
             'is_new' => false,
-            'version' => $versionFromRepository,
-            'url' => $this->getLatestVersionFromRepository()->html_url,
+            'version' => $versionName,
+            'url' => $versionUrl,
         ];
 
         $versionFromDb = $this->configHelper->getExtensionVersion();
         // If the db version is older than the repo one, mark it as new and return it
-        if (version_compare($versionFromDb, $versionFromRepository, '<')) {
+        if (version_compare($versionFromDb, $versionName, '<')) {
             $newVersion['is_new'] = true;
             $this->setLastCheck($newVersion);
 

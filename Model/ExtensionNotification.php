@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use GuzzleHttp\Client;
 use Magento\Framework\App\CacheInterface;
+use Magento\Framework\Serialize\SerializerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
@@ -25,6 +26,9 @@ class ExtensionNotification
     /** @var LoggerInterface */
     private $logger;
 
+    /** @var SerializerInterface */
+    private $serializer;
+
     /** @var Client */
     private $guzzleClient;
 
@@ -34,15 +38,18 @@ class ExtensionNotification
      * @param CacheInterface $cacheManager
      * @param ConfigHelper $configHelper
      * @param LoggerInterface $logger
+     * @param SerializerInterface $serializer
      */
     public function __construct(
         CacheInterface $cacheManager,
         ConfigHelper $configHelper,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        SerializerInterface $serializer
     ) {
         $this->cacheManager = $cacheManager;
         $this->configHelper = $configHelper;
         $this->logger = $logger;
+        $this->serializer = $serializer;
         $this->guzzleClient = new Client([
             'base_uri' => 'https://api.github.com',
             'timeout' => 10.0,
@@ -73,7 +80,7 @@ class ExtensionNotification
      */
     private function getLastCheck()
     {
-        $notificationData = json_decode(
+        $notificationData = $this->serializer->unserialize(
             $this->cacheManager->load('algoliasearch_notification_lastcheck'),
             true
         );
@@ -98,7 +105,10 @@ class ExtensionNotification
      */
     private function setLastCheck($newExtensionData)
     {
-        $this->cacheManager->save(json_encode($newExtensionData), 'algoliasearch_notification_lastcheck');
+        $this->cacheManager->save(
+            $this->serializer->serialize($newExtensionData),
+            'algoliasearch_notification_lastcheck'
+        );
 
         return $this;
     }
@@ -150,7 +160,7 @@ class ExtensionNotification
                 throw new \Exception($response->getReasonPhrase());
             }
 
-            $this->repoData = json_decode($response->getBody()->getContents());
+            $this->repoData = $this->serializer->unserialize($response->getBody()->getContents());
         }
 
         return $this->repoData;

@@ -36,16 +36,6 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function (algoliaBundle, algoli
 				var queryID = $(this).data('queryid') || getQueryParamFromCurrentUrl('queryID');
 				var indexName = $(this).data('queryid') || getQueryParamFromCurrentUrl('indexName');
 
-				// FIXME: what is this code for? removing it for now
-				// if (!objectId) {
-				// 	var postData = $(this).data('post');
-				// 	if (!postData || !postData.data.product) {
-				// 		return;
-				// 	}
-				//
-				// 	objectId = postData.data.product;
-				// }
-
 				trackConversion(objectId, queryID, indexName);
 			});
 		}
@@ -64,10 +54,10 @@ requirejs(['algoliaBundle', 'algoliaAnalytics'], function (algoliaBundle, algoli
 
 	});
 
-	algolia.registerHook('beforeInstantsearchInit', function (instantsearchOptions) {
-		instantsearchOptions.searchParameters['clickAnalytics'] = true;
-
-		return instantsearchOptions;
+	algolia.registerHook('beforeWidgetInitialization', function (allWidgetConfiguration){
+		allWidgetConfiguration.configure = allWidgetConfiguration.configure || {};
+		allWidgetConfiguration.configure.clickAnalytics = true;
+		return allWidgetConfiguration;
 	});
 
 	function trackClick(objectID, position, queryID, indexName) {

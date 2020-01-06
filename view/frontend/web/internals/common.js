@@ -501,51 +501,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				$(this).html('+ ' + algoliaConfig.translations.refine);
 		});
 
-		// Handle backward compatibility with old routing
-		function routingBc(routeState) {
-			// Handle legacy facets
-			// https://github.com/algolia/algoliasearch-helper-js/blob/39bec1caf24a60acd042eb7bb5d7d7c719fde58b/src/SearchParameters/shortener.js#L6
-			var legacyFacets = ["dFR", "hFR", "fR"];
-			for (i = 0; i < legacyFacets.length; i++) {
-				if (routeState[legacyFacets[i]]) {
-					for (var key in routeState[legacyFacets[i]]) {
-						if (routeState[legacyFacets[i]].hasOwnProperty(key)) {
-							key == "categories.level0" ?
-								routeState["categories"] = routeState[legacyFacets[i]][key][0].split(' /// ').join('~') :
-								routeState[key] = routeState[legacyFacets[i]][key].join('~');
-						}
-					}
-				}
-			}
-
-			// Handle legacy numeric refinements
-			if (routeState.nR) {
-				for (var key in routeState.nR) {
-					if (routeState.nR.hasOwnProperty(key)) {
-						var lt = '', gt = '', eq = '';
-						if (routeState.nR[key]['=']) {
-							eq = routeState.nR[key]['='];
-						}
-						if (routeState.nR[key]['<=']) {
-							lt = routeState.nR[key]['<='];
-						}
-						if (routeState.nR[key]['>=']) {
-							gt = routeState.nR[key]['>='];
-						}
-
-						if (eq != '') {
-							routeState[key] = eq;
-						}
-						if (lt != '' || gt != '') {
-							routeState[key] = gt + ':' + lt;
-						}
-					}
-				}
-			}
-
-			return routeState;
-		}
-
 		// The url is now rendered as follows : http://website.com?q=searchquery&facet1=value&facet2=value1~value2
 		// "?" and "&" are used to be fetched easily inside Magento for the backend rendering
 		// Multivalued facets use "~" as separator
@@ -579,80 +534,83 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}),
 			stateMapping: {
 				stateToRoute: function (uiState) {
-					var map = {};
+					var productIndexName = algoliaConfig.indexName + '_products';
+					var uiStateProductIndex = uiState[productIndexName] || {};
+					var routeParameters = {};
 					if (algoliaConfig.isCategoryPage) {
-						map['q'] = uiState.query;
+						routeParameters['q'] = uiState[productIndexName].query;
 					} else {
-						map['q'] = uiState.query || '__empty__';
+						routeParameters['q'] = uiState[productIndexName].query || '__empty__';
 					}
 					if (algoliaConfig.facets) {
 						for(var i=0; i<algoliaConfig.facets.length; i++) {
 							var currentFacet = algoliaConfig.facets[i];
 							// Handle refinement facets
 							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
-								map[currentFacet.attribute] = (uiState.refinementList &&
-									uiState.refinementList[currentFacet.attribute] &&
-									uiState.refinementList[currentFacet.attribute].join('~'));
+								routeParameters[currentFacet.attribute] = (uiStateProductIndex.refinementList &&
+									uiStateProductIndex.refinementList[currentFacet.attribute] &&
+									uiStateProductIndex.refinementList[currentFacet.attribute].join('~'));
 							}
 							// Handle categories
 							if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-								map[currentFacet.attribute] = (uiState.hierarchicalMenu &&
-									uiState.hierarchicalMenu[currentFacet.attribute+ '.level0'] &&
-									uiState.hierarchicalMenu[currentFacet.attribute+ '.level0'].join('~'));
+								routeParameters[currentFacet.attribute] = (uiStateProductIndex.hierarchicalMenu &&
+									uiStateProductIndex.hierarchicalMenu[currentFacet.attribute+ '.level0'] &&
+									uiStateProductIndex.hierarchicalMenu[currentFacet.attribute+ '.level0'].join('~'));
 							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
-								map[currentFacet.attribute] = (uiState.range &&
-									uiState.range[currentFacet.attribute] &&
-									uiState.range[currentFacet.attribute]);
+								routeParameters[currentFacet.attribute] = (uiStateProductIndex.range &&
+									uiStateProductIndex.range[currentFacet.attribute] &&
+									uiStateProductIndex.range[currentFacet.attribute]);
 							}
 						};
 					}
-					map['sortBy'] = uiState.sortBy;
-					map['page'] = uiState.page;
-					return map;
+					routeParameters['sortBy'] = uiStateProductIndex.sortBy;
+					routeParameters['page'] = uiStateProductIndex.page;
+					return routeParameters;
 				},
-				routeToState: function (routeState) {
-					var map = {};
-					routeState = routingBc(routeState);
-					map['query'] = routeState.q == '__empty__' ? '' : routeState.q;
-					if (algoliaConfig.isLandingPage && typeof map['query'] === 'undefined' && algoliaConfig.landingPage.query != '') {
-						map['query'] = algoliaConfig.landingPage.query;
+				routeToState: function (routeParameters) {
+					var productIndexName = algoliaConfig.indexName + '_products';
+					var uiStateProductIndex = {}
+					
+					uiStateProductIndex['query'] = routeParameters.q == '__empty__' ? '' : routeParameters.q;
+					if (algoliaConfig.isLandingPage && typeof uiStateProductIndex['query'] === 'undefined' && algoliaConfig.landingPage.query != '') {
+						uiStateProductIndex['query'] = algoliaConfig.landingPage.query;
 					}
 
 					var landingPageConfig = algoliaConfig.isLandingPage && algoliaConfig.landingPage.configuration ?
 						JSON.parse(algoliaConfig.landingPage.configuration) :
 						{};
 
-					map['refinementList'] = {};
-					map['hierarchicalMenu'] = {};
-					map['range'] = {};
+					uiStateProductIndex['refinementList'] = {};
+					uiStateProductIndex['hierarchicalMenu'] = {};
+					uiStateProductIndex['range'] = {};
 					if (algoliaConfig.facets) {
 						for(var i=0; i<algoliaConfig.facets.length; i++) {
 							var currentFacet = algoliaConfig.facets[i];
 							// Handle refinement facets
 							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
-								map['refinementList'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute].split('~');
+								uiStateProductIndex['refinementList'][currentFacet.attribute] = routeParameters[currentFacet.attribute] && routeParameters[currentFacet.attribute].split('~');
 								if (algoliaConfig.isLandingPage &&
-									typeof map['refinementList'][currentFacet.attribute] === 'undefined' &&
+									typeof uiStateProductIndex['refinementList'][currentFacet.attribute] === 'undefined' &&
 									currentFacet.attribute in landingPageConfig) {
-									map['refinementList'][currentFacet.attribute] = landingPageConfig[currentFacet.attribute].split('~');
+									uiStateProductIndex['refinementList'][currentFacet.attribute] = landingPageConfig[currentFacet.attribute].split('~');
 								}
 							}
 							// Handle categories facet
 							if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-								map['hierarchicalMenu']['categories.level0'] = routeState['categories'] && routeState['categories'].split('~');
+								uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters['categories'] && routeParameters['categories'].split('~');
 								if (algoliaConfig.isLandingPage &&
-									typeof map['hierarchicalMenu']['categories.level0'] === 'undefined' &&
+									typeof uiStateProductIndex['hierarchicalMenu']['categories.level0'] === 'undefined' &&
 									'categories.level0' in landingPageConfig) {
-									map['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
+									uiStateProductIndex['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
 								}
 							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
-								map['range'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute];
+								uiStateProductIndex['range'][currentFacet.attribute] = routeParameters[currentFacet.attribute] && routeParameters[currentFacet.attribute];
 								if (algoliaConfig.isLandingPage &&
-									typeof map['range'][currentFacet.attribute] === 'undefined' &&
+									typeof uiStateProductIndex['range'][currentFacet.attribute] === 'undefined' &&
 									currentFacet.attribute in landingPageConfig) {
 
 									var facetValue = '';
@@ -663,14 +621,17 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 									if (typeof landingPageConfig[currentFacet.attribute]['<='] !== "undefined") {
 										facetValue += landingPageConfig[currentFacet.attribute]['<='][0];
 									}
-									map['range'][currentFacet.attribute] = facetValue;
+									uiStateProductIndex['range'][currentFacet.attribute] = facetValue;
 								}
 							}
 						};
 					}
-					map['sortBy'] = routeState.sortBy;
-					map['page'] = routeState.page;
-					return map;
+					uiStateProductIndex['sortBy'] = routeParameters.sortBy;
+					uiStateProductIndex['page'] = routeParameters.page;
+					
+					var uiState = {};
+					uiState[productIndexName] = uiStateProductIndex;
+					return uiState;
 				}
 			}
 		};

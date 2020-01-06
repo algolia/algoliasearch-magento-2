@@ -79,13 +79,13 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 		}
 
 		var searchClient = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
+		var searchParameters = {
+			hitsPerPage: algoliaConfig.hitsPerPage,
+			ruleContexts: ruleContexts
+		};
 		var instantsearchOptions = {
 			searchClient: searchClient,
 			indexName: algoliaConfig.indexName + '_products',
-			searchParameters: {
-				hitsPerPage: algoliaConfig.hitsPerPage,
-				ruleContexts: ruleContexts
-			},
 			searchFunction: function (helper) {
 				if (helper.state.query === '' && !algoliaConfig.isSearchPage) {
 					$('.algolia-instant-replaced-content').show();
@@ -101,10 +101,10 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 
 		if (algoliaConfig.request.path.length > 0 && window.location.hash.indexOf('categories.level0') === -1) {
 			if (algoliaConfig.areCategoriesInFacets === false) {
-				instantsearchOptions.searchParameters['facetsRefinements'] = {};
-				instantsearchOptions.searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
+				searchParameters['facetsRefinements'] = {};
+				searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
 			} else {
-				instantsearchOptions.searchParameters['hierarchicalFacetsRefinements'] = {
+				searchParameters['hierarchicalFacetsRefinements'] = {
 					'categories.level0': [algoliaConfig.request.path]
 				}
 			}
@@ -144,17 +144,18 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 		var allWidgetConfiguration = {
 			infiniteHits: {},
 			hits: {},
+			configure: searchParameters,
 			custom: [
 				/**
 				 * Custom widget - this widget is used to refine results for search page or catalog page
 				 * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
 				 **/
 				{
-					getConfiguration: function () {
+					getWidgetSearchParameters: function(searchParameters) {
 						if (algoliaConfig.request.query.length > 0 && location.hash.length < 1) {
-							return {query: algoliaConfig.request.query}
+							return searchParameters.setQuery(algoliaConfig.request.query)
 						}
-						return {};
+						return searchParameters;
 					},
 					init: function (data) {
 						var page = data.helper.state.page;
@@ -626,16 +627,16 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 
 	function addWidget(search, type, config) {
 		if (type === 'custom') {
-			search.addWidget(config);
+			search.addWidgets([config]);
 			return;
 		}
 		var widget = algoliaBundle.instantsearch.widgets[type];
 		if (config.panelOptions) {
 			widget = algoliaBundle.instantsearch.widgets.panel(config.panelOptions)(widget);
+			delete config.panelOptions;
 		}
-		delete config.panelOptions;
 
-		search.addWidget(widget(config));
+		search.addWidgets([widget(config)]);
 	}
 
 	function addSearchForFacetValues(facet, options) {

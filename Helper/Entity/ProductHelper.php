@@ -1143,7 +1143,8 @@ class ProductHelper
         }
 
         $isInStock = true;
-        if (!$this->configHelper->getShowOutOfStock($storeId)) {
+        if (!$this->configHelper->getShowOutOfStock($storeId)
+            || (!$this->configHelper->indexOutOfStockOptions($storeId) && $isChildProduct === true)) {
             $isInStock = $this->productIsInStock($product, $storeId);
         }
 

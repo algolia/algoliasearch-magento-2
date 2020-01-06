@@ -2,26 +2,42 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\ObjectManagerInterface;
 
 class AdditionalSectionHelper
 {
+    /**
+     * @var ManagerInterface
+     */
     private $eventManager;
 
-    private $objectManager;
+    /**
+     * @var CollectionFactory
+     */
+    private $collectionFactory;
 
+    /**
+     * @var Config
+     */
     private $eavConfig;
 
+    /**
+     * AdditionalSectionHelper constructor.
+     *
+     * @param ManagerInterface $eventManager
+     * @param CollectionFactory $collectionFactory
+     * @param Config $eavConfig
+     */
     public function __construct(
         ManagerInterface $eventManager,
-        ObjectManagerInterface $objectManager,
+        CollectionFactory $collectionFactory,
         Config $eavConfig
     ) {
         $this->eventManager = $eventManager;
-        $this->objectManager = $objectManager;
+        $this->collectionFactory = $collectionFactory;
         $this->eavConfig = $eavConfig;
     }
 
@@ -51,8 +67,8 @@ class AdditionalSectionHelper
         $attributeCode = $section['name'];
 
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $products */
-        $products = $this->objectManager->create('Magento\Catalog\Model\ResourceModel\Product\Collection');
-        $products = $products->addStoreFilter($storeId)
+        $products = $this->collectionFactory->create()
+            ->addStoreFilter($storeId)
             ->addAttributeToFilter($attributeCode, ['notnull' => true])
             ->addAttributeToFilter($attributeCode, ['neq' => ''])
             ->addAttributeToSelect($attributeCode);

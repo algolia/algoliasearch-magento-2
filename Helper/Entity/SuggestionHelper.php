@@ -6,15 +6,18 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Search\Model\Query;
+use Magento\Search\Model\ResourceModel\Query\CollectionFactory as QueryCollectionFactory;
 
 class SuggestionHelper
 {
     private $eventManager;
 
-    private $objectManager;
+    /**
+     * @var QueryCollectionFactory
+     */
+    private $queryCollectionFactory;
 
     private $cache;
 
@@ -24,15 +27,24 @@ class SuggestionHelper
 
     private $popularQueriesCacheId = 'algoliasearch_popular_queries_cache_tag';
 
+    /**
+     * SuggestionHelper constructor.
+     *
+     * @param ManagerInterface $eventManager
+     * @param QueryCollectionFactory $queryCollectionFactory
+     * @param ConfigCache $cache
+     * @param ConfigHelper $configHelper
+     * @param SerializerInterface $serializer
+     */
     public function __construct(
         ManagerInterface $eventManager,
-        ObjectManagerInterface $objectManager,
+        QueryCollectionFactory $queryCollectionFactory,
         ConfigCache $cache,
         ConfigHelper $configHelper,
         SerializerInterface $serializer
     ) {
         $this->eventManager = $eventManager;
-        $this->objectManager = $objectManager;
+        $this->queryCollectionFactory = $queryCollectionFactory;
         $this->cache = $cache;
         $this->configHelper = $configHelper;
         $this->serializer = $serializer;
@@ -89,7 +101,8 @@ class SuggestionHelper
             return $this->serializer->unserialize($queries);
         }
 
-        $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
+        /** @var \Magento\Search\Model\ResourceModel\Query\Collection $collection */
+        $collection = $this->queryCollectionFactory->create();
         $collection->getSelect()->where(
             'num_results >= ' . $this->configHelper->getMinNumberOfResults() . ' 
             AND popularity >= ' . $this->configHelper->getMinPopularity() . ' 
@@ -124,8 +137,9 @@ class SuggestionHelper
     public function getSuggestionCollectionQuery($storeId)
     {
         /** @var \Magento\Search\Model\ResourceModel\Query\Collection $collection */
-        $collection = $this->objectManager->create('\Magento\Search\Model\ResourceModel\Query\Collection');
-        $collection = $collection->addStoreFilter($storeId)->setStoreId($storeId);
+        $collection = $this->queryCollectionFactory->create()
+            ->addStoreFilter($storeId)
+            ->setStoreId($storeId);
 
         $collection->getSelect()->where(
             'num_results >= ' . $this->configHelper->getMinNumberOfResults($storeId) . ' 

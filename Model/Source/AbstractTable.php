@@ -40,7 +40,7 @@ abstract class AbstractTable extends AbstractFieldArray
         if (!array_key_exists($columnId, $this->selectFields) || !$this->selectFields[$columnId]) {
             /** @var \Algolia\AlgoliaSearch\Block\System\Form\Field\Select $select */
             $select = $this->getLayout()
-                           ->createBlock('Algolia\AlgoliaSearch\Block\System\Form\Field\Select', '', [
+                           ->createBlock(\Algolia\AlgoliaSearch\Block\System\Form\Field\Select::class, '', [
                                'data' => ['is_render_to_js_template' => true],
                            ]);
 

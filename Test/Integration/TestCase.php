@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_01;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_2;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_3;
 use AlgoliaSearch\AlgoliaException;
+use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -52,7 +53,7 @@ abstract class TestCase extends \TC
     protected function resetConfigs($configs = [])
     {
         /** @var UpgradeSchema $installClass */
-        $installClass = $this->getObjectManager()->get('Algolia\AlgoliaSearch\Setup\UpgradeSchema');
+        $installClass = $this->getObjectManager()->get(\Algolia\AlgoliaSearch\Setup\UpgradeSchema::class);
         $defaultConfigData = $installClass->getDefaultConfigData();
 
         foreach ($configs as $config) {
@@ -63,7 +64,7 @@ abstract class TestCase extends \TC
 
     protected function setConfig($path, $value)
     {
-        $this->getObjectManager()->get('Magento\Framework\App\Config\MutableScopeConfigInterface')->setValue(
+        $this->getObjectManager()->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class)->setValue(
             $path,
             $value,
             ScopeInterface::SCOPE_STORE,
@@ -108,9 +109,9 @@ abstract class TestCase extends \TC
             $this->assertValues = new Magento_2_3();
         }
 
-        $this->algoliaHelper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\AlgoliaHelper');
+        $this->algoliaHelper = $this->getObjectManager()->create(AlgoliaHelper::class);
 
-        $this->configHelper = $config = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\ConfigHelper');
+        $this->configHelper = $config = $this->getObjectManager()->create(ConfigHelper::class);
 
         $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'));
         $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_API_KEY'));
@@ -144,14 +145,14 @@ abstract class TestCase extends \TC
 
     private function getMagentoVersion()
     {
-        /** @var \Magento\Framework\App\ProductMetadataInterface $productMetadata */
-        $productMetadata = $this->getObjectManager()->get('\Magento\Framework\App\ProductMetadataInterface');
+        /** @var ProductMetadataInterface $productMetadata */
+        $productMetadata = $this->getObjectManager()->get(ProductMetadataInterface::class);
 
         return $productMetadata->getVersion();
     }
 
     protected function getSerializer()
     {
-        return $this->getObjectManager()->get('Magento\Framework\Serialize\SerializerInterface');
+        return $this->getObjectManager()->get(\Magento\Framework\Serialize\SerializerInterface::class);
     }
 }

@@ -4,38 +4,69 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Cms\Model\Page;
+use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
 use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\UrlInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class PageHelper
 {
+    /**
+     * @var ManagerInterface
+     */
     private $eventManager;
 
-    private $objectManager;
+    /**
+     * @var PageCollectionFactory
+     */
+    private $pageCollectionFactory;
 
+    /**
+     * @var ConfigHelper
+     */
     private $configHelper;
 
+    /**
+     * @var FilterProvider
+     */
     private $filterProvider;
 
+    /**
+     * @var StoreManagerInterface
+     */
     private $storeManager;
 
-    private $storeUrls;
+    /**
+     * @var UrlInterface
+     */
+    private $frontendUrlBuilder;
 
+    /**
+     * PageHelper constructor.
+     *
+     * @param ManagerInterface $eventManager
+     * @param PageCollectionFactory $pageCollectionFactory
+     * @param ConfigHelper $configHelper
+     * @param FilterProvider $filterProvider
+     * @param StoreManagerInterface $storeManager
+     * @param UrlInterface $frontendUrlBuilder
+     */
     public function __construct(
         ManagerInterface $eventManager,
-        ObjectManagerInterface $objectManager,
+        PageCollectionFactory $pageCollectionFactory,
         ConfigHelper $configHelper,
         FilterProvider $filterProvider,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        UrlInterface $frontendUrlBuilder
     ) {
         $this->eventManager = $eventManager;
-        $this->objectManager = $objectManager;
+        $this->pageCollectionFactory = $pageCollectionFactory;
         $this->configHelper = $configHelper;
         $this->filterProvider = $filterProvider;
         $this->storeManager = $storeManager;
+        $this->frontendUrlBuilder = $frontendUrlBuilder;
     }
 
     public function getIndexNameSuffix()
@@ -62,12 +93,8 @@ class PageHelper
 
     public function getPages($storeId)
     {
-        /** @var \Magento\Cms\Model\Page $pageModel */
-        $pageModel = $this->objectManager->create('\Magento\Cms\Model\Page');
-
         /** @var \Magento\Cms\Model\ResourceModel\Page\Collection $magentoPages */
-        $magentoPages = $pageModel->getCollection();
-        $magentoPages = $magentoPages
+        $magentoPages = $this->pageCollectionFactory->create()
             ->addStoreFilter($storeId)
             ->addFieldToFilter('is_active', 1);
 
@@ -102,7 +129,7 @@ class PageHelper
             }
 
             $pageObject['objectID'] = $page->getId();
-            $pageObject['url'] = $this->getStoreUrl($storeId)
+            $pageObject['url'] = $this->frontendUrlBuilder->setStore($storeId)
                                       ->getUrl(
                                           null,
                                           [
@@ -123,17 +150,6 @@ class PageHelper
         }
 
         return $pages;
-    }
-
-    private function getStoreUrl($storeId)
-    {
-        if (!isset($this->storeUrls[$storeId])) {
-            $url = $this->objectManager->create('Magento\Framework\Url');
-            $url->setData('store', $storeId);
-            $this->storeUrls[$storeId] = $url;
-        }
-
-        return $this->storeUrls[$storeId];
     }
 
     public function getStores($storeId = null)

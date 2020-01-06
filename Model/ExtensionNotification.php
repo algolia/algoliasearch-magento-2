@@ -3,23 +3,19 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use GuzzleHttp\Client;
 use Magento\Framework\App\CacheInterface;
+use Magento\Framework\Serialize\SerializerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 
 class ExtensionNotification
 {
     const CHECK_FREQUENCY = 86400; // one day
 
-    const REPOSITORY_URL = 'https://api.github.com/repos/algolia/algoliasearch-magento-2/releases/latest';
+    const REPOSITORY_URI = '/repos/algolia/algoliasearch-magento-2/releases/latest';
 
-    const CURL_OPT = [
-        'http' => [
-            'method' => 'GET',
-            'header' => [
-                'User-Agent: PHP',
-            ],
-            'timeout' => 10,
-        ],
-    ];
+    const APPLICATION_JSON_HEADER = ['Content-Type' => 'application/json'];
 
     /** @var CacheInterface */
     protected $cacheManager;
@@ -27,18 +23,37 @@ class ExtensionNotification
     /** @var ConfigHelper */
     private $configHelper;
 
+    /** @var LoggerInterface */
+    private $logger;
+
+    /** @var SerializerInterface */
+    private $serializer;
+
+    /** @var Client */
+    private $guzzleClient;
+
     private $repoData = null;
 
     /**
      * @param CacheInterface $cacheManager
      * @param ConfigHelper $configHelper
+     * @param LoggerInterface $logger
+     * @param SerializerInterface $serializer
      */
     public function __construct(
         CacheInterface $cacheManager,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        LoggerInterface $logger,
+        SerializerInterface $serializer
     ) {
         $this->cacheManager = $cacheManager;
         $this->configHelper = $configHelper;
+        $this->logger = $logger;
+        $this->serializer = $serializer;
+        $this->guzzleClient = new Client([
+            'base_uri' => 'https://api.github.com',
+            'timeout' => 10.0,
+        ]);
     }
 
     /**
@@ -65,10 +80,13 @@ class ExtensionNotification
      */
     private function getLastCheck()
     {
-        $notificationData = json_decode(
-            $this->cacheManager->load('algoliasearch_notification_lastcheck'),
-            true
-        );
+        $notificationData = null;
+        $cachedLastCheck = $this->cacheManager->load('algoliasearch_notification_lastcheck');
+
+        if ($cachedLastCheck !== false) {
+            $notificationData = $this->serializer->unserialize($cachedLastCheck, true);
+        }
+
         if ($notificationData === null || !is_array($notificationData)) {
             $notificationData = [
                 'time' => 0,
@@ -90,7 +108,10 @@ class ExtensionNotification
      */
     private function setLastCheck($newExtensionData)
     {
-        $this->cacheManager->save(json_encode($newExtensionData), 'algoliasearch_notification_lastcheck');
+        $this->cacheManager->save(
+            $this->serializer->serialize($newExtensionData),
+            'algoliasearch_notification_lastcheck'
+        );
 
         return $this;
     }
@@ -99,21 +120,25 @@ class ExtensionNotification
     {
         $newVersion = null;
         try {
-            $versionFromRepository = $this->getLatestVersionFromRepository()->name;
+            $versionFromRepository = $this->getLatestVersionFromRepository();
+            $versionName = $versionFromRepository['name'];
+            $versionUrl = $versionFromRepository['html_url'];
         } catch (\Exception $e) {
+            $this->logger->log(LogLevel::INFO, $e->getMessage());
+
             return $newVersion;
         }
 
         $newVersion = [
             'time' => time(),
             'is_new' => false,
-            'version' => $versionFromRepository,
-            'url' => $this->getLatestVersionFromRepository()->html_url,
+            'version' => $versionName,
+            'url' => $versionUrl,
         ];
 
         $versionFromDb = $this->configHelper->getExtensionVersion();
         // If the db version is older than the repo one, mark it as new and return it
-        if (version_compare($versionFromDb, $versionFromRepository, '<')) {
+        if (version_compare($versionFromDb, $versionName, '<')) {
             $newVersion['is_new'] = true;
             $this->setLastCheck($newVersion);
 
@@ -128,12 +153,19 @@ class ExtensionNotification
     private function getLatestVersionFromRepository()
     {
         if ($this->repoData === null) {
-            $json = file_get_contents(
-                self::REPOSITORY_URL,
-                false,
-                stream_context_create(self::CURL_OPT)
+            $response = $this->guzzleClient->request(
+                'GET',
+                self::REPOSITORY_URI,
+                [
+                    'headers' => self::APPLICATION_JSON_HEADER,
+                ]
             );
-            $this->repoData = json_decode($json);
+
+            if ($response->getStatusCode() != 200) {
+                throw new \Exception($response->getReasonPhrase());
+            }
+
+            $this->repoData = $this->serializer->unserialize($response->getBody()->getContents());
         }
 
         return $this->repoData;

@@ -28,10 +28,7 @@ class Sorts extends AbstractTable
             ],
             'sort' => [
                 'label'  => 'Sort',
-                'values' => [
-                    'asc'  => 'Ascending',
-                    'desc' => 'Descending',
-                ],
+                'values' => ['asc' => __('Ascending'), 'desc' => __('Descending')],
             ],
             'sortLabel' => [
                 'label' => 'Label',

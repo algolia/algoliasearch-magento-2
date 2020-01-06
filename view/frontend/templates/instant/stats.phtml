@@ -4,10 +4,12 @@
     {{#hasManyResults}}
         {{^hasNoResults}}{{first}}-{{last}} out of{{/hasNoResults}}
         <strong>
-            <span itemprop="numberOfItems">{{#helpers.formatNumber}}{{nbHits}}{{/helpers.formatNumber}}</span>
+            <span itemprop="numberOfItems">{{nbHits}}</span>
             <?php echo $block->escapeHtml(__('results found')); ?>
         </strong>
     {{/hasManyResults}}
 
+    {{^hasNoResults}}
     <?php echo $block->escapeHtml(__('in')); ?> {{seconds}} <?php echo $block->escapeHtml(__('seconds')); ?>
+    {{/hasNoResults}}
 </script>

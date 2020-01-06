@@ -105,8 +105,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				.attr('id', 'algolia-autocomplete-tt')
 				.on('autocomplete:updated', function (e) {
 					fixAutocompleteCssSticky(menu);
-				})
-				.on('autocomplete:updated', function (e) {
 					fixAutocompleteCssHeight(menu);
 				}).on('autocomplete:selected', function (e, suggestion, dataset) {
 					location.assign(suggestion.url);

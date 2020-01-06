@@ -9,7 +9,7 @@ class CategoriesIndexingTest extends IndexingTestCase
     public function testCategories()
     {
         /** @var Category $categoriesIndexer */
-        $categoriesIndexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Category');
+        $categoriesIndexer = $this->getObjectManager()->create(Category::class);
         $this->processTest($categoriesIndexer, 'categories', 18);
     }
 
@@ -21,7 +21,7 @@ class CategoriesIndexingTest extends IndexingTestCase
         );
 
         /** @var Category $categoriesIndexer */
-        $categoriesIndexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Category');
+        $categoriesIndexer = $this->getObjectManager()->create(Category::class);
         $categoriesIndexer->executeRow(3);
 
         $this->algoliaHelper->waitLastTask();

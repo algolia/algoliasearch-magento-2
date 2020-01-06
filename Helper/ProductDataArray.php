@@ -6,12 +6,18 @@ use Magento\Framework\DataObject;
 
 class ProductDataArray extends DataObject
 {
+    /**
+     * @return array
+     */
     public function getItems()
     {
-        return $this->getData('items');
+        return $this->getData('items') ?: [];
     }
 
-    public function setItems(array $items)
+    /**
+     * @param array $items
+     */
+    public function setItems($items = [])
     {
         $this->setData('items', $items);
     }
@@ -23,7 +29,7 @@ class ProductDataArray extends DataObject
     public function addProductData($productId, array $keyValuePairs)
     {
         $items = $this->getItems();
-        if (count($items) && isset($items[$productId])) {
+        if (is_array($items) && isset($items[$productId])) {
             $keyValuePairs = array_merge($items[$productId], $keyValuePairs);
         }
         $items[$productId] = $keyValuePairs;
@@ -32,8 +38,6 @@ class ProductDataArray extends DataObject
 
     public function getItem($productId)
     {
-        $items = $this->getItems();
-
-        return isset($items[$productId]) ? $items[$productId] : null;
+        return $this->getData('items', $productId);
     }
 }

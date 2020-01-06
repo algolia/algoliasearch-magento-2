@@ -103,12 +103,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					colors.push(color.value);
 
 					if (algoliaConfig.useAdaptiveImage === true) {
-						var re = /<em>(.*?)<\/em>/g;
-						var matchedWords = color.value.match(re).map(function (val) {
-							return val.replace(/<\/?em>/g, '');
-						});
-
-						var matchedColor = matchedWords.join(' ');
+						var matchedColor = color.matchedWords.join(' ');
 
 						if (hit.images_data && color.fullyHighlighted && color.fullyHighlighted === true) {
 							matchedColors.push(matchedColor);
@@ -154,11 +149,11 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			if (hit['price'] !== undefined && price_key !== '.' + algoliaConfig.currencyCode + '.default' && hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_formated'] !== hit['price'][algoliaConfig.currencyCode]['default_formated']) {
 				hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_original_formated'] = hit['price'][algoliaConfig.currencyCode]['default_formated'];
 			}
-			
+
 			if (hit['price'][algoliaConfig.currencyCode]['default_original_formated']
 				&& hit['price'][algoliaConfig.currencyCode]['special_to_date']) {
 				var priceExpiration = hit['price'][algoliaConfig.currencyCode]['special_to_date'];
-				
+
 				if (algoliaConfig.now > priceExpiration + 1) {
 					hit['price'][algoliaConfig.currencyCode]['default_formated'] = hit['price'][algoliaConfig.currencyCode]['default_original_formated'];
 					hit['price'][algoliaConfig.currencyCode]['default_original_formated'] = false;
@@ -179,6 +174,19 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				'uenc': AlgoliaBase64.mageEncode(action),
 				'formKey': algoliaConfig.instant.addToCartParams.formKey
 			};
+
+			if (hit.__queryID) {
+				var insightsDataUrlString = $.param({
+					queryID: hit.__queryID,
+					objectID: hit.objectID,
+					indexName: hit.__indexName
+				});
+				if (hit.url.indexOf('?') > -1) {
+					hit.urlForInsights = hit.url + insightsDataUrlString
+				} else {
+					hit.urlForInsights = hit.url + '?' + insightsDataUrlString;
+				}
+			}
 
 			return hit;
 		};
@@ -227,12 +235,13 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							return template;
 						},
 						suggestion: function (hit, payload) {
+							hit.__indexName = algoliaConfig.indexName + "_" + section.name;
+							hit.__queryID = payload.queryID;
+							hit.__position = payload.hits.indexOf(hit) + 1;
+
 							hit = transformHit(hit, algoliaConfig.priceKey);
 
 							hit.displayKey = hit.displayKey || hit.name;
-
-							hit.__queryID = payload.queryID;
-							hit.__position = payload.hits.indexOf(hit) + 1;
 
 							return algoliaConfig.autocomplete.templates[section.name].render(hit);
 						}
@@ -467,16 +476,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}
 		}
 
-		window.focusInstantSearchBar = function (search, instant_search_bar) {
-			if ($(window).width() > 992) {
-				instant_search_bar.focusWithoutScrolling();
-				if (algoliaConfig.autofocus === false) {
-					instant_search_bar.focus().val('');
-				}
-			}
-			instant_search_bar.val(search.helper.state.query);
-		};
-
 		window.createISWidgetContainer = function (attributeName) {
 			var div = document.createElement('div');
 			div.className = 'is-widget-container-' + attributeName.split('.').join('_');
@@ -501,57 +500,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			else
 				$(this).html('+ ' + algoliaConfig.translations.refine);
 		});
-
-		$.fn.focusWithoutScrolling = function(){
-			var x = window.scrollX, y = window.scrollY;
-			this.focus();
-			window.scrollTo(x, y);
-		};
-
-		// Handle backward compatibility with old routing
-		function routingBc(routeState) {
-			// Handle legacy facets
-			// https://github.com/algolia/algoliasearch-helper-js/blob/39bec1caf24a60acd042eb7bb5d7d7c719fde58b/src/SearchParameters/shortener.js#L6
-			var legacyFacets = ["dFR", "hFR", "fR"];
-			for (i = 0; i < legacyFacets.length; i++) {
-				if (routeState[legacyFacets[i]]) {
-					for (var key in routeState[legacyFacets[i]]) {
-						if (routeState[legacyFacets[i]].hasOwnProperty(key)) {
-							key == "categories.level0" ?
-								routeState["categories"] = routeState[legacyFacets[i]][key][0].split(' /// ').join('~') :
-								routeState[key] = routeState[legacyFacets[i]][key].join('~');
-						}
-					}
-				}
-			}
-
-			// Handle legacy numeric refinements
-			if (routeState.nR) {
-				for (var key in routeState.nR) {
-					if (routeState.nR.hasOwnProperty(key)) {
-						var lt = '', gt = '', eq = '';
-						if (routeState.nR[key]['=']) {
-							eq = routeState.nR[key]['='];
-						}
-						if (routeState.nR[key]['<=']) {
-							lt = routeState.nR[key]['<='];
-						}
-						if (routeState.nR[key]['>=']) {
-							gt = routeState.nR[key]['>='];
-						}
-
-						if (eq != '') {
-							routeState[key] = eq;
-						}
-						if (lt != '' || gt != '') {
-							routeState[key] = gt + ':' + lt;
-						}
-					}
-				}
-			}
-
-			return routeState;
-		}
 
 		// The url is now rendered as follows : http://website.com?q=searchquery&facet1=value&facet2=value1~value2
 		// "?" and "&" are used to be fetched easily inside Magento for the backend rendering
@@ -586,80 +534,83 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			}),
 			stateMapping: {
 				stateToRoute: function (uiState) {
-					var map = {};
+					var productIndexName = algoliaConfig.indexName + '_products';
+					var uiStateProductIndex = uiState[productIndexName] || {};
+					var routeParameters = {};
 					if (algoliaConfig.isCategoryPage) {
-						map['q'] = uiState.query;
+						routeParameters['q'] = uiState[productIndexName].query;
 					} else {
-						map['q'] = uiState.query || '__empty__';
+						routeParameters['q'] = uiState[productIndexName].query || '__empty__';
 					}
 					if (algoliaConfig.facets) {
 						for(var i=0; i<algoliaConfig.facets.length; i++) {
 							var currentFacet = algoliaConfig.facets[i];
 							// Handle refinement facets
 							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
-								map[currentFacet.attribute] = (uiState.refinementList &&
-									uiState.refinementList[currentFacet.attribute] &&
-									uiState.refinementList[currentFacet.attribute].join('~'));
+								routeParameters[currentFacet.attribute] = (uiStateProductIndex.refinementList &&
+									uiStateProductIndex.refinementList[currentFacet.attribute] &&
+									uiStateProductIndex.refinementList[currentFacet.attribute].join('~'));
 							}
 							// Handle categories
 							if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-								map[currentFacet.attribute] = (uiState.hierarchicalMenu &&
-									uiState.hierarchicalMenu[currentFacet.attribute+ '.level0'] &&
-									uiState.hierarchicalMenu[currentFacet.attribute+ '.level0'].join('~'));
+								routeParameters[currentFacet.attribute] = (uiStateProductIndex.hierarchicalMenu &&
+									uiStateProductIndex.hierarchicalMenu[currentFacet.attribute+ '.level0'] &&
+									uiStateProductIndex.hierarchicalMenu[currentFacet.attribute+ '.level0'].join('~'));
 							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
-								map[currentFacet.attribute] = (uiState.range &&
-									uiState.range[currentFacet.attribute] &&
-									uiState.range[currentFacet.attribute]);
+								routeParameters[currentFacet.attribute] = (uiStateProductIndex.range &&
+									uiStateProductIndex.range[currentFacet.attribute] &&
+									uiStateProductIndex.range[currentFacet.attribute]);
 							}
 						};
 					}
-					map['sortBy'] = uiState.sortBy;
-					map['page'] = uiState.page;
-					return map;
+					routeParameters['sortBy'] = uiStateProductIndex.sortBy;
+					routeParameters['page'] = uiStateProductIndex.page;
+					return routeParameters;
 				},
-				routeToState: function (routeState) {
-					var map = {};
-					routeState = routingBc(routeState);
-					map['query'] = routeState.q == '__empty__' ? '' : routeState.q;
-					if (algoliaConfig.isLandingPage && typeof map['query'] === 'undefined' && algoliaConfig.landingPage.query != '') {
-						map['query'] = algoliaConfig.landingPage.query;
+				routeToState: function (routeParameters) {
+					var productIndexName = algoliaConfig.indexName + '_products';
+					var uiStateProductIndex = {}
+					
+					uiStateProductIndex['query'] = routeParameters.q == '__empty__' ? '' : routeParameters.q;
+					if (algoliaConfig.isLandingPage && typeof uiStateProductIndex['query'] === 'undefined' && algoliaConfig.landingPage.query != '') {
+						uiStateProductIndex['query'] = algoliaConfig.landingPage.query;
 					}
 
 					var landingPageConfig = algoliaConfig.isLandingPage && algoliaConfig.landingPage.configuration ?
-						JSON.parse(algoliaConfig.landingPage.configuration) : 
+						JSON.parse(algoliaConfig.landingPage.configuration) :
 						{};
 
-					map['refinementList'] = {};
-					map['hierarchicalMenu'] = {};
-					map['range'] = {};
+					uiStateProductIndex['refinementList'] = {};
+					uiStateProductIndex['hierarchicalMenu'] = {};
+					uiStateProductIndex['range'] = {};
 					if (algoliaConfig.facets) {
 						for(var i=0; i<algoliaConfig.facets.length; i++) {
 							var currentFacet = algoliaConfig.facets[i];
 							// Handle refinement facets
 							if (currentFacet.attribute != 'categories' && (currentFacet.type == 'conjunctive' || currentFacet.type == 'disjunctive')) {
-								map['refinementList'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute].split('~');
-								if (algoliaConfig.isLandingPage && 
-									typeof map['refinementList'][currentFacet.attribute] === 'undefined' && 
+								uiStateProductIndex['refinementList'][currentFacet.attribute] = routeParameters[currentFacet.attribute] && routeParameters[currentFacet.attribute].split('~');
+								if (algoliaConfig.isLandingPage &&
+									typeof uiStateProductIndex['refinementList'][currentFacet.attribute] === 'undefined' &&
 									currentFacet.attribute in landingPageConfig) {
-									map['refinementList'][currentFacet.attribute] = landingPageConfig[currentFacet.attribute].split('~');
+									uiStateProductIndex['refinementList'][currentFacet.attribute] = landingPageConfig[currentFacet.attribute].split('~');
 								}
 							}
 							// Handle categories facet
 							if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-								map['hierarchicalMenu']['categories.level0'] = routeState['categories'] && routeState['categories'].split('~');
+								uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters['categories'] && routeParameters['categories'].split('~');
 								if (algoliaConfig.isLandingPage &&
-									typeof map['hierarchicalMenu']['categories.level0'] === 'undefined' &&
+									typeof uiStateProductIndex['hierarchicalMenu']['categories.level0'] === 'undefined' &&
 									'categories.level0' in landingPageConfig) {
-									map['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
+									uiStateProductIndex['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
 								}
 							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
-								map['range'][currentFacet.attribute] = routeState[currentFacet.attribute] && routeState[currentFacet.attribute];
+								uiStateProductIndex['range'][currentFacet.attribute] = routeParameters[currentFacet.attribute] && routeParameters[currentFacet.attribute];
 								if (algoliaConfig.isLandingPage &&
-									typeof map['range'][currentFacet.attribute] === 'undefined' &&
+									typeof uiStateProductIndex['range'][currentFacet.attribute] === 'undefined' &&
 									currentFacet.attribute in landingPageConfig) {
 
 									var facetValue = '';
@@ -670,14 +621,17 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 									if (typeof landingPageConfig[currentFacet.attribute]['<='] !== "undefined") {
 										facetValue += landingPageConfig[currentFacet.attribute]['<='][0];
 									}
-									map['range'][currentFacet.attribute] = facetValue;
+									uiStateProductIndex['range'][currentFacet.attribute] = facetValue;
 								}
 							}
 						};
 					}
-					map['sortBy'] = routeState.sortBy;
-					map['page'] = routeState.page;
-					return map;
+					uiStateProductIndex['sortBy'] = routeParameters.sortBy;
+					uiStateProductIndex['page'] = routeParameters.page;
+					
+					var uiState = {};
+					uiState[productIndexName] = uiStateProductIndex;
+					return uiState;
 				}
 			}
 		};

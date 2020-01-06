@@ -1,7 +1,32 @@
 <style type="text/css">
     .algolia-notice { margin-bottom: 2rem; }
+    .algolia-admin-content { margin-bottom: 2rem; }
 </style>
-
+<div class="algolia-admin-content">
+    <div class="algolia-admin-content-wrapper">
+        <div class="algolia-admin-content-links">
+            <p>
+                <span>
+                    <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg') ?>">
+                    <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&amp;utm_medium=extension&amp;utm_campaign=magento_2&amp;utm_term=shop-owner&amp;utm_content=doc-link">Indexing queue documentation</a>
+                </span>
+            </p>
+            <p>
+                <span>
+                    <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg') ?>">
+                    <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/?utm_source=magento&amp;utm_medium=extension&amp;utm_campaign=magento_2&amp;utm_term=shop-owner&amp;utm_content=doc-link">Indexing troubleshooting guide</a>
+                </span>
+            </p>
+        </div>
+        <div class="algolia-admin-content-videos">
+            <p>
+                <span>Related video:</span>
+                <a target="_blank" href="https://www.youtube.com/watch?v=0V1BSKlCm10"><img src="https://img.youtube.com/vi/0V1BSKlCm10/mqdefault.jpg"></a>
+                <a target="_blank" href="https://www.youtube.com/watch?v=0V1BSKlCm10">The indexing queue</a>
+            </p>
+        </div>
+    </div>
+</div>
 <?php if ($this->isQueueActive()) : ?>
     <div class="message message-notice notice algolia-notice">
         <div data-ui-id="messages-message-notice">

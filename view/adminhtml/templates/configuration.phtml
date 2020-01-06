@@ -1,0 +1,145 @@
+<?php
+
+/** @var $this \Magento\Backend\Block\Template */
+
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
+$viewModel = $this->getViewModel();
+
+$isClickAnalyticsEnabled = true;
+
+$section = $this->getRequest()->getParam('section');
+
+if ($section === 'algoliasearch_cc_analytics') {
+    $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
+}
+
+$linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
+$isEsWarningNeeded = $viewModel->isEsWarningNeeded();
+$extensionNotices = $viewModel->getExtensionNotices();
+
+?>
+
+<script>
+var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
+var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
+var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
+var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
+
+document.addEventListener("DOMContentLoaded", function(event) {
+	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
+		algoliaAdminBundle.$(function ($) {
+			$('form[action*="algoliasearch"] .accordion .config .label').css('width', 'auto');
+			$('form[action*="algoliasearch"] .accordion .config .value').css('width', 'auto');
+
+			var fixHelper = function(e, ui) {
+				ui.children().each(function() {
+					$(this).width($(this).width());
+				});
+
+				return ui;
+			};
+
+			setTimeout(function () {
+				$('form[action*="algoliasearch"] .admin__control-table tbody').sortable({
+					containment: "parent",
+					items: 'tr',
+					tolerance: 'pointer',
+					helper: fixHelper,
+					start: function (event, ui) {
+						$(ui.item).css('margin-left', '10px');
+					}
+				});
+
+				$('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
+			}, 1000);
+
+
+			var url = window.location.href;
+			if (url.indexOf('section/algoliasearch_') !== -1) {
+
+				// Hide click analytics config if not available
+				if (isClickAnalyticsEnabled === false) {
+					$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
+				}
+
+				// Adding links and videos to the config panel
+                $('.algolia-admin-content').html(linksAndVideoTemplate);
+
+            	// New notice management
+            	extensionNotices.each(function(notice){
+            		if (notice.method === 'before') {
+        				$(notice.selector).before(notice.message);
+        			} else if (notice.method === 'append') {
+						$(notice.selector).append(notice.message);
+        			} else if (notice.method === 'after') {
+						$(notice.selector).after(notice.message);
+        			}
+            	});
+			}
+
+			// SYNONYMS
+
+			handleSynonyms($('#algoliasearch_synonyms_synonyms_group_enable_synonyms').val());
+
+			$(document).on('change', '#algoliasearch_synonyms_synonyms_group_enable_synonyms', function() {
+				handleSynonyms($(this).val());
+			});
+
+			function handleSynonyms(enabled) {
+				var $rows = $('#row_algoliasearch_synonyms_synonyms_group_synonyms, #row_algoliasearch_synonyms_synonyms_group_oneway_synonyms, #row_algoliasearch_synonyms_synonyms_group_synonyms_file');
+
+				if (enabled === '1') {
+					$rows.show();
+				} else {
+					$rows.hide();
+				}
+			}
+
+			// ORDERED / UNORDERED
+			var $attributesRows = $('#algoliasearch_products_products_product_additional_attributes, #algoliasearch_categories_categories_category_additional_attributes');
+			initAttributes($attributesRows);
+
+			$attributesRows.on('click', 'button[id^="addToEndBtn"]', function (e) {
+				initAttributes($attributesRows);
+			});
+
+			$attributesRows.on('change', 'select[name$="[searchable]"]', function (e) {
+				handleAttributes($(this));
+			});
+
+			function initAttributes($attributesRows) {
+				$attributesRows.find('select[name$="[searchable]"]').each(function(e) {
+					handleAttributes($(this));
+				});
+			}
+
+			function handleAttributes($selectBox) {
+				var selectValue = $selectBox.val(),
+					$input = $selectBox.parent('td').next().find('select[name$="[order]"]');
+
+				if(selectValue !== '1') {
+					$input.hide();
+				}
+				else {
+					$input.show();
+				}
+			}
+		});
+	});
+
+	requirejs([
+		'jquery',
+		'Magento_Ui/js/lib/validation/validator',
+		'mage/translate',
+		'prototype'
+	], function ($, validator, mage) {
+		'use strict';
+		if (isEsWarningNeeded) {
+        	$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
+	        $('#algoliasearch_instant_instant_is_instant_enabled').on('change', function(){
+				$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
+			});
+		}
+	});
+});
+</script>

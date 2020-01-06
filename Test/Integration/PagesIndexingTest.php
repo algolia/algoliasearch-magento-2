@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Page;
+use Magento\Cms\Model\PageFactory;
 
 class PagesIndexingTest extends IndexingTestCase
 {
@@ -15,7 +16,7 @@ class PagesIndexingTest extends IndexingTestCase
         );
 
         /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Page');
+        $indexer = $this->getObjectManager()->create(Page::class);
 
         $this->processTest($indexer, 'pages', 6);
     }
@@ -32,7 +33,7 @@ class PagesIndexingTest extends IndexingTestCase
         );
 
         /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Page');
+        $indexer = $this->getObjectManager()->create(Page::class);
         $this->processTest($indexer, 'pages', 4);
 
         $results = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
@@ -57,7 +58,7 @@ class PagesIndexingTest extends IndexingTestCase
     public function testDefaultIndexableAttributes()
     {
         /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create('\Algolia\AlgoliaSearch\Model\Indexer\Page');
+        $indexer = $this->getObjectManager()->create(Page::class);
         $indexer->executeFull();
 
         $this->algoliaHelper->waitLastTask();
@@ -87,7 +88,8 @@ class PagesIndexingTest extends IndexingTestCase
 
     public function testStripTags()
     {
-        $pageFactory = $this->getObjectManager()->create('\Magento\Cms\Model\PageFactory');
+        /** @var PageFactory $pageFactory */
+        $pageFactory = $this->getObjectManager()->create(PageFactory::class);
         $testPage = $pageFactory->create();
 
         $testPage = $testPage->setTitle('Example CMS page')
@@ -101,7 +103,7 @@ class PagesIndexingTest extends IndexingTestCase
         $testPageId = (string) $testPage->getId();
 
         /** @var PageHelper $pagesHelper */
-        $pagesHelper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Entity\PageHelper');
+        $pagesHelper = $this->getObjectManager()->create(PageHelper::class);
         $pages = $pagesHelper->getPages(1);
         foreach ($pages as $page) {
             if ($page['objectID'] === $testPageId) {
@@ -120,7 +122,8 @@ class PagesIndexingTest extends IndexingTestCase
     {
         $utf8Content = 'příliš žluťoučký kůň';
 
-        $pageFactory = $this->getObjectManager()->create('\Magento\Cms\Model\PageFactory');
+        /** @var PageFactory $pageFactory */
+        $pageFactory = $this->getObjectManager()->create(PageFactory::class);
         $testPage = $pageFactory->create();
 
         $testPage = $testPage->setTitle('Example CMS page')
@@ -134,7 +137,7 @@ class PagesIndexingTest extends IndexingTestCase
         $testPageId = (string) $testPage->getId();
 
         /** @var PageHelper $pagesHelper */
-        $pagesHelper = $this->getObjectManager()->create('Algolia\AlgoliaSearch\Helper\Entity\PageHelper');
+        $pagesHelper = $this->getObjectManager()->create(PageHelper::class);
         $pages = $pagesHelper->getPages(1);
         foreach ($pages as $page) {
             if ($page['objectID'] === $testPageId) {

@@ -12,19 +12,19 @@ class JobStatuses implements \Magento\Framework\Data\OptionSourceInterface
         $options = [
             [
                 'value' => JobInterface::STATUS_NEW,
-                'label' => 'New',
+                'label' => __('New'),
             ],
             [
                 'value' => JobInterface::STATUS_ERROR,
-                'label' => 'Error',
+                'label' => __('Error'),
             ],
             [
                 'value' => JobInterface::STATUS_PROCESSING,
-                'label' => 'Processing',
+                'label' => __('Processing'),
             ],
             [
                 'value' => JobInterface::STATUS_COMPLETE,
-                'label' => 'Complete',
+                'label' => __('Complete'),
             ],
         ];
 

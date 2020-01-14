@@ -264,7 +264,7 @@ class AlgoliaHelper extends AbstractHelper
             $response = $response->getBody();
         }
 
-        self::$lastTaskId = $response['taskID'];
+        self::$lastTaskId = isset($response['taskID']) ? $response['taskID'] : null;
     }
 
     public function saveRule($rule, $indexName, $forwardToReplicas = false)

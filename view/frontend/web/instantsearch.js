@@ -68,7 +68,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 		 * For rendering instant search page is used Algolia's instantsearch.js library
 		 * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/
 		 **/
-		
+
 		var ruleContexts = ['magento_filters', '']; // Empty context to keep BC for already create rules in dashboard
 		if (algoliaConfig.request.categoryId.length > 0) {
 			ruleContexts.push('magento-category-' + algoliaConfig.request.categoryId);
@@ -79,13 +79,14 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 		}
 
 		var searchClient = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
+		var indexName = algoliaConfig.indexName + '_products';
 		var searchParameters = {
 			hitsPerPage: algoliaConfig.hitsPerPage,
 			ruleContexts: ruleContexts
 		};
 		var instantsearchOptions = {
 			searchClient: searchClient,
-			indexName: algoliaConfig.indexName + '_products',
+			indexName: indexName,
 			searchFunction: function (helper) {
 				if (helper.state.query === '' && !algoliaConfig.isSearchPage) {
 					$('.algolia-instant-replaced-content').show();
@@ -99,17 +100,6 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 			routing: window.routing,
 		};
 
-		if (algoliaConfig.request.path.length > 0 && window.location.hash.indexOf('categories.level0') === -1) {
-			if (algoliaConfig.areCategoriesInFacets === false) {
-				searchParameters['facetsRefinements'] = {};
-				searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
-			} else {
-				searchParameters['hierarchicalFacetsRefinements'] = {
-					'categories.level0': [algoliaConfig.request.path]
-				}
-			}
-		}
-
 		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions, algoliaBundle);
 
 		var search = algoliaBundle.instantsearch(instantsearchOptions);
@@ -118,7 +108,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 
 		/** Prepare sorting indices data */
 		algoliaConfig.sortingIndices.unshift({
-			name: algoliaConfig.indexName + '_products',
+			name: indexName,
 			label: algoliaConfig.translations.relevance
 		});
 
@@ -417,8 +407,9 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 		var customAttributeFacet = {
 			categories: function (facet, templates) {
 				var hierarchical_levels = [];
-				for (var l = 0; l < 10; l++)
+				for (var l = 0; l < 10; l++) {
 					hierarchical_levels.push('categories.level' + l.toString());
+				}
 
 				var hierarchicalMenuParams = {
 					container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),

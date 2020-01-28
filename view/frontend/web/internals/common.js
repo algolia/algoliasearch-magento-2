@@ -572,7 +572,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				routeToState: function (routeParameters) {
 					var productIndexName = algoliaConfig.indexName + '_products';
 					var uiStateProductIndex = {}
-					
+
 					uiStateProductIndex['query'] = routeParameters.q == '__empty__' ? '' : routeParameters.q;
 					if (algoliaConfig.isLandingPage && typeof uiStateProductIndex['query'] === 'undefined' && algoliaConfig.landingPage.query != '') {
 						uiStateProductIndex['query'] = algoliaConfig.landingPage.query;
@@ -606,6 +606,9 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 									uiStateProductIndex['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
 								}
 							}
+							if (currentFacet.attribute == 'categories' && algoliaConfig.isCategoryPage) {
+								uiStateProductIndex['hierarchicalMenu']['categories.level0'] = [algoliaConfig.request.path];
+							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
 								uiStateProductIndex['range'][currentFacet.attribute] = routeParameters[currentFacet.attribute] && routeParameters[currentFacet.attribute];
@@ -628,7 +631,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					}
 					uiStateProductIndex['sortBy'] = routeParameters.sortBy;
 					uiStateProductIndex['page'] = routeParameters.page;
-					
+
 					var uiState = {};
 					uiState[productIndexName] = uiStateProductIndex;
 					return uiState;

@@ -49,24 +49,19 @@ shared: &shared
                 php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:
-    "magento-2.1":
-        <<: *shared
-        docker:
-            - image: algolia/magento2-circleci:2.1.17
-
     "magento-2.2":
         <<: *shared
         docker:
-            - image: algolia/magento2-circleci:2.2.8
+            - image: algolia/magento2-circleci:v2-2.2.8
 
     "magento-2.3":
         <<: *shared
         docker:
-            - image: algolia/magento2-circleci:2.3.0
+            - image: algolia/magento2-circleci:v2-2.3.0
 
     "quality-tools":
         docker:
-            - image: algolia/magento2-circleci:2.3.0
+            - image: algolia/magento2-circleci:v2-2.3.0
         working_directory: ~/build_directory/algoliasearch-magento-2
         steps:
             - checkout

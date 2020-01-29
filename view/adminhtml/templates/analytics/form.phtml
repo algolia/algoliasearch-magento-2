@@ -1,20 +1,17 @@
 <?php
-
-/** @var $this \Magento\Backend\Block\Template */
-
-/** @var Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form $form */
-$form = $this->getViewModel();
-
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form $form */
+$form = $block->getViewModel();
 ?>
 
 <?php $isFormDisabled = !$form->isAnalyticsApiEnabled() ? ' disabled' : '' ?>
 <div class="algolia-analytics-form" id="algolia-analytics-daterange">
-    <form id="algolia-analytics-form" data-mage-init='{"validation":{}}' action="<?php echo $form->getFormAction() ?>"  method="post">
+    <form id="algolia-analytics-form" data-mage-init='{"validation":{}}' action="<?php echo $form->getFormAction() ?>" method="post">
         <input type="hidden" name="form_key" value="<?php echo $block->getFormKey() ?>" />
         <div class="inline-field">
             <select name="type" class="select admin__control-select"<?php echo $isFormDisabled ?>>
                 <?php foreach ($form->getSections() as $key => $section): ?>
-                    <option value="<?php echo $key ?>"<?php echo $key == $form->getFormValue('type') ? ' selected' : '' ?>>
+                    <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('type')) ? ' selected' : '' ?>>
                         <?php echo ucwords($key) ?>
                     </option>
                 <?php endforeach; ?>
@@ -23,16 +20,16 @@ $form = $this->getViewModel();
         <div class="inline-field">
             <input type="text" id="analytics_from" name="from" <?php echo $isFormDisabled ?>
                    class="admin__control-text input-text date-range-analytics-from"
-                   placeholder="<?php echo __('Start Date') ?>" value="<?php echo $form->getFormValue('from') ?>"/>
+                   placeholder="<?php echo $block->escapeHtmlAttr(__('Start Date')) ?>" value="<?php echo $form->getFormValue('from') ?>"/>
         </div>
         <span class="divide">-</span>
         <div class="inline-field">
             <input type="text" id="analytics_to" name="to" <?php echo $isFormDisabled ?>
                    class="admin__control-text input-text validate-date-range date-range-analytics-to"
-                   placeholder="<?php echo __('End Date') ?>" value="<?php echo $form->getFormValue('to') ?>"/>
+                   placeholder="<?php echo $block->escapeHtmlAttr(__('End Date')) ?>" value="<?php echo $form->getFormValue('to') ?>"/>
         </div>
-        <button type="submit" class="action submit primary algolia-daterange-submit"<?php echo $isFormDisabled ?>>
-            <?php echo __('Update') ?>
+        <button type="submit" class="action submit primary algolia-daterange-submit" <?php echo $isFormDisabled ?>>
+            <?php echo $block->escapeHtml(__('Update')) ?>
         </button>
     </form>
 </div>

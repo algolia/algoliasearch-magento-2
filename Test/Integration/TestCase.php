@@ -2,13 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\UpgradeSchema;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_01;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_2;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_3;
-use AlgoliaSearch\AlgoliaException;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;

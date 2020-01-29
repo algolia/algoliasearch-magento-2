@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
@@ -11,7 +12,6 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
-use AlgoliaSearch\AlgoliaException;
 
 class IndicesConfigurator
 {

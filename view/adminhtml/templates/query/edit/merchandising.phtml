@@ -1,14 +1,15 @@
 <?php
 
-/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Query\Merchandising $this */
+/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Query\Merchandising $block */
 
-$configHelper = $this->getConfigHelper();
+$configHelper = $block->getConfigHelper();
 
 ?>
 
 <?php
 
-$indexName = $this->getCoreHelper()->getBaseIndexName();
+$indexName = $block->getCoreHelper()->getBaseIndexName();
+$currencyCode = $configHelper->getCurrencyCode();
 
 $query = $block->getCurrentQuery();
 $queryId = $query->getId();
@@ -17,7 +18,7 @@ $isConfig = [
     'appId' => $configHelper->getApplicationID(),
     'apiKey' => $configHelper->getSearchOnlyAPIKey(),
     'indexDataByStoreIds' => $block->getCoreHelper()->getIndexDataByStoreIds(),
-    'indexName' => $configHelper->getIndexPrefix() . $this->getCurrentStore()->getCode() . '_products',
+    'indexName' => $configHelper->getIndexPrefix() . $block->getCurrentStore()->getCode() . '_products',
     'routing' => false,
     'searchParameters' => [
         'query' => $query->getQueryText(),
@@ -86,7 +87,7 @@ $isConfig = [
                             {{/_highlightResult.sku.0}}
                         </td>
                         <td>{{{ _highlightResult.name.value }}}</td>
-                        <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+                        <td>{{ price.<?php echo $currencyCode ?>.default_formated }}</td>
                         <td class="actions">
                             <div class="pin_block">
                                 <a class="arrow up" href="#">
@@ -136,7 +137,7 @@ $isConfig = [
             {{/sku.0}}
         </td>
         <td>{{{ name }}}</td>
-        <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+        <td>{{ price.<?php echo $currencyCode ?>.default_formated }}</td>
         <td class="actions">
             <div class="pin_block">
                 <a class="arrow up" href="#">
@@ -163,7 +164,7 @@ $isConfig = [
         <div class="info">
             {{{ _highlightResult.name.value }}}
             <div class="price">
-				{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}
+				{{ price.<?php echo $currencyCode ?>.default_formated }}
 			</div>
         </div>
 

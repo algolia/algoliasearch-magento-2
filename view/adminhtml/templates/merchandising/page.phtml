@@ -1,21 +1,22 @@
-<?php /** @var \Magento\Backend\Block\Template $block */ ?>
-<?php /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising\Page $viewModel */ ?>
-<?php $viewModel = $block->getViewModel() ?>
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising\Page $viewModel */?>
+<?php $viewModel = $block->getViewModel(); ?>
 <div class="algolia-admin-content">
     <div class="algolia-admin-content-wrapper">
         <div class="algolia-admin-content-links">
             <p>
                 <span>
-                    <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg') ?>">
-                    <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/merchandising/visual-merchandising/?utm_source=magento&amp;utm_medium=extension&amp;utm_campaign=magento_2&amp;utm_term=shop-owner&amp;utm_content=doc-link">Merchandising features</a>
+                    <img src="<?php echo $block->escapeUrl($block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg')); ?>" alt="<?php echo $block->escapeHtmlAttr(__('Merchandising features')) ?>" title="<?php echo $block->escapeHtmlAttr(__('Merchandising features')) ?>">
+                    <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/merchandising/visual-merchandising/?utm_source=magento&amp;utm_medium=extension&amp;utm_campaign=magento_2&amp;utm_term=shop-owner&amp;utm_content=doc-link"><?php echo $block->escapeHtml(__('Merchandising features')) ?></a>
                 </span>
             </p>
         </div>
         <div class="algolia-admin-content-videos">
             <p>
-                <span>Related video:</span>
+                <span><?php echo $block->escapeHtml(__('Related video:')) ?></span>
                 <a target="_blank" href="https://www.youtube.com/watch?v=qrgmtMMxj6o"><img src="https://img.youtube.com/vi/qrgmtMMxj6o/mqdefault.jpg"></a>
-                <a target="_blank" href="https://www.youtube.com/watch?v=qrgmtMMxj6o">Merchandising features</a>
+                <a target="_blank" href="https://www.youtube.com/watch?v=qrgmtMMxj6o"><?php echo $block->escapeHtml(__('Merchandising features')) ?></a>
             </p>
         </div>
     </div>
@@ -23,45 +24,45 @@
 <section class="algoliasearch-merchandising-options clearfix">
     <div class="merchandising-item query-merchandising">
         <div class="image-container">
-            <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-querymerchandiser.svg'); ?>" alt="<?php echo  __('Query Merchandiser') ?>" title="<?php echo  __('Query Merchandiser') ?>" />
+            <img src="<?php echo $block->escapeUrl($block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-querymerchandiser.svg')); ?>" alt="<?php echo $block->escapeHtmlAttr(__('Query Merchandiser')) ?>" title="<?php echo $block->escapeHtmlAttr(__('Query Merchandiser')) ?>" />
         </div>
-        <h3><?php echo __('Query Merchandiser') ?></h3>
+        <h3><?php echo $block->escapeHtml(__('Query Merchandiser')) ?></h3>
         <div class="std description">
-            <p><?php echo __('Easily promote or demote products for a search. Based on Algolia\'s Query rules, the Query merchandiser allows you to enhance the ranking behavior for specific search queries.') ?></p>
+            <p><?php echo $block->escapeHtml(__('Easily promote or demote products for a search. Based on Algolia\'s Query rules, the Query merchandiser allows you to enhance the ranking behavior for specific search queries.')) ?></p>
         </div>
 
         <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
-            <a href="<?php echo $block->getUrl('algolia_algoliasearch/query') ?>" title="<?php echo __('Merchandise search results') ?>"><?php echo __('Merchandise search results') ?></a>
+            <a href="<?php echo $block->getUrl('algolia_algoliasearch/query') ?>" title="<<?php echo $block->escapeHtml(__('Merchandise search results')) ?>"><?php echo $block->escapeHtml(__('Merchandise search results')) ?></a>
         <?php else: ?>
             <?php echo $block->getChildHtml('upsell') ?>
         <?php endif ?>
     </div>
     <div class="merchandising-item category-merchandising">
         <div class="image-container">
-            <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-categorymerchandiser.svg'); ?>" alt="<?php echo  __('Category Merchandiser') ?>" title="<?php echo  __('Category Merchandiser') ?>" />
+            <img src="<?php echo $block->escapeUrl($block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-categorymerchandiser.svg')); ?>" alt="<?php echo $block->escapeHtmlAttr(__('Category Merchandiser')) ?>" title="<?php echo $block->escapeHtmlAttr(__('Category Merchandiser')) ?>" />
         </div>
-        <h3><?php echo __('Category Merchandiser') ?></h3>
+        <h3><?php echo $block->escapeHtml(__('Category Merchandiser')) ?></h3>
         <div class="std description">
-            <p><?php echo __('Give more visibility to specific products within a category page. Promote or demote displayed items by using a simple drag and drop mechanism.') ?></p>
+            <p><?php echo $block->escapeHtml(__('Give more visibility to specific products within a category page. Promote or demote displayed items by using a simple drag and drop mechanism.')) ?></p>
         </div>
 
         <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
-            <a href="<?php echo $block->getUrl('catalog/category') ?>" title="<?php echo __('Promote products within a category') ?>"><?php echo __('Promote products within a category') ?></a>
+            <a href="<?php echo $block->getUrl('catalog/category') ?>" title="<?php echo $block->escapeHtmlAttr(__('Promote products within a category')) ?>"><?php echo $block->escapeHtml(__('Promote products within a category')) ?></a>
         <?php else: ?>
             <?php echo $block->getChildHtml('upsell') ?>
         <?php endif ?>
     </div>
     <div class="merchandising-item landing-page-builder">
         <div class="image-container">
-            <img src="<?php echo $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg'); ?>" alt="<?php echo  __('Landing Page Builder') ?>" title="<?php echo  __('Landing Page Builder') ?>" />
+            <img src="<?php echo $block->escapeUrl($block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg')); ?>" alt="<?php echo $block->escapeHtmlAttr(__('Landing Page Builder')) ?>" title="<?php echo $block->escapeHtml(__('Landing Page Builder')) ?>" />
         </div>
-        <h3><?php echo __('Landing Page Builder') ?></h3>
+        <h3><?php echo $block->escapeHtml(__('Landing Page Builder')) ?></h3>
         <div class="std description">
-            <p><?php echo __('The Landing Page Builder allows you to easily create customised landing pages out of search queries. It is a powerful marketing tool to promote products, with a strong focus on SEO.') ?></p>
+            <p><?php echo $block->escapeHtml(__('The Landing Page Builder allows you to easily create customised landing pages out of search queries. It is a powerful marketing tool to promote products, with a strong focus on SEO.')) ?></p>
         </div>
 
         <?php if ($viewModel->canAccessLandingPageBuilder()): ?>
-            <a href="<?php echo $block->getUrl('algolia_algoliasearch/landingpage') ?>" title="<?php echo __('Create a new landing page') ?>"><?php echo __('Create a new landing page') ?></a>
+            <a href="<?php echo $block->getUrl('algolia_algoliasearch/landingpage') ?>" title="<?php echo $block->escapeHtmlAttr(__('Create a new landing page')) ?>"><?php echo $block->escapeHtml(__('Create a new landing page')) ?></a>
         <?php else: ?>
             <?php echo $block->getChildHtml('upsell') ?>
         <?php endif ?>

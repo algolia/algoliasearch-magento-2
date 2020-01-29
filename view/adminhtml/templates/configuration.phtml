@@ -1,13 +1,13 @@
 <?php
 
-/** @var $this \Magento\Backend\Block\Template */
+/** @var \Magento\Backend\Block\Template $block */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
-$viewModel = $this->getViewModel();
+$viewModel = $block->getViewModel();
 
 $isClickAnalyticsEnabled = true;
 
-$section = $this->getRequest()->getParam('section');
+$section = $block->getRequest()->getParam('section');
 
 if ($section === 'algoliasearch_cc_analytics') {
     $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();

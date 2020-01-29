@@ -7,7 +7,7 @@
   "require": {
     "php": "~7.0|~7.1|~7.2|~7.3",
     "magento/framework": "~101.0|~102.0",
-    "algolia/algoliasearch-client-php": ">=1.27.0 <2.0",
+    "algolia/algoliasearch-client-php": "^2.4",
     "guzzlehttp/guzzle": "^6.3.3",
     "ext-json": "*",
     "ext-PDO": "*",

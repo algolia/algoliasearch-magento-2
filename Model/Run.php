@@ -20,7 +20,7 @@ class Run extends \Magento\Framework\Model\AbstractModel implements IdentityInte
      */
     protected function _construct()
     {
-        $this->_init('Algolia\AlgoliaSearch\Model\ResourceModel\Run');
+        $this->_init(\Algolia\AlgoliaSearch\Model\ResourceModel\Run::class);
     }
 
     /**

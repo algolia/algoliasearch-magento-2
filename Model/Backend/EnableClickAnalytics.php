@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model\Backend;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Magento\Framework\App\Config\Value;
 use Magento\Framework\Exception\LocalizedException;
@@ -11,6 +12,7 @@ class EnableClickAnalytics extends Value
 {
     private $algoliaHelper;
     private $productHelper;
+    private $configHelper;
 
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -18,6 +20,7 @@ class EnableClickAnalytics extends Value
         \Magento\Framework\App\Config\ScopeConfigInterface $config,
         \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList,
         AlgoliaHelper $algoliaHelper,
+        ConfigHelper $configHelper,
         ProductHelper $productHelper,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
@@ -27,6 +30,7 @@ class EnableClickAnalytics extends Value
 
         $this->algoliaHelper = $algoliaHelper;
         $this->productHelper = $productHelper;
+        $this->configHelper = $configHelper;
     }
 
     public function beforeSave()
@@ -37,14 +41,14 @@ class EnableClickAnalytics extends Value
             return parent::beforeSave();
         }
 
-        $context = $this->algoliaHelper->getClient()->getContext();
-
         $ch = curl_init();
 
-        $headers = [];
-        $headers[] = 'X-Algolia-Api-Key: ' . $context->apiKey;
-        $headers[] = 'X-Algolia-Application-Id: ' . $context->applicationID;
-        $headers[] = 'Content-Type: application/x-www-form-urlencoded';
+        $headers = [
+            'X-Algolia-Api-Key: ' . $this->configHelper->getAPIKey(),
+            'X-Algolia-Application-Id: ' . $this->configHelper->getApplicationID(),
+            'Content-Type: application/x-www-form-urlencoded',
+        ];
+
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $postFields = json_encode([

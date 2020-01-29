@@ -88,7 +88,7 @@ class Image extends \Magento\Catalog\Helper\Image
     private function getProductImage(\Magento\Catalog\Model\Product\Image $model)
     {
         $imageUrl = $this->getProduct()->getData($model->getDestinationSubdir());
-        if ($this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
+        if (($imageUrl === null || $imageUrl == '') && $this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
             $imageUrl = $this->getType() !== 'image' && $this->getConfigurableProductImage() ?
                 $this->getConfigurableProductImage() : $this->getProduct()->getImage();
         }

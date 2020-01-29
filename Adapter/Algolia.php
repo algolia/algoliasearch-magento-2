@@ -3,8 +3,8 @@
 namespace Algolia\AlgoliaSearch\Adapter;
 
 use Algolia\AlgoliaSearch\Adapter\Aggregation\Builder as AlgoliaAggregationBuilder;
+use Algolia\AlgoliaSearch\Exceptions\UnreachableException;
 use Algolia\AlgoliaSearch\Helper\AdapterHelper;
-use AlgoliaSearch\AlgoliaConnectionException;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\DB\Select;
@@ -110,7 +110,7 @@ class Algolia implements AdapterInterface
 
             $apiDocuments = array_map([$this, 'getApiDocument'], $documents);
             $table = $temporaryStorage->storeApiDocuments($apiDocuments);
-        } catch (AlgoliaConnectionException $e) {
+        } catch (UnreachableException $e) {
             return $this->nativeQuery($request);
         }
 

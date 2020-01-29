@@ -2,20 +2,20 @@
 /**
  * @see \Magento\Backend\Block\Denied
  */
-$emptyStateIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg');
-$bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
-$starsIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
+$emptyStateIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg');
+$bookIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+$starsIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
 ?>
 <hr class="access-denied-hr"/>
 <div class="access-denied-page algolia-denied-page">
-    <span><img src="<?php echo $emptyStateIllustration ?>" /></span>
+    <span><img src="<?php echo $block->escapeUrl($emptyStateIllustration); ?>" /></span>
     <div class="algolia-suggestions-header">
-        <img src="<?php echo $bookIllustration ?>" class="book" />
+        <img src="<?php echo $block->escapeUrl($bookIllustration); ?>" class="book" />
         <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
         <p>It is a powerful marketing tool to promote products, with a strong focus on SEO. To find out more about the Landing Page Builder, please see our <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/landing-page-builder/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.</p>
     </div>
     <div class="algolia-suggestions-header algolia-suggestions-header-wbg">
-        <img src="<?php echo $starsIllustration ?>" class="stars" />
+        <img src="<?php echo $block->escapeUrl($starsIllustration); ?>" class="stars" />
         <p>To get access to this Algolia feature, please consider <a href="https://www.algolia.com/pricing" target="_blank" class="algolia-upgrade-plan">upgrading to a higher plan</a>.</p>
     </div>
 </div>

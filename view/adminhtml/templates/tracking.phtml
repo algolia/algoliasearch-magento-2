@@ -1,4 +1,12 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
+$view = $block->getViewModel();
+$applicationId = $view->getApplicationId();
+?>
+
 <script>
+var algoliaAppId = '<?php echo $block->escapeJs($applicationId) ?>';
 var algoliaEventsTracking = {
 
     eventsToTrack: [
@@ -359,7 +367,7 @@ var algoliaEventsTracking = {
         data = data || {};
 
         const postData = JSON.stringify({
-            appId: applicationId,
+            appId: algoliaAppId,
             eventName: eventName,
             data: data
         });

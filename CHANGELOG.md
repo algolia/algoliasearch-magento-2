@@ -1,5 +1,33 @@
 # CHANGE LOG
 
+## 1.13.0
+
+## FEATURES
+- Indexing Queue Log admin view (#929)
+
+### UPDATES
+- Add documentations links on top of the Indexing Queue page (#931)
+- Archive logs cleaning (#928) 
+- Admin notices refactoring (#921)
+- Join 2 callbacks for autocomplete updated event (#926) @vmalyk
+- Replace class names to ::class instead string names (#936) @vmalyk
+- Added translation to ui components and source options (#938) @vmalyk
+- Adminhtml improvements: XSS prevention, translations, etc (#939) @vmalyk
+- Tests: improve class names usage and replace literal name to ::class (#940) @vmalyk
+- Clean up adminhtml queue controllers (#968)
+
+### FIXES
+- Prevent type error for backend facet query (#911)
+- B2B countable error in ProductDataArray class (#915)
+- Hide out of stock for configurable products (#925) @vmalyk
+- Remove "Replace categories" config dependency (#930)
+- PHP 7.2 warning error fixes (#932)
+- Remove Object manager and add factories to constructor (#937) @vmalyk
+- Fix Landing Page Builder remove url rewrite when disabled (#944)
+- Re-add forgotten indexOutOfStockOptions() method behaviour (#954)
+- Use Guzzle to for version checking (#949)
+- Fix configurable image condition (#964)
+
 ## 1.12.1
 
 This release has been made possible thanks to the involvement of the community, with about half of the pull requests merged coming from the Magento ecosystem.

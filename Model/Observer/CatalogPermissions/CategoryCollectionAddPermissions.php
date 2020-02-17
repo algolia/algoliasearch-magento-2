@@ -60,8 +60,10 @@ class CategoryCollectionAddPermissions implements ObserverInterface
                 }
                 list($customerGroupId, $level) = $permission;
                 if ($category = $collection->getItemById($categoryId)) {
-                    $category->setData('customer_group_permission_' . $customerGroupId, (($level == -2 || $level != -1
-                        && !$catalogPermissionsHelper->isAllowedCategoryView()) ? 0 : 1));
+                    $category->setData(
+                        'customer_group_permission_' . $customerGroupId,
+                        $level == -2 ? 0 : 1
+                    );
                 }
             }
         }

@@ -550,7 +550,7 @@ class ProductHelper
         if ($typeInstance instanceof Configurable) {
             $subProducts = $typeInstance->getUsedProducts($product);
         } elseif ($typeInstance instanceof BundleProductType) {
-            $subProducts = $typeInstance->getOptions($product);
+            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product);
         } else { // Grouped product
             $subProducts = $typeInstance->getAssociatedProducts($product);
         }

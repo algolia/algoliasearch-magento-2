@@ -424,7 +424,7 @@ class ProductHelper
         } elseif ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
             $this->logger->log('
-                Synonyms management disabled. 
+                Synonyms management disabled.
                 Copying synonyms from production index to TMP one to not to erase them with the index move.
             ');
         }
@@ -1092,7 +1092,9 @@ class ProductHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $index->deleteRule($hit['objectID'], true);
+                    $index->deleteRule($hit['objectID'], [
+                        'forwardToReplicas' => true,
+                    ]);
                 }
 
                 $page++;

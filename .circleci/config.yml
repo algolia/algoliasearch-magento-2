@@ -95,7 +95,6 @@ jobs:
                   key: composer-v2-{{ checksum "composer.json" }}
                   paths:
                       - vendor
-                      - ~/.composer/vendor
             - run:
                   name: Quality tools
                   command: |

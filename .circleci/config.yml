@@ -76,19 +76,19 @@ jobs:
                     sudo chown circleci:circleci ~/.composer/
             - restore_cache:
                   keys:
-                      - composer-v2-{{ checksum "composer.json" }}
-                      - composer-v2-
+                      - composer-v3-{{ checksum "composer.json" }}
+                      - composer-v3-
                       
             - run:
                   name: Prepare environment
                   command: |
                       sudo composer self-update
                       composer config http-basic.'repo.magento.com' ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
-                      composer install -n --prefer-dist --ignore-platform-reqs --no-progress
+                      composer install -n --prefer-dist --no-progress
                       sudo chown circleci:circleci ~/.composer/
                       composer global config prefer-stable true
                       composer global config minimum-stability dev
-                      composer global require algolia/magento2-tools --ignore-platform-reqs
+                      composer global require algolia/magento2-tools
 
                       # We have to do this again because we restore the cache above, overwriting the vendor with the original.
                       cd ~/magento_directory/vendor/algolia
@@ -97,10 +97,9 @@ jobs:
                       cd ~/magento_directory
                       composer dump-autoload
             - save_cache:
-                  key: composer-v2-{{ checksum "composer.json" }}
+                  key: composer-v3-{{ checksum "composer.json" }}
                   paths:
                       - vendor
-                      - ~/.composer/vendor
             - run:
                   name: Quality tools
                   command: |

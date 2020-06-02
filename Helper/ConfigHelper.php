@@ -390,6 +390,7 @@ class ConfigHelper
     public function getNumberOfJobToRun($storeId = null)
     {
         $nbJobs = (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
+
         return max($nbJobs, 1);
     }
 

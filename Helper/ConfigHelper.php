@@ -389,7 +389,9 @@ class ConfigHelper
 
     public function getNumberOfJobToRun($storeId = null)
     {
-        return (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
+        $nbJobs = (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
+
+        return max($nbJobs, 1);
     }
 
     public function getRetryLimit($storeId = null)

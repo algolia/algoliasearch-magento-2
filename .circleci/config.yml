@@ -77,7 +77,6 @@ jobs:
             - run:
                   name: Prepare environment
                   command: |
-                      composer install -n --prefer-dist --no-progress
                       sudo chown circleci:circleci ~/.composer/
                       composer global config prefer-stable true
                       composer global config minimum-stability dev

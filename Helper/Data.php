@@ -761,7 +761,7 @@ class Data
 
             $salesData = $salesConnection->query($query)->fetchAll(\PDO::FETCH_GROUP|\PDO::FETCH_UNIQUE|\PDO::FETCH_ASSOC);
         }
-        
+
         return $salesData;
     }
 

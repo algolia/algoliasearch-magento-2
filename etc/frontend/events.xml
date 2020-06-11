@@ -7,11 +7,21 @@
         <observer name="algoliasearch_apply_product_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\ApplyProductPermissionsFilter" />
     </event>
 
-    <!-- Click and Conversion Analytics -->
-    <event name="catalog_controller_product_init_before">
-        <observer name="algoliasearch_set_parameters_to_session" instance="Algolia\AlgoliaSearch\Model\Observer\ClickAnalytics\CatalogControllerProductInitBefore" />
+    <!-- Insight -->
+    <event name="customer_login">
+        <observer name="algoliasearch_personalization_set_user_token" instance="Algolia\AlgoliaSearch\Model\Observer\Insights\CustomerLogin" />
+    </event>
+    <event name="wishlist_product_add_after">
+        <observer name="algoliasearch_insights_add_to_wishlist_event" instance="Algolia\AlgoliaSearch\Model\Observer\Insights\WishlistProductAddAfter" />
+    </event>
+    <event name="checkout_cart_product_add_before">
+        <observer name="algoliasearch_analytics_add_request_queryid_to_product" instance="Algolia\AlgoliaSearch\Model\Observer\Insights\CheckoutCartProductAddBefore" />
     </event>
     <event name="checkout_cart_product_add_after">
-        <observer name="algoliasearch_add_request_to_quote_item" instance="Algolia\AlgoliaSearch\Model\Observer\ClickAnalytics\CheckoutCartProductAddAfter" />
+        <observer name="algoliasearch_insights_add_to_cart_event" instance="Algolia\AlgoliaSearch\Model\Observer\Insights\CheckoutCartProductAddAfter" />
     </event>
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="algoliasearch_insights_place_order_event" instance="Algolia\AlgoliaSearch\Model\Observer\Insights\CheckoutOnepageControllerSuccessAction" />
+    </event>
+
 </config>

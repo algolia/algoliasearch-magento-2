@@ -1,10 +1,10 @@
 <?php
-$bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+$bookIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
 ?>
 
 <div class="algolia-suggestions-header">
     <div class="close-box">x</div>
-    <img src="<?php echo $bookIllustration ?>" class="book" />
+    <img src="<?php echo $block->escapeUrl($bookIllustration); ?>" class="book" />
     <p>Basics of a landing page - its URL, title, meta description and meta keywords are used to improve your SEO.</p>
     <p>You may also set a timeframe on your landing page.</p>
 </div>

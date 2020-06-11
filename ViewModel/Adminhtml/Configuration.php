@@ -41,4 +41,9 @@ class Configuration implements \Magento\Framework\View\Element\Block\ArgumentInt
     {
         return $this->noticeHelper->getExtensionNotices();
     }
+
+    public function getPersonalizationStatus()
+    {
+        return $this->noticeHelper->getPersonalizationStatus();
+    }
 }

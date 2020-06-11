@@ -37,10 +37,10 @@ class ApplyProductPermissionsFilter implements ObserverInterface
     public function execute(Observer $observer)
     {
         $storeId = $this->storeManager->getStore()->getId();
-        if (!$this->permissionsFactory->isCatalogPermissionsEnabled($storeId)
-            || ($this->permissionsFactory->getCatalogPermissionsHelper()->isAllowedCategoryView($storeId)
-                && !$this->sharedCatalogFactory->isSharedCatalogEnabled($storeId))
-        ) {
+
+        // shared catalog is dependant on catalog permissions settings,
+        // should only check against catalog permissions
+        if (!$this->permissionsFactory->isCatalogPermissionsEnabled($storeId)) {
             return $this;
         }
 

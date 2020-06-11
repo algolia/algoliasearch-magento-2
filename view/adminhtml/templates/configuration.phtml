@@ -1,13 +1,13 @@
 <?php
 
-/** @var $this \Magento\Backend\Block\Template */
+/** @var \Magento\Backend\Block\Template $block */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
-$viewModel = $this->getViewModel();
+$viewModel = $block->getViewModel();
 
 $isClickAnalyticsEnabled = true;
 
-$section = $this->getRequest()->getParam('section');
+$section = $block->getRequest()->getParam('section');
 
 if ($section === 'algoliasearch_cc_analytics') {
     $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
@@ -16,6 +16,7 @@ if ($section === 'algoliasearch_cc_analytics') {
 $linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
 $isEsWarningNeeded = $viewModel->isEsWarningNeeded();
 $extensionNotices = $viewModel->getExtensionNotices();
+$personalizationStatus = $viewModel->getPersonalizationStatus();
 
 ?>
 
@@ -23,13 +24,12 @@ $extensionNotices = $viewModel->getExtensionNotices();
 var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
 var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
 var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
+var personalizationStatus = <?php echo json_encode($personalizationStatus); ?>;
 var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
 		algoliaAdminBundle.$(function ($) {
-			$('form[action*="algoliasearch"] .accordion .config .label').css('width', 'auto');
-			$('form[action*="algoliasearch"] .accordion .config .value').css('width', 'auto');
 
 			var fixHelper = function(e, ui) {
 				ui.children().each(function() {
@@ -60,6 +60,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				// Hide click analytics config if not available
 				if (isClickAnalyticsEnabled === false) {
 					$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
+				}
+
+				// Hide personalization config if not available
+				if (personalizationStatus < 2) {
+					$('#algoliasearch_personalization_personalization_group table').parent().parent().hide();
 				}
 
 				// Adding links and videos to the config panel

@@ -433,3 +433,137 @@
 .algolia_dashboard_warning_page {
 	margin-bottom : 0;
 }
+
+.algolia-notice {
+	margin-bottom: 2rem;
+}
+
+.algolia-admin-content {
+	margin-bottom: 2rem;
+}
+
+.algolia-setup-fieldset .admin__fieldset-wrapper-title { 
+	padding-top: 0;
+	margin-bottom: 0;
+}
+
+.algolia-setup-fieldset .admin__field {
+	margin-bottom: 0;
+	margin-top: 0;
+}
+
+.algolia-setup-fieldset .admin__field-label {
+	width: calc(100% * 0.17 - 30px) !important;
+}
+
+.algolia-setup-fieldset .admin__field-control {
+	width: calc(100% * 0.83 - 30px) !important;
+}
+
+.algolia-setup-fieldset .admin__field-pre {
+    overflow: scroll;
+    border: solid 1px grey;
+    color: #FFF;
+    background-color: #111;
+    width: 850px;
+}
+
+/* Global Config*/
+form[action*="algoliasearch"] .accordion .config .label,
+form[action*="algoliasearch"] .accordion .config .value {
+	width: auto;
+}
+
+#algoliasearch_personalization_personalization_group .entry-edit-head {
+	background-color: #f8f8f8;
+	border-bottom: 1px solid #e3e3e3;
+	border-top: 1px solid #e3e3e3;
+}
+
+#algoliasearch_personalization_personalization_group .section-config{
+	border: 0;
+	margin-left : 0;
+}
+
+#algoliasearch_personalization_personalization_group .section-config .entry-edit-head > a {
+	padding-left: 3.8rem;
+}
+
+#algoliasearch_personalization_personalization_group .section-config .entry-edit-head > a::before {
+	left: 10px;
+}
+
+/* Personalization Config */
+#algoliasearch_personalization_personalization_group td.label{
+	width: 25%;
+	text-align: left;
+	/*padding: 2.2rem 1.5rem 3.2rem 0;*/
+}
+
+#algoliasearch_personalization_personalization_group span[data-config-scope]::before{
+	right: auto;
+}
+
+#algoliasearch_personalization_personalization_group td.value {
+	width: 50%;
+	padding: 1.7rem 1.5rem 2rem 0;
+	position: relative;
+}
+
+#algoliasearch_personalization_personalization_group td.value select{
+	width: 30%;
+}
+
+#algoliasearch_personalization_personalization_group td.value input{
+	width: 90%;
+}
+
+#algoliasearch_personalization_personalization_group tr[id$="_selector"]  td.label{
+	padding: 0 1.5rem 2rem 0;
+}
+
+#algoliasearch_personalization_personalization_group tr[id$="_selector"]  td.value{
+	padding: 0 1.5rem 2rem 0;
+}
+
+#algoliasearch_personalization_personalization_group tr[id$="_selector"]  td.use-default{
+	width: 25%;
+	padding-top: 5px;
+}
+
+#row_algoliasearch_personalization_personalization_group_personalization_view_events_group tr,
+#row_algoliasearch_personalization_personalization_group_personalization_click_events_group tr ,
+#row_algoliasearch_personalization_personalization_group_personalization_conversion_events_group tr{
+	position: relative;
+}
+
+#row_algoliasearch_personalization_personalization_group_personalization_click_events_group_filter_clicked,
+#row_algoliasearch_personalization_personalization_group_personalization_click_events_group_product_recommended_clicked{
+	border-top: 1px solid #e5e5e5;
+	padding-top: 2rem;
+}
+
+
+
+.algolia-perso-footer {
+	border-top: 2px solid #e3e3e3;
+	margin-top: 20px;
+}
+
+.admin__scope-old .algolia-perso-title {
+	color: #0a0a0a;
+	font-size: 1.7rem;
+	font-weight: 600;
+	letter-spacing: .025em;
+	padding: 1.9rem 2.8rem 1.9rem 0;
+}
+
+.perso-illustration {
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.algoblue{
+	background-color: #F5FAFD;
+	border: 1px solid #E2F0FA;
+}

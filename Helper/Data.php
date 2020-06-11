@@ -768,7 +768,11 @@ class Data
 
         $objectIds = [];
         $counter = 0;
-        foreach ($index->browse('', ['attributesToRetrieve' => ['objectID']]) as $hit) {
+        $browseOptions = [
+            'query' => '',
+            'attributesToRetrieve' => ['objectID'],
+        ];
+        foreach ($index->browseObjects($browseOptions) as $hit) {
             $objectIds[] = $hit['objectID'];
             $counter++;
 

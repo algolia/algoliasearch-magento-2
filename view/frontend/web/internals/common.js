@@ -6,7 +6,8 @@ var algolia = {
 		'beforeInstantsearchInit',
 		'beforeWidgetInitialization',
 		'beforeInstantsearchStart',
-		'afterInstantsearchStart'
+		'afterInstantsearchStart',
+		'afterInsightsBindEvents'
 	],
 	registeredHooks: [],
 	registerHook: function (hookName, callback) {
@@ -176,15 +177,21 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			};
 
 			if (hit.__queryID) {
-				var insightsDataUrlString = $.param({
-					queryID: hit.__queryID,
-					objectID: hit.objectID,
-					indexName: hit.__indexName
-				});
-				if (hit.url.indexOf('?') > -1) {
-					hit.urlForInsights = hit.url + insightsDataUrlString
-				} else {
-					hit.urlForInsights = hit.url + '?' + insightsDataUrlString;
+
+				hit.urlForInsights = hit.url;
+
+				if (algoliaConfig.ccAnalytics.enabled
+					&& algoliaConfig.ccAnalytics.conversionAnalyticsMode !== 'disabled') {
+					var insightsDataUrlString = $.param({
+						queryID: hit.__queryID,
+						objectID: hit.objectID,
+						indexName: hit.__indexName
+					});
+					if (hit.url.indexOf('?') > -1) {
+						hit.urlForInsights += insightsDataUrlString
+					} else {
+						hit.urlForInsights += '?' + insightsDataUrlString;
+					}
 				}
 			}
 
@@ -479,6 +486,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 		window.createISWidgetContainer = function (attributeName) {
 			var div = document.createElement('div');
 			div.className = 'is-widget-container-' + attributeName.split('.').join('_');
+			div.dataset.attr = attributeName;
 
 			return div;
 		};
@@ -572,7 +580,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				routeToState: function (routeParameters) {
 					var productIndexName = algoliaConfig.indexName + '_products';
 					var uiStateProductIndex = {}
-					
+
 					uiStateProductIndex['query'] = routeParameters.q == '__empty__' ? '' : routeParameters.q;
 					if (algoliaConfig.isLandingPage && typeof uiStateProductIndex['query'] === 'undefined' && algoliaConfig.landingPage.query != '') {
 						uiStateProductIndex['query'] = algoliaConfig.landingPage.query;
@@ -606,6 +614,9 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 									uiStateProductIndex['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
 								}
 							}
+							if (currentFacet.attribute == 'categories' && algoliaConfig.isCategoryPage) {
+								uiStateProductIndex['hierarchicalMenu']['categories.level0'] = [algoliaConfig.request.path];
+							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
 								uiStateProductIndex['range'][currentFacet.attribute] = routeParameters[currentFacet.attribute] && routeParameters[currentFacet.attribute];
@@ -628,7 +639,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					}
 					uiStateProductIndex['sortBy'] = routeParameters.sortBy;
 					uiStateProductIndex['page'] = routeParameters.page;
-					
+
 					var uiState = {};
 					uiState[productIndexName] = uiStateProductIndex;
 					return uiState;

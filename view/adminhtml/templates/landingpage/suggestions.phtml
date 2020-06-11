@@ -1,30 +1,29 @@
 <?php
 
-/** @var $this \Magento\Backend\Block\Template */
-
+/** @var \Magento\Backend\Block\Template $block */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Landingpage\Suggestions $view */
-$view = $this->getViewModel();
+$view = $block->getViewModel();
 
-$emptyStateIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg');
-$bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+$emptyStateIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-lpb.svg');
+$bookIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
 ?>
 
 <?php if ($view->getNbOfLandingPages() > 0) : ?>
     <div class="algolia-suggestions-header">
         <div class="close-box">x</div>
-        <img src="<?php echo $bookIllustration ?>" class="book" />
+        <img src="<?php echo $block->escapeUrl($bookIllustration); ?>" class="book" />
         <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
         <p>It is a powerful marketing tool to promote products, with a strong focus on SEO. To find out more about the Landing Page Builder, please see our <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/landing-page-builder/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.</p>
     </div>
 <?php else: ?>
     <div class="algolia-no-lp">
-        <span><img src="<?php echo $emptyStateIllustration ?>" /></span>
+        <span><img src="<?php echo $block->escapeUrl($emptyStateIllustration); ?>" /></span>
         <p class="bigtext">No landing page yet!</p>
         <div class="algolia-suggestions-header">
-            <img src="<?php echo $bookIllustration ?>" class="book" />
+            <img src="<?php echo $block->escapeUrl($bookIllustration); ?>" class="book" />
             <p>The Landing Page Builder allows you to easily create customised landing pages out of search queries.</p>
             <p>It is a powerful marketing tool to promote products, with a strong focus on SEO. To find out more about the Landing Page Builder, please see our <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/landing-page-builder/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.</p>
         </div>
-        <p><a class="new-lp algolia-landing-page-builder-create" href="<?php echo $this->getUrl('*/*/edit'); ?>" >Create a new landing page</a></p>
+        <p><a class="new-lp algolia-landing-page-builder-create" href="<?php echo $block->escapeUrl($block->getUrl('*/*/edit')); ?>" >Create a new landing page</a></p>
     </div>
 <?php endif ?>

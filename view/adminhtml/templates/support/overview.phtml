@@ -1,18 +1,18 @@
 <?php
 
-/** @var $this \Magento\Backend\Block\Template */
+/** @var \Magento\Backend\Block\Template $block */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Overview $view */
-$view = $this->getViewModel();
+$view = $block->getViewModel();
 
-$docIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-documentation.svg');
-$comIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-community.svg');
-$vidIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-videotutorials.svg');
-$noResultsIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/support-no-results.svg');
+$docIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/support-documentation.svg');
+$comIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/support-community.svg');
+$vidIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/support-videotutorials.svg');
+$noResultsIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/support-no-results.svg');
 
-$videoDiscover = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-discover.png');
-$videoQueue = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-queue.png');
-$videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-features.png');
+$videoDiscover = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/video-discover.png');
+$videoQueue = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/video-queue.png');
+$videoFeatures = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/video-features.png');
 
 ?>
 
@@ -22,12 +22,12 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
     <ul role="tablist">
         <li class="tab-active" role="tab" aria-controls="algolia-documentation-panel" aria-selected="true">
             <a href="javascript:;">
-                <span><?php echo __('Search Documentation') ?></span>
+                <span><?php echo $block->escapeHtml(__('Search Documentation')) ?></span>
             </a>
         </li>
         <li role="tab" aria-controls="algolia-contact-panel" aria-selected="false">
             <a href="javascript:;">
-                <span><?php echo __('Contact Us') ?></span>
+                <span><?php echo $block->escapeHtml(__('Contact Us')) ?></span>
             </a>
         </li>
     </ul>
@@ -49,11 +49,11 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
             <div class="col-l-5">
                 <div class="heading">
                     <div class="main">
-                        Documentation
+                        <?php echo $block->escapeHtml(__('Documentation')) ?>
                     </div>
 
                     <div class="sub">
-                        The official Algolia for Magento documentation
+                        <?php echo $block->escapeHtml(__('The official Algolia for Magento documentation')) ?>
                     </div>
                 </div>
 
@@ -68,11 +68,11 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
             <div class="col-l-5">
                 <div class="heading">
                     <div class="main">
-                        Community Forum
+                         <?php echo $block->escapeHtml(__('Community Forum')) ?>
                     </div>
 
                     <div class="sub">
-                        Questions and answers from the Algolia community
+                         <?php echo $block->escapeHtml(__('Questions and answers from the Algolia community')) ?>
                     </div>
                 </div>
 
@@ -87,165 +87,165 @@ $videoFeatures = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/video-feat
         <div id="landing" class="row">
             <div class="col-l-4">
                 <div class="heading">
-                    <img src="<?php echo $docIllustration ?>"  alt="Documentation"/>
+                    <img src="<?php echo $block->escapeUrl($docIllustration) ?>"  alt="<?php echo $block->escapeHtmlAttr(__('Documentation')) ?>" />
 
                     <div class="main">
-                        Documentation
+                        <?php echo $block->escapeHtml(__('Documentation')) ?>
                     </div>
 
                     <div class="sub">
-                        Documentation for all things Algolia for Magento
+                        <?php echo $block->escapeHtml(__('Documentation for all things Algolia for Magento')) ?>
                     </div>
                 </div>
                 <div class="links">
                     <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Indexing
+                            <?php echo $block->escapeHtml(__('Indexing')) ?>
                         </span>
                         <span class="content">
-                            In order to provide fast and relevant search, Algolia restructures your data in a special way, via Indexing.
+                            <?php echo $block->escapeHtml(__('In order to provide fast and relevant search, Algolia restructures your data in a special way, via Indexing.')) ?>
                         </span>
                     </a>
                     <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Indexing Queue
+                            <?php echo $block->escapeHtml(__('Indexing Queue')) ?>
                         </span>
                         <span class="content">
-                            The index queue manages all uploads to Algolia. Before your data can be searched, it must be uploaded to Algolia. This process is called indexing, which the extension does automatically - via the queue.
+                            <?php echo $block->escapeHtml(__('The index queue manages all uploads to Algolia. Before your data can be searched, it must be uploaded to Algolia. This process is called indexing, which the extension does automatically - via the queue.')) ?>
                         </span>
                     </a>
                     <a href="https://www.algolia.com/doc/integration/magento-2/customize/autocomplete-menu/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Autocomplete menu
+                            <?php echo $block->escapeHtml(__('Autocomplete menu')) ?>
                         </span>
                         <span class="content">
-                            Customize the autocomplete drop-down menu which appears underneath the search bar on your Magento site.
+                            <?php echo $block->escapeHtml(__('Customize the autocomplete drop-down menu which appears underneath the search bar on your Magento site.')) ?>
                         </span>
                     </a>
                     <a href="https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Customize the extension
+                            <?php echo $block->escapeHtml(__('Customize the extension')) ?>
                         </span>
                         <span class="content">
-                            In this guide you’ll learn how to attach hooks to the events fired by the Algolia extension. It should only take a few minutes. Let’s get started!
+                            <?php echo $block->escapeHtml(__('In this guide you’ll learn how to attach hooks to the events fired by the Algolia extension. It should only take a few minutes. Let’s get started!')) ?>
                         </span>
                     </a>
                     <a href="https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Troubleshooting
+                            <?php echo $block->escapeHtml(__('Troubleshooting')) ?>
                         </span>
                         <span class="content">
-                            Let’s say you’re getting an error with your data or search results. It may be an error that other Magento/Algolia users experience.
+                            <?php echo $block->escapeHtml(__('Let\'s say you\'re getting an error with your data or search results. It may be an error that other Magento/Algolia users experience.')) ?>
                         </span>
                     </a>
                 </div>
 
                 <a href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
-                    Go to documentation homepage ...
+                    <?php echo $block->escapeHtml(__('Go to documentation homepage ...')) ?>
                 </a>
             </div>
 
             <div class="col-l-4">
                 <div class="heading">
-                    <img src="<?php echo $comIllustration ?>"  alt="Community Forum" />
+                    <img src="<?php echo $block->escapeUrl($comIllustration) ?>"  alt="<?php echo $block->escapeHtmlAttr('Community Forum') ?>" />
 
                     <div class="main">
-                        Community Forum
+                        <?php echo $block->escapeHtml(__('Community Forum')) ?>
                     </div>
 
                     <div class="sub">
-                        Questions and answers from the Algolia community
+                        <?php echo $block->escapeHtml(__('Questions and answers from the Algolia community')) ?>
                     </div>
                 </div>
                 <div class="links">
                     <a href="https://discourse.algolia.com/t/magento-2-autocomplete-results-configurable-product-prices-showing-0-00/5477/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Autocomplete results configurable product prices showing £0.00
+                            <?php echo $block->escapeHtml(__('Autocomplete results configurable product prices showing £0.00')) ?>
                         </span>
                         <span class="content">
-                            We are using the official Algolia extension 1.7.0 on Magento 2.2.4 CE. For some reason our Magento 2 store’s autocomplete search results (the dropdown box below the search input field) is now showing zero prices for some Configurable products (where until the day before yesterday) it would show a range from lowest to highest.
+                            <?php echo $block->escapeHtml(__('We are using the official Algolia extension 1.7.0 on Magento 2.2.4 CE. For some reason our Magento 2 store’s autocomplete search results (the dropdown box below the search input field) is now showing zero prices for some Configurable products (where until the day before yesterday) it would show a range from lowest to highest.')) ?>
                         </span>
                     </a>
                     <a href="https://discourse.algolia.com/t/magento2-custom-searchable-attributes/1833/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Custom Searchable attributes
+                            <?php echo $block->escapeHtml(__('Custom Searchable attributes')) ?>
                         </span>
                         <span class="content">
-                            As per instructions found at Algolia we've tried to set a list of Indexable attributes to sent from Magento 2.1.7 to Algolia.
+                            <?php echo $block->escapeHtml(__('As per instructions found at Algolia we\'ve tried to set a list of Indexable attributes to sent from Magento 2.1.7 to Algolia.')) ?>
                         </span>
                     </a>
                     <a href="https://discourse.algolia.com/t/m2-1-7-js-error-on-clean-install/2034/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            M2.1.7 JS Error on Clean install
+                            <?php echo $block->escapeHtml(__('M2.1.7 JS Error on Clean install')) ?>
                         </span>
                         <span class="content">
-                            Just installed Algolia for Magento 2 via composer, run setup:upgrade and deployed files and cleared caches (site is still in developer mode).
+                            <?php echo $block->escapeHtml(__('Just installed Algolia for Magento 2 via composer, run setup:upgrade and deployed files and cleared caches (site is still in developer mode).')) ?>
                         </span>
                     </a>
                     <a href="https://discourse.algolia.com/t/layered-navigation-on-search-result-pages/4619/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Layered Navigation on search result pages
+                            <?php echo $block->escapeHtml(__('Layered Navigation on search result pages')) ?>
                         </span>
                         <span class="content">
-                            I have an issue with layered navigation (Filters) on Search result pages within Magento where Instant search is not being used.
+                            <?php echo $block->escapeHtml(__('I have an issue with layered navigation (Filters) on Search result pages within Magento where Instant search is not being used.')) ?>
                         </span>
                     </a>
                     <a href="https://discourse.algolia.com/t/magento-in-the-url/2364/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" target="_blank">
                         <span class="heading">
-                            Magento in the URL
+                            <?php echo $block->escapeHtml(__('Magento in the URL')) ?>
                         </span>
                         <span class="content">
-                            My Algolia dashboard indexed URL’s not updated after 6 hours - still contain ref to “bad” URL’s. Have performed magento indexer:reindex.
+                            <?php echo $block->escapeHtml(__('My Algolia dashboard indexed URL\'s not updated after 6 hours - still contain ref to “bad” URL\'s. Have performed magento indexer:reindex.')) ?>
                         </span>
                     </a>
                 </div>
 
                 <a href="https://discourse.algolia.com/tags/magento2/?utm_source=magento&utm_medium=extension&utm_campaign=support-page" class="footer" target="_blank">
-                    Browse more forum topics ...
+                     <?php echo $block->escapeHtml(__('Browse more forum topics ...')) ?>
                 </a>
             </div>
 
             <div class="col-l-4">
                 <div class="heading">
-                    <img src="<?php echo $vidIllustration ?>"  alt="Video Tutorials" />
+                    <img src="<?php echo $block->escapeUrl($vidIllustration) ?>"  alt="<?php echo $block->escapeHtmlAttr(__('Video Tutorials')) ?>" />
 
                     <div class="main">
-                        Video Tutorials
+                        <?php echo $block->escapeHtml(__('Video Tutorials')) ?>
                     </div>
 
                     <div class="sub">
-                        An introduction to the Magento extension in video
+                        <?php echo $block->escapeHtml(__('An introduction to the Magento extension in video')) ?>
                     </div>
                 </div>
                 <div class="videos">
                     <a href="https://www.youtube.com/watch?v=1vxnisyxgFU" target="_blank" class="video">
                         <div class="img">
-                            <img src="<?php echo $videoDiscover ?>"  alt="Discover the extension" />
+                            <img src="<?php echo $block->escapeUrl($videoDiscover) ?>"  alt="<?php echo $block->escapeHtmlAttr(__('Discover the extension')) ?>" />
                         </div>
                         <div class="description">
-                            Discover the extension
+                            <?php echo $block->escapeHtml(__('Discover the extension')) ?>
                         </div>
                     </a>
                     <a href="https://www.youtube.com/watch?v=0V1BSKlCm10" target="_blank" class="video">
                         <div class="img">
-                            <img src="<?php echo $videoQueue ?>"  alt="Understand Indexing queue" />
+                            <img src="<?php echo $block->escapeUrl($videoQueue) ?>"  alt="<?php echo $block->escapeHtmlAttr(__('Understand Indexing queue')) ?>" />
                         </div>
                         <div class="description">
-                            Understand Indexing Queue
+                            <?php echo $block->escapeHtml(__('Understand Indexing Queue')) ?>
                         </div>
                     </a>
                     <a href="https://www.youtube.com/watch?v=qzaLrHz67U4" target="_blank" class="video">
                         <div class="img">
-                            <img src="<?php echo $videoFeatures ?>"  alt="See all extra features" />
+                            <img src="<?php echo $block->escapeUrl($videoFeatures) ?>"  alt="<?php echo $block->escapeHtmlAttr(__('See all extra features')) ?>" />
                         </div>
                         <div class="description">
-                            See all extra features
+                            <?php echo $block->escapeHtml(__('See all extra features')) ?>
                         </div>
                     </a>
                 </div>
 
                 <a href="https://www.youtube.com/playlist?list=PLuHdbqhRgWHLZ8pIwBT0B2JNxdoSfCWKY&disable_polymer=true" class="footer" target="_blank">
-                    View more tutorials ...
+                    <?php echo $block->escapeHtml(__('View more tutorials ...')) ?>
                 </a>
             </div>
         </div>

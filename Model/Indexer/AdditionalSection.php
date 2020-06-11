@@ -42,9 +42,7 @@ class AdditionalSection implements Magento\Framework\Indexer\ActionInterface, Ma
 
     public function executeFull()
     {
-        if (!$this->configHelper->getApplicationID()
-            || !$this->configHelper->getAPIKey()
-            || !$this->configHelper->getSearchOnlyAPIKey()) {
+        if (!$this->configHelper->credentialsAreConfigured()) {
             $errorMessage = 'Algolia reindexing failed: 
             You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 

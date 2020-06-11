@@ -1,7 +1,7 @@
 <script type="text/template" id="refinements-lists-item-template">
-    <div class="{{cssClasses.label}} {{#isRefined}}checked{{/isRefined}}">
-        <input class="{{cssClasses.checkbox}}" {{#isRefined}}checked{{/isRefined}} type="checkbox">
+    <label class="{{cssClasses.label}} {{#isRefined}}checked{{/isRefined}}">
+        <input class="{{cssClasses.checkbox}}" {{#isRefined}}checked{{/isRefined}} type="checkbox" value="{{value}}" />
         {{value}}
         <span class="{{cssClasses.count}}">{{count}}</span>
-    </div>
+    </label>
 </script>

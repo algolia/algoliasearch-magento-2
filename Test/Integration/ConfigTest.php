@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
-use AlgoliaSearch\AlgoliaException;
 
 class ConfigTest extends TestCase
 {
@@ -35,7 +35,7 @@ class ConfigTest extends TestCase
         $hitsPerPage = 100;
         $page = 0;
         do {
-            $fetchedQueryRules = $index->searchRules([
+            $fetchedQueryRules = $index->searchRules('', [
                 'context' => 'magento_filters',
                 'page' => $page,
                 'hitsPerPage' => $hitsPerPage,

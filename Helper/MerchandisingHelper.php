@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use AlgoliaSearch\AlgoliaException;
 
 class MerchandisingHelper
 {
@@ -112,7 +112,7 @@ class MerchandisingHelper
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $productIndex->searchRules([
+                $fetchedQueryRules = $productIndex->searchRules('', [
                     'context' => $context,
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
@@ -137,7 +137,10 @@ class MerchandisingHelper
             } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
 
             if (!empty($queryRulesToSet)) {
-                $productIndex->batchRules($queryRulesToSet, false, false);
+                $productIndex->saveRules($queryRulesToSet, [
+                    'forwardToReplicas'  => false,
+                    'clearExistingRules' => false,
+                ]);
             }
         } catch (AlgoliaException $e) {
             // Fail silently if query rules are disabled on the app

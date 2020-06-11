@@ -44,8 +44,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
         $this->backendView = $backendView;
         $this->analyticsHelper = $analyticsHelper;
         $this->indexEntityDataProvider = $indexEntityDataProvider;
-
-        $this->getTotalCountOfSearches();
     }
 
     /**
@@ -54,6 +52,14 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     public function getBackendView()
     {
         return $this->backendView;
+    }
+
+    public function getTimeZone()
+    {
+        return $this->backendView->getDateTime()->getConfigTimezone(
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $this->getStore()->getId()
+        );
     }
 
     /**
@@ -80,13 +86,13 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
         if (empty($this->analyticsParams)) {
             $params = ['index' => $this->getIndexName()];
             if ($formData = $this->getBackendView()->getBackendSession()->getAlgoliaAnalyticsFormData()) {
+                $dateTime = $this->getBackendView()->getDateTime();
+                $timeZone = $this->getTimeZone();
                 if (isset($formData['from']) && $formData['from'] !== '') {
-                    $params['startDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()
-                        ->date($formData['from'])->getTimestamp());
+                    $params['startDate'] = $dateTime->date($formData['from'], $timeZone, true, false)->format('Y-m-d');
                 }
                 if (isset($formData['to']) && $formData['to'] !== '') {
-                    $params['endDate'] = date('Y-m-d', $this->getBackendView()->getDateTime()
-                        ->date($formData['to'])->getTimestamp());
+                    $params['endDate'] = $dateTime->date($formData['to'], $timeZone, true, false)->format('Y-m-d');
                 }
             }
 
@@ -296,14 +302,18 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     }
 
     /**
+     * @throws NoSuchEntityException
+     *
      * @return bool
      */
     public function checkIsValidDateRange()
     {
         if ($formData = $this->getBackendView()->getBackendSession()->getAlgoliaAnalyticsFormData()) {
             if (isset($formData['from']) && !empty($formData['from'])) {
-                $startDate = $this->getBackendView()->getDateTime()->date($formData['from']);
-                $diff = date_diff($startDate, $this->getBackendView()->getDateTime()->date());
+                $dateTime = $this->getBackendView()->getDateTime();
+                $timeZone = $this->getTimeZone();
+                $startDate = $dateTime->date($formData['from'], $timeZone, true, false);
+                $diff = date_diff($startDate, $dateTime->date(null, $timeZone, true, null));
 
                 if ($diff->days > $this->getAnalyticRetentionDays()) {
                     return false;

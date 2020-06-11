@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Model\Observer;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\ConfigurationTracker;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
-use AlgoliaSearch\AlgoliaException;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Store\Model\StoreManagerInterface;

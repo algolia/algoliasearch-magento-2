@@ -1,10 +1,10 @@
 <?php
-$bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+$bookIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
 ?>
 
 <div class="algolia-suggestions-header">
     <div class="close-box">x</div>
-    <img src="<?php echo $bookIllustration ?>" class="book" />
+    <img src="<?php echo $block->escapeUrl($bookIllustration); ?>" class="book" />
     <p>The CMS editor allows you to customize header of your landing page.</p>
     <p>The final result depends on your Magento template and CSS customizations.</p>
 </div>

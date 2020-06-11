@@ -7,13 +7,13 @@ use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
 use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
 use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
-use AlgoliaSearch\AlgoliaException;
-use AlgoliaSearch\Index;
+use Algolia\AlgoliaSearch\SearchIndex;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -176,7 +176,7 @@ class ProductHelper
                 'custom_design', 'custom_design_from', 'custom_design_to', 'custom_layout_update',
                 'custom_use_parent_settings', 'default_sort_by', 'display_mode', 'filter_price_range',
                 'global_position', 'image', 'include_in_menu', 'is_active', 'is_always_include_in_menu', 'is_anchor',
-                'landing_page', 'level', 'lower_cms_block', 'page_layout', 'path_in_store', 'position', 'small_image',
+                'landing_page', 'lower_cms_block', 'page_layout', 'path_in_store', 'position', 'small_image',
                 'thumbnail', 'url_key', 'url_path', 'visible_in_menu', 'quantity_and_stock_status',
             ];
 
@@ -424,7 +424,7 @@ class ProductHelper
         } elseif ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
             $this->logger->log('
-                Synonyms management disabled. 
+                Synonyms management disabled.
                 Copying synonyms from production index to TMP one to not to erase them with the index move.
             ');
         }
@@ -550,7 +550,7 @@ class ProductHelper
         if ($typeInstance instanceof Configurable) {
             $subProducts = $typeInstance->getUsedProducts($product);
         } elseif ($typeInstance instanceof BundleProductType) {
-            $subProducts = $typeInstance->getOptions($product);
+            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product);
         } else { // Grouped product
             $subProducts = $typeInstance->getAssociatedProducts($product);
         }
@@ -1069,17 +1069,19 @@ class ProductHelper
 
         if ($rules) {
             $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $index->batchRules($rules, true);
+            $index->saveRules($rules, [
+                'forwardToReplicas' => true,
+            ]);
         }
     }
 
-    private function clearFacetsQueryRules(Index $index)
+    private function clearFacetsQueryRules(SearchIndex $index)
     {
         try {
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $index->searchRules([
+                $fetchedQueryRules = $index->searchRules('', [
                     'context' => 'magento_filters',
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
@@ -1090,7 +1092,9 @@ class ProductHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $index->deleteRule($hit['objectID'], true);
+                    $index->deleteRule($hit['objectID'], [
+                        'forwardToReplicas' => true,
+                    ]);
                 }
 
                 $page++;

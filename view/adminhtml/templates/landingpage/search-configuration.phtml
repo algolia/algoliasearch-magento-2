@@ -3,8 +3,8 @@
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\SearchConfiguration $block */
 
 $configHelper = $block->getConfigHelper();
-$merchIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-merchtool.svg');
-$starsIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
+$merchIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-merchtool.svg');
+$starsIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
 $indexName = $block->getCoreHelper()->getBaseIndexName();
 
 $landingPage = $block->getLandingPage();
@@ -45,7 +45,7 @@ $isConfig = [
             <p>2. Pre-select applicable filters, for example a price range that is interesting to your customers.</p>
         </div>
         <div class="col-middle">
-            <img src="<?php echo $merchIllustration ?>"/>
+            <img src="<?php echo $block->escapeUrl($merchIllustration); ?>"/>
         </div>
         <div class="col-right">
             <p>3. You can see which products (and in what order) will be shown on the final landing page. If you're on Algolia's higher plans, you may manually set specific order of products, promote or demote as desired.</p>
@@ -88,7 +88,7 @@ $isConfig = [
         <div id="instant-search-pagination-container"></div>
         <?php if ($block->getPlanLevel() < 3) : ?>
             <div class="algolia-suggestions-header algolia-suggestions-header-wbg">
-                <img src="<?php echo $starsIllustration ?>" class="stars" />
+                <img src="<?php echo $block->escapeUrl($starsIllustration); ?>" class="stars" />
                 <p>To be able to sort search results in particular order (promote or demote items), please consider <a href="https://www.algolia.com/pricing" target="_blank" >upgrading to a higher plan</a>.</p>
             </div>
         <?php endif; ?>

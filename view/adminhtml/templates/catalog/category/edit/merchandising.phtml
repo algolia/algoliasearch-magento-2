@@ -1,8 +1,8 @@
 <?php
 
-/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $this */
+/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
 
-$configHelper = $this->getConfigHelper();
+$configHelper = $block->getConfigHelper();
 
 ?>
 
@@ -14,7 +14,7 @@ $configHelper = $this->getConfigHelper();
     Find out more about Algolia Merchandising, please refer to <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/category-merchandising/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
 </div>
 
-<?php if (!$this->isQueryRulesEnabled()): ?>
+<?php if (!$block->isQueryRulesEnabled()): ?>
 
     <br>
     <div class="algolia_block icon-stars">
@@ -24,7 +24,7 @@ $configHelper = $this->getConfigHelper();
 
 <?php return; endif; ?>
 
-<?php if ($this->isRootCategory()): ?>
+<?php if ($block->isRootCategory()): ?>
 
     <br>
     <div class="algolia_block icon-bulb">
@@ -35,13 +35,13 @@ $configHelper = $this->getConfigHelper();
 <?php return; endif; ?>
 
 <?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()):
-    $instantSearchLink = $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_instant');
+    $instantSearchLink = $block->getUrl('adminhtml/system_config/edit/section/algoliasearch_instant');
 ?>
 
 <div class="algolia_block icon-stars">
     To merchandise products using Algolia
     you need to enable <strong>Instant search</strong> with <strong>Replace category pages</strong> feature.
-    You can do it in Algolia's <a href="<?php echo $instantSearchLink; ?>" target="_blank">Instant Search configuration</a>.
+    You can do it in Algolia's <a href="<?php echo $block->escapeUrl($instantSearchLink) ?>" target="_blank">Instant Search configuration</a>.
     <br><br>
     <strong>Instant search</strong> with enabled <strong>Replace category pages</strong> feature gives your customers a great experience
     while browsing your catalog. It enables your customers to search and filter for products at real time resulting
@@ -51,22 +51,22 @@ $configHelper = $this->getConfigHelper();
 
 <?php return; endif; ?>
 
-<div class="algolia_block display-product-msg icon-warning" <?php echo !$this->canDisplayProducts() ?: 'style="display:none;"' ?>>
+<div class="algolia_block display-product-msg icon-warning" <?php echo !$block->canDisplayProducts() ?: 'style="display:none;"' ?>>
     <p><strong>Products are not displayed for this category</strong></p>
     <p>Please note that you've selected "Static block only" in Display Settings. Since no products are shown on the page, changes you make with Algolia Merchandising won't be visible to your customers.</p>
 </div>
 
 <?php
 
-$indexName = $this->getCoreHelper()->getBaseIndexName();
+$indexName = $block->getCoreHelper()->getBaseIndexName();
 
-$category = $this->getCategory();
+$category = $block->getCategory();
 $categoryId = $category->getId();
 
 $isConfig = [
     'appId' => $configHelper->getApplicationID(),
     'apiKey' => $configHelper->getSearchOnlyAPIKey(),
-    'indexName' => $configHelper->getIndexPrefix() . $this->getCurrentStore()->getCode() . '_products',
+    'indexName' => $configHelper->getIndexPrefix() . $block->getCurrentStore()->getCode() . '_products',
     'routing' => false,
     'searchParameters' => [
         'hitsPerPage' => $configHelper->getNumberOfProductResults(),
@@ -205,7 +205,7 @@ $isConfig = [
         algoliaAdminBundle.$(function ($) {
         	var config = <?php echo json_encode($isConfig); ?>;
 
-            var search = algoliaAdminBundle.instantsearch(<?php echo json_encode($isConfig); ?>);
+            var search = algoliaAdminBundle.instantsearch(config);
 
             // // initialize SearchBox
             // search.addWidget(

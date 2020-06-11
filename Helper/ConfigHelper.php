@@ -389,7 +389,9 @@ class ConfigHelper
 
     public function getNumberOfJobToRun($storeId = null)
     {
-        return (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
+        $nbJobs = (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
+
+        return max($nbJobs, 1);
     }
 
     public function getRetryLimit($storeId = null)
@@ -600,6 +602,13 @@ class ConfigHelper
     public function getSearchOnlyAPIKey($storeId = null)
     {
         return $this->configInterface->getValue(self::SEARCH_ONLY_API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function credentialsAreConfigured($storeId = null)
+    {
+        return $this->getApplicationID($storeId) &&
+            $this->getAPIKey($storeId) &&
+            $this->getSearchOnlyAPIKey($storeId);
     }
 
     public function getIndexPrefix($storeId = null)

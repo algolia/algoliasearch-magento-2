@@ -2,10 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\AnalyticsClient;
+use Algolia\AlgoliaSearch\Config\AnalyticsConfig;
 use Algolia\AlgoliaSearch\DataProvider\Analytics\IndexEntityDataProvider;
-use AlgoliaSearch\Analytics;
+use Algolia\AlgoliaSearch\RequestOptions\RequestOptionsFactory;
 
-class AnalyticsHelper extends Analytics
+class AnalyticsHelper
 {
     const ANALYTICS_SEARCH_PATH = '/2/searches';
     const ANALYTICS_HITS_PATH = '/2/hits';
@@ -42,8 +44,16 @@ class AnalyticsHelper extends Analytics
     private $fetchError = false;
 
     /**
-     * AnalyticsHelper constructor.
-     *
+     * @var AnalyticsClient
+     */
+    private $analyticsClient;
+
+    /**
+     * @var AnalyticsConfig
+     */
+    private $analyticsConfig;
+
+    /**
      * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
      * @param IndexEntityDataProvider $entityHelper
@@ -64,8 +74,23 @@ class AnalyticsHelper extends Analytics
         $this->proxyHelper = $proxyHelper;
 
         $this->logger = $logger;
+    }
 
-        parent::__construct($algoliaHelper->getClient());
+    private function setupAnalyticsClient()
+    {
+        if ($this->analyticsClient) {
+            return;
+        }
+
+        $this->analyticsClient = AnalyticsClient::create(
+            $this->configHelper->getApplicationID(),
+            $this->configHelper->getAPIKey()
+        );
+
+        $this->analyticsConfig = AnalyticsConfig::create(
+            $this->configHelper->getApplicationID(),
+            $this->configHelper->getAPIKey()
+        );
     }
 
     /**
@@ -334,9 +359,16 @@ class AnalyticsHelper extends Analytics
                 throw new \Magento\Framework\Exception\LocalizedException($msg);
             }
 
-            $response = $this->request('GET', $path, $params);
+            $this->setupAnalyticsClient();
+
+            $requestOptions = new RequestOptionsFactory($this->analyticsConfig);
+            $requestOptions = $requestOptions->create([]);
+
+            $requestOptions->addQueryParameters($params);
+
+            $response = $this->analyticsClient->custom('GET', $path, $requestOptions);
         } catch (\Exception $e) {
-            $this->errors[] = $e->getMessage();
+            $this->errors[] = $e->getMessage() . ': ' . $path;
             $this->logger->log($e->getMessage());
 
             $this->fetchError = true;

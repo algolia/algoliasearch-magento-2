@@ -398,44 +398,15 @@ class AlgoliaHelper extends AbstractHelper
      * @param $fromIndexName
      * @param $toIndexName
      *
-     * @throws AlgoliaException
      */
     public function copyQueryRules($fromIndexName, $toIndexName)
     {
-        $fromIndex = $this->getIndex($fromIndexName);
-        $toIndex = $this->getIndex($toIndexName);
+        $res = $this->getClient()->copyRules($fromIndexName, $toIndexName, [
+            'forwardToReplicas'  => true,
+            'clearExistingRules' => true,
+        ]);
 
-        $queryRulesToSet = [];
-
-        $hitsPerPage = 100;
-        $page = 0;
-        do {
-            $fetchedQueryRules = $fromIndex->searchRules('', [
-                'page' => $page,
-                'hitsPerPage' => $hitsPerPage,
-            ]);
-
-            foreach ($fetchedQueryRules['hits'] as $hit) {
-                unset($hit['_highlightResult']);
-
-                $queryRulesToSet[] = $hit;
-            }
-
-            $page++;
-        } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
-
-        if (!$queryRulesToSet) {
-            $res = $toIndex->clearRules([
-                'forwardToReplicas' => true,
-            ]);
-        } else {
-            $res = $toIndex->saveRules($queryRulesToSet, [
-                'forwardToReplicas'  => true,
-                'clearExistingRules' => true,
-            ]);
-        }
-
-        self::setLastOperationInfo($toIndex, $res);
+        self::setLastOperationInfo($toIndexName, $res);
     }
 
     private function checkClient($methodName)

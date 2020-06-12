@@ -9,8 +9,9 @@ abstract class ProductWithChildren extends ProductWithoutChildren
 {
     protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode, $field)
     {
-        list($min, $max, $minOriginal, $maxOriginal) = $this->getMinMaxPrices(
-            $product, $withTax, $subProducts, $currencyCode);
+        list($min, $max, $minOriginal, $maxOriginal) =
+            $this->getMinMaxPrices($product, $withTax, $subProducts, $currencyCode);
+
         $dashedFormat = $this->getDashedPriceFormat($min, $max, $currencyCode);
 
         if ($min !== $max) {
@@ -46,7 +47,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
 
                 $max = max($max, $price);
                 $originalMax = max($max, $basePrice);
-
             }
         } else {
             $originalMax = $original = $min = $max;
@@ -81,7 +81,11 @@ abstract class ProductWithChildren extends ProductWithoutChildren
             $this->customData[$field][$currencyCode]['default_formated'] = $dashedFormat;
 
             //// Do not keep special price that is already taken into account in min max
-            unset($this->customData['price']['special_from_date'], $this->customData['price']['special_to_date'], $this->customData['price']['default_original_formated']);
+            unset(
+                $this->customData['price']['special_from_date'],
+                $this->customData['price']['special_to_date'],
+                $this->customData['price']['default_original_formated']
+            );
 
             $this->customData[$field][$currencyCode]['default'] = 0; // will be reset just after
         }
@@ -134,20 +138,26 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     {
         if ($min !== $max) {
             if ($min !== $minOriginal || $max !== $maxOriginal) {
-                if($minOriginal !== $maxOriginal) {
+                if ($minOriginal !== $maxOriginal) {
                     $this->customData[$field][$currencyCode]['default_original_formated'] = $this->getDashedPriceFormat(
-                        $minOriginal, $maxOriginal, $currencyCode);
-                }else{
+                        $minOriginal,
+                        $maxOriginal,
+                        $currencyCode
+                    );
+                } else {
                     $this->customData[$field][$currencyCode]['default_original_formated'] = $this->formatPrice(
-                        $minOriginal, $currencyCode);
+                        $minOriginal,
+                        $currencyCode
+                    );
                 }
             }
         } else {
             if ($min < $minOriginal) {
                 $this->customData[$field][$currencyCode]['default_original_formated'] = $this->formatPrice(
-                    $minOriginal, $currencyCode);
+                    $minOriginal,
+                    $currencyCode
+                );
             }
         }
     }
-
 }

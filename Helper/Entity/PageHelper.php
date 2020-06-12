@@ -8,7 +8,6 @@ use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFact
 use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\UrlInterface;
 use Magento\Framework\UrlFactory;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -132,14 +131,13 @@ class PageHelper
             }
 
             $pageObject['objectID'] = $page->getId();
-            $pageObject['url'] = $frontendUrlBuilder
-                                                          ->getUrl(
-                                          null,
-                                          [
-                                              '_direct' => $page->getIdentifier(),
-                                              '_secure' => $this->configHelper->useSecureUrlsInFrontend($storeId),
-                                          ]
-                                      );
+            $pageObject['url'] = $frontendUrlBuilder->getUrl(
+                null,
+                [
+                    '_direct' => $page->getIdentifier(),
+                    '_secure' => $this->configHelper->useSecureUrlsInFrontend($storeId),
+                ]
+            );
             $pageObject['content'] = $this->strip($content, ['script', 'style']);
 
             $transport = new DataObject($pageObject);

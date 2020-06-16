@@ -465,7 +465,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 			if (facet.type === 'priceRanges') {
 				delete templates.item;
 
-				return ['priceRanges', {
+				return ['rangeInput', {
 					container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
 					attribute: facet.attribute,
 					labels: {

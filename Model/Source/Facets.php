@@ -50,7 +50,7 @@ class Facets extends AbstractTable
                     'conjunctive' => 'Conjunctive',
                     'disjunctive' => 'Disjunctive',
                     'slider'      => 'Slider',
-                    'priceRanges' => 'Price Ranges',
+                    'priceRanges' => 'Price Range',
                 ],
             ],
             'label' => [

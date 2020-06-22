@@ -109,6 +109,10 @@ class AlgoliaHelper extends AbstractHelper
     {
         $this->checkClient(__FUNCTION__);
 
+        if (isset($params['disjunctiveFacets'])) {
+            return $this->searchWithDisjunctiveFaceting($indexName, $q, $params);
+        }
+
         return $this->client->initIndex($indexName)->search($q, $params);
     }
 
@@ -264,7 +268,7 @@ class AlgoliaHelper extends AbstractHelper
             $response = $response->getBody();
         }
 
-        self::$lastTaskId = $response['taskID'];
+        self::$lastTaskId = isset($response['taskID']) ? $response['taskID'] : null;
     }
 
     public function saveRule($rule, $indexName, $forwardToReplicas = false)
@@ -394,44 +398,15 @@ class AlgoliaHelper extends AbstractHelper
      * @param $fromIndexName
      * @param $toIndexName
      *
-     * @throws AlgoliaException
      */
     public function copyQueryRules($fromIndexName, $toIndexName)
     {
-        $fromIndex = $this->getIndex($fromIndexName);
-        $toIndex = $this->getIndex($toIndexName);
+        $res = $this->getClient()->copyRules($fromIndexName, $toIndexName, [
+            'forwardToReplicas'  => true,
+            'clearExistingRules' => true,
+        ]);
 
-        $queryRulesToSet = [];
-
-        $hitsPerPage = 100;
-        $page = 0;
-        do {
-            $fetchedQueryRules = $fromIndex->searchRules('', [
-                'page' => $page,
-                'hitsPerPage' => $hitsPerPage,
-            ]);
-
-            foreach ($fetchedQueryRules['hits'] as $hit) {
-                unset($hit['_highlightResult']);
-
-                $queryRulesToSet[] = $hit;
-            }
-
-            $page++;
-        } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
-
-        if (!$queryRulesToSet) {
-            $res = $toIndex->clearRules([
-                'forwardToReplicas' => true,
-            ]);
-        } else {
-            $res = $toIndex->saveRules($queryRulesToSet, [
-                'forwardToReplicas'  => true,
-                'clearExistingRules' => true,
-            ]);
-        }
-
-        self::setLastOperationInfo($toIndex, $res);
+        self::setLastOperationInfo($toIndexName, $res);
     }
 
     private function checkClient($methodName)
@@ -491,7 +466,7 @@ class AlgoliaHelper extends AbstractHelper
 
             if ($object === false) {
                 $longestAttribute = $this->getLongestAttribute($previousObject);
-                $modifiedIds[] = $indexName . ' 
+                $modifiedIds[] = $indexName . '
                     - ID ' . $previousObject['objectID'] . ' - skipped - longest attribute: ' . $longestAttribute;
 
                 unset($objects[$key]);
@@ -506,10 +481,10 @@ class AlgoliaHelper extends AbstractHelper
         if ($modifiedIds && $modifiedIds !== []) {
             $separator = php_sapi_name() === 'cli' ? "\n" : '<br>';
 
-            $errorMessage = 'Algolia reindexing: 
-                You have some records which are too big to be indexed in Algolia. 
-                They have either been truncated 
-                (removed attributes: ' . implode(', ', $this->potentiallyLongAttributes) . ') 
+            $errorMessage = 'Algolia reindexing:
+                You have some records which are too big to be indexed in Algolia.
+                They have either been truncated
+                (removed attributes: ' . implode(', ', $this->potentiallyLongAttributes) . ')
                 or skipped completely: ' . $separator . implode($separator, $modifiedIds);
 
             if (php_sapi_name() === 'cli') {
@@ -664,5 +639,124 @@ class AlgoliaHelper extends AbstractHelper
     private function calculateObjectSize($object)
     {
         return mb_strlen(json_encode($object));
+    }
+
+    protected function searchWithDisjunctiveFaceting($indexName, $q, $params)
+    {
+        if (! is_array($params['disjunctiveFacets']) || count($params['disjunctiveFacets']) <= 0) {
+            throw new \InvalidArgumentException('disjunctiveFacets needs to be an non empty array');
+        }
+
+        if (isset($params['filters'])) {
+            throw new \InvalidArgumentException('You can not use disjunctive faceting and the filters parameter');
+        }
+
+        /**
+         * Prepare queries
+         */
+        // Get the list of disjunctive queries to do: 1 per disjunctive facet
+        $disjunctiveQueries = $this->getDisjunctiveQueries($params);
+
+        // Format disjunctive queries for multipleQueries call
+        foreach ($disjunctiveQueries as &$disjunctiveQuery) {
+            $disjunctiveQuery['indexName'] = $indexName;
+            $disjunctiveQuery['query'] = $q;
+            unset($disjunctiveQuery['disjunctiveFacets']);
+        }
+
+        // Merge facets and disjunctiveFacets for the hits query
+        $facets = isset($params['facets']) ? $params['facets'] : [];
+        $facets = array_merge($facets, $params['disjunctiveFacets']);
+        unset($params['disjunctiveFacets']);
+
+        // format the hits query for multipleQueries call
+        $params['query'] = $q;
+        $params['indexName'] = $indexName;
+        $params['facets'] = $facets;
+
+        // Put the hit query first
+        array_unshift($disjunctiveQueries, $params);
+
+        /**
+         * Do all queries in one call
+         */
+        $results = $this->client->multipleQueries(array_values($disjunctiveQueries));
+        $results = $results['results'];
+
+        /**
+         * Merge facets from disjunctive queries with facets from the hits query
+         */
+        // The first query is the hits query that the one we'll return to the user
+        $queryResults = array_shift($results);
+
+        // To be able to add facets from disjunctive query we create 'facets' key in case we only have disjunctive facets
+        if (false === isset($queryResults['facets'])) {
+            $queryResults['facets'] =[];
+        }
+
+        foreach ($results as $disjunctiveResults) {
+            if (isset($disjunctiveResults['facets'])) {
+                foreach ($disjunctiveResults['facets'] as $facetName => $facetValues) {
+                    $queryResults['facets'][$facetName] = $facetValues;
+                }
+            }
+        }
+
+        return $queryResults;
+    }
+
+    protected function getDisjunctiveQueries($queryParams)
+    {
+        $queriesParams = [];
+
+        foreach ($queryParams['disjunctiveFacets'] as $facetName) {
+            $params = $queryParams;
+            $params['facets'] = [$facetName];
+            $facetFilters = isset($params['facetFilters']) ? $params['facetFilters'] : [];
+            $numericFilters = isset($params['numericFilters']) ? $params['numericFilters'] : [];
+
+            $additionalParams = [
+                'hitsPerPage' => 1,
+                'page' => 0,
+                'attributesToRetrieve' => [],
+                'attributesToHighlight' => [],
+                'attributesToSnippet' => [],
+                'analytics' => false,
+            ];
+
+            $additionalParams['facetFilters'] =
+                $this->getAlgoliaFiltersArrayWithoutCurrentRefinement($facetFilters, $facetName . ':');
+            $additionalParams['numericFilters'] =
+                $this->getAlgoliaFiltersArrayWithoutCurrentRefinement($numericFilters, $facetName);
+
+            $queriesParams[$facetName] = array_merge($params, $additionalParams);
+        }
+
+        return $queriesParams;
+    }
+
+    protected function getAlgoliaFiltersArrayWithoutCurrentRefinement($filters, $needle)
+    {
+        // iterate on each filters which can be string or array and filter out every refinement matching the needle
+        for ($i = 0; $i < count($filters); $i++) {
+            if (is_array($filters[$i])) {
+                foreach ($filters[$i] as $filter) {
+                    if (mb_substr($filter, 0, mb_strlen($needle)) === $needle) {
+                        unset($filters[$i]);
+                        $filters = array_values($filters);
+                        $i--;
+                        break;
+                    }
+                }
+            } else {
+                if (mb_substr($filters[$i], 0, mb_strlen($needle)) === $needle) {
+                    unset($filters[$i]);
+                    $filters = array_values($filters);
+                    $i--;
+                }
+            }
+        }
+
+        return $filters;
     }
 }

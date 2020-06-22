@@ -1,3 +1,6 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+?>
 <?php if (!empty($block->getAnalytics())): ?>
     <div id="algolia-analyatics-diagram"></div>
 
@@ -57,6 +60,6 @@
     </script>
 <?php else: ?>
     <div class="dashboard-diagram-nodata">
-        <span><?php echo __('No Data Found') ?></span>
+        <span><?php echo $block->escapeHtml(__('No Data Found')) ?></span>
     </div>
 <?php endif ?>

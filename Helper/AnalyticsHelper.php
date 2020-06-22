@@ -3,8 +3,9 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\AnalyticsClient;
+use Algolia\AlgoliaSearch\Config\AnalyticsConfig;
 use Algolia\AlgoliaSearch\DataProvider\Analytics\IndexEntityDataProvider;
-use AlgoliaSearch\Analytics;
+use Algolia\AlgoliaSearch\RequestOptions\RequestOptionsFactory;
 
 class AnalyticsHelper
 {
@@ -48,8 +49,11 @@ class AnalyticsHelper
     private $analyticsClient;
 
     /**
-     * AnalyticsHelper constructor.
-     *
+     * @var AnalyticsConfig
+     */
+    private $analyticsConfig;
+
+    /**
      * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
      * @param IndexEntityDataProvider $entityHelper
@@ -79,6 +83,11 @@ class AnalyticsHelper
         }
 
         $this->analyticsClient = AnalyticsClient::create(
+            $this->configHelper->getApplicationID(),
+            $this->configHelper->getAPIKey()
+        );
+
+        $this->analyticsConfig = AnalyticsConfig::create(
             $this->configHelper->getApplicationID(),
             $this->configHelper->getAPIKey()
         );
@@ -350,9 +359,16 @@ class AnalyticsHelper
                 throw new \Magento\Framework\Exception\LocalizedException($msg);
             }
 
-            $response = $this->analyticsClient->custom('GET', $path, $params);
+            $this->setupAnalyticsClient();
+
+            $requestOptions = new RequestOptionsFactory($this->analyticsConfig);
+            $requestOptions = $requestOptions->create([]);
+
+            $requestOptions->addQueryParameters($params);
+
+            $response = $this->analyticsClient->custom('GET', $path, $requestOptions);
         } catch (\Exception $e) {
-            $this->errors[] = $e->getMessage();
+            $this->errors[] = $e->getMessage() . ': ' . $path;
             $this->logger->log($e->getMessage());
 
             $this->fetchError = true;

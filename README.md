@@ -1,7 +1,7 @@
 Algolia Search for Magento 2
 ==================
 
-![Latest version](https://img.shields.io/badge/latest-1.12.1-green.svg)
+![Latest version](https://img.shields.io/badge/latest-2.0.0-green.svg)
 ![Magento 2](https://img.shields.io/badge/Magento-%3E=2.2-blue.svg)
 ![PHP >= 7.0.6](https://img.shields.io/badge/PHP-%3E=7.0-green.svg)
 
@@ -54,6 +54,14 @@ Run the following commands:
 - ```$ composer require algolia/algoliasearch-magento-2```
 - ```$ bin/magento module:enable Algolia_AlgoliaSearch```
 - ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
+
+Upgrading from 1.x to 2.x
+------------
+With the release of a new major version, we have decided to create minor and major version releases to allow those that want to continue on the minor version. This update will **break compatibility**. Please read the [upgrade guide](https://www.algolia.com/doc/integration/magento-2/getting-started/upgrading/#upgrading-from-v1-to-v2) for all of the file changes and updates included in this release. 
+
+If you would like to stay on the minor version, please upgrade your composer to only accept versions less than version 2 like the example:
+
+`"algolia/algoliasearch-magento-2": ">=1.13.1 <2.0"`
 
 Contribution
 ------------

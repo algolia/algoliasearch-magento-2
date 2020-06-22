@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -37,6 +38,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
     private $coreHelper;
     private $categoryHelper;
     private $landingPageHelper;
+    private $personalizationHelper;
     private $checkoutSession;
     private $date;
 
@@ -57,6 +59,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         CoreHelper $coreHelper,
         CategoryHelper $categoryHelper,
         LandingPageHelper $landingPageHelper,
+        PersonalizationHelper $personalizationHelper,
         CheckoutSession $checkoutSession,
         DateTime $date,
         array $data = []
@@ -74,6 +77,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $this->coreHelper = $coreHelper;
         $this->categoryHelper = $categoryHelper;
         $this->landingPageHelper = $landingPageHelper;
+        $this->personalizationHelper = $personalizationHelper;
         $this->checkoutSession = $checkoutSession;
         $this->date = $date;
 
@@ -119,6 +123,11 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getAlgoliaHelper()
     {
         return $this->algoliaHelper;
+    }
+
+    public function getPersonalizationHelper()
+    {
+        return $this->personalizationHelper;
     }
 
     public function getCurrencySymbol()

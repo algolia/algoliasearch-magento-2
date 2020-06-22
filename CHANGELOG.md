@@ -1,5 +1,54 @@
 # CHANGE LOG
 
+## 2.0.0
+With the release of a new major version, we have decided to create minor and major version releases to allow those that want to continue on the minor version. This update will **break compatibility**. Please read the [upgrade guide](https://www.algolia.com/doc/integration/magento-2/getting-started/upgrading/#upgrading-from-v1-to-v2) for all of the file changes and updates included in this release. 
+
+If you would like to stay on the minor version, please upgrade your composer to only accept versions less than version 2 like the example:
+
+`"algolia/algoliasearch-magento-2": ">=1.13.1 <2.0"`
+
+## New Features
+- Algolia PHP Client v2 (from v1) (#848, #968, #984, #990) @DevinCodes  
+- [Instantsearch v4](https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/js/) (from v2) (#838, #912) @tkrugg
+- [Personalization](https://www.algolia.com/doc/integration/magento-2/how-it-works/personalization/) (#994, #998) 
+
+## 1.13.1
+
+### UPDATES
+- Add warning after image cache is flushed (#983)
+
+### FIXES
+- Fix bundle product selections for subproducts (#982)
+- Fixes visibility in B2B / Catalog Permissions raw SQL (#977)
+
+## 1.13.0
+
+## FEATURES
+- Indexing Queue Log admin view (#929)
+
+### UPDATES
+- Add documentations links on top of the Indexing Queue page (#931)
+- Archive logs cleaning (#928) 
+- Admin notices refactoring (#921)
+- Join 2 callbacks for autocomplete updated event (#926) @vmalyk
+- Replace class names to ::class instead string names (#936) @vmalyk
+- Added translation to ui components and source options (#938) @vmalyk
+- Adminhtml improvements: XSS prevention, translations, etc (#939) @vmalyk
+- Tests: improve class names usage and replace literal name to ::class (#940) @vmalyk
+- Clean up adminhtml queue controllers (#968)
+
+### FIXES
+- Prevent type error for backend facet query (#911)
+- B2B countable error in ProductDataArray class (#915)
+- Hide out of stock for configurable products (#925) @vmalyk
+- Remove "Replace categories" config dependency (#930)
+- PHP 7.2 warning error fixes (#932)
+- Remove Object manager and add factories to constructor (#937) @vmalyk
+- Fix Landing Page Builder remove url rewrite when disabled (#944)
+- Re-add forgotten indexOutOfStockOptions() method behaviour (#954)
+- Use Guzzle to for version checking (#949)
+- Fix configurable image condition (#964)
+
 ## 1.12.1
 
 This release has been made possible thanks to the involvement of the community, with about half of the pull requests merged coming from the Magento ecosystem.

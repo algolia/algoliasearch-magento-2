@@ -147,7 +147,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 'icon' => 'iconDocs',
             ],
             [
-                'title' => 'Documentation for magento2',
+                'title' => 'Documentation for Magento 2',
                 'url' => 'https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link',
                 'icon' => 'iconDocs',
             ],
@@ -252,7 +252,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
                             <p>
                                 <span>Related video:</span>
                                 <a target="_blank" href="' . $config['url'] . '"><img src="' . $config['thumbnail'] . '"/></a>
-                                <a target="_blank" href="' . $config['url'] . '">' . $config['title'] . '</a>
+                                <a target="_blank" href="' . $config['url'] . '">' . __($config['title']) . '</a>
                             </p>
                         </div>';
         }
@@ -269,7 +269,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
             $links = '';
             $i = 0;
             foreach ($config as $link) {
-                $links .= '<span><img src="' . $this->icons[$link['icon']] . '"/><a target="_blank" href="' . $link['url'] . '">' . $link['title'] . '</a></span>';
+                $links .= '<span><img src="' . $this->icons[$link['icon']] . '"/><a target="_blank" href="' . $link['url'] . '">' . __($link['title']) . '</a></span>';
                 if ($i%2 == 1) {
                     $links .= '<br/>';
                 }

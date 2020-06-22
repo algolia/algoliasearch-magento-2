@@ -5,6 +5,7 @@
 
         <script src="Algolia_AlgoliaSearch::instantsearch.js"/>
         <script src="Algolia_AlgoliaSearch::autocomplete.js"/>
+        <script src="Algolia_AlgoliaSearch::insights.js"/>
 
         <css src="Algolia_AlgoliaSearch::internals/autocomplete.css" />
         <css src="Algolia_AlgoliaSearch::internals/grid.css" />
@@ -35,6 +36,7 @@
             <block class="Magento\Framework\View\Element\Template" name="algolia.instant.stats" template="Algolia_AlgoliaSearch::instant/stats.phtml"/>
             <block class="Magento\Framework\View\Element\Template" name="algolia.instant.facet" template="Algolia_AlgoliaSearch::instant/facet.phtml"/>
             <block class="Magento\Framework\View\Element\Template" name="algolia.instant.refinements" template="Algolia_AlgoliaSearch::instant/refinements.phtml"/>
+
         </referenceBlock>
     </body>
 </page>

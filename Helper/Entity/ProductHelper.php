@@ -424,7 +424,7 @@ class ProductHelper
         } elseif ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
             $this->logger->log('
-                Synonyms management disabled. 
+                Synonyms management disabled.
                 Copying synonyms from production index to TMP one to not to erase them with the index move.
             ');
         }
@@ -550,7 +550,7 @@ class ProductHelper
         if ($typeInstance instanceof Configurable) {
             $subProducts = $typeInstance->getUsedProducts($product);
         } elseif ($typeInstance instanceof BundleProductType) {
-            $subProducts = $typeInstance->getOptions($product);
+            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product)->getItems();
         } else { // Grouped product
             $subProducts = $typeInstance->getAssociatedProducts($product);
         }
@@ -1092,7 +1092,9 @@ class ProductHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $index->deleteRule($hit['objectID'], true);
+                    $index->deleteRule($hit['objectID'], [
+                        'forwardToReplicas' => true,
+                    ]);
                 }
 
                 $page++;

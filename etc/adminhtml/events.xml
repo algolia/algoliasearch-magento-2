@@ -57,4 +57,9 @@
     <event name="algolia_after_create_category_object">
         <observer name="algoliasearch_category_permissions" instance="Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions\CategoryPermissions" />
     </event>
+
+    <event name="clean_catalog_images_cache_after">
+        <observer name="algoliasearch_flush_catalog_image_cache_after" instance="Algolia\AlgoliaSearch\Model\Observer\CleanCatalogImagesCacheAfter" />
+    </event>
+
 </config>

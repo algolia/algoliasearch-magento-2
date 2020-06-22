@@ -1,7 +1,8 @@
-<?php /** @var $this \Magento\Backend\Block\Template */ ?>
-
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+?>
 <script>
-	var algoliaSearchExtentionsVersion = "<?php echo $this->getData('extension_version'); ?>"
+	var algoliaSearchExtentionsVersion = "<?php echo $block->escapeJs($block->getData('extension_version')); ?>"
 </script>
 
 <div class="legacy_version">

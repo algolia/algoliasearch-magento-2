@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollec
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\UrlInterface;
+use Magento\Framework\View\Asset\Repository as AssetRepository;
 
 class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -35,6 +36,9 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var UrlInterface */
     protected $urlBuilder;
 
+    /** @var AssetRepository */
+    protected $assetRepository;
+
     /** @var string[] */
     protected $noticeFunctions = [
         'getQueueNotice',
@@ -43,6 +47,16 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'getVersionNotice',
         'getClickAnalyticsNotice',
         'getQueryRulesNotice',
+        'getPersonalizationNotice',
+    ];
+
+    /** @var array[] */
+    protected $pagesWithoutQueueNotice = [
+        'algoliasearch_cc_analytics',
+        'algoliasearch_analytics',
+        'algoliasearch_personalization',
+        'algoliasearch_advanced',
+        'algoliasearch_extra_settings',
     ];
 
     /** @var array[] */
@@ -56,7 +70,8 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         ObjectManagerInterface $objectManager,
         ExtensionNotification $extensionNotification,
         JobCollectionFactory $jobCollectionFactory,
-        UrlInterface $urlBuilder
+        UrlInterface $urlBuilder,
+        AssetRepository $assetRepository
     ) {
         $this->configHelper = $configHelper;
         $this->proxyHelper = $proxyHelper;
@@ -65,6 +80,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $this->extensionNotification = $extensionNotification;
         $this->jobCollectionFactory = $jobCollectionFactory;
         $this->urlBuilder = $urlBuilder;
+        $this->assetRepository = $assetRepository;
 
         foreach ($this->noticeFunctions as $noticeFunction) {
             call_user_func([$this, $noticeFunction]);
@@ -79,6 +95,12 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
     protected function getQueueNotice()
     {
+        foreach ($this->pagesWithoutQueueNotice as $page) {
+            if (preg_match('/' . $page . '/', $this->urlBuilder->getCurrentUrl())) {
+                return;
+            }
+        }
+
         $jobCollection = $this->jobCollectionFactory->create();
         $size = $jobCollection->getSize();
         $maxJobsPerSingleRun = $this->configHelper->getNumberOfJobToRun();
@@ -237,12 +259,98 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         ];
     }
 
+    protected function getPersonalizationNotice()
+    {
+        if (! preg_match('/algoliasearch_personalization/', $this->urlBuilder->getCurrentUrl())) {
+            return;
+        }
+
+        $personalizationStatus = $this->getPersonalizationStatus();
+
+        // Adding header
+        $docContent = '<h2 class="algolia-perso-title">Personalization</h2>';
+
+        if ($personalizationStatus < 2) {
+            $docContent .=  '<div class="perso-illustration">
+                <img src="' . $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/illu-perso.svg') . '"/>
+            </div>';
+        }
+
+        $docContent .= '<div class="algolia_block icon-documentation algoblue">
+            <div class="heading"></div>
+            Personalization brings another level of relevant search results to your customers.<br/>
+            Find out more in our <a href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/personalization/what-is-personalization/" target="_blank`">Documentation</a>.
+        </div>';
+
+        switch ($personalizationStatus) {
+            // Activated
+            case 2: $warningContent = 'Personalization is based on actions a user has performed in the past. We help you collect some of the data automatically.</br>
+        After you\'ve collected a reasonable amount of data, Personlization can be applied.';
+                $icon = 'icon-warning';
+                break;
+            // Available but not activated
+            case 1: $warningContent = 'To start using this feature, please head over the <a href="https://www.algolia.com/dashboard" target="_blank`">Algolia Dashboard</a>, 
+        and make sure you\'ve enabled Personalization in your account, as well as agreed to the terms and conditions of using Personalization.';
+                $icon = 'icon-warning';
+                break;
+            // Not Available
+            default: $warningContent = 'To get access to this Algolia feature, please <a target="_blank" href="https://www.algolia.com/contact/enterprise/">contact us</a>.';
+                $icon = 'icon-stars';
+                break;
+        }
+
+        $docContent .= $this->formatNotice('', $warningContent, $icon);
+
+        $this->notices[] = [
+            'selector' => '.entry-edit',
+            'method' => 'before',
+            'message' => $docContent,
+        ];
+
+        // Adding footer
+        $footerContent = '<div class="algolia-perso-footer"><br/><h2>Personlization preferences</h2>
+        <p>Manage your Personalization further on the <a href="https://www.algolia.com/dashboard" target="_blank`">Algolia Dashboard</a></p></div>';
+
+        $this->notices[] = [
+            'selector' => '#algoliasearch_personalization_personalization_group_personalization_conversion_events_group',
+            'method' => 'after',
+            'message' => $footerContent,
+        ];
+    }
+
     protected function formatNotice($title, $content, $icon = 'icon-warning')
     {
         return '<div class="algolia_block ' . $icon . '">
                     <div class="heading">' . $title . '</div>
                     ' . $content . '
                 </div>';
+    }
+
+    /**
+     * 0 for non available
+     * 1 for available but not activated
+     * 2 for activated
+     *
+     * @return int
+     */
+    public function getPersonalizationStatus()
+    {
+        $info = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_PERSONALIZATION);
+
+        $status = 2;
+
+        if ($info
+            && array_key_exists('personalization', $info)
+            && array_key_exists('personalization_enabled_at', $info)) {
+            if (!$info['personalization']) {
+                $status = 0;
+            }
+            if ($info['personalization_enabled_at'] === null) {
+                $status = min(1, $status);
+            }
+        }
+
+        return $status;
     }
 
     /** @return bool */

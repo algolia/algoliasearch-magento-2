@@ -13,7 +13,9 @@ class Clear extends AbstractAction
         $resultRedirect->setPath('*/*/index');
 
         try {
-            $this->db->query('TRUNCATE TABLE ' . $this->tableName);
+            $connection = $this->jobResourceModel->getConnection();
+            $connection->truncateTable($this->jobResourceModel->getMainTable());
+
             $this->messageManager->addNoticeMessage(__('Queue has been cleared.'));
         } catch (\Exception $e) {
             $this->messageManager->addExceptionMessage($e);

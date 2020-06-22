@@ -38,10 +38,14 @@ class ProductPermissions implements ObserverInterface
         foreach ($collection as $customerGroup) {
             $customerGroupId = $customerGroup->getCustomerGroupId();
 
-            $permissions['customer_group_' . $customerGroupId] =
-                !is_null($product->getData('customer_group_permission_' . $customerGroupId))
-                    ? (int) $product->getData('customer_group_permission_' . $customerGroupId)
-                    : (int) $product->getData('shared_catalog_permission_' . $customerGroupId);
+            $isVisible  = (int) $this->permissionsFactory->getCatalogPermissionsHelper()->isAllowedCategoryView($storeId, $customerGroupId);
+            if (!is_null($product->getData('shared_catalog_permission_' . $customerGroupId))) {
+                $isVisible = (int) $product->getData('shared_catalog_permission_' . $customerGroupId);
+            } elseif (!is_null($product->getData('customer_group_permission_' . $customerGroupId))) {
+                $isVisible = (int) $product->getData('customer_group_permission_' . $customerGroupId);
+            }
+
+            $permissions['customer_group_' . $customerGroupId] = $isVisible;
         }
 
         if (count($permissions)) {

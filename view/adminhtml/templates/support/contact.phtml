@@ -1,23 +1,23 @@
 <?php
 
-/** @var $this \Magento\Backend\Block\Template */
+/** @var \Magento\Backend\Block\Template $block */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Contact $view */
-$view = $this->getViewModel();
+$view = $block->getViewModel();
 
 ?>
 
-<h3><?php echo __('Contact Algolia') ?></h3>
+<h3><?php echo $block->escapeHtml(__('Contact Algolia')) ?></h3>
 
 <?php if ($view->isExtensionSupportEnabled()) : ?>
-    <form method="post" action="<?php echo $this->getUrl('*/*/contact') ?>" class="algolia_contact_form" data-mage-init='{"validation":{}}'>
-        <input type="hidden" name="form_key" value="<?php echo $this->getFormKey() ?>" />
+    <form method="post" action="<?php echo $block->getUrl('*/*/contact') ?>" class="algolia_contact_form" data-mage-init='{"validation":{}}'>
+        <input type="hidden" name="form_key" value="<?php echo $block->getFormKey() ?>" />
 
         <div class="row">
             <fieldset class="admin__fieldset col-l-7">
                 <div class="admin__field _required">
                     <label for="name" class="admin__field-label">
-                        <span><?php echo __('Your name') ?></span>
+                        <span><?php echo $block->escapeHtml(__('Your name')) ?></span>
                     </label>
 
                     <div class="admin__field-control">
@@ -33,7 +33,7 @@ $view = $this->getViewModel();
 
                 <div class="admin__field _required">
                     <label for="email" class="admin__field-label">
-                        <span><?php echo __('E-mail') ?></span>
+                        <span><?php echo $block->escapeHtml(__('E-mail')) ?></span>
                     </label>
                     <div class="admin__field-control">
                         <input
@@ -48,14 +48,14 @@ $view = $this->getViewModel();
 
                 <div class="admin__field _required">
                     <label for="subject" class="admin__field-label">
-                        <span><?php echo __('Subject') ?></span>
+                        <span><?php echo $block->escapeHtml(__('Subject')) ?></span>
                     </label>
                     <div class="admin__field-control">
                         <input
                             type="text"
                             name="subject"
                             id="subject"
-                            value="<?php echo $this->getRequest()->getParam('subject'); ?>"
+                            value="<?php echo $block->getRequest()->getParam('subject'); ?>"
                             class="admin__control-text"
                             data-validate="{required: true}" />
                     </div>
@@ -63,7 +63,7 @@ $view = $this->getViewModel();
 
                 <div class="admin__field _required">
                     <label for="message" class="admin__field-label">
-                        <span><?php echo __('Your message') ?></span>
+                        <span><?php echo $block->escapeHtml(__('Your message')) ?></span>
                     </label>
                     <div class="admin__field-control">
                         <textarea
@@ -71,7 +71,7 @@ $view = $this->getViewModel();
                             id="message"
                             class="admin__control-textarea"
                             placeholder="Please provide us context of your problem or question: what you were trying to achieve, what went wrong, etc."
-                            data-validate="{required: true}"><?php echo $this->getRequest()->getParam('message'); ?></textarea>
+                            data-validate="{required: true}"><?php echo $block->getRequest()->getParam('message'); ?></textarea>
 
                         <div class="admin__field-note">
                             <div class="note_icon">i</div>
@@ -120,7 +120,7 @@ $view = $this->getViewModel();
                                 name="sent"
                                 value="sent"
                                 class="action submit primary algolia-daterange-submit">
-                                <?php echo __('Send') ?>
+                               <?php echo $block->escapeHtml(__('Send')) ?>
                             </button>
                         </div>
                     </div>
@@ -129,7 +129,7 @@ $view = $this->getViewModel();
             <div class="col-l-1"></div>
             <div class="col-l-3">
                 <div class="heading">
-                    Related to your subject ...
+                    <?php echo $block->escapeHtml(__('Related to your subject ...')) ?>
                 </div>
                 <div class="contact_results links"></div>
             </div>
@@ -139,18 +139,18 @@ $view = $this->getViewModel();
 <?php else: ?>
 
     <?php
-        $helpIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-help.svg');
-        $bookIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
-        $starsIllustration = $this->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
+        $helpIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-help.svg');
+        $bookIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-book.svg');
+        $starsIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
     ?>
     <div class="access-denied-page algolia-denied-page">
-        <span><img src="<?php echo $helpIllustration ?>" /></span>
+        <span><img src="<?php echo $block->escapeUrl($helpIllustration) ?>" /></span>
         <div class="algolia-suggestions-header">
-            <img src="<?php echo $bookIllustration ?>" class="book" />
+            <img src="<?php echo $block->escapeUrl($bookIllustration) ?>" class="book" />
             <p>There's <a href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">Documentation, Tutorials and Videos</a> - But we also offer expert advice and solutions through direct email support by Algolia engineers and product specialists.</p>
         </div>
         <div class="algolia-suggestions-header algolia-suggestions-header-wbg">
-            <img src="<?php echo $starsIllustration ?>" class="stars" />
+            <img src="<?php echo $block->escapeUrl($starsIllustration) ?>" class="stars" />
             <p>To get access to this Algolia feature, please consider <a href="https://www.algolia.com/pricing" target="_blank" >upgrading to a higher plan</a>.</p>
         </div>
     </div>

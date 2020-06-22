@@ -566,7 +566,7 @@
                 </field>
             </group>
         </section>
-        <section id="algoliasearch_synonyms" translate="label" type="text" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_synonyms" translate="label" type="text" sortOrder="66" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Synonyms</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
@@ -632,7 +632,7 @@
                 </field>
             </group>
         </section>
-        <section id="algoliasearch_cc_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_cc_analytics" translate="label" type="text" sortOrder="67" showInDefault="1" showInWebsite="1" showInStore="1">
             <label><![CDATA[Click & Conversion Analytics]]></label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
@@ -664,7 +664,9 @@
                     <source_model>Algolia\AlgoliaSearch\Model\Source\ConversionAnalyticsMode</source_model>
                     <comment>
                         <![CDATA[
-                            Conversion is tracked when a product was found and clicked in search results and then added to cart / ordered.
+                            Conversion is tracked when a product was found and clicked in search results and then added to cart / ordered. </br></br>
+
+                            If conversion is tracked, URL parameters will be appended to your searched product links. The `queryID` parameter is required for insights to tie a conversion event to a search. For best SEO practice, we recommend you to use canonical links for your product pages. You can enable this setting by going to <strong>Stores > Configuration > Catalog > Catalog > Search Engine Optimization > Use Canonical Link Meta Tag For Products</strong>.
                         ]]>
                     </comment>
                     <depends>
@@ -688,6 +690,116 @@
                 </field>
             </group>
         </section>
+
+        <section id="algoliasearch_personalization" translate="label" type="text" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Personalization</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="personalization_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Tracked data</label>
+                <comment>
+                    <![CDATA[
+                            <p>Please select what events we should track. Don't forget to save your preferences afterwards.</p>
+                            <p>The Algolia extension for Magento will implement it automatically for you, no extra coding required.</p>
+                        ]]>
+                </comment>
+                <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Personalization</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <group id="personalization_view_events_group" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>View events</label>
+                    <attribute type="expanded">1</attribute>
+                    <comment>
+                        <![CDATA[
+                            View event tracking is based on default Magento behaviors.
+                        ]]>
+                    </comment>
+                    <field id="view_product" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>View a product page</label>
+                        <source_model>Algolia\AlgoliaSearch\Model\Source\PersonalizationTracking</source_model>
+                        <comment><![CDATA[]]></comment>
+                    </field>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </group>
+
+                <group id="personalization_click_events_group" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Click events</label>
+                    <attribute type="expanded">1</attribute>
+                    <comment>
+                        <![CDATA[
+                            Event tracking is based on default Magento behaviors and components. If you are using a specific component that
+                            is not Magento native, please specify its DOM selector, so Algolia should know where what to target for this event.
+                        ]]>
+                    </comment>
+
+                    <field id="product_clicked" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Product clicked</label>
+                        <source_model>Algolia\AlgoliaSearch\Model\Source\PersonalizationTracking</source_model>
+                    </field>
+                    <field id="product_clicked_selector" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <label>DOM selector</label>
+                        <frontend_model>Algolia\AlgoliaSearch\Block\System\Form\Field\PersonalizationSelector</frontend_model>
+                        <depends>
+                            <field id="product_clicked">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="product_recommended_clicked" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Product recommendation clicked</label>
+                        <source_model>Algolia\AlgoliaSearch\Model\Source\PersonalizationTracking</source_model>
+                    </field>
+                    <field id="product_recommended_clicked_selector" translate="label comment" type="text" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <label>DOM selector</label>
+                        <frontend_model>Algolia\AlgoliaSearch\Block\System\Form\Field\PersonalizationSelector</frontend_model>
+                        <depends>
+                            <field id="product_recommended_clicked">1</field>
+                        </depends>
+                    </field>
+
+                    <field id="filter_clicked" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Facet clicked</label>
+                        <source_model>Algolia\AlgoliaSearch\Model\Source\PersonalizationTracking</source_model>
+                        <comment><![CDATA[This event will track when a filter has been selected from instantsearch.]]></comment>
+                    </field>
+
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </group>
+
+                <group id="personalization_conversion_events_group" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Conversion events</label>
+                    <attribute type="expanded">1</attribute>
+                    <comment>
+                        <![CDATA[
+                            Conversion event tracking is based on default Magento behavior and will fire after dispatched events mentioned.
+                        ]]>
+                    </comment>
+                    <field id="conversion_wishist_add" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Product added to wishlist</label>
+                        <source_model>Algolia\AlgoliaSearch\Model\Source\PersonalizationTracking</source_model>
+                        <comment><![CDATA[This conversion event fires on the dispatched event `wishlist_product_add_after`.]]></comment>
+                    </field>
+                    <field id="conversion_cart_add" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Product added to cart</label>
+                        <source_model>Algolia\AlgoliaSearch\Model\Source\PersonalizationTracking</source_model>
+                        <comment><![CDATA[This conversion event fires on the dispatched event `checkout_cart_product_add_after`.]]></comment>
+                    </field>
+                    <field id="conversion_order_placed" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Place order</label>
+                        <source_model>Algolia\AlgoliaSearch\Model\Source\PersonalizationTracking</source_model>
+                        <comment><![CDATA[This conversion event fires on the dispatched event `checkout_onepage_controller_success_action`.]]></comment>
+                    </field>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </group>
+            </group>
+        </section>
+
         <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Google Analytics</label>
             <tab>algolia</tab>
@@ -695,7 +807,7 @@
             <group id="analytics_group" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Google Analytics</label>
                 <comment>
-                   <![CDATA[
+                    <![CDATA[
                         <div class="algolia-admin-content"></div>
                     ]]>
                 </comment>
@@ -746,6 +858,7 @@
                 </field>
             </group>
         </section>
+
         <section id="algoliasearch_advanced" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Advanced</label>
             <tab>algolia</tab>

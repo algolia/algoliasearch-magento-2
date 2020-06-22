@@ -21,7 +21,7 @@
             </block>
         </referenceContainer>
         <referenceContainer name="content">
-            <block class="Magento\Backend\Block\Template" name="analytics_overview" template="Algolia_AlgoliaSearch::analytics/overview.phtml">
+            <block class="Magento\Backend\Block\Template" name="analytics.overview" template="Algolia_AlgoliaSearch::analytics/overview.phtml">
                 <arguments>
                     <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Overview</argument>
                 </arguments>

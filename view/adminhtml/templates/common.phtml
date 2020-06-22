@@ -1,11 +1,11 @@
 <?php
-/** @var $this \Magento\Backend\Block\Template */
+/** @var \Magento\Backend\Block\Template $block */
 
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
-$viewModel = $this->getViewModel();
+$viewModel = $block->getViewModel();
 
-$ajaxCheckUrl = $this->getUrl('algolia_algoliasearch/landingpage/checkUrl');
-$ajaxCheckQuery = $this->getUrl('algolia_algoliasearch/query/checkQuery');
+$ajaxCheckUrl = $block->getUrl('algolia_algoliasearch/landingpage/checkUrl');
+$ajaxCheckQuery = $block->getUrl('algolia_algoliasearch/query/checkQuery');
 
 $applicationId = $viewModel->getApplicationId();
 ?>
@@ -14,12 +14,12 @@ var applicationId = <?php echo json_encode($applicationId); ?>;
 var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
 var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
 document.addEventListener("DOMContentLoaded", function(event) {
-	requirejs([
-		'jquery',
-		'Magento_Ui/js/lib/validation/validator',
-		'mage/translate'
-	], function ($, validator, mage) {
-		'use strict';
+  requirejs([
+    'jquery',
+    'Magento_Ui/js/lib/validation/validator',
+    'mage/translate'
+  ], function ($, validator, mage) {
+    'use strict';
 
       $(".close-box").click(function() {
         $(this).parent().hide();
@@ -89,6 +89,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
             },
             $.mage.__('This URL key is already in use. Please find another one.')
         );
-	});
+  });
 });
 </script>

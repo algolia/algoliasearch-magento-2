@@ -550,7 +550,7 @@ class ProductHelper
         if ($typeInstance instanceof Configurable) {
             $subProducts = $typeInstance->getUsedProducts($product);
         } elseif ($typeInstance instanceof BundleProductType) {
-            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product);
+            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product)->getItems();
         } else { // Grouped product
             $subProducts = $typeInstance->getAssociatedProducts($product);
         }
@@ -929,11 +929,11 @@ class ProductHelper
                 } else {
                     $searchableAttributes[] = 'unordered(' . $attribute['attribute'] . ')';
                 }
-            }
 
-            if ($attribute['attribute'] === 'categories') {
-                $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] === 'ordered') ?
-                    'categories_without_path' : 'unordered(categories_without_path)';
+                if ($attribute['attribute'] === 'categories') {
+                    $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] === 'ordered') ?
+                        'categories_without_path' : 'unordered(categories_without_path)';
+                }
             }
         }
 

@@ -1,5 +1,27 @@
 # CHANGE LOG
 
+## 2.0.1
+
+### UPDATES
+- Update the copyQueryRules method to use api client copyRules (#1029) 
+- Removed obsolete trigger for catalog_product_entity_media_gallery from mview.xml (#1027) @vmalyk
+- Add csp_whitelist for services (#1039) 
+- Refactor getSalesData() method for optimisation (#1034) 
+- Activate "filterPromotes" attribute for created Merchandising Rules (#1043)
+- Add category_without_path only if categories is searchable (#969) @VincentMarmiesse
+
+### FIXES
+- Prevent division by zero in the Notice Helper when configuration is not set (#1026)
+- Remove extra css import (#1013) @palviggi-flagbit
+- Bundle products collection to return getItems array (#1038) 
+- Switch from priceRanges to input ranges widget for ISV4 (#1042) 
+- Check the right storeId for moveIndex (#1016) @palviggi-flagbit
+
+
+### TOOLING
+- Remove composer self-update from circleCI quality tools (#1032) 
+- Update CircleCI quality tools to remove composer set and install (#1033) 
+
 ## 2.0.0
 With the release of a new major version, we have decided to create minor and major version releases to allow those that want to continue on the minor version. This update will **break compatibility**. Please read the [upgrade guide](https://www.algolia.com/doc/integration/magento-2/getting-started/upgrading/#upgrading-from-v1-to-v2) for all of the file changes and updates included in this release. 
 

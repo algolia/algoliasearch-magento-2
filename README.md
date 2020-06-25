@@ -9,22 +9,22 @@ Algolia Search for Magento 2
 
 -------
 
-🔎 Are you a Magento engineer? [Join our team](https://www.algolia.com/careers#!?j=eed58660-f684-436d-a2ff-e9947d2b65a2) and help us deliver the best search solution for Magento stores!
+🔎 Need help? For feedback, bugs, or issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID if needed, and steps to reproducing your issue.
 
 -------
 
-- **Auto-completion menu:** Offer End-Users immediate access to your whole catalog from the dropdown menu, whatever your number of categories or attributes.
+- **Autocompletion menu:** Offer End-Users immediate access to your whole catalog from the dropdown menu, whatever your number of categories or attributes.
 
-- **Instant search results page:** Have your search results page, navigation and pagination updated in realtime, after each keystroke.
+- **Instantsearch results page:** Have your search results page, navigation and pagination updated in realtime, after each keystroke.
 
-Official website: [community.algolia.com/magento](https://community.algolia.com/magento).
+Official website: [https://www.algolia.com/solutions/magento/](https://www.algolia.com/solutions/magento/).
 
 *Note: if your store is running under Magento version 1.x, please check our [Algolia for Magento 1 extension](https://github.com/algolia/algoliasearch-magento).*
 
 Demo
 --------------
 
-Try the auto-complete and the instant search results page on our [live demo](https://magento2.algolia.com). 
+Try the autocomplete and the instantsearch results page on our [live demo](https://magento2.algolia.com).
 
 Algolia Search
 --------------
@@ -32,11 +32,6 @@ Algolia Search
 [Algolia](http://www.algolia.com) is a search engine API as a service capable of delivering realtime results from the first keystroke.
 
 This extension replaces the default search of Magento with a typo-tolerant, fast & relevant search experience backed by Algolia. It's based on [algoliasearch-client-php](https://github.com/algolia/algoliasearch-client-php), [autocomplete.js](https://github.com/algolia/autocomplete.js) and [instantsearch.js](https://github.com/algolia/instantsearch.js).
-
-<!-- 
-The extension officially supports only 2.0.X versions of Magento. 
-It's possible to use it for versions >= 2.1.0, but some unexpected issues might appear. When you experience that, please [open an issue](https://github.com/algolia/algoliasearch-magento-2/issues/new).
--->
 
 Documentation
 --------------
@@ -66,4 +61,4 @@ If you would like to stay on the minor version, please upgrade your composer to 
 Contribution
 ------------
 
-To start contribuiting to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).
+To start contributing to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).

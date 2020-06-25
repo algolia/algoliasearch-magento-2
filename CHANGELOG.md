@@ -1,5 +1,21 @@
 # CHANGE LOG
 
+## 1.13.2
+
+### UPDATES
+- Update copyQueryRules to use client scopedCopyIndex (#1030) 
+- Removed obsolete trigger for catalog_product_entity_media_gallery from mview.xml (#1025) @vmalyk
+- Added CSP whitelisted hosts for Magento 2.3.5 or higher (#1036) @vmalyk
+- Refactor getSalesData() method for optimisation (#1041) 
+- Add filterPromotes to true for query rules (#1045) 
+
+### FIXES
+- Prevent division by zero in the Notice Helper when configuration is not set (#1031) @vmalyk
+- Fix ProductHelper for bundle subproducts error (#1014) 
+
+### TOOLING
+- Circleci do not use cache on the global composer vendor (#997) (#1028) 
+
 ## 1.13.1
 
 ### UPDATES

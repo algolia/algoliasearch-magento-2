@@ -62,3 +62,16 @@ Contribution
 ------------
 
 To start contributing to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).
+
+Need Help?
+------------
+Here are some helpful documentation to help with your issue:
+
+- [General FAQs](https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/)
+- [Technical Troubleshooting Guide](https://www.algolia.com/doc/integration/magento-2/troubleshooting/technical-troubleshooting/)
+- [Indexing Queue](https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/)
+- [Frontend Custom Events](https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/)
+- [Dispatched Backend Events](https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/)
+
+For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
+

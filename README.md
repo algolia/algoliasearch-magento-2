@@ -9,7 +9,7 @@ Algolia Search for Magento 2
 
 -------
 
-🔎 Need help? For feedback, bugs, or issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID if needed, and steps to reproducing your issue.
+🔎  &nbsp; **Need help?** Check out our [Technical Troubleshooting Guide](https://www.algolia.com/doc/integration/magento-2/troubleshooting/technical-troubleshooting/). For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
 
 -------
 

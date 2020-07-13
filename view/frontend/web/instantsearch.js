@@ -595,17 +595,21 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 					input.addEventListener('input', function (event) {
 						var query = event.target.value;
 						renderOptions.refine(query);
-						if (query.length > 0) {
-							$(clearBtn).show();
-						} else {
-							$(clearBtn).hide();
+						if (clearBtn) {
+							if (query.length > 0) {
+								$(clearBtn).show();
+							} else {
+								$(clearBtn).hide();
+							}
 						}
 					});
 
-					clearBtn.addEventListener('click', function () {
-						renderOptions.refine('');
-						input.value = '';
-					});
+					if (clearBtn) {
+						clearBtn.addEventListener('click', function () {
+							renderOptions.refine('');
+							input.value = '';
+						});
+					}
 				}
 			});
 

@@ -683,6 +683,9 @@ class Data
 
         $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
         $this->scopeCodeResolver->clean();
+        $this->storeManager->setCurrentStore($storeId);
+        $this->algoliaHelper->resetCredentialsFromConfig();
+
         $this->emulationRuns = true;
 
         $this->logger->stop('START EMULATION');

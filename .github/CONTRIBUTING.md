@@ -16,8 +16,11 @@ The development team will review all issues and contributions submitted by the c
 4. PRs which include bug fixing, must be accompanied with step-by-step description of how to reproduce the bug.
 5. PRs which include new logic or new features must be submitted along with:
 	* Integration test coverage
-	* Proposed [documentation](https://community.algolia.com/magento/) update. Documentation contributions can be submitted [here](https://github.com/algolia/magento).
-6. All automated tests are passed successfully (all builds on [Travis CI](https://travis-ci.org/algolia/algoliasearch-magento-2/) must be green).
+	* Proposed [documentation](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/) update
+6. All automated tests are passed successfully:
+	* CircleCI Magento 2.2
+	* CircleCI Magento 2.3
+	* CircleCI [Quality Tools](https://github.com/algolia/magento2-tools) (phpcs and php compatibility)
 
 # Contribution process
 
@@ -35,7 +38,7 @@ If you are a new GitHub user, we recommend that you create your own [free github
 
 # Continuous Integration checks
 
-Automated continous integration checks are run on [Travis CI](https://travis-ci.org/algolia/algoliasearch-magento-2/).
+Automated continous integration checks are run on [CircleCI](../.circleci/config.yml).
 
 ## Integration tests
 
@@ -152,3 +155,29 @@ $ composer create-project --repository=https://repo.magento.com magento/marketpl
 ```bash
 [[magento-coding-standard_dir]]/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test [[magento_root_dir]]/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
 ```
+
+## Quality Tools
+As an alternative to testing Code Styling and Static Analysis individually, you can use our [Quality Tools](https://github.com/algolia/magento2-tools) tool that our CircleCI integration check against, to lint and test your changes. 
+
+You can install the tool via composer:
+```bash
+composer global require algolia/magento2-tools
+```
+
+Make sure to place Composer's system-wide vendor bin directory in your `$PATH` so the `magento2-tool` executable can be located by your system.
+
+Finally, you can launch the quality tools with:
+```bash
+{command} path/to/magento/extension
+```
+
+Here is the list of available commands:
+
+- **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php_cs`.
+
+- **`magento2-types`**: Runs the type checker and displays the found issues - configuration file under `algoliasearch-magento-2/phpstan.neon`.
+
+- **`magento2-php-compatibility`**: Checks if your code is compatibility between multiple all php versions supported by magento.
+
+- **`magento2-test`**: Runs all previous commands in `--dry-run` mode.
+

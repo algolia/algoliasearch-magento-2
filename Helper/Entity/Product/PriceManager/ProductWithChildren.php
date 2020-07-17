@@ -90,6 +90,8 @@ abstract class ProductWithChildren extends ProductWithoutChildren
             $this->customData[$field][$currencyCode]['default'] = 0; // will be reset just after
         }
 
+        $this->customData[$field][$currencyCode]['default_max'] = $max;
+
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
@@ -99,6 +101,8 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                     $this->customData[$field][$currencyCode]['group_' . $groupId]               = 0;
                     $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
                 }
+
+                $this->customData[$field][$currencyCode]['group_' . $groupId . '_max'] = $max;
             }
         }
     }

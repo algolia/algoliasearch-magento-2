@@ -402,7 +402,7 @@ class AlgoliaHelper extends AbstractHelper
     public function copyQueryRules($fromIndexName, $toIndexName)
     {
         $res = $this->getClient()->copyRules($fromIndexName, $toIndexName, [
-            'forwardToReplicas'  => true,
+            'forwardToReplicas'  => false,
             'clearExistingRules' => true,
         ]);
 

@@ -346,7 +346,7 @@ class ProductHelper
 
         $replicas = [];
 
-        if ($this->configHelper->isInstantEnabled() || $this->configHelper->isBackendRenderingEnabled()) {
+        if ($this->configHelper->isInstantEnabled($storeId) || $this->configHelper->isBackendRenderingEnabled($storeId)) {
             $replicas = array_values(array_map(function ($sortingIndex) {
                 return $sortingIndex['name'];
             }, $sortingIndices));

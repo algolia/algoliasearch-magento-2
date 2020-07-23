@@ -1,5 +1,17 @@
 # CHANGE LOG
 
+## 2.0.2
+
+### UPDATES
+- Update setUserToken to cap character length (#1058) 
+- Set forwardToReplicas for copy rules to false (#1059) 
+- Use current store id to get settings for replicas (#1057) @palviggi-flagbit
+- Make sure original price range is saved for configurables (#1015) @palviggi-flagbit
+
+### FIXES
+- Restore "search as you type" feature (#1061) 
+- Fix error on URL during Pages indexing (#1012) @palviggi-flagbit
+
 ## 2.0.1
 
 ### UPDATES

@@ -929,11 +929,11 @@ class ProductHelper
                 } else {
                     $searchableAttributes[] = 'unordered(' . $attribute['attribute'] . ')';
                 }
-            }
 
-            if ($attribute['attribute'] === 'categories') {
-                $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] === 'ordered') ?
-                    'categories_without_path' : 'unordered(categories_without_path)';
+                if ($attribute['attribute'] === 'categories') {
+                    $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] === 'ordered') ?
+                        'categories_without_path' : 'unordered(categories_without_path)';
+                }
             }
         }
 

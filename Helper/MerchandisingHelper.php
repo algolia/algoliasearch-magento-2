@@ -45,6 +45,7 @@ class MerchandisingHelper
                 'context' => 'magento-' . $entityType . '-' . $entityId,
             ],
             'consequence' => [
+                'filterPromotes' => true,
                 'promote' => $positions,
             ],
         ];

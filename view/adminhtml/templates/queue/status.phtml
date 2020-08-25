@@ -37,4 +37,9 @@
             <?php endforeach; ?>
         </div>
     </div>
+    <div class="indexing-queue-logs-message algoblue">
+        <div class="inner">
+            <p><?php echo __('See how well your indexing queue is performing by viewing your %1.', '<a href="' . $block->getUrl('*/*/log') . '">indexing queue run logs</a>') ?></p>
+        </div>
+    </div>
 <?php endif; ?>

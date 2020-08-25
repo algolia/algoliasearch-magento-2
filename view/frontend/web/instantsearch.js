@@ -107,7 +107,6 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 			}
 		}
 
-
 		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions, algoliaBundle);
 
 		var search = algoliaBundle.instantsearch(instantsearchOptions);

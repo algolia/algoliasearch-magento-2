@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
-use Magento\Framework\DataObject\IdentityInterface;
 
 /**
  * @api
@@ -25,12 +24,8 @@ use Magento\Framework\DataObject\IdentityInterface;
  * @method $this setDecodedData($decodedData)
  * @method $this setMergedIds($mergedIds)
  */
-class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInterface, JobInterface
+class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 {
-    const CACHE_TAG = 'algoliasearch_queue_job';
-
-    protected $_cacheTag = 'algoliasearch_queue_job';
-
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
     /** @var \Magento\Framework\ObjectManagerInterface */
@@ -195,14 +190,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements IdentityInte
         $this->setDataSize($dataSize);
 
         return $this;
-    }
-
-    /**
-     * @return array|string[]
-     */
-    public function getIdentities()
-    {
-        return [self::CACHE_TAG . '_' . $this->getId()];
     }
 
     /**

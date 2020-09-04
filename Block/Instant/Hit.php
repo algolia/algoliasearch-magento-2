@@ -41,6 +41,14 @@ class Hit extends Template
         return $this->priceKey;
     }
 
+    public function getCurrencyCode()
+    {
+        /** @var \Magento\Store\Model\Store $store */
+        $store = $this->_storeManager->getStore();
+
+        return $store->getCurrentCurrencyCode();
+    }
+
     public function getGroupId()
     {
         return $this->httpContext->getValue(CustomerContext::CONTEXT_GROUP);

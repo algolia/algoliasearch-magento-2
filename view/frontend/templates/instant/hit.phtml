@@ -2,18 +2,26 @@
 
 /** @var \Algolia\AlgoliaSearch\Block\Instant\Hit $block */
 
-$priceKey = $block->getPriceKey();
+$priceKey     = $block->getPriceKey();
+$currencyCode = $block->getCurrencyCode();
 
-$origFormatedVar = 'price' . $priceKey . '_original_formated';
-$tierFormatedVar = 'price' . $priceKey . '_tier_formated'
+$baseVar         = $block->escapeHtml('price' . $priceKey);
+$maxVar          = $block->escapeHtml('price' . $priceKey . '_max');
+$baseFormatedVar = $block->escapeHtml('price' . $priceKey . '_formated');
+$origFormatedVar = $block->escapeHtml('price' . $priceKey . '_original_formated');
+$tierFormatedVar = $block->escapeHtml('price' . $priceKey . '_tier_formated');
 
 ?>
 
 <script type="text/template" id="instant-hit-template">
-    <div class="col-md-4 col-sm-6">
-        <div class="result-wrapper" itemprop="itemListElement" itemscope itemtype="http://schema.org/Product">
-            <a itemprop="url"
-                class="result"
+    <div class="col-md-4 col-sm-6" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+        <meta itemprop="position" content="{{__position}}" />
+        <div class="result-wrapper" itemprop="item" itemscope itemtype="http://schema.org/Product">
+            <meta itemprop="url"
+                {{^__queryID}} content="{{url}}" {{/__queryID}}
+                {{#__queryID}} content="{{urlForInsights}}" {{/__queryID}}
+                />
+            <a class="result"
                 {{^__queryID}} href="{{url}}" {{/__queryID}}
                 {{#__queryID}} href="{{urlForInsights}}" {{/__queryID}}
                 data-objectid="{{objectID}}"
@@ -42,26 +50,37 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
                                     </div>
                                 </div>
 
+
+                                {{^<?php echo $maxVar; ?>}}
+                                <div itemprop="offers" itemscope itemtype="http://schema.org/Offer" class="price">
+                                    <meta itemprop="price" content="{{<?php echo $baseVar; ?>}}" />
+                                {{/<?php echo $maxVar; ?>}}
+                                {{#<?php echo $maxVar; ?>}}
                                 <div itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer" class="price">
+                                    <meta itemprop="lowPrice" content="{{<?php echo $baseVar; ?>}}" />
+                                    <meta itemprop="highPrice" content="{{<?php echo $maxVar; ?>}}" />
+                                {{/<?php echo $maxVar; ?>}}
+                                    <meta itemprop="priceCurrency" content="<?php echo $currencyCode; ?>" />
                                     <div class="price-wrapper">
                                         <div>
-                                            <span itemprop="lowPrice" class="after_special
-                                                    {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+
+                                            <span class="after_special
+                                                    {{#<?php echo $origFormatedVar; ?>}}
                                                         promotion
-                                                    {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}">
-                                                {{price<?php echo $block->escapeHtml($priceKey); ?>_formated}}
+                                                    {{/<?php echo $origFormatedVar; ?>}}">
+                                                {{<?php echo $baseFormatedVar; ?>}}
                                             </span>
-                                            {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
-                                                <span itemprop="highPrice" class="before_special">
-                                                    {{<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                                            {{#<?php echo $origFormatedVar; ?>}}
+                                                <span class="before_special">
+                                                    {{<?php echo $origFormatedVar; ?>}}
                                                 </span>
-                                            {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}
-                                            {{#<?php echo $block->escapeHtml($tierFormatedVar); ?>}}
+                                            {{/<?php echo $origFormatedVar; ?>}}
+                                            {{#<?php echo $tierFormatedVar; ?>}}
                                                 <span class="tier_price">
                                                     <?php echo __('As low as') ?>
-                                                    <span class="tier_value">{{<?php echo $block->escapeHtml($tierFormatedVar); ?>}}</span>
+                                                    <span class="tier_value">{{<?php echo $tierFormatedVar; ?>}}</span>
                                                 </span>
-                                            {{/<?php echo $block->escapeHtml($tierFormatedVar); ?>}}
+                                            {{/<?php echo $tierFormatedVar; ?>}}
                                         </div>
                                     </div>
                                 </div>

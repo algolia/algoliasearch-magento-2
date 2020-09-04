@@ -100,6 +100,13 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 			routing: window.routing,
 		};
 
+		if (algoliaConfig.request.path.length > 0 && window.location.hash.indexOf('categories.level0') === -1) {
+			if (algoliaConfig.areCategoriesInFacets === false) {
+				searchParameters['facetsRefinements'] = { };
+				searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
+			}
+		}
+
 		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions, algoliaBundle);
 
 		var search = algoliaBundle.instantsearch(instantsearchOptions);

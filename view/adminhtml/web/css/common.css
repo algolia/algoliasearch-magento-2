@@ -434,7 +434,8 @@
 	margin-bottom : 0;
 }
 
-.algolia-notice {
+.algolia-notice,
+.notice.algolia-notice {
 	margin-bottom: 2rem;
 }
 
@@ -563,7 +564,23 @@ form[action*="algoliasearch"] .accordion .config .value {
 	margin-bottom: 20px;
 }
 
-.algoblue{
+.algoblue {
 	background-color: #F5FAFD;
 	border: 1px solid #E2F0FA;
+}
+
+.indexing-queue-logs-message {
+	padding: 20px 20px;
+	margin-bottom: 20px;
+}
+.indexing-queue-logs-message .inner {
+	max-width: 1250px;
+	width: 100%;
+}
+
+.indexing-queue-logs-message p {
+	margin-bottom: 15px;
+}
+.indexing-queue-logs-message p:last-child {
+	margin-bottom: 0;
 }

@@ -903,11 +903,13 @@ class ConfigHelper
         foreach ($currencies as $currency) {
             $attributes[] = 'price.' . $currency . '.default';
             $attributes[] = 'price.' . $currency . '.default_tier';
+            $attributes[] = 'price.' . $currency . '.default_max';
             $attributes[] = 'price.' . $currency . '.default_formated';
             $attributes[] = 'price.' . $currency . '.default_original_formated';
             $attributes[] = 'price.' . $currency . '.default_tier_formated';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId;
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_tier';
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_max';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_formated';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_tier_formated';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_original_formated';

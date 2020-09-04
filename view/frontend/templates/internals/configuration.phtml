@@ -19,13 +19,3 @@ $configuration = $block->getConfiguration();
 
 	window.algoliaConfig = <?php /* @noEscape */ echo json_encode($configuration); ?>;
 </script>
-
-<!--[if lte IE 9]>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        algoliaBundle.$(function () {
-            window.algoliaConfig.autofocus = false;
-        });
-    });
-</script>
-<![endif]-->

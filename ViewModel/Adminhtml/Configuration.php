@@ -26,7 +26,7 @@ class Configuration implements \Magento\Framework\View\Element\Block\ArgumentInt
     {
         return $this->noticeHelper->isClickAnalyticsEnabled();
     }
-    
+
     public function getLinksAndVideoTemplate($section)
     {
         return $this->assetHelper->getLinksAndVideoTemplate($section);

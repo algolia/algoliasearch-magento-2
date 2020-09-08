@@ -32,7 +32,6 @@ class ConfigHelper
     const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant/show_suggestions_on_no_result_page';
     const XML_ADD_TO_CART_ENABLE = 'algoliasearch_instant/instant/add_to_cart_enable';
     const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant/infinite_scroll_enable';
-    const BACKEND_RENDERING_ENABLE = 'algoliasearch_instant/instant/backend_rendering_enable';
 
     const IS_POPUP_ENABLED = 'algoliasearch_autocomplete/autocomplete/is_popup_enabled';
     const NB_OF_PRODUCTS_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions';
@@ -100,7 +99,6 @@ class ConfigHelper
     const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
     const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
-    const CATALOG_SEARCH_ENGINE = 'catalog/search/engine';
 
     const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
     const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
@@ -365,11 +363,6 @@ class ConfigHelper
     {
         return $this->isInstantEnabled($storeId)
             && $this->configInterface->isSetFlag(self::INFINITE_SCROLL_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function isBackendRenderingEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::BACKEND_RENDERING_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isRemoveBranding($storeId = null)
@@ -1137,10 +1130,5 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
-    }
-
-    public function getCatalogSearchEngine($storeId = null)
-    {
-        return $this->configInterface->getValue(self::CATALOG_SEARCH_ENGINE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

@@ -18,8 +18,6 @@
         <plugin name="algoliaSearchHelperData" type="Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin"/>
     </type>
 
-    <preference for="Magento\Framework\Search\Adapter\Mysql\Adapter" type="Algolia\AlgoliaSearch\Adapter\Algolia" />
-
     <!-- Dependency Injection for new Model -->
     <preference for="Algolia\AlgoliaSearch\Api\Data\JobInterface" type="Algolia\AlgoliaSearch\Model\Job" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" type="Algolia\AlgoliaSearch\Model\LandingPage" />
@@ -112,8 +110,8 @@
         <arguments>
             <argument name="imageUploader" xsi:type="object">Algolia\AlgoliaSearch\QueryImageUpload</argument>
         </arguments>
-    </type>    
-    
+    </type>
+
     <!-- Click and Conversion Analytics -->
     <type name="Magento\Quote\Model\Quote\Item\ToOrderItem">
         <plugin name="algoliasearch_query_quote_item_conversion" type="Algolia\AlgoliaSearch\Plugin\QuoteItem"/>

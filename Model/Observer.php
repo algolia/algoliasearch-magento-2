@@ -48,8 +48,6 @@ class Observer implements ObserverInterface
                     }
 
                     $this->loadPreventBackendRenderingHandle($layout);
-
-                    $this->addBodyCss();
                 }
             }
         }
@@ -79,13 +77,5 @@ class Observer implements ObserverInterface
         }
 
         $layout->getUpdate()->addHandle('algolia_search_handle_prevent_backend_rendering');
-    }
-
-    private function addBodyCss()
-    {
-        $storeId = $this->storeManager->getStore()->getId();
-        if ($this->config->isBackendRenderingEnabled($storeId)) {
-            $this->pageConfig->addBodyClass('algolia-rendering');
-        }
     }
 }

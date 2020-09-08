@@ -84,10 +84,6 @@ class FiltersHelper
             $categoryId = $category->getEntityId();
         }
 
-        if (!is_null($this->request->getParam('cat')) && $this->config->isBackendRenderingEnabled($storeId)) {
-            $categoryId = $this->request->getParam('cat');
-        }
-
         if (!is_null($categoryId)) {
             $categoryFilter['facetFilters'][] = 'categoryIds:' . $categoryId;
         }

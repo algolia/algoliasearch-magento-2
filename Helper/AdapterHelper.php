@@ -83,10 +83,7 @@ class AdapterHelper
      */
     private function getOrderParam($storeId)
     {
-        return !$this->configHelper->isInstantEnabled($storeId)
-            && $this->configHelper->isBackendRenderingEnabled($storeId) ?
-            self::BACKEND_ORDER_PARAM :
-            self::INSTANTSEARCH_ORDER_PARAM;
+        return self::INSTANTSEARCH_ORDER_PARAM;
     }
 
     /**
@@ -178,8 +175,7 @@ class AdapterHelper
         return
             $this->filtersHelper->getRequest()->getControllerName() === 'category'
             && $this->configHelper->replaceCategories($storeId) === true
-            && ($this->configHelper->isInstantEnabled($storeId) === true
-                || $this->configHelper->isBackendRenderingEnabled($storeId) === true);
+            && $this->configHelper->isInstantEnabled($storeId) === true;
     }
 
     /**

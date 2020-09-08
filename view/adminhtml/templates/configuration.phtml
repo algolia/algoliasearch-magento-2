@@ -14,7 +14,6 @@ if ($section === 'algoliasearch_cc_analytics') {
 }
 
 $linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
-$isEsWarningNeeded = $viewModel->isEsWarningNeeded();
 $extensionNotices = $viewModel->getExtensionNotices();
 $personalizationStatus = $viewModel->getPersonalizationStatus();
 
@@ -23,7 +22,6 @@ $personalizationStatus = $viewModel->getPersonalizationStatus();
 <script>
 var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
 var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
-var isEsWarningNeeded = <?php echo json_encode($isEsWarningNeeded); ?>;
 var personalizationStatus = <?php echo json_encode($personalizationStatus); ?>;
 var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
 
@@ -130,21 +128,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 				}
 			}
 		});
-	});
-
-	requirejs([
-		'jquery',
-		'Magento_Ui/js/lib/validation/validator',
-		'mage/translate',
-		'prototype'
-	], function ($, validator, mage) {
-		'use strict';
-		if (isEsWarningNeeded) {
-        	$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
-	        $('#algoliasearch_instant_instant_is_instant_enabled').on('change', function(){
-				$('#algoliasearch_instant_instant_backend_rendering_enable').attr('disabled','disabled');
-			});
-		}
 	});
 });
 </script>

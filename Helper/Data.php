@@ -739,24 +739,29 @@ class Data
             return [];
         }
 
-        $ordersTableName = $this->resource->getTableName('sales_order_item');
+        $salesData = [];
 
         $ids = $collection->getColumnValues('entity_id');
-        $ids[] = '0'; // Makes sure the imploded string is not empty
 
-        $ids = implode(', ', $ids);
+        if (count($ids)) {
+            $ordersTableName = $this->resource->getTableName('sales_order_item');
 
-        try {
-            $salesConnection = $this->resource->getConnectionByName('sales');
-        } catch (\DomainException $e) {
-            $salesConnection = $this->resource->getConnection();
+            try {
+                $salesConnection = $this->resource->getConnectionByName('sales');
+            } catch (\DomainException $e) {
+                $salesConnection = $this->resource->getConnection();
+            }
+
+            $select = $salesConnection->select()
+                ->from($ordersTableName, [])
+                ->columns('product_id')
+                ->columns(['ordered_qty' => new \Zend_Db_Expr('SUM(qty_ordered)')])
+                ->columns(['total_ordered' => new \Zend_Db_Expr('SUM(row_total)')])
+                ->where('product_id IN (?)', $ids)
+                ->group('product_id');
+
+            $salesData = $salesConnection->fetchAll($select, [], \PDO::FETCH_GROUP|\PDO::FETCH_ASSOC|\PDO::FETCH_UNIQUE);
         }
-
-        $query = 'SELECT product_id, SUM(qty_ordered) AS ordered_qty, SUM(row_total) AS total_ordered 
-            FROM ' . $ordersTableName . ' 
-            WHERE product_id IN (' . $ids . ') 
-            GROUP BY product_id';
-        $salesData = $salesConnection->query($query)->fetchAll(\PDO::FETCH_GROUP|\PDO::FETCH_UNIQUE|\PDO::FETCH_ASSOC);
 
         return $salesData;
     }

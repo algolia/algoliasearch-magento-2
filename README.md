@@ -1,30 +1,30 @@
 Algolia Search for Magento 2
 ==================
 
-![Latest version](https://img.shields.io/badge/latest-1.13.1-green.svg)
-![Magento 2](https://img.shields.io/badge/Magento-%3E=2.2-blue.svg)
+![Latest version](https://img.shields.io/badge/latest-1.13.2-green.svg)
+![Magento 2](https://img.shields.io/badge/Magento-%3E=2.2%20<2.4-blue.svg)
 ![PHP >= 7.0.6](https://img.shields.io/badge/PHP-%3E=7.0-green.svg)
 
 [![CircleCI](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/master.svg?style=svg)](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/master)
 
 -------
 
-🔎 Are you a Magento engineer? [Join our team](https://www.algolia.com/careers#!?j=eed58660-f684-436d-a2ff-e9947d2b65a2) and help us deliver the best search solution for Magento stores!
+🔎  &nbsp; **Need help?** Check out our [Technical Troubleshooting Guide](https://www.algolia.com/doc/integration/magento-2/troubleshooting/technical-troubleshooting/). For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
 
 -------
 
-- **Auto-completion menu:** Offer End-Users immediate access to your whole catalog from the dropdown menu, whatever your number of categories or attributes.
+- **Autocompletion menu:** Offer End-Users immediate access to your whole catalog from the dropdown menu, whatever your number of categories or attributes.
 
-- **Instant search results page:** Have your search results page, navigation and pagination updated in realtime, after each keystroke.
+- **Instantsearch results page:** Have your search results page, navigation and pagination updated in realtime, after each keystroke.
 
-Official website: [community.algolia.com/magento](https://community.algolia.com/magento).
+Official website: [https://www.algolia.com/solutions/magento/](https://www.algolia.com/solutions/magento/).
 
 *Note: if your store is running under Magento version 1.x, please check our [Algolia for Magento 1 extension](https://github.com/algolia/algoliasearch-magento).*
 
 Demo
 --------------
 
-Try the auto-complete and the instant search results page on our [live demo](https://magento2.algolia.com). 
+Try the autocomplete and the instantsearch results page on our [live demo](https://magento2.algolia.com).
 
 Algolia Search
 --------------
@@ -32,11 +32,6 @@ Algolia Search
 [Algolia](http://www.algolia.com) is a search engine API as a service capable of delivering realtime results from the first keystroke.
 
 This extension replaces the default search of Magento with a typo-tolerant, fast & relevant search experience backed by Algolia. It's based on [algoliasearch-client-php](https://github.com/algolia/algoliasearch-client-php), [autocomplete.js](https://github.com/algolia/autocomplete.js) and [instantsearch.js](https://github.com/algolia/instantsearch.js).
-
-<!-- 
-The extension officially supports only 2.0.X versions of Magento. 
-It's possible to use it for versions >= 2.1.0, but some unexpected issues might appear. When you experience that, please [open an issue](https://github.com/algolia/algoliasearch-magento-2/issues/new).
--->
 
 Documentation
 --------------
@@ -58,4 +53,17 @@ Run the following commands:
 Contribution
 ------------
 
-To start contribuiting to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).
+To start contributing to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).
+
+Need Help?
+------------
+Here are some helpful documentation to help with your issue:
+
+- [General FAQs](https://www.algolia.com/doc/integration/magento-2/troubleshooting/general-faq/)
+- [Technical Troubleshooting Guide](https://www.algolia.com/doc/integration/magento-2/troubleshooting/technical-troubleshooting/)
+- [Indexing Queue](https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/)
+- [Frontend Custom Events](https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/)
+- [Dispatched Backend Events](https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/)
+
+For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
+

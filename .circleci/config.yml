@@ -25,7 +25,7 @@ shared: &shared
             name: Install the extension
             command: |
                 cd ~/magento_directory
-                php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync
+                php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_Mysqlmq
                 php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
                 php -dmemory_limit=-1 bin/magento setup:upgrade
 

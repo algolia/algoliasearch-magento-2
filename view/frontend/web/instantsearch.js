@@ -302,7 +302,9 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 					resetLabel: algoliaConfig.translations.clearAll,
 				},
 				includedAttributes: attributes.map(function (attribute) {
-					return attribute.name
+					if (!(algoliaConfig.isCategoryPage && attribute.name.indexOf('categories') > -1)) {
+						return attribute.name;
+					}
 				}),
 				cssClasses: {
 					button: ['action', 'primary']

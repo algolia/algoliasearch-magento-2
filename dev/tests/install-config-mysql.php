@@ -12,8 +12,5 @@ return [
     'admin-email' => \Magento\TestFramework\Bootstrap::ADMIN_EMAIL,
     'admin-firstname' => \Magento\TestFramework\Bootstrap::ADMIN_FIRSTNAME,
     'admin-lastname' => \Magento\TestFramework\Bootstrap::ADMIN_LASTNAME,
-    'amqp-host' => '127.0.0.1',
-    'amqp-port' => '5672',
-    'amqp-user' => 'guest',
-    'amqp-password' => 'guest',
+    'disable-modules' => 'Magento_WebapiSecurity,Magento_Amqp,Magento_MysqlMq',
 ];

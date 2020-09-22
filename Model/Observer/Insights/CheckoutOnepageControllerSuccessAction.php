@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Sales\Model\OrderFactory;
 
 class CheckoutOnepageControllerSuccessAction implements ObserverInterface
 {
@@ -15,16 +16,22 @@ class CheckoutOnepageControllerSuccessAction implements ObserverInterface
     /** @var InsightsHelper */
     private $insightsHelper;
 
+    /** @var OrderFactory */
+    private $orderFactory;
+
     /**
      * @param Data $dataHelper
      * @param InsightsHelper $insightsHelper
+     * @param OrderFactory $orderFactory
      */
     public function __construct(
         Data $dataHelper,
-        InsightsHelper $insightsHelper
+        InsightsHelper $insightsHelper,
+        OrderFactory $orderFactory
     ) {
         $this->dataHelper = $dataHelper;
         $this->insightsHelper = $insightsHelper;
+        $this->orderFactory = $orderFactory;
     }
 
     /**
@@ -45,7 +52,12 @@ class CheckoutOnepageControllerSuccessAction implements ObserverInterface
         /** @var \Magento\Sales\Model\Order $order */
         $order = $observer->getEvent()->getOrder();
 
-        if (!$this->insightsHelper->isOrderPlacedTracked($order->getStoreId())) {
+        if (!$order) {
+            $orderId = $observer->getEvent()->getOrderIds()[0];
+            $order = $this->orderFactory->create()->loadByIncrementId($orderId);
+        }
+
+        if (!$order || !$this->insightsHelper->isOrderPlacedTracked($order->getStoreId())) {
             return $this;
         }
 

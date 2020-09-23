@@ -32,8 +32,8 @@ shared: &shared
         - run:
             name: Get the right tests config for DB and administration
             command: |
-                mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
-                mv ~/build_directory/algoliasearch-magento-2/dev/tests/phpunit.xml ~/magento_directory/dev/tests/integration/phpunit.xml
+                # mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
+                # mv ~/build_directory/algoliasearch-magento-2/dev/tests/phpunit.xml ~/magento_directory/dev/tests/integration/phpunit.xml
 
         - run:
               name: Before setup
@@ -48,7 +48,8 @@ shared: &shared
                 export CI_PROJ_USERNAME=$CIRCLE_PROJECT_USERNAME
                 export CI_PROJ_REPONAME=$CIRCLE_PROJECT_REPONAME
                 eval $(~/build_directory/algoliasearch-magento-2/algolia-keys export)
-                php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+                # echo 'memory_limit = 256M' | sudo tee /usr/local/etc/php/php.ini
+                # php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:
     "magento-2.3":

@@ -13,4 +13,5 @@ return [
     'admin-firstname' => \Magento\TestFramework\Bootstrap::ADMIN_FIRSTNAME,
     'admin-lastname' => \Magento\TestFramework\Bootstrap::ADMIN_LASTNAME,
     'disable-modules' => 'Magento_WebapiSecurity,Magento_Amqp,Magento_MysqlMq',
+    'elasticsearch-host' => '127.0.0.1'
 ];

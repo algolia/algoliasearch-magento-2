@@ -103,6 +103,7 @@ Depending on the extension version you are using, you could have a different PHP
 | v3.x | [2.5.1](https://github.com/algolia/algoliasearch-client-php/tree/2.5.1) |
 
 Refer to these docs when customising your Algolia Magento extension backend:
+- [Indexing](https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/)
 - [Dispatched Backend Events](https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/)
 
 

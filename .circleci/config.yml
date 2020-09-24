@@ -33,7 +33,7 @@ shared: &shared
             command: |
                 cd ~/magento_directory
                 php -dmemory_limit=-1 bin/magento sampledata:remove
-                php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq
+                php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq Magento_MessageQueue
                 php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
                 php -dmemory_limit=-1 bin/magento setup:upgrade
 

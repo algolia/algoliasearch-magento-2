@@ -24,9 +24,9 @@ shared: &shared
         - run:
               name: Start elasticsearch service
               command: |
-                  # sudo service elasticsearch start
-                  # sleep 2
-                  # ps aux | grep elasticsearch
+                  sudo service elasticsearch start
+                  sleep 2
+                  ps aux | grep elasticsearch
 
         - run:
             name: Install the extension

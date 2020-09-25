@@ -32,7 +32,6 @@ shared: &shared
             name: Install the extension
             command: |
                 cd ~/magento_directory
-                php -dmemory_limit=-1 bin/magento sampledata:remove
                 php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq Magento_MessageQueue
                 php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
                 php -dmemory_limit=-1 bin/magento setup:upgrade
@@ -41,6 +40,7 @@ shared: &shared
             name: Get the right tests config for DB and administration
             command: |
                 mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
+                cp ~/magento_directory/app/etc/config.php ~/magento_directory/dev/tests/integration/etc/config.php
 
         - run:
               name: Before setup

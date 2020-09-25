@@ -1048,14 +1048,16 @@ class ProductHelper
 
             $attribute = $facet['attribute'];
 
+            $condition = [
+                'anchoring' => 'contains',
+                'pattern' => '{facet:' . $attribute . '}',
+                'context' => 'magento_filters',
+            ];
+
             $rules[] = [
                 'objectID' => 'filter_' . $attribute,
                 'description' => 'Filter facet "' . $attribute . '"',
-                'condition' => [
-                    'anchoring' => 'contains',
-                    'pattern' => '{facet:' . $attribute . '}',
-                    'context' => 'magento_filters',
-                ],
+                'conditions' => [$condition],
                 'consequence' => [
                     'params' => [
                         'automaticFacetFilters' => [$attribute],

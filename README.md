@@ -9,21 +9,21 @@ Algolia Search for Magento 2
 
 -------
 
+🔎  &nbsp; **Need help?** Check out our [Technical Troubleshooting Guide](https://www.algolia.com/doc/integration/magento-2/troubleshooting/technical-troubleshooting/). For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
+
+-------
+
 #### Magento 2.4 compatibility & extension's versions End of Life
 
-We are happy to announce that the version 3.x of our extension is now compatible with Magento 2.4 (see details below in this readme to know more about differences between the different branches).
+We are happy to announce that the version 3.x of our extension is now compatible with Magento 2.4. Review the [Customisation](https://github.com/algolia/algoliasearch-magento-2#customisation) section to learn more about the differences between our extension versions.
 
-We also decided to stop maintaining actively legacy branches (1.x and 2.x), we'll just continue to backport major fixes and we'll release the latest version of each of these branches in January 2021. We won't accept any PRs after this date.
+Additionally, we are announcing the end of life for our legacy versions. We will continue to support and backport major changes to the minor branches until the defined dates below. We will not accept community PRs for those branches after this date. 
 
 | Extension Version | End of Life |
 | --- | --- |
 | v1.x | Jan 2021 |
 | v2.x | Jan 2021 |
 | v3.x | N/A |
-
--------
-
-🔎  &nbsp; **Need help?** Check out our [Technical Troubleshooting Guide](https://www.algolia.com/doc/integration/magento-2/troubleshooting/technical-troubleshooting/). For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
 
 -------
 

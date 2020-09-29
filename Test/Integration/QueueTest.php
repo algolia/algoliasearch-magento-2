@@ -99,7 +99,7 @@ class QueueTest extends TestCase
         $this->assertTrue($existsDefaultTmpIndex, 'Default products production index does not exists and it should');
 
         // Run the second two jobs - batch, move
-        $queue->runCron(2, true);
+        $queue->runCron(1, true);
 
         $this->algoliaHelper->waitLastTask();
 

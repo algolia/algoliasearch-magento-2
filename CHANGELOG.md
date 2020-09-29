@@ -1,5 +1,14 @@
 # CHANGE LOG
 
+## 1.13.3
+
+### UPDATES
+- Set forwardToReplicas for copy rules to false (#1060)
+- Added algolia/algoliasearch-inventory-magento-2 to suggested modules by Composer (#1040) @vmalyk
+- Set ACL resource titles are translatable. (#1076) @vmalyk
+- Change condition to accept multi conditions (#1087) 
+- Remove IdentityInterface from job model class (#1088) 
+
 ## 1.13.2
 
 ### UPDATES

@@ -70,6 +70,8 @@ class QueueTest extends TestCase
             $this->assertEquals('moveIndexWithSetSettings', $row['method']);
             $this->assertEquals(1, $row['data_size']);
         }
+
+        var_dump($rows);
     }
 
     /** @depends testFill */
@@ -119,6 +121,9 @@ class QueueTest extends TestCase
         $this->assertTrue($existsDefaultProdIndex, 'Default product production index does not exists and it should');
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+
+        var_dump(count($rows));
+
         $this->assertEquals(0, count($rows));
     }
 

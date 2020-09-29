@@ -21,8 +21,8 @@ Additionally, we are announcing the end of life for our legacy versions. We will
 
 | Extension Version | End of Life |
 | --- | --- |
-| v1.x | Jan 2021 |
-| v2.x | Jan 2021 |
+| v1.x | Dec 2020 |
+| v2.x | Dec 2020 |
 | v3.x | N/A |
 
 -------

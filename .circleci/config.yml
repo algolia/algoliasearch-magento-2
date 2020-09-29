@@ -22,16 +22,11 @@ shared: &shared
                 ps aux | grep mysql
 
         - run:
-              name: Start elasticsearch service
-              command: |
-                  sudo service elasticsearch start
-                  sleep 2
-                  ps aux | grep elasticsearch
-
-        - run:
             name: Install the extension
             command: |
                 cd ~/magento_directory
+                sudo service elasticsearch start # for some reasons has to be launched with the step
+                sleep 10
                 php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq Magento_MessageQueue
                 php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
                 php -dmemory_limit=-1 bin/magento setup:upgrade
@@ -55,6 +50,8 @@ shared: &shared
                 export CI_PROJ_USERNAME=$CIRCLE_PROJECT_USERNAME
                 export CI_PROJ_REPONAME=$CIRCLE_PROJECT_REPONAME
                 eval $(~/build_directory/algoliasearch-magento-2/algolia-keys export)
+                sudo service elasticsearch start # for some reasons has to be launched with the step
+                sleep 10
                 php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:

@@ -19,7 +19,7 @@ class QueueTest extends TestCase
     /** @var AdapterInterface */
     private $connection;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

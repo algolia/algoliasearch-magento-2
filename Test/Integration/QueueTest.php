@@ -122,7 +122,7 @@ class QueueTest extends TestCase
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
-        var_dump(count($rows));
+        var_dump($rows);
 
         $this->assertEquals(0, count($rows));
     }

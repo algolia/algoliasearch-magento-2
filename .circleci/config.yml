@@ -55,7 +55,7 @@ shared: &shared
                 export CI_PROJ_USERNAME=$CIRCLE_PROJECT_USERNAME
                 export CI_PROJ_REPONAME=$CIRCLE_PROJECT_REPONAME
                 eval $(~/build_directory/algoliasearch-magento-2/algolia-keys export)
-                php -dmemory_limit=-1 ../../../vendor/bin/phpunit --testdox ../../../vendor/algolia/algoliasearch-magento-2/Test
+                php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:
     "magento-2.3":

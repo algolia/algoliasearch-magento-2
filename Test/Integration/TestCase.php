@@ -45,7 +45,7 @@ abstract class TestCase extends \TC
         $this->bootstrap();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->clearIndices();
     }

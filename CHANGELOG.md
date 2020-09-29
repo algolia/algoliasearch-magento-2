@@ -1,16 +1,46 @@
 # CHANGE LOG
 
+## 3.0.0
+This update will **break compatibility** if you're using the backend facets feature. Please read the [Magento 2.4 section](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/#magento-24-compatibility) of our documentation to get more information about it. 
+
+## New Features
+- Compatibility with Magento 2.4
+
+### UPDATES
+- Remove less than IE9 condition from configuration template (#1068) 
+- Add messaging for indexing queue and logs (#1070) 
+- Remove IdentityInterface from job model class (#1071) 
+- Convert condition to conditions formatting (#1072)
+- Remove backend facets and Mysql Adapter (2.4 compatibility) (#1073) 
+- Update PHP and magento framework versions (#1074) 
+- Backport: Added algolia/algoliasearch-inventory-magento-2 to suggest (#1075) @vmalyk
+- Remove PHP requirements from Composer (#1077) @vmalyk
+- Set ACL resource titles are translatable. (#1080) @vmalyk
+- If order not found fetch order from first order ID (#1081) 
+- Exclude category facets from clearRefinement on category page (#1083)
+- Update bundle with updated IS and autocomplete versions (#1084) 
+- Add Customisation section to README.md (#1086) 
+
+### FIXES
+- Fix microdata on instantsearch (#1065) @flagbit
+- Instantsearch Category Filter when category facet is not configured (#1069)
+- Fix serialization issue with 2.4 (#1079) 
+- Add image check to skip if placeholder for adaptive imgs (#1082)
+
+### TOOLING
+- Update CircleCi for Magento v2.3.5-2 and v2.4.0 (#1078)
+
 ## 2.0.2
 
 ### UPDATES
 - Update setUserToken to cap character length (#1058) 
 - Set forwardToReplicas for copy rules to false (#1059) 
-- Use current store id to get settings for replicas (#1057) @palviggi-flagbit
-- Make sure original price range is saved for configurables (#1015) @palviggi-flagbit
+- Use current store id to get settings for replicas (#1057) @flagbit
+- Make sure original price range is saved for configurables (#1015) @flagbit
 
 ### FIXES
 - Restore "search as you type" feature (#1061) 
-- Fix error on URL during Pages indexing (#1012) @palviggi-flagbit
+- Fix error on URL during Pages indexing (#1012) @flagbit
 
 ## 2.0.1
 
@@ -24,10 +54,10 @@
 
 ### FIXES
 - Prevent division by zero in the Notice Helper when configuration is not set (#1026)
-- Remove extra css import (#1013) @palviggi-flagbit
+- Remove extra css import (#1013) @flagbit
 - Bundle products collection to return getItems array (#1038) 
 - Switch from priceRanges to input ranges widget for ISV4 (#1042) 
-- Check the right storeId for moveIndex (#1016) @palviggi-flagbit
+- Check the right storeId for moveIndex (#1016) @flagbit
 
 
 ### TOOLING

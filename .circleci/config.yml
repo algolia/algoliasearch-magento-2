@@ -27,7 +27,7 @@ shared: &shared
                 cd ~/magento_directory
                 sudo service elasticsearch start # for some reasons has to be launched with the step
                 sleep 10
-                php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq Magento_MessageQueue Dotdigitalgroup_Email
+                php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq Magento_MessageQueue Dotdigitalgroup_Chat Dotdigitalgroup_Email
                 php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
                 php -dmemory_limit=-1 bin/magento setup:upgrade
 

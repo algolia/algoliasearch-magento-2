@@ -34,7 +34,6 @@ shared: &shared
         - run:
             name: Get the right tests config for DB and administration
             command: |
-                mv ~/build_directory/algoliasearch-magento-2/dev/tests/phpunit.xml ~/magento_directory/dev/tests/integration/phpunit.xml
                 mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
 
         - run:

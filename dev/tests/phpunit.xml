@@ -41,7 +41,7 @@
                 <directory>../../../lib/internal/*/*/Test</directory>
                 <directory>../../../lib/internal/*/*/*/Test</directory>
                 <directory>../../../setup/src/*/*/Test</directory>
-                <directory>../../../vendor/dotmailer/*/Test</directory>
+                <directory>../../../vendor/dotmailer</directory>
             </exclude>
         </whitelist>
     </filter>

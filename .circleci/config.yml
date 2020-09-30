@@ -34,6 +34,7 @@ shared: &shared
         - run:
             name: Get the right tests config for DB and administration
             command: |
+                rm -rf ~/magento_directory/vendor/dotmailer/dotmailer-magento2-extension/Test ~/magento_directory/vendor/dotmailer/dotmailer-magento2-extension-chat/Test
                 mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
 
         - run:

@@ -107,7 +107,7 @@ class PagesIndexingTest extends IndexingTestCase
         $pages = $pagesHelper->getPages(1);
         foreach ($pages as $page) {
             if ($page['objectID'] === $testPageId) {
-                $content = $page['content'];
+                $content = [$page['content']];
                 $this->assertNotContains('<script>', $content);
                 $this->assertNotContains('alert("Foo");', $content);
                 $this->assertNotContains('<style>', $content);

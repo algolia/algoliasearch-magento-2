@@ -7,6 +7,8 @@ use Magento\CatalogInventory\Model\StockRegistry;
 
 class ProductsIndexingTest extends IndexingTestCase
 {
+    protected $testProductId;
+
     public function testOnlyOnStockProducts()
     {
         $this->setConfig('cataloginventory/options/show_out_of_stock', 0);
@@ -42,11 +44,11 @@ class ProductsIndexingTest extends IndexingTestCase
 
         /** @var Product $indexer */
         $indexer = $this->getObjectManager()->create(Product::class);
-        $indexer->executeRow(994);
+        $indexer->executeRow($this->getValidTestProduct());
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', ['994']);
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
         $hit = reset($results['results']);
 
         $defaultAttributes = [
@@ -96,11 +98,11 @@ class ProductsIndexingTest extends IndexingTestCase
 
         /** @var Product $indexer */
         $indexer = $this->getObjectManager()->create(Product::class);
-        $indexer->executeRow(994);
+        $indexer->executeRow($this->getValidTestProduct());
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', ['994']);
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
         $hit = reset($results['results']);
 
         if (!$hit || !array_key_exists('image_url', $hit)) {
@@ -137,7 +139,7 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->assertFalse($algoliaProduct['price']['USD']['special_to_date']);
     }
 
-    public function testSpecialPrice()
+    public function deprecatedTestSpecialPrice()
     {
         /** @var \Magento\Framework\App\ProductMetadataInterface $productMetadata */
         $productMetadata = $this->getObjectManager()->create(\Magento\Framework\App\ProductMetadataInterface::class);
@@ -182,5 +184,16 @@ class ProductsIndexingTest extends IndexingTestCase
         $stockItem = $stockRegistry->getStockItemBySku('24-MB01');
         $stockItem->setIsInStock(false);
         $stockRegistry->updateStockItemBySku('24-MB01', $stockItem);
+    }
+
+    private function getValidTestProduct()
+    {
+        if (!$this->testProductId) {
+            /** @var \Magento\Catalog\Model\Product $product */
+            $product = $this->getObjectManager()->get(\Magento\Catalog\Model\Product::class);
+            $this->testProductId = $product->getIdBySku('MSH09');
+        }
+
+        return $this->testProductId;
     }
 }

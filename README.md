@@ -1,15 +1,28 @@
 Algolia Search for Magento 2
 ==================
 
-![Latest version](https://img.shields.io/badge/latest-2.0.2-green.svg)
-![Magento 2](https://img.shields.io/badge/Magento-%3E=2.2%20<2.4-blue.svg)
-![PHP >= 7.0.6](https://img.shields.io/badge/PHP-%3E=7.0-green.svg)
+![Latest version](https://img.shields.io/badge/latest-3.0.0-green.svg)
+![Magento 2](https://img.shields.io/badge/Magento-%32.3,%202.4-blue.svg)
 
 [![CircleCI](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/master.svg?style=svg)](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/master)
 
 -------
 
 🔎  &nbsp; **Need help?** Check out our [Technical Troubleshooting Guide](https://www.algolia.com/doc/integration/magento-2/troubleshooting/technical-troubleshooting/). For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
+
+-------
+
+#### Magento 2.4 compatibility & extension's versions End of Life
+
+We are happy to announce that the version 3.x of our extension is now compatible with Magento 2.4. Review the [Customisation](https://github.com/algolia/algoliasearch-magento-2#customisation) section to learn more about the differences between our extension versions.
+
+Additionally, we are announcing the end of life for our legacy versions. We will continue to support and backport major changes to the minor branches until the defined dates below. We will not accept community PRs for those branches after this date. 
+
+| Extension Version | End of Life |
+| --- | --- |
+| v1.x | Dec 2020 |
+| v2.x | Dec 2020 |
+| v3.x | N/A |
 
 -------
 
@@ -75,7 +88,7 @@ Knowing the version of the library will help you understand what is available in
 | Extension Version |	autocomplete.js | instantsearch.js | search-insights.js |
 | --- | --- | --- | --- |
 | v1.x | [0.26.0](https://github.com/algolia/autocomplete.js/tree/v0.26.0) | [2.10.2](https://github.com/algolia/instantsearch.js/tree/v2.10.2) | [0.0.14](https://cdn.jsdelivr.net/npm/search-insights@0.0.14) |
-| v2.x | [0.26.0](https://github.com/algolia/autocomplete.js/tree/v0.26.0) | [4.0.0](https://github.com/algolia/instantsearch.js/tree/v4.0.0) | [1.4.0](https://github.com/algolia/search-insights.js/tree/v1.4.0) |
+| v2.x | [0.38.0](https://github.com/algolia/autocomplete.js/tree/v0.38.0) | [4.7.2](https://github.com/algolia/instantsearch.js/tree/v4.7.2) | [1.4.0](https://github.com/algolia/search-insights.js/tree/v1.4.0) |
 | v3.x | [0.38.0](https://github.com/algolia/autocomplete.js/tree/v0.38.0) | [4.7.2](https://github.com/algolia/instantsearch.js/tree/v4.7.2) | [1.4.0](https://github.com/algolia/search-insights.js/tree/v1.4.0) |
 
 The autocomplete and instantsearch libraries are accessible in the `algoliaBundle` global. This bundle is a prepackage javascript file that contains it's dependencies. What is included in this bundle can be seen here:

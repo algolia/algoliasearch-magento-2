@@ -106,7 +106,7 @@ abstract class AbstractTable extends AbstractFieldArray
         }
 
         if ($row['_id'] === null || is_int($row['_id'])) {
-            $row->setData('_id', '_' . mt_rand() . '_' . mt_rand(0, 999));
+            $row->setData('_id', '_' . random_int(1000000000, 9999999999) . '_' . random_int(0, 999));
         }
 
         $row->setData('option_extra_attrs', $options);

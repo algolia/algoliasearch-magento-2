@@ -873,6 +873,11 @@ class ProductHelper
             return $subProductImages;
         }
 
+        $subImage = $subProduct->getData($this->configHelper->getImageType());
+        if (!$subImage || $subImage === 'no_selection') {
+            return $subProductImages;
+        }
+
         $image = $this->imageHelper
             ->init($subProduct, $this->configHelper->getImageType())
             ->resize(

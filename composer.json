@@ -5,7 +5,6 @@
   "license": ["MIT"],
   "version": "2.0.2",
   "require": {
-    "php": "~7.1|~7.2|~7.3|~7.4",
     "magento/framework": "~102.0|~103.0",
     "algolia/algoliasearch-client-php": "^2.4",
     "guzzlehttp/guzzle": "^6.3.3",
@@ -15,7 +14,8 @@
     "ext-dom": "*"
   },
   "suggest": {
-      "algolia/algoliasearch-magento-2-es-compatibility": "Algolia Search ES Compatibility module for Magento >=2.3.1|>=2.2.8"
+      "algolia/algoliasearch-magento-2-es-compatibility": "Algolia Search ES Compatibility module for Magento >=2.3.1|>=2.2.8",
+      "algolia/algoliasearch-inventory-magento-2": "Algolia Search Inventory module for Magento 2.3.x and Algolia Search 1.12+ extension"
   },
   "repositories": [
     {

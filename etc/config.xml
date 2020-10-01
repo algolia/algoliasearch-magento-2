@@ -7,6 +7,30 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
+        <algoliasearch_autocomplete>
+            <autocomplete>
+                <sections><![CDATA[{"_1600351750374_374":{"name":"pages","label":"Pages","hitsPerPage":"2"}}]]></sections>
+                <excluded_pages><![CDATA[{"_1600351757831_831":{"attribute":"no-route"}}]]></excluded_pages>
+            </autocomplete>
+        </algoliasearch_autocomplete>
+        <algoliasearch_instant>
+            <instant>
+                <facets><![CDATA[{"_1458145454535_587":{"attribute":"price","type":"slider","label":"Price","searchable":"2","create_rule":"2"},"_2541608784525_123":{"attribute":"categories","type":"conjunctive","label":"Categories","searchable":"2","create_rule":"2"},"_3211608784535_456":{"attribute":"color","type":"disjunctive","label":"Colors","searchable":"1","create_rule":"2"}}]]></facets>
+                <sorts><![CDATA[{"_4581608784535_789":{"attribute":"price","sort":"asc","sortLabel":"Lowest price"},"_2541555584535_585":{"attribute":"price","sort":"desc","sortLabel":"Highest price"},"_5581608784535_898":{"attribute":"created_at","sort":"desc","sortLabel":"Newest first"}}]]></sorts>
+            </instant>
+        </algoliasearch_instant>
+        <algoliasearch_products>
+            <products>
+                <product_additional_attributes><![CDATA[{"_1581608784535_535":{"attribute":"name","searchable":"1","order":"unordered","retrievable":"1"},"_1581608793630_630":{"attribute":"sku","searchable":"1","order":"unordered","retrievable":"1"},"_1582212731087_87":{"attribute":"manufacturer","searchable":"1","order":"unordered","retrievable":"1"},"_1582212739021_21":{"attribute":"categories","searchable":"1","order":"unordered","retrievable":"1"},"_1582212749587_587":{"attribute":"color","searchable":"1","order":"unordered","retrievable":"1"},"_1582212776086_86":{"attribute":"price","searchable":"2","order":"unordered","retrievable":"1"},"_1582212790407_407":{"attribute":"rating_summary","searchable":"2","order":"unordered","retrievable":"1"}}]]></product_additional_attributes>
+                <custom_ranking_product_attributes><![CDATA[{"_1600352070901_901":{"attribute":"in_stock","order":"desc"},"_1600352075148_148":{"attribute":"ordered_qty","order":"desc"},"_1600352080300_300":{"attribute":"created_at","order":"desc"}}]]></custom_ranking_product_attributes>
+            </products>
+        </algoliasearch_products>
+        <algoliasearch_categories>
+            <categories>
+                <category_additional_attributes><![CDATA[{"_1582212881657_657":{"attribute":"name","searchable":"1","order":"unordered","retrievable":"1"},"_1582212904351_351":{"attribute":"path","searchable":"1","order":"unordered","retrievable":"1"},"_1582212910660_660":{"attribute":"meta_title","searchable":"1","order":"unordered","retrievable":"1"},"_1582212915890_890":{"attribute":"meta_keywords","searchable":"1","order":"unordered","retrievable":"1"},"_1582212922533_533":{"attribute":"meta_description","searchable":"1","order":"unordered","retrievable":"1"},"_1582212927307_307":{"attribute":"product_count","searchable":"2","order":"unordered","retrievable":"1"}}]]></category_additional_attributes>
+                <custom_ranking_category_attributes><![CDATA[{"_1600352142072_72":{"attribute":"product_count","order":"desc"}}]]></custom_ranking_category_attributes>
+            </categories>
+        </algoliasearch_categories>
         <algoliasearch_personalization>
             <personalization_group>
                 <personalization_click_events_group>

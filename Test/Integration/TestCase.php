@@ -40,12 +40,12 @@ abstract class TestCase extends \TC
     /** @var Magento_2_01|Magento_2_2 */
     protected $assertValues;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->bootstrap();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->clearIndices();
     }

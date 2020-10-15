@@ -1,5 +1,15 @@
 # CHANGE LOG
 
+## 3.0.1
+
+### UPDATES
+- Added some configuration to algoliaConfig JS object (#1097) 
+- Update csp for proxy and update admin bundle (#1098) 
+
+### FIXES
+- Switch from mt_rand to random_int to meet marketplace expectations (#1095)
+- Indexing queue grids fixes (#1096) 
+
 ## 3.0.0
 This update will **break compatibility** if you're using the backend facets feature. Please read the [Magento 2.4 section](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/#magento-24-compatibility) of our documentation to get more information about it. 
 

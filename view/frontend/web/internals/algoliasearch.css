@@ -720,7 +720,9 @@ a.ais-current-refined-values--link:hover {
 
 #algolia-searchbox .magnifying-glass {
     position: absolute;
+    border: none;
     bottom: 21px;
+    box-shadow: none;
     right: 7px;
     width: 20px;
     height: 20px;

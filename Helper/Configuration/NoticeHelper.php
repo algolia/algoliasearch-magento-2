@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Helper\Configuration;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\ProxyHelper;
-use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
 use Algolia\AlgoliaSearch\Model\ExtensionNotification;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
 use Magento\Framework\Module\Manager as ModuleManager;

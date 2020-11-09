@@ -344,6 +344,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 				templates: {
 					empty: '',
 					item: $('#instant-hit-template').html(),
+					showMoreText: algoliaConfig.translations.showMore
 				},
 				cssClasses: {
 					loadPrevious: ['action', 'primary'],
@@ -358,7 +359,6 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 						return item;
 					});
 				},
-				showMoreLabel: algoliaConfig.translations.showMore,
 				showPrevious: true,
 				escapeHits: true
 			};

@@ -14,7 +14,7 @@ $configHelper = $block->getConfigHelper();
     Find out more about Algolia Merchandising, please refer to <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/category-merchandising/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
 </div>
 
-<?php if (!$block->isQueryRulesEnabled()): ?>
+<?php if (!$block->isQueryRulesEnabled()) : ?>
 
     <br>
     <div class="algolia_block icon-stars">
@@ -22,9 +22,9 @@ $configHelper = $block->getConfigHelper();
         please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
     </div>
 
-<?php return; endif; ?>
+    <?php return; endif; ?>
 
-<?php if ($block->isRootCategory()): ?>
+<?php if ($block->isRootCategory()) : ?>
 
     <br>
     <div class="algolia_block icon-bulb">
@@ -32,24 +32,24 @@ $configHelper = $block->getConfigHelper();
         To merchandise products, please select any sub-category.
     </div>
 
-<?php return; endif; ?>
+    <?php return; endif; ?>
 
-<?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()):
+<?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()) :
     $instantSearchLink = $block->getUrl('adminhtml/system_config/edit/section/algoliasearch_instant');
-?>
+    ?>
 
-<div class="algolia_block icon-stars">
-    To merchandise products using Algolia
-    you need to enable <strong>Instant search</strong> with <strong>Replace category pages</strong> feature.
-    You can do it in Algolia's <a href="<?php echo $block->escapeUrl($instantSearchLink) ?>" target="_blank">Instant Search configuration</a>.
-    <br><br>
-    <strong>Instant search</strong> with enabled <strong>Replace category pages</strong> feature gives your customers a great experience
-    while browsing your catalog. It enables your customers to search and filter for products at real time resulting
-    in better customer journey. With the speed and relevancy of Algolia your customers are more likely to purchase
-    and enjoy the shopping on your store(s).
-</div>
+    <div class="algolia_block icon-stars">
+        To merchandise products using Algolia
+        you need to enable <strong>Instant search</strong> with <strong>Replace category pages</strong> feature.
+        You can do it in Algolia's <a href="<?php echo $block->escapeUrl($instantSearchLink) ?>" target="_blank">Instant Search configuration</a>.
+        <br><br>
+        <strong>Instant search</strong> with enabled <strong>Replace category pages</strong> feature gives your customers a great experience
+        while browsing your catalog. It enables your customers to search and filter for products at real time resulting
+        in better customer journey. With the speed and relevancy of Algolia your customers are more likely to purchase
+        and enjoy the shopping on your store(s).
+    </div>
 
-<?php return; endif; ?>
+    <?php return; endif; ?>
 
 <div class="algolia_block display-product-msg icon-warning" <?php echo !$block->canDisplayProducts() ?: 'style="display:none;"' ?>>
     <p><strong>Products are not displayed for this category</strong></p>
@@ -97,46 +97,46 @@ $isConfig = [
     <div class="admin__data-grid-wrap admin__data-grid-wrap-static algolia_merchandising_items_table">
         <table class="data-grid">
             <thead>
-                <tr>
-                    <th class="data-grid-th">Position</th>
-                    <th class="data-grid-th">Image</th>
-                    <th class="data-grid-th">ID</th>
-                    <th class="data-grid-th">SKU</th>
-                    <th class="data-grid-th">Name</th>
-                    <th class="data-grid-th">Price</th>
-                    <th class="data-grid-th">Pin it</th>
-                </tr>
+            <tr>
+                <th class="data-grid-th">Position</th>
+                <th class="data-grid-th">Image</th>
+                <th class="data-grid-th">ID</th>
+                <th class="data-grid-th">SKU</th>
+                <th class="data-grid-th">Name</th>
+                <th class="data-grid-th">Price</th>
+                <th class="data-grid-th">Pin it</th>
+            </tr>
             </thead>
             <tbody>
-                {{#hits}}
-                    <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
-                        <td class="position_cell">
-                            <span class="padlock"></span>
-                            <span class="draggable-handle"></span>
-                        </td>
-                        <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
-                        <td>{{ objectID }}</td>
-                        <td>{{{ _highlightResult.sku.value }}}</td>
-                        <td>{{{ _highlightResult.name.value }}}</td>
-                        <td>{{ price.USD.default_formated }}</td>
-                        <td class="actions">
-                            <div class="pin_block">
-                                <a class="arrow up" href="#">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
-                                        <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
-                                    </svg>
-                                ️</a>
-                                <a href="#" class="pinIt">PIN HERE</a>
-                                <a href="#" class="unpinIt">UN-PIN</a>
-                                <a class="arrow down" href="#">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
-                                        <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
-                                    </svg>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                {{/hits}}
+            {{#hits}}
+            <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
+            <td class="position_cell">
+                <span class="padlock"></span>
+                <span class="draggable-handle"></span>
+            </td>
+            <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
+            <td>{{ objectID }}</td>
+            <td>{{{ _highlightResult.sku.value }}}</td>
+            <td>{{{ _highlightResult.name.value }}}</td>
+            <td>{{ price.USD.default_formated }}</td>
+            <td class="actions">
+                <div class="pin_block">
+                    <a class="arrow up" href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                            <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
+                        </svg>
+                        ️</a>
+                    <a href="#" class="pinIt">PIN HERE</a>
+                    <a href="#" class="unpinIt">UN-PIN</a>
+                    <a class="arrow down" href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                            <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
+                        </svg>
+                    </a>
+                </div>
+            </td>
+            </tr>
+            {{/hits}}
             </tbody>
         </table>
     </div>
@@ -188,8 +188,8 @@ $isConfig = [
         <div class="info">
             {{{ _highlightResult.name.value }}}
             <div class="price">
-				{{ price.USD.default_formated }}
-			</div>
+                {{ price.USD.default_formated }}
+            </div>
         </div>
 
         <a href="#" class="pinIt">
@@ -203,18 +203,18 @@ $isConfig = [
 <script>
     requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
-        	var config = <?php echo json_encode($isConfig); ?>;
+            var config = <?php echo json_encode($isConfig); ?>;
 
             var search = algoliaAdminBundle.instantsearch(config);
 
             // // initialize SearchBox
             // search.addWidget(
-             //    algoliaAdminBundle.instantsearch.widgets.searchBox({
-             //        container: '#algolia_merchandising_search_box',
-             //        placeholder: 'Search for products',
-             //        reset: false,
-             //        magnifier: false
-             //    })
+            //    algoliaAdminBundle.instantsearch.widgets.searchBox({
+            //        container: '#algolia_merchandising_search_box',
+            //        placeholder: 'Search for products',
+            //        reset: false,
+            //        magnifier: false
+            //    })
             // );
 
             // initialize hits widget
@@ -250,7 +250,7 @@ $isConfig = [
             );
 
             search.on('render', function() {
-	            initAutocomplete();
+                initAutocomplete();
 
                 initSortableTable();
 
@@ -268,43 +268,43 @@ $isConfig = [
             });
 
             $(document).on('click', '.algolia_merchandising_items_table a.unpinIt', function(e) {
-	            $(this).closest('tr').removeClass('pinned');
+                $(this).closest('tr').removeClass('pinned');
 
-	            regeneratePositionsValue();
+                regeneratePositionsValue();
                 checkCurrentPins();
 
                 e.preventDefault();
                 return false;
             });
 
-	        $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
-		        var $row = $(this).closest('tr'),
+            $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
+                var $row = $(this).closest('tr'),
                     $previousRow = $row.prev();
 
-		        if ($previousRow.length > 0) {
-			        $previousRow.insertAfter($row);
-			        pinIt($row);
-		        }
-
-		        e.preventDefault();
-		        return false;
-	        });
-
-	        $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
-		        var $row = $(this).closest('tr'),
-                    $nextRow = $row.next();
-
-		        if ($nextRow.length > 0) {
-		            $nextRow.insertBefore($row);
-		            pinIt($row);
+                if ($previousRow.length > 0) {
+                    $previousRow.insertAfter($row);
+                    pinIt($row);
                 }
 
-		        e.preventDefault();
-		        return false;
-	        });
+                e.preventDefault();
+                return false;
+            });
+
+            $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
+                var $row = $(this).closest('tr'),
+                    $nextRow = $row.next();
+
+                if ($nextRow.length > 0) {
+                    $nextRow.insertBefore($row);
+                    pinIt($row);
+                }
+
+                e.preventDefault();
+                return false;
+            });
 
             var initAutocomplete = function() {
-	            var client = algoliaAdminBundle.algoliasearch(config.appId, config.apiKey),
+                var client = algoliaAdminBundle.algoliasearch(config.appId, config.apiKey),
                     index = client.initIndex(config.indexName),
                     template = algoliaAdminBundle.Hogan.compile($('#algolia_merchandising_autocomplete_hit').html()),
                     options = {
@@ -315,52 +315,52 @@ $isConfig = [
                         source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
                         name: 'products',
                         templates: {
-                        	header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
+                            header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
                             suggestion: function (hit) {
                                 return template.render(hit);
                             }
                         }
                     }];
 
-	            $('#algolia_merchandising_autocomplete')
+                $('#algolia_merchandising_autocomplete')
                     .autocomplete({ debug: false, hint: false }, sources)
-		            .on('autocomplete:selected', function (e, suggestion) {
-		            	var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
+                    .on('autocomplete:selected', function (e, suggestion) {
+                        var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
 
-		            	if ($existingRow.length > 0) {
-		            		var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
-		            		$existingRow.insertBefore($firstRow);
+                        if ($existingRow.length > 0) {
+                            var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+                            $existingRow.insertBefore($firstRow);
                         }
                         else {
-				            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
-					            newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
-					            rowHtml = newRowTemplate.render(suggestion);
+                            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+                                newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+                                rowHtml = newRowTemplate.render(suggestion);
 
-				            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
-				            $('.algolia_merchandising_items_table tbody tr').last().remove();
-			            }
+                            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+                            $('.algolia_merchandising_items_table tbody tr').last().remove();
+                        }
 
-			            var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
-			            pinIt($firstRow);
-		            });
+                        var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+                        pinIt($firstRow);
+                    });
             };
 
             var initSortableTable = function() {
-	            $('.algolia_merchandising_items_table tbody').sortable({
-		            containment: 'parent',
-		            items: 'tr',
-		            tolerance: 'pointer',
-		            helper: sortableHelper,
-		            start: function (event, ui) {
-			            $(ui.item).css('margin-left', '10px');
-		            },
-		            stop: function (event, ui) {
-		            	var $row = $(ui.item[0]);
-		            	pinIt($row);
-		            }
-	            });
+                $('.algolia_merchandising_items_table tbody').sortable({
+                    containment: 'parent',
+                    items: 'tr',
+                    tolerance: 'pointer',
+                    helper: sortableHelper,
+                    start: function (event, ui) {
+                        $(ui.item).css('margin-left', '10px');
+                    },
+                    stop: function (event, ui) {
+                        var $row = $(ui.item[0]);
+                        pinIt($row);
+                    }
+                });
 
-	            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+                $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
             };
 
             var pinIt = function($row) {
@@ -370,25 +370,25 @@ $isConfig = [
                     return false;
                 }
 
-            	if ($row.hasClass('pinned') === false) {
-		            $row.addClass('pinned');
-	            }
+                if ($row.hasClass('pinned') === false) {
+                    $row.addClass('pinned');
+                }
 
-	            regeneratePositionsValue();
+                regeneratePositionsValue();
             };
 
             var regeneratePositionsValue = function() {
-	            var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
-		            positions = {};
+                var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
+                    positions = {};
 
-	            $('.algolia_merchandising_items_table tbody tr').each(function(position) {
-		            if ($(this).hasClass('pinned')) {
-			            var objectId = $(this).data('objectid');
-			            positions[objectId] = position;
-		            }
-	            });
+                $('.algolia_merchandising_items_table tbody tr').each(function(position) {
+                    if ($(this).hasClass('pinned')) {
+                        var objectId = $(this).data('objectid');
+                        positions[objectId] = position;
+                    }
+                });
 
-	            $positionsInput.val(JSON.stringify(positions));
+                $positionsInput.val(JSON.stringify(positions));
             };
 
             var sortableHelper = function(e, ui) {

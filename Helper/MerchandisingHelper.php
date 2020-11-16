@@ -54,12 +54,16 @@ class MerchandisingHelper
             $condition['pattern'] = $query;
         }
 
-        if (! is_null($banner)) {
+        if (!is_null($banner)) {
             $rule['consequence']['userData']['banner'] = $banner;
         }
 
         if ($entityType == 'query') {
             unset($condition['context']);
+        }
+
+        if (in_array($entityType, ['query', 'landingpage'])) {
+            $rule['tags'] = ['visual-editor'];
         }
 
         $rule['conditions'] = [$condition];

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Configuration;
 
+use Magento\Framework\App\Config\ConfigResource\ConfigInterface as ConfigResourceInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 
@@ -30,11 +31,16 @@ class PersonalizationHelper extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var ScopeConfigInterface */
     private $configInterface;
 
+    /** @var ConfigResourceInterface */
+    private $configResourceInterface;
+
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        ScopeConfigInterface $configInterface
+        ScopeConfigInterface $configInterface,
+        ConfigResourceInterface $configResourceInterface
     ) {
         $this->configInterface = $configInterface;
+        $this->configResourceInterface = $configResourceInterface;
         parent::__construct($context);
     }
 
@@ -46,6 +52,16 @@ class PersonalizationHelper extends \Magento\Framework\App\Helper\AbstractHelper
     public function isPersoEnabled($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::IS_PERSO_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param int|null $storeId
+     *
+     * @return void
+     */
+    public function disablePerso($storeId = null)
+    {
+        $this->configResourceInterface->saveConfig(self::IS_PERSO_ENABLED, 0, 'default', 0);
     }
 
     /**

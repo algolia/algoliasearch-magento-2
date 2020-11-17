@@ -10,7 +10,7 @@ $form = $block->getViewModel();
         <input type="hidden" name="form_key" value="<?php echo $block->getFormKey() ?>" />
         <div class="inline-field">
             <select name="type" class="select admin__control-select"<?php echo $isFormDisabled ?>>
-                <?php foreach ($form->getSections() as $key => $section): ?>
+                <?php foreach ($form->getSections() as $key => $section) : ?>
                     <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('type')) ? ' selected' : '' ?>>
                         <?php echo ucwords($key) ?>
                     </option>

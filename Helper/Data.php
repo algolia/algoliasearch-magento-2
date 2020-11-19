@@ -173,6 +173,7 @@ class Data
                 $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
             }
 
+            $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
             $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
             $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
@@ -202,6 +203,7 @@ class Data
             }
         }
 
+        $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
         $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
         $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
@@ -289,6 +291,7 @@ class Data
         $tmpIndexName = $this->getIndexName($indexNameSuffix, $storeId, true);
         $indexName = $this->getIndexName($indexNameSuffix, $storeId);
 
+        $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName);
         $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
     }
 
@@ -592,8 +595,8 @@ class Data
             return;
         }
 
-        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ', 
-            page ' . $page . ', 
+        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
+            page ' . $page . ',
             pageSize ' . $pageSize;
         $this->logger->start($wrapperLogMessage);
 
@@ -622,8 +625,8 @@ class Data
             ['collection' => $collection, 'store' => $storeId]
         );
 
-        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ', 
-            collection page: ' . $page . ', 
+        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
+            collection page: ' . $page . ',
             pageSize: ' . $pageSize;
 
         $this->logger->start($logMessage);

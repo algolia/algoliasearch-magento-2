@@ -36,7 +36,7 @@ class CheckoutCartProductAddBefore implements ObserverInterface
         /** @var \Magento\Catalog\Model\Product $product */
         $product = $observer->getEvent()->getProduct();
         $requestInfo = $observer->getEvent()->getInfo();
-        
+
         if (isset($requestInfo['queryID']) && $requestInfo['queryID'] != '') {
             $product->setData('queryId', $requestInfo['queryID']);
         }

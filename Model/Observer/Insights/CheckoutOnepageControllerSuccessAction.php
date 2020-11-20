@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\OrderFactory;
+use Psr\Log\LoggerInterface;
 
 class CheckoutOnepageControllerSuccessAction implements ObserverInterface
 {
@@ -19,19 +20,25 @@ class CheckoutOnepageControllerSuccessAction implements ObserverInterface
     /** @var OrderFactory */
     private $orderFactory;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     /**
      * @param Data $dataHelper
      * @param InsightsHelper $insightsHelper
      * @param OrderFactory $orderFactory
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Data $dataHelper,
         InsightsHelper $insightsHelper,
-        OrderFactory $orderFactory
+        OrderFactory $orderFactory,
+        LoggerInterface $logger
     ) {
         $this->dataHelper = $dataHelper;
         $this->insightsHelper = $insightsHelper;
         $this->orderFactory = $orderFactory;
+        $this->logger = $logger;
     }
 
     /**
@@ -88,13 +95,22 @@ class CheckoutOnepageControllerSuccessAction implements ObserverInterface
             /** @var \Magento\Sales\Model\Order\Item $item */
             foreach ($orderItems as $item) {
                 $productIds[] = $item->getProductId();
+
+                // Event can't process more than 20 objects
+                if (count($productIds) > 20) {
+                    break;
+                }
             }
 
-            $userClient->convertedObjectIDs(
-                __('Placed Order'),
-                $this->dataHelper->getIndexName('_products', $order->getStoreId()),
-                $productIds
-            );
+            try {
+                $userClient->convertedObjectIDs(
+                    __('Placed Order'),
+                    $this->dataHelper->getIndexName('_products', $order->getStoreId()),
+                    $productIds
+                );
+            } catch (\Exception $e) {
+                $this->logger->critical($e);
+            }
         }
 
         return $this;

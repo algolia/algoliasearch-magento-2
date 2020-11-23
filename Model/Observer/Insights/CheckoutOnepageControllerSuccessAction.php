@@ -73,16 +73,26 @@ class CheckoutOnepageControllerSuccessAction implements ObserverInterface
 
         if ($this->getConfigHelper()->isClickConversionAnalyticsEnabled($order->getStoreId())
             && $this->getConfigHelper()->getConversionAnalyticsMode($order->getStoreId()) === 'place_order') {
-
+            $queryIds = [];
             /** @var \Magento\Sales\Model\Order\Item $item */
             foreach ($orderItems as $item) {
                 if ($item->hasData('algoliasearch_query_param')) {
+                    $queryId = $item->getData('algoliasearch_query_param');
+                    $queryIds[$queryId][] = $item->getProductId();
+                }
+            }
+
+            if (count($queryIds) > 0) {
+                foreach ($queryIds as $queryId => $productIds) {
+
+                    // Event can't process more than 20 objects
+                    $productIds = array_slice($productIds, 0, 20);
+
                     try {
-                        $queryId = $item->getData('algoliasearch_query_param');
                         $userClient->convertedObjectIDsAfterSearch(
                             __('Placed Order'),
                             $this->dataHelper->getIndexName('_products', $order->getStoreId()),
-                            [$item->getProductId()],
+                            $productIds,
                             $queryId
                         );
                     } catch (\Exception $e) {

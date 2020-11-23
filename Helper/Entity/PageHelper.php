@@ -91,12 +91,16 @@ class PageHelper
         return $indexSettings;
     }
 
-    public function getPages($storeId)
+    public function getPages($storeId, array $pageIds = null)
     {
         /** @var \Magento\Cms\Model\ResourceModel\Page\Collection $magentoPages */
         $magentoPages = $this->pageCollectionFactory->create()
             ->addStoreFilter($storeId)
             ->addFieldToFilter('is_active', 1);
+
+        if ($pageIds && count($pageIds)) {
+            $magentoPages->addFieldToFilter('page_id', ['in' => $pageIds]);
+        }
 
         $excludedPages = array_values($this->configHelper->getExcludedPages());
 

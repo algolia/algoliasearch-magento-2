@@ -6,7 +6,7 @@ use Magento\Framework\Indexer\ActionInterface;
 
 abstract class IndexingTestCase extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

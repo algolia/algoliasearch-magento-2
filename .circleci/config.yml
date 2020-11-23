@@ -25,17 +25,22 @@ shared: &shared
             name: Install the extension
             command: |
                 cd ~/magento_directory
+                sudo service elasticsearch start # for some reasons has to be launched with the step
+                sleep 10
+                php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq Magento_MessageQueue
                 php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
                 php -dmemory_limit=-1 bin/magento setup:upgrade
 
         - run:
             name: Get the right tests config for DB and administration
             command: |
+                rm -rf ~/magento_directory/vendor/dotmailer/dotmailer-magento2-extension/Test ~/magento_directory/vendor/dotmailer/dotmailer-magento2-extension-chat/Test
                 mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
 
         - run:
               name: Before setup
               command: |
+                  echo 'memory_limit = 256M' | sudo tee /usr/local/etc/php/php.ini
                   wget https://alg.li/algolia-keys && chmod +x algolia-keys
 
         - run:
@@ -46,22 +51,24 @@ shared: &shared
                 export CI_PROJ_USERNAME=$CIRCLE_PROJECT_USERNAME
                 export CI_PROJ_REPONAME=$CIRCLE_PROJECT_REPONAME
                 eval $(~/build_directory/algoliasearch-magento-2/algolia-keys export)
-                php -dmemory_limit=-1 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test
+                sudo service elasticsearch start # for some reasons has to be launched with the step
+                sleep 10
+                php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:
-    "magento-2.2":
-        <<: *shared
-        docker:
-            - image: algolia/magento2-circleci:v2-2.2.8
-
     "magento-2.3":
         <<: *shared
         docker:
-            - image: algolia/magento2-circleci:v2-2.3.0
+            - image: algolia/magento2-circleci:v3-2.3.5-p2
+
+    "magento-2.4":
+        <<: *shared
+        docker:
+            - image: algolia/magento2-circleci:v3-2.4.0
 
     "quality-tools":
         docker:
-            - image: algolia/magento2-circleci:v2-2.3.0
+            - image: algolia/magento2-circleci:v3-2.3.5-p2
         working_directory: ~/build_directory/algoliasearch-magento-2
         steps:
             - checkout
@@ -71,8 +78,8 @@ jobs:
                     sudo chown circleci:circleci ~/.composer/
             - restore_cache:
                   keys:
-                      - composer-v3-{{ checksum "composer.json" }}
-                      - composer-v3-
+                      - composer-v4-{{ checksum "composer.json" }}
+                      - composer-v4-
                       
             - run:
                   name: Prepare environment
@@ -89,7 +96,7 @@ jobs:
                       cd ~/magento_directory
                       composer dump-autoload
             - save_cache:
-                  key: composer-v3-{{ checksum "composer.json" }}
+                  key: composer-v4-{{ checksum "composer.json" }}
                   paths:
                       - vendor
             - run:
@@ -101,6 +108,6 @@ workflows:
     version: 2
     build:
         jobs:
-            - "magento-2.2"
             - "magento-2.3"
+            - "magento-2.4"
             - "quality-tools"

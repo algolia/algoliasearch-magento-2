@@ -35,31 +35,38 @@ class MerchandisingHelper
         $productsIndexName = $this->coreHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
 
         $positions = $this->transformPositions($rawPositions);
+        $condition = [
+            'pattern' => '',
+            'anchoring' => 'is',
+            'context' => 'magento-' . $entityType . '-' . $entityId,
+        ];
 
         $rule = [
             'objectID' => $this->getQueryRuleId($entityId, $entityType),
             'description' => 'MagentoGeneratedQueryRule',
-            'condition' => [
-                'pattern' => '',
-                'anchoring' => 'is',
-                'context' => 'magento-' . $entityType . '-' . $entityId,
-            ],
             'consequence' => [
+                'filterPromotes' => true,
                 'promote' => $positions,
             ],
         ];
 
         if (!is_null($query) && $query != '') {
-            $rule['condition']['pattern'] = $query;
+            $condition['pattern'] = $query;
         }
 
-        if (! is_null($banner)) {
+        if (!is_null($banner)) {
             $rule['consequence']['userData']['banner'] = $banner;
         }
 
         if ($entityType == 'query') {
-            unset($rule['condition']['context']);
+            unset($condition['context']);
         }
+
+        if (in_array($entityType, ['query', 'landingpage'])) {
+            $rule['tags'] = ['visual-editor'];
+        }
+
+        $rule['conditions'] = [$condition];
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
@@ -130,6 +137,15 @@ class MerchandisingHelper
                     if (isset($hit['condition']['context']) && $hit['condition']['context'] == $context) {
                         $hit['condition']['context'] = $newContext;
                     }
+
+                    if (isset($hit['conditions']) && is_array($hit['conditions'])) {
+                        foreach ($hit['conditions'] as &$condition) {
+                            if (isset($condition['context']) && $condition['context'] == $context) {
+                                $condition['context'] = $newContext;
+                            }
+                        }
+                    }
+
                     $queryRulesToSet[] = $hit;
                 }
 

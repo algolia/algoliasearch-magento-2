@@ -27,11 +27,6 @@ class Configuration implements \Magento\Framework\View\Element\Block\ArgumentInt
         return $this->noticeHelper->isClickAnalyticsEnabled();
     }
 
-    public function isEsWarningNeeded()
-    {
-        return ! $this->noticeHelper->isMysqlUsed();
-    }
-
     public function getLinksAndVideoTemplate($section)
     {
         return $this->assetHelper->getLinksAndVideoTemplate($section);

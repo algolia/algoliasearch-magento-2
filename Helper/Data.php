@@ -173,6 +173,7 @@ class Data
                 $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
             }
 
+            $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
             $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
             $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
@@ -202,6 +203,7 @@ class Data
             }
         }
 
+        $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
         $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
         $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
@@ -289,6 +291,7 @@ class Data
         $tmpIndexName = $this->getIndexName($indexNameSuffix, $storeId, true);
         $indexName = $this->getIndexName($indexNameSuffix, $storeId);
 
+        $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName);
         $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
     }
 
@@ -592,8 +595,8 @@ class Data
             return;
         }
 
-        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ', 
-            page ' . $page . ', 
+        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
+            page ' . $page . ',
             pageSize ' . $pageSize;
         $this->logger->start($wrapperLogMessage);
 
@@ -622,8 +625,8 @@ class Data
             ['collection' => $collection, 'store' => $storeId]
         );
 
-        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ', 
-            collection page: ' . $page . ', 
+        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
+            collection page: ' . $page . ',
             pageSize: ' . $pageSize;
 
         $this->logger->start($logMessage);
@@ -739,24 +742,29 @@ class Data
             return [];
         }
 
-        $ordersTableName = $this->resource->getTableName('sales_order_item');
+        $salesData = [];
 
         $ids = $collection->getColumnValues('entity_id');
-        $ids[] = '0'; // Makes sure the imploded string is not empty
 
-        $ids = implode(', ', $ids);
+        if (count($ids)) {
+            $ordersTableName = $this->resource->getTableName('sales_order_item');
 
-        try {
-            $salesConnection = $this->resource->getConnectionByName('sales');
-        } catch (\DomainException $e) {
-            $salesConnection = $this->resource->getConnection();
+            try {
+                $salesConnection = $this->resource->getConnectionByName('sales');
+            } catch (\DomainException $e) {
+                $salesConnection = $this->resource->getConnection();
+            }
+
+            $select = $salesConnection->select()
+                ->from($ordersTableName, [])
+                ->columns('product_id')
+                ->columns(['ordered_qty' => new \Zend_Db_Expr('SUM(qty_ordered)')])
+                ->columns(['total_ordered' => new \Zend_Db_Expr('SUM(row_total)')])
+                ->where('product_id IN (?)', $ids)
+                ->group('product_id');
+
+            $salesData = $salesConnection->fetchAll($select, [], \PDO::FETCH_GROUP|\PDO::FETCH_ASSOC|\PDO::FETCH_UNIQUE);
         }
-
-        $query = 'SELECT product_id, SUM(qty_ordered) AS ordered_qty, SUM(row_total) AS total_ordered 
-            FROM ' . $ordersTableName . ' 
-            WHERE product_id IN (' . $ids . ') 
-            GROUP BY product_id';
-        $salesData = $salesConnection->query($query)->fetchAll(\PDO::FETCH_GROUP|\PDO::FETCH_UNIQUE|\PDO::FETCH_ASSOC);
 
         return $salesData;
     }

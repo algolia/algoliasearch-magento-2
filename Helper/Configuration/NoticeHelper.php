@@ -13,13 +13,14 @@ use Magento\Framework\View\Asset\Repository as AssetRepository;
 
 class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const CATALOG_SEARCH_MYSQL_ENGINE = 'mysql';
-
     /** @var ConfigHelper */
     private $configHelper;
 
     /** @var ProxyHelper */
     private $proxyHelper;
+
+    /** @var PersonalizationHelper */
+    private $personalizationHelper;
 
     /** @var ModuleManager */
     private $moduleManager;
@@ -43,7 +44,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     protected $noticeFunctions = [
         'getQueueNotice',
         'getMsiNotice',
-        'getEsNotice',
         'getVersionNotice',
         'getClickAnalyticsNotice',
         'getQueryRulesNotice',
@@ -66,6 +66,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Framework\App\Helper\Context $context,
         ConfigHelper $configHelper,
         ProxyHelper $proxyHelper,
+        PersonalizationHelper $personalizationHelper,
         ModuleManager $moduleManager,
         ObjectManagerInterface $objectManager,
         ExtensionNotification $extensionNotification,
@@ -75,6 +76,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     ) {
         $this->configHelper = $configHelper;
         $this->proxyHelper = $proxyHelper;
+        $this->personalizationHelper = $personalizationHelper;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
         $this->extensionNotification = $extensionNotification;
@@ -157,21 +159,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
             'selector' => '.entry-edit',
             'method' => 'before',
             'message' => $this->formatNotice($noticeTitle, $noticeContent),
-        ];
-    }
-
-    protected function getEsNotice()
-    {
-        if ($this->isMysqlUsed()) {
-            $noticeContent = '<span class="algolia-config-warning">&#9888;</span> If you turn on this feature, please make sure that every attribute you choose in the facet listing below is configured as "<strong>Use in Layered Navigation</strong>" for categories and "<strong>Use in Search Result Layered Navigation</strong>" for Catalog Search in <strong>Stores > Attributes > Product > "Storefront Properties" panel of attribute configuration</strong>';
-        } else {
-            $noticeContent = '<span class="algolia-config-warning">&#9888;</span>This feature is currently  supported only for MySQL search engine.';
-        }
-
-        $this->notices[] = [
-            'selector' => '#row_algoliasearch_instant_instant_backend_rendering_enable .note',
-            'method' => 'append',
-            'message' => $noticeContent,
         ];
     }
 
@@ -289,7 +276,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 $icon = 'icon-warning';
                 break;
             // Available but not activated
-            case 1: $warningContent = 'To start using this feature, please head over the <a href="https://www.algolia.com/dashboard" target="_blank`">Algolia Dashboard</a>, 
+            case 1: $warningContent = 'To start using this feature, please head over the <a href="https://www.algolia.com/dashboard" target="_blank`">Algolia Dashboard</a>,
         and make sure you\'ve enabled Personalization in your account, as well as agreed to the terms and conditions of using Personalization.';
                 $icon = 'icon-warning';
                 break;
@@ -336,7 +323,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     public function getPersonalizationStatus()
     {
         $info = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_PERSONALIZATION);
-
         $status = 2;
 
         if ($info
@@ -344,6 +330,11 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
             && array_key_exists('personalization_enabled_at', $info)) {
             if (!$info['personalization']) {
                 $status = 0;
+
+                // If perso is not avaible in the plan but activated in admin for some reason, turn it off
+                if ($this->personalizationHelper->isPersoEnabled()) {
+                    $this->personalizationHelper->disablePerso();
+                }
             }
             if ($info['personalization_enabled_at'] === null) {
                 $status = min(1, $status);
@@ -379,11 +370,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         return true;
-    }
-
-    public function isMysqlUsed()
-    {
-        return $this->configHelper->getCatalogSearchEngine() === self::CATALOG_SEARCH_MYSQL_ENGINE;
     }
 
     public function isMsiExternalModuleNeeded()

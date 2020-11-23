@@ -346,7 +346,7 @@ class ProductHelper
 
         $replicas = [];
 
-        if ($this->configHelper->isInstantEnabled() || $this->configHelper->isBackendRenderingEnabled()) {
+        if ($this->configHelper->isInstantEnabled($storeId)) {
             $replicas = array_values(array_map(function ($sortingIndex) {
                 return $sortingIndex['name'];
             }, $sortingIndices));
@@ -550,7 +550,7 @@ class ProductHelper
         if ($typeInstance instanceof Configurable) {
             $subProducts = $typeInstance->getUsedProducts($product);
         } elseif ($typeInstance instanceof BundleProductType) {
-            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product);
+            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product)->getItems();
         } else { // Grouped product
             $subProducts = $typeInstance->getAssociatedProducts($product);
         }
@@ -873,6 +873,11 @@ class ProductHelper
             return $subProductImages;
         }
 
+        $subImage = $subProduct->getData($this->configHelper->getImageType());
+        if (!$subImage || $subImage === 'no_selection') {
+            return $subProductImages;
+        }
+
         $image = $this->imageHelper
             ->init($subProduct, $this->configHelper->getImageType())
             ->resize(
@@ -929,11 +934,11 @@ class ProductHelper
                 } else {
                     $searchableAttributes[] = 'unordered(' . $attribute['attribute'] . ')';
                 }
-            }
 
-            if ($attribute['attribute'] === 'categories') {
-                $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] === 'ordered') ?
-                    'categories_without_path' : 'unordered(categories_without_path)';
+                if ($attribute['attribute'] === 'categories') {
+                    $searchableAttributes[] = (isset($attribute['order']) && $attribute['order'] === 'ordered') ?
+                        'categories_without_path' : 'unordered(categories_without_path)';
+                }
             }
         }
 
@@ -1048,14 +1053,16 @@ class ProductHelper
 
             $attribute = $facet['attribute'];
 
+            $condition = [
+                'anchoring' => 'contains',
+                'pattern' => '{facet:' . $attribute . '}',
+                'context' => 'magento_filters',
+            ];
+
             $rules[] = [
                 'objectID' => 'filter_' . $attribute,
                 'description' => 'Filter facet "' . $attribute . '"',
-                'condition' => [
-                    'anchoring' => 'contains',
-                    'pattern' => '{facet:' . $attribute . '}',
-                    'context' => 'magento_filters',
-                ],
+                'conditions' => [$condition],
                 'consequence' => [
                     'params' => [
                         'automaticFacetFilters' => [$attribute],

@@ -379,3 +379,28 @@
     clear: both;
     content: '';
 }
+
+#algolia-searchbox {
+    position: relative;
+}
+
+#algolia-searchbox .clear-cross, #algolia_instant_selector .clear-cross {
+    position: absolute;
+    display: none;
+    background: url("data:image/svg+xml;utf8,<svg width=\'12\' height=\'12\' viewBox=\'0 0 12 12\' xmlns=\'http://www.w3.org/2000/svg\' opacity=\'0.6\'><path d=\'M.566 1.698L0 1.13 1.132 0l.565.566L6 4.868 10.302.566 10.868 0 12 1.132l-.566.565L7.132 6l4.302 4.3.566.568L10.868 12l-.565-.566L6 7.132l-4.3 4.302L1.13 12 0 10.868l.566-.565L4.868 6 .566 1.698z\'></path></svg>") no-repeat center center / contain;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+}
+
+#algolia-searchbox .clear-query-autocomplete {
+    bottom: 8px;
+    right: 9px;
+}
+
+#algolia_instant_selector .cross-wrapper .clear-refinement {
+    display: block;
+    position: relative;
+    top: 5px;
+    left: 5px;
+}

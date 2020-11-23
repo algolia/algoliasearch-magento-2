@@ -100,6 +100,13 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 			routing: window.routing,
 		};
 
+		if (algoliaConfig.request.path.length > 0 && window.location.hash.indexOf('categories.level0') === -1) {
+			if (algoliaConfig.areCategoriesInFacets === false) {
+				searchParameters['facetsRefinements'] = { };
+				searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
+			}
+		}
+
 		instantsearchOptions = algolia.triggerHooks('beforeInstantsearchInit', instantsearchOptions, algoliaBundle);
 
 		var search = algoliaBundle.instantsearch(instantsearchOptions);
@@ -295,7 +302,9 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 					resetLabel: algoliaConfig.translations.clearAll,
 				},
 				includedAttributes: attributes.map(function (attribute) {
-					return attribute.name
+					if (!(algoliaConfig.isCategoryPage && attribute.name.indexOf('categories') > -1)) {
+						return attribute.name;
+					}
 				}),
 				cssClasses: {
 					button: ['action', 'primary']
@@ -335,6 +344,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 				templates: {
 					empty: '',
 					item: $('#instant-hit-template').html(),
+					showMoreText: algoliaConfig.translations.showMore
 				},
 				cssClasses: {
 					loadPrevious: ['action', 'primary'],
@@ -349,7 +359,6 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 						return item;
 					});
 				},
-				showMoreLabel: algoliaConfig.translations.showMore,
 				showPrevious: true,
 				escapeHits: true
 			};
@@ -465,7 +474,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 			if (facet.type === 'priceRanges') {
 				delete templates.item;
 
-				return ['priceRanges', {
+				return ['rangeInput', {
 					container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
 					attribute: facet.attribute,
 					labels: {
@@ -584,6 +593,37 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 				triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
 				pushInitialSearch: algoliaConfig.analytics.pushInitialSearch
 			};
+		}
+
+		if (!algoliaConfig.autocomplete.enabled) {
+			var customSearchBox = algoliaBundle.instantsearch.connectors.connectSearchBox(function(renderOptions, isFirstRendering) {
+				if (isFirstRendering) {
+					var input = document.querySelector(instant_selector);
+					var clearBtn = input.parentElement.getElementsByClassName('clear-query-autocomplete')[0];
+
+					input.addEventListener('input', function (event) {
+						var query = event.target.value;
+						renderOptions.refine(query);
+						if (clearBtn) {
+							if (query.length > 0) {
+								$(clearBtn).show();
+							} else {
+								$(clearBtn).hide();
+							}
+						}
+					});
+
+					if (clearBtn) {
+						clearBtn.addEventListener('click', function () {
+							renderOptions.refine('');
+							input.value = '';
+						});
+					}
+				}
+			});
+
+			delete allWidgetConfiguration['searchBox'];
+			allWidgetConfiguration.custom.push(customSearchBox());
 		}
 
 		allWidgetConfiguration = algolia.triggerHooks('beforeWidgetInitialization', allWidgetConfiguration, algoliaBundle);

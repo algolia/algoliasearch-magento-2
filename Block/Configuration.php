@@ -243,6 +243,14 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             ],
             'analytics' => $config->getAnalyticsConfig(),
             'now' => $this->getTimestamp(),
+            'queue' => [
+                'isEnabled' => $config->isQueueActive($this->getStoreId()),
+                'nbOfJobsToRun' => $config->getNumberOfJobToRun($this->getStoreId()),
+                'retryLimit' => $config->getRetryLimit($this->getStoreId()),
+                'nbOfElementsPerIndexingJob' => $config->getNumberOfElementByPage($this->getStoreId()),
+            ],
+            'isPreventBackendRenderingEnabled' => $config->preventBackendRendering($this->getStoreId()),
+            'areOutOfStockOptionsDisplayed' => $config->indexOutOfStockOptions($this->getStoreId()),
             'translations' => [
                 'to' => __('to'),
                 'or' => __('or'),

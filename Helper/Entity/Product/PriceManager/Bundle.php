@@ -23,6 +23,6 @@ class Bundle extends ProductWithChildren
             }
         }
 
-        return [$min, $max];
+        return [$min, $max, $min, $max];
     }
 }

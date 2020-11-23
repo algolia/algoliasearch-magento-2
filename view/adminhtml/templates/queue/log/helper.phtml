@@ -1,0 +1,9 @@
+<div class="indexing-queue-logs-message algoblue">
+    <div class="inner">
+        <p>To determine how well your indexing queue is performing, you can review the <code>`algoliasearch_queue_log`</code> table in your database. Each row represents a process of the <code>`algolia_queue_runner`</code> indexer, whether it comes from the cronjob or a manual run.</p>
+
+        <p>The <strong><code>`duration`</code></strong> column is represented in seconds. This duration should be at least a minute shorter than your cronjob interval. For instance, if you have the cronjob set to every 5 minutes, the duration at most should be less than 4 minutes (or 240 seconds). This accounts for any extra processing time.</p>
+
+        <p>If you’re performing over the recommended time, we recommend that you reduce the number of processed jobs and follow the documentation on <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link&language=php#configuring-the-queue">how to optimise your indexing queue</a>.</p>
+    </div>
+</div>

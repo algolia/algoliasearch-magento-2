@@ -212,7 +212,16 @@ class Data
         }
 
         if (!$isFullReindex && isset($pages['toRemove']) && count($pages['toRemove'])) {
-            $this->algoliaHelper->deleteObjects($pages['toRemove'], $indexName);
+            $pagesToRemove = $pages['toRemove'];
+
+            foreach (array_chunk($pagesToRemove, 100) as $chunk) {
+                try {
+                    $this->algoliaHelper->deleteObjects($chunk, $indexName);
+                } catch (\Exception $e) {
+                    $this->logger->log($e->getMessage());
+                    continue;
+                }
+            }
         }
 
         if ($isFullReindex) {

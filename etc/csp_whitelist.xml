@@ -9,11 +9,6 @@
         </policy>
         <policy id="connect-src">
             <values>
-                <value id="algolia" type="host">*.algolia.net</value>
-            </values>
-        </policy>
-        <policy id="connect-src">
-            <values>
                 <value id="algolia-api" type="host">*.algolia.net</value>
                 <value id="algolia" type="host">*.algolia.com</value>
             </values>

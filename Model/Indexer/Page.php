@@ -65,13 +65,11 @@ class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framewo
         $storeIds = $this->pageHelper->getStores();
 
         foreach ($storeIds as $storeId) {
-
             if ($this->fullAction->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
             if ($this->isPagesInAdditionalSections($storeId)) {
-
                 $data = ['store_id' => $storeId];
                 if (is_array($ids) && count($ids) > 0) {
                     $data['page_ids'] = $ids;
@@ -83,7 +81,6 @@ class Page implements Magento\Framework\Indexer\ActionInterface, Magento\Framewo
                     $data,
                     is_array($ids) ? count($ids) : 1
                 );
-
             }
         }
     }

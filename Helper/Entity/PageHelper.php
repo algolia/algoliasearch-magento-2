@@ -115,7 +115,6 @@ class PageHelper
 
         /** @var Page $page */
         foreach ($magentoPages as $page) {
-
             $pageObject = [];
 
             $pageObject['slug'] = $page->getIdentifier();

@@ -209,7 +209,6 @@ class Data
                     continue;
                 }
             }
-
         }
 
         if (!$isFullReindex && isset($pages['toRemove']) && count($pages['toRemove'])) {

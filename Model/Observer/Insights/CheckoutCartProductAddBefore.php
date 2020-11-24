@@ -37,12 +37,7 @@ class CheckoutCartProductAddBefore implements ObserverInterface
         $product = $observer->getEvent()->getProduct();
         $requestInfo = $observer->getEvent()->getInfo();
 
-        if (!$this->configHelper->isClickConversionAnalyticsEnabled($product->getStoreId())
-            || $this->configHelper->getConversionAnalyticsMode($product->getStoreId()) !== 'place_order') {
-            return;
-        }
-
-        if (isset($requestInfo['queryID']) && $requestInfo['queryID'] == '') {
+        if (isset($requestInfo['queryID']) && $requestInfo['queryID'] != '') {
             $product->setData('queryId', $requestInfo['queryID']);
         }
     }

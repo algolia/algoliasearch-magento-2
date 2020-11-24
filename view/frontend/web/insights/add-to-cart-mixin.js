@@ -6,7 +6,7 @@ define(['jquery'], function ($) {
         submitForm: function (form) {
             if (window.algoliaConfig
                 && algoliaConfig.ccAnalytics.enabled
-                && algoliaConfig.ccAnalytics.conversionAnalyticsMode == 'place_order'
+                && algoliaConfig.ccAnalytics.conversionAnalyticsMode != 'disabled'
             ) {
                 this._setQueryIdToForm(form)
             }

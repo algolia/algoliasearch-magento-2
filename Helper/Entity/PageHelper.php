@@ -102,11 +102,12 @@ class PageHelper
             $magentoPages->addFieldToFilter('page_id', ['in' => $pageIds]);
         }
 
-        $excludedPages = array_values($this->configHelper->getExcludedPages());
-
-        foreach ($excludedPages as &$excludedPage) {
-            $excludedPage = $excludedPage['attribute'];
+        $excludedPages = $this->getExcludedPageIds();
+        if (count($excludedPages)) {
+            $magentoPages->addFieldToFilter('identifier', ['nin' => $excludedPages]);
         }
+
+        $pageIdsToRemove = $pageIds ? array_flip($pageIds) : [];
 
         $pages = [];
 
@@ -114,9 +115,6 @@ class PageHelper
 
         /** @var Page $page */
         foreach ($magentoPages as $page) {
-            if (in_array($page->getIdentifier(), $excludedPages)) {
-                continue;
-            }
 
             $pageObject = [];
 
@@ -151,10 +149,25 @@ class PageHelper
             );
             $pageObject = $transport->getData();
 
-            $pages[] = $pageObject;
+            if (isset($pageIdsToRemove[$page->getId()])) {
+                unset($pageIdsToRemove[$page->getId()]);
+            }
+            $pages['toIndex'][] = $pageObject;
         }
 
+        $pages['toRemove'] = array_unique(array_keys($pageIdsToRemove));
+
         return $pages;
+    }
+
+    public function getExcludedPageIds()
+    {
+        $excludedPages = array_values($this->configHelper->getExcludedPages());
+        foreach ($excludedPages as &$excludedPage) {
+            $excludedPage = $excludedPage['attribute'];
+        }
+
+        return $excludedPages;
     }
 
     public function getStores($storeId = null)

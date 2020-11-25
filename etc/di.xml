@@ -14,6 +14,10 @@
         <plugin name="algoliaCategories" type="Algolia\AlgoliaSearch\Model\Indexer\CategoryObserver"/>
     </type>
 
+    <type name="Magento\Cms\Model\ResourceModel\Page">
+        <plugin name="algoliaPages" type="Algolia\AlgoliaSearch\Model\Indexer\PageObserver"/>
+    </type>
+
     <type name="Magento\Search\Helper\Data">
         <plugin name="algoliaSearchHelperData" type="Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin"/>
     </type>

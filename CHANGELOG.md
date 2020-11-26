@@ -1,5 +1,24 @@
 # CHANGE LOG
 
+## 3.0.2
+
+### FEATURES
+- CMS Page indexing improvement (#1113) (by @vmalyk)
+
+### UPDATES
+- Add tags for QM and LPB queries to use VM if applicable (#1103)
+- InfiniteHits change showMoreLabel to showMoreText (#1105)
+- Turn off Perso when it’s not available in the plan but activated in the Magento admin (#1104)
+- Keep custom Rules set directly on Algolia dashboard for CMS Pages, Suggestions and Additional sections. (#1106)
+- Remove from composer suggestion for es compatibility (#1114)
+
+### FIXES
+- linter fix templates (#1108)
+- Configurable product with broken image when set to “no_selection” (#1101) (by @dverkade)
+- Insights Analytics - Fix Add to Cart Conversion (#1111)
+- Added try/catch on CheckoutSuccess event (#1112)
+- Merge 2 connect-src policy sections to 1 (#1110) (by @vmalyk)
+
 ## 3.0.1
 
 ### UPDATES

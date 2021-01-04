@@ -9,13 +9,19 @@ $isClickAnalyticsEnabled = true;
 
 $section = $block->getRequest()->getParam('section');
 
-if ($section === 'algoliasearch_cc_analytics') {
-    $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
-}
+$linksAndVideoTemplate = '';
+$extensionNotices = [];
+$personalizationStatus = 0;
 
-$linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
-$extensionNotices = $viewModel->getExtensionNotices();
-$personalizationStatus = $viewModel->getPersonalizationStatus();
+if (preg_match('/algoliasearch_/', $section)) {
+    if ($section === 'algoliasearch_cc_analytics') {
+        $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
+    }
+
+    $linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
+    $extensionNotices = $viewModel->getExtensionNotices();
+    $personalizationStatus = $viewModel->getPersonalizationStatus();
+}
 
 ?>
 

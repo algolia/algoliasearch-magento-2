@@ -619,20 +619,24 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
-								uiStateProductIndex['range'][currentFacet.attribute] = routeParameters[currentFacet.attribute] && routeParameters[currentFacet.attribute];
+							    var currentFacetAttribute = currentFacet.attribute;
+                                if (currentFacetAttribute.indexOf("price") !== -1) {
+                                    currentFacetAttribute += algoliaConfig.priceKey;
+                                }
+								uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[currentFacetAttribute] && routeParameters[currentFacetAttribute];
 								if (algoliaConfig.isLandingPage &&
-									typeof uiStateProductIndex['range'][currentFacet.attribute] === 'undefined' &&
-									currentFacet.attribute in landingPageConfig) {
+									typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
+                                    currentFacetAttribute in landingPageConfig) {
 
 									var facetValue = '';
-									if (typeof landingPageConfig[currentFacet.attribute]['>='] !== "undefined") {
-										facetValue = landingPageConfig[currentFacet.attribute]['>='][0];
+									if (typeof landingPageConfig[currentFacetAttribute]['>='] !== "undefined") {
+										facetValue = landingPageConfig[currentFacetAttribute]['>='][0];
 									}
 									facetValue += ':';
-									if (typeof landingPageConfig[currentFacet.attribute]['<='] !== "undefined") {
-										facetValue += landingPageConfig[currentFacet.attribute]['<='][0];
+									if (typeof landingPageConfig[currentFacetAttribute]['<='] !== "undefined") {
+										facetValue += landingPageConfig[currentFacetAttribute]['<='][0];
 									}
-									uiStateProductIndex['range'][currentFacet.attribute] = facetValue;
+									uiStateProductIndex['range'][currentFacetAttribute] = facetValue;
 								}
 							}
 						};
@@ -640,7 +644,10 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					uiStateProductIndex['sortBy'] = routeParameters.sortBy;
 					uiStateProductIndex['page'] = routeParameters.page;
 
-					var uiState = {};
+                    console.log(uiStateProductIndex);
+
+
+                    var uiState = {};
 					uiState[productIndexName] = uiStateProductIndex;
 					return uiState;
 				}

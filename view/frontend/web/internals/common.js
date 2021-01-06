@@ -619,14 +619,14 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 							}
 							// Handle sliders
 							if (currentFacet.type == 'slider') {
-							    var currentFacetAttribute = currentFacet.attribute;
-                                if (currentFacetAttribute.indexOf("price") !== -1) {
-                                    currentFacetAttribute += algoliaConfig.priceKey;
-                                }
+								var currentFacetAttribute = currentFacet.attribute;
+								if (currentFacetAttribute.indexOf("price") !== -1) {
+									currentFacetAttribute += algoliaConfig.priceKey;
+								}
 								uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[currentFacetAttribute] && routeParameters[currentFacetAttribute];
 								if (algoliaConfig.isLandingPage &&
 									typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
-                                    currentFacetAttribute in landingPageConfig) {
+									currentFacetAttribute in landingPageConfig) {
 
 									var facetValue = '';
 									if (typeof landingPageConfig[currentFacetAttribute]['>='] !== "undefined") {
@@ -644,10 +644,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 					uiStateProductIndex['sortBy'] = routeParameters.sortBy;
 					uiStateProductIndex['page'] = routeParameters.page;
 
-                    console.log(uiStateProductIndex);
-
-
-                    var uiState = {};
+					var uiState = {};
 					uiState[productIndexName] = uiStateProductIndex;
 					return uiState;
 				}

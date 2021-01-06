@@ -295,9 +295,6 @@ class CategoryHelper
         ];
 
         if (!empty($imageUrl)) {
-            $imageUrl = $this->imageHelper->removeProtocol($imageUrl);
-            $imageUrl = $this->imageHelper->removeDoubleSlashes($imageUrl);
-
             $data['image_url'] = $imageUrl;
         }
 

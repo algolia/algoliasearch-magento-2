@@ -52,9 +52,6 @@ class Image extends \Magento\Catalog\Helper\Image
             $url = $this->getDefaultPlaceholderUrl();
         }
 
-        $url = $this->removeProtocol($url);
-        $url = $this->removeDoubleSlashes($url);
-
         if ($this->configHelper->shouldRemovePubDirectory()) {
             $url = $this->removePubDirectory($url);
         }
@@ -108,19 +105,6 @@ class Image extends \Magento\Catalog\Helper\Image
         }
 
         return null;
-    }
-
-    public function removeProtocol($url)
-    {
-        return str_replace(['https://', 'http://'], '//', $url);
-    }
-
-    public function removeDoubleSlashes($url)
-    {
-        $url = str_replace('//', '/', $url);
-        $url = '/' . $url;
-
-        return $url;
     }
 
     public function removePubDirectory($url)

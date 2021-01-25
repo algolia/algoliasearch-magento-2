@@ -3,6 +3,9 @@
     <view id="algolia_suggestions" class="Algolia\AlgoliaSearch\Model\Indexer\Suggestion" group="indexer">
     </view>
     <view id="algolia_pages" class="Algolia\AlgoliaSearch\Model\Indexer\Page" group="indexer">
+        <subscriptions>
+            <table name="cms_page" entity_column="page_id" />
+        </subscriptions>
     </view>
     <view id="algolia_additional_sections" class="Algolia\AlgoliaSearch\Model\Indexer\Page" group="indexer">
     </view>

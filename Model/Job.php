@@ -129,14 +129,16 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         $decodedData = $this->getDecodedData();
 
         if ((!isset($decodedData['product_ids']) || count($decodedData['product_ids']) <= 0)
-            && (!isset($decodedData['category_ids']) || count($decodedData['category_ids']) < 0)) {
+            && (!isset($decodedData['category_ids']) || count($decodedData['category_ids']) < 0)
+            && (!isset($decodedData['page_ids']) || count($decodedData['page_ids']) < 0)) {
             return false;
         }
 
         $candidateDecodedData = $job->getDecodedData();
 
         if ((!isset($candidateDecodedData['product_ids']) || count($candidateDecodedData['product_ids']) <= 0)
-            && (!isset($candidateDecodedData['category_ids']) || count($candidateDecodedData['category_ids']) < 0)) {
+            && (!isset($candidateDecodedData['category_ids']) || count($candidateDecodedData['category_ids']) < 0)
+            && (!isset($candidateDecodedData['page_ids']) || count($candidateDecodedData['page_ids']) < 0)) {
             return false;
         }
 
@@ -147,6 +149,11 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
         if (isset($decodedData['category_ids'])
             && count($decodedData['category_ids']) + count($candidateDecodedData['category_ids']) > $maxJobDataSize) {
+            return false;
+        }
+
+        if (isset($decodedData['page_ids'])
+            && count($decodedData['page_ids']) + count($candidateDecodedData['page_ids']) > $maxJobDataSize) {
             return false;
         }
 
@@ -184,6 +191,13 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
             ));
 
             $dataSize = count($decodedData['category_ids']);
+        } elseif (isset($decodedData['page_ids'])) {
+            $decodedData['page_ids'] = array_unique(array_merge(
+                $decodedData['page_ids'],
+                $mergedJobDecodedData['page_ids']
+            ));
+
+            $dataSize = count($decodedData['page_ids']);
         }
 
         $this->setDecodedData($decodedData);

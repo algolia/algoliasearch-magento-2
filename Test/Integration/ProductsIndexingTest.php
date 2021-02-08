@@ -81,44 +81,6 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
     }
 
-    public function testNoProtocolImageUrls()
-    {
-        $additionAttributes = $this->configHelper->getProductAdditionalAttributes();
-        $additionAttributes[] = [
-            'attribute' => 'media_gallery',
-            'searchable' => '0',
-            'retrievable' => '1',
-            'order' => 'unordered',
-        ];
-
-        $this->setConfig(
-            'algoliasearch_products/products/product_additional_attributes',
-            $this->getSerializer()->serialize($additionAttributes)
-        );
-
-        /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
-        $indexer->executeRow($this->getValidTestProduct());
-
-        $this->algoliaHelper->waitLastTask();
-
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
-        $hit = reset($results['results']);
-
-        if (!$hit || !array_key_exists('image_url', $hit)) {
-            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
-        }
-
-        $this->assertStringStartsWith('//', $hit['image_url']);
-        $this->assertStringStartsWith('//', $hit['thumbnail_url']);
-
-        $this->assertArrayHasKey('media_gallery', $hit);
-
-        foreach ($hit['media_gallery'] as $galleryImageUrl) {
-            $this->assertStringStartsWith('//', $galleryImageUrl);
-        }
-    }
-
     public function testNoSpecialPrice()
     {
         /** @var Product $indexer */

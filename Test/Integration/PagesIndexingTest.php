@@ -104,8 +104,8 @@ class PagesIndexingTest extends IndexingTestCase
 
         /** @var PageHelper $pagesHelper */
         $pagesHelper = $this->getObjectManager()->create(PageHelper::class);
-        $pages = $pagesHelper->getPages(1);
-        foreach ($pages as $page) {
+        $pages = $pagesHelper->getPages(1, [$testPageId]);
+        foreach ($pages['toIndex'] as $page) {
             if ($page['objectID'] === $testPageId) {
                 $content = [$page['content']];
                 $this->assertNotContains('<script>', $content);
@@ -138,8 +138,8 @@ class PagesIndexingTest extends IndexingTestCase
 
         /** @var PageHelper $pagesHelper */
         $pagesHelper = $this->getObjectManager()->create(PageHelper::class);
-        $pages = $pagesHelper->getPages(1);
-        foreach ($pages as $page) {
+        $pages = $pagesHelper->getPages(1, [$testPageId]);
+        foreach ($pages['toIndex'] as $page) {
             if ($page['objectID'] === $testPageId) {
                 $this->assertSame($utf8Content, $page['content']);
             }

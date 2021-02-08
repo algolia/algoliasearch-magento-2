@@ -735,11 +735,7 @@ class ProductHelper
                 $images = $product->getMediaGalleryImages();
                 if ($images) {
                     foreach ($images as $image) {
-                        $url = $image->getUrl();
-                        $url = $this->imageHelper->removeProtocol($url);
-                        $url = $this->imageHelper->removeDoubleSlashes($url);
-
-                        $customData['media_gallery'][] = $url;
+                        $customData['media_gallery'][] = $image->getUrl();
                     }
                 }
             }

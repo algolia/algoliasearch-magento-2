@@ -173,13 +173,14 @@ class Data
                 $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
             }
 
+            $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
             $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
 
             $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
         }
     }
 
-    public function rebuildStorePageIndex($storeId)
+    public function rebuildStorePageIndex($storeId, array $pageIds = null)
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -189,20 +190,44 @@ class Data
 
         $this->startEmulation($storeId);
 
-        $pages = $this->pageHelper->getPages($storeId);
+        $pages = $this->pageHelper->getPages($storeId, $pageIds);
 
         $this->stopEmulation();
 
-        foreach (array_chunk($pages, 100) as $chunk) {
-            try {
-                $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
-            } catch (\Exception $e) {
-                $this->logger->log($e->getMessage());
-                continue;
+        // if there are pageIds defined, do not index to _tmp
+        $isFullReindex = (!$pageIds);
+
+        if (isset($pages['toIndex']) && count($pages['toIndex'])) {
+            $pagesToIndex = $pages['toIndex'];
+            $toIndexName = $indexName . ($isFullReindex ? '_tmp' : '');
+
+            foreach (array_chunk($pagesToIndex, 100) as $chunk) {
+                try {
+                    $this->algoliaHelper->addObjects($chunk, $toIndexName);
+                } catch (\Exception $e) {
+                    $this->logger->log($e->getMessage());
+                    continue;
+                }
             }
         }
 
-        $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
+        if (!$isFullReindex && isset($pages['toRemove']) && count($pages['toRemove'])) {
+            $pagesToRemove = $pages['toRemove'];
+
+            foreach (array_chunk($pagesToRemove, 100) as $chunk) {
+                try {
+                    $this->algoliaHelper->deleteObjects($chunk, $indexName);
+                } catch (\Exception $e) {
+                    $this->logger->log($e->getMessage());
+                    continue;
+                }
+            }
+        }
+
+        if ($isFullReindex) {
+            $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
+            $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
+        }
 
         $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
     }
@@ -289,6 +314,7 @@ class Data
         $tmpIndexName = $this->getIndexName($indexNameSuffix, $storeId, true);
         $indexName = $this->getIndexName($indexNameSuffix, $storeId);
 
+        $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName);
         $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
     }
 
@@ -592,8 +618,8 @@ class Data
             return;
         }
 
-        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ', 
-            page ' . $page . ', 
+        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
+            page ' . $page . ',
             pageSize ' . $pageSize;
         $this->logger->start($wrapperLogMessage);
 
@@ -622,8 +648,8 @@ class Data
             ['collection' => $collection, 'store' => $storeId]
         );
 
-        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ', 
-            collection page: ' . $page . ', 
+        $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
+            collection page: ' . $page . ',
             pageSize: ' . $pageSize;
 
         $this->logger->start($logMessage);

@@ -1,7 +1,7 @@
 <?php
 /** @var \Magento\Backend\Block\Template $block */
 ?>
-<?php if (!empty($block->getAnalytics())): ?>
+<?php if (!empty($block->getAnalytics())) : ?>
     <div id="algolia-analyatics-diagram"></div>
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -12,17 +12,17 @@
 
             var data = new google.visualization.arrayToDataTable([
                 ['Date', 'Searches', {type: 'string', role: 'tooltip', p: {'html': true}}, {role: 'style'}],
-                <?php foreach ($block->getAnalytics() as $item): ?>
+                <?php foreach ($block->getAnalytics() as $item) : ?>
                 ['<?php echo $item['formatted'] ?>', <?php echo $item['count'] ?>,
                     "<div style='padding: 1.5rem; line-height: 18px;'><strong style='font-size: 14px;'><?php echo $item['formatted'] ?></strong><br/><br/>" +
                     "<p>Searches: <strong style='color: #5468ff; padding-left: 3px;'><?php echo $item['count'] ?></strong></p>" +
                     "<p>Users: <strong style='color: #3a46a1; padding-left: 3px;'><?php echo $item['users'] ?></strong></p>" +
                     "<p>No Result Rate: <strong style='color: #3ab2bd; padding-left: 3px;'><?php echo round((int) $item['rate'] * 100, 2) . '%' ?></strong></p>" +
-                    <?php if (isset($item['ctr'])): ?>
-                        "<br/>" +
-                        "<p>CTR: <strong style='color: #5468ff; padding-left: 3px;'><?php echo round((int) $item['ctr'] * 100, 2) . '%' ?></strong></p>" +
-                        "<p>Conversion Rate: <strong style='color: #3a46a1; padding-left: 3px;'><?php echo round((int) $item['conversion'] * 100, 2) . '%' ?></strong></p>" +
-                        "<p>Avg Click Position: <strong style='color: #3ab2bd; padding-left: 3px;'><?php echo $item['clickPos'] ? $item['clickPos'] : '-' ?></strong></p>" +
+                    <?php if (isset($item['ctr'])) : ?>
+                    "<br/>" +
+                    "<p>CTR: <strong style='color: #5468ff; padding-left: 3px;'><?php echo round((int) $item['ctr'] * 100, 2) . '%' ?></strong></p>" +
+                    "<p>Conversion Rate: <strong style='color: #3a46a1; padding-left: 3px;'><?php echo round((int) $item['conversion'] * 100, 2) . '%' ?></strong></p>" +
+                    "<p>Avg Click Position: <strong style='color: #3ab2bd; padding-left: 3px;'><?php echo $item['clickPos'] ? $item['clickPos'] : '-' ?></strong></p>" +
                     <?php endif ?>
                     "</div>",
                     'stroke-opacity: 0; fill-opacity: 0.75;'
@@ -58,7 +58,7 @@
             chart.draw(data, options);
         }
     </script>
-<?php else: ?>
+<?php else : ?>
     <div class="dashboard-diagram-nodata">
         <span><?php echo $block->escapeHtml(__('No Data Found')) ?></span>
     </div>

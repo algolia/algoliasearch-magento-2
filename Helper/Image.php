@@ -52,9 +52,6 @@ class Image extends \Magento\Catalog\Helper\Image
             $url = $this->getDefaultPlaceholderUrl();
         }
 
-        $url = $this->removeProtocol($url);
-        $url = $this->removeDoubleSlashes($url);
-
         if ($this->configHelper->shouldRemovePubDirectory()) {
             $url = $this->removePubDirectory($url);
         }
@@ -88,7 +85,8 @@ class Image extends \Magento\Catalog\Helper\Image
     private function getProductImage(\Magento\Catalog\Model\Product\Image $model)
     {
         $imageUrl = $this->getProduct()->getData($model->getDestinationSubdir());
-        if (($imageUrl === null || $imageUrl == '') && $this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
+        if (($imageUrl === null || $imageUrl == '' || $imageUrl == 'no_selection') &&
+            $this->getProduct()->getTypeId() == ProductTypeConfigurable::TYPE_CODE) {
             $imageUrl = $this->getType() !== 'image' && $this->getConfigurableProductImage() ?
                 $this->getConfigurableProductImage() : $this->getProduct()->getImage();
         }
@@ -107,19 +105,6 @@ class Image extends \Magento\Catalog\Helper\Image
         }
 
         return null;
-    }
-
-    public function removeProtocol($url)
-    {
-        return str_replace(['https://', 'http://'], '//', $url);
-    }
-
-    public function removeDoubleSlashes($url)
-    {
-        $url = str_replace('//', '/', $url);
-        $url = '/' . $url;
-
-        return $url;
     }
 
     public function removePubDirectory($url)

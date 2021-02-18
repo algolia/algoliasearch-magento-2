@@ -2,8 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Adapter\AdapterInterface;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Model\AbstractModel;
 
@@ -12,29 +11,25 @@ class PageObserver
     private $indexer;
 
     /**
-     * @var ResourceConnection
+     * @var ConfigHelper
      */
-    private $resourceConnection;
-
-    /**
-     * @var AdapterInterface
-     */
-    private $dbConnection;
+    private $configHelper;
 
     public function __construct(
         IndexerRegistry $indexerRegistry,
-        ResourceConnection $resourceConnection
+        ConfigHelper $configHelper
     ) {
         $this->indexer = $indexerRegistry->get('algolia_pages');
-        $this->resourceConnection = $resourceConnection;
+        $this->configHelper = $configHelper;
     }
 
     public function beforeSave(
         \Magento\Cms\Model\ResourceModel\Page $pageResource,
         AbstractModel $page
     ) {
-        // On fresh Magento install, we have to make sure that category entity type exists
-        if (!$this->categoryEntityTypeExists()) {
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
             return [$page];
         }
 
@@ -47,24 +42,16 @@ class PageObserver
         return [$page];
     }
 
-    protected function categoryEntityTypeExists()
-    {
-        $this->dbConnection = $this->resourceConnection->getConnection();
-
-        $select = $this->dbConnection->select()
-            ->from(
-                $this->resourceConnection->getTableName('eav_entity_type'),
-                'entity_type_id'
-            )
-            ->where('entity_type_code = \'catalog_category\'');
-
-        return $this->dbConnection->fetchOne($select);
-    }
-
     public function beforeDelete(
         \Magento\Cms\Model\ResourceModel\Page $pageResource,
         AbstractModel $page
     ) {
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            return [$page];
+        }
+
         $pageResource->addCommitCallback(function () use ($page) {
             if (!$this->indexer->isScheduled()) {
                 $this->indexer->reindexRow($page->getId());

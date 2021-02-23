@@ -62,6 +62,8 @@ abstract class ProductWithoutChildren
         foreach ($fields as $field => $withTax) {
             $this->customData[$field] = [];
 
+            $product->setPriceCalculation(true);
+
             foreach ($currencies as $currencyCode) {
                 $this->customData[$field][$currencyCode] = [];
 

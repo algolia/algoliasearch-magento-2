@@ -2,12 +2,15 @@ requirejs([
     'jquery',
     'algoliaAnalytics',
     'algoliaBundle',
-], function ($, algoliaAnalytics, algoliaBundle) {
+], function ($, algoliaAnalyticsWrapper, algoliaBundle) {
+
+    algoliaAnalytics = algoliaAnalyticsWrapper.default;
 
     var algoliaInsights = {
         config: null,
         defaultIndexName: null,
         isTracking: false,
+        hasAddedParameters: false,
 
         track: function(algoliaConfig) {
 
@@ -46,7 +49,10 @@ requirejs([
 
         addSearchParameters: function() {
 
-            var self = this;
+            if (this.hasAddedParameters) {
+                return;
+            }
+
             algolia.registerHook('beforeWidgetInitialization', function (allWidgetConfiguration) {
                 allWidgetConfiguration.configure = allWidgetConfiguration.configure || {};
                 if (algoliaConfig.ccAnalytics.enabled) {
@@ -60,6 +66,9 @@ requirejs([
 
                 return allWidgetConfiguration;
             });
+
+            this.hasAddedParameters = true;
+
         },
 
         bindData: function() {
@@ -255,6 +264,8 @@ requirejs([
         }
 
     };
+
+    algoliaInsights.addSearchParameters();
 
     algoliaBundle.$(function ($) {
         if (window.algoliaConfig) {

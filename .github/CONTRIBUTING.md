@@ -18,8 +18,8 @@ The development team will review all issues and contributions submitted by the c
 	* Integration test coverage
 	* Proposed [documentation](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/) update
 6. All automated tests are passed successfully:
-	* CircleCI Magento 2.2
 	* CircleCI Magento 2.3
+	* CircleCI Magento 2.4 
 	* CircleCI [Quality Tools](https://github.com/algolia/magento2-tools) (phpcs and php compatibility)
 
 # Contribution process

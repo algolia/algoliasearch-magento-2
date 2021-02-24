@@ -1,7 +1,7 @@
 Algolia Search for Magento 2
 ==================
 
-![Latest version](https://img.shields.io/badge/latest-3.0.2-green.svg)
+![Latest version](https://img.shields.io/badge/latest-3.1.0-green.svg)
 ![Magento 2](https://img.shields.io/badge/Magento-%32.3,%202.4-blue.svg)
 
 [![CircleCI](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/master.svg?style=svg)](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/master)

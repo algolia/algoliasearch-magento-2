@@ -1,5 +1,21 @@
 # CHANGE LOG
 
+## 3.1.0
+
+### UPDATES
+- Fetch Algolia additional data only in the extension's sections in the Magento config (#1119)
+- Remove image URL manipulation (#1120) by @fredden
+- Add product source hook to modify search options (#1123) 
+- Use button element for search button (#1102) by @fredden
+- Set Price Calculation to true for every tax field during price calculation (#1124)
+- Update maintainers.md with process info (#1128) 
+- Update algoliaBundle with latest instantsearch version (#1127) 
+
+### FIXES
+- Fix to keep the price slider values in the filter when user refresh the page (#1121)
+- Add missing handle for cms editor layout needed for pagebuilder (#1122) 
+- Adding credentials check to prevent Magento from crashing on fresh install (#1125)
+
 ## 3.0.2
 
 ### FEATURES

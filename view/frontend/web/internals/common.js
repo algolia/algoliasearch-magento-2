@@ -98,7 +98,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				var colors = [];
 
 				$.each(hit._highlightResult.color, function (i, color) {
-					if (color.matchLevel === 'none') {
+					if (color.matchLevel === undefined || color.matchLevel === 'none') {
 						return;
 					}
 
@@ -106,7 +106,6 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 
 					if (algoliaConfig.useAdaptiveImage === true) {
 						var matchedColor = color.matchedWords.join(' ');
-
 						if (hit.images_data && color.fullyHighlighted && color.fullyHighlighted === true) {
 							matchedColors.push(matchedColor);
 						}

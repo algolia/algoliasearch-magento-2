@@ -465,6 +465,7 @@ class CategoryHelper
 
         if ($this->getCorrectIdColumn() === 'row_id') {
             $category = $this->getCategoryById($categoryId);
+
             return $category ? $category->getRowId() : null;
         }
 

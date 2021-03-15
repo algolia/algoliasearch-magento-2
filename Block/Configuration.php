@@ -286,13 +286,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
     private function areCategoriesInFacets($facets)
     {
-        foreach ($facets as $facet) {
-            if ($facet['attribute'] === 'categories') {
-                return true;
-            }
-        }
-
-        return false;
+        return in_array('categories', array_column($facets, 'attribute'));
     }
 
     private function getUrlTrackedParameters()
@@ -336,28 +330,16 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
     private function getLandingPageId()
     {
-        if (!$this->isLandingPage()) {
-            return '';
-        }
-
-        return $this->getCurrentLandingPage()->getId();
+        return $this->isLandingPage() ? $this->getCurrentLandingPage()->getId() : '';
     }
 
     private function getLandingPageQuery()
     {
-        if (!$this->isLandingPage()) {
-            return '';
-        }
-
-        return $this->getCurrentLandingPage()->getQuery();
+        return $this->isLandingPage() ? $this->getCurrentLandingPage()->getQuery() : '';
     }
 
     private function getLandingPageConfiguration()
     {
-        if (!$this->isLandingPage()) {
-            return json_encode([]);
-        }
-
-        return $this->getCurrentLandingPage()->getConfiguration();
+        return $this->isLandingPage() ? $this->getCurrentLandingPage()->getConfiguration() : json_encode([]);
     }
 }

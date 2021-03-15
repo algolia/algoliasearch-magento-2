@@ -5,12 +5,11 @@ namespace Algolia\AlgoliaSearch\Model\Indexer;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Queue;
-use Magento;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
-class AdditionalSection implements Magento\Framework\Indexer\ActionInterface, Magento\Framework\Mview\ActionInterface
+class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     private $fullAction;
     private $storeManager;

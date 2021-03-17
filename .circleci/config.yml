@@ -46,9 +46,8 @@ shared: &shared
             name: Run tests
             command: |
                 cd ~/magento_directory/dev/tests/integration
-                echo $CIRCLE_PROJECT_REPONAME
-                echo $CIRCLE_BUILD_NUM
                 curl -s https://algoliasearch-client-keygen.herokuapp.com | sh >> $BASH_ENV
+                printenv
                 sudo service elasticsearch start # for some reasons has to be launched with the step
                 sleep 10
                 php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test

@@ -41,20 +41,18 @@ shared: &shared
               name: Before setup
               command: |
                   echo 'memory_limit = 256M' | sudo tee /usr/local/etc/php/php.ini
-                  sudo service elasticsearch start # for some reasons has to be launched with the step
-                  sleep 10
 
         - run:
               name: Get keys from dealer
               command: |
-                  curl -s https://algoliasearch-client-keygen.herokuapp.com | sh
                   curl -s https://algoliasearch-client-keygen.herokuapp.com | sh >> $BASH_ENV
 
         - run:
             name: Run tests
             command: |
-                echo $ALGOLIA_SEARCH_KEY_1
                 cd ~/magento_directory/dev/tests/integration
+                sudo service elasticsearch start # for some reasons has to be launched with the step
+                sleep 10
                 php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:

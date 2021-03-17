@@ -45,14 +45,15 @@ shared: &shared
                   sleep 10
 
         - run:
-              name: Keygen
+              name: Get keys from dealer
               command: |
+                  curl -s https://algoliasearch-client-keygen.herokuapp.com | sh
                   curl -s https://algoliasearch-client-keygen.herokuapp.com | sh >> $BASH_ENV
-                  echo $ALGOLIA_SEARCH_KEY_1
 
         - run:
             name: Run tests
             command: |
+                echo $ALGOLIA_SEARCH_KEY_1
                 cd ~/magento_directory/dev/tests/integration
                 php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test
 

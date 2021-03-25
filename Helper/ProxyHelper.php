@@ -86,18 +86,6 @@ class ProxyHelper
     }
 
     /**
-     * @param array $data
-     *
-     * @return bool
-     */
-    public function pushSupportTicket($data)
-    {
-        $result = $this->postRequest($data, self::PROXY_URL_PARAM_POST_DATA);
-
-        return $result === 'true';
-    }
-
-    /**
      * @param $data
      * @param $proxyMethod
      *

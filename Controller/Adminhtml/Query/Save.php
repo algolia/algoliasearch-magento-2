@@ -114,10 +114,6 @@ class Save extends AbstractAction
 
             $storeId = isset($data['store_id']) && $data['store_id'] != 0 ? $data['store_id'] : null;
 
-            $this->trackQueryMerchandisingData($query, 'banner_image', 'Uploaded Banner', $storeId);
-            $this->trackQueryMerchandisingData($query, 'banner_alt', 'Add Alt Text', $storeId);
-            $this->trackQueryMerchandisingData($query, 'banner_url', 'Add Banner URL', $storeId);
-
             try {
                 $query->getResource()->save($query);
 
@@ -208,23 +204,5 @@ class Save extends AbstractAction
         }
 
         return $content;
-    }
-
-    /**
-     * @param string $query
-     * @param string $attributeCode
-     * @param string $eventName
-     * @param int|null $storeId
-     */
-    private function trackQueryMerchandisingData($query, $attributeCode, $eventName, $storeId = null)
-    {
-        if (($query->isObjectNew() && $query->getData($attributeCode))
-            || $query->getOrigData($attributeCode) !== $query->getData($attributeCode)) {
-            $this->proxyHelper->trackEvent(
-                $this->configHelper->getApplicationID($storeId),
-                $eventName,
-                ['source' => 'magento2.querymerch.edit']
-            );
-        }
     }
 }

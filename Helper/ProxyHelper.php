@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 class ProxyHelper
 {
-    const PROXY_URL = 'https://magento-proxy.algolia.com/';
+    const PROXY_URL = 'https://magentoNO-proxy.algolia.com/';
 
     const PROXY_URL_PARAM_GET_INFO = 'get-info/';
 

@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Query;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
-use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Algolia\AlgoliaSearch\Model\ImageUploader;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
 use Magento\Framework\App\Request\DataPersistorInterface;
@@ -36,7 +35,6 @@ class Save extends AbstractAction
      * @param \Magento\Framework\Registry $coreRegistry
      * @param QueryFactory $queryFactory
      * @param MerchandisingHelper $merchandisingHelper
-     * @param ProxyHelper $proxyHelper
      * @param StoreManagerInterface $storeManager
      * @param DataPersistorInterface $dataPersistor
      * @param ConfigHelper $configHelper
@@ -49,7 +47,6 @@ class Save extends AbstractAction
         \Magento\Framework\Registry $coreRegistry,
         QueryFactory $queryFactory,
         MerchandisingHelper $merchandisingHelper,
-        ProxyHelper $proxyHelper,
         StoreManagerInterface $storeManager,
         DataPersistorInterface $dataPersistor,
         ConfigHelper $configHelper,
@@ -64,7 +61,6 @@ class Save extends AbstractAction
             $coreRegistry,
             $queryFactory,
             $merchandisingHelper,
-            $proxyHelper,
             $storeManager
         );
     }

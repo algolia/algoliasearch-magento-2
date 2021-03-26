@@ -916,7 +916,6 @@
                 </field>
                 <field id="remove_branding" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Remove branding logo</label>
-                    <frontend_model>Algolia\AlgoliaSearch\Block\System\Form\Field\Logo</frontend_model>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="autocomplete_selector" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">

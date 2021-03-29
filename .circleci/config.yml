@@ -41,16 +41,18 @@ shared: &shared
               name: Before setup
               command: |
                   echo 'memory_limit = 256M' | sudo tee /usr/local/etc/php/php.ini
-                  wget https://alg.li/algolia-keys && chmod +x algolia-keys
+
+        - run:
+              name: Get keys from dealer
+              command: |
+                  if [ "$CIRCLE_PR_REPONAME" ]; then
+                    curl -s https://algoliasearch-client-keygen.herokuapp.com | sh >> $BASH_ENV
+                  fi
 
         - run:
             name: Run tests
             command: |
                 cd ~/magento_directory/dev/tests/integration
-                export CI_BUILD_NUM=$CIRCLE_BUILD_NUM
-                export CI_PROJ_USERNAME=$CIRCLE_PROJECT_USERNAME
-                export CI_PROJ_REPONAME=$CIRCLE_PROJECT_REPONAME
-                eval $(~/build_directory/algoliasearch-magento-2/algolia-keys export)
                 sudo service elasticsearch start # for some reasons has to be launched with the step
                 sleep 10
                 php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test

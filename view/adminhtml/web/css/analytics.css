@@ -73,6 +73,10 @@
     padding: 2rem;
 }
 
+.algoliasearch-analytics-overview .section.popular-results {
+    margin-left: 2%
+}
+
 .algoliasearch-analytics-overview .analytics-footer {
     margin-top: 1.5rem;
     text-align: left;

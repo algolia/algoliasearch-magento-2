@@ -68,7 +68,7 @@ class EnableClickAnalytics extends Value
 
         if ($result) {
             $result = json_decode($result);
-            if ($result->status === 401 && $result->message === 'Feature not available') {
+            if ($result->status === 402) {
                 throw new LocalizedException(
                     __('Click & Conversion analytics are not supported on your current plan. Please refer to <a target="_blank" href="https://www.algolia.com/pricing/">Algolia\'s pricing page</a> for more details.')
                 );

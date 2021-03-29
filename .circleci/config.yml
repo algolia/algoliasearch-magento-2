@@ -45,7 +45,9 @@ shared: &shared
         - run:
               name: Get keys from dealer
               command: |
-                  curl -s https://algoliasearch-client-keygen.herokuapp.com | sh >> $BASH_ENV
+                  if [ "$CIRCLE_PR_REPONAME" ]; then
+                    curl -s https://algoliasearch-client-keygen.herokuapp.com | sh >> $BASH_ENV
+                  fi
 
         - run:
             name: Run tests

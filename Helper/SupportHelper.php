@@ -10,7 +10,8 @@ class SupportHelper
     /**
      * @param ConfigHelper $configHelper
      */
-    public function __construct(ConfigHelper $configHelper) {
+    public function __construct(ConfigHelper $configHelper)
+    {
         $this->configHelper = $configHelper;
     }
 

@@ -2,11 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Model\Source;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Magento\Backend\Block\Template\Context;
-
 class Facets extends AbstractTable
 {
     protected function getTableData()

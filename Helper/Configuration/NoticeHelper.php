@@ -200,7 +200,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $selector = '#row_algoliasearch_cc_analytics_cc_analytics_group_enable';
         $method = 'before';
 
-
         $this->notices[] = [
             'selector' => $selector,
             'method' => $method,

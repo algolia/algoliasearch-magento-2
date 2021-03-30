@@ -323,7 +323,7 @@ class AnalyticsHelper
     {
         $clientData = $this->getClientData();
 
-        return (bool) $clientData && isset($clientData['analytics_api']) ? $clientData['analytics_api'] : 0;
+        return (bool) $clientData && isset($clientData['analytics_api']) ? $clientData['analytics_api'] : 1;
     }
 
     public function isClickAnalyticsEnabled()
@@ -334,7 +334,7 @@ class AnalyticsHelper
 
         $clientData = $this->getClientData();
 
-        return (bool) $clientData && isset($clientData['click_analytics']) ? $clientData['click_analytics'] : 0;
+        return (bool) $clientData && isset($clientData['click_analytics']) ? $clientData['click_analytics'] : 1;
     }
 
     /**

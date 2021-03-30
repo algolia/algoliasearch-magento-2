@@ -165,11 +165,7 @@ class CategoryHelper
         $storeRootCategoryPath = sprintf('%d/%d', $this->getRootCategoryId(), $store->getRootCategoryId());
 
         $unserializedCategorysAttrs = $this->getAdditionalAttributes($storeId);
-
-        $additionalAttr = [];
-        foreach ($unserializedCategorysAttrs as $attr) {
-            $additionalAttr[] = $attr['attribute'];
-        }
+        $additionalAttr = array_column($unserializedCategorysAttrs, 'attribute');
 
         $categories = $this->categoryCollectionFactory->create()
             ->distinct(true)

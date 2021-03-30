@@ -889,6 +889,8 @@ class ConfigHelper
             'in_stock',
             'type_id',
             'value',
+            'query', # suggestions
+            'path', # categories
         ]);
 
         $currencies = $this->dirCurrency->getConfigAllowCurrencies();

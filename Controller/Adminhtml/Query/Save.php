@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Query;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
-use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Algolia\AlgoliaSearch\Model\ImageUploader;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
 use Magento\Framework\App\Request\DataPersistorInterface;
@@ -36,7 +35,6 @@ class Save extends AbstractAction
      * @param \Magento\Framework\Registry $coreRegistry
      * @param QueryFactory $queryFactory
      * @param MerchandisingHelper $merchandisingHelper
-     * @param ProxyHelper $proxyHelper
      * @param StoreManagerInterface $storeManager
      * @param DataPersistorInterface $dataPersistor
      * @param ConfigHelper $configHelper
@@ -49,7 +47,6 @@ class Save extends AbstractAction
         \Magento\Framework\Registry $coreRegistry,
         QueryFactory $queryFactory,
         MerchandisingHelper $merchandisingHelper,
-        ProxyHelper $proxyHelper,
         StoreManagerInterface $storeManager,
         DataPersistorInterface $dataPersistor,
         ConfigHelper $configHelper,
@@ -64,7 +61,6 @@ class Save extends AbstractAction
             $coreRegistry,
             $queryFactory,
             $merchandisingHelper,
-            $proxyHelper,
             $storeManager
         );
     }
@@ -113,10 +109,6 @@ class Save extends AbstractAction
             $query->setCreatedAt(time());
 
             $storeId = isset($data['store_id']) && $data['store_id'] != 0 ? $data['store_id'] : null;
-
-            $this->trackQueryMerchandisingData($query, 'banner_image', 'Uploaded Banner', $storeId);
-            $this->trackQueryMerchandisingData($query, 'banner_alt', 'Add Alt Text', $storeId);
-            $this->trackQueryMerchandisingData($query, 'banner_url', 'Add Banner URL', $storeId);
 
             try {
                 $query->getResource()->save($query);
@@ -208,23 +200,5 @@ class Save extends AbstractAction
         }
 
         return $content;
-    }
-
-    /**
-     * @param string $query
-     * @param string $attributeCode
-     * @param string $eventName
-     * @param int|null $storeId
-     */
-    private function trackQueryMerchandisingData($query, $attributeCode, $eventName, $storeId = null)
-    {
-        if (($query->isObjectNew() && $query->getData($attributeCode))
-            || $query->getOrigData($attributeCode) !== $query->getData($attributeCode)) {
-            $this->proxyHelper->trackEvent(
-                $this->configHelper->getApplicationID($storeId),
-                $eventName,
-                ['source' => 'magento2.querymerch.edit']
-            );
-        }
     }
 }

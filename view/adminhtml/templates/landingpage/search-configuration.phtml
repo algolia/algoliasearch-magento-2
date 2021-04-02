@@ -77,21 +77,13 @@ $isConfig = [
     <div class="algolia_merchandising_items_right_container" id="algolia_merchandising_items_right_container">
         <h2>Products shown on landing page</h2>
         <div id="algolia-stats"></div>
-        <?php if ($block->getPlanLevel() == 3) : ?>
-            <label for="algolia_merchandising_autocomplete">
-                <input type="text" id="algolia_merchandising_autocomplete" placeholder="Quickly find an item to promote..." />
-            </label>
-        <?php endif; ?>
+        <label for="algolia_merchandising_autocomplete">
+            <input type="text" id="algolia_merchandising_autocomplete" placeholder="Quickly find an item to promote..." />
+        </label>
         <div id="algolia_sortby"></div>
         <div id="algolia_hit_per_page"></div>
         <div id="algolia_merchandising_hits"></div>
         <div id="instant-search-pagination-container"></div>
-        <?php if ($block->getPlanLevel() < 3) : ?>
-            <div class="algolia-suggestions-header algolia-suggestions-header-wbg">
-                <img src="<?php echo $block->escapeUrl($starsIllustration); ?>" class="stars" />
-                <p>To be able to sort search results in particular order (promote or demote items), please consider <a href="https://www.algolia.com/pricing" target="_blank" >upgrading to a higher plan</a>.</p>
-            </div>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -106,9 +98,7 @@ $isConfig = [
                 <th class="data-grid-th">SKU</th>
                 <th class="data-grid-th">Name</th>
                 <th class="data-grid-th">Price</th>
-                <?php if ($block->getPlanLevel() == 3) : ?>
-                    <th class="data-grid-th">Pin it</th>
-                <?php endif; ?>
+                <th class="data-grid-th">Pin it</th>
             </tr>
             </thead>
             <tbody>
@@ -116,9 +106,7 @@ $isConfig = [
             <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
             <td class="position_cell">
                 <span class="padlock"></span>
-                <?php if ($block->getPlanLevel() == 3) : ?>
-                    <span class="draggable-handle"></span>
-                <?php endif; ?>
+                <span class="draggable-handle"></span>
             </td>
             <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
             <td>{{ objectID }}</td>
@@ -132,24 +120,22 @@ $isConfig = [
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
             <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
-            <?php if ($block->getPlanLevel() == 3) : ?>
-                <td class="actions">
-                    <div class="pin_block">
-                        <a class="arrow up" href="#">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
-                                <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
-                            </svg>
-                            ️</a>
-                        <a href="#" class="pinIt">PIN HERE</a>
-                        <a href="#" class="unpinIt">UN-PIN</a>
-                        <a class="arrow down" href="#">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
-                                <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
-                            </svg>
-                        </a>
-                    </div>
-                </td>
-            <?php endif; ?>
+            <td class="actions">
+                <div class="pin_block">
+                    <a class="arrow up" href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                            <path fill="#888" fill-rule="nonzero" d="M10.065 6.724c-.038.102-.125.169-.222.169h-3.55v6.834c0 .15-.108.273-.24.273H4.04c-.133 0-.24-.122-.24-.273V6.893H.24c-.098 0-.185-.067-.223-.168a.302.302 0 0 1 .052-.298L4.864.955a.227.227 0 0 1 .17-.08c.065 0 .126.029.17.08l4.809 5.471a.3.3 0 0 1 .052.298z"/>
+                        </svg>
+                        ️</a>
+                    <a href="#" class="pinIt">PIN HERE</a>
+                    <a href="#" class="unpinIt">UN-PIN</a>
+                    <a class="arrow down" href="#">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14">
+                            <path fill="#888" fill-rule="nonzero" d="M10.065 7.276c-.038-.102-.125-.169-.222-.169h-3.55V.273c0-.15-.108-.273-.24-.273H4.04c-.133 0-.24.122-.24.273v6.834H.24c-.098 0-.185.067-.223.168a.302.302 0 0 0 .052.298l4.794 5.472c.046.051.107.08.17.08a.228.228 0 0 0 .17-.08l4.809-5.471a.3.3 0 0 0 .052-.298z"/>
+                        </svg>
+                    </a>
+                </div>
+            </td>
             </tr>
             {{/hits}}
             </tbody>
@@ -177,9 +163,7 @@ $isConfig = [
                 <th class="data-grid-th">SKU</th>
                 <th class="data-grid-th">Name</th>
                 <th class="data-grid-th">Price</th>
-                <?php if ($block->getPlanLevel() == 3) : ?>
-                    <th class="data-grid-th">Pin it</th>
-                <?php endif; ?>
+                <th class="data-grid-th">Pin it</th>
             </tr>
             </thead>
             <tbody>
@@ -187,9 +171,7 @@ $isConfig = [
             <tr data-objectid="{{ objectID }}" {{#_rankingInfo.promoted}}class="pinned"{{/_rankingInfo.promoted}}>
             <td class="position_cell">
                 <span class="padlock"></span>
-                <?php if ($block->getPlanLevel() == 3) : ?>
-                    <span class="draggable-handle"></span>
-                <?php endif; ?>
+                <span class="draggable-handle"></span>
             </td>
             <td class="image_cell"><img src="{{ image_url }}" width="57" /></td>
             <td>{{ objectID }}</td>
@@ -203,7 +185,6 @@ $isConfig = [
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
             <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
-            <?php if ($block->getPlanLevel() == 3) : ?>
                 <td class="actions">
                     <div class="pin_block">
                         <a class="arrow up" href="#">
@@ -220,7 +201,6 @@ $isConfig = [
                         </a>
                     </div>
                 </td>
-            <?php endif; ?>
             </tr>
             {{/hits}}
             </tbody>
@@ -232,9 +212,7 @@ $isConfig = [
     <tr data-objectid="{{ objectID }}">
         <td class="position_cell">
             <span class="padlock"></span>
-            <?php if ($block->getPlanLevel() == 3) : ?>
-                <span class="draggable-handle"></span>
-            <?php endif; ?>
+            <span class="draggable-handle"></span>
         </td>
         <td class="image_cell"><img src="{{ image_url }}" width="60" /></td>
         <td>{{ objectID }}</td>
@@ -248,7 +226,6 @@ $isConfig = [
         </td>
         <td>{{{ name }}}</td>
         <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
-        <?php if ($block->getPlanLevel() == 3) : ?>
             <td class="actions">
                 <div class="pin_block">
                     <a class="arrow up" href="#">
@@ -265,7 +242,6 @@ $isConfig = [
                     </a>
                 </div>
             </td>
-        <?php endif; ?>
     </tr>
 </script>
 
@@ -660,12 +636,10 @@ $isConfig = [
         }
       );
 
-      <?php if ($block->getPlanLevel() == 3) : ?>
         search.on('render', function() {
           initAutocomplete();
           initSortableTable();
         });
-      <?php endif; ?>
 
       search.start();
 

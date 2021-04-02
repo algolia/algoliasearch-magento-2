@@ -3,12 +3,4 @@
     <head>
         <css src="Algolia_AlgoliaSearch::css/common.css"/>
     </head>
-
-    <referenceBlock name="before.body.end">
-        <block class="Magento\Backend\Block\Template" name="algolia.tracking" template="Algolia_AlgoliaSearch::tracking.phtml">
-            <arguments>
-                <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common</argument>
-            </arguments>
-        </block>
-    </referenceBlock>
 </page>

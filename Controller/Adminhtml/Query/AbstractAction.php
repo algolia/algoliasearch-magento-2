@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Query;
 
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
-use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
@@ -20,9 +19,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     /** @var MerchandisingHelper */
     protected $merchandisingHelper;
 
-    /** @var ProxyHelper */
-    protected $proxyHelper;
-
     /** @var StoreManagerInterface */
     protected $storeManager;
 
@@ -31,7 +27,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
      * @param Registry $coreRegistry
      * @param QueryFactory $queryFactory
      * @param MerchandisingHelper $merchandisingHelper
-     * @param ProxyHelper $proxyHelper
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
@@ -39,7 +34,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         Registry $coreRegistry,
         QueryFactory $queryFactory,
         MerchandisingHelper $merchandisingHelper,
-        ProxyHelper $proxyHelper,
         StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
@@ -47,7 +41,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $this->coreRegistry = $coreRegistry;
         $this->queryFactory = $queryFactory;
         $this->merchandisingHelper = $merchandisingHelper;
-        $this->proxyHelper = $proxyHelper;
         $this->storeManager = $storeManager;
     }
 
@@ -55,35 +48,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function dispatch(\Magento\Framework\App\RequestInterface $request)
-    {
-        $planLevelInfo = $this->proxyHelper->getClientConfigurationData();
-        $planLevel = isset($planLevelInfo['plan_level']) ? (int) $planLevelInfo['plan_level'] : 1;
-
-        if ($planLevel < 3) {
-            $this->_response->setStatusHeader(403, '1.1', 'Forbidden');
-            if (!$this->_auth->isLoggedIn()) {
-                return $this->_redirect('*/auth/login');
-            }
-            $this->_view->loadLayout(
-                ['default', 'algolia_algoliasearch_handle_query_access_denied'],
-                true,
-                true,
-                false
-            );
-            $this->_view->getLayout();
-            $this->_view->renderLayout();
-            $this->_request->setDispatched(true);
-
-            return $this->_response;
-        }
-
-        return parent::dispatch($request);
     }
 
     /** @return \Algolia\AlgoliaSearch\Model\Query */

@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Landingpage;
 
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
-use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Controller\ResultFactory;
@@ -24,7 +23,6 @@ class Save extends AbstractAction
      * @param \Magento\Framework\Registry $coreRegistry
      * @param LandingPageFactory $landingPageFactory
      * @param MerchandisingHelper $merchandisingHelper
-     * @param ProxyHelper $proxyHelper
      * @param StoreManagerInterface $storeManager
      * @param DataPersistorInterface $dataPersistor
      *
@@ -35,7 +33,6 @@ class Save extends AbstractAction
         \Magento\Framework\Registry $coreRegistry,
         LandingPageFactory $landingPageFactory,
         MerchandisingHelper $merchandisingHelper,
-        ProxyHelper $proxyHelper,
         StoreManagerInterface $storeManager,
         DataPersistorInterface $dataPersistor
     ) {
@@ -46,7 +43,6 @@ class Save extends AbstractAction
             $coreRegistry,
             $landingPageFactory,
             $merchandisingHelper,
-            $proxyHelper,
             $storeManager
         );
     }

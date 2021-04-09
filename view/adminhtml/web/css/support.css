@@ -362,10 +362,6 @@ a.footer {
 	padding-top: 20px;
 }
 
-#algolia-contact-panel {
-	display: none;
-}
-
 /* access denied */
 .algolia-suggestions-header {
 	width : 100%;

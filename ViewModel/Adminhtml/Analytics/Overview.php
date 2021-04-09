@@ -199,8 +199,7 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
                 $search['conversion'] = $this->getDateValue($conversion, $search['date'], 'rate');
             }
 
-            $date = $this->getBackendView()->getDateTime()->date($search['date']);
-            $search['formatted'] = date('M, d', $date->getTimestamp());
+            $search['formatted'] = date('M, d', strtotime($search['date']));
         }
 
         return $searches;

@@ -1,7 +1,5 @@
 <?php
-/** @var \Magento\Backend\Block\Template $block */
-/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Merchandising\Page $viewModel */?>
-<?php $viewModel = $block->getViewModel(); ?>
+/** @var \Magento\Backend\Block\Template $block */  ?>
 <div class="algolia-admin-content">
     <div class="algolia-admin-content-wrapper">
         <div class="algolia-admin-content-links">
@@ -31,11 +29,7 @@
             <p><?php echo $block->escapeHtml(__('Easily promote or demote products for a search. Based on Algolia\'s Query rules, the Query merchandiser allows you to enhance the ranking behavior for specific search queries.')) ?></p>
         </div>
 
-        <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
-            <a href="<?php echo $block->getUrl('algolia_algoliasearch/query') ?>" title="<<?php echo $block->escapeHtml(__('Merchandise search results')) ?>"><?php echo $block->escapeHtml(__('Merchandise search results')) ?></a>
-        <?php else: ?>
-            <?php echo $block->getChildHtml('upsell') ?>
-        <?php endif ?>
+        <a href="<?php echo $block->getUrl('algolia_algoliasearch/query') ?>" title="<<?php echo $block->escapeHtml(__('Merchandise search results')) ?>"><?php echo $block->escapeHtml(__('Merchandise search results')) ?></a>
     </div>
     <div class="merchandising-item category-merchandising">
         <div class="image-container">
@@ -45,12 +39,7 @@
         <div class="std description">
             <p><?php echo $block->escapeHtml(__('Give more visibility to specific products within a category page. Promote or demote displayed items by using a simple drag and drop mechanism.')) ?></p>
         </div>
-
-        <?php if ($viewModel->canAccessMerchandisingFeature()): ?>
-            <a href="<?php echo $block->getUrl('catalog/category') ?>" title="<?php echo $block->escapeHtmlAttr(__('Promote products within a category')) ?>"><?php echo $block->escapeHtml(__('Promote products within a category')) ?></a>
-        <?php else: ?>
-            <?php echo $block->getChildHtml('upsell') ?>
-        <?php endif ?>
+        <a href="<?php echo $block->getUrl('catalog/category') ?>" title="<?php echo $block->escapeHtmlAttr(__('Promote products within a category')) ?>"><?php echo $block->escapeHtml(__('Promote products within a category')) ?></a>
     </div>
     <div class="merchandising-item landing-page-builder">
         <div class="image-container">
@@ -60,11 +49,6 @@
         <div class="std description">
             <p><?php echo $block->escapeHtml(__('The Landing Page Builder allows you to easily create customised landing pages out of search queries. It is a powerful marketing tool to promote products, with a strong focus on SEO.')) ?></p>
         </div>
-
-        <?php if ($viewModel->canAccessLandingPageBuilder()): ?>
-            <a href="<?php echo $block->getUrl('algolia_algoliasearch/landingpage') ?>" title="<?php echo $block->escapeHtmlAttr(__('Create a new landing page')) ?>"><?php echo $block->escapeHtml(__('Create a new landing page')) ?></a>
-        <?php else: ?>
-            <?php echo $block->getChildHtml('upsell') ?>
-        <?php endif ?>
+        <a href="<?php echo $block->getUrl('algolia_algoliasearch/landingpage') ?>" title="<?php echo $block->escapeHtmlAttr(__('Create a new landing page')) ?>"><?php echo $block->escapeHtml(__('Create a new landing page')) ?></a>
     </div>
 </section>

@@ -2,7 +2,7 @@
     {{#hasOneResult}}<strong>1</strong> <?php echo $block->escapeHtml(__('result')); ?> found{{/hasOneResult}}
 
     {{#hasManyResults}}
-        {{^hasNoResults}}{{first}}-{{last}} out of{{/hasNoResults}}
+        {{^hasNoResults}}{{first}}-{{last}} <?php echo $block->escapeHtml(__('out of')); ?>{{/hasNoResults}}
         <strong>
             <span itemprop="numberOfItems">{{nbHits}}</span>
             <?php echo $block->escapeHtml(__('results found')); ?>

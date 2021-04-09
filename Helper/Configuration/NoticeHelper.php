@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Helper\Configuration;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\ProxyHelper;
 use Algolia\AlgoliaSearch\Model\ExtensionNotification;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
 use Magento\Framework\Module\Manager as ModuleManager;
@@ -15,9 +14,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /** @var ConfigHelper */
     private $configHelper;
-
-    /** @var ProxyHelper */
-    private $proxyHelper;
 
     /** @var PersonalizationHelper */
     private $personalizationHelper;
@@ -46,7 +42,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'getMsiNotice',
         'getVersionNotice',
         'getClickAnalyticsNotice',
-        'getQueryRulesNotice',
         'getPersonalizationNotice',
     ];
 
@@ -65,7 +60,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         ConfigHelper $configHelper,
-        ProxyHelper $proxyHelper,
         PersonalizationHelper $personalizationHelper,
         ModuleManager $moduleManager,
         ObjectManagerInterface $objectManager,
@@ -75,7 +69,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         AssetRepository $assetRepository
     ) {
         $this->configHelper = $configHelper;
-        $this->proxyHelper = $proxyHelper;
         $this->personalizationHelper = $personalizationHelper;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
@@ -184,7 +177,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     protected function getClickAnalyticsNotice()
     {
         // If the feature is enabled both in Magento Admin and Algolia dashboard, no need to display a notice
-        if ($this->isClickAnalyticsEnabled() && $this->configHelper->isClickConversionAnalyticsEnabled()) {
+        if ($this->configHelper->isClickConversionAnalyticsEnabled()) {
             return;
         }
 
@@ -192,56 +185,24 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $selector = '';
         $method = 'before';
 
-        // If the feature is not enabled in the Algolia dashboard
-        if (! $this->isClickAnalyticsEnabled()) {
-            $noticeContent = '<br>
-				<div class="algolia_block icon-stars">
-					To get access to this Algolia feature,
-					please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
-				</div>';
-            $selector = '#algoliasearch_cc_analytics_cc_analytics_group .comment';
-            $method = 'after';
-        }
-
         // If the feature is enabled in the Algolia dashboard but not activated on the Magento Admin
-        if ($this->isClickAnalyticsEnabled() && ! $this->configHelper->isClickConversionAnalyticsEnabled()) {
-            $noticeContent = '<tr>
-				<td colspan="3">
-					<div class="algolia_block blue icon-stars">
-					Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
-					like Click-through Rate, Conversion Rate from searches and average click position.
-					Click Analytics are only available for higher plans and require only minor additional settings.
-					<br><br>
-					Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-					</div>
-				</td>
-			</tr>';
-            $selector = '#row_algoliasearch_cc_analytics_cc_analytics_group_enable';
-            $method = 'before';
-        }
+        $noticeContent = '<tr>
+            <td colspan="3">
+                <div class="algolia_block blue icon-stars">
+                Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
+                like Click-through Rate, Conversion Rate from searches and average click position.
+                Click Analytics are only available for higher plans and require only minor additional settings.
+                <br><br>
+                Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+                </div>
+            </td>
+        </tr>';
+        $selector = '#row_algoliasearch_cc_analytics_cc_analytics_group_enable';
+        $method = 'before';
 
         $this->notices[] = [
             'selector' => $selector,
             'method' => $method,
-            'message' => $noticeContent,
-        ];
-    }
-
-    protected function getQueryRulesNotice()
-    {
-        if ($this->isQueryRulesEnabled()) {
-            return;
-        }
-
-        $noticeContent = '<br>
-                <div class="algolia_block icon-stars">
-                    To be able to create Query rules for facets,
-                    please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
-                </div>';
-
-        $this->notices[] = [
-            'selector' => '#row_algoliasearch_instant_instant_facets .algolia_block.blue',
-            'method' => 'after',
             'message' => $noticeContent,
         ];
     }
@@ -322,54 +283,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getPersonalizationStatus()
     {
-        $info = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_PERSONALIZATION);
-        $status = 2;
-
-        if ($info
-            && array_key_exists('personalization', $info)
-            && array_key_exists('personalization_enabled_at', $info)) {
-            if (!$info['personalization']) {
-                $status = 0;
-
-                // If perso is not avaible in the plan but activated in admin for some reason, turn it off
-                if ($this->personalizationHelper->isPersoEnabled()) {
-                    $this->personalizationHelper->disablePerso();
-                }
-            }
-            if ($info['personalization_enabled_at'] === null) {
-                $status = min(1, $status);
-            }
-        }
-
-        return $status;
-    }
-
-    /** @return bool */
-    public function isQueryRulesEnabled()
-    {
-        $info = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_QUERY_RULES);
-
-        // In case the call to API proxy fails,
-        // be "nice" and return true
-        if ($info && array_key_exists('query_rules', $info)) {
-            return $info['query_rules'];
-        }
-
-        return true;
-    }
-
-    /** @return bool */
-    public function isClickAnalyticsEnabled()
-    {
-        $info = $this->proxyHelper->getInfo(ProxyHelper::INFO_TYPE_ANALYTICS);
-
-        // In case the call to API proxy fails,
-        // be "nice" and return true
-        if ($info && array_key_exists('click_analytics', $info)) {
-            return $info['click_analytics'];
-        }
-
-        return true;
+        return 2;
     }
 
     public function isMsiExternalModuleNeeded()

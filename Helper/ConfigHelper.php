@@ -120,7 +120,6 @@ class ConfigHelper
     private $eventManager;
     private $currencyManager;
     private $serializer;
-    private $maxRecordSize;
 
     public function __construct(
         Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
@@ -889,6 +888,8 @@ class ConfigHelper
             'in_stock',
             'type_id',
             'value',
+            'query', # suggestions
+            'path', # categories
         ]);
 
         $currencies = $this->dirCurrency->getConfigAllowCurrencies();
@@ -1098,29 +1099,7 @@ class ConfigHelper
 
     public function getMaxRecordSizeLimit($storeId = null)
     {
-        if ($this->maxRecordSize) {
-            return $this->maxRecordSize;
-        }
-
-        $configValue = $this->configInterface->getValue(self::MAX_RECORD_SIZE_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
-        if ($configValue) {
-            $this->maxRecordSize = $configValue;
-
-            return $this->maxRecordSize;
-        }
-        /** @var \Algolia\AlgoliaSearch\Helper\ProxyHelper $proxyHelper */
-        $proxyHelper = $this->objectManager->create('Algolia\AlgoliaSearch\Helper\ProxyHelper');
-        $clientData = $proxyHelper->getClientConfigurationData();
-        if ($clientData && isset($clientData['max_record_size'])) {
-            /** @var \Magento\Framework\App\Config\Storage\Writer $configWriter */
-            $configWriter = $this->objectManager->create('Magento\Framework\App\Config\Storage\Writer');
-            $configWriter->save(self::MAX_RECORD_SIZE_LIMIT, $clientData['max_record_size']);
-            $this->maxRecordSize = $clientData['max_record_size'];
-        } else {
-            $this->maxRecordSize = self::getDefaultMaxRecordSize();
-        }
-
-        return $this->maxRecordSize;
+        return self::getDefaultMaxRecordSize();
     }
 
     public function getArchiveLogClearLimit($storeId = null)

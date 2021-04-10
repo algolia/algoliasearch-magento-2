@@ -14,10 +14,6 @@ $extensionNotices = [];
 $personalizationStatus = 0;
 
 if (preg_match('/algoliasearch_/', $section)) {
-    if ($section === 'algoliasearch_cc_analytics') {
-        $isClickAnalyticsEnabled = $viewModel->isClickAnalyticsEnabled();
-    }
-
     $linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
     $extensionNotices = $viewModel->getExtensionNotices();
     $personalizationStatus = $viewModel->getPersonalizationStatus();

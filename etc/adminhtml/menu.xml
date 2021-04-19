@@ -61,16 +61,6 @@
             resource="Algolia_AlgoliaSearch::manage"
         />
         <add
-            id="Algolia_AlgoliaSearch::analytics"
-            title="Analytics Overview"
-            translate="title"
-            module="Algolia_AlgoliaSearch"
-            sortOrder="110"
-            parent="Algolia_AlgoliaSearch::manage"
-            action="algolia_algoliasearch/analytics/index"
-            resource="Algolia_AlgoliaSearch::manage"
-        />
-        <add
             id="Algolia_AlgoliaSearch::support"
             title="Help &amp; Support"
             translate="title"

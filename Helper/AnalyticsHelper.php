@@ -244,11 +244,6 @@ class AnalyticsHelper
         return $this->fetch(self::ANALYTICS_FILTER_PATH . '/' . $attribute, $params);
     }
 
-    public function isAnalyticsApiEnabled()
-    {
-        return true;
-    }
-
     /**
      * Pass through method for handling API Versions
      *

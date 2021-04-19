@@ -2,8 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Setup;
 
-use Algolia\AlgoliaSearch\Api\Data\LandingPageInterface;
-use Algolia\AlgoliaSearch\Api\Data\QueryInterface;
 use Magento\Framework\App\Config\ConfigResource\ConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\DB\Ddl\Table;
@@ -75,17 +73,10 @@ class UpgradeSchema implements UpgradeSchemaInterface
         'algoliasearch_queue/queue/number_of_job_to_run' => '5',
         'algoliasearch_queue/queue/number_of_retries' => '3',
 
-        'algoliasearch_cc_analytics/cc_analytics_group/enable' => '0',
-        'algoliasearch_cc_analytics/cc_analytics_group/is_selector' => '.ais-Hits-item a.result, .ais-InfiniteHits-item a.result',
-        'algoliasearch_cc_analytics/cc_analytics_group/enable_conversion_analytics' => 'disabled',
-        'algoliasearch_cc_analytics/cc_analytics_group/add_to_cart_selector' => '.action.primary.tocart',
-
         'algoliasearch_analytics/analytics_group/enable' => '0',
         'algoliasearch_analytics/analytics_group/delay' => '3000',
         'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction' => '1',
         'algoliasearch_analytics/analytics_group/push_initial_search' => '0',
-
-        'algoliasearch_synonyms/synonyms_group/enable_synonyms' => '0',
 
         'algoliasearch_advanced/advanced/number_of_element_by_page' => '300',
         'algoliasearch_advanced/advanced/remove_words_if_no_result' => 'allOptional',
@@ -121,21 +112,18 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'type' => 'slider',
                 'label' => 'Price',
                 'searchable' => '2',
-                'create_rule' => '2',
             ],
             [
                 'attribute' => 'categories',
                 'type' => 'conjunctive',
                 'label' => 'Categories',
                 'searchable' => '2',
-                'create_rule' => '2',
             ],
             [
                 'attribute' => 'color',
                 'type' => 'disjunctive',
                 'label' => 'Colors',
                 'searchable' => '1',
-                'create_rule' => '2',
             ],
         ],
         'algoliasearch_instant/instant/sorts' => [
@@ -406,103 +394,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $connection->createTable($table);
         }
 
-        if (!$connection->isTableExists(LandingPageInterface::TABLE_NAME)) {
-            $table = $connection->newTable($setup->getTable(LandingPageInterface::TABLE_NAME));
-
-            $table->addColumn(
-                LandingPageInterface::FIELD_LANDING_PAGE_ID,
-                $table::TYPE_INTEGER,
-                10,
-                ['identity' => true, 'nullable' => false, 'primary' => true]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_STORE_ID,
-                $table::TYPE_INTEGER,
-                10,
-                ['nullable' => false]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_URL_KEY,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => false]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_IS_ACTIVE,
-                $table::TYPE_BOOLEAN,
-                null,
-                ['nullable' => false, 'default' => 0]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_TITLE,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => false]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_DATE_FROM,
-                $table::TYPE_DATETIME,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_DATE_TO,
-                $table::TYPE_DATETIME,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_META_TITLE,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_META_DESCRIPTION,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_META_KEYWORDS,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_CONTENT,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_QUERY,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_CONFIGURATION,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => false, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_CUSTOM_JS,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                LandingPageInterface::FIELD_CUSTOM_CSS,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-
-            $connection->createTable($table);
-        }
-
         $algoliaSeachQueueTable = $setup->getTable('algoliasearch_queue');
 
         if (!$connection->tableColumnExists($algoliaSeachQueueTable, 'is_full_reindex')) {
@@ -531,61 +422,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
                     'after' => 'created',
                 ]
             );
-        }
-
-        if (!$connection->isTableExists(QueryInterface::TABLE_NAME)) {
-            $table = $connection->newTable($setup->getTable(QueryInterface::TABLE_NAME));
-
-            $table->addColumn(
-                QueryInterface::FIELD_QUERY_ID,
-                $table::TYPE_INTEGER,
-                10,
-                ['identity' => true, 'nullable' => false, 'primary' => true]
-            );
-            $table->addColumn(
-                QueryInterface::FIELD_STORE_ID,
-                $table::TYPE_INTEGER,
-                10,
-                ['nullable' => false]
-            );
-            $table->addColumn(
-                QueryInterface::FIELD_QUERY_TEXT,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => false]
-            );
-            $table->addColumn(
-                QueryInterface::FIELD_BANNER_IMAGE,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                QueryInterface::FIELD_BANNER_URL,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                QueryInterface::FIELD_BANNER_ALT,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                QueryInterface::FIELD_BANNER_CONTENT,
-                $table::TYPE_TEXT,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-            $table->addColumn(
-                QueryInterface::FIELD_CREATED_AT,
-                $table::TYPE_DATETIME,
-                null,
-                ['nullable' => true, 'default' => null]
-            );
-
-            $connection->createTable($table);
         }
 
         if (version_compare($context->getVersion(), '1.12.1', '<')) {

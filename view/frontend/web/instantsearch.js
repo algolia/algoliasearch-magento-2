@@ -74,10 +74,6 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 			ruleContexts.push('magento-category-' + algoliaConfig.request.categoryId);
 		}
 
-		if (algoliaConfig.request.landingPageId.length > 0) {
-			ruleContexts.push('magento-landingpage-' + algoliaConfig.request.landingPageId);
-		}
-
 		var searchClient = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
 		var indexName = algoliaConfig.indexName + '_products';
 		var searchParameters = {

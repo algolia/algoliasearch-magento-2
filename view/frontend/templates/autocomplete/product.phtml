@@ -10,10 +10,7 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
 
 <!-- Product hit template -->
 <script type="text/template" id="autocomplete_products_template">
-    <a class="algoliasearch-autocomplete-hit"
-        {{^__queryID}} href="{{url}}" {{/__queryID}}
-        {{#__queryID}} href="{{urlForInsights}}" {{/__queryID}}
-    >
+    <a class="algoliasearch-autocomplete-hit" href="{{url}}" >
         {{#thumbnail_url}}
         <div class="thumb"><img src="{{thumbnail_url}}" alt="{{{name}}}" /></div>
         {{/thumbnail_url}}

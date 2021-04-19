@@ -29,7 +29,6 @@ require(
 			var pageIds = [
 				'#algoliasearch_products_products',
 				'#algoliasearch_categories_categories',
-				'#algoliasearch_synonyms_synonyms_group',
 				'#algoliasearch_extra_settings_extra_settings'
 			];
 
@@ -62,10 +61,10 @@ require(
 				var searchableSelect = $('select[name="groups[instant][fields][facets][value][' + rowId + '][searchable]"]');
 
 				searchableSelect.on('change', function(){
-					configQrFromSearchableSelect($(this));	
+					configQrFromSearchableSelect($(this));
 				});
 
-				configQrFromSearchableSelect(searchableSelect);	
+				configQrFromSearchableSelect(searchableSelect);
 			}
 		}
 
@@ -85,4 +84,4 @@ require(
 		}
 
 	}
-);	
+);

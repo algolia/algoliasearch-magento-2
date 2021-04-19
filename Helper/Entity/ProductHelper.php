@@ -13,7 +13,6 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
-use Algolia\AlgoliaSearch\SearchIndex;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -334,11 +333,6 @@ class ProductHelper
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
-        $this->setFacetsQueryRules($indexName);
-        if ($saveToTmpIndicesToo === true) {
-            $this->setFacetsQueryRules($indexNameTmp);
-        }
-
         /*
          * Handle replicas
          */
@@ -389,44 +383,8 @@ class ProductHelper
         // Commented out as it doesn't delete anything now because of merging replica indices earlier
         // $this->deleteUnusedReplicas($indexName, $replicas, $setReplicasTaskId);
 
-        if ($this->configHelper->isEnabledSynonyms($storeId) === true) {
-            if ($synonymsFile = $this->configHelper->getSynonymsFile($storeId)) {
-                $synonymsToSet = json_decode(file_get_contents($synonymsFile));
-            } else {
-                $synonymsToSet = [];
-
-                $synonyms = $this->configHelper->getSynonyms($storeId);
-                foreach ($synonyms as $objectID => $synonym) {
-                    $synonymsToSet[] = [
-                        'objectID' => $objectID,
-                        'type' => 'synonym',
-                        'synonyms' => $this->explodeSynonyms($synonym['synonyms']),
-                    ];
-                }
-
-                $onewaySynonyms = $this->configHelper->getOnewaySynonyms($storeId);
-                foreach ($onewaySynonyms as $objectID => $onewaySynonym) {
-                    $synonymsToSet[] = [
-                        'objectID' => $objectID,
-                        'type' => 'oneWaySynonym',
-                        'input' => $onewaySynonym['input'],
-                        'synonyms' => $this->explodeSynonyms($onewaySynonym['synonyms']),
-                    ];
-                }
-            }
-
-            $this->algoliaHelper->setSynonyms($indexName, $synonymsToSet);
-            $this->logger->log('Setting synonyms to "' . $indexName . '"');
-            if ($saveToTmpIndicesToo === true) {
-                $this->algoliaHelper->setSynonyms($indexNameTmp, $synonymsToSet);
-                $this->logger->log('Setting synonyms to "' . $indexNameTmp . '"');
-            }
-        } elseif ($saveToTmpIndicesToo === true) {
+        if ($saveToTmpIndicesToo === true) {
             $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
-            $this->logger->log('
-                Synonyms management disabled.
-                Copying synonyms from production index to TMP one to not to erase them with the index move.
-            ');
         }
 
         if ($saveToTmpIndicesToo === true) {
@@ -1032,88 +990,6 @@ class ProductHelper
                 $this->algoliaHelper->deleteIndex($indexToDelete);
             }
         }
-    }
-
-    private function setFacetsQueryRules($indexName)
-    {
-        $index = $this->algoliaHelper->getIndex($indexName);
-
-        $this->clearFacetsQueryRules($index);
-
-        $rules = [];
-        $facets = $this->configHelper->getFacets();
-        foreach ($facets as $facet) {
-            if (!array_key_exists('create_rule', $facet) || $facet['create_rule'] !== '1') {
-                continue;
-            }
-
-            $attribute = $facet['attribute'];
-
-            $condition = [
-                'anchoring' => 'contains',
-                'pattern' => '{facet:' . $attribute . '}',
-                'context' => 'magento_filters',
-            ];
-
-            $rules[] = [
-                'objectID' => 'filter_' . $attribute,
-                'description' => 'Filter facet "' . $attribute . '"',
-                'conditions' => [$condition],
-                'consequence' => [
-                    'params' => [
-                        'automaticFacetFilters' => [$attribute],
-                        'query' => [
-                            'remove' => ['{facet:' . $attribute . '}'],
-                        ],
-                    ],
-                ],
-            ];
-        }
-
-        if ($rules) {
-            $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $index->saveRules($rules, [
-                'forwardToReplicas' => true,
-            ]);
-        }
-    }
-
-    private function clearFacetsQueryRules(SearchIndex $index)
-    {
-        try {
-            $hitsPerPage = 100;
-            $page = 0;
-            do {
-                $fetchedQueryRules = $index->searchRules('', [
-                    'context' => 'magento_filters',
-                    'page' => $page,
-                    'hitsPerPage' => $hitsPerPage,
-                ]);
-
-                if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
-                    break;
-                }
-
-                foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $index->deleteRule($hit['objectID'], [
-                        'forwardToReplicas' => true,
-                    ]);
-                }
-
-                $page++;
-            } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
-        } catch (AlgoliaException $e) {
-            // Fail silently if query rules are disabled on the app
-            // If QRs are disabled, nothing will happen and the extension will work as expected
-            if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
-                throw $e;
-            }
-        }
-    }
-
-    private function explodeSynonyms($synonyms)
-    {
-        return array_map('trim', explode(',', $synonyms));
     }
 
     /**

@@ -4,12 +4,9 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
-use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Context as CustomerContext;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\App\Http\Context as HttpContext;
@@ -37,9 +34,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
     private $httpContext;
     private $coreHelper;
     private $categoryHelper;
-    private $landingPageHelper;
-    private $personalizationHelper;
-    private $checkoutSession;
     private $date;
 
     private $priceKey;
@@ -58,9 +52,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
         HttpContext $httpContext,
         CoreHelper $coreHelper,
         CategoryHelper $categoryHelper,
-        LandingPageHelper $landingPageHelper,
-        PersonalizationHelper $personalizationHelper,
-        CheckoutSession $checkoutSession,
         DateTime $date,
         array $data = []
     ) {
@@ -76,9 +67,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $this->httpContext = $httpContext;
         $this->coreHelper = $coreHelper;
         $this->categoryHelper = $categoryHelper;
-        $this->landingPageHelper = $landingPageHelper;
-        $this->personalizationHelper = $personalizationHelper;
-        $this->checkoutSession = $checkoutSession;
         $this->date = $date;
 
         parent::__construct($context, $data);
@@ -123,11 +111,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getAlgoliaHelper()
     {
         return $this->algoliaHelper;
-    }
-
-    public function getPersonalizationHelper()
-    {
-        return $this->personalizationHelper;
     }
 
     public function getCurrencySymbol()
@@ -175,18 +158,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->registry->registry('current_category');
     }
 
-    /** @return \Magento\Catalog\Model\Product */
-    public function getCurrentProduct()
-    {
-        return $this->registry->registry('product');
-    }
-
-    /** @return \Magento\Sales\Model\Order */
-    public function getLastOrder()
-    {
-        return $this->checkoutSession->getLastRealOrder();
-    }
-
     public function getAddToCartParams()
     {
         $url = $this->getAddToCartUrl();
@@ -217,15 +188,5 @@ class Algolia extends Template implements CollectionDataSourceInterface
         }
 
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
-    }
-
-    protected function getCurrentLandingPage()
-    {
-        $landingPageId = $this->getRequest()->getParam('landing_page_id');
-        if (!$landingPageId) {
-            return null;
-        }
-
-        return $this->landingPageHelper->getLandingPage($landingPageId);
     }
 }

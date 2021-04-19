@@ -1,3 +1,4 @@
+
 /* Fix Magento buggy display */
 ._has-datepicker + .ui-datepicker-trigger {
     position: absolute;

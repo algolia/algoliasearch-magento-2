@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Block;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
@@ -15,7 +14,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             /** @var Http $request */
             $request = $this->getRequest();
 
-            if ($request->getFullActionName() === 'catalogsearch_result_index' || $this->isLandingPage()) {
+            if ($request->getFullActionName() === 'catalogsearch_result_index') {
                 return true;
             }
 
@@ -43,8 +42,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $productHelper = $this->getProductHelper();
 
         $algoliaHelper = $this->getAlgoliaHelper();
-
-        $persoHelper = $this->getPersonalizationHelper();
 
         $baseUrl = rtrim($this->getBaseUrl(), '/');
 
@@ -100,11 +97,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             }
         }
 
-        $productId = null;
-        if ($config->isClickConversionAnalyticsEnabled() && $request->getFullActionName() === 'catalog_product_view') {
-            $productId = $this->getCurrentProduct()->getId();
-        }
-
         /**
          * Handle search
          */
@@ -153,10 +145,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'nbOfQueriesSuggestions' => $config->getNumberOfQueriesSuggestions(),
                 'isDebugEnabled' => $config->isAutocompleteDebugEnabled(),
             ],
-            'landingPage' => [
-                'query' => $this->getLandingPageQuery(),
-                'configuration' => $this->getLandingPageConfiguration(),
-            ],
             'extensionVersion' => $config->getExtensionVersion(),
             'applicationId' => $config->getApplicationID(),
             'indexName' => $coreHelper->getBaseIndexName(),
@@ -178,9 +166,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             )),
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $isCategoryPage,
-            'isLandingPage' => $this->isLandingPage(),
             'removeBranding' => (bool) $config->isRemoveBranding(),
-            'productId' => $productId,
             'priceKey' => $priceKey,
             'currencyCode' => $currencyCode,
             'currencySymbol' => $currencySymbol,
@@ -192,7 +178,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'refinementKey' => $refinementKey,
                 'refinementValue' => $refinementValue,
                 'categoryId' => $categoryId,
-                'landingPageId' => $this->getLandingPageId(),
                 'path' => $path,
                 'level' => $level,
             ],
@@ -203,43 +188,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'useAdaptiveImage' => $config->useAdaptiveImage(),
             'urls' => [
                 'logo' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/search-by-algolia.svg'),
-            ],
-            'ccAnalytics' => [
-                'enabled' => $config->isClickConversionAnalyticsEnabled(),
-                'ISSelector' => $config->getClickConversionAnalyticsISSelector(),
-                'conversionAnalyticsMode' => $config->getConversionAnalyticsMode(),
-                'addToCartSelector' => $config->getConversionAnalyticsAddToCartSelector(),
-                'orderedProductIds' => $this->getOrderedProductIds($config, $request),
-            ],
-            'isPersonalizationEnabled' => $persoHelper->isPersoEnabled(),
-            'personalization' => [
-                'enabled' => $persoHelper->isPersoEnabled(),
-                'viewedEvents' => [
-                    'viewProduct' => [
-                        'eventName' => __('Viewed Product'),
-                        'enabled' => $persoHelper->isViewProductTracked(),
-                        'method' => 'viewedObjectIDs',
-                    ],
-                ],
-                'clickedEvents' => [
-                    'productClicked' => [
-                        'eventName' => __('Product Clicked'),
-                        'enabled' => $persoHelper->isProductClickedTracked(),
-                        'selector' => $persoHelper->getProductClickedSelector(),
-                        'method' => 'clickedObjectIDs',
-                    ],
-                    'productRecommended' => [
-                        'eventName' => __('Recommended Product Clicked'),
-                        'enabled' => $persoHelper->isProductRecommendedTracked(),
-                        'selector' => $persoHelper->getProductRecommendedSelector(),
-                        'method' => 'clickedObjectIDs',
-                    ],
-                ],
-                'filterClicked' => [
-                    'eventName' => __('Filter Clicked'),
-                    'enabled' => $persoHelper->isFilterClickedTracked(),
-                    'method' => 'clickedFilters',
-                ],
             ],
             'analytics' => $config->getAnalyticsConfig(),
             'now' => $this->getTimestamp(),
@@ -298,48 +246,5 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         }
 
         return $urlTrackedParameters;
-    }
-
-    private function getOrderedProductIds(ConfigHelper $configHelper, Http $request)
-    {
-        $ids = [];
-
-        if ($configHelper->getConversionAnalyticsMode() === 'disabled'
-            || $request->getFrontName() !== 'checkout'
-            || $request->getActionName() !== 'success') {
-            return $ids;
-        }
-
-        $lastOrder = $this->getLastOrder();
-        if (!$lastOrder) {
-            return $ids;
-        }
-
-        $items = $lastOrder->getItems();
-        foreach ($items as $item) {
-            $ids[] = $item->getProductId();
-        }
-
-        return $ids;
-    }
-
-    private function isLandingPage()
-    {
-        return $this->getRequest()->getFullActionName() === 'algolia_landingpage_view';
-    }
-
-    private function getLandingPageId()
-    {
-        return $this->isLandingPage() ? $this->getCurrentLandingPage()->getId() : '';
-    }
-
-    private function getLandingPageQuery()
-    {
-        return $this->isLandingPage() ? $this->getCurrentLandingPage()->getQuery() : '';
-    }
-
-    private function getLandingPageConfiguration()
-    {
-        return $this->isLandingPage() ? $this->getCurrentLandingPage()->getConfiguration() : json_encode([]);
     }
 }

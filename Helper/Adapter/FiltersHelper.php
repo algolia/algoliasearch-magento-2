@@ -92,46 +92,7 @@ class FiltersHelper
     }
 
     /**
-     * Get current landing page filters
-     *
-     * @param int $storeId
-     *
-     * @return array
-     */
-    public function getLandingPageFilters($storeId)
-    {
-        $landingPageFilter = [];
-        $landingPage = $this->registry->registry('current_landing_page');
-        if ($landingPage) {
-            $landingPageConfiguration = json_decode($landingPage->getConfiguration(), true);
-            $landingPageFilter['facetFilters'] = $this->getFacetFilters($storeId, $landingPageConfiguration);
-            $landingPageFilter = array_merge(
-                $landingPageFilter,
-                $this->getLandingPagePriceFilters($storeId, $landingPageConfiguration)
-            );
-        }
-
-        return $landingPageFilter;
-    }
-
-    /**
-     * Get current landing page query
-     *
-     * @return array
-     */
-    public function getLandingPageQuery()
-    {
-        $landingPage = $this->registry->registry('current_landing_page');
-        $landingPageQuery = '';
-        if ($landingPage) {
-            $landingPageQuery = $landingPage->getQuery();
-        }
-
-        return $landingPageQuery;
-    }
-
-    /**
-     * Get the facet filters from the url or landing page configuration
+     * Get the facet filters from the url configuration
      *
      * @param int $storeId
      * @param string[] $parameters
@@ -250,32 +211,6 @@ class FiltersHelper
             }
             if ($prices[1] != '') {
                 $priceFilters['numericFilters'][] = $priceSlider . '<=' . $prices[1];
-            }
-        }
-
-        return $priceFilters;
-    }
-
-    /**
-     * Get the price filters from the landing Page configuration
-     *
-     * @param int $storeId
-     * @param string[] $landingPageConfiguration
-     *
-     * @return array
-     */
-    public function getLandingPagePriceFilters($storeId, $landingPageConfiguration)
-    {
-        $priceFilters = [];
-        $paramPriceSliderData = $this->getParamPriceSlider($storeId);
-        $priceSlider = $paramPriceSliderData['price_slider'];
-        $paramPriceSlider = $paramPriceSliderData['param'];
-
-        if (isset($landingPageConfiguration[$priceSlider])
-            && is_array($landingPageConfiguration[$priceSlider])) {
-            $prices = $landingPageConfiguration[$priceSlider];
-            foreach ($prices as $operator => $price) {
-                $priceFilters['numericFilters'][] = $priceSlider . $operator . $price[0];
             }
         }
 

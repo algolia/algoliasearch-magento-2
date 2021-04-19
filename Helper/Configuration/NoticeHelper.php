@@ -15,9 +15,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var ConfigHelper */
     private $configHelper;
 
-    /** @var PersonalizationHelper */
-    private $personalizationHelper;
-
     /** @var ModuleManager */
     private $moduleManager;
 
@@ -41,15 +38,11 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'getQueueNotice',
         'getMsiNotice',
         'getVersionNotice',
-        'getClickAnalyticsNotice',
-        'getPersonalizationNotice',
     ];
 
     /** @var array[] */
     protected $pagesWithoutQueueNotice = [
-        'algoliasearch_cc_analytics',
         'algoliasearch_analytics',
-        'algoliasearch_personalization',
         'algoliasearch_advanced',
         'algoliasearch_extra_settings',
     ];
@@ -60,7 +53,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         ConfigHelper $configHelper,
-        PersonalizationHelper $personalizationHelper,
         ModuleManager $moduleManager,
         ObjectManagerInterface $objectManager,
         ExtensionNotification $extensionNotification,
@@ -69,7 +61,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         AssetRepository $assetRepository
     ) {
         $this->configHelper = $configHelper;
-        $this->personalizationHelper = $personalizationHelper;
         $this->moduleManager = $moduleManager;
         $this->objectManager = $objectManager;
         $this->extensionNotification = $extensionNotification;
@@ -174,116 +165,12 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         ];
     }
 
-    protected function getClickAnalyticsNotice()
-    {
-        // If the feature is enabled both in Magento Admin and Algolia dashboard, no need to display a notice
-        if ($this->configHelper->isClickConversionAnalyticsEnabled()) {
-            return;
-        }
-
-        $noticeContent = '';
-        $selector = '';
-        $method = 'before';
-
-        // If the feature is enabled in the Algolia dashboard but not activated on the Magento Admin
-        $noticeContent = '<tr>
-            <td colspan="3">
-                <div class="algolia_block blue icon-stars">
-                Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
-                like Click-through Rate, Conversion Rate from searches and average click position.
-                Click Analytics are only available for higher plans and require only minor additional settings.
-                <br><br>
-                Find more information in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/click-and-conversion-analytics/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
-                </div>
-            </td>
-        </tr>';
-        $selector = '#row_algoliasearch_cc_analytics_cc_analytics_group_enable';
-        $method = 'before';
-
-        $this->notices[] = [
-            'selector' => $selector,
-            'method' => $method,
-            'message' => $noticeContent,
-        ];
-    }
-
-    protected function getPersonalizationNotice()
-    {
-        if (! preg_match('/algoliasearch_personalization/', $this->urlBuilder->getCurrentUrl())) {
-            return;
-        }
-
-        $personalizationStatus = $this->getPersonalizationStatus();
-
-        // Adding header
-        $docContent = '<h2 class="algolia-perso-title">Personalization</h2>';
-
-        if ($personalizationStatus < 2) {
-            $docContent .=  '<div class="perso-illustration">
-                <img src="' . $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/illu-perso.svg') . '"/>
-            </div>';
-        }
-
-        $docContent .= '<div class="algolia_block icon-documentation algoblue">
-            <div class="heading"></div>
-            Personalization brings another level of relevant search results to your customers.<br/>
-            Find out more in our <a href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/personalization/what-is-personalization/" target="_blank`">Documentation</a>.
-        </div>';
-
-        switch ($personalizationStatus) {
-            // Activated
-            case 2: $warningContent = 'Personalization is based on actions a user has performed in the past. We help you collect some of the data automatically.</br>
-        After you\'ve collected a reasonable amount of data, Personlization can be applied.';
-                $icon = 'icon-warning';
-                break;
-            // Available but not activated
-            case 1: $warningContent = 'To start using this feature, please head over the <a href="https://www.algolia.com/dashboard" target="_blank`">Algolia Dashboard</a>,
-        and make sure you\'ve enabled Personalization in your account, as well as agreed to the terms and conditions of using Personalization.';
-                $icon = 'icon-warning';
-                break;
-            // Not Available
-            default: $warningContent = 'To get access to this Algolia feature, please <a target="_blank" href="https://www.algolia.com/contact/enterprise/">contact us</a>.';
-                $icon = 'icon-stars';
-                break;
-        }
-
-        $docContent .= $this->formatNotice('', $warningContent, $icon);
-
-        $this->notices[] = [
-            'selector' => '.entry-edit',
-            'method' => 'before',
-            'message' => $docContent,
-        ];
-
-        // Adding footer
-        $footerContent = '<div class="algolia-perso-footer"><br/><h2>Personlization preferences</h2>
-        <p>Manage your Personalization further on the <a href="https://www.algolia.com/dashboard" target="_blank`">Algolia Dashboard</a></p></div>';
-
-        $this->notices[] = [
-            'selector' => '#algoliasearch_personalization_personalization_group_personalization_conversion_events_group',
-            'method' => 'after',
-            'message' => $footerContent,
-        ];
-    }
-
     protected function formatNotice($title, $content, $icon = 'icon-warning')
     {
         return '<div class="algolia_block ' . $icon . '">
                     <div class="heading">' . $title . '</div>
                     ' . $content . '
                 </div>';
-    }
-
-    /**
-     * 0 for non available
-     * 1 for available but not activated
-     * 2 for activated
-     *
-     * @return int
-     */
-    public function getPersonalizationStatus()
-    {
-        return 2;
     }
 
     public function isMsiExternalModuleNeeded()

@@ -63,16 +63,6 @@ class ConfigHelper
     const XML_PATH_IMAGE_HEIGHT = 'algoliasearch_images/image/height';
     const XML_PATH_IMAGE_TYPE = 'algoliasearch_images/image/type';
 
-    const ENABLE_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/enable_synonyms';
-    const SYNONYMS = 'algoliasearch_synonyms/synonyms_group/synonyms';
-    const ONEWAY_SYNONYMS = 'algoliasearch_synonyms/synonyms_group/oneway_synonyms';
-    const SYNONYMS_FILE = 'algoliasearch_synonyms/synonyms_group/synonyms_file';
-
-    const CC_ANALYTICS_ENABLE = 'algoliasearch_cc_analytics/cc_analytics_group/enable';
-    const CC_ANALYTICS_IS_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/is_selector';
-    const CC_CONVERSION_ANALYTICS_MODE = 'algoliasearch_cc_analytics/cc_analytics_group/conversion_analytics_mode';
-    const CC_ADD_TO_CART_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/add_to_cart_selector';
-
     const GA_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
     const GA_DELAY = 'algoliasearch_analytics/analytics_group/delay';
     const GA_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
@@ -934,78 +924,6 @@ class ConfigHelper
         $attributes = array_values($attributes);
 
         return count($attributes) ? ['filters' => implode(' AND ', $attributes)] : [];
-    }
-
-    public function isEnabledSynonyms($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::ENABLE_SYNONYMS, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getSynonyms($storeId = null)
-    {
-        $synonyms = $this->unserialize($this->configInterface->getValue(
-            self::SYNONYMS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
-
-        if (is_array($synonyms)) {
-            return $synonyms;
-        }
-
-        return [];
-    }
-
-    public function getOnewaySynonyms($storeId = null)
-    {
-        $onewaySynonyms = $this->unserialize($this->configInterface->getValue(
-            self::ONEWAY_SYNONYMS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
-
-        if (is_array($onewaySynonyms)) {
-            return $onewaySynonyms;
-        }
-
-        return [];
-    }
-
-    public function getSynonymsFile($storeId = null)
-    {
-        $filename = $this->configInterface->getValue(self::SYNONYMS_FILE, ScopeInterface::SCOPE_STORE, $storeId);
-
-        if (!$filename) {
-            return null;
-        }
-
-        $baseDirectory = $this->directoryList->getPath(DirectoryList::MEDIA);
-
-        return $baseDirectory . '/algoliasearch_admin_config_uploads/' . $filename;
-    }
-
-    public function isClickConversionAnalyticsEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::CC_ANALYTICS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getClickConversionAnalyticsISSelector($storeId = null)
-    {
-        return $this->configInterface->getValue(self::CC_ANALYTICS_IS_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getConversionAnalyticsMode($storeId = null)
-    {
-        return $this->configInterface->getValue(
-            self::CC_CONVERSION_ANALYTICS_MODE,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    public function getConversionAnalyticsAddToCartSelector($storeId = null)
-    {
-        return $this->configInterface->getValue(self::CC_ADD_TO_CART_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function isAnalyticsEnabled($storeId = null)

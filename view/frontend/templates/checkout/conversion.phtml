@@ -1,8 +1,0 @@
-<?php
-/** @var \Algolia\AlgoliaSearch\Block\Checkout\Conversion $block */
-$orderItemsJson = $block->getOrderItemsConversionJson();
-?>
-
-<script type="text/javascript">
-    var algoliaOrderConversionJson = <?php echo $orderItemsJson ?>;
-</script>

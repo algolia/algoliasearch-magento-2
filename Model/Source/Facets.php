@@ -41,11 +41,6 @@ class Facets extends AbstractTable
             ],
         ];
 
-        $config['create_rule'] =  [
-            'label'  => 'Create Query rule?',
-            'values' => ['2' => 'No', '1' => 'Yes'],
-        ];
-
         return $config;
     }
 }

@@ -17,17 +17,8 @@ $tierFormatedVar = $block->escapeHtml('price' . $priceKey . '_tier_formated');
     <div class="col-md-4 col-sm-6" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
         <meta itemprop="position" content="{{__position}}" />
         <div class="result-wrapper" itemprop="item" itemscope itemtype="http://schema.org/Product">
-            <meta itemprop="url"
-                {{^__queryID}} content="{{url}}" {{/__queryID}}
-                {{#__queryID}} content="{{urlForInsights}}" {{/__queryID}}
-                />
-            <a class="result"
-                {{^__queryID}} href="{{url}}" {{/__queryID}}
-                {{#__queryID}} href="{{urlForInsights}}" {{/__queryID}}
-                data-objectid="{{objectID}}"
-                data-indexname="{{__indexName}}"
-                data-position="{{__position}}"
-                data-queryid="{{__queryID}}">
+            <meta itemprop="url" content="{{url}}" />
+            <a class="result" href="{{url}}">
                 <div class="result-content">
                     <div class="result-thumbnail">
                         {{#image_url}}<img itemprop="image" src="{{{image_url}}}" alt="{{{name}}}" />{{/image_url}}
@@ -93,12 +84,7 @@ $tierFormatedVar = $block->escapeHtml('price' . $priceKey . '_tier_formated');
                             <input type="hidden" name="product" value="{{objectID}}">
                             <input type="hidden" name="uenc" value="{{ addToCart.uenc }}">
                             <input name="form_key" type="hidden" value="{{ addToCart.formKey }}">
-                            <button type="submit" title="<?php echo __('Add to Cart') ?>" class="action tocart primary"
-                            data-objectid="{{objectID}}"
-                            data-indexname="{{__indexName}}"
-                            data-position="{{__position}}"
-                            data-queryid="{{__queryID}}"
-                            >
+                            <button type="submit" title="<?php echo __('Add to Cart') ?>" class="action tocart primary" >
                                 <span><?php echo __('Add to Cart') ?></span>
                             </button>
                         </form>

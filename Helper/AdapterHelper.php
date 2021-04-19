@@ -53,18 +53,8 @@ class AdapterHelper
         $algoliaQuery = $query !== '__empty__' ? $query : '';
         $searchParams = [];
         $targetedIndex = null;
-        if ($this->isReplaceCategory() || $this->isSearch() || $this->isLandingPage()) {
+        if ($this->isReplaceCategory() || $this->isSearch()) {
             $searchParams = $this->getSearchParams($storeId);
-
-            // This is the first load of a landing page, so we have to get the parameters from the entity
-            if ($this->isLandingPage() && $this->filtersHelper->getRawQueryParameter() === null) {
-                $searchParams = array_merge(
-                    $searchParams,
-                    $this->filtersHelper->getLandingPageFilters($storeId)
-                );
-                $algoliaQuery = $this->filtersHelper->getLandingPageQuery();
-            }
-
             $orderParam = $this->getOrderParam($storeId);
             if ($this->filtersHelper->getRequest()->getParam('sortBy') !== null) {
                 $targetedIndex = $this->filtersHelper->getRequest()->getParam($orderParam);
@@ -151,16 +141,6 @@ class AdapterHelper
     public function isSearch()
     {
         return $this->filtersHelper->getRequest()->getFullActionName() === 'catalogsearch_result_index';
-    }
-
-    /** @return bool */
-    public function isLandingPage()
-    {
-        $storeId = $this->getStoreId();
-
-        return
-            $this->filtersHelper->getRequest()->getFullActionName() === 'algolia_landingpage_view'
-            && $this->configHelper->isInstantEnabled($storeId) === true;
     }
 
     /**

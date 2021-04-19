@@ -15,7 +15,7 @@
         </algoliasearch_autocomplete>
         <algoliasearch_instant>
             <instant>
-                <facets><![CDATA[{"_1458145454535_587":{"attribute":"price","type":"slider","label":"Price","searchable":"2","create_rule":"2"},"_2541608784525_123":{"attribute":"categories","type":"conjunctive","label":"Categories","searchable":"2","create_rule":"2"},"_3211608784535_456":{"attribute":"color","type":"disjunctive","label":"Colors","searchable":"1","create_rule":"2"}}]]></facets>
+                <facets><![CDATA[{"_1458145454535_587":{"attribute":"price","type":"slider","label":"Price","searchable":"2"},"_2541608784525_123":{"attribute":"categories","type":"conjunctive","label":"Categories","searchable":"2"},"_3211608784535_456":{"attribute":"color","type":"disjunctive","label":"Colors","searchable":"1"}}]]></facets>
                 <sorts><![CDATA[{"_4581608784535_789":{"attribute":"price","sort":"asc","sortLabel":"Lowest price"},"_2541555584535_585":{"attribute":"price","sort":"desc","sortLabel":"Highest price"},"_5581608784535_898":{"attribute":"created_at","sort":"desc","sortLabel":"Newest first"}}]]></sorts>
             </instant>
         </algoliasearch_instant>
@@ -31,16 +31,5 @@
                 <custom_ranking_category_attributes><![CDATA[{"_1600352142072_72":{"attribute":"product_count","order":"desc"}}]]></custom_ranking_category_attributes>
             </categories>
         </algoliasearch_categories>
-        <algoliasearch_personalization>
-            <personalization_group>
-                <personalization_click_events_group>
-                    <product_clicked_selector>.ais-Hits-item a.result, .ais-InfiniteHits-item a.result</product_clicked_selector>
-                    <filter_clicked_selector>.default-filter-selector</filter_clicked_selector>
-                    <product_recommended_clicked_selector>.products-upsell .product-item</product_recommended_clicked_selector>
-                </personalization_click_events_group>
-                <personalization_conversion_events_group>
-                </personalization_conversion_events_group>
-            </personalization_group>
-        </algoliasearch_personalization>
     </default>
 </config>

@@ -4,14 +4,12 @@
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
 $viewModel = $block->getViewModel();
 
-$ajaxCheckUrl = $block->getUrl('algolia_algoliasearch/landingpage/checkUrl');
 $ajaxCheckQuery = $block->getUrl('algolia_algoliasearch/query/checkQuery');
 
 $applicationId = $viewModel->getApplicationId();
 ?>
 <script>
 var applicationId = <?php echo json_encode($applicationId); ?>;
-var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
 var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
 document.addEventListener("DOMContentLoaded", function(event) {
   requirejs([
@@ -65,30 +63,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
         },
         $.mage.__('The index corresponding to the store you selected doesn\'t exist.')
       );
-
-        validator.addRule(
-            'validate-url-unicity',
-            function (value) {
-                var isValid = false;
-                var storeId = $('select[name="store_id"]').val();
-                var landingPageId = $('input[name="landing_page_id"]').val();
-                var checkUrl = ajaxCheckUrl;
-
-                $.ajax({
-                  url: checkUrl,
-                  method: 'POST',
-                  data: {'store_id': storeId, 'url_key': value, 'landing_page_id': landingPageId},
-                  async: false,
-                  complete: function (transport) {
-                    var response = JSON.parse(transport.responseText);
-                    isValid = response.isValid;
-                  }
-                });
-
-                return isValid;
-            },
-            $.mage.__('This URL key is already in use. Please find another one.')
-        );
   });
 });
 </script>

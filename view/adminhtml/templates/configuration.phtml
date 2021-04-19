@@ -5,26 +5,20 @@
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
 $viewModel = $block->getViewModel();
 
-$isClickAnalyticsEnabled = true;
-
 $section = $block->getRequest()->getParam('section');
 
 $linksAndVideoTemplate = '';
 $extensionNotices = [];
-$personalizationStatus = 0;
 
 if (preg_match('/algoliasearch_/', $section)) {
     $linksAndVideoTemplate = $viewModel->getLinksAndVideoTemplate($section);
     $extensionNotices = $viewModel->getExtensionNotices();
-    $personalizationStatus = $viewModel->getPersonalizationStatus();
 }
 
 ?>
 
 <script>
-var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
 var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
-var personalizationStatus = <?php echo json_encode($personalizationStatus); ?>;
 var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
@@ -57,16 +51,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 			var url = window.location.href;
 			if (url.indexOf('section/algoliasearch_') !== -1) {
 
-				// Hide click analytics config if not available
-				if (isClickAnalyticsEnabled === false) {
-					$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
-				}
-
-				// Hide personalization config if not available
-				if (personalizationStatus < 2) {
-					$('#algoliasearch_personalization_personalization_group table').parent().parent().hide();
-				}
-
 				// Adding links and videos to the config panel
                 $('.algolia-admin-content').html(linksAndVideoTemplate);
 
@@ -80,24 +64,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 						$(notice.selector).after(notice.message);
         			}
             	});
-			}
-
-			// SYNONYMS
-
-			handleSynonyms($('#algoliasearch_synonyms_synonyms_group_enable_synonyms').val());
-
-			$(document).on('change', '#algoliasearch_synonyms_synonyms_group_enable_synonyms', function() {
-				handleSynonyms($(this).val());
-			});
-
-			function handleSynonyms(enabled) {
-				var $rows = $('#row_algoliasearch_synonyms_synonyms_group_synonyms, #row_algoliasearch_synonyms_synonyms_group_oneway_synonyms, #row_algoliasearch_synonyms_synonyms_group_synonyms_file');
-
-				if (enabled === '1') {
-					$rows.show();
-				} else {
-					$rows.hide();
-				}
 			}
 
 			// ORDERED / UNORDERED

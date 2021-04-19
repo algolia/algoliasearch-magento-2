@@ -477,12 +477,10 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 				return ['rangeInput', {
 					container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
 					attribute: facet.attribute,
-					labels: {
-						currency: algoliaConfig.currencySymbol,
-						separator: algoliaConfig.translations.to,
-						button: algoliaConfig.translations.go
-					},
-					templates: templates,
+					templates: $.extend({
+						separatorText: algoliaConfig.translations.to,
+						submitText: algoliaConfig.translations.go
+					}, templates),
 					cssClasses: {
 						root: 'conjunctive'
 					},

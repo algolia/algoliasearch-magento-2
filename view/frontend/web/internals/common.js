@@ -147,17 +147,17 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 			if (Array.isArray(hit.price))
 				hit.price = hit.price[0];
 
-			if (hit['price'] !== undefined && price_key !== '.' + algoliaConfig.currencyCode + '.default' && hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_formated'] !== hit['price'][algoliaConfig.currencyCode]['default_formated']) {
-				hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_original_formated'] = hit['price'][algoliaConfig.currencyCode]['default_formated'];
+			if (hit['price'] !== undefined && price_key !== '.' + algoliaConfig.currencyCode + '.default' && hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_formatted'] !== hit['price'][algoliaConfig.currencyCode]['default_formatted']) {
+				hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_original_formatted'] = hit['price'][algoliaConfig.currencyCode]['default_formatted'];
 			}
 
-			if (hit['price'][algoliaConfig.currencyCode]['default_original_formated']
+			if (hit['price'][algoliaConfig.currencyCode]['default_original_formatted']
 				&& hit['price'][algoliaConfig.currencyCode]['special_to_date']) {
 				var priceExpiration = hit['price'][algoliaConfig.currencyCode]['special_to_date'];
 
 				if (algoliaConfig.now > priceExpiration + 1) {
-					hit['price'][algoliaConfig.currencyCode]['default_formated'] = hit['price'][algoliaConfig.currencyCode]['default_original_formated'];
-					hit['price'][algoliaConfig.currencyCode]['default_original_formated'] = false;
+					hit['price'][algoliaConfig.currencyCode]['default_formatted'] = hit['price'][algoliaConfig.currencyCode]['default_original_formatted'];
+					hit['price'][algoliaConfig.currencyCode]['default_original_formatted'] = false;
 				}
 			}
 

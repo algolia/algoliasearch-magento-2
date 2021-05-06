@@ -3,8 +3,8 @@
 /** @var \Algolia\AlgoliaSearch\Block\Algolia $block */
 $priceKey = $block->getPriceKey();
 
-$origFormatedVar = 'price' . $priceKey . '_original_formated';
-$tierFormatedVar = 'price' . $priceKey . '_tier_formated'
+$origFormattedVar = 'price' . $priceKey . '_original_formatted';
+$tierFormattedVar = 'price' . $priceKey . '_tier_formatted'
 
 ?>
 
@@ -38,23 +38,23 @@ $tierFormatedVar = 'price' . $priceKey . '_tier_formated'
 
             <div class="algoliasearch-autocomplete-price">
                     <span class="after_special
-                                {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                                {{#<?php echo $block->escapeHtml($origFormattedVar); ?>}}
                                     promotion
-                                {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}">
-                        {{price<?php echo $block->escapeHtml($priceKey); ?>_formated}}
+                                {{/<?php echo $block->escapeHtml($origFormattedVar); ?>}}">
+                        {{price<?php echo $block->escapeHtml($priceKey); ?>_formatted}}
                     </span>
 
-                {{#<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                {{#<?php echo $block->escapeHtml($origFormattedVar); ?>}}
                     <span class="before_special">
-                        {{<?php echo $block->escapeHtml($origFormatedVar); ?>}}
+                        {{<?php echo $block->escapeHtml($origFormattedVar); ?>}}
                     </span>
-                {{/<?php echo $block->escapeHtml($origFormatedVar); ?>}}
-                {{#<?php echo $block->escapeHtml($tierFormatedVar); ?>}}
+                {{/<?php echo $block->escapeHtml($origFormattedVar); ?>}}
+                {{#<?php echo $block->escapeHtml($tierFormattedVar); ?>}}
                     <span class="tier_price">
                         <?php echo __('As low as') ?>
-                        <span class="tier_value">{{<?php echo $block->escapeHtml($tierFormatedVar); ?>}}</span>
+                        <span class="tier_value">{{<?php echo $block->escapeHtml($tierFormattedVar); ?>}}</span>
                     </span>
-                {{/<?php echo $block->escapeHtml($tierFormatedVar); ?>}}
+                {{/<?php echo $block->escapeHtml($tierFormattedVar); ?>}}
             </div>
         </div>
     </a>

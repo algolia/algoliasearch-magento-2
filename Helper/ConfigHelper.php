@@ -898,15 +898,15 @@ class ConfigHelper
             $attributes[] = 'price.' . $currency . '.default';
             $attributes[] = 'price.' . $currency . '.default_tier';
             $attributes[] = 'price.' . $currency . '.default_max';
-            $attributes[] = 'price.' . $currency . '.default_formated';
-            $attributes[] = 'price.' . $currency . '.default_original_formated';
-            $attributes[] = 'price.' . $currency . '.default_tier_formated';
+            $attributes[] = 'price.' . $currency . '.default_formatted';
+            $attributes[] = 'price.' . $currency . '.default_original_formatted';
+            $attributes[] = 'price.' . $currency . '.default_tier_formatted';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId;
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_tier';
             $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_max';
-            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_formated';
-            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_tier_formated';
-            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_original_formated';
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_formatted';
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_tier_formatted';
+            $attributes[] = 'price.' . $currency . '.group_' . $groupId . '_original_formatted';
             $attributes[] = 'price.' . $currency . '.special_from_date';
             $attributes[] = 'price.' . $currency . '.special_to_date';
         }

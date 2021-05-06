@@ -7,9 +7,9 @@ $currencyCode = $block->getCurrencyCode();
 
 $baseVar         = $block->escapeHtml('price' . $priceKey);
 $maxVar          = $block->escapeHtml('price' . $priceKey . '_max');
-$baseFormatedVar = $block->escapeHtml('price' . $priceKey . '_formated');
-$origFormatedVar = $block->escapeHtml('price' . $priceKey . '_original_formated');
-$tierFormatedVar = $block->escapeHtml('price' . $priceKey . '_tier_formated');
+$baseFormattedVar = $block->escapeHtml('price' . $priceKey . '_formatted');
+$origFormattedVar = $block->escapeHtml('price' . $priceKey . '_original_formatted');
+$tierFormattedVar = $block->escapeHtml('price' . $priceKey . '_tier_formatted');
 
 ?>
 
@@ -65,22 +65,22 @@ $tierFormatedVar = $block->escapeHtml('price' . $priceKey . '_tier_formated');
                                         <div>
 
                                             <span class="after_special
-                                                    {{#<?php echo $origFormatedVar; ?>}}
+                                                    {{#<?php echo $origFormattedVar; ?>}}
                                                         promotion
-                                                    {{/<?php echo $origFormatedVar; ?>}}">
-                                                {{<?php echo $baseFormatedVar; ?>}}
+                                                    {{/<?php echo $origFormattedVar; ?>}}">
+                                                {{<?php echo $baseFormattedVar; ?>}}
                                             </span>
-                                            {{#<?php echo $origFormatedVar; ?>}}
+                                            {{#<?php echo $origFormattedVar; ?>}}
                                                 <span class="before_special">
-                                                    {{<?php echo $origFormatedVar; ?>}}
+                                                    {{<?php echo $origFormattedVar; ?>}}
                                                 </span>
-                                            {{/<?php echo $origFormatedVar; ?>}}
-                                            {{#<?php echo $tierFormatedVar; ?>}}
+                                            {{/<?php echo $origFormattedVar; ?>}}
+                                            {{#<?php echo $tierFormattedVar; ?>}}
                                                 <span class="tier_price">
                                                     <?php echo __('As low as') ?>
-                                                    <span class="tier_value">{{<?php echo $tierFormatedVar; ?>}}</span>
+                                                    <span class="tier_value">{{<?php echo $tierFormattedVar; ?>}}</span>
                                                 </span>
-                                            {{/<?php echo $tierFormatedVar; ?>}}
+                                            {{/<?php echo $tierFormattedVar; ?>}}
                                         </div>
                                     </div>
                                 </div>

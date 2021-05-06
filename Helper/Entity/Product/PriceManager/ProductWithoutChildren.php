@@ -75,7 +75,7 @@ abstract class ProductWithoutChildren
                 $price = $this->getTaxPrice($product, $price, $withTax);
 
                 $this->customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($price);
-                $this->customData[$field][$currencyCode]['default_formated'] = $this->formatPrice($price, $currencyCode);
+                $this->customData[$field][$currencyCode]['default_formatted'] = $this->formatPrice($price, $currencyCode);
 
                 $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax);
                 $tierPrice = $this->getTierPrice($product, $currencyCode, $withTax);
@@ -260,7 +260,7 @@ abstract class ProductWithoutChildren
                 $this->customData[$field][$currencyCode]['group_' . $groupId] =
                     $this->getTaxPrice($product, $discountedPrice, $withTax);
 
-                $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
+                $this->customData[$field][$currencyCode]['group_' . $groupId . '_formatted'] =
                     $this->formatPrice(
                         $this->customData[$field][$currencyCode]['group_' . $groupId],
                         $currencyCode
@@ -268,15 +268,15 @@ abstract class ProductWithoutChildren
 
                 if ($this->customData[$field][$currencyCode]['default'] >
                     $this->customData[$field][$currencyCode]['group_' . $groupId]) {
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_original_formated'] =
-                        $this->customData[$field][$currencyCode]['default_formated'];
+                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_original_formatted'] =
+                        $this->customData[$field][$currencyCode]['default_formatted'];
                 }
             } else {
                 $this->customData[$field][$currencyCode]['group_' . $groupId] =
                     $this->customData[$field][$currencyCode]['default'];
 
-                $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
-                    $this->customData[$field][$currencyCode]['default_formated'];
+                $this->customData[$field][$currencyCode]['group_' . $groupId . '_formatted'] =
+                    $this->customData[$field][$currencyCode]['default_formatted'];
             }
         }
 
@@ -294,13 +294,13 @@ abstract class ProductWithoutChildren
                     && $specialPrice[$groupId] < $this->customData[$field][$currencyCode]['group_' . $groupId]) {
                     $this->customData[$field][$currencyCode]['group_' . $groupId] = $specialPrice[$groupId];
 
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
+                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_formatted'] =
                         $this->formatPrice($specialPrice[$groupId], $currencyCode);
 
                     if ($this->customData[$field][$currencyCode]['default'] >
                         $this->customData[$field][$currencyCode]['group_' . $groupId]) {
-                        $this->customData[$field][$currencyCode]['group_' . $groupId . '_original_formated'] =
-                            $this->customData[$field][$currencyCode]['default_formated'];
+                        $this->customData[$field][$currencyCode]['group_' . $groupId . '_original_formatted'] =
+                            $this->customData[$field][$currencyCode]['default_formatted'];
                     }
                 }
             }
@@ -309,11 +309,11 @@ abstract class ProductWithoutChildren
         }
 
         if ($specialPrice[0] && $specialPrice[0] < $this->customData[$field][$currencyCode]['default']) {
-            $this->customData[$field][$currencyCode]['default_original_formated'] =
-                $this->customData[$field][$currencyCode]['default_formated'];
+            $this->customData[$field][$currencyCode]['default_original_formatted'] =
+                $this->customData[$field][$currencyCode]['default_formatted'];
 
             $this->customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($specialPrice[0]);
-            $this->customData[$field][$currencyCode]['default_formated'] =
+            $this->customData[$field][$currencyCode]['default_formatted'] =
                 $this->formatPrice($specialPrice[0], $currencyCode);
         }
     }
@@ -328,7 +328,7 @@ abstract class ProductWithoutChildren
                 if ($tierPrice[$groupId]) {
                     $this->customData[$field][$currencyCode]['group_' . $groupId . '_tier'] = $tierPrice[$groupId];
 
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_tier_formated'] =
+                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_tier_formatted'] =
                         $this->formatPrice($tierPrice[$groupId], $currencyCode);
                 }
             }
@@ -338,7 +338,7 @@ abstract class ProductWithoutChildren
 
         if ($tierPrice[0]) {
             $this->customData[$field][$currencyCode]['default_tier'] = $this->priceCurrency->round($tierPrice[0]);
-            $this->customData[$field][$currencyCode]['default_tier_formated'] =
+            $this->customData[$field][$currencyCode]['default_tier_formatted'] =
                 $this->formatPrice($tierPrice[0], $currencyCode);
         }
     }

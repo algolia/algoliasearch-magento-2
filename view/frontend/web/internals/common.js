@@ -571,7 +571,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 									uiStateProductIndex.hierarchicalMenu[currentFacet.attribute+ '.level0'].join('~'));
 							}
 							// Handle sliders
-							if (currentFacet.type == 'slider') {
+							if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
 								routeParameters[currentFacet.attribute] = (uiStateProductIndex.range &&
 									uiStateProductIndex.range[currentFacet.attribute] &&
 									uiStateProductIndex.range[currentFacet.attribute]);
@@ -623,7 +623,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 								uiStateProductIndex['hierarchicalMenu']['categories.level0'] = [algoliaConfig.request.path];
 							}
 							// Handle sliders
-							if (currentFacet.type == 'slider') {
+							if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
 								var currentFacetAttribute = currentFacet.attribute;
 								if (currentFacetAttribute.indexOf("price") !== -1) {
 									currentFacetAttribute += algoliaConfig.priceKey;

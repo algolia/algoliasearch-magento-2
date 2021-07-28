@@ -46,7 +46,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                 $original = min($original, $basePrice);
 
                 $max = max($max, $price);
-                $originalMax = max($max, $basePrice);
+                $originalMax = max($originalMax, $basePrice);
             }
         } else {
             $originalMax = $original = $min = $max;

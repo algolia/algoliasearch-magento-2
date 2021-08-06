@@ -879,6 +879,11 @@ class ProductHelper
                 $this->configHelper->getImageHeight()
             );
 
+        $subImage = $subProduct->getData($image->getType());
+        if (!$subImage || $subImage === 'no_selection') {
+            return $subProductImages;
+        }
+
         try {
             $textValueInLower = mb_strtolower($valueText, 'utf-8');
             $subProductImages[$textValueInLower] = $image->getUrl();

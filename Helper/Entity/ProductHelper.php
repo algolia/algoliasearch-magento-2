@@ -830,8 +830,12 @@ class ProductHelper
 
                 $values = array_merge($values, $this->getValues($valueText, $subProduct, $attributeResource));
                 if ($this->configHelper->useAdaptiveImage($attributeResource->getStoreId())) {
-                    $subProductImages = $this->addSubProductImage($subProductImages, $attribute, $subProduct,
-                        $valueText);
+                    $subProductImages = $this->addSubProductImage(
+                        $subProductImages,
+                        $attribute,
+                        $subProduct,
+                        $valueText
+                    );
                 }
             }
         }

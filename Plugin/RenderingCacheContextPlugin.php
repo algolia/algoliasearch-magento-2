@@ -39,23 +39,24 @@ class RenderingCacheContextPlugin
      * we set a different page variation, and the FPC stores a different cached page)
      *
      * @param HttpContext $subject
+     * @param string[] $data
      *
      * @return array
      */
-    public function beforeGetVaryString(HttpContext $subject)
+    public function afterGetData(HttpContext $subject, $data)
     {
         $storeId = $this->storeManager->getStore()->getId();
-        if (! ($this->request->getControllerName() === 'category'
-                && $this->configHelper->replaceCategories($storeId) === true)) {
-            return [];
+        if (!($this->request->getControllerName() === 'category'
+            && $this->configHelper->replaceCategories($storeId) === true)) {
+            return $data;
         }
 
         $context = $this->configHelper->preventBackendRendering() ?
             self::RENDERING_WITHOUT_BACKEND :
             self::RENDERING_WITH_BACKEND;
 
-        $subject->setValue(self::RENDERING_CONTEXT, $context, self::RENDERING_WITH_BACKEND);
+        $data[self::RENDERING_CONTEXT] = $context;
 
-        return [];
+        return $data;
     }
 }

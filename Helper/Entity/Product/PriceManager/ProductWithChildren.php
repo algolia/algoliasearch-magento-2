@@ -22,6 +22,10 @@ abstract class ProductWithChildren extends ProductWithoutChildren
 
         if (!$this->customData[$field][$currencyCode]['default']) {
             $this->handleZeroDefaultPrice($field, $currencyCode, $min, $max);
+
+            # need to rehandle specialPrice
+            $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax);
+            $this->addSpecialPrices($specialPrice, $field, $currencyCode);
         }
 
         if ($this->areCustomersGroupsEnabled) {

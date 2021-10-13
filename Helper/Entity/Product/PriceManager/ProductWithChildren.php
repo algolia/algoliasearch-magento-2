@@ -22,6 +22,10 @@ abstract class ProductWithChildren extends ProductWithoutChildren
 
         if (!$this->customData[$field][$currencyCode]['default']) {
             $this->handleZeroDefaultPrice($field, $currencyCode, $min, $max);
+
+            # need to rehandle specialPrice
+            $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax);
+            $this->addSpecialPrices($specialPrice, $field, $currencyCode);
         }
 
         if ($this->areCustomersGroupsEnabled) {
@@ -46,7 +50,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                 $original = min($original, $basePrice);
 
                 $max = max($max, $price);
-                $originalMax = max($max, $basePrice);
+                $originalMax = max($originalMax, $basePrice);
             }
         } else {
             $originalMax = $original = $min = $max;

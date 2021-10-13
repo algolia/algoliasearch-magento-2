@@ -9,6 +9,7 @@ class JobMethods implements \Magento\Framework\Data\OptionSourceInterface
         'moveIndexWithSetSettings' => 'Move Index',
         'deleteObjects' => 'Object deletion',
         'rebuildStoreCategoryIndex' => 'Category Reindex',
+        'rebuildCategoryIndex' => 'Category Reindex',
         'rebuildStoreProductIndex' => 'Product Reindex',
         'rebuildProductIndex' => 'Product Reindex',
         'rebuildStoreAdditionalSectionsIndex' => 'Additional Section Reindex',

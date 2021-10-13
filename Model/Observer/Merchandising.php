@@ -38,8 +38,15 @@ class Merchandising implements ObserverInterface
 
         $positions = json_decode($positions, true);
 
+        $storeId = $this->request->getParam('store_id');
+        if ($storeId > 0) {
+            $stores[] = $this->storeManager->getStore($storeId);
+        } else {
+            $stores = $this->storeManager->getStores();
+        }
+
         try {
-            foreach ($this->storeManager->getStores() as $store) {
+            foreach ($stores as $store) {
                 if (!$store->getIsActive()) {
                     continue;
                 }

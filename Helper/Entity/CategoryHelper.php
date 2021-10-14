@@ -470,8 +470,7 @@ class CategoryHelper
 
     private function getCategoryById($categoryId)
     {
-        //$categories = $this->getCoreCategories(false);
-        $categories = $this->getCoreCategories();
+        $categories = $this->getCoreCategories(false);
 
         return isset($categories[$categoryId]) ? $categories[$categoryId] : null;
     }

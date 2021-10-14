@@ -829,7 +829,14 @@ class ProductHelper
                 $valueText = $subProduct->getAttributeText($attributeName);
 
                 $values = array_merge($values, $this->getValues($valueText, $subProduct, $attributeResource));
-                $subProductImages = $this->addSubProductImage($subProductImages, $attribute, $subProduct, $valueText);
+                if ($this->configHelper->useAdaptiveImage($attributeResource->getStoreId())) {
+                    $subProductImages = $this->addSubProductImage(
+                        $subProductImages,
+                        $attribute,
+                        $subProduct,
+                        $valueText
+                    );
+                }
             }
         }
 
@@ -869,17 +876,17 @@ class ProductHelper
             return $subProductImages;
         }
 
-        $subImage = $subProduct->getData($this->configHelper->getImageType());
-        if (!$subImage || $subImage === 'no_selection') {
-            return $subProductImages;
-        }
-
         $image = $this->imageHelper
             ->init($subProduct, $this->configHelper->getImageType())
             ->resize(
                 $this->configHelper->getImageWidth(),
                 $this->configHelper->getImageHeight()
             );
+
+        $subImage = $subProduct->getData($image->getType());
+        if (!$subImage || $subImage === 'no_selection') {
+            return $subProductImages;
+        }
 
         try {
             $textValueInLower = mb_strtolower($valueText, 'utf-8');

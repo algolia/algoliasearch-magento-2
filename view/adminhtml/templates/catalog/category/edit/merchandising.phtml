@@ -14,16 +14,6 @@ $configHelper = $block->getConfigHelper();
     Find out more about Algolia Merchandising, please refer to <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/category-merchandising/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
 </div>
 
-<?php if (!$block->isQueryRulesEnabled()) : ?>
-
-    <br>
-    <div class="algolia_block icon-stars">
-        To get access to this Algolia feature,
-        please consider <a href="https://www.algolia.com/billing/overview" target="_blank">upgrading to a higher plan</a>.
-    </div>
-
-    <?php return; endif; ?>
-
 <?php if ($block->isRootCategory()) : ?>
 
     <br>

@@ -783,7 +783,7 @@ a.ais-current-refined-values--link:hover {
     padding-top: 50px;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 991px) {
     #algolia_instant_selector .facets {
         padding-top: 10px;
     }

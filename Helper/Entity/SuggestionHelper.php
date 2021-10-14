@@ -106,28 +106,20 @@ class SuggestionHelper
         $collection->getSelect()->where(
             'num_results >= ' . $this->configHelper->getMinNumberOfResults() . ' 
             AND popularity >= ' . $this->configHelper->getMinPopularity() . ' 
-            AND query_text != "__empty__"'
+            AND query_text != "__empty__" AND CHAR_LENGTH(query_text) >= 3'
         );
-        $collection->getSelect()->limit(12);
-        $collection->setOrder('popularity', 'DESC');
-        $collection->setOrder('num_results', 'DESC');
-        $collection->setOrder('updated_at', 'ASC');
 
         if ($storeId) {
             $collection->getSelect()->where('store_id = ?', (int) $storeId);
         }
 
-        $collection->load();
+        $collection->setOrder('popularity', 'DESC');
+        $collection->setOrder('num_results', 'DESC');
+        $collection->setOrder('updated_at', 'ASC');
 
-        $suggestions = [];
+        $collection->getSelect()->limit(10);
 
-        foreach ($collection as $suggestion) {
-            if (mb_strlen($suggestion['query_text']) >= 3) {
-                $suggestions[] = $suggestion['query_text'];
-            }
-        }
-
-        $queries = array_slice($suggestions, 0, 9);
+        $queries = $collection->getColumnValues('query_text');
 
         $this->cache->save($this->serializer->serialize($queries), $this->popularQueriesCacheId, [], 24*3600);
 

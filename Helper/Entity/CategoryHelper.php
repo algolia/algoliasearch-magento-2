@@ -165,11 +165,7 @@ class CategoryHelper
         $storeRootCategoryPath = sprintf('%d/%d', $this->getRootCategoryId(), $store->getRootCategoryId());
 
         $unserializedCategorysAttrs = $this->getAdditionalAttributes($storeId);
-
-        $additionalAttr = [];
-        foreach ($unserializedCategorysAttrs as $attr) {
-            $additionalAttr[] = $attr['attribute'];
-        }
+        $additionalAttr = array_column($unserializedCategorysAttrs, 'attribute');
 
         $categories = $this->categoryCollectionFactory->create()
             ->distinct(true)
@@ -465,9 +461,8 @@ class CategoryHelper
 
         if ($this->getCorrectIdColumn() === 'row_id') {
             $category = $this->getCategoryById($categoryId);
-            if ($category) {
-                $categoryKeyId = $category->getRowId();
-            }
+
+            return $category ? $category->getRowId() : null;
         }
 
         return $categoryKeyId;
@@ -475,7 +470,7 @@ class CategoryHelper
 
     private function getCategoryById($categoryId)
     {
-        $categories = $this->getCoreCategories();
+        $categories = $this->getCoreCategories(false);
 
         return isset($categories[$categoryId]) ? $categories[$categoryId] : null;
     }

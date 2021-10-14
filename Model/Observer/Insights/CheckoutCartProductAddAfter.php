@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Psr\Log\LoggerInterface;
 
 class CheckoutCartProductAddAfter implements ObserverInterface
 {
@@ -15,12 +16,17 @@ class CheckoutCartProductAddAfter implements ObserverInterface
     /** @var InsightsHelper */
     private $insightsHelper;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     public function __construct(
         Data $dataHelper,
-        InsightsHelper $insightsHelper
+        InsightsHelper $insightsHelper,
+        LoggerInterface $logger
     ) {
         $this->dataHelper = $dataHelper;
         $this->insightsHelper = $insightsHelper;
+        $this->logger = $logger;
     }
 
     /**
@@ -58,19 +64,27 @@ class CheckoutCartProductAddAfter implements ObserverInterface
         if ($this->getConfigHelper()->isClickConversionAnalyticsEnabled($storeId)
             && $this->getConfigHelper()->getConversionAnalyticsMode($storeId) === 'add_to_cart') {
             if ($product->hasData('queryId')) {
-                $userClient->convertedObjectIDsAfterSearch(
-                    __('Added to Cart'),
-                    $this->dataHelper->getIndexName('_products', $storeId),
-                    [$product->getId()],
-                    $product->getData('queryId')
-                );
+                try {
+                    $userClient->convertedObjectIDsAfterSearch(
+                        __('Added to Cart'),
+                        $this->dataHelper->getIndexName('_products', $storeId),
+                        [$product->getId()],
+                        $product->getData('queryId')
+                    );
+                } catch (\Exception $e) {
+                    $this->logger->critical($e);
+                }
             }
         } else {
-            $userClient->convertedObjectIDs(
-                __('Added to Cart'),
-                $this->dataHelper->getIndexName('_products', $storeId),
-                [$product->getId()]
-            );
+            try {
+                $userClient->convertedObjectIDs(
+                    __('Added to Cart'),
+                    $this->dataHelper->getIndexName('_products', $storeId),
+                    [$product->getId()]
+                );
+            } catch (\Exception $e) {
+                $this->logger->critical($e);
+            }
         }
     }
 }

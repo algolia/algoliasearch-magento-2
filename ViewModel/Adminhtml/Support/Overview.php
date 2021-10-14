@@ -24,12 +24,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
         $this->supportHelper = $supportHelper;
     }
 
-    /** @return bool */
-    public function isExtensionSupportEnabled()
-    {
-        return $this->supportHelper->isExtensionSupportEnabled();
-    }
-
     /** @return string */
     public function getApplicationId()
     {

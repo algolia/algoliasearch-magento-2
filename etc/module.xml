@@ -4,8 +4,8 @@
         <sequence>
             <module name="Magento_Theme"/>
             <module name="Magento_Backend"/>
-            <module name="Magento_Catalog"/>
             <module name="Magento_Indexer"/>
+            <module name="Magento_Catalog"/>
             <module name="Magento_Search"/>
             <module name="Magento_Checkout"/>
             <module name="Magento_Customer"/>

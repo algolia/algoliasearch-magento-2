@@ -105,7 +105,7 @@
     }
 }
 
-@media (max-width: 992px) {
+@media (max-width: 991px) {
     #algolia_instant_selector .visible-sm {
         display: block !important;
     }

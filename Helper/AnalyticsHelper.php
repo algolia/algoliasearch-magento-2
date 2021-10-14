@@ -52,6 +52,7 @@ class AnalyticsHelper
 
     /**
      * Can be changed through DI
+     *
      * @var string
      */
     private $region;

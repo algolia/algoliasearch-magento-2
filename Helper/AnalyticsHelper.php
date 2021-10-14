@@ -33,7 +33,6 @@ class AnalyticsHelper
     private $clickPositions;
     private $clickThroughs;
     private $conversions;
-  
 
     private $clientData;
 

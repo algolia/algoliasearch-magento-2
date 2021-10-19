@@ -445,9 +445,10 @@ class ProductHelper
         }
     }
 
-    public function getAllCategories($categoryIds)
+    public function getAllCategories($categoryIds, $storeId)
     {
-        $categories = $this->categoryHelper->getCoreCategories(false);
+        $filterNotIncludedCategories = !$this->configHelper->showCatsNotIncludedInNavigation($storeId);
+        $categories = $this->categoryHelper->getCoreCategories($filterNotIncludedCategories);
 
         $selectedCategories = [];
         foreach ($categoryIds as $id) {
@@ -628,7 +629,7 @@ class ProductHelper
         $_categoryIds = $product->getCategoryIds();
 
         if (is_array($_categoryIds) && count($_categoryIds) > 0) {
-            $categoryCollection = $this->getAllCategories($_categoryIds);
+            $categoryCollection = $this->getAllCategories($_categoryIds, $storeId);
 
             /** @var Store $store */
             $store = $this->storeManager->getStore($product->getStoreId());

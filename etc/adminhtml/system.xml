@@ -632,7 +632,11 @@
                 <field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Click Analytics</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\EnableClickAnalytics</backend_model>
+                    <comment>
+                        <![CDATA[
+                            To use this feature, you need to first activate it in your Algolia Application.
+                        ]]>
+                    </comment>
                 </field>
                 <field id="is_selector" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>DOM selector of a result container on the instant search page</label>

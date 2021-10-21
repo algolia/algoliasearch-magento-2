@@ -1,5 +1,38 @@
 # CHANGE LOG
 
+## 3.2.0
+
+### UPDATES
+- Update module sequence and indexers (#1132)
+- Add additional attributes for customer groups (#1144)
+- Add priceRanges back to uistate (#1151)
+- Set visibility of getTaxPrice() to public in ProductWithoutChildren (#1159) (@JeroenVanLeusden)
+- Improve check: and try to handle URL by URL rewrites if request path is NULL. (#1149) (@vmalyk)
+- Unfilter getCoreCategories() from private getCategoryById() (#1154)
+- Add ability to change region for Analytics call (#1131) (@bchatard)
+
+### FIXES
+- Add missing indexName for autocomplete sections (#1133)
+- Add check if color object is defined for adaptive images (#1135)
+- Add small change on category indexing for Enterprise Edition (#1136)
+- Refactor loops and fix analytics overview issues (#1137)
+- Fix missing 'out of' translation on search results page (#1139) (@NickdeK)
+- Restore query value in custom instant search box (#1142) (@vmalyk)
+- Fix instantsearch rangeInput labels (#1148)
+- Recalculate special price if zero default pricing (#1160)
+- Add missing label for queue method rebuildCategoryIndex (#1152) (@tezlopchan)
+- Fix max original price for product with children (#1155) (@valeriish)
+- Store scope category merchandising based on store_id param (#1156)
+- Fix Subproduct Image Data (#1157)
+- Add try/catch to add to cart push events (#1158)
+- Fix for BE side renderting and caching 2 types of content (#1161) (@sudma)
+- Fix: categories not included filtering on product listing (#1163)
+- Fix: removing old feature checking for C&C that triggers deprecated endpoint (#1164)
+
+### TOOLING
+-  Update CI testing (#1140)
+
+
 ## 3.1.0
 
 ### UPDATES

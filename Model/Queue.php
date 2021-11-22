@@ -69,13 +69,17 @@ class Queue
     /** @var array */
     private $logRecord;
 
+    /** @var JobFactory */
+    private $jobFactory;
+
     public function __construct(
         ConfigHelper $configHelper,
         Logger $logger,
         JobCollectionFactory $jobCollectionFactory,
         ResourceConnection $resourceConnection,
         ObjectManagerInterface $objectManager,
-        ConsoleOutput $output
+        ConsoleOutput $output,
+        JobFactory $jobFactory
     ) {
         $this->configHelper = $configHelper;
         $this->logger = $logger;
@@ -89,6 +93,7 @@ class Queue
 
         $this->objectManager = $objectManager;
         $this->output = $output;
+        $this->jobFactory = $jobFactory;
 
         $this->elementsPerPage = $this->configHelper->getNumberOfElementByPage();
 
@@ -117,6 +122,7 @@ class Queue
                 'data_size' => $dataSize,
                 'pid'       => null,
                 'is_full_reindex' => $isFullReindex ? 1 : 0,
+                'store_id'  => $data['store_id'] ?? null,
             ]);
         } else {
             $object = $this->objectManager->get($className);
@@ -201,7 +207,6 @@ class Queue
         $this->clearOldFailingJobs();
 
         $jobs = $this->getJobs($maxJobs);
-
         if ($jobs === []) {
             return;
         }
@@ -211,11 +216,17 @@ class Queue
             // If there are some failed jobs before move, we want to skip the move
             // as most probably not all products have prices reindexed
             // and therefore are not indexed yet in TMP index
-            if ($job->getMethod() === 'moveIndex' && $this->noOfFailedJobs > 0) {
-                // Set pid to NULL so it's not deleted after
-                $this->db->update($this->table, ['pid' => null], ['job_id = ?' => $job->getId()]);
+            if ($job->getMethod() === 'moveIndexWithSetSettings') {
+                $remainingStoreJobs = $this->db->query(
+                    $this->db->select()->from('algoliasearch_queue', 'COUNT(*)')->where('store_id = ?', $job->getStoreId())
+                )->fetchColumn();
 
-                continue;
+                if ($this->noOfFailedJobs > 0 || $remainingStoreJobs > 0) {
+                    // Set pid and locked_at to NULL so it's not deleted after.
+                    $this->db->update($this->table, ['pid' => null, 'locked_at' => null], ['job_id = ?' => $job->getId()]);
+
+                    continue;
+                }
             }
 
             try {
@@ -314,8 +325,6 @@ class Queue
                 $jobs = array_merge($jobs, $restFullReindexJobs);
             }
 
-            $this->lockJobs($jobs);
-
             $this->db->commit();
         } catch (Exception $e) {
             $this->db->rollBack();
@@ -347,19 +356,34 @@ class Queue
 
         while ($actualBatchSize < $maxBatchSize) {
             $jobsCollection = $this->jobCollectionFactory->create();
-            $jobsCollection
-                ->addFieldToFilter('pid', ['null' => true])
+            $jobsCollection->addFieldToFilter('pid', ['null' => true])
                 ->addFieldToFilter('is_full_reindex', $fetchFullReindexJobs)
                 ->setOrder('job_id', Collection::SORT_ORDER_ASC)
                 ->getSelect()
-                    ->limit($limit, $offset)
-                    ->forUpdate();
+                ->limit($limit, $offset);
 
             if ($lastJobId !== null) {
                 $jobsCollection->addFieldToFilter('job_id', ['gt' => $lastJobId]);
             }
 
-            $rawJobs = $jobsCollection->getItems();
+            $innerSelect = $jobsCollection->getSelect() . ' FOR UPDATE SKIP LOCKED';
+            $pid = getmypid();
+            $this->db->update($this->table, [
+                'locked_at' => date('Y-m-d H:i:s'),
+                'pid' => $pid,
+            ], ['job_id IN (SELECT job_id FROM (?) tmp)' => new \Zend_Db_Expr($innerSelect)]);
+
+            $rawJobs = $this->db->query(
+                $this->db->select()
+                    ->from('algoliasearch_queue')
+                    ->where('pid = ?', $pid)
+                    ->where('is_full_reindex = ?', $fetchFullReindexJobs)
+            )->fetchAll();
+
+            $self = $this;
+            $rawJobs = \array_map(static function (array $data) use ($self) {
+                return $self->jobFactory->create()->setData($data);
+            }, $rawJobs);
 
             if ($rawJobs === []) {
                 break;
@@ -525,22 +549,6 @@ class Queue
         call_user_func_array('array_multisort', $args);
 
         return array_pop($args);
-    }
-
-    /**
-     * @param Job[] $jobs
-     */
-    private function lockJobs(array $jobs)
-    {
-        $jobsIds = $this->getJobsIdsFromMergedJobs($jobs);
-
-        if ($jobsIds !== []) {
-            $pid = getmypid();
-            $this->db->update($this->table, [
-                'locked_at' => date('Y-m-d H:i:s'),
-                'pid' => $pid,
-            ], ['job_id IN (?)' => $jobsIds]);
-        }
     }
 
     /**

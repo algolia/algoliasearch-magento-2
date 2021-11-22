@@ -27,6 +27,12 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" type="Algolia\AlgoliaSearch\Model\LandingPage" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueryInterface" type="Algolia\AlgoliaSearch\Model\Query" />
 
+    <type name="Algolia\AlgoliaSearch\Model\Indexer\QueueRunner">
+        <arguments>
+            <argument name="threadsCount" xsi:type="init_parameter">Magento\Indexer\Model\ProcessManager::THREADS_COUNT</argument>
+        </arguments>
+    </type>
+
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">

@@ -523,17 +523,21 @@
                             If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br>
                             <br>
                             To schedule the run you need to add this in your crontab:<br>
-                            <code>*/5 * * * * php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code>
-                            <br><span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
+                            <code>*/5 * * * * php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code><br>
+                            <br>
+                            To executes queue indexer across multiple threads add this in your crontab:<br>
+                            <code>*/5 * * * * MAGE_INDEXER_THREADS_COUNT=x php /absolute/path/to/magento/bin/magento indexer:reindex algolia_queue_runner</code><br>
+                            where "x" is the amount of threads.<br>
+                            <span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
                         ]]>
                     </comment>
                 </field>
                 <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
-                    <label>Number of jobs to run each time the cron is run</label>
+                    <label>Number of jobs to run each time the indexer is run</label>
                     <comment>
                         <![CDATA[
-                            Number of queued jobs to run each time the cron is launched. Default value is 5.
+                            Number of queued jobs to run each time the indexer is launched. Default value is 5.
                             <br><span class="algolia-config-warning">&#9888;</span> Each time the cron runs it will process ("Max number of element per indexing job" * "Number of jobs to run each time the cron is run")
                             products.
                         ]]>

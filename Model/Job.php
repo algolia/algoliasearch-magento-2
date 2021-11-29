@@ -9,8 +9,6 @@ use Algolia\AlgoliaSearch\Api\Data\JobInterface;
  *
  * @method int getPid()
  * @method int getStoreId()
- * @method string getClass()
- * @method string getMethod()
  * @method int getDataSize()
  * @method int getRetries()
  * @method int getMaxRetries()
@@ -247,5 +245,69 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         $this->getResource()->save($this);
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getClass(): string
+    {
+        return $this->getData(self::FIELD_CLASS);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setClass(string $class): JobInterface
+    {
+        return $this->setData(self::FIELD_CLASS, $class);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMethod(): string
+    {
+        return $this->getData(self::FIELD_METHOD);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setMethod(string $method): JobInterface
+    {
+        return $this->setData(self::FIELD_METHOD, $method);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBody(): string
+    {
+        return $this->getData(self::FIELD_DATA);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setBody(string $data): JobInterface
+    {
+        return $this->setData(self::FIELD_DATA, $data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBodySize(): int
+    {
+        return $this->getData(self::FIELD_DATA_SIZE);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setBodySize(int $size): JobInterface
+    {
+        return $this->setData(self::FIELD_DATA_SIZE, $size);
     }
 }

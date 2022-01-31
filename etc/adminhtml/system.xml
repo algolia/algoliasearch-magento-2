@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="../../../../Magento/Config/etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <tab id="algolia" translate="label" sortOrder="100001">
             <label>
@@ -985,6 +984,13 @@
                         <![CDATA[
                             (In days - default value is 30) Sets the limit when the oldest records should be cleared from the archive logs (algoliasearch_queue_archive).
                         ]]>
+                    </comment>
+                </field>
+                <field id="exclude_ips_from_analytics" translate="label comment" type="text" sortOrder="105" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude IPs from analytics</label>
+                    <backend_model>Magento\Developer\Model\Config\Backend\AllowedIps</backend_model>
+                    <comment>
+                        <![CDATA[(comma separated) Exclude searches coming from IP addresses from your analytics, such as searches your development team or other employees make.]]>
                     </comment>
                 </field>
             </group>

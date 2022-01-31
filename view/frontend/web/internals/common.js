@@ -203,6 +203,7 @@ requirejs(['algoliaBundle'], function(algoliaBundle) {
 				return null;
 
 			var options = {
+                 analytics: algoliaConfig.algoliaAnalytics,
 				hitsPerPage: section.hitsPerPage,
 				analyticsTags: 'autocomplete',
 				clickAnalytics: true

@@ -81,6 +81,7 @@ requirejs(['algoliaBundle', 'Magento_Catalog/js/price-utils'], function (algolia
 		var searchClient = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
 		var indexName = algoliaConfig.indexName + '_products';
 		var searchParameters = {
+             analytics: algoliaConfig.algoliaAnalytics,
 			hitsPerPage: algoliaConfig.hitsPerPage,
 			ruleContexts: ruleContexts
 		};

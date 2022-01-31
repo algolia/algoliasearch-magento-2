@@ -7,6 +7,7 @@ use Magento;
 use Magento\Directory\Model\Currency as DirCurrency;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\DataObject;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Framework\Locale\Currency;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -118,8 +119,8 @@ class ConfigHelper
     private $moduleResource;
     private $productMetadata;
     private $eventManager;
-    private $currencyManager;
     private $serializer;
+    private $remoteAddress;
 
     public function __construct(
         Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
@@ -131,8 +132,8 @@ class ConfigHelper
         Magento\Framework\Module\ResourceInterface $moduleResource,
         Magento\Framework\App\ProductMetadataInterface $productMetadata,
         Magento\Framework\Event\ManagerInterface $eventManager,
-        Magento\Directory\Model\Currency $currencyManager,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        RemoteAddress $remoteAddress
     ) {
         $this->objectManager = $objectManager;
         $this->configInterface = $configInterface;
@@ -143,8 +144,8 @@ class ConfigHelper
         $this->moduleResource = $moduleResource;
         $this->productMetadata = $productMetadata;
         $this->eventManager = $eventManager;
-        $this->currencyManager = $currencyManager;
         $this->serializer = $serializer;
+        $this->remoteAddress = $remoteAddress;
     }
 
     public function indexOutOfStockOptions($storeId = null)
@@ -1109,5 +1110,30 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+    }
+
+    /**
+     * @param null $storeId
+     *
+     * @return bool
+     */
+    public function enableAlgoliaAnalytics($storeId = null): bool
+    {
+        $enabled = true;
+        $remoteAddr = $this->remoteAddress->getRemoteAddress();
+        $excludeIps = $this->configInterface->getValue(
+            'algoliasearch_advanced/advanced/exclude_ips_from_analytics',
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        if (!empty($excludeIps) && !empty($remoteAddr)) {
+            $excludeIps = preg_split('#\s*,\s*#', $excludeIps, null, PREG_SPLIT_NO_EMPTY);
+            if (in_array($remoteAddr, $excludeIps, true)) {
+                $enabled = false;
+            }
+        }
+
+        return $enabled;
     }
 }

@@ -242,6 +242,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 ],
             ],
             'analytics' => $config->getAnalyticsConfig(),
+            'algoliaAnalytics' => $config->disableAlgoliaAnalytics($this->getStoreId()),
             'now' => $this->getTimestamp(),
             'queue' => [
                 'isEnabled' => $config->isQueueActive($this->getStoreId()),

@@ -9,23 +9,24 @@
 
         {{#image_url}}
         <div class="info">
-            {{/image_url}}
-            {{^image_url}}
-            <div class="info-without-thumb">
-                {{#_highlightResult.path}}
-                {{{_highlightResult.path.value}}}
-                {{/_highlightResult.path}}
-                {{^_highlightResult.path}}
-                {{{path}}}
-                {{/_highlightResult.path}}
+        {{/image_url}}
 
-                {{#product_count}}
-                <small>({{product_count}})</small>
-                {{/product_count}}
+        {{^image_url}}
+        <div class="info-without-thumb">
+        {{/image_url}}
 
-            </div>
-            <div class="algolia-clearfix"></div>
-            {{/image_url}}
+            {{#_highlightResult.path}}
+            {{{_highlightResult.path.value}}}
+            {{/_highlightResult.path}}
+            {{^_highlightResult.path}}
+            {{{path}}}
+            {{/_highlightResult.path}}
+
+            {{#product_count}}
+            <small>({{product_count}})</small>
+            {{/product_count}}
+
         </div>
+        <div class="algolia-clearfix"></div>
     </a>
 </script>

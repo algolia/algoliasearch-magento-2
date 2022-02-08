@@ -248,7 +248,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getClass(): string
     {
@@ -256,7 +256,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function setClass(string $class): JobInterface
     {
@@ -264,7 +264,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getMethod(): string
     {
@@ -272,7 +272,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function setMethod(string $method): JobInterface
     {
@@ -280,7 +280,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getBody(): string
     {
@@ -288,7 +288,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function setBody(string $data): JobInterface
     {
@@ -296,7 +296,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getBodySize(): int
     {
@@ -304,7 +304,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function setBodySize(int $size): JobInterface
     {

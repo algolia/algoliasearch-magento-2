@@ -37,6 +37,7 @@ interface JobInterface
 
     /**
      * @param string $class
+     *
      * @return $this
      */
     public function setClass(string $class): self;
@@ -48,6 +49,7 @@ interface JobInterface
 
     /**
      * @param string $method
+     *
      * @return $this
      */
     public function setMethod(string $method): self;
@@ -59,6 +61,7 @@ interface JobInterface
 
     /**
      * @param string $data
+     *
      * @return $this
      */
     public function setBody(string $data): self;
@@ -70,6 +73,7 @@ interface JobInterface
 
     /**
      * @param int $size
+     *
      * @return $this
      */
     public function setBodySize(int $size): self;

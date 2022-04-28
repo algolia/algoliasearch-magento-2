@@ -43,7 +43,6 @@ class QueueTest extends TestCase
         /** @var Product $indexer */
         $indexer = $this->getObjectManager()->create(Product::class);
         $indexer->executeFull();
-
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(3, count($rows));
 

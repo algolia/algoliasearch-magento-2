@@ -10,7 +10,7 @@ class CategoriesIndexingTest extends IndexingTestCase
     {
         /** @var Category $categoriesIndexer */
         $categoriesIndexer = $this->getObjectManager()->create(Category::class);
-        $this->processTest($categoriesIndexer, 'categories', 18);
+        $this->processTest($categoriesIndexer, 'categories', $this->assertValues->expectedCategory);
     }
 
     public function testDefaultIndexableAttributes()

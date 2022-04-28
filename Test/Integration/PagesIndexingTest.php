@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Page;
 use Magento\Cms\Model\PageFactory;
 
-class PagesIndexingTest extends IndexingTestCase
+class   PagesIndexingTest extends IndexingTestCase
 {
     public function testOnlyOnStockProducts()
     {
@@ -18,7 +18,7 @@ class PagesIndexingTest extends IndexingTestCase
         /** @var Page $indexer */
         $indexer = $this->getObjectManager()->create(Page::class);
 
-        $this->processTest($indexer, 'pages', 6);
+        $this->processTest($indexer, 'pages', $this->assertValues->expectedPages);
     }
 
     public function testExcludedPages()
@@ -34,7 +34,7 @@ class PagesIndexingTest extends IndexingTestCase
 
         /** @var Page $indexer */
         $indexer = $this->getObjectManager()->create(Page::class);
-        $this->processTest($indexer, 'pages', 4);
+        $this->processTest($indexer, 'pages', $this->assertValues->expectedExcludePages);
 
         $results = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
 

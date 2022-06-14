@@ -135,3 +135,5 @@ Here are some helpful documentation to help with your issue:
 
 For feedback, bug reporting, or unresolved issues with the extension, please contact us at [support@algolia.com](mailto:support@algolia.com). Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
 
+Or open up an issue: https://github.com/algolia/algoliasearch-magento-2/issues/new
+

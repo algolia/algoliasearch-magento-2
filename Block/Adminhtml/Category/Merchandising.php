@@ -58,15 +58,21 @@ class Merchandising extends \Magento\Backend\Block\Template
     {
         $category = $this->getCategory();
 
-        if ($category) {
-            $path = $category->getPath();
-
-            $parts = explode('/', $path);
-            if (count($parts) <= 2) {
-                return true;
-            }
+        if (!$category) {
+            return false;
         }
 
+        $path = $category->getPath();
+
+        if (!$path) {
+            return false;
+        }
+        
+        $parts = explode('/', $path);
+        if (count($parts) <= 2) {
+            return true;
+        }
+        
         return false;
     }
 

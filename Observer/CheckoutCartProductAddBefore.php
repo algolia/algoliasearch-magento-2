@@ -1,37 +1,23 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Model\Observer\Insights;
+namespace Algolia\AlgoliaSearch\Observer;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Session\SessionManagerInterface;
 
 class CheckoutCartProductAddBefore implements ObserverInterface
 {
-    /** @var ConfigHelper */
-    private $configHelper;
-
-    /** @var InsightsHelper */
-    private $insightsHelper;
-
     /** @var SessionManagerInterface */
-    private $_coreSession;
+    protected $coreSession;
 
     /**
-     * @param ConfigHelper $configHelper
-     * @param InsightsHelper $insightsHelper
      * @param SessionManagerInterface $coreSession
      */
     public function __construct(
-        ConfigHelper $configHelper,
-        InsightsHelper $insightsHelper,
         SessionManagerInterface $coreSession
     ) {
-        $this->configHelper = $configHelper;
-        $this->insightsHelper = $insightsHelper;
-        $this->_coreSession = $coreSession;
+        $this->coreSession = $coreSession;
     }
 
     /**
@@ -45,8 +31,8 @@ class CheckoutCartProductAddBefore implements ObserverInterface
         $requestInfo = $observer->getEvent()->getInfo();
 
         if (isset($requestInfo['queryID']) && $requestInfo['queryID'] != '') {
-            $this->_coreSession->start();
-            $this->_coreSession->setQueryId($requestInfo['queryID']);
+            $this->coreSession->start();
+            $this->coreSession->setQueryId($requestInfo['queryID']);
             $product->setData('queryId', $requestInfo['queryID']);
         }
     }

@@ -70,7 +70,6 @@ class CheckoutCartProductAddAfter implements ObserverInterface
                 $quoteItem->setData('algoliasearch_query_param', $queryId);
                 break;
             case 'add_to_cart':
-                $this->coreSession->start();
                 $queryId = ($queryId ?: $this->coreSession->getQueryId());
                 if ($queryId) {
                     try {
@@ -80,7 +79,6 @@ class CheckoutCartProductAddAfter implements ObserverInterface
                             [$product->getId()],
                             $queryId
                         );
-                        $this->coreSession->unsQueryId();
                     } catch (\Exception $e) {
                         $this->logger->critical($e);
                     }

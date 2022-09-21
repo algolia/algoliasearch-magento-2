@@ -31,7 +31,6 @@ class CheckoutCartProductAddBefore implements ObserverInterface
         $requestInfo = $observer->getEvent()->getInfo();
 
         if (isset($requestInfo['queryID']) && $requestInfo['queryID'] != '') {
-            $this->coreSession->start();
             $this->coreSession->setQueryId($requestInfo['queryID']);
             $product->setData('queryId', $requestInfo['queryID']);
         }

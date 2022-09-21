@@ -57,7 +57,7 @@ class CheckoutCartProductAddAfter implements ObserverInterface
         $product = $observer->getEvent()->getProduct();
         $storeId = $quoteItem->getStoreId();
         $conversionAnalyticsMode = $this->configHelper->getConversionAnalyticsMode($storeId);
-        $queryId = $product->hasData('queryId');
+        $queryId = $this->coreSession->getQueryId();
 
         if (!$this->insightsHelper->isAddedToCartTracked($storeId) && !$this->insightsHelper->isOrderPlacedTracked($storeId)) {
             return;
@@ -70,7 +70,6 @@ class CheckoutCartProductAddAfter implements ObserverInterface
                 $quoteItem->setData('algoliasearch_query_param', $queryId);
                 break;
             case 'add_to_cart':
-                $queryId = ($queryId ?: $this->coreSession->getQueryId());
                 if ($queryId) {
                     try {
                         $userClient->convertedObjectIDsAfterSearch(

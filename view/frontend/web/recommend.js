@@ -3,6 +3,7 @@ requirejs([
     'recommendJs',
     'algoliaBundle'
 ], function (recommend, recommendJs, algoliaBundle) {
+algoliaBundle.$(function ($) {
     this.config = algoliaConfig;
     this.defaultIndexName = algoliaConfig.indexName + '_products';
     const appId = this.config.applicationId;
@@ -61,4 +62,5 @@ requirejs([
             },
         });
     }
+});
 });

@@ -86,6 +86,19 @@ class QueueTest extends TestCase
         $this->algoliaHelper->waitLastTask();
 
         $indices = $this->algoliaHelper->listIndexes();
+        if (count($indices) > 0) {
+            foreach ($indices['items'] as $index) {
+                $name = $index['name'];
+
+                if (mb_strpos($name, $this->indexPrefix) === 0) {
+                    try {
+                        $this->algoliaHelper->deleteIndex($name);
+                    } catch (AlgoliaException $e) {
+                        // Might be a replica
+                    }
+                }
+            }
+        }
 
         $existsDefaultTmpIndex = false;
         foreach ($indices['items'] as $index) {

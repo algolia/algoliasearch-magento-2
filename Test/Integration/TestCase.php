@@ -78,14 +78,16 @@ abstract class TestCase extends \TC
     {
         $indices = $this->algoliaHelper->listIndexes();
 
-        foreach ($indices['items'] as $index) {
-            $name = $index['name'];
+        if (count($indices) > 0) {
+            foreach ($indices['items'] as $index) {
+                $name = $index['name'];
 
-            if (mb_strpos($name, $this->indexPrefix) === 0) {
-                try {
-                    $this->algoliaHelper->deleteIndex($name);
-                } catch (AlgoliaException $e) {
-                    // Might be a replica
+                if (mb_strpos($name, $this->indexPrefix) === 0) {
+                    try {
+                        $this->algoliaHelper->deleteIndex($name);
+                    } catch (AlgoliaException $e) {
+                        // Might be a replica
+                    }
                 }
             }
         }

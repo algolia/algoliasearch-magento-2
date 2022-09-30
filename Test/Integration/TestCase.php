@@ -43,8 +43,8 @@ abstract class TestCase extends \TC
 
     public function setUp(): void
     {
-        $this->tearDown();
         $this->bootstrap();
+        $this->tearDown();
     }
 
     public function tearDown(): void

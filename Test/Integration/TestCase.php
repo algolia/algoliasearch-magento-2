@@ -43,6 +43,7 @@ abstract class TestCase extends \TC
 
     public function setUp(): void
     {
+        $this->tearDown();
         $this->bootstrap();
     }
 
@@ -122,7 +123,7 @@ abstract class TestCase extends \TC
 
         $this->indexPrefix =  'magento2_' . date('Y-m-d_H:i:s') . '_' . (getenv('INDEX_PREFIX') ?: 'circleci_');
         $this->setConfig('algoliasearch_credentials/credentials/index_prefix', $this->indexPrefix);
-        $this->tearDown();
+        
         $this->boostrapped = true;
     }
 

@@ -10,6 +10,18 @@ class CategoriesIndexingTest extends IndexingTestCase
     {
         /** @var Category $categoriesIndexer */
         $categoriesIndexer = $this->getObjectManager()->create(Category::class);
+        $indices = $this->algoliaHelper->listIndexes();
+        foreach ($indices['items'] as $index) {
+            $name = $index['name'];
+
+            if (mb_strpos($name, $this->indexPrefix) === 0) {
+                try {
+                    $this->algoliaHelper->deleteIndex($name);
+                } catch (AlgoliaException $e) {
+                    // Might be a replica
+                }
+            }
+        }
         $this->processTest($categoriesIndexer, 'categories', $this->assertValues->expectedCategory);
     }
 

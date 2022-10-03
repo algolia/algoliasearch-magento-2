@@ -96,7 +96,7 @@ class SuggestionHelper
 
     public function getPopularQueries($storeId)
     {
-        $queries = $this->cache->load($this->popularQueriesCacheId);
+        $queries = $this->cache->load($this->popularQueriesCacheId . '_' . $storeId);
         if ($queries !== false) {
             return $this->serializer->unserialize($queries);
         }
@@ -121,7 +121,12 @@ class SuggestionHelper
 
         $queries = $collection->getColumnValues('query_text');
 
-        $this->cache->save($this->serializer->serialize($queries), $this->popularQueriesCacheId, [], 24*3600);
+        $this->cache->save(
+            $this->serializer->serialize($queries),
+            $this->popularQueriesCacheId . '_' . $storeId,
+            [],
+            24*3600
+        );
 
         return $queries;
     }

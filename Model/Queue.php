@@ -69,6 +69,14 @@ class Queue
     /** @var array */
     protected $logRecord;
 
+    /**
+     * @param ConfigHelper $configHelper
+     * @param Logger $logger
+     * @param JobCollectionFactory $jobCollectionFactory
+     * @param ResourceConnection $resourceConnection
+     * @param ObjectManagerInterface $objectManager
+     * @param ConsoleOutput $output
+     */
     public function __construct(
         ConfigHelper $configHelper,
         Logger $logger,
@@ -562,6 +570,9 @@ class Queue
         return $jobsIds;
     }
 
+    /**
+     * @return void
+     */
     protected function clearOldFailingJobs()
     {
         $this->archiveFailedJobs('retries > max_retries');
@@ -585,6 +596,9 @@ class Queue
         }
     }
 
+    /**
+     * @return void
+     */
     protected function clearOldArchiveRecords()
     {
         $archiveLogClearLimit = $this->configHelper->getArchiveLogClearLimit();
@@ -599,6 +613,9 @@ class Queue
         );
     }
 
+    /**
+     * @return void
+     */
     protected function unlockStackedJobs()
     {
         $this->db->update($this->table, [

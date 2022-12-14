@@ -66,7 +66,9 @@ class ReindexProductOnLastItemPurchaseIfMsiDisable implements ObserverInterface
                         $productToReindex[] = $productId;
                     }
                 }
-                $this->indexer->reindexList($productToReindex);
+                if ($productToReindex) {
+                    $this->indexer->reindexList($productToReindex);
+                }
             }
         }
     }

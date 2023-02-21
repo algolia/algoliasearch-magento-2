@@ -32,6 +32,7 @@
     },
     "algoliasearch_queue_archive": {
         "column": {
+            "id": true,
             "pid": true,
             "class": true,
             "method": true,
@@ -39,6 +40,9 @@
             "error_log": true,
             "data_size": true,
             "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
         }
     },
     "algoliasearch_landing_page": {

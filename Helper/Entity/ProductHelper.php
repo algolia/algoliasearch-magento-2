@@ -469,11 +469,11 @@ class ProductHelper
         // Merge current replicas with sorting replicas to not delete A/B testing replica indices
         try {
             $currentSettings = $this->algoliaHelper->getSettings($indexName);
-            if (array_key_exists('replicas', $currentSettings)) {
+            if (is_array($currentSettings) && array_key_exists('replicas', $currentSettings)) {
                 $replicas = array_values(array_unique(array_merge($replicas, $currentSettings['replicas'])));
             }
         } catch (AlgoliaException $e) {
-            if ($e->getMessage() !== 'Index does not exist') {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
@@ -527,9 +527,7 @@ class ProductHelper
                     Copying query rules to "' . $indexNameTmp . '" to not to erase them with the index move.
                 ');
             } catch (AlgoliaException $e) {
-                // Fail silently if query rules are disabled on the app
-                // If QRs are disabled, nothing will happen and the extension will work as expected
-                if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
+                if ($e->getCode() !== 404) {
                     throw $e;
                 }
             }
@@ -734,6 +732,53 @@ class ProductHelper
         return $customData;
     }
 
+    protected function getCategoryPaths($product, $category)
+    {
+        $category->getUrlInstance()->setStore($product->getStoreId());
+        $path = [];
+
+        foreach ($category->getPathIds() as $treeCategoryId) {
+            $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
+            if ($name) {
+                $categoryIds[] = $treeCategoryId;
+                $path[] = $name;
+            }
+        }
+    }
+
+    /**
+     * A category should only be indexed if in the path of the current store and has a valid name.
+     *
+     * @param $category
+     * @param $rootCat
+     * @param $storeId
+     * @return string|null
+     */
+    protected function getValidCategoryName($category, $rootCat, $storeId): ?string
+    {
+        $pathParts = explode('/', $category->getPath());
+        if (isset($pathParts[1]) && $pathParts[1] !== $rootCat) {
+            return null;
+        }
+
+        return $this->categoryHelper->getCategoryName($category->getId(), $storeId);
+
+    }
+
+    /**
+     * Filter out non unique category path entries.
+     *
+     * @param $paths
+     * @return array
+     */
+    protected function dedupePaths($paths): array
+    {
+        return array_intersect_key(
+            $paths,
+            array_unique(array_map('serialize', $paths))
+        );
+    }
+
     /**
      * @param $customData
      * @param Product $product
@@ -758,22 +803,28 @@ class ProductHelper
     }
 
     /**
-     * @param $customData
+     * For a given product extract category data including category names, parent paths and all category tree IDs
+     *
      * @param Product $product
-     * @return mixed
+     * @return array|array[]
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    protected function addCategoryData($customData, Product $product)
+    protected function buildCategoryData(Product $product): array
     {
+        // Build within a single loop
+        // TODO: Profile for efficiency vs separate loops
+        $categoryData = [
+            'categoryNames'      => [],
+            'categoryIds'        => [],
+            'categoriesWithPath' => [],
+        ];
+
         $storeId = $product->getStoreId();
-        $categories = [];
-        $categoriesWithPath = [];
-        $categoryIds = [];
 
         $_categoryIds = $product->getCategoryIds();
 
-        if (is_array($_categoryIds) && count($_categoryIds) > 0) {
+        if (is_array($_categoryIds) && count($_categoryIds)) {
             $categoryCollection = $this->getAllCategories($_categoryIds, $storeId);
 
             /** @var Store $store */
@@ -781,84 +832,123 @@ class ProductHelper
             $rootCat = $store->getRootCategoryId();
 
             foreach ($categoryCollection as $category) {
-                // Check and skip all categories that is not
-                // in the path of the current store.
-                $path = $category->getPath();
-                $pathParts = explode('/', $path);
-                if (isset($pathParts[1]) && $pathParts[1] !== $rootCat) {
+                $categoryName = $this->getValidCategoryName($category, $rootCat, $storeId);
+                if (!$categoryName) {
                     continue;
                 }
+                $categoryData['categoryNames'][] = $categoryName;
 
-                $categoryName = $this->categoryHelper->getCategoryName($category->getId(), $storeId);
-                if ($categoryName) {
-                    $categories[] = $categoryName;
-                }
-
-                $category->getUrlInstance()->setStore($product->getStoreId());
-                $path = [];
+                $category->getUrlInstance()->setStore($storeId);
+                $paths = [];
 
                 foreach ($category->getPathIds() as $treeCategoryId) {
                     $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
                     if ($name) {
-                        $categoryIds[] = $treeCategoryId;
-                        $path[] = $name;
+                        $categoryData['categoryIds'][] = $treeCategoryId;
+                        $paths[] = $name;
                     }
                 }
 
-                $categoriesWithPath[] = $path;
+                $categoryData['categoriesWithPath'][] = $paths;
             }
         }
 
-        foreach ($categoriesWithPath as $result) {
-            for ($i = count($result) - 1; $i > 0; $i--) {
-                $categoriesWithPath[] = array_slice($result, 0, $i);
-            }
-        }
+        // TODO: Evaluate use cases
+        // Based on old extraneous array manip logic (since removed) - is this still a likely scenario?
+        $categoryData['categoriesWithPath'] = $this->dedupePaths($categoryData['categoriesWithPath']);
 
-        $categoriesWithPath = array_intersect_key(
-            $categoriesWithPath,
-            array_unique(array_map('serialize', $categoriesWithPath))
-        );
-
-        $hierarchicalCategories = $this->getHierarchicalCategories($categoriesWithPath);
-
-        $customData['categories'] = $hierarchicalCategories;
-        $customData['categories_without_path'] = $categories;
-        $customData['categoryIds'] = array_values(array_unique($categoryIds));
-
-        return $customData;
+        return $categoryData;
     }
 
     /**
-     * @param $categoriesWithPath
+     * Flatten non hierarchical paths for merchandising
+     *
+     * @param array $paths
      * @return array
      */
-    protected function getHierarchicalCategories($categoriesWithPath)
+    protected function flattenCategoryPaths(array $paths, int $storeId): array
     {
-        $hierachivalCategories = [];
+        return array_map(
+            function ($path) use ($storeId) { return implode($this->configHelper->getCategorySeparator($storeId), $path); },
+            $paths
+        );
+    }
+
+    /**
+     * Take an array of paths where each element is an array of parent-child hierarchies and
+     * append to the top level array each possible parent iteration.
+     * This serves to emulate anchoring in Magento in order to use category page id filtering
+     * without explicit category assignment.
+     *
+     * @param array $paths
+     * @return array
+     */
+    protected function autoAnchorParentCategories(array $paths): array {
+        foreach ($paths as $path) {
+            for ($i = count($path) - 1; $i > 0; $i--) {
+                $paths[] = array_slice($path,0, $i);
+            }
+        }
+        return $this->dedupePaths($paths);
+    }
+
+    /**
+     * @param array $algoliaData Data for product object to be serialized to Algolia index
+     * @param Product $product
+     * @return mixed
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    protected function addCategoryData(array $algoliaData, Product $product): array
+    {
+        $storeId = $product->getStoreId();
+
+        $categoryData = $this->buildCategoryData($product);
+        $hierarchicalCategories = $this->getHierarchicalCategories($categoryData['categoriesWithPath'], $storeId);
+        $algoliaData['categories'] = $hierarchicalCategories;
+        $algoliaData['categories_without_path'] = $categoryData['categoryNames'];
+        $algoliaData['categoryIds'] = array_values(array_unique($categoryData['categoryIds']));
+
+        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
+            $autoAnchorPaths = $this->autoAnchorParentCategories($categoryData['categoriesWithPath']);
+            $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($autoAnchorPaths, $storeId);
+        }
+
+        return $algoliaData;
+    }
+
+    /**
+     * @param array $categoriesWithPath
+     * @param int $storeId
+     * @return array
+     */
+    protected function getHierarchicalCategories(array $categoriesWithPath, int $storeId): array
+    {
+        $hierarchicalCategories = [];
 
         $levelName = 'level';
 
         foreach ($categoriesWithPath as $category) {
             $categoryCount = count($category);
             for ($i = 0; $i < $categoryCount; $i++) {
-                if (isset($hierachivalCategories[$levelName . $i]) === false) {
-                    $hierachivalCategories[$levelName . $i] = [];
+                if (isset($hierarchicalCategories[$levelName . $i]) === false) {
+                    $hierarchicalCategories[$levelName . $i] = [];
                 }
 
                 if ($category[$i] === null) {
                     continue;
                 }
 
-                $hierachivalCategories[$levelName . $i][] = implode(' /// ', array_slice($category, 0, $i + 1));
+                $hierarchicalCategories[$levelName . $i][] = implode($this->configHelper->getCategorySeparator($storeId), array_slice($category, 0, $i + 1));
             }
         }
 
-        foreach ($hierachivalCategories as &$level) {
+        // dedupe in case of multi category assignment
+        foreach ($hierarchicalCategories as &$level) {
             $level = array_values(array_unique($level));
         }
 
-        return $hierachivalCategories;
+        return $hierarchicalCategories;
     }
 
     /**
@@ -1254,6 +1344,10 @@ class ProductHelper
         // Used for merchandising
         $attributesForFaceting[] = 'categoryIds';
 
+        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
+            $attributesForFaceting[] = 'searchable(' . $this->configHelper->getCategoryPageIdAttributeName($storeId) . ')';
+        }
+
         return $attributesForFaceting;
     }
 
@@ -1366,9 +1460,7 @@ class ProductHelper
                 $page++;
             } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
         } catch (AlgoliaException $e) {
-            // Fail silently if query rules are disabled on the app
-            // If QRs are disabled, nothing will happen and the extension will work as expected
-            if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }

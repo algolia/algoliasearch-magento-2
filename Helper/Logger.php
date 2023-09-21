@@ -74,8 +74,15 @@ class Logger
         }
     }
 
+    public function error($message) {
+        if ($this->enabled) {
+            $this->logger->error($message);
+        }
+    }
+
     private function formatTime($begin, $end)
     {
         return ($end - $begin) . 'sec';
     }
+
 }

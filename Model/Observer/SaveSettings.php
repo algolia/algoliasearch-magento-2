@@ -25,7 +25,7 @@ class SaveSettings implements ObserverInterface
     protected $algoliaHelper;
 
     /**
-     * @var AlgoliaHelper
+     * @var Data
      */
     protected $helper;
 
@@ -67,7 +67,7 @@ class SaveSettings implements ObserverInterface
             foreach ($storeIds as $storeId) {
                 $indexName = $this->helper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
                 $currentSettings = $this->algoliaHelper->getSettings($indexName);
-                if (array_key_exists('replicas', $currentSettings)) {
+                if (is_array($currentSettings) && array_key_exists('replicas', $currentSettings)) {
                     $this->algoliaHelper->setSettings($indexName, ['replicas' => []]);
                     $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
                     $this->algoliaHelper->waitLastTask($indexName, $setReplicasTaskId);
@@ -79,7 +79,7 @@ class SaveSettings implements ObserverInterface
                 }
             }
         } catch (\Exception $e) {
-            if ($e->getMessage() !== 'Index does not exist') {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }

@@ -19,6 +19,7 @@ $isConfig = [
     'currencyCode' => $configHelper->getCurrencyCode(),
     'maxValuesPerFacet' => (int) $configHelper->getMaxValuesPerFacet(),
     'landingPageConfig' => json_decode($landingPage->getConfiguration()),
+    'categorySeparator' => $configHelper->getCategorySeparator(),
     'searchParameters' => [
         'query' => $landingPage->getQuery(),
         'hitsPerPage' => 10,
@@ -483,8 +484,7 @@ $isConfig = [
           var hierarchicalMenuParams = {
             container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
             attributes: hierarchical_levels,
-            separator: ' /// ',
-            alwaysGetRootLevel: true,
+            separator: config.categorySeparator,
             limit: config.maxValuesPerFacet,
             templates: templates,
             sortBy: ['name:asc'],

@@ -193,7 +193,13 @@ class AlgoliaHelper extends AbstractHelper
 
     public function getSettings($indexName)
     {
-        return $this->getIndex($indexName)->getSettings();
+        try {
+            return $this->getIndex($indexName)->getSettings();
+        }catch (\Exception $e) {
+            if ($e->getCode() !== 404) {
+                throw $e;
+            }
+        }
     }
 
     public function mergeSettings($indexName, $settings, $mergeSettingsFrom = '')

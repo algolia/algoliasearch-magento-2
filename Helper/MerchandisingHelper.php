@@ -160,9 +160,7 @@ class MerchandisingHelper
                 ]);
             }
         } catch (AlgoliaException $e) {
-            // Fail silently if query rules are disabled on the app
-            // If QRs are disabled, nothing will happen and the extension will work as expected
-            if ($e->getMessage() !== 'Query Rules are not enabled on this application') {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }

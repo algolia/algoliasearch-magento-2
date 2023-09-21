@@ -166,7 +166,7 @@ class FiltersHelper
 
             if ($facet['attribute'] == 'categories') {
                 $level = '.level' . (count($facetValues) - 1);
-                $facetFilters[] = $facet['attribute'] . $level . ':' . implode(' /// ', $facetValues);
+                $facetFilters[] = $facet['attribute'] . $level . ':' . implode($this->config->getCategorySeparator($storeId), $facetValues);
 
                 continue;
             }

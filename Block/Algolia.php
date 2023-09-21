@@ -270,13 +270,12 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->checkoutSession->getLastRealOrder();
     }
 
-    public function getAddToCartParams()
+    public function getAddToCartParams() : array
     {
-        $url = $this->getAddToCartUrl();
-
         return [
-            'action' => $url,
+            'action' => $this->_urlBuilder->getUrl('checkout/cart/add', []),
             'formKey' => $this->formKey->getFormKey(),
+            'redirectUrlParam' => ActionInterface::PARAM_NAME_URL_ENCODED
         ];
     }
 
@@ -285,6 +284,9 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->date->gmtTimestamp('today midnight');
     }
 
+    /**
+     * @deprecated This function is deprecated as redirect routes must be derived on the frontend not backend
+     */
     protected function getAddToCartUrl($additional = [])
     {
         $continueUrl = $this->urlHelper->getEncodedUrl($this->_urlBuilder->getCurrentUrl());

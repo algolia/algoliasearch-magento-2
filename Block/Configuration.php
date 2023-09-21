@@ -9,6 +9,9 @@ use Magento\Framework\DataObject;
 
 class Configuration extends Algolia implements CollectionDataSourceInterface
 {
+    //Placeholder for future implementation (requires customer renderer for hierarchicalMenu widget)
+    private const IS_CATEGORY_NAVIGATION_ENABLED = false;
+
     public function isSearchPage()
     {
         if ($this->getConfigHelper()->isInstantEnabled()) {
@@ -28,6 +31,40 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         }
 
         return false;
+    }
+
+    /**
+     * @param \Magento\Catalog\Model\Category $cat
+     * @return string
+     */
+    protected function initCategoryParentPath(\Magento\Catalog\Model\Category $cat): string {
+        $path = '';
+        foreach ($cat->getPathIds() as $treeCategoryId) {
+            if ($path) {
+                $path .= $this->getConfigHelper()->getCategorySeparator($this->getStoreId());
+            }
+            $path .= $this->getCategoryHelper()->getCategoryName($treeCategoryId, $this->getStoreId());
+        }
+        return $path;
+    }
+
+    /**
+     * @param \Magento\Catalog\Model\Category $cat
+     * @param string $parent
+     * @param array $arr
+     * @return array
+     */
+    protected function getChildCategoryUrls(\Magento\Catalog\Model\Category $cat, string $parent = '', array $arr = array()): array {
+        if (!$parent) {
+            $parent = $this->initCategoryParentPath($cat);
+        }
+
+        foreach ($cat->getChildrenCategories() as $child) {
+            $key = $parent ? $parent . $this->getConfigHelper()->getCategorySeparator($this->getStoreId()) . $child->getName() : $child ->getName();
+            $arr[$key]['url'] = $child->getUrl();
+            $arr = array_merge($arr, $this->getChildCategoryUrls($child, $key, $arr));
+        }
+        return $arr;
     }
 
     public function getConfiguration()
@@ -70,6 +107,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $level = '';
         $categoryId = '';
         $parentCategoryName = '';
+        $childCategories = [];
 
         $addToCartParams = $this->getAddToCartParams();
 
@@ -88,14 +126,17 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
             if ($category && $category->getDisplayMode() !== 'PAGE') {
                 $category->getUrlInstance()->setStore($this->getStoreId());
+                if (self::IS_CATEGORY_NAVIGATION_ENABLED) {
+                    $childCategories = $this->getChildCategoryUrls($category);
+                }
 
                 $categoryId = $category->getId();
 
                 $level = -1;
                 foreach ($category->getPathIds() as $treeCategoryId) {
                     if ($path !== '') {
-                        $path .= ' /// ';
-                    }else{
+                        $path .= $config->getCategorySeparator();
+                    } else {
                         $parentCategoryName = $categoryHelper->getCategoryName($treeCategoryId, $this->getStoreId());
                     }
 
@@ -144,7 +185,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         }
 
         $attributesToFilter = $config->getAttributesToFilter($customerGroupId);
-
         $algoliaJsConfig = [
             'instant' => [
                 'enabled' => $config->isInstantEnabled(),
@@ -154,6 +194,10 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'infiniteScrollEnabled' => $config->isInfiniteScrollEnabled(),
                 'urlTrackedParameters' => $this->getUrlTrackedParameters(),
                 'isSearchBoxEnabled' => $config->isInstantSearchBoxEnabled(),
+                'isVisualMerchEnabled' => $config->isVisualMerchEnabled(),
+                'categorySeparator' => $config->getCategorySeparator(),
+                'categoryPageIdAttribute' => $config->getCategoryPageIdAttributeName(),
+                'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
                 'hidePagination' => $config->hidePaginationInInstantSearchPage()
             ],
             'autocomplete' => [
@@ -198,10 +242,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'indexName' => $coreHelper->getBaseIndexName(),
             'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
                 $config->getSearchOnlyAPIKey(),
-                array_merge(
-                    $config->getAttributesToRetrieve($customerGroupId),
-                    $attributesToFilter
-                )
+                $attributesToFilter
             ),
             'attributeFilter' => $attributesToFilter,
             'facets' => $facets,
@@ -236,6 +277,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'path' => $path,
                 'level' => $level,
                 'parentCategory' => $parentCategoryName,
+                'childCategories' => $childCategories,
+                'url' => $this->getUrl('*/*/*', ['_use_rewrite' => true, '_forced_secure' => true])
             ],
             'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
             'showSuggestionsOnNoResultsPage' => $config->showSuggestionsOnNoResultsPage(),

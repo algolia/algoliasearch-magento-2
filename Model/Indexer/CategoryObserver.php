@@ -54,6 +54,11 @@ class CategoryObserver
         CategoryResourceModel $result,
         CategoryModel $category
     ) {
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
+            return $result;
+        }
         $categoryResource->addCommitCallback(function () use ($category) {
             $collectionIds = [];
             // To reduce the indexing operation for products, only update if these values have changed

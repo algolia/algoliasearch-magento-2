@@ -208,7 +208,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
                 'nbOfQueriesSuggestions' => $config->getNumberOfQueriesSuggestions(),
                 'isDebugEnabled' => $config->isAutocompleteDebugEnabled(),
-                'isNavigatorEnabled' => $config->isAutocompleteNavigatorEnabled()
+                'isNavigatorEnabled' => $config->isAutocompleteNavigatorEnabled(),
+                'debounceMilliseconds' => $config->getAutocompleteDebounceMilliseconds(),
+                'minimumCharacters' => $config->getAutocompleteMinimumCharacterLength()
             ],
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),
@@ -267,7 +269,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'autofocus' => true,
             'resultPageUrl' => $this->getCatalogSearchHelper()->getResultUrl(),
             'request' => [
-                'query' => html_entity_decode($query),
+                'query' =>  htmlspecialchars(html_entity_decode($query)),
                 'refinementKey' => $refinementKey,
                 'refinementValue' => $refinementValue,
                 'categoryId' => $categoryId,

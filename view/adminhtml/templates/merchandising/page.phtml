@@ -9,6 +9,12 @@
                     <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/merchandising/visual-merchandising/?utm_source=magento&amp;utm_medium=extension&amp;utm_campaign=magento_2&amp;utm_term=shop-owner&amp;utm_content=doc-link"><?php echo $block->escapeHtml(__('Merchandising features')) ?></a>
                 </span>
             </p>
+            <p>
+                <span>
+                    <img src="<?php echo $block->escapeUrl($block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-docs.svg')); ?>" alt="<?php echo $block->escapeHtmlAttr(__('Merchandising Studio')) ?>" title="<?php echo $block->escapeHtmlAttr(__('Merchandising Studio')) ?>">
+                    <a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/#merchandising-studio?utm_source=magento&amp;utm_medium=extension&amp;utm_campaign=magento_2&amp;utm_term=shop-owner&amp;utm_content=doc-link"><?php echo $block->escapeHtml(__('Merchandising Studio')) ?></a>
+                </span>
+            </p>
         </div>
         <div class="algolia-admin-content-videos">
             <p>
@@ -19,6 +25,14 @@
         </div>
     </div>
 </div>
+<section class="algoliasearch-merchandising-banner clearfix">
+    <div class="algolia_dashboard_warning std description" style="background-position: 25px 20px; padding: 20px 20px 20px 90px;">
+        <?php echo $block->escapeHtml(__('We recommend using ')) ?><a href="https://www.algolia.com/industries-and-solutions/ecommerce/digital-merchandising/"><?php echo $block->escapeHtml(__('Merchandising Studio ')) ?></a>
+            <?php echo $block->escapeHtml(__('if you’re on a ')) ?><a href="https://www.algolia.com/pricing/"><?php echo $block->escapeHtml(__('Premium plan.')) ?></a>
+            <?php echo $block->escapeHtml(__('While the legacy merchandising capabilities within the Magento extension shall remain for now, we strongly advice that users ')) ?><a href="https://www.algolia.com/doc/integration/magento-2/merchandising/merchandising-studio/?client=php"><?php echo $block->escapeHtml(__('become familiar with this powerful new tool')) ?></a>
+            <?php echo $block->escapeHtml(__('to truly unlock the potential of Algolia.')) ?>
+    </div>
+</section>
 <section class="algoliasearch-merchandising-options clearfix">
     <div class="merchandising-item query-merchandising">
         <div class="image-container">

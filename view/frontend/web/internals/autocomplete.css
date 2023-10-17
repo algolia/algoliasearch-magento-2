@@ -503,6 +503,13 @@ html {
     background: #fff;
     display: none;
 }
+
+#algoliaAutocomplete .aa-LoadingIndicator {
+    position: absolute;
+    top: 20%;
+    right: 10px;
+}
+
 .aa-Panel li.aa-Item{
     list-style-type: none;
 }

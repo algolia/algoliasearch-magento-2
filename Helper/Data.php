@@ -79,7 +79,7 @@ class Data
     protected $emulationRuns = false;
 
     /** @var \Magento\Framework\Indexer\IndexerInterface */
-    private $priceIndexer;
+    protected $priceIndexer;
 
 
     /**
@@ -260,6 +260,11 @@ class Data
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
+        
+        if (!$this->configHelper->isPagesIndexEnabled($storeId)) {
+            $this->logger->log('Pages Indexing is not enabled for the store.');
+            return;
+        }
 
         $indexName = $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId);
 
@@ -356,7 +361,12 @@ class Data
      */
     public function rebuildStoreSuggestionIndex($storeId)
     {
-        if ($this->isIndexingEnabled($storeId) === false) {
+        if ($this->isIndexingEnabled($storeId) === false || !$this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
+            return;
+        }
+
+        if (!$this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
+            $this->logger->log('Query Suggestions Indexing is not enabled for the store.');
             return;
         }
 

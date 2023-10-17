@@ -7,11 +7,19 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
+        <algoliasearch_credentials>
+            <credentials>
+                <enable_query_suggestions_index>1</enable_query_suggestions_index>
+                <enable_pages_index>1</enable_pages_index>
+            </credentials>
+        </algoliasearch_credentials>
         <algoliasearch_autocomplete>
             <autocomplete>
                 <sections><![CDATA[{"_1600351750374_374":{"name":"pages","label":"Pages","hitsPerPage":"2"}}]]></sections>
                 <excluded_pages><![CDATA[{"_1600351757831_831":{"attribute":"no-route"}}]]></excluded_pages>
                 <navigator>1</navigator>
+                <debounce_millisec>300</debounce_millisec>
+                <minimum_char_length>0</minimum_char_length>
             </autocomplete>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>

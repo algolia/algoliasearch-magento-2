@@ -157,7 +157,7 @@ class AlgoliaHelper extends AbstractHelper
     public function deleteIndex($indexName)
     {
         $this->checkClient(__FUNCTION__);
-        $res = $this->client->initIndex($indexName)->delete();
+        $res = $this->client->initIndex($indexName)->delete()->wait();
 
         self::setLastOperationInfo($indexName, $res);
     }

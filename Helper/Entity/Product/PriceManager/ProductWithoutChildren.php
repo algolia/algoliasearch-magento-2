@@ -90,7 +90,7 @@ abstract class ProductWithoutChildren
         $this->customData = $customData;
         $this->store = $product->getStore();
         $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
-        $currencies = $this->store->getAvailableCurrencyCodes();
+        $currencies = $this->store->getAvailableCurrencyCodes(true);
         $this->baseCurrencyCode = $this->store->getBaseCurrencyCode();
         $this->groups = $this->customerGroupCollectionFactory->create();
         $fields = $this->getFields();

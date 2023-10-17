@@ -16,31 +16,31 @@ use Algolia\AlgoliaSearch\Helper\Logger;
 class IndicesConfigurator
 {
     /** @var Data */
-    private $baseHelper;
+    protected $baseHelper;
 
     /** @var AlgoliaHelper */
-    private $algoliaHelper;
+    protected $algoliaHelper;
 
     /** @var ConfigHelper */
-    private $configHelper;
+    protected $configHelper;
 
     /** @var ProductHelper */
-    private $productHelper;
+    protected $productHelper;
 
     /** @var CategoryHelper */
-    private $categoryHelper;
+    protected $categoryHelper;
 
     /** @var PageHelper */
-    private $pageHelper;
+    protected $pageHelper;
 
     /** @var SuggestionHelper */
-    private $suggestionHelper;
+    protected $suggestionHelper;
 
     /** @var AdditionalSectionHelper */
-    private $additionalSectionHelper;
+    protected $additionalSectionHelper;
 
     /** @var Logger */
-    private $logger;
+    protected $logger;
 
     public function __construct(
         Data $baseHelper,
@@ -85,13 +85,24 @@ class IndicesConfigurator
         if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
             $this->logger->log('Indexing is not enabled for the store.');
             $this->logger->stop($logEventName);
-
             return;
         }
 
         $this->setCategoriesSettings($storeId);
-        $this->setPagesSettings($storeId);
-        $this->setQuerySuggestionsSettings($storeId);
+        /* heck if we want to index CMS pages */
+        if ($this->configHelper->isPagesIndexEnabled($storeId)) {
+            $this->setPagesSettings($storeId);
+        } else {
+            $this->logger->log('CMS Page Indexing is not enabled for the store.');
+        }
+
+        //Check if we want to index Query Suggestions
+        if ($this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
+            $this->setQuerySuggestionsSettings($storeId);
+        } else {
+            $this->logger->log('Query Suggestions Indexing is not enabled for the store.');
+        }
+
         $this->setAdditionalSectionsSettings($storeId);
         $this->setProductsSettings($storeId, $useTmpIndex);
 
@@ -103,7 +114,7 @@ class IndicesConfigurator
      *
      * @throws AlgoliaException
      */
-    private function setCategoriesSettings($storeId)
+    protected function setCategoriesSettings($storeId)
     {
         $this->logger->start('Pushing settings for categories indices.');
 
@@ -122,7 +133,7 @@ class IndicesConfigurator
      *
      * @throws AlgoliaException
      */
-    private function setPagesSettings($storeId)
+    protected function setPagesSettings($storeId)
     {
         $this->logger->start('Pushing settings for CMS pages indices.');
 
@@ -141,7 +152,7 @@ class IndicesConfigurator
      *
      * @throws AlgoliaException
      */
-    private function setQuerySuggestionsSettings($storeId)
+    protected function setQuerySuggestionsSettings($storeId)
     {
         $this->logger->start('Pushing settings for query suggestions indices.');
 
@@ -160,7 +171,7 @@ class IndicesConfigurator
      *
      * @throws AlgoliaException
      */
-    private function setAdditionalSectionsSettings($storeId)
+    protected function setAdditionalSectionsSettings($storeId)
     {
         $this->logger->start('Pushing settings for additional section indices.');
 
@@ -191,7 +202,7 @@ class IndicesConfigurator
      *
      * @throws AlgoliaException
      */
-    private function setProductsSettings($storeId, $useTmpIndex)
+    protected function setProductsSettings($storeId, $useTmpIndex)
     {
         $this->logger->start('Pushing settings for products indices.');
 
@@ -212,7 +223,7 @@ class IndicesConfigurator
      *
      * @throws AlgoliaException
      */
-    private function setExtraSettings($storeId, $saveToTmpIndicesToo)
+    protected function setExtraSettings($storeId, $saveToTmpIndicesToo)
     {
         $this->logger->start('Pushing extra settings.');
 
@@ -248,7 +259,7 @@ class IndicesConfigurator
             } catch (AlgoliaException $e) {
                 if (mb_strpos($e->getMessage(), 'Invalid object attributes:') === 0) {
                     $error[] = '
-                        Extra settings for "' . $section . '" indices were not saved. 
+                        Extra settings for "' . $section . '" indices were not saved.
                         Error message: "' . $e->getMessage() . '"';
 
                     continue;

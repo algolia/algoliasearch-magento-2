@@ -9,7 +9,7 @@
     <table name="algoliasearch_queue" resource="default" engine="innodb" comment="Algoliasearch Queue Table">
         <column xsi:type="int" name="job_id" unsigned="false" nullable="false" identity="true" comment="Job Id"/>
         <column xsi:type="int" name="pid" unsigned="true" nullable="true" identity="false" comment="PID"/>
-        <column xsi:type="varchar" name="class" nullable="false" length="50" comment="class"/>
+        <column xsi:type="varchar" name="class" nullable="false" length="255" comment="class"/>
         <column xsi:type="varchar" name="method" nullable="false" length="255" comment="Method"/>
         <column xsi:type="text" name="data" nullable="false" comment="Data"/>
         <column xsi:type="int" name="max_retries" unsigned="true" nullable="false" default="3" identity="false" comment="Max Retries"/>
@@ -37,7 +37,7 @@
     <table name="algoliasearch_queue_archive" resource="default" engine="innodb" comment="Algoliasearch Queue Archive Table">
         <column xsi:type="int" name="archive_id" unsigned="false" nullable="false" identity="true" comment="Archive Id"/>
         <column xsi:type="int" name="pid" unsigned="true" nullable="true" identity="false" comment="PID"/>
-        <column xsi:type="varchar" name="class" nullable="false" length="50" comment="class"/>
+        <column xsi:type="varchar" name="class" nullable="false" length="255" comment="class"/>
         <column xsi:type="varchar" name="method" nullable="false" length="255" comment="Method"/>
         <column xsi:type="text" name="data" nullable="false" comment="Data"/>
         <column xsi:type="int" name="retries" unsigned="true" nullable="false" default="0" identity="false" comment="Retries"/>

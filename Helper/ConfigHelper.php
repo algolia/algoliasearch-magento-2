@@ -16,6 +16,8 @@ class ConfigHelper
 {
     public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
     public const ENABLE_BACKEND = 'algoliasearch_credentials/credentials/enable_backend';
+    public const ENABLE_QUERY_SUGGESTIONS_INDEX = 'algoliasearch_credentials/credentials/enable_query_suggestions_index';
+    public const ENABLE_PAGES_INDEX = 'algoliasearch_credentials/credentials/enable_pages_index';
     public const LOGGING_ENABLED = 'algoliasearch_credentials/credentials/debug';
     public const APPLICATION_ID = 'algoliasearch_credentials/credentials/application_id';
     public const API_KEY = 'algoliasearch_credentials/credentials/api_key';
@@ -45,6 +47,8 @@ class ConfigHelper
     public const MIN_NUMBER_OF_RESULTS = 'algoliasearch_autocomplete/autocomplete/min_number_of_results';
     public const RENDER_TEMPLATE_DIRECTIVES = 'algoliasearch_autocomplete/autocomplete/render_template_directives';
     public const AUTOCOMPLETE_MENU_DEBUG = 'algoliasearch_autocomplete/autocomplete/debug';
+    public const AUTOCOMPLETE_DEBOUNCE_MILLISEC = 'algoliasearch_autocomplete/autocomplete/debounce_millisec';
+    public const AUTOCOMPLETE_MINIMUM_CHAR_LENGTH = 'algoliasearch_autocomplete/autocomplete/minimum_char_length';
 
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
@@ -954,6 +958,24 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_MENU_DEBUG, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
+    public function getAutocompleteDebounceMilliseconds($storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(
+            self::AUTOCOMPLETE_DEBOUNCE_MILLISEC,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function getAutocompleteMinimumCharacterLength($storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(
+            self::AUTOCOMPLETE_MINIMUM_CHAR_LENGTH,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
     /**
      * @param $originalIndexName
      * @param $storeId
@@ -1605,6 +1627,24 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isQuerySuggestionsIndexEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::ENABLE_QUERY_SUGGESTIONS_INDEX, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isPagesIndexEnabled($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::ENABLE_PAGES_INDEX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

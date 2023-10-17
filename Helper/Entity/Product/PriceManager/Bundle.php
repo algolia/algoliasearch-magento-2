@@ -43,20 +43,21 @@ class Bundle extends ProductWithChildren
      */
     protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode)
     {
-        $product->setData('website_id', $product->getStore()->getWebsiteId());
-        $minPrice = $product->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
-        $minOriginalPrice = $product->getPriceInfo()->getPrice('regular_price')->getMinimalPrice()->getValue();
-        $maxOriginalPrice = $product->getPriceInfo()->getPrice('regular_price')->getMaximalPrice()->getValue();
-        $max = $product->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
+        $productWithPrice = $this->productloader->create()->load($product->getId());
+        $productWithPrice->setData('website_id', $product->getStore()->getWebsiteId());
+        $minPrice = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
+        $minOriginalPrice = $productWithPrice->getPriceInfo()->getPrice('regular_price')->getMinimalPrice()->getValue();
+        $maxOriginalPrice = $productWithPrice->getPriceInfo()->getPrice('regular_price')->getMaximalPrice()->getValue();
+        $max = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
         $minArray = [];
         $maxArray = [];
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
-            $product->setData('customer_group_id', $groupId);
-            $minPrice = $product->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
-            $minArray[$groupId] = $product->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
-            $maxArray[$groupId] = $product->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
-            $product->setData('customer_group_id', null);
+            $productWithPrice->setData('customer_group_id', $groupId);
+            $minPrice = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
+            $minArray[$groupId] = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
+            $maxArray[$groupId] = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
+            $productWithPrice->setData('customer_group_id', null);
         }
 
         $minPriceArray = [];

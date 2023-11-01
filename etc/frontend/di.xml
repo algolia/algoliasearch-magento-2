@@ -20,4 +20,8 @@
     <type name="Magento\Framework\View\Element\AbstractBlock">
         <plugin name="remove_related_upsell_block" type="Algolia\AlgoliaSearch\Plugin\RemovePdpProductsBlock" />
     </type>
+
+    <type name="Magento\Catalog\Api\CategoryRepositoryInterface">
+        <plugin name="algoliaCategoryVersions" type="Algolia\AlgoliaSearch\Plugin\CategoryVersionPlugin"/>
+    </type>
 </config>

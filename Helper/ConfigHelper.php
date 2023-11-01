@@ -55,6 +55,7 @@ class ConfigHelper
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
     public const ENABLE_VISUAL_MERCHANDISING = 'algoliasearch_products/products/enable_visual_merchandising';
     public const CATEGORY_PAGE_ID_ATTRIBUTE_NAME = 'algoliasearch_products/products/category_page_id_attribute_name';
+    public const ENABLE_CATEGORY_VERSIONS = 'algoliasearch_products/products/enable_category_versions';
 
     public const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
     public const CATEGORY_CUSTOM_RANKING = 'algoliasearch_categories/categories/custom_ranking_category_attributes';
@@ -910,6 +911,15 @@ class ConfigHelper
         return (string) $this->configInterface->getValue(self::CATEGORY_PAGE_ID_ATTRIBUTE_NAME, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isCategoryVersionTrackingEnabled($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::ENABLE_CATEGORY_VERSIONS, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+    
     /**
      * @param $storeId
      * @return mixed

@@ -92,6 +92,32 @@
     <table name="sales_order_item" resource="sales" engine="innodb" comment="Sales Flat Order Item">
         <column xsi:type="text" name="algoliasearch_query_param" nullable="true" comment="Reference for Algolia analytics order conversion"/>
     </table>
+    <table name="algoliasearch_category_version" resource="default" engine="innodb" comment="Algolia change log for category updates">
+        <column xsi:type="int" name="version_id" unsigned="false" nullable="false" identity="true" comment="Version Id"/>
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="false" comment="Category Entity Id"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" identity="false" comment="Store Id"/>
+        <column xsi:type="varchar" name="old_value" nullable="false" length="255" comment="Old Value"/>
+        <column xsi:type="varchar" name="new_value" nullable="false" length="255" comment="New Value"/>
+        <column xsi:type="datetime" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="datetime" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <column xsi:type="datetime" name="indexed_at" nullable="true" comment="Indexed At"/>
+        <column xsi:type="datetime" name="resolved_at" nullable="true" comment="Resolved At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="version_id"/>
+        </constraint>
+        <index referenceId="ALGOLIA_ALGOLIASEARCH_CATEGORY_VERSION_CREATED_AT" indexType="btree">
+            <column name="created_at"/>
+        </index>
+        <index referenceId="ALGOLIA_ALGOLIASEARCH_CATEGORY_VERSION_UPDATED_AT" indexType="btree">
+            <column name="updated_at"/>
+        </index>
+        <constraint xsi:type="foreign" referenceId="ALGOLIA_ALGOLIASEARCH_CATEGORY_VERSION_ENTITY_ID_CATALOG_CATEGORY_ENTITY_ENTITY_ID"
+                    table="algoliasearch_category_versions" column="entity_id" referenceTable="catalog_category_entity"
+                    referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="ALGOLIA_ALGOLIASEARCH_CATEGORY_VERSION_STORE_ID_STORE_STORE_ID" table="algoliasearch_category_versions" column="store_id"
+                    referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+    </table>
+
 </schema>
 
 

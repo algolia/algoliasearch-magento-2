@@ -2,27 +2,34 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Algolia\AlgoliaSearch\Api\CategoryVersionLoggerInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Logger;
 use Algolia\AlgoliaSearch\Model\Indexer\Category as CategoryIndexer;
+use Magento\Catalog\Api\Data\CategoryInterface;
+use Magento\Catalog\Model\AbstractModel;
 use Magento\Catalog\Model\Category as CategoryModel;
 use Magento\Catalog\Model\ResourceModel\Category as CategoryResourceModel;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Store\Model\StoreManagerInterface;
+
 
 class CategoryObserver
 {
-    /** @var IndexerRegistry */
-    private $indexerRegistry;
-
-    /** @var CategoryIndexer */
-    private $indexer;
-
-    /** @var ConfigHelper */
-    private $configHelper;
-
     /** @var ResourceConnection */
     protected $resource;
+    protected $logger;
+    protected $storeManager;
+    protected $categoryVersionLogger;
+    /** @var IndexerRegistry */
+    private $indexerRegistry;
+    /** @var CategoryIndexer */
+    private $indexer;
+    /** @var ConfigHelper */
+    private $configHelper;
 
     /**
      * CategoryObserver constructor.
@@ -32,14 +39,21 @@ class CategoryObserver
      * @param ResourceConnection $resource
      */
     public function __construct(
-        IndexerRegistry $indexerRegistry,
-        ConfigHelper $configHelper,
-        ResourceConnection $resource
-    ) {
+        IndexerRegistry                $indexerRegistry,
+        ConfigHelper                   $configHelper,
+        ResourceConnection             $resource,
+        Logger                         $logger,
+        StoreManagerInterface          $storeManager,
+        CategoryVersionLoggerInterface $categoryVersionLogger
+    )
+    {
         $this->indexerRegistry = $indexerRegistry;
         $this->indexer = $indexerRegistry->get('algolia_categories');
         $this->configHelper = $configHelper;
         $this->resource = $resource;
+        $this->logger = $logger;
+        $this->storeManager = $storeManager;
+        $this->categoryVersionLogger = $categoryVersionLogger;
     }
 
     /**
@@ -48,28 +62,41 @@ class CategoryObserver
      * @param CategoryModel $category
      *
      * @return CategoryResourceModel
+     * @throws NoSuchEntityException
      */
     public function afterSave(
         CategoryResourceModel $categoryResource,
         CategoryResourceModel $result,
-        CategoryModel $category
-    ) {
+        CategoryModel         $category
+    ) 
+    {
         if (!$this->configHelper->getApplicationID()
             || !$this->configHelper->getAPIKey()
             || !$this->configHelper->getSearchOnlyAPIKey()) {
             return $result;
         }
-        $categoryResource->addCommitCallback(function () use ($category) {
+        
+        $storeId = $this->storeManager->getStore()->getId();
+
+        $categoryResource->addCommitCallback(function () use ($category, $storeId) {
             $collectionIds = [];
             // To reduce the indexing operation for products, only update if these values have changed
-            if ($category->getOrigData('name') !== $category->getData('name')
-                || $category->getOrigData('include_in_menu') !== $category->getData('include_in_menu')
-                || $category->getOrigData('is_active') !== $category->getData('is_active')
-                || $category->getOrigData('path') !== $category->getData('path')) {
+            if ($this->isDataChanged($category, [
+                CategoryInterface::KEY_NAME,
+                CategoryInterface::KEY_PATH,
+                CategoryInterface::KEY_INCLUDE_IN_MENU,
+                CategoryInterface::KEY_IS_ACTIVE
+            ])) {
                 /** @var ProductCollection $productCollection */
                 $productCollection = $category->getProductCollection();
                 $collectionIds = (array) $productCollection->getColumnValues('entity_id');
+                if ($this->isDataChanged($category, [CategoryInterface::KEY_PATH])) {
+                    $this->categoryVersionLogger->logCategoryMove($category);
+                } else {
+                    $this->categoryVersionLogger->logCategoryChange($category, $storeId);
+                }
             }
+
             $changedProductIds = ($category->getChangedProductIds() !== null ? (array) $category->getChangedProductIds() : []);
 
             if (!$this->indexer->isScheduled()) {
@@ -87,29 +114,18 @@ class CategoryObserver
     }
 
     /**
-     * @param CategoryResourceModel $categoryResource
-     * @param CategoryResourceModel $result
-     * @param CategoryModel $category
-     *
-     * @return CategoryResourceModel
+     * @param AbstractModel $model
+     * @param array $fields
+     * @return bool
      */
-    public function afterDelete(
-        CategoryResourceModel $categoryResource,
-        CategoryResourceModel $result,
-        CategoryModel $category
-    ) {
-        $categoryResource->addCommitCallback(function () use ($category) {
-            // mview should be able to handle the changes for catalog_category_product relationship
-            if (!$this->indexer->isScheduled()) {
-                /* we are using products position because getProductCollection() doesn't use correct store */
-                $productCollection = $category->getProductsPosition();
-                CategoryIndexer::$affectedProductIds = array_keys($productCollection);
-
-                $this->indexer->reindexRow($category->getId());
+    protected function isDataChanged(AbstractModel $model, array $fields): bool
+    {
+        foreach ($fields as $field) {
+            if ($model->getOrigData($field) !== $model->getData($field)) {
+                return true;
             }
-        });
-
-        return $result;
+        }
+        return false;
     }
 
     /**
@@ -133,5 +149,32 @@ class CategoryObserver
                 $connection->insertMultiple($changelogTableName, $data);
             }
         }
+    }
+
+    /**
+     * @param CategoryResourceModel $categoryResource
+     * @param CategoryResourceModel $result
+     * @param CategoryModel $category
+     *
+     * @return CategoryResourceModel
+     */
+    public function afterDelete(
+        CategoryResourceModel $categoryResource,
+        CategoryResourceModel $result,
+        CategoryModel         $category
+    )
+    {
+        $categoryResource->addCommitCallback(function () use ($category) {
+            // mview should be able to handle the changes for catalog_category_product relationship
+            if (!$this->indexer->isScheduled()) {
+                /* we are using products position because getProductCollection() doesn't use correct store */
+                $productCollection = $category->getProductsPosition();
+                CategoryIndexer::$affectedProductIds = array_keys($productCollection);
+
+                $this->indexer->reindexRow($category->getId());
+            }
+        });
+
+        return $result;
     }
 }

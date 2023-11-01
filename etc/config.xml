@@ -37,6 +37,7 @@
                 <custom_ranking_product_attributes><![CDATA[{"_1600352070901_901":{"attribute":"in_stock","order":"desc"},"_1600352075148_148":{"attribute":"ordered_qty","order":"desc"},"_1600352080300_300":{"attribute":"created_at","order":"desc"}}]]></custom_ranking_product_attributes>
                 <enable_visual_merchandising>0</enable_visual_merchandising>
                 <category_page_id_attribute_name>categoryPageId</category_page_id_attribute_name>
+                <enable_category_versions>0</enable_category_versions>
             </products>
         </algoliasearch_products>
         <algoliasearch_categories>

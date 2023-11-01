@@ -33,6 +33,12 @@
     <!-- Declare implementation for QueueArchiveInterface -->
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface" type="Algolia\AlgoliaSearch\Model\QueueArchive" />
 
+    <!-- Category version implementation -->
+    <preference for="Algolia\AlgoliaSearch\Api\Data\CategoryVersionInterface" type="Algolia\AlgoliaSearch\Model\CategoryVersion" />
+    <preference for="Algolia\AlgoliaSearch\Api\CategoryVersionRepositoryInterface" type="Algolia\AlgoliaSearch\Model\CategoryVersion\CategoryVersionRepository" />
+    <preference for="Algolia\AlgoliaSearch\Api\Data\CategoryVersionSearchResultsInterface" type="Algolia\AlgoliaSearch\Model\CategoryVersion\CategoryVersionSearchResults" />
+    <preference for="Algolia\AlgoliaSearch\Api\Data\CategoryVersionAttributeInterface" type="Algolia\AlgoliaSearch\Model\CategoryVersion\CategoryVersionAttribute" />
+
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">

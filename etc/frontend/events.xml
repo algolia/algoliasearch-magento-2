@@ -23,4 +23,9 @@
     <event name="checkout_onepage_controller_success_action">
         <observer name="algoliasearch_insights_place_order_event" instance="Algolia\AlgoliaSearch\Observer\Insights\CheckoutOnepageControllerSuccessAction" />
     </event>
+
+    <!-- Registry -->
+    <event name="catalog_controller_category_init_after">
+        <observer name="algoliasearch_current_category" instance="Algolia\AlgoliaSearch\Observer\RegisterCurrentCategoryObserver"/>
+    </event>
 </config>

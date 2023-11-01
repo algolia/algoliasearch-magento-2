@@ -122,6 +122,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         if ($config->isInstantEnabled()
             && $config->replaceCategories()
             && $request->getControllerName() === 'category') {
+
             $category = $this->getCurrentCategory();
 
             if ($category && $category->getDisplayMode() !== 'PAGE') {
@@ -278,6 +279,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'level' => $level,
                 'parentCategory' => $parentCategoryName,
                 'childCategories' => $childCategories,
+                'hasCategoryVersions' => $this->hasCategoryVersions(),
+                'alternatePaths' => array_values($this->getAlternatePaths($path)),
                 'url' => $this->getUrl('*/*/*', ['_use_rewrite' => true, '_forced_secure' => true])
             ],
             'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
@@ -426,5 +429,22 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     protected function getLandingPageConfiguration()
     {
         return $this->isLandingPage() ? $this->getCurrentLandingPage()->getConfiguration() : json_encode([]);
+    }
+
+    protected function hasCategoryVersions(): bool
+    {
+        if (!$this->config->isCategoryVersionTrackingEnabled()) return false;
+        return (bool) $this->getCurrentCategory()->getExtensionAttributes()->getAlgoliaCategoryVersions()?->hasVersions();
+    }
+
+    protected function getAlternatePaths(string $mainPath): array
+    {
+        if (!$this->config->isCategoryVersionTrackingEnabled() || !$this->hasCategoryVersions()) return [];
+        return array_unique(
+            array_merge(
+                [$mainPath],
+                $this->getCurrentCategory()->getExtensionAttributes()->getAlgoliaCategoryVersions()->getSearchFilters()
+            )
+        );
     }
 }

@@ -534,6 +534,22 @@
                         <field id="enable_visual_merchandising">1</field>
                     </depends>
                 </field>
+                <field id="enable_category_versions" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable category version tracking</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Changing category names in Magento without re-indexing can cause a disconnect in the front end experience when
+                            matching product records in Algolia are not found.
+                            <br><br>
+                            Enable this setting to allow the Algolia extension to track the changes you make in Magento so that product records
+                            can still be retrieved based on previous category identifiers.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable_visual_merchandising">1</field>
+                    </depends>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_categories" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">

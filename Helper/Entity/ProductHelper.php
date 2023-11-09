@@ -452,19 +452,16 @@ class ProductHelper
          * Handle replicas
          */
         $sortingIndices = $this->configHelper->getSortingIndices($indexName, $storeId);
-
         $replicas = [];
 
         if ($this->configHelper->isInstantEnabled($storeId)) {
             $replicas = array_values(array_map(function ($sortingIndex) {
-                return $sortingIndex['name'];
+                return [$sortingIndex['name'],$sortingIndex['virtualReplica']];
             }, $sortingIndices));
         }
 
         // Managing Virtual Replica
-        if ($this->configHelper->useVirtualReplica($storeId)) {
-            $replicas = $this->handleVirtualReplica($replicas, $indexName);
-        }
+        $replicas = $this->handleVirtualReplica($replicas, $indexName, $storeId);
 
         // Merge current replicas with sorting replicas to not delete A/B testing replica indices
         try {
@@ -483,25 +480,23 @@ class ProductHelper
             $this->logger->log('Setting replicas to "' . $indexName . '" index.');
             $this->logger->log('Replicas: ' . json_encode($replicas));
             $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
-
-            if (!$this->configHelper->useVirtualReplica($storeId)) {
-                foreach ($sortingIndices as $values) {
-                    $replicaName = $values['name'];
-                    $indexSettings['ranking'] = $values['ranking'];
-                    $this->algoliaHelper->setSettings($replicaName, $indexSettings, false, true);
-                    $this->logger->log('Setting settings to "' . $replicaName . '" replica.');
-                    $this->logger->log('Settings: ' . json_encode($indexSettings));
-                }
-            } else {
-                foreach ($sortingIndices as $values) {
+            foreach ($sortingIndices as $values) {
+                if ($values['virtualReplica']) {
                     $replicaName = $values['name'];
                     array_unshift($customRanking, $values['ranking'][0]);
                     $replicaSetting['customRanking'] = $customRanking;
                     $this->algoliaHelper->setSettings($replicaName, $replicaSetting, false, false);
                     $this->logger->log('Setting settings to "' . $replicaName . '" replica.');
                     $this->logger->log('Settings: ' . json_encode($replicaSetting));
+                } else {
+                    $replicaName = $values['name'];
+                    $indexSettings['ranking'] = $values['ranking'];
+                    $this->algoliaHelper->setSettings($replicaName, $indexSettings, false, true);
+                    $this->logger->log('Setting settings to "' . $replicaName . '" replica.');
+                    $this->logger->log('Settings: ' . json_encode($indexSettings));
                 }
             }
+
         } else {
             $this->algoliaHelper->setSettings($indexName, ['replicas' => []]);
             $this->logger->log('Removing replicas from "' . $indexName . '" index');
@@ -574,7 +569,6 @@ class ProductHelper
         );
 
         $defaultData = $transport->getData();
-
         $visibility = $product->getVisibility();
 
         $visibleInCatalog = $this->visibility->getVisibleInCatalogIds();
@@ -773,11 +767,9 @@ class ProductHelper
      */
     protected function dedupePaths($paths): array
     {
-        return array_values(
-            array_intersect_key(
-                $paths,
-                array_unique(array_map('serialize', $paths))
-            )
+        return array_intersect_key(
+            $paths,
+            array_unique(array_map('serialize', $paths))
         );
     }
 
@@ -1056,7 +1048,6 @@ class ProductHelper
             }
 
             $attributeResource = $attributeResource->setData('store_id', $product->getStoreId());
-
             $value = $product->getData($attributeName);
 
             if ($value !== null) {
@@ -1231,7 +1222,7 @@ class ProductHelper
             $value = $attributeResource->getFrontend()->getValue($product);
         }
 
-        if ($value !== null) {
+        if ($value) {
             $customData[$attribute['attribute']] = $value;
         }
 
@@ -1534,13 +1525,17 @@ class ProductHelper
      * @param $replica
      * @return array
      */
-    public function handleVirtualReplica($replicas, $indexName)
+    public function handleVirtualReplica($replicas, $indexName, $storeId)
     {
         $virtualReplicaArray = [];
         foreach ($replicas as $replica) {
-            $virtualReplicaArray[] = 'virtual(' . $replica . ')';
+            if ($replica[1]) {
+                $replicaArray[] = 'virtual(' . $replica[0] . ')';
+            } else {
+                $replicaArray[] = $replica[0];
+            }
         }
-        return $virtualReplicaArray;
+        return $replicaArray;
     }
 
     /**
@@ -1558,12 +1553,14 @@ class ProductHelper
                 return $sortingIndex['name'];
             }, $sortingIndices));
             try {
+                $replicasFormated = $this->handleVirtualReplica($replicas);
+                $availableReplicaMatch = array_merge($replicasFormated, $replicas);
                 if ($this->configHelper->useVirtualReplica($storeId)) {
-                    $replicas = $this->handleVirtualReplica($replicas, $indexName);
+                   $replicas = $replicasFormated;
                 }
                 $currentSettings = $this->algoliaHelper->getSettings($indexName);
                 if (is_array($currentSettings) && array_key_exists('replicas', $currentSettings)) {
-                    $replicasRequired = array_values(array_diff_assoc($currentSettings['replicas'], $replicas));
+                    $replicasRequired = array_values(array_diff($currentSettings['replicas'], $availableReplicaMatch));
                     $this->algoliaHelper->setSettings($indexName, ['replicas' => $replicasRequired]);
                     $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
                     $this->algoliaHelper->waitLastTask($indexName, $setReplicasTaskId);

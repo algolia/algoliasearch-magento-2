@@ -405,7 +405,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['hierarchicalMenu']['categories.level0'] === 'undefined' &&
                                 'categories.level0' in landingPageConfig) {
-                                uiStateProductIndex['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(' /// ');
+                                uiStateProductIndex['hierarchicalMenu']['categories.level0'] = landingPageConfig['categories.level0'].split(algoliaConfig.instant.categorySeparator);
                             }
                         }
                         if (currentFacet.attribute == 'categories' && algoliaConfig.isCategoryPage) {

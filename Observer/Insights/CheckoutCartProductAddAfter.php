@@ -67,7 +67,7 @@ class CheckoutCartProductAddAfter implements ObserverInterface
         $product = $observer->getEvent()->getProduct();
         $storeId = $quoteItem->getStoreId();
 
-        if (!$this->insightsHelper->isAddedToCartTracked($storeId) && !$this->insightsHelper->isOrderPlacedTracked($storeId)) {
+        if (!$this->insightsHelper->isAddedToCartTracked($storeId) && !$this->insightsHelper->isOrderPlacedTracked($storeId) || !$this->insightsHelper->getUserAllowedSavedCookie()) {
             return;
         }
 

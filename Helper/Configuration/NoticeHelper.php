@@ -44,6 +44,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'getClickAnalyticsNotice',
         'getPersonalizationNotice',
         'getRecommendNotice',
+	'getCookieConfigurationNotice',
     ];
 
     /** @var array[] */
@@ -200,6 +201,27 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         </tr>';
         $selector = '#row_algoliasearch_cc_analytics_cc_analytics_group_enable';
         $method = 'before';
+
+        $this->notices[] = [
+            'selector' => $selector,
+            'method' => $method,
+            'message' => $noticeContent,
+        ];
+    }
+	
+   protected function getCookieConfigurationNotice()
+   {
+        $noticeContent = '';
+        $selector = '';
+        $method = 'after';
+
+        // If the feature is enabled in the Algolia dashboard but not activated on the Magento Admin
+        $noticeContent = '
+                <div class="algolia_block_cookie">
+                Find out more about Algolia Cookie Configuration in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/analytics-overview/?client=php#algolia-cookie-configuration?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
+                </div>';
+        $selector = '#algoliasearch_credentials_algolia_cookie_configuration';
+        $method = 'after';
 
         $this->notices[] = [
             'selector' => $selector,

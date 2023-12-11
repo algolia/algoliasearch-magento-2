@@ -452,7 +452,7 @@ class ProductHelper
          * Handle replicas
          */
         $sortingIndices = $this->configHelper->getSortingIndices($indexName, $storeId);
-
+        
         $replicas = [];
 
         if ($this->configHelper->isInstantEnabled($storeId)) {
@@ -483,7 +483,7 @@ class ProductHelper
             $this->logger->log('Setting replicas to "' . $indexName . '" index.');
             $this->logger->log('Replicas: ' . json_encode($replicas));
             $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
-
+            
             if (!$this->configHelper->useVirtualReplica($storeId)) {
                 foreach ($sortingIndices as $values) {
                     $replicaName = $values['name'];
@@ -574,7 +574,7 @@ class ProductHelper
         );
 
         $defaultData = $transport->getData();
-
+        
         $visibility = $product->getVisibility();
 
         $visibleInCatalog = $this->visibility->getVisibleInCatalogIds();
@@ -773,9 +773,11 @@ class ProductHelper
      */
     protected function dedupePaths($paths): array
     {
-        return array_intersect_key(
-            $paths,
-            array_unique(array_map('serialize', $paths))
+        return array_values(
+            array_intersect_key(
+                $paths,
+                array_unique(array_map('serialize', $paths))
+            )
         );
     }
 
@@ -1054,7 +1056,7 @@ class ProductHelper
             }
 
             $attributeResource = $attributeResource->setData('store_id', $product->getStoreId());
-
+            
             $value = $product->getData($attributeName);
 
             if ($value !== null) {
@@ -1229,7 +1231,7 @@ class ProductHelper
             $value = $attributeResource->getFrontend()->getValue($product);
         }
 
-        if ($value) {
+        if ($value !== null) {
             $customData[$attribute['attribute']] = $value;
         }
 
@@ -1532,12 +1534,52 @@ class ProductHelper
      * @param $replica
      * @return array
      */
-    protected function handleVirtualReplica($replicas, $indexName)
+    public function handleVirtualReplica($replicas, $indexName)
     {
         $virtualReplicaArray = [];
         foreach ($replicas as $replica) {
             $virtualReplicaArray[] = 'virtual(' . $replica . ')';
         }
         return $virtualReplicaArray;
+    }
+
+    /**
+     * @param $indexName
+     * @param $storeId
+     * @param $sortingAttribute
+     * @return void
+     * @throws AlgoliaException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function handlingReplica($indexName, $storeId, $sortingAttribute = false) {
+        $sortingIndices = $this->configHelper->getSortingIndices($indexName, $storeId, null, $sortingAttribute);
+        if ($this->configHelper->isInstantEnabled($storeId)) {
+            $replicas = array_values(array_map(function ($sortingIndex) {
+                return $sortingIndex['name'];
+            }, $sortingIndices));
+            try {
+                if ($this->configHelper->useVirtualReplica($storeId)) {
+                    $replicas = $this->handleVirtualReplica($replicas, $indexName);
+                }
+                $currentSettings = $this->algoliaHelper->getSettings($indexName);
+                if (is_array($currentSettings) && array_key_exists('replicas', $currentSettings)) {
+                    $replicasRequired = array_values(array_diff_assoc($currentSettings['replicas'], $replicas));
+                    $this->algoliaHelper->setSettings($indexName, ['replicas' => $replicasRequired]);
+                    $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
+                    $this->algoliaHelper->waitLastTask($indexName, $setReplicasTaskId);
+                    if (count($replicas) > 0) {
+                        foreach ($replicas as $replicaIndex) {
+                            $this->algoliaHelper->deleteIndex($replicaIndex);
+                        }
+                    }
+                }
+            } catch (AlgoliaException $e) {
+                if ($e->getCode() !== 404) {
+                    $this->logger->log($e->getMessage());
+                    throw $e;
+                }
+            }
+        }
+        return true;
     }
 }

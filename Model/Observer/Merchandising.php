@@ -67,7 +67,7 @@ class Merchandising implements ObserverInterface
                     The category cannot be merchandised with Algolia 
                     as you hit your <a href="https://www.algolia.com/pricing/" target="_blank">query rules quota</a>. 
                     If you need an extended quota, 
-                    please contact us on <a href="mailto:support@algolia.com">support@algolia.com</a>.';
+                    please reach out to the [Algolia Support team](https://support.algolia.com/hc/en-us/requests/new).';
             }
 
             $phrase = new Phrase($message);

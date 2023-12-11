@@ -1,10 +1,11 @@
 define([
+    'jquery',
     'algoliaBundle',
     'recommend',
     'recommendJs',
     'recommendProductsHtml',
     'domReady!'
-],function (algoliaBundle, recommend, recommendJs, recommendProductsHtml) {
+],function ($, algoliaBundle, recommend, recommendJs, recommendProductsHtml) {
     'use strict';
 
     if (typeof algoliaConfig === 'undefined') {
@@ -12,7 +13,7 @@ define([
     }
 
     return function (config, element) {
-        algoliaBundle.$(function ($) {
+        $(function ($) {
             this.defaultIndexName = algoliaConfig.indexName + '_products';
             const appId = algoliaConfig.applicationId;
             const apiKey = algoliaConfig.apiKey;

@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
+use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Magento\Catalog\Model\Product;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Model\Context as CustomerContext;
@@ -97,6 +98,9 @@ class Algolia extends Template implements CollectionDataSourceInterface
      */
     protected $date;
 
+    /** @var CurrentCategory  */
+    protected CurrentCategory $currentCategory;
+
     protected $priceKey;
 
     /**
@@ -139,6 +143,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         PersonalizationHelper $personalizationHelper,
         CheckoutSession $checkoutSession,
         DateTime $date,
+        CurrentCategory $currentCategory,
         array $data = []
     ) {
         $this->config = $config;
@@ -158,6 +163,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $this->personalizationHelper = $personalizationHelper;
         $this->checkoutSession = $checkoutSession;
         $this->date = $date;
+        $this->currentCategory = $currentCategory;
 
         parent::__construct($context, $data);
     }
@@ -255,7 +261,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
 
     public function getCurrentCategory()
     {
-        return $this->registry->registry('current_category');
+        return $this->currentCategory->get();
     }
 
     /** @return Product */

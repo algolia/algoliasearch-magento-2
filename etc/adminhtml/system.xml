@@ -110,6 +110,39 @@
                     </comment>
                 </field>
             </group>
+            <group id="algolia_cookie_configuration" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Algolia Cookie Configuration</label>    
+                <attribute type="expanded">1</attribute>
+                <comment>
+                    <![CDATA[
+                         If your Magento cookie settings, specifically <b>General > Web > Default Cookie Settings > Cookie Restriction Mode</b> is set to "No," we will consider it as Implicit Cookie Consent. In this case, the useCookie will be set to True by default for all insight events. Conversely, if <b>Cookie Restriction Mode is set to 'Yes,'</b> Insight events will not be allowed without explicit cookie consent.
+                        ]]>
+                </comment>    
+                <field id="default_consent_cookie_name" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Consent Cookie Name</label>
+                    <comment>
+                        <![CDATA[
+                            Enter the name for your website's consent cookie.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="allow_cookie_button_selector" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Allow Cookie Button Selector</label>
+                    <comment>
+                        <![CDATA[
+                            Enter Allow Cookie Button Selector.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="cookie_duration" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Algolia Cookie Duration</label>
+                    <comment>
+                        <![CDATA[
+                            Add Cookie Duration in milliseconds. Default is 15552000000 (6 Months).
+                        ]]>
+                    </comment>
+                </field>
+            </group>
         </section>
         <section id="algoliasearch_autocomplete" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Autocomplete Menu</label>
@@ -374,6 +407,7 @@
                 <field id="use_virtual_replica" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Use Virtual Replica</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Replica</backend_model>
                     <comment>
                         <![CDATA[
                             Virtual Replica is only available on Premium plans <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a>
@@ -386,7 +420,7 @@
                 <field id="sorts" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sorts</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\Sorts</frontend_model>
-                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Sorts</backend_model>
                     <comment>
                         <![CDATA[
                             Specify different sorting options you want to offer on a search results page.<br>
@@ -1136,6 +1170,7 @@
                 <field id="customer_groups_enable" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Customer Groups</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Replica</backend_model>    
                     <comment>
                         <![CDATA[
                             Do you want to take into account customer groups and display the price of the logged-in group instead of the default price?

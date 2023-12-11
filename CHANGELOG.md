@@ -1,5 +1,24 @@
 # CHANGE LOG
 
+## 3.12.0
+
+### Updates
+- Updated code to consider user’s cookie consent to send events to Algolia by using ‘useCookie’ parameter
+- Updated references to support@algolia.com to new ticket link
+- Updated code to refactor the deprecated registry for categories
+- Updated code to ensure compatibility with NeuralSearch
+- Updated AlgoliaBundle by eliminating the unnecessary jQuery library
+- Included the promotion class in autocomplete menu when a product has any promotions
+
+### Bug Fixes
+- Fixed formatting issue in product object related to CategoryPageId attribute
+- Fixed issue with Clear Refinements button in InstantSearch page
+- Fixed issue with custom banner functionality via merchandising dashboard in admin
+- Fixed issue with hierarchicalMenu widget when utilizing transformItems when the number of categories exceeded the limit
+- Fixed issue with indexing text field attributes with a value of 0
+- Fixed issue with user cookies not clearing upon customer logout
+- Fixed back button issue with pagination in instant search page and category pages
+  
 ## 3.11.0
 
 ### Updates

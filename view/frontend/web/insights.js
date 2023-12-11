@@ -13,19 +13,20 @@ define(
             defaultIndexName:   null,
             isTracking:         false,
             hasAddedParameters: false,
+            useCookie:          false,
 
-            track: function (algoliaConfig) {
-                if (this.isTracking) {
-                    return;
-                }
-
+            track: function (algoliaConfig, partial = false) {
                 this.config = algoliaConfig;
                 this.defaultIndexName = algoliaConfig.indexName + '_products';
+                this.useCookie = this.config.cookieConfiguration.cookieRestrictionModeEnabled ? !!getCookie(this.config.cookieConfiguration.consentCookieName) : true;
+                if (this.isTracking || this.useCookie === false) {
+                    return;
+                }
 
                 if (algoliaConfig.ccAnalytics.enabled
                     || algoliaConfig.personalization.enabled) {
 
-                    this.initializeAnalytics();
+                    this.initializeAnalytics(partial);
                     this.addSearchParameters();
                     this.bindData();
                     this.bindEvents();
@@ -34,11 +35,24 @@ define(
                 }
             },
 
-            initializeAnalytics: function () {
-                algoliaAnalytics.init({
-                    appId:  this.config.applicationId,
-                    apiKey: this.config.apiKey
-                });
+            initializeAnalytics: function (partial = false) {
+                let useCookie = this.config.cookieConfiguration.cookieRestrictionModeEnabled ? !!getCookie(this.config.cookieConfiguration.consentCookieName) : true;
+                if (partial) {
+                    algoliaAnalytics.init({
+                        appId:  this.config.applicationId,
+                        apiKey: this.config.apiKey,
+                        partial: true,
+                        useCookie: useCookie,
+                        cookieDuration: Number(this.config.cookieConfiguration.cookieDuration)
+                    });
+                } else {
+                    algoliaAnalytics.init({
+                        appId:  this.config.applicationId,
+                        apiKey: this.config.apiKey,
+                        useCookie: useCookie,
+                        cookieDuration: Number(this.config.cookieConfiguration.cookieDuration)
+                    });
+                }
 
                 var userAgent = 'insights-js-in-magento (' + this.config.extensionVersion + ')';
                 algoliaAnalytics.addAlgoliaAgent(userAgent);
@@ -109,7 +123,7 @@ define(
 
                 var self = this;
 
-                algoliaBundle.$(function ($) {
+                $(function ($) {
                     $(self.config.autocomplete.selector).on('autocomplete:selected', function (e, suggestion) {
                         var eventData = self.buildEventData(
                             'Clicked', suggestion.objectID, suggestion.__indexName, suggestion.__position, suggestion.__queryID
@@ -278,8 +292,12 @@ define(
 
         algoliaInsights.addSearchParameters();
 
-        algoliaBundle.$(function ($) {
+        $(function ($) {
             if (window.algoliaConfig) {
+                $(document).on('click', algoliaConfig.cookieConfiguration.cookieAllowButtonSelector, function (event) {
+                    event.preventDefault();
+                    algoliaInsights.track(algoliaConfig, true);
+                });
                 algoliaInsights.track(algoliaConfig);
             }
         });

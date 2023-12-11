@@ -1,115 +1,116 @@
 define(
     [
+            'jquery',
             'algoliaBundle',
             'Magento_Catalog/js/price-utils',
             'algoliaCommon',
             'algoliaInsights',
             'algoliaHooks'
     ],
-    function (algoliaBundle, priceUtils) {
-            algoliaBundle.$(function ($) {
-                    /** We have nothing to do here if instantsearch is not enabled **/
-                    if (typeof algoliaConfig === 'undefined' || !algoliaConfig.instant.enabled || !(algoliaConfig.isSearchPage || !algoliaConfig.autocomplete.enabled)) {
-                            return;
-                    }
+    function ($, algoliaBundle, priceUtils) {
+            $(function ($) {
+					/** We have nothing to do here if instantsearch is not enabled **/
+					if (typeof algoliaConfig === 'undefined' || !algoliaConfig.instant.enabled || !(algoliaConfig.isSearchPage || !algoliaConfig.autocomplete.enabled)) {
+							return;
+					}
 
-                    if ($(algoliaConfig.instant.selector).length <= 0) {
-                            throw '[Algolia] Invalid instant-search selector: ' + algoliaConfig.instant.selector;
-                    }
+					if ($(algoliaConfig.instant.selector).length <= 0) {
+							throw '[Algolia] Invalid instant-search selector: ' + algoliaConfig.instant.selector;
+					}
 
-                    if (algoliaConfig.autocomplete.enabled && $(algoliaConfig.instant.selector).find(algoliaConfig.autocomplete.selector).length > 0) {
-                            throw '[Algolia] You can\'t have a search input matching "' + algoliaConfig.autocomplete.selector +
-                            '" inside you instant selector "' + algoliaConfig.instant.selector + '"';
-                    }
+					if (algoliaConfig.autocomplete.enabled && $(algoliaConfig.instant.selector).find(algoliaConfig.autocomplete.selector).length > 0) {
+							throw '[Algolia] You can\'t have a search input matching "' + algoliaConfig.autocomplete.selector +
+							'" inside you instant selector "' + algoliaConfig.instant.selector + '"';
+					}
 
-                    var findAutocomplete = algoliaConfig.autocomplete.enabled && $(algoliaConfig.instant.selector).find('#algolia-autocomplete-container').length > 0;
-                    if (findAutocomplete) {
-                            $(algoliaConfig.instant.selector).find('#algolia-autocomplete-container').remove();
-                    }
+					var findAutocomplete = algoliaConfig.autocomplete.enabled && $(algoliaConfig.instant.selector).find('#algolia-autocomplete-container').length > 0;
+					if (findAutocomplete) {
+							$(algoliaConfig.instant.selector).find('#algolia-autocomplete-container').remove();
+					}
 
-                    /** BC of old hooks **/
-                    if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
-                            algolia.registerHook('beforeInstantsearchInit', algoliaHookBeforeInstantsearchInit);
-                    }
+					/** BC of old hooks **/
+					if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
+							algolia.registerHook('beforeInstantsearchInit', algoliaHookBeforeInstantsearchInit);
+					}
 
-                    if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
-                            algolia.registerHook('beforeWidgetInitialization', algoliaHookBeforeWidgetInitialization);
-                    }
+					if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
+							algolia.registerHook('beforeWidgetInitialization', algoliaHookBeforeWidgetInitialization);
+					}
 
-                    if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
-                            algolia.registerHook('beforeInstantsearchStart', algoliaHookBeforeInstantsearchStart);
-                    }
+					if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
+							algolia.registerHook('beforeInstantsearchStart', algoliaHookBeforeInstantsearchStart);
+					}
 
-                    if (typeof algoliaHookAfterInstantsearchStart === 'function') {
-                            algolia.registerHook('afterInstantsearchStart', algoliaHookAfterInstantsearchStart);
-                    }
+					if (typeof algoliaHookAfterInstantsearchStart === 'function') {
+							algolia.registerHook('afterInstantsearchStart', algoliaHookAfterInstantsearchStart);
+					}
 
-                    /**
-                     * Setup wrapper
-                     *
-                     * For templating is used Hogan library
-                     * Docs: http://twitter.github.io/hogan.js/
-                     **/
-                    var wrapperTemplate = algoliaBundle.Hogan.compile($('#instant_wrapper_template').html());
-                    var instant_selector = "#instant-search-bar";
+					/**
+					 * Setup wrapper
+					 *
+					 * For templating is used Hogan library
+					 * Docs: http://twitter.github.io/hogan.js/
+					 **/
+					var wrapperTemplate = algoliaBundle.Hogan.compile($('#instant_wrapper_template').html());
+					var instant_selector = "#instant-search-bar";
 
-                    var div = document.createElement('div');
-                    $(div).addClass('algolia-instant-results-wrapper');
+					var div = document.createElement('div');
+					$(div).addClass('algolia-instant-results-wrapper');
 
-                    $(algoliaConfig.instant.selector).addClass('algolia-instant-replaced-content');
-                    $(algoliaConfig.instant.selector).wrap(div);
+					$(algoliaConfig.instant.selector).addClass('algolia-instant-replaced-content');
+					$(algoliaConfig.instant.selector).wrap(div);
 
-                    $('.algolia-instant-results-wrapper').append('<div class="algolia-instant-selector-results"></div>');
-                    $('.algolia-instant-selector-results').html(wrapperTemplate.render({
-                            second_bar:       algoliaConfig.instant.enabled,
-                            findAutocomplete: findAutocomplete,
-                            config:           algoliaConfig.instant,
-                            translations:     algoliaConfig.translations
-                    })).show();
+					$('.algolia-instant-results-wrapper').append('<div class="algolia-instant-selector-results"></div>');
+					$('.algolia-instant-selector-results').html(wrapperTemplate.render({
+							second_bar:       algoliaConfig.instant.enabled,
+							findAutocomplete: findAutocomplete,
+							config:           algoliaConfig.instant,
+							translations:     algoliaConfig.translations
+					})).show();
 
-                    /**
-                     * Initialise instant search
-                     * For rendering instant search page is used Algolia's instantsearch.js library
-                     * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/
-                     **/
+					/**
+					 * Initialise instant search
+					 * For rendering instant search page is used Algolia's instantsearch.js library
+					 * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/
+					 **/
 
-                    var ruleContexts = ['magento_filters', '']; // Empty context to keep BC for already create rules in dashboard
-                    if (algoliaConfig.request.categoryId.length > 0) {
-                            ruleContexts.push('magento-category-' + algoliaConfig.request.categoryId);
-                    }
+					var ruleContexts = ['magento_filters', '']; // Empty context to keep BC for already create rules in dashboard
+					if (algoliaConfig.request.categoryId.length > 0) {
+							ruleContexts.push('magento-category-' + algoliaConfig.request.categoryId);
+					}
 
-                    if (algoliaConfig.request.landingPageId.length > 0) {
-                            ruleContexts.push('magento-landingpage-' + algoliaConfig.request.landingPageId);
-                    }
+					if (algoliaConfig.request.landingPageId.length > 0) {
+							ruleContexts.push('magento-landingpage-' + algoliaConfig.request.landingPageId);
+					}
 
-                    var searchClient = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
-                    var indexName = algoliaConfig.indexName + '_products';
-                    var searchParameters = {
-                            hitsPerPage:  algoliaConfig.hitsPerPage,
-                            ruleContexts: ruleContexts
-                    };
-                    var instantsearchOptions = {
-                            searchClient:   searchClient,
-                            indexName:      indexName,
-                            searchFunction: function (helper) {
-                                    if (helper.state.query === '' && !algoliaConfig.isSearchPage) {
-                                            $('.algolia-instant-replaced-content').show();
-                                            $('.algolia-instant-selector-results').hide();
-                                    } else {
-                                            helper.search();
-                                            $('.algolia-instant-replaced-content').hide();
-                                            $('.algolia-instant-selector-results').show();
-                                    }
-                            },
-                            routing:        window.routing,
-                    };
+					var searchClient = algoliaBundle.algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
+					var indexName = algoliaConfig.indexName + '_products';
+					var searchParameters = {
+							hitsPerPage:  algoliaConfig.hitsPerPage,
+							ruleContexts: ruleContexts
+					};
+					var instantsearchOptions = {
+							searchClient:   searchClient,
+							indexName:      indexName,
+							searchFunction: function (helper) {
+									if (helper.state.query === '' && !algoliaConfig.isSearchPage) {
+											$('.algolia-instant-replaced-content').show();
+											$('.algolia-instant-selector-results').hide();
+									} else {
+											helper.search();
+											$('.algolia-instant-replaced-content').hide();
+											$('.algolia-instant-selector-results').show();
+									}
+							},
+							routing:        window.routing,
+					};
 
-                    if (algoliaConfig.request.path.length > 0 && window.location.hash.indexOf('categories.level0') === -1) {
-                            if (algoliaConfig.areCategoriesInFacets === false) {
-                                    searchParameters['facetsRefinements'] = {};
-                                    searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
-                            }
-                    }
+					if (algoliaConfig.request.path.length > 0 && window.location.hash.indexOf('categories.level0') === -1) {
+							if (algoliaConfig.areCategoriesInFacets === false) {
+									searchParameters['facetsRefinements'] = {};
+									searchParameters['facetsRefinements']['categories.level' + algoliaConfig.request.level] = [algoliaConfig.request.path];
+							}
+					}
 
                     if (algoliaConfig.instant.isVisualMerchEnabled && algoliaConfig.isCategoryPage ) {
                         searchParameters.filters = `${algoliaConfig.instant.categoryPageIdAttribute}:'${algoliaConfig.request.path}'`;
@@ -299,46 +300,47 @@ define(
                                         return item;
                                     });
                             },
+                        },
 
-                            /*
-                             * clearRefinements
-                             * Widget displays a button that lets the user clean every refinement applied to the search. You can control which attributes are impacted by the button with the options.
-                             * Docs: https://www.algolia.com/doc/api-reference/widgets/clear-refinements/js/
-                             **/
-                            clearRefinements: {
-                                container         : '#clear-refinements',
-                                templates         : {
-                                    resetLabel: algoliaConfig.translations.clearAll,
-                                },
-                                includedAttributes: attributes.map(function (attribute) {
-                                    if (!(algoliaConfig.isCategoryPage && attribute.name.indexOf('categories') > -1)) {
-                                        return attribute.name;
-                                    }
-                                }),
-                                cssClasses        : {
-                                    button: ['action', 'primary']
-                                },
-                                transformItems    : function (items) {
-                                    return items.map(function (item) {
-                                        var attribute = attributes.filter(function (_attribute) {
-                                            return item.attribute === _attribute.name
-                                        })[0];
-                                        if (!attribute) return item;
-                                        item.label = attribute.label;
-                                        return item;
-                                    })
-                                }
+                        /*
+                        * clearRefinements
+                        * Widget displays a button that lets the user clean every refinement applied to the search. You can control which attributes are impacted by the button with the options.
+                        * Docs: https://www.algolia.com/doc/api-reference/widgets/clear-refinements/js/
+                        **/
+                        clearRefinements: {
+                            container         : '#clear-refinements',
+                            templates         : {
+                                resetLabel: algoliaConfig.translations.clearAll,
                             },
-                            /*
-                             * queryRuleCustomData
-                             * The queryRuleCustomData widget displays custom data from Query Rules.
-                             * Docs: https://www.algolia.com/doc/api-reference/widgets/query-rule-custom-data/js/
-                             **/
-                            queryRuleCustomData: {
-                                container: '#algolia-banner',
-                                templates: {
-                                    default: '{{#items}} {{#banner}} {{{banner}}} {{/banner}} {{/items}}',
+                            includedAttributes: attributes.map(function (attribute) {
+                                if (!(algoliaConfig.isCategoryPage && attribute.name.indexOf('categories') > -1)) {
+                                    return attribute.name;
                                 }
+                            }),
+                            cssClasses        : {
+                                button: ['action', 'primary']
+                            },
+                            transformItems    : function (items) {
+                                return items.map(function (item) {
+                                    var attribute = attributes.filter(function (_attribute) {
+                                        return item.attribute === _attribute.name
+                                    })[0];
+                                    if (!attribute) return item;
+                                    item.label = attribute.label;
+                                    return item;
+                                })
+                            }
+                        },
+
+                        /*
+                        * queryRuleCustomData
+                        * The queryRuleCustomData widget displays custom data from Query Rules.
+                        * Docs: https://www.algolia.com/doc/api-reference/widgets/query-rule-custom-data/js/
+                        **/
+                        queryRuleCustomData: {
+                            container: '#algolia-banner',
+                            templates: {
+                                    default: '{{#items}} {{#banner}} {{{banner}}} {{/banner}} {{/items}}',
                             }
                         }
                     };
@@ -446,40 +448,25 @@ define(
                      * Custom widgets can be added to this object like [attribute]: function(facet, templates)
                      * Function must return an array [<widget name>: string, <widget options>: object]
                      **/
-                    var customAttributeFacet = {
+                    const customAttributeFacet = {
                             categories: function (facet, templates) {
-                                    var hierarchical_levels = [];
-                                    for (var l = 0; l < 10; l++) {
+                                    const hierarchical_levels = [];
+                                    for (let l = 0; l < 10; l++) {
                                             hierarchical_levels.push('categories.level' + l.toString());
                                     }
 
-
-                                    //return array of items starting from root based on category
-                                    const findRoot = (items) => {
-                                        const root = items.find(element => algoliaConfig.request.path.startsWith(element.value));
-
-                                        if (!root) {
-                                            return items;
-                                        }
-                                        if (!root.data) {
-                                            return [];
-                                        }
-
-                                        return findRoot(root.data);
-
-                                    };
-
-                                    var hierarchicalMenuParams = {
+                                    const hierarchicalMenuParams = {
                                         container         : facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
                                         attributes        : hierarchical_levels,
                                         separator         : algoliaConfig.instant.categorySeparator,
                                         templates         : templates,
                                         showParentLevel   : true,
                                         limit             : algoliaConfig.maxValuesPerFacet,
+                                        rootPath          : algoliaConfig.request.path,
                                         sortBy            : ['name:asc'],
                                         transformItems(items) {
                                             return (algoliaConfig.isCategoryPage)
-                                                ? findRoot(items).map(
+                                                ? items.map(
                                                     item => {
                                                         return {
                                                             ...item,

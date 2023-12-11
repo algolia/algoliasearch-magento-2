@@ -42,6 +42,17 @@ class IndicesConfigurator
     /** @var Logger */
     protected $logger;
 
+    /**
+     * @param Data $baseHelper
+     * @param AlgoliaHelper $algoliaHelper
+     * @param ConfigHelper $configHelper
+     * @param ProductHelper $productHelper
+     * @param CategoryHelper $categoryHelper
+     * @param PageHelper $pageHelper
+     * @param SuggestionHelper $suggestionHelper
+     * @param AdditionalSectionHelper $additionalSectionHelper
+     * @param Logger $logger
+     */
     public function __construct(
         Data $baseHelper,
         AlgoliaHelper $algoliaHelper,

@@ -12,6 +12,11 @@
                 <enable_query_suggestions_index>1</enable_query_suggestions_index>
                 <enable_pages_index>1</enable_pages_index>
             </credentials>
+            <algolia_cookie_configuration>
+                <default_consent_cookie_name>user_allowed_save_cookie</default_consent_cookie_name>
+                <allow_cookie_button_selector>#btn-cookie-allow</allow_cookie_button_selector>
+                <cookie_duration>15552000000</cookie_duration>
+            </algolia_cookie_configuration>
         </algoliasearch_credentials>
         <algoliasearch_autocomplete>
             <autocomplete>

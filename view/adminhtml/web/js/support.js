@@ -1,5 +1,8 @@
-requirejs(['algoliaAdminBundle'], function(algoliaBundle) {
-	algoliaBundle.$(function ($) {
+requirejs([
+    'jquery',
+    'algoliaAdminBundle'
+], function($, algoliaBundle) {
+	$(function ($) {
 		handleLatestVersion($);
 
 		if ($('#search_box').length > 0) {

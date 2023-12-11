@@ -11,6 +11,7 @@ use Magento\Framework\Locale\Currency;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Cookie\Helper\Cookie as CookieHelper;
 
 class ConfigHelper
 {
@@ -23,6 +24,10 @@ class ConfigHelper
     public const API_KEY = 'algoliasearch_credentials/credentials/api_key';
     public const SEARCH_ONLY_API_KEY = 'algoliasearch_credentials/credentials/search_only_api_key';
     public const INDEX_PREFIX = 'algoliasearch_credentials/credentials/index_prefix';
+    public const COOKIE_DEFAULT_CONSENT_COOKIE_NAME = 'algoliasearch_credentials/algolia_cookie_configuration/default_consent_cookie_name';
+    public const ALLOW_COOKIE_BUTTON_SELECTOR = 'algoliasearch_credentials/algolia_cookie_configuration/allow_cookie_button_selector';
+    public const ALGOLIA_COOKIE_DURATION = 'algoliasearch_credentials/algolia_cookie_configuration/cookie_duration';
+
 
     public const IS_INSTANT_ENABLED = 'algoliasearch_instant/instant/is_instant_enabled';
     public const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
@@ -186,6 +191,11 @@ class ConfigHelper
     protected $groupCollection;
 
     /**
+     * @var CookieHelper
+     */
+    protected $cookieHelper;
+
+    /**
      * @param Magento\Framework\App\Config\ScopeConfigInterface $configInterface
      * @param StoreManagerInterface $storeManager
      * @param Currency $currency
@@ -196,6 +206,7 @@ class ConfigHelper
      * @param Magento\Framework\Event\ManagerInterface $eventManager
      * @param SerializerInterface $serializer
      * @param GroupCollection $groupCollection
+     * @param CookieHelper $cookieHelper
      */
     public function __construct(
         Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
@@ -207,7 +218,8 @@ class ConfigHelper
         Magento\Framework\App\ProductMetadataInterface    $productMetadata,
         Magento\Framework\Event\ManagerInterface          $eventManager,
         SerializerInterface                               $serializer,
-        GroupCollection                                   $groupCollection
+        GroupCollection                                   $groupCollection,
+        CookieHelper                                      $cookieHelper
     ) {
         $this->configInterface = $configInterface;
         $this->currency = $currency;
@@ -219,6 +231,7 @@ class ConfigHelper
         $this->eventManager = $eventManager;
         $this->serializer = $serializer;
         $this->groupCollection = $groupCollection;
+        $this->cookieHelper = $cookieHelper;
     }
 
 
@@ -980,12 +993,16 @@ class ConfigHelper
      * @param $originalIndexName
      * @param $storeId
      * @param $currentCustomerGroupId
+     * @param $attrs
      * @return array
      * @throws Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null)
+    public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null, $attrs = null)
     {
-        $attrs = $this->getSorting($storeId);
+        if (!$attrs){
+            $attrs = $this->getSorting($storeId);
+        }
+
         $currency = $this->getCurrencyCode($storeId);
         $attributesToAdd = [];
         foreach ($attrs as $key => $attr) {
@@ -1565,6 +1582,45 @@ class ConfigHelper
 
     /**
      * @param $storeId
+     * @return mixed
+     */
+    public function getDefaultConsentCookieName($storeId = null)
+    {
+        return $this->configInterface->getValue(
+            self::COOKIE_DEFAULT_CONSENT_COOKIE_NAME,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     */
+    public function getAllowCookieButtonSelector($storeId = null)
+    {
+        return $this->configInterface->getValue(
+            self::ALLOW_COOKIE_BUTTON_SELECTOR,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     */
+    public function getAlgoliaCookieDuration($storeId = null)
+    {
+        return $this->configInterface->getValue(
+            self::ALGOLIA_COOKIE_DURATION,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * @param $storeId
      * @return array
      */
     public function getAnalyticsConfig($storeId = null)
@@ -1694,5 +1750,13 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCookieRestrictionModeEnabled()
+    {
+        return (bool)$this->cookieHelper->isCookieRestrictionModeEnabled();
     }
 }

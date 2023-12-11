@@ -94,6 +94,9 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
                 if (isset($formData['to']) && $formData['to'] !== '') {
                     $params['endDate'] = $dateTime->date($formData['to'], $timeZone, true, false)->format('Y-m-d');
                 }
+                if (isset($formData['region'])) {
+                    $params['region'] = $formData['region'];
+                }
             }
 
             $this->analyticsParams = $params;
@@ -356,6 +359,16 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     public function getSections()
     {
         return $this->analyticsHelper->getAnalyticsIndices($this->getStore()->getId());
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     *
+     * @return array
+     */
+    public function getAnayliticsRegionSections()
+    {
+        return $this->analyticsHelper->getAnalyticsRegion($this->getStore()->getId());
     }
 
     /**

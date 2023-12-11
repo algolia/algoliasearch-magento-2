@@ -18,6 +18,15 @@ $form = $block->getViewModel();
             </select>
         </div>
         <div class="inline-field">
+            <select name="region" class="select admin__control-select"<?php echo $isFormDisabled ?>>
+                <?php foreach ($form->getAnayliticsRegionSections() as $key => $region) : ?>
+                    <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('region')) ? ' selected' : '' ?>>
+                        <?php echo $region ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="inline-field">
             <input type="text" id="analytics_from" name="from" <?php echo $isFormDisabled ?>
                    class="admin__control-text input-text date-range-analytics-from"
                    placeholder="<?php echo $block->escapeHtmlAttr(__('Start Date')) ?>" value="<?php echo $form->getFormValue('from') ?>"/>

@@ -50,26 +50,18 @@ class AnalyticsHelper
      */
     private $analyticsConfig;
 
-    /**
-     * Can be changed through DI
-     *
-     * @var string
-     */
-    private $region;
 
     /**
      * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
      * @param IndexEntityDataProvider $entityHelper
      * @param Logger $logger
-     * @param string $region
      */
     public function __construct(
         AlgoliaHelper $algoliaHelper,
         ConfigHelper $configHelper,
         IndexEntityDataProvider $entityHelper,
-        Logger $logger,
-        string $region = 'us'
+        Logger $logger
     ) {
         $this->algoliaHelper = $algoliaHelper;
         $this->configHelper = $configHelper;
@@ -77,10 +69,9 @@ class AnalyticsHelper
         $this->entityHelper = $entityHelper;
 
         $this->logger = $logger;
-        $this->region = $region;
     }
 
-    private function setupAnalyticsClient()
+    private function setupAnalyticsClient($region = false)
     {
         if ($this->analyticsClient) {
             return;
@@ -110,6 +101,19 @@ class AnalyticsHelper
             'products' => $this->entityHelper->getIndexNameByEntity('products', $storeId),
             'categories' => $this->entityHelper->getIndexNameByEntity('categories', $storeId),
             'pages' => $this->entityHelper->getIndexNameByEntity('pages', $storeId),
+        ];
+    }
+
+    /**
+     * @param $storeId
+     *
+     * @return array
+     */
+    public function getAnalyticsRegion($storeId)
+    {
+        return $region = [
+            'us' => "United States",
+            'de' => "Europe (Germany)",
         ];
     }
 
@@ -348,7 +352,9 @@ class AnalyticsHelper
                 throw new \Magento\Framework\Exception\LocalizedException($msg);
             }
 
-            $this->setupAnalyticsClient();
+            $region = isset($params['region']) ? $params['region'] : 'us';
+
+            $this->setupAnalyticsClient($region);
 
             $requestOptions = new RequestOptionsFactory($this->analyticsConfig);
             $requestOptions = $requestOptions->create([]);

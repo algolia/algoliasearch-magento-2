@@ -111,13 +111,13 @@
                 </field>
             </group>
             <group id="algolia_cookie_configuration" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Algolia Cookie Configuration</label>    
+                <label>Algolia Cookie Configuration</label>
                 <attribute type="expanded">1</attribute>
                 <comment>
                     <![CDATA[
                          If your Magento cookie settings, specifically <b>General > Web > Default Cookie Settings > Cookie Restriction Mode</b> is set to "No," we will consider it as Implicit Cookie Consent. In this case, the useCookie will be set to True by default for all insight events. Conversely, if <b>Cookie Restriction Mode is set to 'Yes,'</b> Insight events will not be allowed without explicit cookie consent.
                         ]]>
-                </comment>    
+                </comment>
                 <field id="default_consent_cookie_name" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Consent Cookie Name</label>
                     <comment>
@@ -1170,7 +1170,7 @@
                 <field id="customer_groups_enable" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Customer Groups</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Replica</backend_model>    
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Replica</backend_model>
                     <comment>
                         <![CDATA[
                             Do you want to take into account customer groups and display the price of the logged-in group instead of the default price?
@@ -1258,6 +1258,15 @@
                             By default, the Algolia extension has a record size limit of 10 kB per record.
                             If your Algolia plan allows a higher record size limit, you can customize the record size limit.]]>
                     </comment>
+                </field>
+                <field id="connection_timeout" translate="label comment" type="text" sortOrder="100" showInDefault="1">
+                    <label>Connection Timeout (In Seconds)</label>
+                </field>
+                <field id="read_timeout" translate="label comment" type="text" sortOrder="105" showInDefault="1">
+                    <label>Read Timeout (In Seconds)</label>
+                </field>
+                <field id="write_timeout" translate="label comment" type="text" sortOrder="110" showInDefault="1">
+                    <label>Write Timeout (In Seconds)</label>
                 </field>
             </group>
             <group id="queue" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">

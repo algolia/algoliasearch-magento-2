@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Response\AbstractResponse;
 use Algolia\AlgoliaSearch\Response\BatchIndexingResponse;
 use Algolia\AlgoliaSearch\Response\MultiResponse;
 use Algolia\AlgoliaSearch\SearchClient;
+use Algolia\AlgoliaSearch\Config\SearchConfig;
 use Algolia\AlgoliaSearch\SearchIndex;
 use Algolia\AlgoliaSearch\Support\UserAgent;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -89,10 +90,11 @@ class AlgoliaHelper extends AbstractHelper
     public function resetCredentialsFromConfig()
     {
         if ($this->config->getApplicationID() && $this->config->getAPIKey()) {
-            $this->client = SearchClient::create(
-                $this->config->getApplicationID(),
-                $this->config->getAPIKey()
-            );
+            $config = SearchConfig::create($this->config->getApplicationID(), $this->config->getAPIKey());
+            $config->setConnectTimeout($this->config->getConnectionTimeout());
+            $config->setReadTimeout($this->config->getReadTimeout());
+            $config->setWriteTimeout($this->config->getWriteTimeout());
+            $this->client = SearchClient::createWithConfig($config);
         }
     }
 

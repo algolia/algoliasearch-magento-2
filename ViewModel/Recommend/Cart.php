@@ -13,6 +13,11 @@ use Magento\Store\Model\StoreManagerInterface;
 class Cart implements ArgumentInterface
 {
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+    
+    /**
      * @var Session
      */
     protected $checkoutSession;

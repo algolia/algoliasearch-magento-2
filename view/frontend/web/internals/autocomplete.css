@@ -79,13 +79,13 @@ html {
     .aa-Panel.productColumn1 section:nth-child(1) .aa-List li {
         width: 285px;
     }
-    .aa-Panel.productColumn2 section:nth-child(2) .aa-List {
+    .aa-Panel.productColumn2 section:nth-child(3) .aa-List {
         columns: 2;
         -webkit-columns: 2;
         -moz-columns: 2;
     }
 
-    .aa-Panel.productColumn2 section:nth-child(2) .aa-List li {
+    .aa-Panel.productColumn2 section:nth-child(3) .aa-List li {
         width: 285px;
     }
 
@@ -514,7 +514,7 @@ html {
     list-style-type: none;
 }
 
-.aa-Panel .aa-PanelLayout{
+.aa-Panel .aa-PanelLayout .aa-PanelSections{
     display: grid;
     /*grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);*/
@@ -522,15 +522,15 @@ html {
     grid-row-gap: 0px;
     padding-bottom: 45px;
 }
-.aa-Panel .aa-PanelLayout section{
+.aa-Panel .aa-PanelLayout .aa-PanelSections section{
     padding-top: 10px;
 }
-.aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1) li a, .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(2) li a, .aa-Panel .aa-PanelLayout section:nth-child(3) li a, .aa-Panel .aa-PanelLayout section:nth-child(4) li a, .aa-Panel .aa-PanelLayout section:nth-child(5) li a{
+.aa-Panel.productColumn2 .aa-PanelLayout .aa-PanelSections section:nth-child(1) li a, .aa-Panel.productColumn1 .aa-PanelLayout .aa-PanelSections section:nth-child(2) li a, .aa-Panel .aa-PanelLayout .aa-PanelSections section:nth-child(3) li a, .aa-Panel .aa-PanelLayout .aa-PanelSections section:nth-child(4) li a, .aa-Panel .aa-PanelLayout .aa-PanelSections section:nth-child(5) li a{
     color: inherit;
     display: block;
     padding: 5px 10px;
 }
-.aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1) li a:hover, .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(2) li a:hover, .aa-Panel .aa-PanelLayout section:nth-child(3) li a:hover, .aa-Panel .aa-PanelLayout section:nth-child(4) li a:hover, .aa-Panel .aa-PanelLayout section:nth-child(5) li a:hover{
+.aa-Panel.productColumn2 .aa-PanelLayout .aa-PanelSections section:nth-child(1) li a:hover, .aa-Panel.productColumn1 .aa-PanelLayout .aa-PanelSections section:nth-child(2) li a:hover, .aa-Panel .aa-PanelLayout .aa-PanelSections section:nth-child(3) li a:hover, .aa-Panel .aa-PanelLayout .aa-PanelSections section:nth-child(4) li a:hover, .aa-Panel .aa-PanelLayout .aa-PanelSections section:nth-child(5) li a:hover{
     background-color: #f2f2f2;
     text-decoration: none;
 }
@@ -554,13 +554,13 @@ html {
 }
 
 @media (min-width: 992px) {
-    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(2), .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(1){
+    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(3), .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(1){
         margin-left: 2.5rem !important;
         min-width: 570px !important;
     }
     .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1),
     .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(2),
-    .aa-Panel .aa-PanelLayout section:nth-child(3),
+    .aa-Panel .aa-PanelLayout section:nth-child(2),
     .aa-Panel .aa-PanelLayout section:nth-child(4),
     .aa-Panel .aa-PanelLayout section:nth-child(5){
         width: 220px !important;
@@ -577,7 +577,7 @@ html {
         padding-top: 20px;
         width: 180px;
     }
-    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(2){
+    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(3){
         border-left: 1px solid #BBB;
         margin-bottom: 0px;
         margin-left: 1.5rem;

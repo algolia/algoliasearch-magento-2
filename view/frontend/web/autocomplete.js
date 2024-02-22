@@ -465,8 +465,55 @@ define(
             },
             shouldPanelOpen({ state }) {
                 return state.query.length >= MIN_SEARCH_LENGTH_CHARS;
+            },
+            render({ elements, state, render, html }, root) {
+                //debugger;
+                const recentSearchesPlugin = plugins[0];
+                const query = state.query;
+                const {
+                    recentSearchesPlugin: recentSearches,
+                    buildSuggestionsPlugin: querySuggestions,
+                } = elements;
+
+                let sourcesData;
+                if (sources) {
+                    const sourceIDS = sources.map((element) => {
+                        return element.sourceId;
+                    });
+
+                    sourcesData = sourceIDS.map((sourceId) => {
+                        return elements[sourceId];
+                    });
+                }
+
+                render(
+                    html`
+                        <div class="aa-PanelLayout aa-Panel--scrollable">
+                            ${autoCompleteRendererResults(
+                        {
+                            query,
+                            html,
+                            recentSearches,
+                            querySuggestions,
+                            sourcesData
+                        }
+                    )}
+                        </div>
+                    `,
+                    root
+                );
             }
         };
+
+        const autoCompleteRendererResults = ({query, html, recentSearches, querySuggestions, sourcesData}) => {
+            if(query) {
+                return html `<div class="aa-PanelSections">
+            ${querySuggestions}
+            ${sourcesData}
+                    ${recentSearches}
+        </div>`
+            }
+        }
 
         if (isMobile() === true) {
             // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu

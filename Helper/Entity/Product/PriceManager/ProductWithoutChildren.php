@@ -92,7 +92,7 @@ abstract class ProductWithoutChildren
         Rule $rule,
         ProductFactory $productloader,
         ScopedProductTierPriceManagementInterface $productTierPrice,
-        Logger $logger,
+        Logger $logger
     ) {
         $this->configHelper = $configHelper;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;

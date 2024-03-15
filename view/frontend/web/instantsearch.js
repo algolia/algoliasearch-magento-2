@@ -663,7 +663,6 @@ define(
                         search.on('render', () => {
                             const cartForms = document.querySelectorAll('[data-role="tocart-form"]');
                             cartForms.forEach((form, i) => {
-                                const ts = Date.now();
                                 form.addEventListener('submit', e => {
                                     const url = `${algoliaConfig.request.url}${window.location.search}`;
                                     e.target.elements[algoliaConfig.instant.addToCartParams.redirectUrlParam].value = AlgoliaBase64.mageEncode(url);

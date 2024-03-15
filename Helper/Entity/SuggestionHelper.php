@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
@@ -100,11 +101,11 @@ class SuggestionHelper
     public function getObject(Query $suggestion)
     {
         $suggestionObject = [
-            'objectID'          => $suggestion->getData('query_id'),
-            'query'             => $suggestion->getData('query_text'),
-            'number_of_results' => (int) $suggestion->getData('num_results'),
-            'popularity'        => (int) $suggestion->getData('popularity'),
-            'updated_at'        => (int) strtotime($suggestion->getData('updated_at')),
+            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $suggestion->getData('query_id'),
+            'query'                              => $suggestion->getData('query_text'),
+            'number_of_results'                  => (int) $suggestion->getData('num_results'),
+            'popularity'                         => (int) $suggestion->getData('popularity'),
+            'updated_at'                         => (int) strtotime($suggestion->getData('updated_at')),
         ];
 
         $transport = new DataObject($suggestionObject);

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Query;
 
+use Algolia\AlgoliaSearch\Model\Query;
 use Magento\Framework\Controller\ResultFactory;
 
 class Delete extends AbstractAction
@@ -15,7 +16,7 @@ class Delete extends AbstractAction
         $queryId = $this->getRequest()->getParam('id');
         if ($queryId) {
             try {
-                /** @var \Algolia\AlgoliaSearch\Model\Query $query */
+                /** @var Query $query */
                 $query = $this->queryFactory->create();
                 $query->getResource()->load($query, $queryId);
                 $query->getResource()->delete($query);
@@ -35,7 +36,12 @@ class Delete extends AbstractAction
         return $resultRedirect->setPath('*/*/');
     }
 
-    private function deleteQueryRules($query)
+    /**
+     * @param Query $query
+     * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    private function deleteQueryRules(Query $query): void
     {
         $stores = [];
         if ($query->getStoreId() == 0) {

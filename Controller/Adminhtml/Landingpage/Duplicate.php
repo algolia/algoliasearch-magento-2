@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Landingpage;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Model\LandingPage;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\LocalizedException;
 
@@ -20,7 +22,7 @@ class Duplicate extends AbstractAction
             return $resultRedirect->setPath('*/*/');
         }
 
-        /** @var \Algolia\AlgoliaSearch\Model\LandingPage $landingPage */
+        /** @var LandingPage $landingPage */
         $landingPage = $this->landingPageFactory->create();
         $landingPage->getResource()->load($landingPage, $landingPageId);
 
@@ -53,9 +55,13 @@ class Duplicate extends AbstractAction
         return $resultRedirect->setPath('*/*/');
     }
 
-    private function duplicateLandingPage($landingPage)
+    /**
+     * @param LandingPage $landingPage
+     * @return LandingPage
+     */
+    private function duplicateLandingPage(LandingPage $landingPage): LandingPage
     {
-        /** @var \Algolia\AlgoliaSearch\Model\LandingPage $newLandingPage */
+        /** @var LandingPage $newLandingPage */
         $newLandingPage = $this->landingPageFactory->create();
         $newLandingPage->setData($landingPage->getData());
         $newLandingPage->setId(null);
@@ -65,7 +71,13 @@ class Duplicate extends AbstractAction
         return $newLandingPage;
     }
 
-    private function copyQueryRules($landingPageFromId, $landingPageToId)
+    /**
+     * @param int $landingPageFromId
+     * @param int $landingPageToId
+     * @return void
+     * @throws AlgoliaException|\Magento\Framework\Exception\NoSuchEntityException
+     */
+    private function copyQueryRules(int $landingPageFromId, int $landingPageToId): void
     {
         $stores = [];
         if ($landingPageFromId) {

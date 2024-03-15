@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
 use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Image;
 use Magento\Catalog\Model\Category;
@@ -307,15 +308,15 @@ class CategoryHelper
         }
 
         $data = [
-            'objectID' => $category->getId(),
-            'name' => $category->getName(),
-            'path' => $path,
-            'level' => $category->getLevel(),
-            'url' => $this->getUrl($category),
-            'include_in_menu' => $category->getIncludeInMenu(),
-            '_tags' => ['category'],
-            'popularity' => 1,
-            'product_count' => $category->getProductCount(),
+            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $category->getId(),
+            'name'                               => $category->getName(),
+            'path'                               => $path,
+            'level'                              => $category->getLevel(),
+            'url'                                => $this->getUrl($category),
+            'include_in_menu'                    => $category->getIncludeInMenu(),
+            '_tags'                              => ['category'],
+            'popularity'                         => 1,
+            'product_count'                      => $category->getProductCount(),
         ];
 
         if (!empty($imageUrl)) {

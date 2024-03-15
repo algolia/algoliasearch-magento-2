@@ -13,7 +13,6 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
-use Algolia\AlgoliaSearch\SearchIndex;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -26,6 +25,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
@@ -33,7 +33,6 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 
 class ProductHelper
 {
@@ -216,7 +215,7 @@ class ProductHelper
     /**
      * @return string
      */
-    public function getIndexNameSuffix()
+    public function getIndexNameSuffix(): string
     {
         return '_products';
     }
@@ -404,14 +403,16 @@ class ProductHelper
     }
 
     /**
-     * @param $indexName
-     * @param $indexNameTmp
-     * @param $storeId
-     * @param $saveToTmpIndicesToo
+     * @param string $indexName
+     * @param string $indexNameTmp
+     * @param int $storeId
+     * @param bool $saveToTmpIndicesToo
      * @return void
      * @throws AlgoliaException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function setSettings($indexName, $indexNameTmp, $storeId, $saveToTmpIndicesToo = false)
+    public function setSettings(string $indexName, string $indexNameTmp, int $storeId, bool $saveToTmpIndicesToo = false): void
     {
         $searchableAttributes = $this->getSearchableAttributes($storeId);
         $customRanking = $this->getCustomRanking($storeId);
@@ -520,8 +521,9 @@ class ProductHelper
         if ($saveToTmpIndicesToo === true) {
             try {
                 $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
+                $this->algoliaHelper->waitLastTask();
                 $this->logger->log('
-                    Copying synonyms from production index to TMP one to not erase them with the index move.
+                    Copying synonyms from production index to "' . $indexNameTmp . '" to not erase them with the index move.
                 ');
             } catch (AlgoliaException $e) {
                 $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
@@ -529,8 +531,9 @@ class ProductHelper
 
             try {
                 $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
+                $this->algoliaHelper->waitLastTask();
                 $this->logger->log('
-                    Copying query rules to "' . $indexNameTmp . '" to not to erase them with the index move.
+                    Copying query rules from production index to "' . $indexNameTmp . '" to not erase them with the index move.
                 ');
             } catch (AlgoliaException $e) {
                 if ($e->getCode() !== 404) {
@@ -592,12 +595,12 @@ class ProductHelper
         ];
 
         $customData = [
-            'objectID'           => $product->getId(),
-            'name'               => $product->getName(),
-            'url'                => $product->getUrlModel()->getUrl($product, $urlParams),
-            'visibility_search'  => (int)(in_array($visibility, $visibleInSearch)),
-            'visibility_catalog' => (int)(in_array($visibility, $visibleInCatalog)),
-            'type_id'            => $product->getTypeId(),
+            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $product->getId(),
+            'name'                               => $product->getName(),
+            'url'                                => $product->getUrlModel()->getUrl($product, $urlParams),
+            'visibility_search'                  => (int) (in_array($visibility, $visibleInSearch)),
+            'visibility_catalog'                 => (int) (in_array($visibility, $visibleInCatalog)),
+            'type_id'                            => $product->getTypeId(),
         ];
 
         $additionalAttributes = $this->getAdditionalAttributes($product->getStoreId());
@@ -1366,12 +1369,14 @@ class ProductHelper
     }
 
     /**
-     * @param $indexName
-     * @param $replicas
-     * @param $setReplicasTaskId
+     * @param string $indexName
+     * @param array $replicas
+     * @param int $setReplicasTaskId
      * @return void
+     * @throws AlgoliaException
+     * @throws \Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException
      */
-    protected function deleteUnusedReplicas($indexName, $replicas, $setReplicasTaskId)
+    protected function deleteUnusedReplicas(string $indexName, array $replicas, int $setReplicasTaskId): void
     {
         $indicesToDelete = [];
 
@@ -1402,9 +1407,9 @@ class ProductHelper
      */
     protected function setFacetsQueryRules($indexName)
     {
-        $index = $this->algoliaHelper->getIndex($indexName);
+        $client = $this->algoliaHelper->getClient();
 
-        $this->clearFacetsQueryRules($index);
+        $this->clearFacetsQueryRules($indexName);
 
         $rules = [];
         $facets = $this->configHelper->getFacets();
@@ -1422,7 +1427,7 @@ class ProductHelper
             ];
 
             $rules[] = [
-                'objectID' => 'filter_' . $attribute,
+                AlgoliaHelper::ALGOLIA_API_OBJECT_ID => 'filter_' . $attribute,
                 'description' => 'Filter facet "' . $attribute . '"',
                 'conditions' => [$condition],
                 'consequence' => [
@@ -1438,37 +1443,35 @@ class ProductHelper
 
         if ($rules) {
             $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $index->saveRules($rules, [
-                'forwardToReplicas' => true,
-            ]);
+            $client->saveRules($indexName, $rules, true);
         }
     }
 
     /**
-     * @param SearchIndex $index
+     * @param  $index
      * @return void
      * @throws AlgoliaException
      */
-    protected function clearFacetsQueryRules(SearchIndex $index)
+    protected function clearFacetsQueryRules($indexName)
     {
         try {
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $index->searchRules('', [
+                $client = $this->algoliaHelper->getClient();
+                $fetchedQueryRules = $client->searchRules($indexName, [
                     'context' => 'magento_filters',
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
                 ]);
+
 
                 if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
                     break;
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $index->deleteRule($hit['objectID'], [
-                        'forwardToReplicas' => true,
-                    ]);
+                    $client->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
                 }
 
                 $page++;

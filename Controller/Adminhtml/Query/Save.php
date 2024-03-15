@@ -149,7 +149,13 @@ class Save extends AbstractAction
         return $resultRedirect->setPath('*/*/');
     }
 
-    private function manageQueryRules($queryId, $data)
+    /**
+     * @param int $queryId
+     * @param array<string, mixed> $data
+     * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    private function manageQueryRules(int $queryId, array $data): void
     {
         $positions = json_decode($data['algolia_merchandising_positions'], true);
         $stores = [];

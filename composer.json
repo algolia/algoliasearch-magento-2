@@ -6,7 +6,7 @@
   "version": "3.13.2",
   "require": {
     "magento/framework": "~102.0|~103.0",
-    "algolia/algoliasearch-client-php": "3.3.2",
+    "algolia/algoliasearch-client-php": "^4.0@alpha",
     "guzzlehttp/guzzle": "^6.3.3|^7.3.0",
     "ext-json": "*",
     "ext-PDO": "*",

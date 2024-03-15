@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use Algolia\AlgoliaSearch\AnalyticsClient;
-use Algolia\AlgoliaSearch\Config\AnalyticsConfig;
+use Algolia\AlgoliaSearch\Api\AnalyticsClient;
+use Algolia\AlgoliaSearch\Configuration\AnalyticsConfig;
 use Algolia\AlgoliaSearch\DataProvider\Analytics\IndexEntityDataProvider;
 use Algolia\AlgoliaSearch\RequestOptions\RequestOptionsFactory;
 
@@ -103,11 +103,11 @@ class AnalyticsHelper
     /**
      * @param $storeId
      *
-     * @return array
+     * @return array<string, string>
      */
-    public function getAnalyticsIndices($storeId)
+    public function getAnalyticsIndices(int $storeId): array
     {
-        return $sections = [
+        return [
             'products' => $this->entityHelper->getIndexNameByEntity('products', $storeId),
             'categories' => $this->entityHelper->getIndexNameByEntity('categories', $storeId),
             'pages' => $this->entityHelper->getIndexNameByEntity('pages', $storeId),
@@ -119,23 +119,31 @@ class AnalyticsHelper
      *
      * @param array $params
      *
-     * @return mixed
+     * @return array<string, mixed>
      */
-    public function getTopSearches(array $params)
+    public function getTopSearches(array $params): array
     {
-        return $this->fetch(self::ANALYTICS_SEARCH_PATH, $params);
+        return $this->safeFetch(self::ANALYTICS_SEARCH_PATH, $params);
     }
 
-    public function getCountOfSearches(array $params)
+    /**
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getCountOfSearches(array $params): array
     {
-        if (!$this->searches) {
-            $this->searches = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/count', $params);
+        if (!isset($this->searches)) {
+            $this->searches = $this->safeFetch(self::ANALYTICS_SEARCH_PATH . '/count', $params);
         }
 
         return $this->searches;
     }
 
-    public function getTotalCountOfSearches(array $params)
+    /**
+     * @param array $params
+     * @return int
+     */
+    public function getTotalCountOfSearches(array $params): int
     {
         $searches = $this->getCountOfSearches($params);
 
@@ -149,15 +157,23 @@ class AnalyticsHelper
         return $searches && isset($searches['dates']) ? $searches['dates'] : [];
     }
 
-    public function getTopSearchesNoResults(array $params)
+    /**
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getTopSearchesNoResults(array $params): array
     {
-        return $this->fetch(self::ANALYTICS_SEARCH_PATH . '/noResults', $params);
+        return $this->safeFetch(self::ANALYTICS_SEARCH_PATH . '/noResults', $params);
     }
 
-    public function getRateOfNoResults(array $params)
+    /**
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getRateOfNoResults(array $params): array
     {
-        if (!$this->rateOfNoResults) {
-            $this->rateOfNoResults = $this->fetch(self::ANALYTICS_SEARCH_PATH . '/noResultRate', $params);
+        if (!isset($this->rateOfNoResults)) {
+            $this->rateOfNoResults = $this->safeFetch(self::ANALYTICS_SEARCH_PATH . '/noResultRate', $params);
         }
 
         return $this->rateOfNoResults;
@@ -182,16 +198,21 @@ class AnalyticsHelper
      *
      * @param array $params
      *
-     * @return mixed
+     * @return array<string, mixed>
      */
-    public function getTopHits(array $params)
+    public function getTopHits(array $params): array
     {
-        return $this->fetch(self::ANALYTICS_HITS_PATH, $params);
+        return $this->safeFetch(self::ANALYTICS_HITS_PATH, $params);
     }
 
-    public function getTopHitsForSearch($search, array $params)
+    /**
+     * @param $search
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getTopHitsForSearch($search, array $params): array
     {
-        return $this->fetch(self::ANALYTICS_HITS_PATH . '?search=' . urlencode($search), $params);
+        return $this->safeFetch(self::ANALYTICS_HITS_PATH . '?search=' . urlencode($search), $params);
     }
 
     /**
@@ -199,18 +220,22 @@ class AnalyticsHelper
      *
      * @param array $params
      *
-     * @return mixed
+     * @return array<string, mixed>
      */
-    public function getUsers(array $params)
+    public function getUsers(array $params): array
     {
-        if (!$this->users) {
-            $this->users = $this->fetch('/2/users/count', $params);
+        if (!isset($this->users)) {
+            $this->users = $this->safeFetch('/2/users/count', $params);
         }
 
         return $this->users;
     }
 
-    public function getTotalUsersCount(array $params)
+    /**
+     * @param array $params
+     * @return int
+     */
+    public function getTotalUsersCount(array $params): int
     {
         $users = $this->getUsers($params);
 
@@ -229,32 +254,53 @@ class AnalyticsHelper
      *
      * @param array $params
      *
-     * @return mixed
+     * @return array<string, mixed>
      */
-    public function getTopFilterAttributes(array $params)
+    public function getTopFilterAttributes(array $params): array
     {
-        return $this->fetch(self::ANALYTICS_FILTER_PATH, $params);
+        return $this->safeFetch(self::ANALYTICS_FILTER_PATH, $params);
     }
 
-    public function getTopFiltersForANoResultsSearch($search, array $params)
+    /**
+     * @param string $search
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getTopFiltersForANoResultsSearch(string $search, array $params): array
     {
-        return $this->fetch(self::ANALYTICS_FILTER_PATH . '/noResults?search=' . urlencode($search), $params);
+        return $this->safeFetch(self::ANALYTICS_FILTER_PATH . '/noResults?search=' . urlencode($search), $params);
     }
 
-    public function getTopFiltersForASearch($search, array $params)
+    /**
+     * @param string $search
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getTopFiltersForASearch(string $search, array $params): array
     {
-        return $this->fetch(self::ANALYTICS_FILTER_PATH . '?search=' . urlencode($search), $params);
+        return $this->safeFetch(self::ANALYTICS_FILTER_PATH . '?search=' . urlencode($search), $params);
     }
 
-    public function getTopFiltersForAttributesAndSearch(array $attributes, $search, array $params)
+    /**
+     * @param array $attributes
+     * @param string $search
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getTopFiltersForAttributesAndSearch(array $attributes, string $search, array $params): array
     {
-        return $this->fetch(self::ANALYTICS_FILTER_PATH . '/' . implode(',', $attributes)
+        return $this->safeFetch(self::ANALYTICS_FILTER_PATH . '/' . implode(',', $attributes)
             . '?search=' . urlencode($search), $params);
     }
 
-    public function getTopFiltersForAttribute($attribute, array $params)
+    /**
+     * @param string $attribute
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getTopFiltersForAttribute(string $attribute, array $params): array
     {
-        return $this->fetch(self::ANALYTICS_FILTER_PATH . '/' . $attribute, $params);
+        return $this->safeFetch(self::ANALYTICS_FILTER_PATH . '/' . $attribute, $params);
     }
 
     /**
@@ -262,12 +308,16 @@ class AnalyticsHelper
      *
      * @param array $params
      *
-     * @return mixed
+     * @return array<string, mixed>
      */
-    public function getAverageClickPosition(array $params)
+    public function getAverageClickPosition(array $params): array
     {
-        if (!$this->clickPositions) {
-            $this->clickPositions = $this->fetch(self::ANALYTICS_CLICKS_PATH . '/averageClickPosition', $params);
+        if (!isset($this->clickPositions)) {
+            $this->clickPositions = $this->safeFetch(
+                self::ANALYTICS_CLICKS_PATH . '/averageClickPosition',
+                $params,
+                array_fill_keys(['average', 'clickCount'], null)
+            );
         }
 
         return $this->clickPositions;
@@ -280,10 +330,18 @@ class AnalyticsHelper
         return $click && isset($click['dates']) ? $click['dates'] : [];
     }
 
-    public function getClickThroughRate(array $params)
+    /**
+     * @param array $params
+     * @return array<string,mixed>
+     */
+    public function getClickThroughRate(array $params): array
     {
-        if (!$this->clickThroughs) {
-            $this->clickThroughs = $this->fetch(self::ANALYTICS_CLICKS_PATH . '/clickThroughRate', $params);
+        if (!isset($this->clickThroughs)) {
+            $this->clickThroughs = $this->safeFetch(
+                self::ANALYTICS_CLICKS_PATH . '/clickThroughRate',
+                $params,
+                array_fill_keys(['rate', 'trackedSearchCount'], null)
+            );
         }
 
         return $this->clickThroughs;
@@ -296,10 +354,18 @@ class AnalyticsHelper
         return $click && isset($click['dates']) ? $click['dates'] : [];
     }
 
-    public function getConversionRate(array $params)
+    /**
+     * @param array $params
+     * @return array<string, mixed>
+     */
+    public function getConversionRate(array $params): array
     {
-        if (!$this->conversions) {
-            $this->conversions = $this->fetch('/2/conversions/conversionRate', $params);
+        if (!isset($this->conversions)) {
+            $this->conversions = $this->safeFetch(
+                '/2/conversions/conversionRate',
+                $params,
+                array_fill_keys(['rate', 'trackedSearchCount'], null)
+            );
         }
 
         return $this->conversions;
@@ -332,9 +398,9 @@ class AnalyticsHelper
      * @param string $path
      * @param array $params
      *
-     * @return mixed
+     * @return array<string, mixed>|false
      */
-    private function fetch($path, array $params)
+    private function fetch(string $path, array $params): array|false
     {
         $response = false;
         if ($this->fetchError) {
@@ -351,13 +417,9 @@ class AnalyticsHelper
 
             $this->setupAnalyticsClient();
 
-            $requestOptions = new RequestOptionsFactory($this->analyticsConfig);
-            $requestOptions = $requestOptions->create([]);
-
-            $requestOptions->addQueryParameters($params);
-
-            $response = $this->analyticsClient->custom('GET', $path, $requestOptions);
+            $response = $this->analyticsClient->customGet($path, $params);
         } catch (\Exception $e) {
+            // TODO: Revisit this error handling code to provide better feedback to front end with PHP connect v4 API
             $this->errors[] = $e->getMessage() . ': ' . $path;
             $this->logger->log($e->getMessage());
 
@@ -365,6 +427,18 @@ class AnalyticsHelper
         }
 
         return $response;
+    }
+
+    /**
+     * A failed request can return false - this provides a way to specify a default
+     * @param string $path
+     * @param array $params
+     * @param array $default Optional default - if not supplied will return an empty array on failed request
+     * @return array<string, mixed>
+     */
+    protected function safeFetch(string $path, array $params, array $default = []): array {
+        $value = $this->fetch($path, $params);
+        return $value !== false ? $value : $default;
     }
 
     public function getErrors()

@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
@@ -159,10 +160,11 @@ class Data
      * @param int $storeId
      * @param array|null $searchParams
      * @param string|null $targetedIndex
+     * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      *
      * @return array
      */
-    public function getSearchResult($query, $storeId, $searchParams = null, $targetedIndex = null)
+    public function getSearchResult($query, $storeId, $searchParams = null, $targetedIndex = null): array
     {
         $indexName = $targetedIndex !== null ?
             $targetedIndex :
@@ -180,7 +182,7 @@ class Data
 
         $params = [
             'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
-            'attributesToRetrieve'   => 'objectID',
+            'attributesToRetrieve'   => AlgoliaHelper::ALGOLIA_API_OBJECT_ID,
             'attributesToHighlight'  => '',
             'attributesToSnippet'    => '',
             'numericFilters'         => ['visibility_search=1'],
@@ -199,7 +201,7 @@ class Data
         $data = [];
 
         foreach ($answer['hits'] as $i => $hit) {
-            $productId = $hit['objectID'];
+            $productId = $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
 
             if ($productId) {
                 $data[$productId] = [
@@ -215,9 +217,19 @@ class Data
     }
 
     /**
+     * @param array $objects
+     * @param string $indexName
+     * @return void
+     * @throws \Exception
+     */
+    protected function saveObjects(array $objects, string $indexName): void {
+        $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled());
+    }
+
+    /**
      * @param $storeId
      * @return void
-     * @throws \Algolia\AlgoliaSearch\Exceptions\AlgoliaException
+     * @throws AlgoliaException
      */
     public function rebuildStoreAdditionalSectionsIndex($storeId)
     {
@@ -239,7 +251,7 @@ class Data
             $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
 
             foreach (array_chunk($attributeValues, 100) as $chunk) {
-                $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
+                $this->saveObjects($chunk, $indexName . '_tmp');
             }
 
             $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
@@ -253,14 +265,14 @@ class Data
      * @param $storeId
      * @param array|null $pageIds
      * @return void
-     * @throws \Algolia\AlgoliaSearch\Exceptions\AlgoliaException
+     * @throws AlgoliaException
      */
     public function rebuildStorePageIndex($storeId, array $pageIds = null)
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-        
+
         if (!$this->configHelper->isPagesIndexEnabled($storeId)) {
             $this->logger->log('Pages Indexing is not enabled for the store.');
             return;
@@ -283,7 +295,7 @@ class Data
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
-                    $this->algoliaHelper->addObjects($chunk, $toIndexName);
+                    $this->saveObjects($chunk, $toIndexName);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;
@@ -522,10 +534,10 @@ class Data
                 array_push($indexData, $suggestionObject);
             }
         }
-
         if (count($indexData) > 0) {
-            $this->algoliaHelper->addObjects($indexData, $indexName);
+            $this->saveObjects($indexData, $indexName);
         }
+
         unset($indexData);
         $collection->walk('clearInstance');
         $collection->clear();
@@ -543,7 +555,7 @@ class Data
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->algoliaHelper->addObjects($indexData['toIndex'], $indexName);
+            $this->saveObjects($indexData['toIndex'], $indexName);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
@@ -764,7 +776,7 @@ class Data
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->algoliaHelper->addObjects($indexData['toIndex'], $indexName);
+            $this->saveObjects($indexData['toIndex'], $indexName);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
@@ -847,8 +859,8 @@ class Data
         foreach (array_chunk($idsToRemove, 1000) as $chunk) {
             $objects = $this->algoliaHelper->getObjects($indexName, $chunk);
             foreach ($objects['results'] as $object) {
-                if (isset($object['objectID'])) {
-                    $toRealRemove[] = $object['objectID'];
+                if (isset($object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID])) {
+                    $toRealRemove[] = $object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
                 }
             }
         }
@@ -893,19 +905,20 @@ class Data
      * @param $storeId
      * @return void
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws AlgoliaException
      */
-    public function deleteInactiveProducts($storeId)
+    public function deleteInactiveProducts($storeId): void
     {
         $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
-        $index = $this->algoliaHelper->getIndex($indexName);
+        $client = $this->algoliaHelper->getClient();
         $objectIds = [];
         $counter = 0;
         $browseOptions = [
             'query'                => '',
-            'attributesToRetrieve' => ['objectID'],
+            'attributesToRetrieve' => [AlgoliaHelper::ALGOLIA_API_OBJECT_ID],
         ];
-        foreach ($index->browseObjects($browseOptions) as $hit) {
-            $objectIds[] = $hit['objectID'];
+        foreach ($client->browseObjects($indexName, $browseOptions) as $hit) {
+            $objectIds[] = $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
             $counter++;
             if ($counter === 1000) {
                 $this->deleteInactiveIds($storeId, $objectIds, $indexName);
@@ -919,23 +932,23 @@ class Data
     }
 
     /**
-     * @param $indexSuffix
-     * @param $storeId
-     * @param $tmp
+     * @param string $indexSuffix
+     * @param int|null $storeId
+     * @param bool $tmp
      * @return string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getIndexName($indexSuffix, $storeId = null, $tmp = false)
+    public function getIndexName(string $indexSuffix, int $storeId = null, bool $tmp = false): string
     {
         return $this->getBaseIndexName($storeId) . $indexSuffix . ($tmp ? '_tmp' : '');
     }
 
     /**
-     * @param $storeId
+     * @param int|null $storeId
      * @return string
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getBaseIndexName($storeId = null)
+    public function getBaseIndexName(int $storeId = null): string
     {
         return $this->configHelper->getIndexPrefix($storeId) . $this->storeManager->getStore($storeId)->getCode();
     }
@@ -964,8 +977,9 @@ class Data
      * @param $objectIds
      * @param $indexName
      * @return void
+     * @throws AlgoliaException
      */
-    protected function deleteInactiveIds($storeId, $objectIds, $indexName)
+    protected function deleteInactiveIds($storeId, $objectIds, $indexName): void
     {
         $collection = $this->productHelper->getProductCollectionQuery($storeId, $objectIds);
         $dbIds = $collection->getAllIds();

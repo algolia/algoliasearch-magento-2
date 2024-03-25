@@ -3,7 +3,7 @@
 $viewModel = $block->getViewModel();
 $recommendConfig =  $viewModel->getAlgoliaRecommendConfiguration();
 
-if (isset($recommendConfig['enabledFBT']) || isset($recommendConfig['enabledRelated']) || isset($recommendConfig['isTrendItemsEnabledInPDP'])):
+if (!empty($recommendConfig['enabledFBT']) || !empty($recommendConfig['enabledRelated']) || !empty($recommendConfig['isTrendItemsEnabledInPDP'])):
     $product = $viewModel->getProduct(); ?>
     <div id="frequentlyBoughtTogether" class="recommend-component"></div>
     <div id="relatedProducts" class="recommend-component"></div>

@@ -2,7 +2,7 @@
 /** @var \Algolia\AlgoliaSearch\ViewModel\Recommend\Cart $block */
 $viewModel = $block->getViewModel();
 $recommendConfig = $viewModel->getAlgoliaRecommendConfiguration();
-if (isset($recommendConfig['enabledRelatedInCart']) || isset($recommendConfig['enabledFBTInCart']) || isset($recommendConfig['isTrendItemsEnabledInCartPage'])):
+if (!empty($recommendConfig['enabledRelatedInCart']) || !empty($recommendConfig['enabledFBTInCart']) || !empty($recommendConfig['isTrendItemsEnabledInCartPage'])):
     $cartItems = $viewModel->getAllCartItems();
     ?>
     <div id="frequentlyBoughtTogether" class="recommend-component"></div>

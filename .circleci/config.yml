@@ -68,7 +68,8 @@ jobs:
   "magento-2.4":
     <<: *shared
     docker:
-      - image: algolia/magento2-circleci:2.4.4-php7.4-v1
+      #- image: algolia/magento2-circleci:2.4.4-php7.4-v1
+      - image: algolia/magento2-circleci:2.4.6
 
   "quality-tools":
     docker:
@@ -109,5 +110,5 @@ workflows:
   build:
     jobs:
       - "magento-2.4"
-      - "magento-2.3"
+      #- "magento-2.3"
       - "quality-tools"

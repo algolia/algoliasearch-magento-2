@@ -16,9 +16,9 @@ shared: &shared
     - run:
         name: Start database server
         command: |
-          sudo service mysql start
+          sudo systemctl start mariadb
           sleep 2
-          ps aux | grep mysql
+          ps aux | grep mariadb
 
     - run:
         name: Install the extension

@@ -57,6 +57,7 @@ shared: &shared
           cd ~/magento_directory/dev/tests/integration
           sudo service elasticsearch start # for some reasons has to be launched with the step
           sleep 10
+          php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:
   "magento-2.3":

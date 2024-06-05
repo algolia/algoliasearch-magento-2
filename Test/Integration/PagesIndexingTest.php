@@ -8,7 +8,7 @@ use Magento\Cms\Model\PageFactory;
 
 class PagesIndexingTest extends IndexingTestCase
 {
-    public function testOnlyOnStockProducts()
+    public function testNoExcludedPages()
     {
         $this->setConfig(
             'algoliasearch_autocomplete/autocomplete/excluded_pages',

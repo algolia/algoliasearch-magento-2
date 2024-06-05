@@ -16,9 +16,9 @@ shared: &shared
     - run:
         name: Start database server
         command: |
-          sudo systemctl start mariadb
+          sudo service mysql start
           sleep 2
-          ps aux | grep mariadb
+          ps aux | grep mysql
 
     - run:
         name: Install the extension
@@ -57,7 +57,6 @@ shared: &shared
           cd ~/magento_directory/dev/tests/integration
           sudo service elasticsearch start # for some reasons has to be launched with the step
           sleep 10
-          php -dmemory_limit=-1 ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test
 
 jobs:
   "magento-2.3":
@@ -68,8 +67,7 @@ jobs:
   "magento-2.4":
     <<: *shared
     docker:
-      #- image: algolia/magento2-circleci:2.4.4-php7.4-v1
-      - image: algolia/magento2-circleci:2.4.6
+      - image: algolia/magento2-circleci:2.4.4-php7.4-v1
 
   "quality-tools":
     docker:
@@ -110,5 +108,5 @@ workflows:
   build:
     jobs:
       - "magento-2.4"
-      #- "magento-2.3"
+      - "magento-2.3"
       - "quality-tools"

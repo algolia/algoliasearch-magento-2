@@ -96,7 +96,7 @@ class Queue
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
         $this->archiveTable = $resourceConnection->getTableName('algoliasearch_queue_archive');
 
-        //$this->db = $resourceConnection->getConnection();
+//        $this->db = $resourceConnection->getConnection();
 
         $this->objectManager = $objectManager;
         $this->db = $objectManager->create(ResourceConnection::class)->getConnection('core_write');
@@ -380,7 +380,7 @@ class Queue
      * @return Job[]
      *
      */
-    protected function getJobs($maxJobs)
+    protected function getJobs($maxJobs, $doLock = true)
     {
         $maxJobs = ($maxJobs === -1) ? $this->configHelper->getNumberOfJobToRun() : $maxJobs;
 
@@ -408,7 +408,9 @@ class Queue
                 $jobs = array_merge($jobs, $restFullReindexJobs);
             }
 
-            $this->lockJobs($jobs);
+            if ($doLock) {
+                $this->lockJobs($jobs);
+            }
 
             $this->db->commit();
         } catch (Exception $e) {

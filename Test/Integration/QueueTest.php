@@ -13,6 +13,8 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 
 class QueueTest extends TestCase
 {
+    private const INCOMPLETE_REASON = "Must revisit transaction handling across connections.";
+
     /** @var JobsCollectionFactory */
     private $jobsCollectionFactory;
 
@@ -77,136 +79,150 @@ class QueueTest extends TestCase
         }
     }
 
-    /** @depends testFill */
-//    public function testExecute()
-//    {
-//        $this->setConfig('algoliasearch_queue/queue/active', '1');
-//
-//        /** @var Queue $queue */
-//        $queue = $this->getObjectManager()->create(Queue::class);
-//
-//        // Run the first two jobs - saveSettings, batch
-//        $queue->runCron(2, true);
-//
-//        $this->algoliaHelper->waitLastTask();
-//
-//        $indices = $this->algoliaHelper->listIndexes();
-//
-//        $existsDefaultTmpIndex = false;
-//        foreach ($indices['items'] as $index) {
-//            if ($index['name'] === $this->indexPrefix . 'default_products_tmp') {
-//                $existsDefaultTmpIndex = true;
-//            }
-//        }
-//
-//        $this->assertTrue($existsDefaultTmpIndex, 'Default products production index does not exists and it should');
-//
-//        // Run the second two jobs - batch, move
-//        $queue->runCron(2, true);
-//
-//        $this->algoliaHelper->waitLastTask();
-//
-//        $indices = $this->algoliaHelper->listIndexes();
-//
-//        $existsDefaultProdIndex = false;
-//        $existsDefaultTmpIndex = false;
-//        foreach ($indices['items'] as $index) {
-//            if ($index['name'] === $this->indexPrefix . 'default_products') {
-//                $existsDefaultProdIndex = true;
-//            }
-//
-//            if ($index['name'] === $this->indexPrefix . 'default_products_tmp') {
-//                $existsDefaultTmpIndex = true;
-//            }
-//        }
-//
-//        $this->assertFalse($existsDefaultTmpIndex, 'Default product TMP index exists and it should not'); // Was already moved
-//        $this->assertTrue($existsDefaultProdIndex, 'Default product production index does not exists and it should');
-//
-//        /** TODO: There are mystery items being added to queue from unknown save process on product_id=1 */
-//        /* $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-//        $this->assertEquals(0, count($rows)); */
-//    }
+    /**
+     * @depends testFill
+     * @magentoDbIsolation disabled
+     */
+    public function testExecute()
+    {
+        $this->markTestIncomplete(self::INCOMPLETE_REASON);
 
-//    public function testSettings()
-//    {
-//        $this->resetConfigs([
-//            'algoliasearch_queue/queue/number_of_job_to_run',
-//            'algoliasearch_advanced/queue/number_of_element_by_page',
-//            'algoliasearch_instant/instant/facets',
-//            'algoliasearch_products/products/product_additional_attributes',
-//        ]);
-//
-//        $this->setConfig('algoliasearch_queue/queue/active', '1');
-//
-//        $this->connection->query('DELETE FROM algoliasearch_queue');
-//
-//        // Reindex products multiple times
-//        /** @var Product $indexer */
-//        $indexer = $this->getObjectManager()->create(Product::class);
-//        $indexer->executeFull();
-//        $indexer->executeFull();
-//        $indexer->executeFull();
-//
-//        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-//        $this->assertEquals(9, count($rows));
-//
-//        // Process the whole queue
-//        /** @var QueueRunner $queueRunner */
-//        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
-//        $queueRunner->executeFull();
-//        $queueRunner->executeFull();
-//        $queueRunner->executeFull();
-//
-//        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-//        $this->assertEquals(0, count($rows));
-//
-//        $this->algoliaHelper->waitLastTask();
-//
-//        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
-//        $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
-//        $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
-//    }
-//
-//    public function testMergeSettings()
-//    {
-//        $this->setConfig('algoliasearch_queue/queue/active', '1');
-//        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 1);
-//        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 300);
-//
-//        $this->connection->query('DELETE FROM algoliasearch_queue');
-//
-//        /** @var Product $productIndexer */
-//        $productIndexer = $this->getObjectManager()->create(Product::class);
-//        $productIndexer->executeFull();
-//
-//        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-//        $this->assertCount(3, $rows);
-//
-//        $productionIndexName = $this->indexPrefix . 'default_products';
-//
-//        $res = $this->algoliaHelper->getIndex($productionIndexName)->setSettings(['disableTypoToleranceOnAttributes' => ['sku']]);
-//        $this->algoliaHelper->waitLastTask($productionIndexName, $res['taskID']);
-//
-//        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
-//        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
-//
-//        /** @var QueueRunner $queueRunner */
-//        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
-//        $queueRunner->executeFull();
-//
-//        $this->algoliaHelper->waitLastTask();
-//
-//        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products_tmp')->getSettings();
-//        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
-//
-//        $queueRunner->executeFull();
-//        $queueRunner->executeFull();
-//
-//        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
-//        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
-//    }
-//
+        $this->setConfig('algoliasearch_queue/queue/active', '1');
+
+        /** @var Queue $queue */
+        $queue = $this->getObjectManager()->create(Queue::class);
+
+        // Run the first two jobs - saveSettings, batch
+        $queue->runCron(2, true);
+
+        $this->algoliaHelper->waitLastTask();
+
+        $indices = $this->algoliaHelper->listIndexes();
+
+        $existsDefaultTmpIndex = false;
+        foreach ($indices['items'] as $index) {
+            if ($index['name'] === $this->indexPrefix . 'default_products_tmp') {
+                $existsDefaultTmpIndex = true;
+            }
+        }
+
+        $this->assertTrue($existsDefaultTmpIndex, 'Default products production index does not exists and it should');
+
+        // Run the second two jobs - batch, move
+        $queue->runCron(2, true);
+
+        $this->algoliaHelper->waitLastTask();
+
+        $indices = $this->algoliaHelper->listIndexes();
+
+        $existsDefaultProdIndex = false;
+        $existsDefaultTmpIndex = false;
+        foreach ($indices['items'] as $index) {
+            if ($index['name'] === $this->indexPrefix . 'default_products') {
+                $existsDefaultProdIndex = true;
+            }
+
+            if ($index['name'] === $this->indexPrefix . 'default_products_tmp') {
+                $existsDefaultTmpIndex = true;
+            }
+        }
+
+        $this->assertFalse($existsDefaultTmpIndex, 'Default product TMP index exists and it should not'); // Was already moved
+        $this->assertTrue($existsDefaultProdIndex, 'Default product production index does not exists and it should');
+
+        /** TODO: There are mystery items being added to queue from unknown save process on product_id=1 */
+        /* $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertEquals(0, count($rows)); */
+    }
+
+    /**
+     * @magentoDbIsolation disabled
+     */
+    public function testSettings()
+    {
+        $this->resetConfigs([
+            'algoliasearch_queue/queue/number_of_job_to_run',
+            'algoliasearch_advanced/queue/number_of_element_by_page',
+            'algoliasearch_instant/instant/facets',
+            'algoliasearch_products/products/product_additional_attributes',
+        ]);
+
+        $this->setConfig('algoliasearch_queue/queue/active', '1');
+
+        $this->connection->query('DELETE FROM algoliasearch_queue');
+
+        // Reindex products multiple times
+        /** @var Product $indexer */
+        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer->executeFull();
+        $indexer->executeFull();
+        $indexer->executeFull();
+
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertEquals(9, count($rows));
+
+        // Process the whole queue
+        /** @var QueueRunner $queueRunner */
+        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
+        $queueRunner->executeFull();
+        $queueRunner->executeFull();
+        $queueRunner->executeFull();
+
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertEquals(0, count($rows));
+
+        $this->algoliaHelper->waitLastTask();
+
+        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
+        $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
+    }
+
+    /**
+     * @magentoDbIsolation disabled
+     */
+    public function testMergeSettings()
+    {
+        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 1);
+        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 300);
+
+        $this->connection->query('DELETE FROM algoliasearch_queue');
+
+        /** @var Product $productIndexer */
+        $productIndexer = $this->getObjectManager()->create(Product::class);
+        $productIndexer->executeFull();
+
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertCount(3, $rows);
+
+        $productionIndexName = $this->indexPrefix . 'default_products';
+
+        $res = $this->algoliaHelper->getIndex($productionIndexName)->setSettings(['disableTypoToleranceOnAttributes' => ['sku']]);
+        $this->algoliaHelper->waitLastTask($productionIndexName, $res['taskID']);
+
+        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
+        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
+
+        /** @var QueueRunner $queueRunner */
+        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
+        $queueRunner->executeFull();
+
+        $this->algoliaHelper->waitLastTask();
+
+        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products_tmp')->getSettings();
+        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
+
+        $queueRunner->executeFull();
+        $queueRunner->executeFull();
+
+        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
+        $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
+    }
+
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMerging()
     {
         $this->connection->query('DELETE FROM algoliasearch_queue');
@@ -418,6 +434,9 @@ class QueueTest extends TestCase
         $this->assertEquals($expectedProductJob, $productJob->toArray());
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMergingWithStaticMethods()
     {
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
@@ -568,8 +587,13 @@ class QueueTest extends TestCase
         $this->assertEquals('rebuildStoreProductIndex', $jobs[11]->getMethod());
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testGetJobs()
     {
+        $this->markTestIncomplete(self::INCOMPLETE_REASON);
+
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         $data = [
@@ -710,8 +734,8 @@ class QueueTest extends TestCase
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
-//        $pid = getmypid();
-        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10, 'doLock' => false]);
+        $pid = getmypid();
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
         $this->assertEquals(6, count($jobs));
 
         $expectedFirstJob = [
@@ -778,11 +802,14 @@ class QueueTest extends TestCase
 
         $this->assertEquals(12, count($dbJobs));
 
-//        foreach ($dbJobs as $dbJob) {
-//            $this->assertEquals($pid, $dbJob['pid']);
-//        }
+        foreach ($dbJobs as $dbJob) {
+            $this->assertEquals($pid, $dbJob['pid']);
+        }
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testHugeJob()
     {
         // Default value - maxBatchSize = 1000
@@ -797,9 +824,9 @@ class QueueTest extends TestCase
             (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":' . $jsonProductIds . '}\', 3, 0, \'\', 5000),
             (2, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"2","product_ids":["9","22"]}\', 3, 0, \'\', 2);');
 
-//        $pid = getmypid();
+        $pid = getmypid();
         /** @var Job[] $jobs */
-        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10, 'doLock' => false]);
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
 
         $this->assertEquals(1, count($jobs));
 
@@ -811,13 +838,16 @@ class QueueTest extends TestCase
 
         $this->assertEquals(2, count($dbJobs));
 
-//        $firstJob = reset($dbJobs);
-//        $lastJob = end($dbJobs);
+        $firstJob = reset($dbJobs);
+        $lastJob = end($dbJobs);
 
-//        $this->assertEquals($pid, $firstJob['pid']);
-//        $this->assertNull($lastJob['pid']);
+        $this->assertEquals($pid, $firstJob['pid']);
+        $this->assertNull($lastJob['pid']);
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMaxSingleJobSize()
     {
         // Default value - maxBatchSize = 1000
@@ -832,10 +862,10 @@ class QueueTest extends TestCase
             (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":' . $jsonProductIds . '}\', 3, 0, \'\', 99),
             (2, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"2","product_ids":["9","22"]}\', 3, 0, \'\', 2);');
 
-//        $pid = getmypid();
+        $pid = getmypid();
 
         /** @var Job[] $jobs */
-        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10, 'doLock' => false]);
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
 
         $this->assertEquals(2, count($jobs));
 
@@ -852,13 +882,16 @@ class QueueTest extends TestCase
 
         $this->assertEquals(2, count($dbJobs));
 
-//        $firstJob = reset($dbJobs);
-//        $lastJob = end($dbJobs);
-//
-//        $this->assertEquals($pid, $firstJob['pid']);
-//        $this->assertEquals($pid, $lastJob['pid']);
+        $firstJob = reset($dbJobs);
+        $lastJob = end($dbJobs);
+
+        $this->assertEquals($pid, $firstJob['pid']);
+        $this->assertEquals($pid, $lastJob['pid']);
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMaxSingleJobsSizeOnProductReindex()
     {
         $this->resetConfigs([

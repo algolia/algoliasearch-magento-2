@@ -6,10 +6,8 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento244;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_01;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_2;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento_2_3;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento23;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento24;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -19,10 +17,6 @@ if (class_exists('PHPUnit\Framework\TestCase')) {
     class_alias('PHPUnit\Framework\TestCase', '\TC');
 } else {
     class_alias('\PHPUnit_Framework_TestCase', '\TC');
-}
-
-if (class_exists('\Algolia\AlgoliaSearch\Test\Integration\AssertValues_2_01')) {
-    class_alias('\Algolia\AlgoliaSearch\Test\Integration\AssertValues_2_01', 'AssertValues');
 }
 
 abstract class TestCase extends \TC
@@ -39,7 +33,7 @@ abstract class TestCase extends \TC
     /** @var ConfigHelper */
     protected $configHelper;
 
-    /** @var Magento_2_01|Magento_2_2 */
+    /** @var Magento23|Magento24 */
     protected $assertValues;
 
     public function setUp(): void
@@ -103,14 +97,10 @@ abstract class TestCase extends \TC
             return;
         }
 
-        if (version_compare($this->getMagentoVersion(), '2.2.0', '<')) {
-            $this->assertValues = new Magento_2_01();
-        } elseif (version_compare($this->getMagentoVersion(), '2.3.0', '<')) {
-            $this->assertValues = new Magento_2_2();
-        } elseif (version_compare($this->getMagentoVersion(), '2.4.3', '<=')) {
-            $this->assertValues = new Magento_2_3();
+        if (version_compare($this->getMagentoVersion(), '2.4.0', '<')) {
+            $this->assertValues = new Magento23();
         } else {
-            $this->assertValues = new Magento244();
+            $this->assertValues = new Magento24();
         }
 
         $this->configHelper = $this->getObjectManager()->create(ConfigHelper::class);

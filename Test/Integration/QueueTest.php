@@ -21,6 +21,9 @@ class QueueTest extends TestCase
     /** @var AdapterInterface */
     private $connection;
 
+    /** @var Queue */
+    private $queue;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -30,13 +33,15 @@ class QueueTest extends TestCase
         /** @var ResourceConnection $resouce */
         $resouce = $this->getObjectManager()->create(ResourceConnection::class);
         $this->connection = $resouce->getConnection();
+
+        $this->queue = $this->getObjectManager()->create(Queue::class);
     }
 
     public function testFill()
     {
         $this->resetConfigs([
             'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/advanced/number_of_element_by_page',
+            'algoliasearch_advanced/queue/number_of_element_by_page',
         ]);
 
         $this->setConfig('algoliasearch_queue/queue/active', '1');
@@ -136,7 +141,7 @@ class QueueTest extends TestCase
 
         $this->resetConfigs([
             'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/advanced/number_of_element_by_page',
+            'algoliasearch_advanced/queue/number_of_element_by_page',
             'algoliasearch_instant/instant/facets',
             'algoliasearch_products/products/product_additional_attributes',
         ]);
@@ -172,13 +177,14 @@ class QueueTest extends TestCase
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMergeSettings()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-
         $this->setConfig('algoliasearch_queue/queue/active', '1');
         $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 1);
-        $this->setConfig('algoliasearch_advanced/advanced/number_of_element_by_page', 300);
+        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 300);
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
@@ -213,10 +219,11 @@ class QueueTest extends TestCase
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMerging()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-        
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
         $data = [
@@ -357,13 +364,10 @@ class QueueTest extends TestCase
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
-        /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
-
         $jobs = $this->jobsCollectionFactory->create()->getItems();
         // $jobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
-        $mergedJobs = array_values($this->invokeMethod($queue, 'mergeJobs', [$jobs]));
+        $mergedJobs = array_values($this->invokeMethod($this->queue, 'mergeJobs', [$jobs]));
         $this->assertEquals(6, count($mergedJobs));
 
         $expectedCategoryJob = [
@@ -389,6 +393,7 @@ class QueueTest extends TestCase
                 ],
             ],
             'locked_at' => null,
+            'debug' => null,
         ];
 
         /** @var Job $categoryJob */
@@ -417,6 +422,7 @@ class QueueTest extends TestCase
                 ],
             ],
             'locked_at' => null,
+            'debug' => null,
         ];
 
         /** @var Job $productJob */
@@ -424,6 +430,9 @@ class QueueTest extends TestCase
         $this->assertEquals($expectedProductJob, $productJob->toArray());
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMergingWithStaticMethods()
     {
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
@@ -552,15 +561,12 @@ class QueueTest extends TestCase
             ],
         ];
 
-        /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
-
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
         /** @var Job[] $jobs */
         $jobs = $this->jobsCollectionFactory->create()->getItems();
 
-        $jobs = array_values($this->invokeMethod($queue, 'mergeJobs', [$jobs]));
+        $jobs = array_values($this->invokeMethod($this->queue, 'mergeJobs', [$jobs]));
         $this->assertEquals(12, count($jobs));
 
         $this->assertEquals('rebuildStoreCategoryIndex', $jobs[0]->getMethod());
@@ -577,6 +583,9 @@ class QueueTest extends TestCase
         $this->assertEquals('rebuildStoreProductIndex', $jobs[11]->getMethod());
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testGetJobs()
     {
         $this->markTestIncomplete(self::INCOMPLETE_REASON);
@@ -721,11 +730,8 @@ class QueueTest extends TestCase
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
-        /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
-
         $pid = getmypid();
-        $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10]);
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
         $this->assertEquals(6, count($jobs));
 
         $expectedFirstJob = [
@@ -751,6 +757,7 @@ class QueueTest extends TestCase
                 ],
             ],
             'locked_at' => null,
+            'debug' => null,
         ];
 
         $expectedLastJob = [
@@ -775,6 +782,7 @@ class QueueTest extends TestCase
                 ],
             ],
             'locked_at' => null,
+            'debug' => null,
         ];
 
         /** @var Job $firstJob */
@@ -795,10 +803,11 @@ class QueueTest extends TestCase
         }
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testHugeJob()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-
         // Default value - maxBatchSize = 1000
         $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
         $this->setConfig('algoliasearch_advanced/advanced/number_of_element_by_page', 100);
@@ -811,12 +820,9 @@ class QueueTest extends TestCase
             (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":' . $jsonProductIds . '}\', 3, 0, \'\', 5000),
             (2, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"2","product_ids":["9","22"]}\', 3, 0, \'\', 2);');
 
-        /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
-
         $pid = getmypid();
         /** @var Job[] $jobs */
-        $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10]);
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
 
         $this->assertEquals(1, count($jobs));
 
@@ -835,13 +841,14 @@ class QueueTest extends TestCase
         $this->assertNull($lastJob['pid']);
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMaxSingleJobSize()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-
         // Default value - maxBatchSize = 1000
         $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/advanced/number_of_element_by_page', 100);
+        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
 
         $productIds = range(1, 99);
         $jsonProductIds = json_encode($productIds);
@@ -851,13 +858,10 @@ class QueueTest extends TestCase
             (1, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"1","product_ids":' . $jsonProductIds . '}\', 3, 0, \'\', 99),
             (2, NULL, \'class\', \'rebuildStoreProductIndex\', \'{"store_id":"2","product_ids":["9","22"]}\', 3, 0, \'\', 2);');
 
-        /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
-
         $pid = getmypid();
 
         /** @var Job[] $jobs */
-        $jobs = $this->invokeMethod($queue, 'getJobs', ['maxJobs' => 10]);
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
 
         $this->assertEquals(2, count($jobs));
 
@@ -881,19 +885,20 @@ class QueueTest extends TestCase
         $this->assertEquals($pid, $lastJob['pid']);
     }
 
+    /**
+     * @magentoDbIsolation disabled
+     */
     public function testMaxSingleJobsSizeOnProductReindex()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-
         $this->resetConfigs([
             'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/advanced/number_of_element_by_page',
+            'algoliasearch_advanced/queue/number_of_element_by_page',
         ]);
 
         $this->setConfig('algoliasearch_queue/queue/active', '1');
 
         $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/advanced/number_of_element_by_page', 100);
+        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 

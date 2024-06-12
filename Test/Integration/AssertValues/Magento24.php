@@ -2,14 +2,14 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\AssertValues;
 
-class Magento244
+class Magento24
 {
     public $productsOnStockCount = 180;
-    public $productsOutOfStockCount = 183;
+    public $productsOutOfStockCount = 181;
     public $lastJobDataSize = 13;
-    public $expectedCategory = 17;
+    public $expectedCategory = 16;
     public $attributesForFaceting = 5;
     public $automaticalSetOfCategoryAttributesForFaceting = 4;
-    public $expectedPages = 9;
-    public $expectedExcludePages = 7;
+    public $expectedPages = 6;
+    public $expectedExcludePages = 4;
 }

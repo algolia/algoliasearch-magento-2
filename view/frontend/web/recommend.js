@@ -35,6 +35,9 @@ define([
                             }));
                         },
                         headerComponent({html}) {
+                            if (this.props.recommendations.length === 0) {
+                                return html
+                            }
                             return recommendProductsHtml.getHeaderHtml(html,algoliaConfig.recommend.FBTTitle);
                         },
                         itemComponent({item, html}) {
@@ -56,6 +59,9 @@ define([
                             }));
                         },
                         headerComponent({html}) {
+                            if (this.props.recommendations.length === 0) {
+                                return html;
+                            }
                             return recommendProductsHtml.getHeaderHtml(html,algoliaConfig.recommend.relatedProductsTitle);
                         },
                         itemComponent({item, html}) {
@@ -80,6 +86,9 @@ define([
                         }));
                     },
                     headerComponent({html}) {
+                        if (this.props.recommendations.length === 0) {
+                            return html;
+                        }
                         return recommendProductsHtml.getHeaderHtml(html,algoliaConfig.recommend.trendingItemsTitle);
                     },
                     itemComponent({item, html}) {

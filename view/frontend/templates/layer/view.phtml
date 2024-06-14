@@ -1,3 +1,7 @@
+<?php
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+?>
+
 <?php if ($block->canShowBlock()) : ?>
     <div class="block filter algolia-filter-list" id="layered-filter-block" data-mage-init='{"collapsible":{"openedState": "active", "collapsible": true, "active": false, "collateral": { "openedState": "filter-active", "element": "body" } }}'>
         <?php $filtered = count($block->getLayer()->getState()->getFilters()) ?>
@@ -30,13 +34,15 @@
             <?php if ($wrapOptions) : ?>
                 </div>
             <?php else : ?>
-                <script>
-                    require([
-                        'jquery'
-                    ], function ($) {
-                        $('#layered-filter-block').addClass('filter-no-options');
-                    });
-                </script>
+                <?php $scriptString = <<<script
+                require([
+                    'jquery'
+                ], function ($) {
+                    $('#layered-filter-block').addClass('filter-no-options');
+                });
+    script;
+                ?>
+                <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false); ?>
             <?php endif; ?>
         </div>
     </div>

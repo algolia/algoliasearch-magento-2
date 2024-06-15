@@ -85,7 +85,7 @@ $job = $block->getCurrentJob();
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><<?php echo $block->escapeHtml(__('Data Size')); ?></span></label>
+                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Data Size')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
                         <?php echo $block->escapeHtml($job->getDataSize()); ?>

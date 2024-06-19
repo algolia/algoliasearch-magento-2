@@ -402,7 +402,7 @@ class Queue
             if ($jobsCount > 0 && $jobsCount < $maxJobs) {
                 $restLimit = $maxJobs - $jobsCount;
 
-                if (count($fullReindexJobs)) {
+                if ($fullReindexJobsCount > 0) {
                     $lastFullReindexJobId = max($this->getJobsIdsFromMergedJobs($fullReindexJobs));
                 } else {
                     $lastFullReindexJobId = max($this->getJobsIdsFromMergedJobs($jobs));

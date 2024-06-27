@@ -14,7 +14,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
         return acc;
     }, {});
 
-    window.algolia = {  
+    window.algolia = {
         deprecatedHooks: [
             'beforeAutocompleteProductSourceOptions',
             'beforeAutocompleteSources'
@@ -85,7 +85,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
         htmlspecialcharsEncode: string => {
             const regex = new RegExp(`[${Object.keys(SPECIAL_CHAR_ENCODE_MAP).join('')}]`, 'g');
             return string.replace(regex, (m) => SPECIAL_CHAR_ENCODE_MAP[m]);
-        } 
+        }
     };
 
     window.isMobile = function () {
@@ -629,7 +629,9 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
             var input = $(this).closest('#algolia-searchbox').find('input');
 
             input.val('');
-            input.length ?  input.get(0)?.dispatchEvent(new Event('input')) : null
+            if (input.length) {
+                input.get(0)?.dispatchEvent(new Event('input'));
+            }
 
             handleInputCrossAutocomplete(input);
         });

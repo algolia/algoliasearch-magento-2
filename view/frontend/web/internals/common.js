@@ -629,7 +629,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
             var input = $(this).closest('#algolia-searchbox').find('input');
 
             input.val('');
-            input.get(0).dispatchEvent(new Event('input'));
+            input.length ?  input.get(0)?.dispatchEvent(new Event('input')) : null
 
             handleInputCrossAutocomplete(input);
         });

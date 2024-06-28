@@ -11,7 +11,7 @@
     width: 110px;
     margin: 0 auto;
 }
-.recommend-component {
+#algoliaRecommend .recommend-component {
     margin-bottom: 80px;
 }
 #relatedProducts .auc-Recommend-list, #frequentlyBoughtTogether .auc-Recommend-list, .trendsItem  .auc-Recommend-list{

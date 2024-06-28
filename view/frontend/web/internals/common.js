@@ -630,7 +630,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
 
             input.val('');
             if (input.length) {
-                input.get(0)?.dispatchEvent(new Event('input'));
+                input.get(0).dispatchEvent(new Event('input'));
             }
 
             handleInputCrossAutocomplete(input);

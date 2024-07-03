@@ -14,10 +14,12 @@ if (!empty($recommendConfig['enabledFBT'])
     || !empty($recommendConfig['isTrendItemsEnabledInPDP'])
     || !empty($recommendConfig['isLookingSimilarEnabledInPDP'])):
     $product = $viewModel->getProduct(); ?>
-    <div id="frequentlyBoughtTogether" class="recommend-component"></div>
-    <div id="relatedProducts" class="recommend-component"></div>
-    <div id="trendItems" class="trendsItem recommend-component"></div>
-    <div id="lookingSimilar" class="lookingSimilar recommend-component"></div>
+    <div id="algoliaRecommend">
+        <div id="frequentlyBoughtTogether" class="recommend-component"></div>
+        <div id="relatedProducts" class="recommend-component"></div>
+        <div id="trendItems" class="trendsItem recommend-component"></div>
+        <div id="lookingSimilar" class="lookingSimilar recommend-component"></div>
+    </div>
     <script type="text/x-magento-init">
         {
             "*": {

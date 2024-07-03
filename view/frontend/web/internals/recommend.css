@@ -1,0 +1,100 @@
+#algoliaRecommend .recommend-item .product-img {
+    width: 180px;
+}
+#algoliaRecommend .auc-Recommend-list {
+    display: flex;
+    justify-content: space-evenly;
+    list-style: none;
+}
+#algoliaRecommend .recommend-item .product-name {
+    height: 50px;
+    width: 110px;
+    margin: 0 auto;
+}
+#algoliaRecommend .recommend-component {
+    margin-bottom: 80px;
+}
+
+#algoliaRecommend #relatedProducts .auc-Recommend-list,
+#algoliaRecommend #frequentlyBoughtTogether .auc-Recommend-list,
+#algoliaRecommend #lookingSimilar .auc-Recommend-list,
+#algoliaRecommend .trendsItem  .auc-Recommend-list {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+#algoliaRecommend #relatedProducts li,
+#algoliaRecommend #frequentlyBoughtTogether li,
+#algoliaRecommend #lookingSimilar li,
+#algoliaRecommend .trendsItem li {
+    display: flex;
+    justify-content: center;
+    width: 16.66666667%;
+}
+#algoliaRecommend #relatedProducts li a,
+#algoliaRecommend #frequentlyBoughtTogether li a,
+#algoliaRecommend #lookingSimilar li a,
+#algoliaRecommend .trendsItem li a {
+    color: inherit;
+    display: block;
+}
+#algoliaRecommend #relatedProducts .product-name,
+#algoliaRecommend #frequentlyBoughtTogether .product-name,
+#algoliaRecommend #lookingSimilar .product-name,
+#algoliaRecommend #trendItems .product-name,
+#algoliaRecommend .trendsItem .product-name{
+    text-align: center;
+    width: 150px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-height: 42px;
+    height: 42px;
+    white-space: normal;
+    line-height: 2rem;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+}
+#algoliaRecommend #trendItems a,
+#algoliaRecommend #trendItems a:hover,
+#algoliaRecommend .trendsItem a,
+#algoliaRecommend .trendsItem a:hover{
+    color:#333;
+}
+#algoliaRecommend .auc-Recommend-item .product-details {
+    text-align: center;
+}
+#algoliaRecommend #trendItems .auc-Recommend-list{
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+#algoliaRecommend .product-details .recommend-item .action.primary,
+#algoliaRecommend .action-primary{
+    background: #f4f4f4;
+    border: 1px solid #f4f4f4;
+    color: #666666;
+}
+#algoliaRecommend .product-details .recommend-item .action.primary:hover,
+#algoliaRecommend .action-primary:hover {
+    border-color: #1979c3;
+    background: #1979c3;
+    color: #FFFFFF;
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+    #algoliaRecommend #relatedProducts li,
+    #algoliaRecommend #frequentlyBoughtTogether li,
+    #algoliaRecommend #lookingSimilar li,
+    #algoliaRecommend #trendItems li {
+        width: 33.33333333%;
+    }
+}
+@media (max-width: 767px) {
+    #algoliaRecommend #relatedProducts li,
+    #algoliaRecommend #frequentlyBoughtTogether li,
+    #algoliaRecommend #lookingSimilar li,
+    #algoliaRecommend #trendItems li {
+        width: 50%;
+    }
+}
+#algoliaRecommend h3.auc-Recommend-title {
+    padding-bottom: 20px;
+}

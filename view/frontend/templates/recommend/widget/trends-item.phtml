@@ -3,7 +3,9 @@
 $isEnabled = $block->isTrendingItemEnabled();
 if ($isEnabled):
     $trendConstainer =  'trendItems' . $block->generateUniqueToken(); ?>
-    <div id="<?= $trendConstainer ?>" class="trendsItem recommend-component"></div>
+    <div id="algoliaRecommend">
+        <div id="<?= $trendConstainer ?>" class="trendsItem recommend-component"></div>
+    </div>
     <script type="text/x-magento-init">
         {
             "*": {

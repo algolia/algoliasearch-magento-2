@@ -1,18 +1,31 @@
 <?php
 
 /** @var \Algolia\AlgoliaSearch\Block\Configuration $block */
-/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
 
 $configuration = $block->getConfiguration();
 
-?>
+if (class_exists('\Magento\Framework\View\Helper\SecureHtmlRenderer')) : ?>
+    <?php
+        /** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+        if ($configuration['instant']['enabled'] === true && $configuration['isSearchPage'] === true)  {
+            $css = /* @noEscape */ $secureRenderer->renderTag('style', [],  $configuration['instant']['selector'] . ' {display:none}', false);
+            /* @noEscape */ echo $secureRenderer->renderTag('script', [], 'document.write(\'' . $css . '\');' , false);
+        }
+    ?>
 
-<?php
-if ($configuration['instant']['enabled'] === true && $configuration['isSearchPage'] === true)  {
-    $css = /* @noEscape */ $secureRenderer->renderTag('style', [],  $configuration['instant']['selector'] . ' {display:none}', false);
-    /* @noEscape */ echo $secureRenderer->renderTag('script', [], 'document.write(\'' . $css . '\');' , false);
-}
-?>
+    <?= /* @noEscape */ $secureRenderer->renderTag('script', [], "window.algoliaConfig = " . json_encode($configuration) . ';' , false); ?>
+<?php else: ?>
+    <script>
+        <?php
+        if ($configuration['instant']['enabled'] === true && $configuration['isSearchPage'] === true) :
+        $css = '<style type="text/css">' . $configuration['instant']['selector'] . ' {display:none}</style>';
+        ?>
+        // Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
+        document.write('<?php /* @noEscape */ echo $css; ?>');
+        <?php
+        endif;
+        ?>
 
-<?= /* @noEscape */ $secureRenderer->renderTag('script', [], "window.algoliaConfig = " . json_encode($configuration) . ';' , false); ?>
-
+        window.algoliaConfig = <?php /* @noEscape */ echo json_encode($configuration); ?>;
+    </script>
+<?php endif; ?>

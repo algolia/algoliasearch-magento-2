@@ -292,7 +292,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'popularQueries' => $suggestionHelper->getPopularQueries($this->getStoreId()),
             'useAdaptiveImage' => $config->useAdaptiveImage(),
             'urls' => [
-                'logo' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/algolia-logo-blue.svg'),
+                'logo' => $this->getViewFileUrl('Algolia_AlgoliaSearch::js/images/algolia-logo-blue.svg'),
             ],
             'cookieConfiguration' => [
                 'customerTokenCookie' => InsightsHelper::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME,

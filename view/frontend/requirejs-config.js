@@ -9,14 +9,14 @@ var config = {
             'algoliaHooks'        : 'Algolia_AlgoliaSearch/js/hooks',
 
             // Autocomplete templates
-            'productsHtml'   : 'Algolia_AlgoliaSearch/js/internals/template/autocomplete/products',
-            'pagesHtml'      : 'Algolia_AlgoliaSearch/js/internals/template/autocomplete/pages',
-            'categoriesHtml' : 'Algolia_AlgoliaSearch/js/internals/template/autocomplete/categories',
-            'suggestionsHtml': 'Algolia_AlgoliaSearch/js/internals/template/autocomplete/suggestions',
-            'additionalHtml' : 'Algolia_AlgoliaSearch/js/internals/template/autocomplete/additional-section',
+            'productsHtml'   : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',
+            'pagesHtml'      : 'Algolia_AlgoliaSearch/js/template/autocomplete/pages',
+            'categoriesHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/categories',
+            'suggestionsHtml': 'Algolia_AlgoliaSearch/js/template/autocomplete/suggestions',
+            'additionalHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/additional-section',
 
             // Recommend templates
-            'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/internals/template/recommend/products'
+            'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products'
         }
     },
     paths : {

@@ -34,7 +34,10 @@ define([
                                 position: index + 1,
                             }));
                         },
-                        headerComponent({html}) {
+                        headerComponent({html, recommendations}) {
+                            if (!recommendations.length) {
+                                return '';
+                            }
                             return recommendProductsHtml.getHeaderHtml(html,algoliaConfig.recommend.FBTTitle);
                         },
                         itemComponent({item, html}) {
@@ -55,7 +58,10 @@ define([
                                 position: index + 1,
                             }));
                         },
-                        headerComponent({html}) {
+                        headerComponent({html, recommendations}) {
+                            if (!recommendations.length) {
+                                return '';
+                            }
                             return recommendProductsHtml.getHeaderHtml(html,algoliaConfig.recommend.relatedProductsTitle);
                         },
                         itemComponent({item, html}) {
@@ -79,7 +85,10 @@ define([
                             position: index + 1,
                         }));
                     },
-                    headerComponent({html}) {
+                    headerComponent({html, recommendations}) {
+                        if (!recommendations.length) {
+                            return '';
+                        }
                         return recommendProductsHtml.getHeaderHtml(html,algoliaConfig.recommend.trendingItemsTitle);
                     },
                     itemComponent({item, html}) {

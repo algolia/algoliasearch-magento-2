@@ -1,5 +1,15 @@
 # CHANGE LOG
 
+## 3.13.5
+
+### Updates
+- Polyfill.io removed from CSP whitelist
+- Hide Recommend Titles when not in use
+- Incorporate community fix for higher specificity CSS selectors on Recommend
+
+### Bug Fixes
+- Incorporate community fix for missing DOM element selector
+
 ## 3.13.4
 
 ### Bug Fixes

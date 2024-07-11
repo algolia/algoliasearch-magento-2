@@ -3,7 +3,7 @@
   "description": "Algolia Search & Discovery extension for Magento 2",
   "type": "magento2-module",
   "license": ["MIT"],
-  "version": "3.13.4",
+  "version": "3.13.5",
   "require": {
     "magento/framework": "~102.0|~103.0",
     "algolia/algoliasearch-client-php": "3.3.2",

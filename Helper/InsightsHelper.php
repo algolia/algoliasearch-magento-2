@@ -142,7 +142,7 @@ class InsightsHelper
         $userToken = $this->generateAuthenticatedUserToken($customer);
 
         $metaData = $this->cookieMetadataFactory->createPublicCookieMetadata()
-            ->setDurationOneYear()
+            ->setDuration($this->configHelper->getCookieLifetime())
             ->setPath('/')
             ->setHttpOnly(false)
             ->setSecure(false);

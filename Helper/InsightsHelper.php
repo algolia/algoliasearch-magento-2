@@ -158,6 +158,30 @@ class InsightsHelper
     }
 
     /**
+     * Sets a token for a non-authenticated user
+     *
+     * @return void
+     */
+    public function setNonAuthenticatedUserToken(): void
+    {
+        $metaData = $this->cookieMetadataFactory->createPublicCookieMetadata()
+            ->setDuration($this->configHelper->getCookieLifetime())
+            ->setPath('/')
+            ->setHttpOnly(false)
+            ->setSecure(false);
+
+        try {
+            $this->cookieManager->setPublicCookie(
+                InsightsHelper::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME,
+                (string) $this->cookieManager->getCookie(InsightsHelper::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME),
+                $metaData
+            );
+        } catch (LocalizedException $e) {
+            $this->logger->error("Error writing anonymous user cookie: " . $e->getMessage());
+        }
+    }
+
+    /**
      * @param int|null $storeId
      * @return bool
      */

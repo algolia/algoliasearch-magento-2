@@ -28,6 +28,9 @@ class InsightsHelper
     /** @var int */
     public const ALGOLIA_USER_TOKEN_MAX_LENGTH = 64;
 
+    /** @var int */
+    public const ALGOLIA_USER_TOKEN_DEFAULT_LIFETIME = 15768000; // 6 months
+
     /** @var string */
     public const QUOTE_ITEM_QUERY_PARAM = 'algoliasearch_query_param';
 
@@ -165,7 +168,7 @@ class InsightsHelper
     public function setNonAuthenticatedUserToken(): void
     {
         $metaData = $this->cookieMetadataFactory->createPublicCookieMetadata()
-            ->setDuration($this->configHelper->getCookieLifetime())
+            ->setDuration(InsightsHelper::ALGOLIA_USER_TOKEN_DEFAULT_LIFETIME)
             ->setPath('/')
             ->setHttpOnly(false)
             ->setSecure(false);

@@ -32,8 +32,6 @@ class CookieRefresherObserver implements ObserverInterface
     {
         if ($this->customerSession->isLoggedIn()) {
             $this->insightsHelper->setAuthenticatedUserToken($this->customerSession->getCustomer());
-        } else {
-            $this->insightsHelper->setNonAuthenticatedUserToken();
         }
     }
 }

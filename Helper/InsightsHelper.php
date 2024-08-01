@@ -28,9 +28,6 @@ class InsightsHelper
     /** @var int */
     public const ALGOLIA_USER_TOKEN_MAX_LENGTH = 64;
 
-    /** @var int */
-    public const ALGOLIA_USER_TOKEN_DEFAULT_LIFETIME = 15768000; // 6 months
-
     /** @var string */
     public const QUOTE_ITEM_QUERY_PARAM = 'algoliasearch_query_param';
 
@@ -158,30 +155,6 @@ class InsightsHelper
         }
 
         return $userToken;
-    }
-
-    /**
-     * Sets a token for a non-authenticated user
-     *
-     * @return void
-     */
-    public function setNonAuthenticatedUserToken(): void
-    {
-        $metaData = $this->cookieMetadataFactory->createPublicCookieMetadata()
-            ->setDuration(InsightsHelper::ALGOLIA_USER_TOKEN_DEFAULT_LIFETIME)
-            ->setPath('/')
-            ->setHttpOnly(false)
-            ->setSecure(false);
-
-        try {
-            $this->cookieManager->setPublicCookie(
-                InsightsHelper::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME,
-                (string) $this->cookieManager->getCookie(InsightsHelper::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME),
-                $metaData
-            );
-        } catch (LocalizedException $e) {
-            $this->logger->error("Error writing anonymous user cookie: " . $e->getMessage());
-        }
     }
 
     /**

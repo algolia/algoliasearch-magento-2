@@ -26,13 +26,13 @@ class ReplicaRebuildCommand
     use ReplicaDeleteCommandTrait;
 
     public function __construct(
-        protected ProductHelper           $productHelper,
-        protected ReplicaManagerInterface $replicaManager,
-        protected StoreManagerInterface   $storeManager,
-        protected ReplicaState            $replicaState,
-        AppState                          $appState,
-        StoreNameFetcher                  $storeNameFetcher,
-        ?string                           $name = null
+        protected ProductHelper\Proxy           $productHelper,
+        protected ReplicaManagerInterface\Proxy $replicaManager,
+        protected StoreManagerInterface         $storeManager,
+        protected ReplicaState                  $replicaState,
+        AppState                                $appState,
+        StoreNameFetcher                        $storeNameFetcher,
+        ?string                                 $name = null
     )
     {
         parent::__construct($appState, $storeNameFetcher, $name);

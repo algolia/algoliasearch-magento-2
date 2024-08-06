@@ -35,10 +35,17 @@ Magento 2.3 and earlier versions are no longer supported by the Algolia extensio
 
 Version 3.x of our extension is compatible with Magento 2.4. Review the [Customisation](https://github.com/algolia/algoliasearch-magento-2#customisation) section to learn more about the differences between our extension versions.
 
-| Extension Version | End of Life | Magento  | PHP |
-|-------------------| --- |----------| ---------|
-| v3.13.x           | N/A | `2.4.x` | `^7.2 \|\| ^8.0` |
-| v3.14.x           | N/A | `2.4.x` | `>=8.1` |
+| Extension Version | End of Life | Magento                      | PHP                                    |
+|-------------------| --- |------------------------------|----------------------------------------|
+| v3.7.x            | N/A | `~2.3.7\|\|~2.4.5\|\|~2.4.6` | `~7.3.0\|\|~7.4.0\|\|~8.1.0\|\|~8.2.0` |
+| v3.8.x            | N/A | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
+| v3.9.x            | N/A | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
+| v3.9.x            | N/A | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
+| v3.10.x           | N/A | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.11.x           | N/A | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.12.x           | N/A | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.13.x           | N/A | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.14.x           | N/A | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
 
 ## Documentation
 

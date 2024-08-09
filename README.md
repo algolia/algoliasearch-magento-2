@@ -83,6 +83,7 @@ Knowing the version of the library will help you understand what is available in
 | v3.11.0         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0) | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0) |
 | v3.13.0          | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0) | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0) |
 | >=v3.14.x         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0) | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0) | [1.15.0](https://github.com/algolia/recommend/tree/v1.15.0) |
+
 The autocomplete and instantsearch libraries are accessible in the `algoliaBundle` global. This bundle is a prepackage javascript file that contains it's dependencies. What is included in this bundle can be seen here:
 
 The search-insights.js library is standalone.

@@ -32,4 +32,7 @@
     <event name="catalog_controller_product_init_after">
         <observer name="algoliasearch_current_product" instance="Algolia\AlgoliaSearch\Observer\RegisterCurrentProductObserver"/>
     </event>
+    <event name="controller_action_predispatch">
+        <observer name="algoliasearch_cookie_refresher" instance="Algolia\AlgoliaSearch\Observer\Insights\CookieRefresherObserver" shared="false" />
+    </event>
 </config>

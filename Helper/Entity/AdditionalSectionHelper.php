@@ -2,51 +2,29 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 
-class AdditionalSectionHelper
+class AdditionalSectionHelper extends AbstractEntityHelper
 {
-    /**
-     * @var ManagerInterface
-     */
-    private $eventManager;
+    use EntityHelperTrait;
+    public const INDEX_NAME_SUFFIX = '_section';
 
-    /**
-     * @var CollectionFactory
-     */
-    private $collectionFactory;
-
-    /**
-     * @var Config
-     */
-    private $eavConfig;
-
-    /**
-     * AdditionalSectionHelper constructor.
-     *
-     * @param ManagerInterface $eventManager
-     * @param CollectionFactory $collectionFactory
-     * @param Config $eavConfig
-     */
     public function __construct(
-        ManagerInterface $eventManager,
-        CollectionFactory $collectionFactory,
-        Config $eavConfig
-    ) {
-        $this->eventManager = $eventManager;
-        $this->collectionFactory = $collectionFactory;
-        $this->eavConfig = $eavConfig;
-    }
-
-    public function getIndexNameSuffix()
+        protected ManagerInterface  $eventManager,
+        protected CollectionFactory $collectionFactory,
+        protected Config            $eavConfig,
+        protected IndexNameFetcher  $indexNameFetcher,
+    )
     {
-        return '_section';
+        parent::__construct($indexNameFetcher);
     }
 
-    public function getIndexSettings($storeId)
+    public function getIndexSettings($storeId): array
     {
         $indexSettings = [
             'searchableAttributes' => ['unordered(value)'],
@@ -62,7 +40,7 @@ class AdditionalSectionHelper
         return $indexSettings;
     }
 
-    public function getAttributeValues($storeId, $section)
+    public function getAttributeValues($storeId, $section): array
     {
         $attributeCode = $section['name'];
 
@@ -91,8 +69,8 @@ class AdditionalSectionHelper
 
         $values = array_map(function ($value) use ($section, $storeId) {
             $record = [
-                'objectID' => $value,
-                'value'    => $value,
+                AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $value,
+                'value'                              => $value,
             ];
 
             $transport = new DataObject($record);

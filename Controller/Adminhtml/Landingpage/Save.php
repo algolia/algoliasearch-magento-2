@@ -154,11 +154,12 @@ class Save extends AbstractAction
     }
 
     /**
-     * @param $landingPageId
-     * @param $data
+     * @param int $landingPageId
+     * @param array<string, mixed> $data
      * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    protected function manageQueryRules($landingPageId, $data)
+    protected function manageQueryRules(int $landingPageId, array $data): void
     {
         $positions = json_decode($data['algolia_merchandising_positions'], true);
         $stores = [];

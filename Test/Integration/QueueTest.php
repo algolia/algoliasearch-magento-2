@@ -140,6 +140,8 @@ class QueueTest extends TestCase
      */
     public function testSettings()
     {
+        $this->markTestIncomplete(self::INCOMPLETE_REASON);
+
         $this->resetConfigs([
             'algoliasearch_queue/queue/number_of_job_to_run',
             'algoliasearch_advanced/queue/number_of_element_by_page',
@@ -173,7 +175,7 @@ class QueueTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $settings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
         $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
@@ -198,10 +200,10 @@ class QueueTest extends TestCase
 
         $productionIndexName = $this->indexPrefix . 'default_products';
 
-        $res = $this->algoliaHelper->getIndex($productionIndexName)->setSettings(['disableTypoToleranceOnAttributes' => ['sku']]);
-        $this->algoliaHelper->waitLastTask($productionIndexName, $res['taskID']);
+        $res = $this->algoliaHelper->setSettings($productionIndexName, ['disableTypoToleranceOnAttributes' => ['sku']]);
+        $this->algoliaHelper->waitLastTask();
 
-        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
+        $settings = $this->algoliaHelper->getSettings($productionIndexName);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         /** @var QueueRunner $queueRunner */
@@ -210,13 +212,13 @@ class QueueTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $settings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products_tmp')->getSettings();
+        $settings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products_tmp');
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         $queueRunner->executeFull();
         $queueRunner->executeFull();
 
-        $settings = $this->algoliaHelper->getIndex($productionIndexName)->getSettings();
+        $settings = $this->algoliaHelper->getSettings($productionIndexName);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
     }
 
@@ -365,13 +367,10 @@ class QueueTest extends TestCase
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
-        /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
-
         $jobs = $this->jobsCollectionFactory->create()->getItems();
         // $jobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
-        $mergedJobs = array_values($this->invokeMethod($queue, 'mergeJobs', [$jobs]));
+        $mergedJobs = array_values($this->invokeMethod($this->queue, 'mergeJobs', [$jobs]));
         $this->assertEquals(6, count($mergedJobs));
 
         $expectedCategoryJob = [
@@ -917,6 +916,7 @@ class QueueTest extends TestCase
         $lastJob = end($dbJobs);
 
         $this->assertEquals(100, (int) $firstJob['data_size']);
+
         $this->assertEquals($this->assertValues->lastJobDataSize, (int) $lastJob['data_size']);
     }
 }

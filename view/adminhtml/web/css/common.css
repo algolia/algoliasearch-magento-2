@@ -443,7 +443,7 @@
 	margin-bottom: 2rem;
 }
 
-.algolia-setup-fieldset .admin__fieldset-wrapper-title { 
+.algolia-setup-fieldset .admin__fieldset-wrapper-title {
 	padding-top: 0;
 	margin-bottom: 0;
 }
@@ -473,6 +473,7 @@
 form[action*="algoliasearch"] .accordion .config .label,
 form[action*="algoliasearch"] .accordion .config .value {
 	width: auto;
+    min-width: 10em;
 }
 
 #algoliasearch_personalization_personalization_group .entry-edit-head {

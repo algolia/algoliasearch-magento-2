@@ -2,17 +2,14 @@
 
 namespace Algolia\AlgoliaSearch\Model\Config;
 
+use Magento\Config\Model\Config\CommentInterface;
 use Magento\Framework\UrlInterface;
 
-class Comment implements \Magento\Config\Model\Config\CommentInterface
+class QueueArchiveComment implements CommentInterface
 {
-    protected $urlInterface;
-
     public function __construct(
-        UrlInterface $urlInterface
-    ) {
-        $this->urlInterface = $urlInterface;
-    }
+        protected UrlInterface $urlInterface
+    ) { }
 
     public function getCommentText($elementValue)
     {

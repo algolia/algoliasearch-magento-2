@@ -23,6 +23,6 @@ abstract class IndexingTestCase extends TestCase
 
         $resultsDefault = $this->algoliaHelper->query($this->indexPrefix . 'default_' . $indexSuffix, '', []);
 
-        $this->assertEquals($expectedNbHits, $resultsDefault['nbHits']);
+        $this->assertEquals($expectedNbHits, $resultsDefault['results'][0]['nbHits']);
     }
 }

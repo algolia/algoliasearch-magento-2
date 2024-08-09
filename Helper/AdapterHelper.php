@@ -45,6 +45,7 @@ class AdapterHelper
      * Get search result from Algolia
      *
      * @return array
+     * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
     public function getDocumentsFromAlgolia()
     {

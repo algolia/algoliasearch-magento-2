@@ -2,7 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Cms\Model\Page;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
 use Magento\Cms\Model\Template\FilterProvider;
@@ -11,67 +13,22 @@ use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\UrlFactory;
 use Magento\Store\Model\StoreManagerInterface;
 
-class PageHelper
+class PageHelper extends AbstractEntityHelper
 {
-    /**
-     * @var ManagerInterface
-     */
-    private $eventManager;
+    use EntityHelperTrait;
+    public const INDEX_NAME_SUFFIX = '_pages';
 
-    /**
-     * @var PageCollectionFactory
-     */
-    private $pageCollectionFactory;
-
-    /**
-     * @var ConfigHelper
-     */
-    private $configHelper;
-
-    /**
-     * @var FilterProvider
-     */
-    private $filterProvider;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    private $storeManager;
-
-    /**
-     * @var UrlFactory
-     */
-    private $frontendUrlFactory;
-
-    /**
-     * PageHelper constructor.
-     *
-     * @param ManagerInterface      $eventManager
-     * @param PageCollectionFactory $pageCollectionFactory
-     * @param ConfigHelper          $configHelper
-     * @param FilterProvider        $filterProvider
-     * @param StoreManagerInterface $storeManager
-     * @param UrlFactory          $frontendUrlFactory
-     */
     public function __construct(
-        ManagerInterface $eventManager,
-        PageCollectionFactory $pageCollectionFactory,
-        ConfigHelper $configHelper,
-        FilterProvider $filterProvider,
-        StoreManagerInterface $storeManager,
-        UrlFactory $frontendUrlFactory
-    ) {
-        $this->eventManager = $eventManager;
-        $this->pageCollectionFactory = $pageCollectionFactory;
-        $this->configHelper = $configHelper;
-        $this->filterProvider = $filterProvider;
-        $this->storeManager = $storeManager;
-        $this->frontendUrlFactory = $frontendUrlFactory;
-    }
-
-    public function getIndexNameSuffix()
+        protected ManagerInterface      $eventManager,
+        protected PageCollectionFactory $pageCollectionFactory,
+        protected ConfigHelper          $configHelper,
+        protected FilterProvider        $filterProvider,
+        protected StoreManagerInterface $storeManager,
+        protected UrlFactory            $frontendUrlFactory,
+        protected IndexNameFetcher      $indexNameFetcher,
+    )
     {
-        return '_pages';
+        parent::__construct($indexNameFetcher);
     }
 
     public function getIndexSettings($storeId)
@@ -131,7 +88,7 @@ class PageHelper
                 $content = $this->filterProvider->getPageFilter()->filter($content);
             }
 
-            $pageObject['objectID'] = $page->getId();
+            $pageObject[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] = $page->getId();
             $pageObject['url'] = $frontendUrlBuilder->getUrl(
                 null,
                 [

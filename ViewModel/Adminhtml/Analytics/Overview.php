@@ -7,7 +7,6 @@ use Algolia\AlgoliaSearch\Helper\AnalyticsHelper;
 use Algolia\AlgoliaSearch\ViewModel\Adminhtml\BackendView;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Locale\ResolverInterface;
 use Magento\Store\Api\Data\StoreInterface;
 
 class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterface
@@ -18,40 +17,19 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
 
     public const DEFAULT_RETENTION_DAYS = 90;
 
-    /** @var BackendView */
-    private $backendView;
-
-    /** @var AnalyticsHelper */
-    private $analyticsHelper;
-
-    /** @var IndexEntityDataProvider */
-    private $indexEntityDataProvider;
-
-    /** @var ResolverInterface */
-    private $localeResolver;
-
     /** @var array */
     private $analyticsParams = [];
 
     /**
-     *  Index constructor.
-     *
      * @param BackendView $backendView
      * @param AnalyticsHelper $analyticsHelper
      * @param IndexEntityDataProvider $indexEntityDataProvider
-     * @param ResolverInterface $localeResolver
      */
     public function __construct(
-        BackendView $backendView,
-        AnalyticsHelper $analyticsHelper,
-        IndexEntityDataProvider $indexEntityDataProvider,
-        ResolverInterface $localeResolver
-    ) {
-        $this->backendView = $backendView;
-        $this->analyticsHelper = $analyticsHelper;
-        $this->indexEntityDataProvider = $indexEntityDataProvider;
-        $this->localeResolver = $localeResolver;
-    }
+        protected BackendView             $backendView,
+        protected AnalyticsHelper         $analyticsHelper,
+        protected IndexEntityDataProvider $indexEntityDataProvider
+    ) { }
 
     /**
      * @return BackendView
@@ -194,6 +172,16 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     public function getConversionRate()
     {
         return $this->analyticsHelper->getConversionRate($this->getAnalyticsParams());
+    }
+
+    public function getConversionRateAddToCart()
+    {
+        return $this->analyticsHelper->getConversionRateAddToCart($this->getAnalyticsParams());
+    }
+
+    public function getConversionRatePlaceOrder()
+    {
+        return $this->analyticsHelper->getConversionRatePlaceOrder($this->getAnalyticsParams());
     }
 
     public function getConversionRateByDates()

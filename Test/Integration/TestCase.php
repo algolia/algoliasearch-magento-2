@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento23;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento24;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
@@ -102,16 +103,15 @@ abstract class TestCase extends \TC
             $this->assertValues = new Magento24();
         }
 
-        $this->algoliaHelper = $this->getObjectManager()->create(AlgoliaHelper::class);
-
-        $this->configHelper = $config = $this->getObjectManager()->create(ConfigHelper::class);
+        $this->configHelper = $this->getObjectManager()->create(ConfigHelper::class);
 
         $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'));
         $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_KEY_1') ?: getenv('ALGOLIA_SEARCH_API_KEY'));
         $this->setConfig('algoliasearch_credentials/credentials/api_key', getenv('ALGOLIA_API_KEY'));
-
         $this->indexPrefix =  'magento2_' . date('Y-m-d_H:i:s') . '_' . (getenv('INDEX_PREFIX') ?: 'circleci_');
         $this->setConfig('algoliasearch_credentials/credentials/index_prefix', $this->indexPrefix);
+
+        $this->algoliaHelper = $this->getObjectManager()->create(AlgoliaHelper::class);
 
         $this->boostrapped = true;
     }

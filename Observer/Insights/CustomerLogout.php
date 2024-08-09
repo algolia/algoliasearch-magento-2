@@ -3,34 +3,27 @@
 namespace Algolia\AlgoliaSearch\Observer\Insights;
 
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
+use Algolia\AlgoliaSearch\Helper\Logger;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
-use Magento\Framework\Stdlib\Cookie\PhpCookieManager;
+use Magento\Framework\Stdlib\CookieManagerInterface;
 
 class CustomerLogout implements ObserverInterface
 {
     public const UNSET_AUTHENTICATION_USER_TOKEN_COOKIE_NAME = "unset_authentication_token";
-    /**
-     * @var PhpCookieManager
-     */
-    private $cookieManager;
 
     /**
-     * @var CookieMetadataFactory
-     */
-    private $cookieMetadataFactory;
-
-    /**
-     * RefreshCustomerData constructor.
-     * @param PhpCookieManager $cookieManager
+     * @param CookieManagerInterface $cookieManager
      * @param CookieMetadataFactory $cookieMetadataFactory
      */
     public function __construct(
-        PhpCookieManager $cookieManager,
-        CookieMetadataFactory $cookieMetadataFactory
+        private readonly CookieManagerInterface $cookieManager,
+        private readonly CookieMetadataFactory  $cookieMetadataFactory,
+        private Logger                          $logger
     ) {
-        $this->cookieManager = $cookieManager;
-        $this->cookieMetadataFactory = $cookieMetadataFactory;
+
     }
 
     /**
@@ -40,18 +33,23 @@ class CustomerLogout implements ObserverInterface
      * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(\Magento\Framework\Event\Observer $observer): void
     {
         if ($this->cookieManager->getCookie(InsightsHelper::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME)) {
+            //TODO: Verify whether this additional cookie is needed
             $metaDataUnset = $this->cookieMetadataFactory->createPublicCookieMetadata()
-            ->setDurationOneYear()
-            ->setPath('/')
-            ->setHttpOnly(false)
-            ->setSecure(false);
-            $this->cookieManager->setPublicCookie(self::UNSET_AUTHENTICATION_USER_TOKEN_COOKIE_NAME, 1, $metaDataUnset);
+                ->setDurationOneYear()
+                ->setPath('/')
+                ->setHttpOnly(false)
+                ->setSecure(false);
             $metadata = $this->cookieMetadataFactory->createCookieMetadata();
             $metadata->setPath('/');
-            $this->cookieManager->deleteCookie(InsightsHelper::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME, $metadata);
+            try {
+                $this->cookieManager->setPublicCookie(self::UNSET_AUTHENTICATION_USER_TOKEN_COOKIE_NAME, 1, $metaDataUnset);
+                $this->cookieManager->deleteCookie(InsightsHelper::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME, $metadata);
+            } catch (LocalizedException $e) {
+                $this->logger->error("Error writing Algolia customer cookies: " . $e->getMessage());
+            }
         }
     }
 }

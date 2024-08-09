@@ -4,11 +4,14 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
@@ -16,137 +19,58 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Search\Model\Query;
+use Magento\Search\Model\ResourceModel\Query\Collection as QueryCollection;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Data
 {
-    /**
-     * @var AlgoliaHelper
-     */
-    protected $algoliaHelper;
-    /**
-     * @var PageHelper
-     */
-    protected $pageHelper;
-    /**
-     * @var CategoryHelper
-     */
-    protected $categoryHelper;
-    /**
-     * @var ProductHelper
-     */
-    protected $productHelper;
-    /**
-     * @var SuggestionHelper
-     */
-    protected $suggestionHelper;
-    /**
-     * @var AdditionalSectionHelper
-     */
-    protected $additionalSectionHelper;
-    /**
-     * @var Logger
-     */
-    protected $logger;
-    /**
-     * @var ConfigHelper
-     */
-    protected $configHelper;
-    /**
-     * @var Emulation
-     */
-    protected $emulation;
-    /**
-     * @var ResourceConnection
-     */
-    protected $resource;
-    /**
-     * @var ManagerInterface
-     */
-    protected $eventManager;
-    /**
-     * @var ScopeCodeResolver
-     */
-    protected $scopeCodeResolver;
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
+    protected bool $emulationRuns = false;
 
-    protected $emulationRuns = false;
+    protected IndexerInterface $priceIndexer;
 
-    /** @var \Magento\Framework\Indexer\IndexerInterface */
-    protected $priceIndexer;
-
-
-    /**
-     * @param AlgoliaHelper $algoliaHelper
-     * @param ConfigHelper $configHelper
-     * @param ProductHelper $producthelper
-     * @param CategoryHelper $categoryHelper
-     * @param PageHelper $pageHelper
-     * @param SuggestionHelper $suggestionHelper
-     * @param AdditionalSectionHelper $additionalSectionHelper
-     * @param Emulation $emulation
-     * @param Logger $logger
-     * @param ResourceConnection $resource
-     * @param ManagerInterface $eventManager
-     * @param ScopeCodeResolver $scopeCodeResolver
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
-        AlgoliaHelper           $algoliaHelper,
-        ConfigHelper            $configHelper,
-        ProductHelper           $producthelper,
-        CategoryHelper          $categoryHelper,
-        PageHelper              $pageHelper,
-        SuggestionHelper        $suggestionHelper,
-        AdditionalSectionHelper $additionalSectionHelper,
-        Emulation               $emulation,
-        Logger                  $logger,
-        ResourceConnection      $resource,
-        ManagerInterface        $eventManager,
-        ScopeCodeResolver       $scopeCodeResolver,
-        StoreManagerInterface   $storeManager,
-        IndexerRegistry         $indexerRegistry
-
+        protected AlgoliaHelper           $algoliaHelper,
+        protected ConfigHelper            $configHelper,
+        protected ProductHelper           $productHelper,
+        protected CategoryHelper          $categoryHelper,
+        protected PageHelper              $pageHelper,
+        protected SuggestionHelper        $suggestionHelper,
+        protected AdditionalSectionHelper $additionalSectionHelper,
+        protected Emulation               $emulation,
+        protected Logger                  $logger,
+        protected ResourceConnection      $resource,
+        protected ManagerInterface        $eventManager,
+        protected ScopeCodeResolver       $scopeCodeResolver,
+        protected StoreManagerInterface   $storeManager,
+        protected IndexNameFetcher        $indexNameFetcher,
+        IndexerRegistry                   $indexerRegistry
     )
     {
-        $this->algoliaHelper = $algoliaHelper;
-        $this->pageHelper = $pageHelper;
-        $this->categoryHelper = $categoryHelper;
-        $this->productHelper = $producthelper;
-        $this->suggestionHelper = $suggestionHelper;
-        $this->additionalSectionHelper = $additionalSectionHelper;
-        $this->configHelper = $configHelper;
-        $this->logger = $logger;
-        $this->emulation = $emulation;
-        $this->resource = $resource;
-        $this->eventManager = $eventManager;
-        $this->scopeCodeResolver = $scopeCodeResolver;
-        $this->storeManager = $storeManager;
-
         $this->priceIndexer = $indexerRegistry->get('catalog_product_price');
     }
 
     /**
      * @return ConfigHelper
      */
-    public function getConfigHelper()
+    public function getConfigHelper(): ConfigHelper
     {
         return $this->configHelper;
     }
 
     /**
-     * @param $storeId
-     * @param $ids
-     * @param $indexName
+     * @param int $storeId
+     * @param array $ids
+     * @param string $indexName
      * @return void
+     * @throws AlgoliaException
      */
-    public function deleteObjects($storeId, $ids, $indexName)
+    public function deleteObjects(int $storeId, array $ids, string $indexName): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -159,14 +83,16 @@ class Data
      * @param int $storeId
      * @param array|null $searchParams
      * @param string|null $targetedIndex
-     *
      * @return array
+     * @throws AlgoliaException|NoSuchEntityException
+     * @internal This method is currently unstable and should not be used. It may be revisited or fixed in a future version.
+     *
      */
-    public function getSearchResult($query, $storeId, $searchParams = null, $targetedIndex = null)
+    public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
     {
         $indexName = $targetedIndex !== null ?
             $targetedIndex :
-            $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
+            $this->productHelper->getIndexName($storeId);
 
         $numberOfResults = 1000;
         if ($this->configHelper->isInstantEnabled()) {
@@ -180,7 +106,7 @@ class Data
 
         $params = [
             'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
-            'attributesToRetrieve'   => 'objectID',
+            'attributesToRetrieve'   => AlgoliaHelper::ALGOLIA_API_OBJECT_ID,
             'attributesToHighlight'  => '',
             'attributesToSnippet'    => '',
             'numericFilters'         => ['visibility_search=1'],
@@ -194,12 +120,13 @@ class Data
             $params = array_merge($params, $searchParams);
         }
 
-        $answer = $this->algoliaHelper->query($indexName, $query, $params);
+        $response = $this->algoliaHelper->query($indexName, $query, $params);
+        $answer = reset($response['results']);
 
         $data = [];
 
         foreach ($answer['hits'] as $i => $hit) {
-            $productId = $hit['objectID'];
+            $productId = $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
 
             if ($productId) {
                 $data[$productId] = [
@@ -215,11 +142,24 @@ class Data
     }
 
     /**
-     * @param $storeId
+     * @param array $objects
+     * @param string $indexName
      * @return void
-     * @throws \Algolia\AlgoliaSearch\Exceptions\AlgoliaException
+     * @throws \Exception
      */
-    public function rebuildStoreAdditionalSectionsIndex($storeId)
+    protected function saveObjects(array $objects, string $indexName): void {
+        $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled());
+    }
+
+    /**
+     * @param int $storeId
+     * @return void
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
+     * @throws \Exception
+     */
+    public function rebuildStoreAdditionalSectionsIndex(int $storeId): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -233,17 +173,19 @@ class Data
                 continue;
             }
 
-            $indexName = $this->getIndexName($this->additionalSectionHelper->getIndexNameSuffix(), $storeId);
+            $indexName = $this->additionalSectionHelper->getIndexName($storeId);
             $indexName = $indexName . '_' . $section['name'];
 
             $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
 
+            $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
+
             foreach (array_chunk($attributeValues, 100) as $chunk) {
-                $this->algoliaHelper->addObjects($chunk, $indexName . '_tmp');
+                $this->saveObjects($chunk, $tempIndexName);
             }
 
-            $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
-            $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
+            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName);
+            $this->algoliaHelper->moveIndex($tempIndexName, $indexName);
 
             $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
         }
@@ -253,20 +195,21 @@ class Data
      * @param $storeId
      * @param array|null $pageIds
      * @return void
-     * @throws \Algolia\AlgoliaSearch\Exceptions\AlgoliaException
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function rebuildStorePageIndex($storeId, array $pageIds = null)
+    public function rebuildStorePageIndex($storeId, array $pageIds = null): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-        
+
         if (!$this->configHelper->isPagesIndexEnabled($storeId)) {
             $this->logger->log('Pages Indexing is not enabled for the store.');
             return;
         }
 
-        $indexName = $this->getIndexName($this->pageHelper->getIndexNameSuffix(), $storeId);
+        $indexName = $this->pageHelper->getIndexName($storeId);
 
         $this->startEmulation($storeId);
 
@@ -279,11 +222,11 @@ class Data
 
         if (isset($pages['toIndex']) && count($pages['toIndex'])) {
             $pagesToIndex = $pages['toIndex'];
-            $toIndexName = $indexName . ($isFullReindex ? '_tmp' : '');
+            $toIndexName = $indexName . ($isFullReindex ? IndexNameFetcher::INDEX_TEMP_SUFFIX : '');
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
-                    $this->algoliaHelper->addObjects($chunk, $toIndexName);
+                    $this->saveObjects($chunk, $toIndexName);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;
@@ -304,8 +247,9 @@ class Data
         }
 
         if ($isFullReindex) {
-            $this->algoliaHelper->copyQueryRules($indexName, $indexName . '_tmp');
-            $this->algoliaHelper->moveIndex($indexName . '_tmp', $indexName);
+            $tempIndexName = $this->pageHelper->getTempIndexName($storeId);
+            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName);
+            $this->algoliaHelper->moveIndex($tempIndexName, $indexName);
         }
         $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
     }
@@ -314,8 +258,8 @@ class Data
      * @param $storeId
      * @param $categoryIds
      * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     public function rebuildStoreCategoryIndex($storeId, $categoryIds = null)
     {
@@ -356,10 +300,13 @@ class Data
     }
 
     /**
-     * @param $storeId
+     * @param int $storeId
      * @return void
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
      */
-    public function rebuildStoreSuggestionIndex($storeId)
+    public function rebuildStoreSuggestionIndex(int $storeId): void
     {
         if ($this->isIndexingEnabled($storeId) === false || !$this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             return;
@@ -393,29 +340,31 @@ class Data
     }
 
     /**
-     * @param $storeId
+     * @param int $storeId
      * @return void
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     * @throws ExceededRetriesException
      */
-    public function moveStoreSuggestionIndex($storeId)
+    public function moveStoreSuggestionIndex(int $storeId): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        $indexNameSuffix = $this->suggestionHelper->getIndexNameSuffix();
-        $tmpIndexName = $this->getIndexName($indexNameSuffix, $storeId, true);
-        $indexName = $this->getIndexName($indexNameSuffix, $storeId);
+        $tmpIndexName = $this->suggestionHelper->getTempIndexName($storeId);
+        $indexName = $this->suggestionHelper->getIndexName($storeId);
         $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName);
         $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
     }
 
     /**
-     * @param $storeId
-     * @param $productIds
+     * @param int $storeId
+     * @param string[] $productIds
      * @return void
      * @throws \Exception
      */
-    public function rebuildStoreProductIndex($storeId, $productIds)
+    public function rebuildStoreProductIndex(int $storeId, array $productIds): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -427,7 +376,8 @@ class Data
         $this->logger->start('Indexing');
         try {
             $this->logger->start('ok');
-            $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds);
+            $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
+            $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
             $size = $collection->getSize();
             if (!empty($productIds)) {
                 $size = max(count($productIds), $size);
@@ -458,19 +408,21 @@ class Data
     }
 
     /**
-     * @param $storeId
-     * @param $productIds
-     * @param $page
-     * @param $pageSize
-     * @param $useTmpIndex
+     * @param int $storeId
+     * @param array|null $productIds
+     * @param int $page
+     * @param int $pageSize
+     * @param bool $useTmpIndex
      * @return void
+     * @throws \Exception
      */
-    public function rebuildProductIndex($storeId, $productIds, $page, $pageSize, $useTmpIndex)
+    public function rebuildProductIndex(int $storeId, ?array $productIds, int $page, int $pageSize, bool $useTmpIndex): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-        $collection = $this->productHelper->getProductCollectionQuery($storeId, null, $useTmpIndex);
+        $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
+        $collection = $this->productHelper->getProductCollectionQuery($storeId, null, $onlyVisible);
         $this->rebuildStoreProductIndexPage($storeId, $collection, $page, $pageSize, null, $productIds, $useTmpIndex);
     }
 
@@ -479,10 +431,11 @@ class Data
      * @param $page
      * @param $pageSize
      * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws \Exception
      */
-    public function rebuildCategoryIndex($storeId, $page, $pageSize)
+    public function rebuildCategoryIndex(int $storeId, int $page, int $pageSize): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -495,23 +448,24 @@ class Data
     }
 
     /**
-     * @param $storeId
-     * @param $collectionDefault
-     * @param $page
-     * @param $pageSize
+     * @param int $storeId
+     * @param QueryCollection $collectionDefault
+     * @param int $page
+     * @param int $pageSize
      * @return void
+     * @throws NoSuchEntityException
+     * @throws \Exception
      */
-    public function rebuildStoreSuggestionIndexPage($storeId, $collectionDefault, $page, $pageSize)
+    public function rebuildStoreSuggestionIndexPage(int $storeId, QueryCollection $collectionDefault, int $page, int $pageSize): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        /** @var \Magento\CatalogSearch\Model\ResourceModel\Fulltext\Collection $collection */
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexName = $this->getIndexName($this->suggestionHelper->getIndexNameSuffix(), $storeId, true);
+        $indexName = $this->suggestionHelper->getTempIndexName($storeId);
         $indexData = [];
 
         /** @var Query $suggestion */
@@ -522,28 +476,32 @@ class Data
                 array_push($indexData, $suggestionObject);
             }
         }
-
         if (count($indexData) > 0) {
-            $this->algoliaHelper->addObjects($indexData, $indexName);
+            $this->saveObjects($indexData, $indexName);
         }
+
         unset($indexData);
         $collection->walk('clearInstance');
         $collection->clear();
         unset($collection);
     }
 
-    public function rebuildStoreCategoryIndexPage($storeId, $collection, $page, $pageSize, $categoryIds = null)
+    /**
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
+     */
+    public function rebuildStoreCategoryIndexPage($storeId, $collection, $page, $pageSize, $categoryIds = null): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexName = $this->getIndexName($this->categoryHelper->getIndexNameSuffix(), $storeId);
+        $indexName = $this->categoryHelper->getIndexName($storeId);
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->algoliaHelper->addObjects($indexData['toIndex'], $indexName);
+            $this->saveObjects($indexData['toIndex'], $indexName);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
@@ -649,7 +607,7 @@ class Data
      * @param array|null $potentiallyDeletedCategoriesIds
      *
      * @return array
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      *
      */
     protected function getCategoryRecords($storeId, $collection, $potentiallyDeletedCategoriesIds = null)
@@ -760,11 +718,11 @@ class Data
         $collection->load();
         $this->logger->log('Loaded ' . count($collection) . ' products');
         $this->logger->stop($logMessage);
-        $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId, $useTmpIndex);
+        $indexName = $this->productHelper->getIndexName($storeId, $useTmpIndex);
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->algoliaHelper->addObjects($indexData['toIndex'], $indexName);
+            $this->saveObjects($indexData['toIndex'], $indexName);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
@@ -789,11 +747,11 @@ class Data
     }
 
     /**
-     * @param $storeId
+     * @param int $storeId
      * @return void
      * @throws \Exception
      */
-    public function startEmulation($storeId)
+    public function startEmulation(int $storeId): void
     {
         if ($this->emulationRuns === true) {
             return;
@@ -810,7 +768,7 @@ class Data
      * @return void
      * @throws \Exception
      */
-    public function stopEmulation()
+    public function stopEmulation(): void
     {
         $this->logger->start('STOP EMULATION');
         $this->emulation->stopEnvironmentEmulation();
@@ -847,8 +805,8 @@ class Data
         foreach (array_chunk($idsToRemove, 1000) as $chunk) {
             $objects = $this->algoliaHelper->getObjects($indexName, $chunk);
             foreach ($objects['results'] as $object) {
-                if (isset($object['objectID'])) {
-                    $toRealRemove[] = $object['objectID'];
+                if (isset($object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID])) {
+                    $toRealRemove[] = $object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
                 }
             }
         }
@@ -892,20 +850,22 @@ class Data
     /**
      * @param $storeId
      * @return void
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
      */
-    public function deleteInactiveProducts($storeId)
+    public function deleteInactiveProducts($storeId): void
     {
-        $indexName = $this->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
-        $index = $this->algoliaHelper->getIndex($indexName);
+        $indexName = $this->productHelper->getIndexName($storeId);
+        $client = $this->algoliaHelper->getClient();
         $objectIds = [];
         $counter = 0;
         $browseOptions = [
             'query'                => '',
-            'attributesToRetrieve' => ['objectID'],
+            'attributesToRetrieve' => [AlgoliaHelper::ALGOLIA_API_OBJECT_ID],
         ];
-        foreach ($index->browseObjects($browseOptions) as $hit) {
-            $objectIds[] = $hit['objectID'];
+        $hits = $client->browseObjects($indexName, $browseOptions);
+        foreach ($hits as $hit) {
+            $objectIds[] = $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
             $counter++;
             if ($counter === 1000) {
                 $this->deleteInactiveIds($storeId, $objectIds, $indexName);
@@ -919,31 +879,32 @@ class Data
     }
 
     /**
-     * @param $indexSuffix
-     * @param $storeId
-     * @param $tmp
+     * @param string $indexSuffix
+     * @param int|null $storeId
+     * @param bool $tmp
      * @return string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
-    public function getIndexName($indexSuffix, $storeId = null, $tmp = false)
+    public function getIndexName(string $indexSuffix, int $storeId = null, bool $tmp = false): string
     {
-        return $this->getBaseIndexName($storeId) . $indexSuffix . ($tmp ? '_tmp' : '');
+        return $this->indexNameFetcher->getIndexName($indexSuffix, $storeId, $tmp);
     }
 
     /**
-     * @param $storeId
+     * @param int|null $storeId
      * @return string
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
-    public function getBaseIndexName($storeId = null)
+    public function getBaseIndexName(int $storeId = null): string
     {
-        return $this->configHelper->getIndexPrefix($storeId) . $this->storeManager->getStore($storeId)->getCode();
+        return $this->indexNameFetcher->getBaseIndexName($storeId);
     }
 
     /**
-     * @return array
+     * @return array<int, array<string, mixed>>
+     * @throws NoSuchEntityException
      */
-    public function getIndexDataByStoreIds()
+    public function getIndexDataByStoreIds(): array
     {
         $indexNames = [];
         $indexNames[0] = [
@@ -964,10 +925,12 @@ class Data
      * @param $objectIds
      * @param $indexName
      * @return void
+     * @throws AlgoliaException
      */
-    protected function deleteInactiveIds($storeId, $objectIds, $indexName)
+    protected function deleteInactiveIds($storeId, $objectIds, $indexName): void
     {
-        $collection = $this->productHelper->getProductCollectionQuery($storeId, $objectIds);
+        $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
+        $collection = $this->productHelper->getProductCollectionQuery($storeId, $objectIds, $onlyVisible);
         $dbIds = $collection->getAllIds();
         $collection = null;
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);

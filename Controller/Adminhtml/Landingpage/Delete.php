@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Landingpage;
 
+use Algolia\AlgoliaSearch\Model\LandingPage;
 use Magento\Framework\Controller\ResultFactory;
 
 class Delete extends AbstractAction
@@ -15,7 +16,7 @@ class Delete extends AbstractAction
         $landingPageId = $this->getRequest()->getParam('id');
         if ($landingPageId) {
             try {
-                /** @var \Algolia\AlgoliaSearch\Model\LandingPage $landingPage */
+                /** @var LandingPage $landingPage */
                 $landingPage = $this->landingPageFactory->create();
                 $landingPage->getResource()->load($landingPage, $landingPageId);
                 $landingPage->getResource()->delete($landingPage);
@@ -35,7 +36,12 @@ class Delete extends AbstractAction
         return $resultRedirect->setPath('*/*/');
     }
 
-    private function deleteQueryRules($landingPage)
+    /**
+     * @param LandingPage $landingPage
+     * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    private function deleteQueryRules(LandingPage $landingPage): void
     {
         $stores = [];
         if ($landingPage->getStoreId() == 0) {

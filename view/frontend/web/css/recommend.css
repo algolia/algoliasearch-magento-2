@@ -14,14 +14,17 @@
 #algoliaRecommend .recommend-component {
     margin-bottom: 80px;
 }
+
 #algoliaRecommend #relatedProducts .auc-Recommend-list,
 #algoliaRecommend #frequentlyBoughtTogether .auc-Recommend-list,
+#algoliaRecommend #lookingSimilar .auc-Recommend-list,
 #algoliaRecommend .trendsItem  .auc-Recommend-list {
     flex-wrap: wrap;
     justify-content: flex-start;
 }
 #algoliaRecommend #relatedProducts li,
 #algoliaRecommend #frequentlyBoughtTogether li,
+#algoliaRecommend #lookingSimilar li,
 #algoliaRecommend .trendsItem li {
     display: flex;
     justify-content: center;
@@ -29,12 +32,14 @@
 }
 #algoliaRecommend #relatedProducts li a,
 #algoliaRecommend #frequentlyBoughtTogether li a,
+#algoliaRecommend #lookingSimilar li a,
 #algoliaRecommend .trendsItem li a {
     color: inherit;
     display: block;
 }
 #algoliaRecommend #relatedProducts .product-name,
 #algoliaRecommend #frequentlyBoughtTogether .product-name,
+#algoliaRecommend #lookingSimilar .product-name,
 #algoliaRecommend #trendItems .product-name,
 #algoliaRecommend .trendsItem .product-name{
     text-align: center;
@@ -77,6 +82,7 @@
 @media (min-width: 768px) and (max-width: 1023px) {
     #algoliaRecommend #relatedProducts li,
     #algoliaRecommend #frequentlyBoughtTogether li,
+    #algoliaRecommend #lookingSimilar li,
     #algoliaRecommend #trendItems li {
         width: 33.33333333%;
     }
@@ -84,6 +90,7 @@
 @media (max-width: 767px) {
     #algoliaRecommend #relatedProducts li,
     #algoliaRecommend #frequentlyBoughtTogether li,
+    #algoliaRecommend #lookingSimilar li,
     #algoliaRecommend #trendItems li {
         width: 50%;
     }

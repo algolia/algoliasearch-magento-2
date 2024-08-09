@@ -35,9 +35,10 @@ class IndexMover
     /**
      * @param string $tmpIndexName
      * @param string $indexName
-     * @param int    $storeId
+     * @param int $storeId
+     * @throws AlgoliaException
      */
-    public function moveIndex($tmpIndexName, $indexName, $storeId)
+    public function moveIndex(string $tmpIndexName, string $indexName, int $storeId): void
     {
         if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
             return;
@@ -49,11 +50,11 @@ class IndexMover
     /**
      * @param string $tmpIndexName
      * @param string $indexName
-     * @param int    $storeId
+     * @param int $storeId
      *
      * @throws AlgoliaException
      */
-    public function moveIndexWithSetSettings($tmpIndexName, $indexName, $storeId)
+    public function moveIndexWithSetSettings(string $tmpIndexName, string $indexName, int $storeId): void
     {
         if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
             return;

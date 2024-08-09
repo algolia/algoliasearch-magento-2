@@ -36,11 +36,12 @@ class PagesIndexingTest extends IndexingTestCase
         $indexer = $this->getObjectManager()->create(Page::class);
         $this->processTest($indexer, 'pages', $this->assertValues->expectedExcludePages);
 
-        $results = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
+        $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
+        $hits = reset($response['results'])['hits'];
 
         $noRoutePageExists = false;
         $homePageExists = false;
-        foreach ($results['hits'] as $hit) {
+        foreach ($hits as $hit) {
             if ($hit['slug'] === 'no-route') {
                 $noRoutePageExists = true;
 
@@ -65,8 +66,9 @@ class PagesIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', ['hitsPerPage' => 1]);
-        $hit = reset($results['hits']);
+        $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', ['hitsPerPage' => 1]);
+        $hits = reset($response['results']);
+        $hit = reset($hits['hits']);
 
         $defaultAttributes = [
             'objectID',

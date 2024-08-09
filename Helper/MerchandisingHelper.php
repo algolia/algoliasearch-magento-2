@@ -26,13 +26,28 @@ class MerchandisingHelper
         $this->algoliaHelper = $algoliaHelper;
     }
 
-    public function saveQueryRule($storeId, $entityId, $rawPositions, $entityType, $query = null, $banner = null)
+    /**
+     * @param int $storeId
+     * @param int $entityId
+     * @param array $rawPositions
+     * @param string $entityType
+     * @param string|null $query
+     * @param string|null $banner
+     * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function saveQueryRule(int    $storeId,
+                                  int    $entityId,
+                                  array  $rawPositions,
+                                  string $entityType,
+                                  string $query = null,
+                                  string $banner = null): void
     {
         if ($this->coreHelper->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        $productsIndexName = $this->coreHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
+        $productsIndexName = $this->productHelper->getIndexName($storeId);
 
         $positions = $this->transformPositions($rawPositions);
         $condition = [
@@ -42,7 +57,7 @@ class MerchandisingHelper
         ];
 
         $rule = [
-            'objectID' => $this->getQueryRuleId($entityId, $entityType),
+            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $this->getQueryRuleId($entityId, $entityType),
             'description' => 'MagentoGeneratedQueryRule',
             'consequence' => [
                 'filterPromotes' => true,
@@ -73,13 +88,20 @@ class MerchandisingHelper
         $this->algoliaHelper->saveRule($rule, $productsIndexName);
     }
 
-    public function deleteQueryRule($storeId, $entityId, $entityType)
+    /**
+     * @param int $storeId
+     * @param int $entityId
+     * @param string $entityType
+     * @return void
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function deleteQueryRule(int $storeId, int $entityId, string $entityType): void
     {
         if ($this->coreHelper->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        $productsIndexName = $this->coreHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
+        $productsIndexName = $this->productHelper->getIndexName($storeId);
         $ruleId = $this->getQueryRuleId($entityId, $entityType);
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
@@ -87,13 +109,17 @@ class MerchandisingHelper
         $this->algoliaHelper->deleteRule($productsIndexName, $ruleId);
     }
 
-    private function transformPositions($positions)
+    /**
+     * @param array $positions
+     * @return array
+     */
+    private function transformPositions(array $positions): array
     {
         $transformedPositions = [];
 
         foreach ($positions as $objectID => $position) {
             $transformedPositions[] = [
-                'objectID' => (string) $objectID,
+                AlgoliaHelper::ALGOLIA_API_OBJECT_ID => (string) $objectID,
                 'position' => $position,
             ];
         }
@@ -102,17 +128,17 @@ class MerchandisingHelper
     }
 
     /**
-     * @param $storeId
-     * @param $entityIdFrom
-     * @param $entityIdTo
-     * @param $entityType
-     *
-     * @throws AlgoliaException
+     * @param int $storeId
+     * @param int $entityIdFrom
+     * @param int $entityIdTo
+     * @param string $entityType
+     * @return void
+     * @throws AlgoliaException|\Magento\Framework\Exception\NoSuchEntityException
      */
-    public function copyQueryRules($storeId, $entityIdFrom, $entityIdTo, $entityType)
+    public function copyQueryRules(int $storeId, int $entityIdFrom, int $entityIdTo, string $entityType): void
     {
-        $productsIndexName = $this->coreHelper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
-        $productIndex = $this->algoliaHelper->getIndex($productsIndexName);
+        $productsIndexName = $this->productHelper->getIndexName($storeId);
+        $client = $this->algoliaHelper->getClient();
         $context = $this->getQueryRuleId($entityIdFrom, $entityType);
         $queryRulesToSet = [];
 
@@ -120,7 +146,7 @@ class MerchandisingHelper
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $productIndex->searchRules('', [
+                $fetchedQueryRules = $client->searchRules($productsIndexName, [
                     'context' => $context,
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
@@ -134,7 +160,7 @@ class MerchandisingHelper
                     unset($hit['_highlightResult']);
 
                     $newContext = $this->getQueryRuleId($entityIdTo, $entityType);
-                    $hit['objectID'] = $newContext;
+                    $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] = $newContext;
                     if (isset($hit['condition']['context']) && $hit['condition']['context'] == $context) {
                         $hit['condition']['context'] = $newContext;
                     }
@@ -154,10 +180,7 @@ class MerchandisingHelper
             } while (($page * $hitsPerPage) < $fetchedQueryRules['nbHits']);
 
             if (!empty($queryRulesToSet)) {
-                $productIndex->saveRules($queryRulesToSet, [
-                    'forwardToReplicas'  => false,
-                    'clearExistingRules' => false,
-                ]);
+                $client->saveRules($productsIndexName, $queryRulesToSet, false, false);
             }
         } catch (AlgoliaException $e) {
             if ($e->getCode() !== 404) {
@@ -166,7 +189,12 @@ class MerchandisingHelper
         }
     }
 
-    private function getQueryRuleId($entityId, $entityType)
+    /**
+     * @param int $entityId
+     * @param string $entityType
+     * @return string
+     */
+    private function getQueryRuleId(int $entityId, string $entityType): string
     {
         return 'magento-' . $entityType . '-' . $entityId;
     }

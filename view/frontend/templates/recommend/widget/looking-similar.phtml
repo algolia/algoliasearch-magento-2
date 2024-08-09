@@ -1,0 +1,25 @@
+<?php
+/** @var \Algolia\AlgoliaSearch\Block\Widget\LookingSimilar $block */
+$isEnabled = $block->isLookingSimilarEnabled();
+if ($isEnabled):
+    $lsContainer =  'lsItems' . $block->generateUniqueToken(); ?>
+    <div id="<?= $lsContainer ?>" class="lsItem recommend-component"></div>
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "Algolia_AlgoliaSearch/recommend" : {
+                    "recommendLSContainer" : "<?= $lsContainer ?>",
+                    "numOfLookingSimilarItem" : "<?= $block->getData('numOfLookingSimilarItem') ?>",
+                    "objectIDs" : <?= $block->getProductIds() ?>
+                }
+            }
+        }
+    </script>
+    <script type="text/x-magento-init">
+        {
+            "[data-role=tocart-form]": {
+                "catalogAddToCart": {}
+            }
+        }
+    </script>
+<?php endif; ?>

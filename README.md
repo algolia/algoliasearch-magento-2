@@ -86,6 +86,8 @@ Knowing the version of the library will help you understand what is available in
 
 The autocomplete and instantsearch libraries are accessible in the `algoliaBundle` global. This bundle is a prepackage javascript file that contains it's dependencies. What is included in this bundle can be seen here:
 
+v3.x latest bundle: https://github.com/algolia/algoliasearch-extensions-bundle/blob/ISv4/package.json
+
 The search-insights.js library is standalone.
 
 Refer to these docs when customising your Algolia Magento extension frontend features:

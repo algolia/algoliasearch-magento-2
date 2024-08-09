@@ -25,18 +25,18 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
     use ReplicaSyncCommandTrait;
 
     public function __construct(
-        protected WriterInterface           $configWriter,
-        protected ConfigChecker             $configChecker,
-        protected ReinitableConfigInterface $scopeConfig,
-        protected SerializerInterface       $serializer,
-        protected ConfigHelper              $configHelper,
-        protected CacheManager              $cacheManager,
-        protected ReplicaManagerInterface   $replicaManager,
-        protected StoreManagerInterface     $storeManager,
-        protected ProductHelper             $productHelper,
-        State                               $state,
-        StoreNameFetcher                    $storeNameFetcher,
-        ?string                             $name = null
+        protected WriterInterface               $configWriter,
+        protected ConfigChecker                 $configChecker,
+        protected ReinitableConfigInterface     $scopeConfig,
+        protected SerializerInterface           $serializer,
+        protected ConfigHelper\Proxy            $configHelper,
+        protected CacheManager                  $cacheManager,
+        protected ReplicaManagerInterface\Proxy $replicaManager,
+        protected StoreManagerInterface         $storeManager,
+        protected ProductHelper\Proxy           $productHelper,
+        State                                   $state,
+        StoreNameFetcher                        $storeNameFetcher,
+        ?string                                 $name = null
     )
     {
         parent::__construct($state, $storeNameFetcher, $name);

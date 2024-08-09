@@ -23,11 +23,11 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
     protected const UNUSED_OPTION_SHORTCUT = 'u';
 
     public function __construct(
-        protected ReplicaManagerInterface $replicaManager,
-        protected StoreManagerInterface   $storeManager,
-        State                             $state,
-        StoreNameFetcher                  $storeNameFetcher,
-        ?string                           $name = null
+        protected ReplicaManagerInterface\Proxy $replicaManager,
+        protected StoreManagerInterface         $storeManager,
+        State                                   $state,
+        StoreNameFetcher                        $storeNameFetcher,
+        ?string                                 $name = null
     )
     {
         parent::__construct($state, $storeNameFetcher, $name);

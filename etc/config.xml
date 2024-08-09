@@ -28,13 +28,17 @@
             </autocomplete>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>
-            <instant>
+            <instant_facets>
                 <facets><![CDATA[{"_1458145454535_587":{"attribute":"price","type":"slider","label":"Price","searchable":"2","create_rule":"2"},"_2541608784525_123":{"attribute":"categories","type":"conjunctive","label":"Categories","searchable":"2","create_rule":"2"},"_3211608784535_456":{"attribute":"color","type":"disjunctive","label":"Colors","searchable":"1","create_rule":"2"}}]]></facets>
+                <max_values_per_facet>10</max_values_per_facet>
+            </instant_facets>
+            <instant_sorts>
                 <sorts><![CDATA[{"_4581608784535_789":{"attribute":"price","sort":"asc","sortLabel":"Lowest price"},"_2541555584535_585":{"attribute":"price","sort":"desc","sortLabel":"Highest price"},"_5581608784535_898":{"attribute":"created_at","sort":"desc","sortLabel":"Newest first"}}]]></sorts>
+            </instant_sorts>
+            <instant_options>
                 <instantsearch_searchbox>1</instantsearch_searchbox>
-                <use_virtual_replica>0</use_virtual_replica>
                 <hide_pagination>0</hide_pagination>
-            </instant>
+            </instant_options>
         </algoliasearch_instant>
         <algoliasearch_products>
             <products>
@@ -42,6 +46,7 @@
                 <custom_ranking_product_attributes><![CDATA[{"_1600352070901_901":{"attribute":"in_stock","order":"desc"},"_1600352075148_148":{"attribute":"ordered_qty","order":"desc"},"_1600352080300_300":{"attribute":"created_at","order":"desc"}}]]></custom_ranking_product_attributes>
                 <enable_visual_merchandising>0</enable_visual_merchandising>
                 <category_page_id_attribute_name>categoryPageId</category_page_id_attribute_name>
+                <include_non_visible_products_in_index>0</include_non_visible_products_in_index>
             </products>
         </algoliasearch_products>
         <algoliasearch_categories>
@@ -76,6 +81,10 @@
                     <title>Trending items</title>
                     <num_of_trending_items>6</num_of_trending_items>
                 </trends_item>
+                <looking_similar>
+                    <title>Looking Similar</title>
+                    <num_of_products>6</num_of_products>
+                </looking_similar>
             </recommend>
         </algoliasearch_recommend>
         <algoliasearch_advanced>

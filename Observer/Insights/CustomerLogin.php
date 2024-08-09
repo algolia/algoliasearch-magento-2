@@ -9,18 +9,12 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CustomerLogin implements ObserverInterface
 {
-
-    /** @var InsightsHelper */
-    protected $insightsHelper;
-
     /**
      * @param InsightsHelper $insightsHelper
      */
     public function __construct(
-        InsightsHelper $insightsHelper
-    ) {
-        $this->insightsHelper = $insightsHelper;
-    }
+        protected InsightsHelper $insightsHelper
+    ) {}
 
     /**
      * @param Observer $observer
@@ -31,8 +25,8 @@ class CustomerLogin implements ObserverInterface
         /** @var Customer $customer */
         $customer = $observer->getEvent()->getCustomer();
 
-        if ($this->insightsHelper->getConfigHelper()->isClickConversionAnalyticsEnabled($customer->getStoreId()) || $this->insightsHelper->getPersonalizationHelper()->isPersoEnabled($customer->getStoreId())) {
-            $this->insightsHelper->setUserToken($customer);
+        if ($this->insightsHelper->isInsightsEnabled($customer->getStoreId())) {
+            $this->insightsHelper->setAuthenticatedUserToken($customer);
         }
     }
 }

@@ -3,13 +3,14 @@
 namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
 
 class Configuration extends Algolia implements CollectionDataSourceInterface
 {
-    //Placeholder for future implementation (requires customer renderer for hierarchicalMenu widget)
+    //Placeholder for future implementation (requires custom renderer for hierarchicalMenu widget)
     private const IS_CATEGORY_NAVIGATION_ENABLED = false;
 
     public function isSearchPage()
@@ -221,9 +222,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'enabledRelated' => $config->isRecommendRelatedProductsEnabled(),
                 'enabledFBTInCart' => $config->isRecommendFrequentlyBroughtTogetherEnabledOnCartPage(),
                 'enabledRelatedInCart' => $config->isRecommendRelatedProductsEnabledOnCartPage(),
+                'enabledLookingSimilar' => $config->isRecommendLookingSimilarEnabled(),
                 'limitFBTProducts' => $config->getNumberOfFrequentlyBoughtTogetherProducts(),
                 'limitRelatedProducts' => $config->getNumberOfRelatedProducts(),
                 'limitTrendingItems' => $config->getNumberOfTrendingItems(),
+                'limitLookingSimilar' => $config->getNumberOfLookingSimilar(),
                 'enabledTrendItems' => $config->isRecommendTrendingItemsEnabled(),
                 'trendItemFacetName' => $config->getTrendingItemsFacetName(),
                 'trendItemFacetValue' => $config->getTrendingItemsFacetValue(),
@@ -232,10 +235,14 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'isAddToCartEnabledInFBT' => $config->isAddToCartEnabledInFrequentlyBoughtTogether(),
                 'isAddToCartEnabledInRelatedProduct' => $config->isAddToCartEnabledInRelatedProducts(),
                 'isAddToCartEnabledInTrendsItem' => $config->isAddToCartEnabledInTrendsItem(),
+                'isAddToCartEnabledInLookingSimilar' => $config->isAddToCartEnabledInLookingSimilar(),
                 'FBTTitle' => __($config->getFBTTitle()),
                 'relatedProductsTitle' => __($config->getRelatedProductsTitle()),
                 'trendingItemsTitle' => __($config->getTrendingItemsTitle()),
                 'addToCartParams' => $addToCartParams,
+                'isLookingSimilarEnabledInPDP' => $config->isLookingSimilarEnabledInPDP(),
+                'isLookingSimilarEnabledInCartPage' => $config->isLookingSimilarEnabledInShoppingCart(),
+                'lookingSimilarTitle' => __($config->getLookingSimilarTitle())
             ],
             'extensionVersion' => $config->getExtensionVersion(),
             'applicationId' => $config->getApplicationID(),
@@ -248,9 +255,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'facets' => $facets,
             'areCategoriesInFacets' => $areCategoriesInFacets,
             'hitsPerPage' => (int) $config->getNumberOfProductResults(),
-            'sortingIndices' => array_values($config->getSortingIndices(
-                $coreHelper->getIndexName($productHelper->getIndexNameSuffix()),
-                null,
+            'sortingIndices' => array_values($this->sortingTransformer->getSortingIndices(
+                $this->getStoreId(),
                 $customerGroupId
             )),
             'isSearchPage' => $this->isSearchPage(),
@@ -286,9 +292,10 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'popularQueries' => $suggestionHelper->getPopularQueries($this->getStoreId()),
             'useAdaptiveImage' => $config->useAdaptiveImage(),
             'urls' => [
-                'logo' => $this->getViewFileUrl('Algolia_AlgoliaSearch::images/algolia-logo-blue.svg'),
+                'logo' => $this->getViewFileUrl('Algolia_AlgoliaSearch::js/images/algolia-logo-blue.svg'),
             ],
             'cookieConfiguration' => [
+                'customerTokenCookie' => InsightsHelper::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME,
                 'consentCookieName' => $config->getDefaultConsentCookieName(),
                 'cookieAllowButtonSelector' => $config->getAllowCookieButtonSelector(),
                 'cookieRestrictionModeEnabled' => $config->isCookieRestrictionModeEnabled(),

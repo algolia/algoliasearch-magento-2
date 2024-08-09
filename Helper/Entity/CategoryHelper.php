@@ -4,8 +4,10 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
 use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Image;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Category as MagentoCategory;
 use Magento\Catalog\Model\CategoryRepository;
@@ -20,89 +22,32 @@ use Magento\Framework\Module\Manager;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 
-class CategoryHelper
+class CategoryHelper extends AbstractEntityHelper
 {
-    /** @var ManagerInterface */
-    protected $eventManager;
-
-    /** @var StoreManagerInterface */
-    protected $storeManager;
-
-    /** @var ResourceConnection */
-    protected $resourceConnection;
-
-    /** @var Config */
-    protected $eavConfig;
-
-    /** @var ConfigHelper */
-    protected $configHelper;
-
-    /** @var CategoryCollectionFactory */
-    protected $categoryCollectionFactory;
-
-    /** @var Image */
-    protected $imageHelper;
-
-    /** @var CategoryResource */
-    protected $categoryResource;
-
-    /** @var CategoryRepository */
-    protected $categoryRepository;
-
+    use EntityHelperTrait;
+    public const INDEX_NAME_SUFFIX = '_categories';
     protected $isCategoryVisibleInMenuCache;
     protected $coreCategories;
     protected $idColumn;
     protected $categoryAttributes;
     protected $rootCategoryId = -1;
-    protected $activeCategories;
     protected $categoryNames;
 
-    /** @var Manager*/
-    protected $moduleManager;
-
-    /**
-     * CategoryHelper constructor.
-     *
-     * @param ManagerInterface $eventManager
-     * @param StoreManagerInterface $storeManager
-     * @param ResourceConnection $resourceConnection
-     * @param Config $eavConfig
-     * @param ConfigHelper $configHelper
-     * @param CategoryCollectionFactory $categoryCollectionFactory
-     * @param Image $imageHelper
-     * @param CategoryResource $categoryResource
-     * @param CategoryRepository $categoryRepository
-     */
     public function __construct(
-        ManagerInterface $eventManager,
-        StoreManagerInterface $storeManager,
-        ResourceConnection $resourceConnection,
-        Config $eavConfig,
-        ConfigHelper $configHelper,
-        CategoryCollectionFactory $categoryCollectionFactory,
-        Image $imageHelper,
-        CategoryResource $categoryResource,
-        CategoryRepository $categoryRepository,
-        Manager $moduleManager
-    ) {
-        $this->eventManager = $eventManager;
-        $this->storeManager = $storeManager;
-        $this->resourceConnection = $resourceConnection;
-        $this->eavConfig = $eavConfig;
-        $this->configHelper = $configHelper;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->imageHelper = $imageHelper;
-        $this->categoryResource = $categoryResource;
-        $this->categoryRepository = $categoryRepository;
-        $this->moduleManager = $moduleManager;
-    }
-
-    /**
-     * @return string
-     */
-    public function getIndexNameSuffix()
+        protected ManagerInterface          $eventManager,
+        protected StoreManagerInterface     $storeManager,
+        protected ResourceConnection        $resourceConnection,
+        protected Config                    $eavConfig,
+        protected ConfigHelper              $configHelper,
+        protected CategoryCollectionFactory $categoryCollectionFactory,
+        protected Image                     $imageHelper,
+        protected CategoryResource          $categoryResource,
+        protected CategoryRepository        $categoryRepository,
+        protected Manager                   $moduleManager,
+        protected IndexNameFetcher          $indexNameFetcher
+    )
     {
-        return '_categories';
+        parent::__construct($indexNameFetcher);
     }
 
     /**
@@ -307,15 +252,15 @@ class CategoryHelper
         }
 
         $data = [
-            'objectID' => $category->getId(),
-            'name' => $category->getName(),
-            'path' => $path,
-            'level' => $category->getLevel(),
-            'url' => $this->getUrl($category),
-            'include_in_menu' => $category->getIncludeInMenu(),
-            '_tags' => ['category'],
-            'popularity' => 1,
-            'product_count' => $category->getProductCount(),
+            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $category->getId(),
+            'name'                               => $category->getName(),
+            'path'                               => $path,
+            'level'                              => $category->getLevel(),
+            'url'                                => $this->getUrl($category),
+            'include_in_menu'                    => $category->getIncludeInMenu(),
+            '_tags'                              => ['category'],
+            'popularity'                         => 1,
+            'product_count'                      => $category->getProductCount(),
         ];
 
         if (!empty($imageUrl)) {

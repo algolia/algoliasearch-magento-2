@@ -2,8 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Magento;
-use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
+use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Directory\Model\Currency as DirCurrency;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\DataObject;
@@ -12,8 +13,7 @@ use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
-use Magento\Cookie\Helper\Cookie as CookieHelper;
-
+use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 
 class ConfigHelper
 {
@@ -35,14 +35,14 @@ class ConfigHelper
     public const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
     public const INSTANT_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
     public const NUMBER_OF_PRODUCT_RESULTS = 'algoliasearch_instant/instant/number_product_results';
-    public const FACETS = 'algoliasearch_instant/instant/facets';
-    public const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant/max_values_per_facet';
-    public const SORTING_INDICES = 'algoliasearch_instant/instant/sorts';
-    public const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant/show_suggestions_on_no_result_page';
-    public const XML_ADD_TO_CART_ENABLE = 'algoliasearch_instant/instant/add_to_cart_enable';
-    public const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant/infinite_scroll_enable';
-    public const SEARCHBOX_ENABLE = 'algoliasearch_instant/instant/instantsearch_searchbox';
-    public const HIDE_PAGINATION = 'algoliasearch_instant/instant/hide_pagination';
+    public const FACETS = 'algoliasearch_instant/instant_facets/facets';
+    public const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant_facets/max_values_per_facet';
+    public const SORTING_INDICES = 'algoliasearch_instant/instant_sorts/sorts';
+    public const SEARCHBOX_ENABLE = 'algoliasearch_instant/instant_options/instantsearch_searchbox';
+    public const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant_options/show_suggestions_on_no_result_page';
+    public const XML_ADD_TO_CART_ENABLE = 'algoliasearch_instant/instant_options/add_to_cart_enable';
+    public const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant_options/infinite_scroll_enable';
+    public const HIDE_PAGINATION = 'algoliasearch_instant/instant_options/hide_pagination';
 
     public const IS_POPUP_ENABLED = 'algoliasearch_autocomplete/autocomplete/is_popup_enabled';
     public const NB_OF_PRODUCTS_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions';
@@ -94,6 +94,7 @@ class ConfigHelper
     public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
     public const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
     public const AUTOCOMPLETE_SELECTOR = 'algoliasearch_autocomplete/autocomplete/autocomplete_selector';
+    public const INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX = 'algoliasearch_products/products/include_non_visible_products_in_index';
     public const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
     public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
     public const PREVENT_BACKEND_RENDERING_DISPLAY_MODE =
@@ -127,6 +128,8 @@ class ConfigHelper
     protected const IS_REMOVE_RELATED_PRODUCTS_BLOCK = 'algoliasearch_recommend/recommend/related_product/is_remove_core_related_products_block';
     protected const IS_REMOVE_UPSELL_PRODUCTS_BLOCK = 'algoliasearch_recommend/recommend/frequently_bought_together/is_remove_core_upsell_products_block';
     protected const IS_RECOMMEND_TRENDING_ITEMS_ENABLED = 'algoliasearch_recommend/recommend/trends_item/is_trending_items_enabled';
+    protected const IS_RECOMMEND_LOOKING_SIMILAR_ENABLED = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled';
+    protected const NUM_OF_LOOKING_SIMILAR = 'algoliasearch_recommend/recommend/looking_similar/num_of_products';
     protected const NUM_OF_TRENDING_ITEMS = 'algoliasearch_recommend/recommend/trends_item/num_of_trending_items';
     protected const TREND_ITEMS_FACET_NAME = 'algoliasearch_recommend/recommend/trends_item/facet_name';
     protected const TREND_ITEMS_FACET_VALUE = 'algoliasearch_recommend/recommend/trends_item/facet_value';
@@ -135,7 +138,11 @@ class ConfigHelper
     protected const IS_ADDTOCART_ENABLED_IN_FREQUENTLY_BOUGHT_TOGETHER = 'algoliasearch_recommend/recommend/frequently_bought_together/is_addtocart_enabled';
     protected const IS_ADDTOCART_ENABLED_IN_RELATED_PRODUCTS = 'algoliasearch_recommend/recommend/related_product/is_addtocart_enabled';
     protected const IS_ADDTOCART_ENABLED_IN_TRENDS_ITEM = 'algoliasearch_recommend/recommend/trends_item/is_addtocart_enabled';
-    protected const USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
+    protected const IS_ADDTOCART_ENABLED_IN_LOOKING_SIMILAR = 'algoliasearch_recommend/recommend/looking_similar/is_addtocart_enabled';
+    protected const IS_LOOKING_SIMILAR_ENABLED_IN_PDP = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_pdp';
+    protected const IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_cart_page';
+    protected const LOOKING_SIMILAR_TITLE = 'algoliasearch_recommend/recommend/looking_similar/title';
+    public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica'; 
     protected const AUTOCOMPLETE_KEYBORAD_NAVIAGATION = 'algoliasearch_autocomplete/autocomplete/navigator';
     protected const FREQUENTLY_BOUGHT_TOGETHER_TITLE = 'algoliasearch_recommend/recommend/frequently_bought_together/title';
     protected const RELATED_PRODUCTS_TITLE = 'algoliasearch_recommend/recommend/related_product/title';
@@ -146,108 +153,22 @@ class ConfigHelper
     public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/queue/number_of_element_by_page';
     public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
 
-    /**
-     * @var Magento\Framework\App\Config\ScopeConfigInterface
-     */
-    protected $configInterface;
-
-    /**
-     * @var Currency
-     */
-    protected $currency;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
-
-    /**
-     * @var DirCurrency
-     */
-    protected $dirCurrency;
-
-    /**
-     * @var DirectoryList
-     */
-    protected $directoryList;
-
-    /**
-     * @var Magento\Framework\Module\ResourceInterface
-     */
-    protected $moduleResource;
-
-    /**
-     * @var Magento\Framework\App\ProductMetadataInterface
-     */
-    protected $productMetadata;
-
-    /**
-     * @var Magento\Framework\Event\ManagerInterface
-     */
-    protected $eventManager;
-
-    /**
-     * @var SerializerInterface
-     */
-    protected $serializer;
-
-    /**
-     * @var GroupCollection
-     */
-    protected $groupCollection;
-
-    /**
-     * @var GroupExcludedWebsiteRepositoryInterface
-     */
-    protected $groupExcludedWebsiteRepository;
-
-    /**
-     * @var CookieHelper
-     */
-    protected $cookieHelper;
-
-    /**
-     * @param Magento\Framework\App\Config\ScopeConfigInterface $configInterface
-     * @param StoreManagerInterface $storeManager
-     * @param Currency $currency
-     * @param DirCurrency $dirCurrency
-     * @param DirectoryList $directoryList
-     * @param Magento\Framework\Module\ResourceInterface $moduleResource
-     * @param Magento\Framework\App\ProductMetadataInterface $productMetadata
-     * @param Magento\Framework\Event\ManagerInterface $eventManager
-     * @param SerializerInterface $serializer
-     * @param GroupCollection $groupCollection
-     * @param GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository
-     * @param CookieHelper $cookieHelper
-
-     */
     public function __construct(
-        Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
-        StoreManagerInterface                             $storeManager,
-        Currency                                          $currency,
-        DirCurrency                                       $dirCurrency,
-        DirectoryList                                     $directoryList,
-        Magento\Framework\Module\ResourceInterface        $moduleResource,
-        Magento\Framework\App\ProductMetadataInterface    $productMetadata,
-        Magento\Framework\Event\ManagerInterface          $eventManager,
-        SerializerInterface                               $serializer,
-        GroupCollection                                   $groupCollection,
-        GroupExcludedWebsiteRepositoryInterface           $groupExcludedWebsiteRepository,
-        CookieHelper                                      $cookieHelper
-    ) {
-        $this->configInterface = $configInterface;
-        $this->currency = $currency;
-        $this->storeManager = $storeManager;
-        $this->dirCurrency = $dirCurrency;
-        $this->directoryList = $directoryList;
-        $this->moduleResource = $moduleResource;
-        $this->productMetadata = $productMetadata;
-        $this->eventManager = $eventManager;
-        $this->serializer = $serializer;
-        $this->groupCollection = $groupCollection;
-        $this->groupExcludedWebsiteRepository = $groupExcludedWebsiteRepository;
-        $this->cookieHelper = $cookieHelper;
-    }
+        protected Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,
+        protected Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
+        protected StoreManagerInterface                                $storeManager,
+        protected Currency                                             $currency,
+        protected DirCurrency                                          $dirCurrency,
+        protected DirectoryList                                        $directoryList,
+        protected Magento\Framework\Module\ResourceInterface           $moduleResource,
+        protected Magento\Framework\App\ProductMetadataInterface       $productMetadata,
+        protected Magento\Framework\Event\ManagerInterface             $eventManager,
+        protected SerializerInterface                                  $serializer,
+        protected GroupCollection                                      $groupCollection,
+        protected GroupExcludedWebsiteRepositoryInterface              $groupExcludedWebsiteRepository,
+        protected CookieHelper                                         $cookieHelper,
+    )
+    {}
 
 
     /**
@@ -312,6 +233,21 @@ class ConfigHelper
     public function getAutocompleteSelector($storeId = null)
     {
         return $this->configInterface->getValue(self::AUTOCOMPLETE_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * Returns config flag
+     *
+     * @param $storeId
+     * @return bool
+     */
+    public function includeNonVisibleProductsInIndex($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     /**
@@ -506,6 +442,10 @@ class ConfigHelper
         }
 
         return [];
+    }
+
+    protected function serialize(array $value): string {
+        return $this->serializer->serialize($value);
     }
 
     /**
@@ -806,6 +746,21 @@ class ConfigHelper
     }
 
     /**
+     * Returns number of looking similar products to display
+     *
+     * @param $storeId
+     * @return int
+     */
+    public function getNumberOfLookingSimilar($storeId = null)
+    {
+        return (int)$this->configInterface->getValue(
+            self::NUM_OF_LOOKING_SIMILAR,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
      * @param $storeId
      * @return mixed
      */
@@ -826,6 +781,57 @@ class ConfigHelper
     {
         return $this->configInterface->getValue(
             self::TREND_ITEMS_FACET_VALUE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * Determines whether Looking Similar enabled (for widgets))
+     *
+     * @param $storeId
+     * @return int
+     */
+    public function isRecommendLookingSimilarEnabled($storeId = null)
+    {
+        return (int)$this->configInterface->getValue(
+            self::IS_RECOMMEND_LOOKING_SIMILAR_ENABLED,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * Determines whether Looking Similar enabled on PDP
+     *
+     * @param $storeId
+     * @return int
+     */
+    public function isLookingSimilarEnabledInPDP($storeId = null)
+    {
+        return (int)$this->configInterface->getValue(
+            self::IS_LOOKING_SIMILAR_ENABLED_IN_PDP,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function getLookingSimilarTitle($storeId = null)
+    {
+        return $this->configInterface->getValue(
+            self::LOOKING_SIMILAR_TITLE,
+            ScopeInterface::SCOPE_STORE, $storeId
+        );
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     */
+    public function isLookingSimilarEnabledInShoppingCart($storeId = null)
+    {
+        return (int)$this->configInterface->getValue(
+            self::IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
@@ -882,6 +888,21 @@ class ConfigHelper
     public function isAddToCartEnabledInTrendsItem($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::IS_ADDTOCART_ENABLED_IN_TRENDS_ITEM, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * Determines whether add to cart is enabled in Looking Similar
+     *
+     * @param $storeId
+     * @return bool
+     */
+    public function isAddToCartEnabledInLookingSimilar($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(
+            self::IS_ADDTOCART_ENABLED_IN_LOOKING_SIMILAR,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     /**
@@ -1012,6 +1033,8 @@ class ConfigHelper
      * @return array
      * @throws Magento\Framework\Exception\LocalizedException
      * @throws Magento\Framework\Exception\NoSuchEntityException
+     * @deprecated This method has been deprecated and should no longer be used
+     * @see \Algolia\AlgoliaSearch\Service\Product\SortingTransformer
      */
     public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null, $attrs = null)
     {
@@ -1106,24 +1129,40 @@ class ConfigHelper
     }
 
     /***
-     * @param $storeId
-     * @return array|bool|float|int|mixed|string|null
+     * @param int|null $storeId
+     * @return array<string,<array<string, mixed>>>
      */
-    public function getSorting($storeId = null)
+    public function getSorting(?int $storeId = null): array
     {
         return $this->unserialize($this->getRawSortingValue($storeId));
     }
 
     /**
-     * @param $storeId
-     * @return mixed
+     * @param int|null $storeId
+     * @return string
      */
-    public function getRawSortingValue($storeId = null)
+    public function getRawSortingValue(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(
+        return (string) $this->configInterface->getValue(
             self::SORTING_INDICES,
             ScopeInterface::SCOPE_STORE,
             $storeId
+        );
+    }
+
+    /**
+     * @param array $sorting
+     * @param string|null $scope
+     * @param int|null $scopeId
+     * @return void
+     */
+    public function setSorting(array $sorting, ?string $scope = null, ?int $scopeId = null): void
+    {
+        $this->configWriter->save(
+            self::SORTING_INDICES,
+            $this->serialize($sorting),
+            $scope,
+            $scopeId
         );
     }
 
@@ -1143,9 +1182,19 @@ class ConfigHelper
      * @param $storeId
      * @return bool
      */
-    public function isCustomerGroupsEnabled($storeId = null)
+    public function isCustomerGroupsEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::CUSTOMER_GROUPS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function setCustomerGroupsEnabled(bool $val, ?string $scope = null, ?int $scopeId = null): void
+    {
+        $this->configWriter->save(
+            self::CUSTOMER_GROUPS_ENABLE,
+            $val ? '1' : '0',
+            $scope,
+            $scopeId
+        );
     }
 
     /**
@@ -1187,10 +1236,10 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
+     * @param int|null $storeId
+     * @return string
      */
-    public function getIndexPrefix($storeId = null)
+    public function getIndexPrefix(int $storeId = null): string
     {
         return $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
@@ -1420,7 +1469,7 @@ class ConfigHelper
             }
         }
         $attributes = array_merge($attributes, [
-            'objectID',
+            AlgoliaHelper::ALGOLIA_API_OBJECT_ID,
             'name',
             'url',
             'visibility_search',
@@ -1791,14 +1840,17 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
+     * @param int|null $storeId
+     * @return bool
      */
-    public function useVirtualReplica($storeId = null) {
-        return $this->configInterface->isSetFlag(self::USE_VIRTUAL_REPLICA_ENABLED,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
+    public function useVirtualReplica(?int $storeId = null): bool
+    {
+        return (bool) count(array_filter(
+            $this->getSorting($storeId),
+            function ($sort) {
+                return $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA];
+            }
+        ));
     }
 
     /**

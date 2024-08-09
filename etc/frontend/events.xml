@@ -14,14 +14,11 @@
     <event name="wishlist_product_add_after">
         <observer name="algoliasearch_insights_add_to_wishlist_event" instance="Algolia\AlgoliaSearch\Observer\Insights\WishlistProductAddAfter" />
     </event>
-    <event name="checkout_cart_product_add_before">
-        <observer name="algoliasearch_analytics_add_request_queryid_to_product" instance="Algolia\AlgoliaSearch\Observer\Insights\CheckoutCartProductAddBefore" />
-    </event>
     <event name="checkout_cart_product_add_after">
         <observer name="algoliasearch_insights_add_to_cart_event" instance="Algolia\AlgoliaSearch\Observer\Insights\CheckoutCartProductAddAfter" />
     </event>
     <event name="checkout_onepage_controller_success_action">
-        <observer name="algoliasearch_insights_place_order_event" instance="Algolia\AlgoliaSearch\Observer\Insights\CheckoutOnepageControllerSuccessAction" />
+        <observer name="algoliasearch_insights_place_order_event" instance="Algolia\AlgoliaSearch\Observer\Insights\CheckoutOnePageControllerSuccessAction" />
     </event>
     <event name="catalog_controller_category_init_after">
         <observer name="algoliasearch_current_category" instance="Algolia\AlgoliaSearch\Observer\RegisterCurrentCategoryObserver"/>

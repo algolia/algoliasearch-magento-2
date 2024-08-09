@@ -32,7 +32,7 @@
         />
         <add
             id="Algolia_AlgoliaSearch::instant"
-            title="Instant Search Results Page"
+            title="InstantSearch Results Page"
             translate="title"
             module="Algolia_AlgoliaSearch"
             sortOrder="30"

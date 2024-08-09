@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Block\Checkout;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
@@ -52,8 +53,8 @@ class Conversion extends Template
 
         /** @var Item $item */
         foreach ($orderItems as $item) {
-            if ($item->hasData('algoliasearch_query_param')) {
-                $orderItemsData[$item->getProductId()] = json_decode($item->getData('algoliasearch_query_param'));
+            if ($item->hasData(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)) {
+                $orderItemsData[$item->getProductId()] = json_decode($item->getData(InsightsHelper::QUOTE_ITEM_QUERY_PARAM));
             }
         }
 
@@ -64,7 +65,7 @@ class Conversion extends Template
     {
         $storeId = $this->checkoutSession->getLastRealOrder()->getStoreId();
         if ($this->configHelper->isClickConversionAnalyticsEnabled($storeId)
-            && $this->configHelper->getConversionAnalyticsMode($storeId) === 'place_order'
+            && $this->configHelper->getConversionAnalyticsMode($storeId) === InsightsHelper::CONVERSION_ANALYTICS_MODE_PURCHASE
         ) {
             return parent::toHtml();
         }

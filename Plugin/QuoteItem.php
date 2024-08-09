@@ -3,24 +3,21 @@
 namespace Algolia\AlgoliaSearch\Plugin;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Quote\Model\Quote\Item\AbstractItem;
 use Magento\Quote\Model\Quote\Item\ToOrderItem;
 use Magento\Sales\Api\Data\OrderItemInterface;
 
 class QuoteItem
 {
-    /** @var ConfigHelper */
-    private $configHelper;
-
     /**
-     * QuoteItem constructor.
+     * QuoteItem plugin constructor.
      *
      * @param ConfigHelper $configHelper
      */
-    public function __construct(ConfigHelper $configHelper)
-    {
-        $this->configHelper = $configHelper;
-    }
+    public function __construct(
+        protected InsightsHelper $insightsHelper
+    ) {}
 
     /**
      * @param ToOrderItem $subject
@@ -34,13 +31,11 @@ class QuoteItem
         ToOrderItem $subject,
         OrderItemInterface $orderItem,
         AbstractItem $item,
-        $additional = []
-    ) {
+        array $additional = []): OrderItemInterface
+    {
         $product = $item->getProduct();
-        if ($this->configHelper->isClickConversionAnalyticsEnabled($product->getStoreId())
-            && $this->configHelper->getConversionAnalyticsMode($product->getStoreId()) === 'place_order'
-        ) {
-            $orderItem->setData('algoliasearch_query_param', $item->getData('algoliasearch_query_param'));
+        if ($this->insightsHelper->isOrderPlacedTracked($product->getStoreId())) {
+            $orderItem->setData(InsightsHelper::QUOTE_ITEM_QUERY_PARAM, $item->getData(InsightsHelper::QUOTE_ITEM_QUERY_PARAM));
         }
 
         return $orderItem;

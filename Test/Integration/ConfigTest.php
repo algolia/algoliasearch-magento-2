@@ -15,7 +15,7 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
 
         $this->assertEquals($this->assertValues->attributesForFaceting, count($indexSettings['attributesForFaceting']));
     }
@@ -28,18 +28,22 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $index = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products');
+        $client = $this->algoliaHelper->getClient();
 
         $matchedRules = [];
 
         $hitsPerPage = 100;
         $page = 0;
         do {
-            $fetchedQueryRules = $index->searchRules('', [
-                'context' => 'magento_filters',
-                'page' => $page,
-                'hitsPerPage' => $hitsPerPage,
-            ]);
+            $fetchedQueryRules = $client->searchRules(
+                $this->indexPrefix . 'default_products',
+                [
+                    'query'       => '',
+                    'context'     => 'magento_filters',
+                    'page'        => $page,
+                    'hitsPerPage' => $hitsPerPage,
+                ]
+            );
 
             foreach ($fetchedQueryRules['hits'] as $hit) {
                 $matchedRules[] = $hit;
@@ -75,7 +79,7 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
 
         $this->assertEquals($this->assertValues->automaticalSetOfCategoryAttributesForFaceting, count($indexSettings['attributesForFaceting']));
 
@@ -97,7 +101,7 @@ class ConfigTest extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getIndex($this->indexPrefix . 'default_products')->getSettings();
+        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
 
         $this->assertEquals($this->assertValues->automaticalSetOfCategoryAttributesForFaceting + 1, count($indexSettings['attributesForFaceting']));
 
@@ -224,7 +228,7 @@ class ConfigTest extends TestCase
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
 
-            $currentSettings = $this->algoliaHelper->getIndex($indexName)->getSettings();
+            $currentSettings = $this->algoliaHelper->getSettings($indexName);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);
             $this->assertEquals('attribute', $currentSettings['exactOnSingleWordQuery']);
@@ -240,7 +244,7 @@ class ConfigTest extends TestCase
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
 
-            $currentSettings = $this->algoliaHelper->getIndex($indexName)->getSettings();
+            $currentSettings = $this->algoliaHelper->getSettings($indexName);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);
             $this->assertEquals('word', $currentSettings['exactOnSingleWordQuery']);

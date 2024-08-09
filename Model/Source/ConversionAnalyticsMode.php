@@ -2,16 +2,24 @@
 
 namespace Algolia\AlgoliaSearch\Model\Source;
 
-use Magento\Framework\Option\ArrayInterface;
+use Algolia\AlgoliaSearch\Helper\InsightsHelper;
+use Magento\Framework\Data\OptionSourceInterface;
 
-class ConversionAnalyticsMode implements ArrayInterface
+/**
+ * Historically the Algolia Magento integration has provided the ability to consider a conversion either a
+ * purchase or an add to cart operation.
+ *
+ * With the introduction of Revenue Analytics which supports both types out of the box this kind of granularity
+ * does not make as much sense. However, the ability to support this feature remains in concept by not configuring
+ * this setting as a Yes/No flag.
+ */
+class ConversionAnalyticsMode implements OptionSourceInterface
 {
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         return [
-            ['value' => 'disabled',     'label' => __('[Disabled]')],
-            ['value' => 'add_to_cart',  'label' => __('Track "Add to cart" action as conversion')],
-            ['value' => 'place_order',  'label' => __('Track "Place Order" action as conversion')],
+            ['value' => InsightsHelper::CONVERSION_ANALYTICS_MODE_ALL, 'label' => __('Yes')],
+            ['value' => InsightsHelper::CONVERSION_ANALYTICS_MODE_DISABLE, 'label' => __('No')]
         ];
     }
 }

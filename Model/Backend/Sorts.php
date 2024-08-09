@@ -2,9 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Backend;
 
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\ConfigChecker;
+use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Magento\Config\Model\Config\Backend\Serialized\ArraySerialized;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -15,78 +14,58 @@ use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
 use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Store\Model\StoreManagerInterface;
 
 class Sorts extends ArraySerialized
 {
-    /** @var StoreManagerInterface */
-    protected $storeManager;
-    /**
-     * @var Data
-     */
-    protected $helper;
-
-    /**
-     * @var ProductHelper
-     */
-    protected $productHelper;
-
-    /**
-     * @param Context $context
-     * @param Registry $registry
-     * @param ScopeConfigInterface $config
-     * @param TypeListInterface $cacheTypeList
-     * @param StoreManagerInterface $storeManager
-     * @param Data $helper
-     * @param ProductHelper $productHelper
-     * @param AbstractResource|null $resource
-     * @param AbstractDb|null $resourceCollection
-     * @param array $data
-     * @param Json|null $serializer
-     */
     public function __construct(
-        Context $context,
-        Registry $registry,
-        ScopeConfigInterface $config,
-        TypeListInterface $cacheTypeList,
-        StoreManagerInterface $storeManager,
-        Data $helper,
-        ProductHelper $productHelper,
-        AbstractResource $resource = null,
-        AbstractDb $resourceCollection = null,
-        array $data = [],
-        Json $serializer = null
-    ) {
-        $this->storeManager = $storeManager;
-        $this->helper = $helper;
-        $this->productHelper = $productHelper;
+        Context                 $context,
+        Registry                $registry,
+        ScopeConfigInterface    $config,
+        TypeListInterface       $cacheTypeList,
+        protected ReplicaState  $replicaState,
+        protected ConfigChecker $configChecker,
+        AbstractResource        $resource = null,
+        AbstractDb              $resourceCollection = null,
+        array                   $data = [],
+        Json                    $serializer = null
+    )
+    {
         $this->serializer = $serializer ?: ObjectManager::getInstance()->get(Json::class);
-        parent::__construct($context, $registry, $config, $cacheTypeList, $resource, $resourceCollection, $data);
+        parent::__construct(
+            $context,
+            $registry,
+            $config,
+            $cacheTypeList,
+            $resource,
+            $resourceCollection,
+            $data,
+            $serializer);
     }
 
     /**
      * @return $this
-     * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function afterSave()
+    public function afterSave(): \Magento\Framework\App\Config\Value
     {
-        if ($this->isValueChanged()) {
-            try{
-                $oldValue = $this->serializer->unserialize($this->getOldValue());
-                $updatedValue = $this->serializer->unserialize($this->getValue());
-                $sortingAttributes = array_merge($oldValue, $updatedValue);
-                $storeIds = array_keys($this->storeManager->getStores());
-                foreach ($storeIds as $storeId) {
-                    $indexName = $this->helper->getIndexName($this->productHelper->getIndexNameSuffix(), $storeId);
-                    $this->productHelper->handlingReplica($indexName, $storeId, $sortingAttributes);
-                }
-            } catch (AlgoliaException $e) {
-                if ($e->getCode() !== 404) {
-                    throw $e;
-                }
+        $this->replicaState->setAppliedScope($this->getScope(), $this->getScopeId());
+
+        $storeIds = $this->configChecker->getAffectedStoreIds(
+            $this->getPath(),
+            $this->getScope(),
+            $this->getScopeId()
+        );
+
+        foreach ($storeIds as $storeId) {
+            if ($this->isValueChanged()) {
+                $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_CHANGED, $storeId);
+                $this->replicaState->setOriginalSortConfiguration($this->serializer->unserialize($this->getOldValue()), $storeId);
+                $this->replicaState->setUpdatedSortConfiguration($this->serializer->unserialize($this->getValue()), $storeId);
+            } else {
+                $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_UNCHANGED, $storeId);
             }
         }
+
         return parent::afterSave();
     }
 }

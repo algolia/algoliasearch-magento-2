@@ -237,7 +237,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
                     indexName: hit.__indexName
                 });
                 if (hit.url.indexOf('?') > -1) {
-                    hit.urlForInsights += insightsDataUrlString
+                    hit.urlForInsights += '&' + insightsDataUrlString;
                 } else {
                     hit.urlForInsights += '?' + insightsDataUrlString;
                 }

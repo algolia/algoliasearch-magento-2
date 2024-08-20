@@ -26,6 +26,7 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\JobInterface" type="Algolia\AlgoliaSearch\Model\Job" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" type="Algolia\AlgoliaSearch\Model\LandingPage" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueryInterface" type="Algolia\AlgoliaSearch\Model\Query" />
+    <preference for="Algolia\AlgoliaSearch\Api\RecommendManagementInterface" type="Algolia\AlgoliaSearch\Model\RecommendManagement" />
 
     <!-- Declare preference for QueueArchiveRepositoryInterface -->
     <preference for="Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface" type="Algolia\AlgoliaSearch\Model\QueueArchiveRepository" />

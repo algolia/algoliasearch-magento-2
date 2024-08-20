@@ -1,5 +1,7 @@
 <?php
+
 namespace Algolia\AlgoliaSearch\Api;
+
 interface RecommendManagementInterface
 {
     /**

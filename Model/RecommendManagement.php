@@ -5,28 +5,24 @@ namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Api\RecommendClient;
 use Algolia\AlgoliaSearch\Api\RecommendManagementInterface;
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Model\StoreManagerInterface;
 
 class RecommendManagement implements RecommendManagementInterface
 {
     /**
      * @var null|RecommendClient
      */
-    private $client = null;
+    private ?RecommendClient $client = null;
 
     /**
-     * @param AlgoliaHelper $algoliaHelper
      * @param ConfigHelper $configHelper
-     * @param StoreManagerInterface $storeManager
+     * @param IndexNameFetcher $indexNameFetcher
      */
     public function __construct(
-        private readonly AlgoliaHelper         $algoliaHelper,
         private readonly ConfigHelper          $configHelper,
-        private readonly StoreManagerInterface $storeManager
+        private readonly IndexNameFetcher      $indexNameFetcher
     ){}
 
     /**
@@ -44,66 +40,42 @@ class RecommendManagement implements RecommendManagementInterface
     }
 
     /**
-     * @param string $name
-     * @return string
-     * @throws AlgoliaException
-     * @throws NoSuchEntityException
-     */
-    private function getFullIndexName(string $name): string
-    {
-        $prefix = $this->configHelper->getIndexPrefix();
-        $storeCode = $this->storeManager->getStore()->getCode();
-
-        foreach ($this->algoliaHelper->listIndexes()['items'] as $index) {
-            if ($index['name'] == $prefix . $storeCode . '_' . $name) {
-                return $index['name'];
-            }
-        }
-
-        return '';
-    }
-
-    /**
      * @param string $productId
      * @return array
-     * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
     public function getBoughtTogetherRecommendation(string $productId): array
     {
-        return $this->getRecommendations($productId, 'bought-together', 50);
+        return $this->getRecommendations($productId, 'bought-together');
     }
 
     /**
      * @param string $productId
      * @return array
-     * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function getRelatedProductsRecommendation($productId): array
+    public function getRelatedProductsRecommendation(string $productId): array
     {
-        return $this->getRecommendations($productId, 'related-products', 50);
+        return $this->getRecommendations($productId, 'related-products');
     }
 
     /**
      * @return array
-     * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
     public function getTrendingItemsRecommendation(): array
     {
-        return $this->getRecommendations('', 'trending-items', 50);
+        return $this->getRecommendations('', 'trending-items');
     }
 
     /**
      * @param string $productId
      * @return array
-     * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function getLookingSimilarRecommendation($productId): array
+    public function getLookingSimilarRecommendation(string $productId): array
     {
-        return $this->getRecommendations($productId, 'bought-together', 50);
+        return $this->getRecommendations($productId, 'bought-together');
     }
 
     /**
@@ -111,12 +83,11 @@ class RecommendManagement implements RecommendManagementInterface
      * @param string $model
      * @param float|int $threshold
      * @return array
-     * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    private function getRecommendations(string $productId, string $model, float|int $threshold = 42): array
+    private function getRecommendations(string $productId, string $model, float|int $threshold = 50): array
     {
-        $request['indexName'] = $this->getFullIndexName('products');
+        $request['indexName'] = $this->indexNameFetcher->getIndexName('_products');
         $request['model'] = $model;
         $request['threshold'] = $threshold;
         if (!empty($productId)) {

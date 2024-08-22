@@ -24,12 +24,12 @@ class ReplicaSyncCommand extends AbstractReplicaCommand implements ReplicaSyncCo
     use ReplicaSyncCommandTrait;
 
     public function __construct(
-        protected ProductHelper\Proxy           $productHelper,
-        protected ReplicaManagerInterface\Proxy $replicaManager,
-        protected StoreManagerInterface         $storeManager,
-        State                                   $state,
-        StoreNameFetcher                        $storeNameFetcher,
-        ?string                                 $name = null
+        protected ReplicaManagerInterface $replicaManager,
+        protected ProductHelper           $productHelper,
+        protected StoreManagerInterface   $storeManager,
+        State                             $state,
+        StoreNameFetcher                  $storeNameFetcher,
+        ?string                           $name = null
     )
     {
         parent::__construct($state, $storeNameFetcher, $name);

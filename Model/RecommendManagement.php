@@ -14,21 +14,21 @@ class RecommendManagement implements RecommendManagementInterface
     /**
      * @var null|RecommendClient
      */
-    private ?RecommendClient $client = null;
+    protected ?RecommendClient $client = null;
 
     /**
      * @param ConfigHelper $configHelper
      * @param IndexNameFetcher $indexNameFetcher
      */
     public function __construct(
-        private readonly ConfigHelper          $configHelper,
-        private readonly IndexNameFetcher      $indexNameFetcher
+        protected readonly ConfigHelper          $configHelper,
+        protected readonly IndexNameFetcher      $indexNameFetcher
     ){}
 
     /**
      * @return RecommendClient
      */
-    private function getClient(): RecommendClient
+    protected function getClient(): RecommendClient
     {
         if ($this->client === null) {
             $this->client = RecommendClient::create(
@@ -85,7 +85,7 @@ class RecommendManagement implements RecommendManagementInterface
      * @return array
      * @throws NoSuchEntityException
      */
-    private function getRecommendations(string $productId, string $model, float|int $threshold = 50): array
+    protected function getRecommendations(string $productId, string $model, float|int $threshold = 50): array
     {
         $request['indexName'] = $this->indexNameFetcher->getIndexName('_products');
         $request['model'] = $model;

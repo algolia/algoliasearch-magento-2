@@ -14,10 +14,14 @@ use Magento\Framework\Exception\LocalizedException;
 
 class RecommendSettings implements ObserverInterface
 {
+    const QUANTITY_AND_STOCK_STATUS = 'quantity_and_stock_status';
+    const STATUS = 'status';
+    const VISIBILITY = 'visibility';
+
     /**
      * @var string
      */
-    private $productId = '';
+    protected $productId = '';
 
     /**
      * @param ConfigHelper $configHelper
@@ -27,11 +31,11 @@ class RecommendSettings implements ObserverInterface
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      */
     public function __construct(
-        private readonly ConfigHelper                 $configHelper,
-        private readonly WriterInterface              $configWriter,
-        private readonly ProductRepositoryInterface   $productRepository,
-        private readonly RecommendManagementInterface $recommendManagement,
-        private readonly SearchCriteriaBuilder        $searchCriteriaBuilder
+        protected readonly ConfigHelper                 $configHelper,
+        protected readonly WriterInterface              $configWriter,
+        protected readonly ProductRepositoryInterface   $productRepository,
+        protected readonly RecommendManagementInterface $recommendManagement,
+        protected readonly SearchCriteriaBuilder        $searchCriteriaBuilder
     ){}
 
     /**
@@ -119,7 +123,7 @@ class RecommendSettings implements ObserverInterface
             $recommendations = $this->recommendManagement->getRelatedProductsRecommendation($this->getProductId());
             if (empty($recommendations['renderingContent'])) {
                 throw new LocalizedException(__(
-                    "It appears that there is no trained model available for the AppID: %1.",
+                    "It appears that there is no trained model available for Algolia application ID: %1.",
                     $this->configHelper->getApplicationID()
                 ));
             }
@@ -141,7 +145,7 @@ class RecommendSettings implements ObserverInterface
             // When no recommendations suggested, most likely trained model is missing
             if (empty($recommendations['renderingContent'])) {
                 throw new LocalizedException(__(
-                    "It appears that there is no trained model available for the AppID: %1.",
+                    "It appears that there is no trained model available for Algolia application ID: %1.",
                     $this->configHelper->getApplicationID()
                 ));
             }
@@ -162,7 +166,7 @@ class RecommendSettings implements ObserverInterface
             $recommendations = $this->recommendManagement->getLookingSimilarRecommendation($this->getProductId());
             if (empty($recommendations['renderingContent'])) {
                 throw new LocalizedException(__(
-                    "It appears that there is no trained model available for the AppID: %1.",
+                    "It appears that there is no trained model available for Algolia application ID: %1.",
                     $this->configHelper->getApplicationID()
                 ));
             }
@@ -175,13 +179,13 @@ class RecommendSettings implements ObserverInterface
     /**
      * @return string
      */
-    private function getProductId(): string
+    protected function getProductId(): string
     {
         if ($this->productId === '') {
             $searchCriteria = $this->searchCriteriaBuilder
-                ->addFilter('status', 1)
-                ->addFilter('quantity_and_stock_status', 1)
-                ->addFilter('visibility', [2, 3, 4], 'in')
+                ->addFilter(self::STATUS, 1)
+                ->addFilter(self::QUANTITY_AND_STOCK_STATUS, 1)
+                ->addFilter(self::VISIBILITY, [2, 3, 4], 'in')
                 ->setPageSize(10)
                 ->create();
             $result = $this->productRepository->getList($searchCriteria);

@@ -94,14 +94,6 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @return RequestInterface
-     */
-    public function getRequest(): RequestInterface
-    {
-        return $this->_getRequest();
-    }
-
-    /**
      * @return void
      */
     public function resetCredentialsFromConfig(): void

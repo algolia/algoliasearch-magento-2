@@ -6,10 +6,11 @@ namespace Algolia\AlgoliaSearch\Observer;
 use Algolia\AlgoliaSearch\Api\RecommendManagementInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Config\Storage\WriterInterface;
-use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 
 class RecommendSettings implements ObserverInterface
@@ -168,7 +169,14 @@ class RecommendSettings implements ObserverInterface
             $searchCriteria = $this->searchCriteriaBuilder
                 ->addFilter(self::STATUS, 1)
                 ->addFilter(self::QUANTITY_AND_STOCK_STATUS, 1)
-                ->addFilter(self::VISIBILITY, [2, 3, 4], 'in')
+                ->addFilter(
+                    self::VISIBILITY,
+                    [
+                        Visibility::VISIBILITY_IN_CATALOG,
+                        Visibility::VISIBILITY_IN_SEARCH,
+                        Visibility::VISIBILITY_BOTH
+                    ],
+                    'in')
                 ->setPageSize(10)
                 ->create();
             $result = $this->productRepository->getList($searchCriteria);

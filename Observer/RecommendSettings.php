@@ -22,7 +22,7 @@ class RecommendSettings implements ObserverInterface
     /**
      * @var string
      */
-    protected $productId = '';
+    protected string $productId = '';
 
     /**
      * @param ConfigHelper $configHelper
@@ -43,7 +43,7 @@ class RecommendSettings implements ObserverInterface
      * @param Observer $observer
      * @throws LocalizedException
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
         foreach ($observer->getData('changed_paths') as $changedPath) {
             // Validate before enable FBT on PDP or on cart page
@@ -161,7 +161,8 @@ class RecommendSettings implements ObserverInterface
     }
 
     /**
-     * @return string
+     * @return string - Product ID string for use in API calls
+     * @throws LocalizedException
      */
     protected function getProductId(): string
     {

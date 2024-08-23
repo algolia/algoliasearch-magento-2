@@ -98,18 +98,7 @@ class RecommendSettings implements ObserverInterface
      */
     protected function validateFrequentlyBroughtTogether(string $changedPath): void
     {
-        try {
-            $recommendations = $this->recommendManagement->getBoughtTogetherRecommendation($this->getProductId());
-            if (empty($recommendations['renderingContent'])) {
-                throw new LocalizedException(__(
-                    "It appears that there is no trained model available for Algolia application ID %1.",
-                    $this->configHelper->getApplicationID()
-                ));
-            }
-        } catch (\Exception $e) {
-            $this->configWriter->save($changedPath, 0);
-            throw new LocalizedException(__("Unable to save FBT Recommend configuration due to the following error: " . $e->getMessage()));
-        }
+        $this->validateRecommendation($changedPath, 'getBoughtTogetherRecommendation', 'Frequently Bought Together');
     }
 
     /**
@@ -119,18 +108,7 @@ class RecommendSettings implements ObserverInterface
      */
     protected function validateRelatedProducts(string $changedPath): void
     {
-        try {
-            $recommendations = $this->recommendManagement->getRelatedProductsRecommendation($this->getProductId());
-            if (empty($recommendations['renderingContent'])) {
-                throw new LocalizedException(__(
-                    "It appears that there is no trained model available for Algolia application ID: %1.",
-                    $this->configHelper->getApplicationID()
-                ));
-            }
-        } catch (\Exception $e) {
-            $this->configWriter->save($changedPath, 0);
-            throw new LocalizedException(__("Unable to save Related Products Recommend configuration due to the following error: ". $e->getMessage()));
-        }
+        $this->validateRecommendation($changedPath, 'getRelatedProductsRecommendation', 'Related Products');
     }
 
     /**
@@ -140,19 +118,7 @@ class RecommendSettings implements ObserverInterface
      */
     protected function validateTrendingItems(string $changedPath): void
     {
-        try {
-            $recommendations = $this->recommendManagement->getTrendingItemsRecommendation();
-            // When no recommendations suggested, most likely trained model is missing
-            if (empty($recommendations['renderingContent'])) {
-                throw new LocalizedException(__(
-                    "It appears that there is no trained model available for Algolia application ID: %1.",
-                    $this->configHelper->getApplicationID()
-                ));
-            }
-        } catch (\Exception $e) {
-            $this->configWriter->save($changedPath, 0);
-            throw new LocalizedException(__("Unable to save Trending Items Recommend configuration due to the following error: ". $e->getMessage()));
-        }
+        $this->validateRecommendation($changedPath, 'getTrendingItemsRecommendation', 'Trending Items');
     }
 
     /**
@@ -162,17 +128,34 @@ class RecommendSettings implements ObserverInterface
      */
     protected function validateLookingSimilar(string $changedPath): void
     {
+        $this->validateRecommendation($changedPath, 'getLookingSimilarRecommendation', 'Looking Similar');
+    }
+
+    /**
+     * @param string $changedPath - config path to be reverted if validation failed
+     * @param string $recommendationMethod - name of method to call to retrieve method from RecommendManagementInterface
+     * @param string $modelName - user friendly name to refer to model in error messaging
+     * @return void
+     * @throws LocalizedException
+     */
+    protected function validateRecommendation(string $changedPath, string $recommendationMethod, string $modelName): void
+    {
         try {
-            $recommendations = $this->recommendManagement->getLookingSimilarRecommendation($this->getProductId());
+            $recommendations = $this->recommendManagement->$recommendationMethod($this->getProductId());
             if (empty($recommendations['renderingContent'])) {
                 throw new LocalizedException(__(
-                    "It appears that there is no trained model available for Algolia application ID: %1.",
+                    "It appears that there is no trained model available for Algolia application ID %1.",
                     $this->configHelper->getApplicationID()
                 ));
             }
         } catch (\Exception $e) {
             $this->configWriter->save($changedPath, 0);
-            throw new LocalizedException(__("Unable to save Looking Similar Recommend configuration due to the following error: ". $e->getMessage()));
+            throw new LocalizedException(__(
+                "Unable to save %1 Recommend configuration due to the following error: %2",
+                    $modelName,
+                    $e->getMessage()
+                )
+            );
         }
     }
 

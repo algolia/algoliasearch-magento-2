@@ -102,7 +102,7 @@ class RecommendSettings implements ObserverInterface
             $recommendations = $this->recommendManagement->getBoughtTogetherRecommendation($this->getProductId());
             if (empty($recommendations['renderingContent'])) {
                 throw new LocalizedException(__(
-                    "It appears that there is no trained model available for the AppID: %1.",
+                    "It appears that there is no trained model available for Algolia application ID %1.",
                     $this->configHelper->getApplicationID()
                 ));
             }

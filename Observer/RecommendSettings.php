@@ -179,7 +179,6 @@ class RecommendSettings implements ObserverInterface
                     ],
                     'in')
                 ->setPageSize(1)
-                ->setCurrentPage(1)
                 ->create();
             $result = $this->productRepository->getList($searchCriteria);
             $items = $result->getItems();

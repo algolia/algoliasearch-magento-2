@@ -177,13 +177,16 @@ class RecommendSettings implements ObserverInterface
                         Visibility::VISIBILITY_BOTH
                     ],
                     'in')
-                ->setPageSize(10)
+                ->setPageSize(1)
+                ->setCurrentPage(1)
                 ->create();
             $result = $this->productRepository->getList($searchCriteria);
-            if ($result->getTotalCount()) {
-                $products = array_reverse($result->getItems());
-                $firstProduct = array_pop($products);
-                $this->productId = (string)$firstProduct->getId();
+            $items = $result->getItems();
+            $firstProduct = reset($items);
+            if ($firstProduct) {
+                $this->productId = (string) $firstProduct->getId();
+            } else {
+                throw new LocalizedException(__("Unable to locate product to validate Recommend model."));
             }
         }
 

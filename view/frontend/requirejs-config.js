@@ -21,6 +21,7 @@ var config = {
     },
     paths : {
         'algoliaBundle'   : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
+        'algoliaSearchLib': 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
         'algoliaAnalytics': 'Algolia_AlgoliaSearch/js/internals/search-insights',
         'recommend'       : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
         'recommendJs'     : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',

@@ -6,19 +6,14 @@ use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Response\AbstractResponse;
-use Algolia\AlgoliaSearch\Response\BatchIndexingResponse;
-use Algolia\AlgoliaSearch\Response\MultiResponse;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Message\ManagerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AlgoliaHelper extends AbstractHelper
 {
-
     /**
      * @var string Case-sensitive object ID key
      */
@@ -32,12 +27,18 @@ class AlgoliaHelper extends AbstractHelper
      */
     public const ALGOLIA_API_TASK_ID = 'taskID';
 
+    /**
+     * @var int
+     */
+    public const ALGOLIA_DEFAULT_SCOPE = 0;
+
     /** @var int This value should be configured based on system/full_page_cache/ttl
      *           (which is by default 86400) and/or the configuration block TTL
      */
     protected const ALGOLIA_API_SECURED_KEY_TIMEOUT_SECONDS = 60 * 60 * 24; // TODO: Implement as config
 
-    protected ?SearchClient $client = null;
+    /** @var SearchClient[] */
+    protected array $clients = [];
 
     protected ConfigHelper $config;
 
@@ -52,6 +53,9 @@ class AlgoliaHelper extends AbstractHelper
 
     /** @var string[] */
     protected array $nonCastableAttributes = ['sku', 'name', 'description', 'query'];
+
+    /** @var int  */
+    protected int $storeId = self::ALGOLIA_DEFAULT_SCOPE;
 
     protected static ?string $lastUsedIndexName;
 
@@ -75,15 +79,43 @@ class AlgoliaHelper extends AbstractHelper
         $this->messageManager = $messageManager;
         $this->consoleOutput = $consoleOutput;
 
-        $this->resetCredentialsFromConfig();
+        $this->createClient();
+        $this->addSegments();
 
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
             $this->nonCastableAttributes,
             $this->config->getNonCastableAttributes()
         );
+    }
 
-        $clientName = $this->client?->getClientConfig()?->getClientName();
+    /**
+     * @return void
+     */
+    public function createClient(): void
+    {
+        $storeId = $this->getStoreId();
+        if ($this->config->getApplicationID($storeId) && $this->config->getAPIKey($storeId)) {
+            $config = SearchConfig::create(
+                $this->config->getApplicationID($storeId),
+                $this->config->getAPIKey($storeId)
+            );
+            $config->setConnectTimeout($this->config->getConnectionTimeout($storeId));
+            $config->setReadTimeout($this->config->getReadTimeout($storeId));
+            $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
+            $this->clients[$storeId] = SearchClient::createWithConfig($config);
+        } else {
+            throw new AlgoliaException('Client initialization could not be performed because Algolia credentials were not provided.');
+        }
+    }
+
+    /**
+     * @return void
+     * @throws AlgoliaException
+     */
+    protected function addSegments(): void
+    {
+        $clientName = $this->getClient()->getClientConfig()?->getClientName();
 
         if ($clientName) {
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento2 integration', $this->config->getExtensionVersion());
@@ -94,28 +126,33 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @return void
-     */
-    public function resetCredentialsFromConfig(): void
-    {
-        if ($this->config->getApplicationID() && $this->config->getAPIKey()) {
-            $config = SearchConfig::create($this->config->getApplicationID(), $this->config->getAPIKey());
-            $config->setConnectTimeout($this->config->getConnectionTimeout());
-            $config->setReadTimeout($this->config->getReadTimeout());
-            $config->setWriteTimeout($this->config->getWriteTimeout());
-            $this->client = SearchClient::createWithConfig($config);
-        }
-    }
-
-    /**
      * @return SearchClient
      * @throws AlgoliaException
      */
     public function getClient(): SearchClient
     {
-        $this->checkClient(__FUNCTION__);
+        if (!isset($this->clients[$this->getStoreId()])) {
+            $this->createClient();
+        }
 
-        return $this->client;
+        return $this->clients[$this->getStoreId()];
+    }
+
+    /**
+     * @return int
+     */
+    public function getStoreId(): int
+    {
+        return $this->storeId;
+    }
+
+    /**
+     * @param int $storeId
+     * @return void
+     */
+    public function setStoreId(int $storeId): void
+    {
+        $this->storeId = $storeId;
     }
 
     /**
@@ -134,9 +171,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function listIndexes()
     {
-        $this->checkClient(__FUNCTION__);
-
-        return $this->client->listIndices();
+        return $this->getClient()->listIndices();
     }
 
     /**
@@ -149,8 +184,6 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function query(string $indexName, string $q, array $params): array
     {
-        $this->checkClient(__FUNCTION__);
-
         // TODO: Revisit - not compatible with PHP v4
         // if (isset($params['disjunctiveFacets'])) {
         //    return $this->searchWithDisjunctiveFaceting($indexName, $q, $params);
@@ -165,7 +198,7 @@ class AlgoliaHelper extends AbstractHelper
         );
 
         // TODO: Validate return value for integration tests
-        return $this->client->search([
+        return $this->getClient()->search([
             'requests' => [ $params ]
         ]);
     }
@@ -178,8 +211,6 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function getObjects(string $indexName, array $objectIds): array
     {
-        $this->checkClient(__FUNCTION__);
-
         $requests = array_values(
             array_map(
                 function($id) use ($indexName) {
@@ -192,7 +223,7 @@ class AlgoliaHelper extends AbstractHelper
             )
         );
 
-        return $this->client->getObjects([ 'requests' => $requests ]);
+        return $this->getClient()->getObjects([ 'requests' => $requests ]);
     }
 
     /**
@@ -211,13 +242,11 @@ class AlgoliaHelper extends AbstractHelper
         $mergeSettings = false,
         $mergeSettingsFrom = ''
     ) {
-        $this->checkClient(__FUNCTION__);
-
         if ($mergeSettings === true) {
             $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom);
         }
 
-        $res = $this->client->setSettings($indexName, $settings, $forwardToReplicas);
+        $res = $this->getClient()->setSettings($indexName, $settings, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -229,7 +258,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     protected function performBatchOperation(string $indexName, array $requests): array
     {
-        $response = $this->client->batch($indexName, [ 'requests' => $requests ] );
+        $response = $this->getClient()->batch($indexName, [ 'requests' => $requests ] );
 
         self::setLastOperationInfo($indexName, $response);
 
@@ -243,8 +272,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function deleteIndex(string $indexName): void
     {
-        $this->checkClient(__FUNCTION__);
-        $res = $this->client->deleteIndex($indexName);
+        $res = $this->getClient()->deleteIndex($indexName);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -257,7 +285,6 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function deleteObjects(array $ids, string $indexName): void
     {
-        $this->checkClient(__FUNCTION__);
         $requests = array_values(
             array_map(
                 function ($id) {
@@ -283,8 +310,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function moveIndex(string $fromIndexName, string $toIndexName): void
     {
-        $this->checkClient(__FUNCTION__);
-        $response = $this->client->operationIndex(
+        $response = $this->getClient()->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'move',
@@ -308,7 +334,7 @@ class AlgoliaHelper extends AbstractHelper
 
         $params['validUntil'] = time() + self::ALGOLIA_API_SECURED_KEY_TIMEOUT_SECONDS;
 
-        return $this->client->generateSecuredApiKey($key, $params);
+        return $this->getClient()->generateSecuredApiKey($key, $params);
     }
 
     /**
@@ -318,10 +344,8 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function getSettings(string $indexName): array
     {
-        $this->checkClient(__FUNCTION__);
-
         try {
-            return $this->client->getSettings($indexName);
+            return $this->getClient()->getSettings($indexName);
         } catch (\Exception $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
@@ -346,7 +370,7 @@ class AlgoliaHelper extends AbstractHelper
                 $sourceIndex = $mergeSettingsFrom;
             }
 
-            $onlineSettings = $this->client->getSettings($sourceIndex);
+            $onlineSettings = $this->getClient()->getSettings($sourceIndex);
         } catch (\Exception $e) {
         }
 
@@ -435,7 +459,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false): void
     {
-        $res = $this->client->saveRule(
+        $res = $this->getClient()->saveRule(
             $indexName,
             $rule[AlgoliaHelper::ALGOLIA_API_OBJECT_ID],
             $rule,
@@ -454,7 +478,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function deleteRule(string $indexName, string $objectID, bool $forwardToReplicas = false): void
     {
-        $res = $this->client->deleteRule($indexName, $objectID, $forwardToReplicas);
+        $res = $this->getClient()->deleteRule($indexName, $objectID, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -480,8 +504,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function copySynonyms(string $fromIndexName, string $toIndexName): void
     {
-        $this->checkClient(__FUNCTION__);
-        $response = $this->client->operationIndex(
+        $response = $this->getClient()->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'copy',
@@ -501,8 +524,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function copyQueryRules(string $fromIndexName, string $toIndexName): void
     {
-        $this->checkClient(__FUNCTION__);
-        $response = $this->client->operationIndex(
+        $response = $this->getClient()->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'copy',
@@ -514,34 +536,12 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param $methodName
-     * @return void
-     * @throws AlgoliaException
-     */
-    protected function checkClient($methodName): void
-    {
-        if (isset($this->client)) {
-            return;
-        }
-
-        $this->resetCredentialsFromConfig();
-
-        if (!isset($this->client)) {
-            $msg = 'Operation ' . $methodName . ' could not be performed because Algolia credentials were not provided.';
-
-            throw new AlgoliaException($msg);
-        }
-    }
-
-    /**
      * @param string $indexName
      * @return void
      */
     public function clearIndex(string $indexName): void
     {
-        $this->checkClient(__FUNCTION__);
-
-        $res = $this->client->clearObjects($indexName);
+        $res = $this->getClient()->clearObjects($indexName);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -554,8 +554,6 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function waitLastTask(string $lastUsedIndexName = null, int $lastTaskId = null): void
     {
-        $this->checkClient(__FUNCTION__);
-
         if ($lastUsedIndexName === null && isset(self::$lastUsedIndexName)) {
             $lastUsedIndexName = self::$lastUsedIndexName;
         }
@@ -568,7 +566,7 @@ class AlgoliaHelper extends AbstractHelper
             return;
         }
 
-        $this->client->waitForTask($lastUsedIndexName, $lastTaskId);
+        $this->getClient()->waitForTask($lastUsedIndexName, $lastTaskId);
     }
 
     /**
@@ -864,7 +862,7 @@ class AlgoliaHelper extends AbstractHelper
         /**
          * Do all queries in one call
          */
-        $results = $this->client->multipleQueries(array_values($disjunctiveQueries));
+        $results = $this->getClient()->multipleQueries(array_values($disjunctiveQueries));
         $results = $results['results'];
 
         /**

@@ -90,7 +90,7 @@ class IndicesConfigurator
         $logEventName = 'Save configuration to Algolia for store: ' . $this->logger->getStoreName($storeId);
         $this->logger->start($logEventName);
 
-        if (!($this->configHelper->getApplicationID() && $this->configHelper->getAPIKey())) {
+        if (!($this->configHelper->getApplicationID($storeId) && $this->configHelper->getAPIKey($storeId))) {
             $this->logger->log('Algolia credentials are not filled.');
             $this->logger->stop($logEventName);
 
@@ -102,6 +102,8 @@ class IndicesConfigurator
             $this->logger->stop($logEventName);
             return;
         }
+
+        $this->algoliaHelper->setStoreId($storeId);
 
         $this->setCategoriesSettings($storeId);
         /* heck if we want to index CMS pages */
@@ -122,6 +124,8 @@ class IndicesConfigurator
         $this->setProductsSettings($storeId, $useTmpIndex);
 
         $this->setExtraSettings($storeId, $useTmpIndex);
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

@@ -1,6 +1,8 @@
 define([
     'jquery',
     'algoliaBundle',
+    'algoliaSearchLib',
+    'algoliaAutocompleteLib',
     'pagesHtml',
     'categoriesHtml',
     'productsHtml',
@@ -13,6 +15,8 @@ define([
 ], function (
     $,
     algoliaBundle,
+    algoliasearch,
+    autocomplete,
     pagesHtml,
     categoriesHtml,
     productsHtml,
@@ -39,7 +43,7 @@ define([
      * Initialise Algolia client
      * Docs: https://www.algolia.com/doc/api-client/getting-started/instantiate-client-index/
      **/
-    const searchClient = algoliaBundle.algoliasearch(
+    const searchClient = algoliasearch(
         algoliaConfig.applicationId,
         algoliaConfig.apiKey
     );

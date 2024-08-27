@@ -27,6 +27,8 @@ var config = {
         'recommend'             : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
         'recommendJs'           : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
         'rangeSlider'           : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
+        // Legacy 
+        'algoliaHoganLib'       : 'Algolia_AlgoliaSearch/js/lib/hogan.min'
     },
     deps  : [
         'algoliaInstantSearch',
@@ -37,6 +39,11 @@ var config = {
             'Magento_Catalog/js/catalog-add-to-cart': {
                 'Algolia_AlgoliaSearch/js/insights/add-to-cart-mixin': true
             }
+        }
+    },
+    shim: {
+        'algoliaHoganLib': {
+            exports: 'Hogan' 
         }
     }
 };

@@ -1,11 +1,12 @@
 define([
     'jquery',
     'algoliaBundle',
+    'algoliaHoganLib',
     'Magento_Catalog/js/price-utils',
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, priceUtils) {
+], function ($, algoliaBundle, Hogan, priceUtils) {
     $(function ($) {
         /** We have nothing to do here if instantsearch is not enabled **/
         if (
@@ -83,7 +84,7 @@ define([
          * For templating is used Hogan library
          * Docs: http://twitter.github.io/hogan.js/
          **/
-        var wrapperTemplate = algoliaBundle.Hogan.compile(
+        var wrapperTemplate = Hogan.compile(
             $('#instant_wrapper_template').html()
         );
         var instant_selector = '#instant-search-bar';
@@ -332,7 +333,7 @@ define([
                 container: '#algolia-stats',
                 templates: {
                     text: function (data) {
-                        var hoganTemplate = algoliaBundle.Hogan.compile(
+                        var hoganTemplate = Hogan.compile(
                             $('#instant-stats-template').html()
                         );
 

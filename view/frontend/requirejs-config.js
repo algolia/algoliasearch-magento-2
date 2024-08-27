@@ -28,7 +28,8 @@ var config = {
         'recommendJs'           : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
         'rangeSlider'           : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
         // Legacy 
-        'algoliaHoganLib'       : 'Algolia_AlgoliaSearch/js/lib/hogan.min'
+        'algoliaHoganLib'       : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
+        'algoliaMustacheLib'    : 'Algolia_AlgoliaSearch/js/lib/mustache.min'
     },
     deps  : [
         'algoliaInstantSearch',

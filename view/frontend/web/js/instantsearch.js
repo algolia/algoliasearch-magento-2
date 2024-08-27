@@ -2,11 +2,12 @@ define([
     'jquery',
     'algoliaBundle',
     'algoliaHoganLib',
+    'algoliaMustacheLib',
     'Magento_Catalog/js/price-utils',
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, Hogan, priceUtils) {
+], function ($, algoliaBundle, Hogan, Mustache, priceUtils) {
     $(function ($) {
         /** We have nothing to do here if instantsearch is not enabled **/
         if (
@@ -83,10 +84,10 @@ define([
          *
          * For templating is used Hogan library
          * Docs: http://twitter.github.io/hogan.js/
+         * 
+         * Alternatively use Mustache
+         * https://github.com/janl/mustache.js
          **/
-        var wrapperTemplate = Hogan.compile(
-            $('#instant_wrapper_template').html()
-        );
         var instant_selector = '#instant-search-bar';
 
         var div = document.createElement('div');
@@ -100,14 +101,28 @@ define([
         $('.algolia-instant-results-wrapper').append(
             '<div class="algolia-instant-selector-results"></div>'
         );
+
+        const template = $('#instant_wrapper_template').html();
+        const templateVars = {
+            second_bar      : algoliaConfig.instant.enabled,
+            findAutocomplete: findAutocomplete,
+            config          : algoliaConfig.instant,
+            translations    : algoliaConfig.translations,
+        };
+        const hoganStart = performance.now();
+        const wrapperTemplate = Hogan.compile(template);
+        const hoganResult = wrapperTemplate.render(templateVars);
+        const hoganEnd = performance.now();
+        console.log("Hogan execution time: %s ms", hoganEnd - hoganStart);
+
+        const mustacheStart = performance.now();
+        const mustacheResult = Mustache.render(template, templateVars);
+        const mustacheEnd = performance.now();
+        console.log("Mustache execution time: %s ms", mustacheEnd - mustacheStart);
+
         $('.algolia-instant-selector-results')
             .html(
-                wrapperTemplate.render({
-                    second_bar      : algoliaConfig.instant.enabled,
-                    findAutocomplete: findAutocomplete,
-                    config          : algoliaConfig.instant,
-                    translations    : algoliaConfig.translations,
-                })
+                mustacheResult
             )
             .show();
 

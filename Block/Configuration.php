@@ -269,7 +269,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'autofocus' => true,
             'resultPageUrl' => $this->getCatalogSearchHelper()->getResultUrl(),
             'request' => [
-                'query' =>  htmlspecialchars(html_entity_decode($query)),
+                'query' =>  htmlspecialchars(html_entity_decode((string)$query)),
                 'refinementKey' => $refinementKey,
                 'refinementValue' => $refinementValue,
                 'categoryId' => $categoryId,

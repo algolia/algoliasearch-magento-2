@@ -8,6 +8,24 @@ define([
     'algoliaInsights',
     'algoliaHooks',
 ], function ($, algoliaBundle, Hogan, Mustache, priceUtils) {
+    const processTemplate = (template, templateVars, useMustache = false) => {
+        const hoganStart = performance.now();
+        const wrapperTemplate = Hogan.compile(template);
+        const hoganResult = wrapperTemplate.render(templateVars);
+        const hoganEnd = performance.now();
+        console.log("Hogan execution time: %s ms", hoganEnd - hoganStart);
+
+        if (useMustache) {
+            const mustacheStart = performance.now();
+            const mustacheResult = Mustache.render(template, templateVars);
+            const mustacheEnd = performance.now();
+            console.log("Mustache execution time: %s ms", mustacheEnd - mustacheStart);
+            return mustacheResult;
+        }
+
+        return hoganResult;
+    };
+
     $(function ($) {
         /** We have nothing to do here if instantsearch is not enabled **/
         if (
@@ -109,21 +127,9 @@ define([
             config          : algoliaConfig.instant,
             translations    : algoliaConfig.translations,
         };
-        const hoganStart = performance.now();
-        const wrapperTemplate = Hogan.compile(template);
-        const hoganResult = wrapperTemplate.render(templateVars);
-        const hoganEnd = performance.now();
-        console.log("Hogan execution time: %s ms", hoganEnd - hoganStart);
-
-        const mustacheStart = performance.now();
-        const mustacheResult = Mustache.render(template, templateVars);
-        const mustacheEnd = performance.now();
-        console.log("Mustache execution time: %s ms", mustacheEnd - mustacheStart);
-
+        
         $('.algolia-instant-selector-results')
-            .html(
-                mustacheResult
-            )
+            .html(processTemplate(template, templateVars, true))
             .show();
 
         /**
@@ -348,10 +354,6 @@ define([
                 container: '#algolia-stats',
                 templates: {
                     text: function (data) {
-                        var hoganTemplate = Hogan.compile(
-                            $('#instant-stats-template').html()
-                        );
-
                         data.first = data.page * data.hitsPerPage + 1;
                         data.last = Math.min(
                             data.page * data.hitsPerPage + data.hitsPerPage,
@@ -359,6 +361,8 @@ define([
                         );
                         data.seconds = data.processingTimeMS / 1000;
                         data.translations = window.algoliaConfig.translations;
+
+                        // TODO: Revisit this injected jQuery logic
                         const searchParams = new URLSearchParams(window.location.search);
                         const searchQuery = searchParams.has('q') || '';
                         if (searchQuery === '' && !algoliaConfig.isSearchPage) {
@@ -368,7 +372,9 @@ define([
                             $('.algolia-instant-replaced-content').hide();
                             $('.algolia-instant-selector-results').show();
                         }
-                        return hoganTemplate.render(data);
+
+                        var template = $('#instant-stats-template').html();
+                        return processTemplate(template, data, true);
                     },
                 },
             },

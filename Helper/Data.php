@@ -165,6 +165,8 @@ class Data
             return;
         }
 
+        $this->algoliaHelper->setStoreId($storeId);
+
         $additionalSections = $this->configHelper->getAutocompleteSections();
 
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
@@ -188,6 +190,8 @@ class Data
             $this->algoliaHelper->moveIndex($tempIndexName, $indexName);
 
             $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
+
+            $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
         }
     }
 
@@ -208,6 +212,8 @@ class Data
             $this->logger->log('Pages Indexing is not enabled for the store.');
             return;
         }
+
+        $this->algoliaHelper->setStoreId($storeId);
 
         $indexName = $this->pageHelper->getIndexName($storeId);
 
@@ -252,6 +258,7 @@ class Data
             $this->algoliaHelper->moveIndex($tempIndexName, $indexName);
         }
         $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -351,11 +358,12 @@ class Data
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-
+        $this->algoliaHelper->setStoreId($storeId);
         $tmpIndexName = $this->suggestionHelper->getTempIndexName($storeId);
         $indexName = $this->suggestionHelper->getIndexName($storeId);
         $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName);
         $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -462,6 +470,7 @@ class Data
             return;
         }
 
+        $this->algoliaHelper->setStoreId($storeId);
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
@@ -483,6 +492,7 @@ class Data
         unset($indexData);
         $collection->walk('clearInstance');
         $collection->clear();
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
         unset($collection);
     }
 
@@ -495,6 +505,7 @@ class Data
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
+        $this->algoliaHelper->setStoreId($storeId);
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
         $indexName = $this->categoryHelper->getIndexName($storeId);
@@ -519,6 +530,7 @@ class Data
         $collection->walk('clearInstance');
         $collection->clear();
         unset($collection);
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -682,6 +694,8 @@ class Data
             return;
         }
 
+        $this->algoliaHelper->setStoreId($storeId);
+
         $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
             page ' . $page . ',
             pageSize ' . $pageSize;
@@ -743,6 +757,9 @@ class Data
         if ($emulationInfo === null) {
             $this->stopEmulation();
         }
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+
         $this->logger->stop($wrapperLogMessage);
     }
 
@@ -856,6 +873,7 @@ class Data
     public function deleteInactiveProducts($storeId): void
     {
         $indexName = $this->productHelper->getIndexName($storeId);
+        $this->algoliaHelper->setStoreId($storeId);
         $client = $this->algoliaHelper->getClient();
         $objectIds = [];
         $counter = 0;
@@ -876,6 +894,7 @@ class Data
         if (!empty($objectIds)) {
             $this->deleteInactiveIds($storeId, $objectIds, $indexName);
         }
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

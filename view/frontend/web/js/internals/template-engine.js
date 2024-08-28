@@ -3,7 +3,10 @@ define([], function () {
   const ENGINE_TYPE_MUSTACHE = 'mustache';
 
   return {
-    getSelectedEngine: () => ENGINE_TYPE_HOGAN, // override via mixin
+    ENGINE_TYPE_HOGAN,
+    ENGINE_TYPE_MUSTACHE,
+
+    getSelectedEngine: () => ENGINE_TYPE_MUSTACHE, // override via mixin
 
     processTemplate: async function (template, data, measure = false) {
       const adapter = await this.getEngineAdapter(this.getSelectedEngine());

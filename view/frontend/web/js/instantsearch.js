@@ -1,34 +1,15 @@
 define([
     'jquery',
     'algoliaBundle',
-    'algoliaHoganLib',
-    'algoliaMustacheLib',
     'algoliaTemplateEngine',
     'Magento_Catalog/js/price-utils',
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, Hogan, Mustache, templateEngine, priceUtils) {
-    
-    const processTemplate = (template, templateVars, useMustache = false) => {
-        const hoganStart = performance.now();
-        const wrapperTemplate = Hogan.compile(template);
-        const hoganResult = wrapperTemplate.render(templateVars);
-        const hoganEnd = performance.now();
-        console.log("Hogan execution time: %s ms", hoganEnd - hoganStart);
-
-        if (useMustache) {
-            const mustacheStart = performance.now();
-            const mustacheResult = Mustache.render(template, templateVars);
-            const mustacheEnd = performance.now();
-            console.log("Mustache execution time: %s ms", mustacheEnd - mustacheStart);
-            return mustacheResult;
-        }
-
-        return hoganResult;
-    };
-
+], function ($, algoliaBundle, templateEngine, priceUtils) {
     $(async function ($) {
+        const templateProcessor = await templateEngine.getSelectedEngineAdapter(); 
+
         /** We have nothing to do here if instantsearch is not enabled **/
         if (
             typeof algoliaConfig === 'undefined' ||
@@ -130,7 +111,7 @@ define([
             translations    : algoliaConfig.translations,
         };
 
-        const wrapperHtml = await templateEngine.processTemplate(template, templateVars);
+        const wrapperHtml = templateProcessor.process(template, templateVars);
         $('.algolia-instant-selector-results').html(wrapperHtml).show();
 
         /**
@@ -375,7 +356,7 @@ define([
                         }
 
                         const template = $('#instant-stats-template').html();
-                        return processTemplate(template, data, true);
+                        return templateProcessor.process(template, data);
                     },
                 },
             },

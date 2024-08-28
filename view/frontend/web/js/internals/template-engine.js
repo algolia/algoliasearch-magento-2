@@ -2,26 +2,46 @@ define([], function () {
   const ENGINE_TYPE_HOGAN = 'hogan';
   const ENGINE_TYPE_MUSTACHE = 'mustache';
 
-  return {
-    ENGINE_TYPE_HOGAN,
-    ENGINE_TYPE_MUSTACHE,
-
-    getSelectedEngine: () => ENGINE_TYPE_MUSTACHE, // override via mixin
-
-    processTemplate: async function (template, data, measure = false) {
-      const adapter = await this.getEngineAdapter(this.getSelectedEngine());
-      if (measure) {
+  const trackingAdapter = {
+      processAndMeasure: function(template, data, tag = '') {
         const start = performance.now();
-        const result = adapter.process(template, data);
+        const result = this.process(template, data);
         const end = performance.now();
+        const prefix = tag ? `${tag}: ` : '';
         console.log(
-          `### Template execution time with "${this.getSelectedEngine()}": %s ms`,
+          `${prefix}Template execution time with "${this.engineType}": %s ms`,
           end - start
         );
         return result;
       }
+  };
 
-      return adapter.process(template, data);
+  return {
+    ENGINE_TYPE_HOGAN,
+    ENGINE_TYPE_MUSTACHE,
+
+    getSelectedEngineType: () => ENGINE_TYPE_MUSTACHE, // override via mixin
+
+    // Retrieve the engine before calling process() if not able to use promises
+    getSelectedEngineAdapter: async function() {
+      return this.getEnhancedEngineAdapter(this.getSelectedEngineType());
+    },
+
+    // Convenience method
+    processTemplate: async function (template, data, measure = false) {
+      const adapter = await this.getSelectedEngineAdapter();
+      return (measure) 
+        ? adapter.processAndMeasure(template, data)
+        : adapter.process(template, data);
+    },
+
+    getEnhancedEngineAdapter: async function (type) {
+      const adapter = await this.getEngineAdapter(type);
+      return {
+        engineType: this.getSelectedEngineType(),
+        ...trackingAdapter,
+        ...adapter
+      };
     },
 
     getEngineAdapter: async function (type) {

@@ -3,11 +3,13 @@ define([
     'algoliaBundle',
     'algoliaHoganLib',
     'algoliaMustacheLib',
+    'algoliaTemplateEngine',
     'Magento_Catalog/js/price-utils',
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, Hogan, Mustache, priceUtils) {
+], function ($, algoliaBundle, Hogan, Mustache, templateEngine, priceUtils) {
+    
     const processTemplate = (template, templateVars, useMustache = false) => {
         const hoganStart = performance.now();
         const wrapperTemplate = Hogan.compile(template);
@@ -26,7 +28,7 @@ define([
         return hoganResult;
     };
 
-    $(function ($) {
+    $(async function ($) {
         /** We have nothing to do here if instantsearch is not enabled **/
         if (
             typeof algoliaConfig === 'undefined' ||
@@ -127,10 +129,9 @@ define([
             config          : algoliaConfig.instant,
             translations    : algoliaConfig.translations,
         };
-        
-        $('.algolia-instant-selector-results')
-            .html(processTemplate(template, templateVars, true))
-            .show();
+
+        const wrapperHtml = await templateEngine.processTemplate(template, templateVars);
+        $('.algolia-instant-selector-results').html(wrapperHtml).show();
 
         /**
          * Initialise instant search
@@ -373,7 +374,7 @@ define([
                             $('.algolia-instant-selector-results').show();
                         }
 
-                        var template = $('#instant-stats-template').html();
+                        const template = $('#instant-stats-template').html();
                         return processTemplate(template, data, true);
                     },
                 },

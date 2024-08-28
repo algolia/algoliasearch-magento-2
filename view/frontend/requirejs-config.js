@@ -16,7 +16,10 @@ var config = {
             'additionalHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/additional-section',
 
             // Recommend templates
-            'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products'
+            'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products',
+
+            // Unbundling 
+            'algoliaTemplateEngine': 'Algolia_AlgoliaSearch/js/internals/template-engine'
         }
     },
     paths : {

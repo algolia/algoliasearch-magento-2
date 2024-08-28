@@ -3,6 +3,7 @@ define([
     'algoliaBundle',
     'algoliaSearchLib',
     'algoliaAutocompleteLib',
+    'querySuggestionsPluginLib',
     'pagesHtml',
     'categoriesHtml',
     'productsHtml',
@@ -17,6 +18,7 @@ define([
     algoliaBundle,
     algoliasearch,
     autocomplete,
+    querySuggestionsPlugin,
     pagesHtml,
     categoriesHtml,
     productsHtml,
@@ -431,7 +433,7 @@ define([
     };
 
     const buildSuggestionsPlugin = function () {
-        return algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin(
+        return querySuggestionsPlugin.createQuerySuggestionsPlugin(
             {
                 searchClient,
                 indexName: `${algoliaConfig.indexName}_suggestions`,
@@ -621,7 +623,7 @@ define([
             return;
         }
         const getItems = ({query}) => {
-            return algoliaBundle.getAlgoliaResults({
+            return autocomplete.getAlgoliaResults({
                 searchClient,
                 queries: [
                     {
@@ -659,8 +661,8 @@ define([
     options = algolia.triggerHooks('afterAutocompleteOptions', options);
 
     /** Bind autocomplete feature to the input */
-    let algoliaAutocompleteInstance = algoliaBundle.autocomplete(options);
-    algoliaAutocompleteInstance = algolia.triggerHooks(
+    let algoliaAutocompleteInstance = autocomplete.autocomplete(options);
+    algolia.triggerHooks(
         'afterAutocompleteStart',
         algoliaAutocompleteInstance
     );

@@ -1,12 +1,14 @@
 define([
     'jquery',
     'algoliaBundle',
+    'algoliaSearchLib',
+    'algoliaInstantSearchLib',
     'algoliaTemplateEngine',
     'Magento_Catalog/js/price-utils',
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, templateEngine, priceUtils) {
+], function ($, algoliaBundle, algoliasearch, instantsearch, templateEngine, priceUtils) {
     $(async function ($) {
         const templateProcessor = await templateEngine.getSelectedEngineAdapter(); 
 
@@ -131,7 +133,7 @@ define([
             );
         }
 
-        var searchClient = algoliaBundle.algoliasearch(
+        var searchClient = algoliasearch(
             algoliaConfig.applicationId,
             algoliaConfig.apiKey
         );
@@ -173,7 +175,7 @@ define([
             algoliaBundle
         );
 
-        var search = algoliaBundle.instantsearch(instantsearchOptions);
+        var search = instantsearch(instantsearchOptions);
 
         search.client.addAlgoliaAgent(
             'Magento2 integration (' + algoliaConfig.extensionVersion + ')'
@@ -911,9 +913,9 @@ define([
             search.addWidgets([config]);
             return;
         }
-        var widget = algoliaBundle.instantsearch.widgets[type];
+        var widget = instantsearch.widgets[type];
         if (config.panelOptions) {
-            widget = algoliaBundle.instantsearch.widgets.panel(config.panelOptions)(
+            widget = instantsearch.widgets.panel(config.panelOptions)(
                 widget
             );
             delete config.panelOptions;
@@ -924,7 +926,7 @@ define([
                     return options.range.min === 0 && options.range.max === 0;
                 },
             };
-            widget = algoliaBundle.instantsearch.widgets.panel(config.panelOptions)(
+            widget = instantsearch.widgets.panel(config.panelOptions)(
                 widget
             );
             delete config.panelOptions;

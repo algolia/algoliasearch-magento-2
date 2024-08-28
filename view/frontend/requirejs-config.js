@@ -25,13 +25,14 @@ var config = {
     paths : {
         'algoliaBundle'                     : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
         'algoliaSearchLib'                  : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
+        'algoliaInstantSearchLib'           : 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
         'algoliaAutocompleteLib'            : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
         'algoliaAnalytics'                  : 'Algolia_AlgoliaSearch/js/internals/search-insights',
         'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
         'recommend'                         : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
         'recommendJs'                       : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
         'rangeSlider'                       : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
-        // Legacy
+        // Legacy 
         'algoliaHoganLib'       : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
         'algoliaMustacheLib'    : 'Algolia_AlgoliaSearch/js/lib/mustache.min'
     },

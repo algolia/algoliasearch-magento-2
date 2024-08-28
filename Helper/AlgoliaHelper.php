@@ -6,15 +6,11 @@ use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
-use Algolia\AlgoliaSearch\Model\Search\SettingsResponse;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Model\Search\SearchRulesResponse;
 use Algolia\AlgoliaSearch\Response\AbstractResponse;
 use Algolia\AlgoliaSearch\Response\BatchIndexingResponse;
 use Algolia\AlgoliaSearch\Response\MultiResponse;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
-use Exception;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Message\ManagerInterface;
@@ -48,6 +44,12 @@ class AlgoliaHelper extends AbstractHelper
     /** @var SearchClient[] */
     protected array $clients = [];
 
+    protected ConfigHelper $config;
+
+    protected ManagerInterface $messageManager;
+
+    protected ConsoleOutput $consoleOutput;
+
     protected ?int $maxRecordSize = null;
 
     /** @var string[] */
@@ -59,21 +61,30 @@ class AlgoliaHelper extends AbstractHelper
     /** @var int  */
     protected int $storeId = self::ALGOLIA_DEFAULT_SCOPE;
 
-    /** @var bool */
-    protected bool $userAgentsAdded = false;
-
     protected static ?string $lastUsedIndexName;
 
     protected static ?int $lastTaskId;
 
+    /**
+     * @param Context $context
+     * @param ConfigHelper $configHelper
+     * @param ManagerInterface $messageManager
+     * @param ConsoleOutput $consoleOutput
+     */
     public function __construct(
         Context $context,
-        protected ConfigHelper $config,
-        protected ManagerInterface $messageManager,
-        protected ConsoleOutput $consoleOutput,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        ConfigHelper $configHelper,
+        ManagerInterface $messageManager,
+        ConsoleOutput $consoleOutput
     ) {
         parent::__construct($context);
+
+        $this->config = $configHelper;
+        $this->messageManager = $messageManager;
+        $this->consoleOutput = $consoleOutput;
+
+        $this->createClient();
+        $this->addSegments();
 
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
@@ -84,30 +95,29 @@ class AlgoliaHelper extends AbstractHelper
 
     /**
      * @return void
-     * @throws AlgoliaException
      */
-    protected function createClient(): void
+    public function createClient(): void
     {
         $storeId = $this->getStoreId();
-        if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
+        if ($this->config->getApplicationID($storeId) && $this->config->getAPIKey($storeId)) {
+            $config = SearchConfig::create(
+                $this->config->getApplicationID($storeId),
+                $this->config->getAPIKey($storeId)
+            );
+            $config->setConnectTimeout($this->config->getConnectionTimeout($storeId));
+            $config->setReadTimeout($this->config->getReadTimeout($storeId));
+            $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
+            $this->clients[$storeId] = SearchClient::createWithConfig($config);
+        } else {
             throw new AlgoliaException('Client initialization could not be performed because Algolia credentials were not provided.');
         }
-
-        $config = SearchConfig::create(
-            $this->config->getApplicationID($storeId),
-            $this->config->getAPIKey($storeId)
-        );
-        $config->setConnectTimeout($this->config->getConnectionTimeout($storeId));
-        $config->setReadTimeout($this->config->getReadTimeout($storeId));
-        $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
-        $this->clients[$storeId] = SearchClient::createWithConfig($config);
     }
 
     /**
      * @return void
      * @throws AlgoliaException
      */
-    protected function addAlgoliaUserAgent(): void
+    protected function addSegments(): void
     {
         $clientName = $this->getClient()->getClientConfig()?->getClientName();
 
@@ -116,8 +126,6 @@ class AlgoliaHelper extends AbstractHelper
             AlgoliaAgent::addAlgoliaAgent($clientName, 'PHP', phpversion());
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento', $this->config->getMagentoVersion());
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Edition', $this->config->getMagentoEdition());
-
-            $this->userAgentsAdded = true;
         }
     }
 
@@ -129,9 +137,6 @@ class AlgoliaHelper extends AbstractHelper
     {
         if (!isset($this->clients[$this->getStoreId()])) {
             $this->createClient();
-            if (!$this->userAgentsAdded) {
-                $this->addAlgoliaUserAgent();
-            }
         }
 
         return $this->clients[$this->getStoreId()];
@@ -165,7 +170,7 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @return ListIndicesResponse|array<string,mixed>
+     * @return mixed
      * @throws AlgoliaException
      */
     public function listIndexes()
@@ -174,9 +179,9 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param string $indexName
-     * @param string $q
-     * @param array $params
+     * @param $indexName
+     * @param $q
+     * @param $params
      * @return array<string, mixed>
      * @throws AlgoliaException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
@@ -237,9 +242,9 @@ class AlgoliaHelper extends AbstractHelper
     public function setSettings(
         $indexName,
         $settings,
-        bool $forwardToReplicas = false,
-        bool $mergeSettings = false,
-        string $mergeSettingsFrom = ''
+        $forwardToReplicas = false,
+        $mergeSettings = false,
+        $mergeSettingsFrom = ''
     ) {
         if ($mergeSettings === true) {
             $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom);
@@ -254,7 +259,6 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $indexName
      * @param array $requests
      * @return array<string, mixed>
-     * @throws AlgoliaException
      */
     protected function performBatchOperation(string $indexName, array $requests): array
     {
@@ -324,7 +328,6 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $key
      * @param array $params
      * @return string
-     * @throws AlgoliaException
      */
     public function generateSearchSecuredApiKey(string $key, array $params = []): string
     {
@@ -339,15 +342,15 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param string $indexName
+     * @param $indexName
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws \Exception
      */
     public function getSettings(string $indexName): array
     {
         try {
             return $this->getClient()->getSettings($indexName);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
             }
@@ -358,10 +361,10 @@ class AlgoliaHelper extends AbstractHelper
     /**
      * @param $indexName
      * @param $settings
-     * @param string $mergeSettingsFrom
-     * @return SettingsResponse|array
+     * @param $mergeSettingsFrom
+     * @return array|void
      */
-    public function mergeSettings($indexName, $settings, string $mergeSettingsFrom = ''): SettingsResponse|array
+    public function mergeSettings($indexName, $settings, $mergeSettingsFrom = '')
     {
         $onlineSettings = [];
 
@@ -372,7 +375,7 @@ class AlgoliaHelper extends AbstractHelper
             }
 
             $onlineSettings = $this->getClient()->getSettings($sourceIndex);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
         }
 
         $removes = ['slaves', 'replicas', 'decompoundedAttributes'];
@@ -409,7 +412,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param array $objects
      * @param string $indexName
      * @return void
-     * @throws Exception
+     * @throws \Exception
      * @deprecated Do not use. This method has been replaced by saveObjects and may be removed in the future.
      */
     public function addObjects(array $objects, string $indexName): void {
@@ -422,7 +425,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param array $objects
      * @param bool $isPartialUpdate
      * @return void
-     * @throws Exception
+     * @throws \Exception
      */
     public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false): void
     {
@@ -446,8 +449,8 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param string $indexName
-     * @param array $response
+     * @param $indexName
+     * @param $response
      * @return void
      */
     protected static function setLastOperationInfo(string $indexName, array $response): void
@@ -461,7 +464,6 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $indexName
      * @param bool $forwardToReplicas
      * @return void
-     * @throws AlgoliaException
      */
     public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false): void
     {
@@ -483,7 +485,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false): void
     {
-        $res = $this->getClient()->saveRules($indexName, $rules, $forwardToReplicas);
+        $res = $this->client->saveRules($indexName, $rules, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -494,7 +496,6 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $objectID
      * @param bool $forwardToReplicas
      * @return void
-     * @throws AlgoliaException
      */
     public function deleteRule(string $indexName, string $objectID, bool $forwardToReplicas = false): void
     {
@@ -567,33 +568,12 @@ class AlgoliaHelper extends AbstractHelper
     {
         $this->checkClient(__FUNCTION__);
 
-        return $this->client->searchRules($indexName, $searchRulesParams);
-    }
-
-    /**
-     * @param $methodName
-     * @return void
-     * @throws AlgoliaException
-     */
-    protected function checkClient($methodName): void
-    {
-        if (isset($this->client)) {
-            return;
-        }
-
-        $this->resetCredentialsFromConfig();
-
-        if (!isset($this->client)) {
-            $msg = 'Operation ' . $methodName . ' could not be performed because Algolia credentials were not provided.';
-
-            throw new AlgoliaException($msg);
-        }
+        return $this->getClient()->searchRules($indexName, $searchRulesParams);
     }
 
     /**
      * @param string $indexName
      * @return void
-     * @throws AlgoliaException
      */
     public function clearIndex(string $indexName): void
     {
@@ -629,7 +609,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param array $objects
      * @param string $indexName
      * @return void
-     * @throws Exception
+     * @throws \Exception
      */
     protected function prepareRecords(array &$objects, string $indexName): void
     {
@@ -697,7 +677,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param $object
      * @return false|mixed
      */
-    protected function handleTooBigRecord($object): mixed
+    protected function handleTooBigRecord($object)
     {
         $size = $this->calculateObjectSize($object);
 
@@ -747,7 +727,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param $object
      * @return int|string
      */
-    protected function getLongestAttribute($object): int|string
+    protected function getLongestAttribute($object)
     {
         $maxLength = 0;
         $longestAttribute = '';
@@ -769,7 +749,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param $productData
      * @return void
      */
-    public function castProductObject(&$productData): void
+    public function castProductObject(&$productData)
     {
         foreach ($productData as $key => &$data) {
             if (in_array($key, $this->nonCastableAttributes, true) === true) {
@@ -798,7 +778,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param $object
      * @return mixed
      */
-    protected function castRecord($object): mixed
+    protected function castRecord($object)
     {
         foreach ($object as $key => &$value) {
             if (in_array($key, $this->nonCastableAttributes, true) === true) {
@@ -827,9 +807,9 @@ class AlgoliaHelper extends AbstractHelper
 
     /**
      * @param $value
-     * @return mixed
+     * @return float|int
      */
-    protected function castAttribute($value): mixed
+    protected function castAttribute($value)
     {
         if (is_numeric($value) && floatval($value) === floatval((int) $value)) {
             return (int) $value;
@@ -876,7 +856,7 @@ class AlgoliaHelper extends AbstractHelper
      * @throws AlgoliaException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    protected function searchWithDisjunctiveFaceting($indexName, $q, $params): mixed
+    protected function searchWithDisjunctiveFaceting($indexName, $q, $params)
     {
         throw new AlgoliaException("This function is not currently supported on PHP connector v4");
 
@@ -947,7 +927,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param $queryParams
      * @return array
      */
-    protected function getDisjunctiveQueries($queryParams): array
+    protected function getDisjunctiveQueries($queryParams)
     {
         $queriesParams = [];
 
@@ -980,9 +960,9 @@ class AlgoliaHelper extends AbstractHelper
     /**
      * @param $filters
      * @param $needle
-     * @return array
+     * @return mixed
      */
-    protected function getAlgoliaFiltersArrayWithoutCurrentRefinement($filters, $needle): array
+    protected function getAlgoliaFiltersArrayWithoutCurrentRefinement($filters, $needle)
     {
         // iterate on each filters which can be string or array and filter out every refinement matching the needle
         for ($i = 0; $i < count($filters); $i++) {

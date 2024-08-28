@@ -12,25 +12,70 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Helper\Logger;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndicesConfigurator
 {
+    /** @var Data */
+    protected $baseHelper;
+
+    /** @var AlgoliaHelper */
+    protected $algoliaHelper;
+
+    /** @var ConfigHelper */
+    protected $configHelper;
+
+    /** @var ProductHelper */
+    protected $productHelper;
+
+    /** @var CategoryHelper */
+    protected $categoryHelper;
+
+    /** @var PageHelper */
+    protected $pageHelper;
+
+    /** @var SuggestionHelper */
+    protected $suggestionHelper;
+
+    /** @var AdditionalSectionHelper */
+    protected $additionalSectionHelper;
+
+    /** @var Logger */
+    protected $logger;
+
+    /**
+     * @param Data $baseHelper
+     * @param AlgoliaHelper $algoliaHelper
+     * @param ConfigHelper $configHelper
+     * @param ProductHelper $productHelper
+     * @param CategoryHelper $categoryHelper
+     * @param PageHelper $pageHelper
+     * @param SuggestionHelper $suggestionHelper
+     * @param AdditionalSectionHelper $additionalSectionHelper
+     * @param Logger $logger
+     */
     public function __construct(
-        protected Data $baseHelper,
-        protected AlgoliaHelper $algoliaHelper,
-        protected ConfigHelper $configHelper,
-        protected ProductHelper $productHelper,
-        protected CategoryHelper $categoryHelper,
-        protected PageHelper $pageHelper,
-        protected SuggestionHelper $suggestionHelper,
-        protected AdditionalSectionHelper $additionalSectionHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected Logger $logger
-    )
-    {}
+        Data $baseHelper,
+        AlgoliaHelper $algoliaHelper,
+        ConfigHelper $configHelper,
+        ProductHelper $productHelper,
+        CategoryHelper $categoryHelper,
+        PageHelper $pageHelper,
+        SuggestionHelper $suggestionHelper,
+        AdditionalSectionHelper $additionalSectionHelper,
+        Logger $logger
+    ) {
+        $this->baseHelper = $baseHelper;
+        $this->algoliaHelper = $algoliaHelper;
+        $this->configHelper = $configHelper;
+        $this->productHelper = $productHelper;
+        $this->categoryHelper = $categoryHelper;
+        $this->pageHelper = $pageHelper;
+        $this->suggestionHelper = $suggestionHelper;
+        $this->additionalSectionHelper = $additionalSectionHelper;
+        $this->logger = $logger;
+    }
 
     /**
      * @param int $storeId
@@ -45,7 +90,7 @@ class IndicesConfigurator
         $logEventName = 'Save configuration to Algolia for store: ' . $this->logger->getStoreName($storeId);
         $this->logger->start($logEventName);
 
-        if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
+        if (!($this->configHelper->getApplicationID($storeId) && $this->configHelper->getAPIKey($storeId))) {
             $this->logger->log('Algolia credentials are not filled.');
             $this->logger->stop($logEventName);
 
@@ -86,9 +131,9 @@ class IndicesConfigurator
         $this->algoliaHelper->waitLastTask();
 
         $this->setExtraSettings($storeId, $useTmpIndex);
+        $this->algoliaHelper->waitLastTask();
 
         $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
-        $this->algoliaHelper->waitLastTask();
     }
 
     /**

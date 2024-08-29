@@ -154,4 +154,33 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand">
+        <arguments>
+            <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
+            <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaDeleteCommand">
+        <arguments>
+            <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand">
+        <arguments>
+            <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
+            <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand">
+        <arguments>
+            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
+            <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
+            <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
+        </arguments>
+    </type>
+
 </config>

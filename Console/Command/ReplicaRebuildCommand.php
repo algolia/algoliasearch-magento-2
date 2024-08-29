@@ -26,8 +26,8 @@ class ReplicaRebuildCommand
     use ReplicaDeleteCommandTrait;
 
     public function __construct(
-        protected ProductHelper           $productHelper,
         protected ReplicaManagerInterface $replicaManager,
+        protected ProductHelper           $productHelper,
         protected StoreManagerInterface   $storeManager,
         protected ReplicaState            $replicaState,
         AppState                          $appState,

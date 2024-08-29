@@ -1,5 +1,16 @@
 # CHANGE LOG
 
+## 3.14.1
+
+### Updates
+- Token clean up on session expiration
+
+### Bug Fixes
+- Query string append issue addressed
+- Address base table not found in integration tests with CLI command classes issue addressed
+- README.md updated
+
+
 ## 3.14.0
 
 GA release

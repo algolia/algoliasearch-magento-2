@@ -16,7 +16,10 @@ var config = {
             'additionalHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/additional-section',
 
             // Recommend templates
-            'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products'
+            'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products',
+
+            // Unbundling
+            'algoliaTemplateEngine': 'Algolia_AlgoliaSearch/js/internals/template-engine'
         }
     },
     paths : {
@@ -28,6 +31,9 @@ var config = {
         'recommend'                         : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
         'recommendJs'                       : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
         'rangeSlider'                       : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
+        // Legacy
+        'algoliaHoganLib'       : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
+        'algoliaMustacheLib'    : 'Algolia_AlgoliaSearch/js/lib/mustache.min'
     },
     deps  : [
         'algoliaInstantSearch',
@@ -38,6 +44,11 @@ var config = {
             'Magento_Catalog/js/catalog-add-to-cart': {
                 'Algolia_AlgoliaSearch/js/insights/add-to-cart-mixin': true
             }
+        }
+    },
+    shim: {
+        'algoliaHoganLib': {
+            exports: 'Hogan'
         }
     }
 };

@@ -1,12 +1,15 @@
 define([
     'jquery',
     'algoliaBundle',
+    'algoliaTemplateEngine',
     'Magento_Catalog/js/price-utils',
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, priceUtils) {
-    $(function ($) {
+], function ($, algoliaBundle, templateEngine, priceUtils) {
+    $(async function ($) {
+        const templateProcessor = await templateEngine.getSelectedEngineAdapter(); 
+
         /** We have nothing to do here if instantsearch is not enabled **/
         if (
             typeof algoliaConfig === 'undefined' ||
@@ -82,10 +85,10 @@ define([
          *
          * For templating is used Hogan library
          * Docs: http://twitter.github.io/hogan.js/
+         * 
+         * Alternatively use Mustache
+         * https://github.com/janl/mustache.js
          **/
-        var wrapperTemplate = algoliaBundle.Hogan.compile(
-            $('#instant_wrapper_template').html()
-        );
         var instant_selector = '#instant-search-bar';
 
         var div = document.createElement('div');
@@ -99,16 +102,17 @@ define([
         $('.algolia-instant-results-wrapper').append(
             '<div class="algolia-instant-selector-results"></div>'
         );
-        $('.algolia-instant-selector-results')
-            .html(
-                wrapperTemplate.render({
-                    second_bar      : algoliaConfig.instant.enabled,
-                    findAutocomplete: findAutocomplete,
-                    config          : algoliaConfig.instant,
-                    translations    : algoliaConfig.translations,
-                })
-            )
-            .show();
+
+        const template = $('#instant_wrapper_template').html();
+        const templateVars = {
+            second_bar      : algoliaConfig.instant.enabled,
+            findAutocomplete: findAutocomplete,
+            config          : algoliaConfig.instant,
+            translations    : algoliaConfig.translations,
+        };
+
+        const wrapperHtml = templateProcessor.process(template, templateVars);
+        $('.algolia-instant-selector-results').html(wrapperHtml).show();
 
         /**
          * Initialise instant search
@@ -332,10 +336,6 @@ define([
                 container: '#algolia-stats',
                 templates: {
                     text: function (data) {
-                        var hoganTemplate = algoliaBundle.Hogan.compile(
-                            $('#instant-stats-template').html()
-                        );
-
                         data.first = data.page * data.hitsPerPage + 1;
                         data.last = Math.min(
                             data.page * data.hitsPerPage + data.hitsPerPage,
@@ -343,6 +343,8 @@ define([
                         );
                         data.seconds = data.processingTimeMS / 1000;
                         data.translations = window.algoliaConfig.translations;
+
+                        // TODO: Revisit this injected jQuery logic
                         const searchParams = new URLSearchParams(window.location.search);
                         const searchQuery = searchParams.has('q') || '';
                         if (searchQuery === '' && !algoliaConfig.isSearchPage) {
@@ -352,7 +354,9 @@ define([
                             $('.algolia-instant-replaced-content').hide();
                             $('.algolia-instant-selector-results').show();
                         }
-                        return hoganTemplate.render(data);
+
+                        const template = $('#instant-stats-template').html();
+                        return templateProcessor.process(template, data);
                     },
                 },
             },

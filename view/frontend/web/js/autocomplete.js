@@ -3,7 +3,7 @@ define([
     'algoliaBundle',
     'algoliaSearchLib',
     'algoliaAutocompleteLib',
-    'querySuggestionsPluginLib',
+    'algoliaQuerySuggestionsPluginLib',
     'pagesHtml',
     'categoriesHtml',
     'productsHtml',

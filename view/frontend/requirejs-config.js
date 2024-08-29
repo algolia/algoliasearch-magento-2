@@ -23,7 +23,6 @@ var config = {
         }
     },
     paths : {
-        'algoliaBundle'                     : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
         'algoliaSearchLib'                  : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
         'algoliaInstantSearchLib'           : 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
         'algoliaAutocompleteLib'            : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
@@ -34,8 +33,9 @@ var config = {
         'rangeSlider'                       : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
         
         // Legacy 
-        'algoliaHoganLib'       : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
-        'algoliaMustacheLib'    : 'Algolia_AlgoliaSearch/js/lib/mustache.min'
+        'algoliaBundle'     : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min', // DEPRECATED - to be removed
+        'algoliaHoganLib'   : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
+        'algoliaMustacheLib': 'Algolia_AlgoliaSearch/js/lib/mustache.min'
     },
     deps  : [
         'algoliaInstantSearch',

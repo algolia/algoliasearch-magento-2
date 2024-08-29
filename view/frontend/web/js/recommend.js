@@ -1,11 +1,10 @@
 define([
     'jquery',
-    'algoliaBundle',
     'recommend',
     'recommendJs',
     'recommendProductsHtml',
     'domReady!',
-], function ($, algoliaBundle, recommend, recommendJs, recommendProductsHtml) {
+], function ($, recommend, recommendJs, recommendProductsHtml) {
     'use strict';
 
     if (typeof algoliaConfig === 'undefined') {

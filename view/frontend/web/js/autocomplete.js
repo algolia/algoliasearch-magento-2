@@ -1,6 +1,5 @@
 define([
     'jquery',
-    'algoliaBundle',
     'algoliaSearchLib',
     'algoliaAutocompleteLib',
     'algoliaQuerySuggestionsPluginLib',
@@ -15,7 +14,6 @@ define([
     'domReady!',
 ], function (
     $,
-    algoliaBundle,
     algoliasearch,
     autocomplete,
     querySuggestionsPlugin,

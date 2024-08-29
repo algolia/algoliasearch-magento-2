@@ -1,4 +1,4 @@
-define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
+define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
     // Character maps supplied for more performant Regex ops
     const SPECIAL_CHAR_ENCODE_MAP = {
         '&': '&amp;',
@@ -305,7 +305,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
     // Multivalued facets use "~" as separator
     // Targeted index is defined by sortBy parameter
     window.routing = {
-        router: algoliaBundle.instantsearch.routers.history({
+        router: instantsearch.routers.history({
             parseURL: function (qsObject) {
                 var location = qsObject.location,
                     qsModule = qsObject.qsModule;

@@ -8,29 +8,36 @@ define([
     // Algolia integration dependencies
     'algoliaTemplateEngine',
 
-    // Magento libs
+    // Magento core libs
     'Magento_Catalog/js/price-utils',
-
-    // DEPRECATED: Legacy bundle libs to be removed in a future release
-    'algoliaHoganLib',
-    'algoliaAutocompleteLib',
 
     // TODO: Refactor legacy global object dependencies
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliasearch, instantsearch, templateEngine, priceUtils, Hogan, autocomplete) {
+], function ($, algoliasearch, instantsearch, templateEngine, priceUtils) {
 
-    // @deprecated algoliaBundle is going away! 
-    // Howver if you've used it in any of your customizations it can be mocked - documentation to come on how to do this... 
+    /**
+     * @deprecated algoliaBundle is going away! 
+     * This mock only includes libraries available to this module
+     * The following have been removed:
+     *  - Hogan
+     *  - algoliasearchHelper
+     *  - autocomplete
+     *  - createAlgoliaInsightsPlugin
+     *  - createLocalStorageRecentSearchesPlugin
+     *  - createQuerySuggestionsPlugin
+     *  - getAlgoliaResults
+     * However if you've used or require any of these additional libs in your customizations,
+     * you can either augment this mock as you need or include the global dependency in your module
+     * and make it available to your hook.
+     * TODO: Mixin and documentation to come on how to do this... 
+     */
     const mockAlgoliaBundle = {
         $,
-        Hogan,
         algoliasearch,
-        // algoliasearchHelper ??? 
-        autocomplete
+        instantsearch
     };
-    console.log("Mock bundle:", mockAlgoliaBundle);
     
     $(async function ($) {
         const templateProcessor = await templateEngine.getSelectedEngineAdapter(); 

@@ -1200,17 +1200,6 @@ class ConfigHelper
 
     /**
      * @param $storeId
-     * @return bool
-     */
-    public function credentialsAreConfigured($storeId = null)
-    {
-        return $this->getApplicationID($storeId) &&
-            $this->getAPIKey($storeId) &&
-            $this->getSearchOnlyAPIKey($storeId);
-    }
-
-    /**
-     * @param $storeId
      * @return mixed'
      */
     public function getApplicationID($storeId = null)

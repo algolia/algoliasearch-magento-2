@@ -7,40 +7,21 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
-use Magento\Framework\Message\ManagerInterface;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Magento\Store\Model\StoreManagerInterface;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
-    private $fullAction;
-    private $storeManager;
-    private $suggestionHelper;
-    private $algoliaHelper;
-    private $queue;
-    private $configHelper;
-    private $messageManager;
-    private $output;
-
     public function __construct(
-        StoreManagerInterface $storeManager,
-        SuggestionHelper $suggestionHelper,
-        Data $helper,
-        AlgoliaHelper $algoliaHelper,
-        Queue $queue,
-        ConfigHelper $configHelper,
-        ManagerInterface $messageManager,
-        ConsoleOutput $output
-    ) {
-        $this->fullAction = $helper;
-        $this->storeManager = $storeManager;
-        $this->suggestionHelper = $suggestionHelper;
-        $this->algoliaHelper = $algoliaHelper;
-        $this->queue = $queue;
-        $this->configHelper = $configHelper;
-        $this->messageManager = $messageManager;
-        $this->output = $output;
-    }
+        protected StoreManagerInterface $storeManager,
+        protected SuggestionHelper $suggestionHelper,
+        protected Data $fullAction,
+        protected AlgoliaHelper $algoliaHelper,
+        protected Queue $queue,
+        protected ConfigHelper $configHelper,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+    )
+    {}
 
     public function execute($ids)
     {
@@ -48,23 +29,6 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
     public function executeFull()
     {
-        if (!$this->configHelper->getApplicationID()
-            || !$this->configHelper->getAPIKey()
-            || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed:
-                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
-
-            if (php_sapi_name() === 'cli') {
-                $this->output->writeln($errorMessage);
-
-                return;
-            }
-
-            $this->messageManager->addErrorMessage($errorMessage);
-
-            return;
-        }
-
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
@@ -72,7 +36,16 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 continue;
             }
 
-            $this->queue->addToQueue($this->fullAction, 'rebuildStoreSuggestionIndex', ['storeId' => $storeId], 1);
+            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
+                $errorMessage = 'Algolia reindexing failed for store :' . $storeId . ' (Suggestion indexer)
+                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+
+                $this->algoliaCredentialsManager->displayErrorMessage($errorMessage);
+
+                return;
+            }
+
+            $this->queue->addToQueue(Data::class, 'rebuildStoreSuggestionIndex', ['storeId' => $storeId], 1);
         }
     }
 

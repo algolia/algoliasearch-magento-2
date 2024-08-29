@@ -4,29 +4,18 @@ namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
-use Magento\Framework\Message\ManagerInterface;
-use Symfony\Component\Console\Output\ConsoleOutput;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 
 class QueueRunner implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public const INDEXER_ID = 'algolia_queue_runner';
 
-    private $configHelper;
-    private $queue;
-    private $messageManager;
-    private $output;
-
     public function __construct(
-        ConfigHelper $configHelper,
-        Queue $queue,
-        ManagerInterface $messageManager,
-        ConsoleOutput $output
-    ) {
-        $this->configHelper = $configHelper;
-        $this->queue = $queue;
-        $this->messageManager = $messageManager;
-        $this->output = $output;
-    }
+        protected ConfigHelper $configHelper,
+        protected Queue $queue,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+    )
+    {}
 
     public function execute($ids)
     {
@@ -35,19 +24,11 @@ class QueueRunner implements \Magento\Framework\Indexer\ActionInterface, \Magent
 
     public function executeFull()
     {
-        if (!$this->configHelper->getApplicationID()
-            || !$this->configHelper->getAPIKey()
-            || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed: 
+        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
+            $errorMessage = 'Algolia reindexing failed (Queue Runner):
                 You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
 
-            if (php_sapi_name() === 'cli') {
-                $this->output->writeln($errorMessage);
-
-                return;
-            }
-
-            $this->messageManager->addErrorMessage($errorMessage);
+            $this->algoliaCredentialsManager->displayErrorMessage($errorMessage);
 
             return;
         }

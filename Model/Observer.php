@@ -3,6 +3,8 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Layout;
@@ -14,32 +16,15 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class Observer implements ObserverInterface
 {
-    protected $config;
-    protected $registry;
-    protected $storeManager;
-    protected $pageConfig;
-    protected $request;
-
-    /**
-     * @param ConfigHelper $configHelper
-     * @param Registry $registry
-     * @param StoreManagerInterface $storeManager
-     * @param PageConfig $pageConfig
-     * @param \Magento\Framework\App\Request\Http $http
-     */
     public function __construct(
-        ConfigHelper $configHelper,
-        Registry $registry,
-        StoreManagerInterface $storeManager,
-        PageConfig $pageConfig,
-        \Magento\Framework\App\Request\Http $http
-    ) {
-        $this->config = $configHelper;
-        $this->registry = $registry;
-        $this->storeManager = $storeManager;
-        $this->pageConfig = $pageConfig;
-        $this->request = $http;
-    }
+        protected ConfigHelper $config,
+        protected Registry $registry,
+        protected StoreManagerInterface $storeManager,
+        protected PageConfig $pageConfig,
+        protected Http $request,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+    )
+    {}
 
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
@@ -47,24 +32,23 @@ class Observer implements ObserverInterface
         if ($actionName === 'swagger_index_index') {
             return $this;
         }
-        if ($this->config->isEnabledFrontEnd()) {
-            if ($this->config->getApplicationID() && $this->config->getAPIKey()) {
-                if ($this->config->isAutoCompleteEnabled() || $this->config->isInstantEnabled()) {
+        $storeId = $this->storeManager->getStore()->getId();
+        if ($this->config->isEnabledFrontEnd($storeId)) {
+            if ($this->algoliaCredentialsManager->checkCredentials($storeId)) {
+                if ($this->config->isAutoCompleteEnabled($storeId) || $this->config->isInstantEnabled($storeId)) {
                     /** @var Layout $layout */
                     $layout = $observer->getData('layout');
                     $layout->getUpdate()->addHandle('algolia_search_handle');
 
-                    $this->loadPreventBackendRenderingHandle($layout);
+                    $this->loadPreventBackendRenderingHandle($layout, $storeId);
                 }
             }
         }
     }
 
-    private function loadPreventBackendRenderingHandle(Layout $layout)
+    private function loadPreventBackendRenderingHandle(Layout $layout, int $storeId)
     {
-        $storeId = $this->storeManager->getStore()->getId();
-
-        if ($this->config->preventBackendRendering() === false) {
+        if ($this->config->preventBackendRendering($storeId) === false) {
             return;
         }
 
@@ -78,7 +62,7 @@ class Observer implements ObserverInterface
             return;
         }
 
-        $displayMode = $this->config->getBackendRenderingDisplayMode();
+        $displayMode = $this->config->getBackendRenderingDisplayMode($storeId);
         if ($displayMode === 'only_products' && $category->getDisplayMode() === 'PAGE') {
             return;
         }

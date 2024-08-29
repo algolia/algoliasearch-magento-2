@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AlgoliaCredentialsManager
@@ -11,7 +12,8 @@ class AlgoliaCredentialsManager
     public function __construct(
         protected ConfigHelper $configHelper,
         protected ManagerInterface $messageManager,
-        protected ConsoleOutput $output
+        protected ConsoleOutput $output,
+        protected StoreManagerInterface $storeManager
     )
     {}
 
@@ -40,11 +42,17 @@ class AlgoliaCredentialsManager
     /**
      * Displays an error message in the console or in the admin
      *
-     * @param string $errorMessage
+     * @param string $class
+     * @param int|null $storeId
      * @return void
      */
-    public function displayErrorMessage(string $errorMessage): void
+    public function displayErrorMessage(string $class, ?int $storeId = null): void
     {
+        $storeInfo = $storeId ? ' for store '. $this->storeManager->getStore($storeId)->getName() : '';
+        $errorMessage = '
+' . $class . ': Algolia credentials missing' . $storeInfo . '
+  => You need to configure your credentials in Stores > Configuration > Algolia Search.';
+
         if (php_sapi_name() === 'cli') {
             $this->output->writeln($errorMessage);
 

@@ -25,10 +25,7 @@ class QueueRunner implements \Magento\Framework\Indexer\ActionInterface, \Magent
     public function executeFull()
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed (Queue Runner):
-                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
-
-            $this->algoliaCredentialsManager->displayErrorMessage($errorMessage);
+            $this->algoliaCredentialsManager->displayErrorMessage(self::class);
 
             return;
         }

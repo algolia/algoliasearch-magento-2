@@ -40,10 +40,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
             }
 
             if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $errorMessage = 'Algolia reindexing failed for store :' . $storeId . ' (Product indexer)
-                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
-
-                $this->algoliaCredentialsManager->displayErrorMessage($errorMessage);
+                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
 
                 return;
             }

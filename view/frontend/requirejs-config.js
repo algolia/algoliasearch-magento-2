@@ -18,19 +18,20 @@ var config = {
             // Recommend templates
             'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products',
 
-            // Unbundling 
+            // Unbundling
             'algoliaTemplateEngine': 'Algolia_AlgoliaSearch/js/internals/template-engine'
         }
     },
     paths : {
-        'algoliaBundle'         : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
-        'algoliaSearchLib'      : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
-        'algoliaAutocompleteLib': 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
-        'algoliaAnalytics'      : 'Algolia_AlgoliaSearch/js/internals/search-insights',
-        'recommend'             : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
-        'recommendJs'           : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
-        'rangeSlider'           : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
-        // Legacy 
+        'algoliaBundle'                     : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
+        'algoliaSearchLib'                  : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
+        'algoliaAutocompleteLib'            : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
+        'algoliaAnalytics'                  : 'Algolia_AlgoliaSearch/js/internals/search-insights',
+        'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
+        'recommend'                         : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
+        'recommendJs'                       : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
+        'rangeSlider'                       : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
+        // Legacy
         'algoliaHoganLib'       : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
         'algoliaMustacheLib'    : 'Algolia_AlgoliaSearch/js/lib/mustache.min'
     },
@@ -47,7 +48,7 @@ var config = {
     },
     shim: {
         'algoliaHoganLib': {
-            exports: 'Hogan' 
+            exports: 'Hogan'
         }
     }
 };

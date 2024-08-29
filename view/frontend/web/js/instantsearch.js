@@ -1,14 +1,37 @@
 define([
     'jquery',
-    'algoliaBundle',
+
+    // Algolia core UI libs
     'algoliaSearchLib',
     'algoliaInstantSearchLib',
+
+    // Algolia integration dependencies
     'algoliaTemplateEngine',
+
+    // Magento libs
     'Magento_Catalog/js/price-utils',
+
+    // DEPRECATED: Legacy bundle libs to be removed in a future release
+    'algoliaHoganLib',
+    'algoliaAutocompleteLib',
+
+    // TODO: Refactor legacy global object dependencies
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, algoliasearch, instantsearch, templateEngine, priceUtils) {
+], function ($, algoliasearch, instantsearch, templateEngine, priceUtils, Hogan, autocomplete) {
+
+    // @deprecated algoliaBundle is going away! 
+    // Howver if you've used it in any of your customizations it can be mocked - documentation to come on how to do this... 
+    const mockAlgoliaBundle = {
+        $,
+        Hogan,
+        algoliasearch,
+        // algoliasearchHelper ??? 
+        autocomplete
+    };
+    console.log("Mock bundle:", mockAlgoliaBundle);
+    
     $(async function ($) {
         const templateProcessor = await templateEngine.getSelectedEngineAdapter(); 
 
@@ -172,7 +195,7 @@ define([
         instantsearchOptions = algolia.triggerHooks(
             'beforeInstantsearchInit',
             instantsearchOptions,
-            algoliaBundle
+            mockAlgoliaBundle
         );
 
         var search = instantsearch(instantsearchOptions);
@@ -852,7 +875,7 @@ define([
         allWidgetConfiguration = algolia.triggerHooks(
             'beforeWidgetInitialization',
             allWidgetConfiguration,
-            algoliaBundle
+            mockAlgoliaBundle
         );
 
         $.each(allWidgetConfiguration, function (widgetType, widgetConfig) {
@@ -892,13 +915,13 @@ define([
             search = algolia.triggerHooks(
                 'beforeInstantsearchStart',
                 search,
-                algoliaBundle
+                mockAlgoliaBundle
             );
             search.start();
             search = algolia.triggerHooks(
                 'afterInstantsearchStart',
                 search,
-                algoliaBundle
+                mockAlgoliaBundle
             );
 
             isStarted = true;

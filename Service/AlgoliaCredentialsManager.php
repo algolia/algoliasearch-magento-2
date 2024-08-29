@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -45,6 +46,7 @@ class AlgoliaCredentialsManager
      * @param string $class
      * @param int|null $storeId
      * @return void
+     * @throws NoSuchEntityException
      */
     public function displayErrorMessage(string $class, ?int $storeId = null): void
     {

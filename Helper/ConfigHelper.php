@@ -81,6 +81,7 @@ class ConfigHelper
     public const CC_ANALYTICS_IS_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/is_selector';
     public const CC_CONVERSION_ANALYTICS_MODE = 'algoliasearch_cc_analytics/cc_analytics_group/conversion_analytics_mode';
     public const CC_ADD_TO_CART_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/add_to_cart_selector';
+    public const COOKIE_LIFETIME = 'web/cookie/cookie_lifetime';
 
     public const GA_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
     public const GA_DELAY = 'algoliasearch_analytics/analytics_group/delay';
@@ -142,7 +143,7 @@ class ConfigHelper
     protected const IS_LOOKING_SIMILAR_ENABLED_IN_PDP = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_pdp';
     protected const IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_cart_page';
     protected const LOOKING_SIMILAR_TITLE = 'algoliasearch_recommend/recommend/looking_similar/title';
-    public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica'; 
+    public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
     protected const AUTOCOMPLETE_KEYBORAD_NAVIAGATION = 'algoliasearch_autocomplete/autocomplete/navigator';
     protected const FREQUENTLY_BOUGHT_TOGETHER_TITLE = 'algoliasearch_recommend/recommend/frequently_bought_together/title';
     protected const RELATED_PRODUCTS_TITLE = 'algoliasearch_recommend/recommend/related_product/title';
@@ -1871,5 +1872,14 @@ class ConfigHelper
     public function isCookieRestrictionModeEnabled()
     {
         return (bool)$this->cookieHelper->isCookieRestrictionModeEnabled();
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     */
+    public function getCookieLifetime($storeId = null)
+    {
+        return $this->configInterface->getValue(self::COOKIE_LIFETIME, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

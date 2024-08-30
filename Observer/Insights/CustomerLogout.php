@@ -47,6 +47,7 @@ class CustomerLogout implements ObserverInterface
             try {
                 $this->cookieManager->setPublicCookie(self::UNSET_AUTHENTICATION_USER_TOKEN_COOKIE_NAME, 1, $metaDataUnset);
                 $this->cookieManager->deleteCookie(InsightsHelper::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME, $metadata);
+                $this->cookieManager->deleteCookie(InsightsHelper::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME, $metadata);
             } catch (LocalizedException $e) {
                 $this->logger->error("Error writing Algolia customer cookies: " . $e->getMessage());
             }

@@ -1,5 +1,17 @@
 # CHANGE LOG
 
+## 3.14.1
+
+### Updates
+- Token clean up on session expiration
+
+### Bug Fixes
+- Query string append issue addressed
+- Fixed issue with "base table not found" in integration tests due to new CLI command classes
+- Removed a warning during indexing of entities with no `created_at` attribute
+- Fixed incorrect Recommend paths resulting from earlier JS asset reorg
+- README.md updated
+
 ## 3.14.0
 
 GA release

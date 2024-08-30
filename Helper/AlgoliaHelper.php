@@ -593,7 +593,9 @@ class AlgoliaHelper extends AbstractHelper
         foreach ($objects as $key => &$object) {
             $object['algoliaLastUpdateAtCET'] = $currentCET;
             // Convert created_at to UTC timestamp
-            $object['created_at'] = strtotime($object['created_at']);
+            if (isset($object['created_at'])) {
+                $object['created_at'] = strtotime($object['created_at']);
+            }
 
             $previousObject = $object;
 

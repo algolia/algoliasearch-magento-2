@@ -24,9 +24,8 @@ class ReplicaSyncCommand extends AbstractReplicaCommand implements ReplicaSyncCo
     use ReplicaSyncCommandTrait;
 
     public function __construct(
-
-        protected ProductHelper           $productHelper,
         protected ReplicaManagerInterface $replicaManager,
+        protected ProductHelper           $productHelper,
         protected StoreManagerInterface   $storeManager,
         State                             $state,
         StoreNameFetcher                  $storeNameFetcher,

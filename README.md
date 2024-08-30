@@ -1,7 +1,7 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.14.0-green)
+![Latest version](https://img.shields.io/badge/latest-3.14.1-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.x-orange)
 
 ![PHP](https://img.shields.io/badge/PHP-8.1%2C8.2%2C8.3-blue)
@@ -35,10 +35,16 @@ Magento 2.3 and earlier versions are no longer supported by the Algolia extensio
 
 Version 3.x of our extension is compatible with Magento 2.4. Review the [Customisation](https://github.com/algolia/algoliasearch-magento-2#customisation) section to learn more about the differences between our extension versions.
 
-| Extension Version | End of Life | Magento  | PHP |
-|-------------------| --- |----------| ---------|
-| v3.13.x           | N/A | `2.4.x` | `^7.2 \|\| ^8.0` |
-| v3.14.x           | N/A | `2.4.x` | `>=8.1` |
+| Extension Version | End of Life | Magento                      | PHP                                    |
+|-------------------|-------------|------------------------------|----------------------------------------|
+| v3.7.x            | 10/10/2023  | `~2.3.7\|\|~2.4.5\|\|~2.4.6` | `~7.3.0\|\|~7.4.0\|\|~8.1.0\|\|~8.2.0` |
+| v3.8.x            | 3/8/2023    | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
+| v3.9.x            | 10/13/2023  | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
+| v3.10.x           | 12/12/2023  | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.11.x           | 1/26/2024   | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.12.x           | 8/2/2024    | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.13.x           | N/A         | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| v3.14.x           | N/A         | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
 
 ## Documentation
 
@@ -56,7 +62,7 @@ The easiest way to install the extension is to use [Composer](https://getcompose
 
 If you would like to stay on a minor version, please upgrade your composer to only accept minor versions. The following example will keep you on the minor version and will update patches automatically.
 
-`"algolia/algoliasearch-magento-2": "~3.14.0"`
+`"algolia/algoliasearch-magento-2": "~3.14.1"`
 
 ### Customisation
 
@@ -77,7 +83,10 @@ Knowing the version of the library will help you understand what is available in
 | v3.11.0         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0) | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0) |
 | v3.13.0          | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0) | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0) |
 | >=v3.14.x         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0) | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0) | [1.15.0](https://github.com/algolia/recommend/tree/v1.15.0) |
+
 The autocomplete and instantsearch libraries are accessible in the `algoliaBundle` global. This bundle is a prepackage javascript file that contains it's dependencies. What is included in this bundle can be seen here:
+
+v3.x latest bundle: https://github.com/algolia/algoliasearch-extensions-bundle/blob/ISv4/package.json
 
 The search-insights.js library is standalone.
 

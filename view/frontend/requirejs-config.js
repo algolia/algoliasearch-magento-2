@@ -1,4 +1,4 @@
-var config = {
+const config = {
     map   : {
         '*': {
             // Magento FE libs
@@ -23,19 +23,24 @@ var config = {
         }
     },
     paths : {
-        'algoliaSearchLib'                  : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
-        'algoliaInstantSearchLib'           : 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
-        'algoliaAutocompleteLib'            : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
-        'algoliaAnalytics'                  : 'Algolia_AlgoliaSearch/js/internals/search-insights',
-        'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
-        'recommend'                         : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
-        'recommendJs'                       : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
-        'rangeSlider'                       : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
-        
-        // Legacy 
-        'algoliaBundle'     : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min', // DEPRECATED - to be removed
+        'algoliaSearchLib'                : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
+        'algoliaInstantSearchLib'         : 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
+        'algoliaAutocompleteLib'          : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
+        'algoliaAnalytics'                : 'Algolia_AlgoliaSearch/js/internals/search-insights',
+        'algoliaQuerySuggestionsPluginLib': 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
+        'algoliaRecommendLib'             : 'Algolia_AlgoliaSearch/js/lib/recommend.min',
+        'algoliaRecommendJsLib'           : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
+
+        'rangeSlider': 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
+
+        // Legacy
+        'algoliaMustacheLib': 'Algolia_AlgoliaSearch/js/lib/mustache.min',
         'algoliaHoganLib'   : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
-        'algoliaMustacheLib': 'Algolia_AlgoliaSearch/js/lib/mustache.min'
+
+        // DEPRECATED
+        'algoliaBundle'     : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
+        'recommend'         : 'Algolia_AlgoliaSearch/js/lib/recommend.min',
+        'recommendJs'       : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
     },
     deps  : [
         'algoliaInstantSearch',

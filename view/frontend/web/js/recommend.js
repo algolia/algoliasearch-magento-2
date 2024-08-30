@@ -1,7 +1,7 @@
 define([
     'jquery',
-    'recommend',
-    'recommendJs',
+    'algoliaRecommendLib',
+    'algoliaRecommendJsLib',
     'recommendProductsHtml',
     'domReady!',
 ], function ($, recommend, recommendJs, recommendProductsHtml) {

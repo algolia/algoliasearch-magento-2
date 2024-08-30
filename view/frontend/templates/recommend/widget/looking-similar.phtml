@@ -7,7 +7,7 @@ if ($isEnabled):
     <script type="text/x-magento-init">
         {
             "*": {
-                "Algolia_AlgoliaSearch/recommend" : {
+                "Algolia_AlgoliaSearch/js/recommend" : {
                     "recommendLSContainer" : "<?= $lsContainer ?>",
                     "numOfLookingSimilarItem" : "<?= $block->getData('numOfLookingSimilarItem') ?>",
                     "objectIDs" : <?= $block->getProductIds() ?>

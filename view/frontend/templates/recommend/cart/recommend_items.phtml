@@ -14,7 +14,7 @@ if (!empty($recommendConfig['enabledRelatedInCart']) || !empty($recommendConfig[
     <script type="text/x-magento-init">
         {
             "*": {
-                "Algolia_AlgoliaSearch/recommend" : {
+                "Algolia_AlgoliaSearch/js/recommend" : {
                     "objectIDs" : <?= json_encode($cartItems) ?>
                 }
             }

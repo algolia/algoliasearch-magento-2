@@ -1200,6 +1200,18 @@ class ConfigHelper
 
     /**
      * @param $storeId
+     * @return bool
+     * @deprecated Use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager instead
+     */
+    public function credentialsAreConfigured($storeId = null)
+    {
+        return $this->getApplicationID($storeId) &&
+            $this->getAPIKey($storeId) &&
+            $this->getSearchOnlyAPIKey($storeId);
+    }
+
+    /**
+     * @param $storeId
      * @return mixed'
      */
     public function getApplicationID($storeId = null)

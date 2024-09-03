@@ -27,7 +27,7 @@ const config = {
         'algoliaSearchLib'                : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
         'algoliaInstantSearchLib'         : 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
         'algoliaAutocompleteLib'          : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
-        'algoliaAnalytics'                : 'Algolia_AlgoliaSearch/js/internals/search-insights',
+        'algoliaAnalyticsLib'             : 'Algolia_AlgoliaSearch/js/lib/search-insights.min',
         'algoliaRecommendLib'             : 'Algolia_AlgoliaSearch/js/lib/recommend.min',
         'algoliaRecommendJsLib'           : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
 
@@ -42,6 +42,7 @@ const config = {
         'algoliaBundle'        : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
         'rangeSlider'          : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
         'recommend'            : 'Algolia_AlgoliaSearch/js/lib/recommend.min',
+        'algoliaAnalytics'     : 'Algolia_AlgoliaSearch/js/lib/search-insights.min',
         'recommendJs'          : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
         'productsHtml'         : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',
         'pagesHtml'            : 'Algolia_AlgoliaSearch/js/template/autocomplete/pages',

@@ -1,6 +1,6 @@
 define([
     'jquery',
-    'algoliaAnalytics',
+    'algoliaAnalyticsLib',
     'algoliaCommon',
     'mage/cookies',
 ], function ($, algoliaAnalyticsWrapper) {

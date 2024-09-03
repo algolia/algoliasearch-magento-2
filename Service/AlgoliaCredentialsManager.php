@@ -63,4 +63,25 @@ class AlgoliaCredentialsManager
 
         $this->messageManager->addErrorMessage($errorMessage);
     }
+
+    /**
+     * Checks if multiple application IDs are configured
+     *
+     * @return bool
+     */
+    public function hasMultipleApplicationIDs(): bool
+    {
+        $applications = [];
+
+        foreach ($this->storeManager->getStores() as $store) {
+            $storeId = $store->getId();
+            if ($this->checkCredentials($storeId)
+                && !isset($applications[$this->configHelper->getApplicationID($storeId)])
+            ) {
+                $applications[$this->configHelper->getApplicationID($storeId)] = true;
+            }
+        }
+
+        return count($applications) > 1;
+    }
 }

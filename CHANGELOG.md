@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.14.2
+
+### Updates
+- Trained model check before enabling recommend
+
 ## 3.14.1
 
 ### Updates

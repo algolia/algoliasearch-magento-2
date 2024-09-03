@@ -62,7 +62,7 @@ The easiest way to install the extension is to use [Composer](https://getcompose
 
 If you would like to stay on a minor version, please upgrade your composer to only accept minor versions. The following example will keep you on the minor version and will update patches automatically.
 
-`"algolia/algoliasearch-magento-2": "~3.14.0"`
+`"algolia/algoliasearch-magento-2": "~3.14.2"`
 
 ### Customisation
 

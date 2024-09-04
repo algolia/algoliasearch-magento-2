@@ -18,32 +18,6 @@ define([
     'algoliaHooks',
 ], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils) {
 
-    function addWidget(search, type, config) {
-        if (type === 'custom') {
-            search.addWidgets([config]);
-            return;
-        }
-        var widget = instantsearch.widgets[type];
-        if (config.panelOptions) {
-            widget = instantsearch.widgets.panel(config.panelOptions)(
-                widget
-            );
-            delete config.panelOptions;
-        }
-        if (type === 'rangeSlider' && config.attribute.indexOf('price.') < 0) {
-            config.panelOptions = {
-                hidden(options) {
-                    return options.range.min === 0 && options.range.max === 0;
-                },
-            };
-            widget = instantsearch.widgets.panel(config.panelOptions)(
-                widget
-            );
-            delete config.panelOptions;
-        }
-
-        search.addWidgets([widget(config)]);
-    }
 
     function addSearchForFacetValues(facet, options) {
         if (facet.searchable === '1') {
@@ -172,7 +146,7 @@ define([
                 translations    : algoliaConfig.translations,
             };
     
-            const wrapperHtml = templateProcessor.processAndMeasure(template, templateVars);
+            const wrapperHtml = templateProcessor.process(template, templateVars);
             $('.algolia-instant-selector-results').html(wrapperHtml).show();
     
             /**
@@ -914,13 +888,13 @@ define([
                 mockAlgoliaBundle
             );
     
-            $.each(allWidgetConfiguration, function (widgetType, widgetConfig) {
+            $.each(allWidgetConfiguration, (widgetType, widgetConfig) => {
                 if (Array.isArray(widgetConfig) === true) {
-                    $.each(widgetConfig, function (i, widgetConfig) {
-                        addWidget(search, widgetType, widgetConfig);
+                    $.each(widgetConfig, (i, widgetConfig) => {
+                        this.addWidget(search, widgetType, widgetConfig);
                     });
                 } else {
-                    addWidget(search, widgetType, widgetConfig);
+                    this.addWidget(search, widgetType, widgetConfig);
                 }
             });
     
@@ -965,6 +939,33 @@ define([
     
             /** Initialise searching **/
             startInstantSearch();
+        },
+
+        addWidget: function(search, type, config) {
+            if (type === 'custom') {
+                search.addWidgets([config]);
+                return;
+            }
+            var widget = instantsearch.widgets[type];
+            if (config.panelOptions) {
+                widget = instantsearch.widgets.panel(config.panelOptions)(
+                    widget
+                );
+                delete config.panelOptions;
+            }
+            if (type === 'rangeSlider' && config.attribute.indexOf('price.') < 0) {
+                config.panelOptions = {
+                    hidden(options) {
+                        return options.range.min === 0 && options.range.max === 0;
+                    },
+                };
+                widget = instantsearch.widgets.panel(config.panelOptions)(
+                    widget
+                );
+                delete config.panelOptions;
+            }
+    
+            search.addWidgets([widget(config)]);
         },
 
         /**

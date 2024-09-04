@@ -75,13 +75,17 @@ class AlgoliaCredentialsManager
 
         foreach ($this->storeManager->getStores() as $store) {
             $storeId = $store->getId();
-            if ($this->checkCredentials($storeId)
-                && !isset($applications[$this->configHelper->getApplicationID($storeId)])
-            ) {
-                $applications[$this->configHelper->getApplicationID($storeId)] = true;
+            if ($this->checkCredentials($storeId)) {
+                if (!isset($applications[$this->configHelper->getApplicationID($storeId)])) {
+                    $applications[$this->configHelper->getApplicationID($storeId)] = true;
+                }
+
+                if (count($applications) > 1) {
+                    return true;
+                }
             }
         }
 
-        return count($applications) > 1;
+        return false;
     }
 }

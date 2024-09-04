@@ -78,7 +78,7 @@ class AlgoliaHelper extends AbstractHelper
     /**
      * @return void
      */
-    public function createClient(): void
+    protected function createClient(): void
     {
         $storeId = $this->getStoreId();
         if ($this->algoliaCredentialsManager->checkCredentials($storeId)) {

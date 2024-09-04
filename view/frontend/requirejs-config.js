@@ -1,5 +1,5 @@
 const config = {
-    map     : {
+    map: {
         '*': {
             // Magento FE libs
             'algoliaCommon'       : 'Algolia_AlgoliaSearch/js/internals/common',
@@ -22,7 +22,8 @@ const config = {
             'additionalHtml'       : 'algoliaAutocompleteAdditionalHtml',
             'recommendProductsHtml': 'algoliaRecommendProductsHtml'
         }
-    }, paths: {
+    },
+    paths: {
         // Core Search UI libs
         'algoliaSearchLib'       : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
         'algoliaInstantSearchLib': 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
@@ -52,13 +53,19 @@ const config = {
         'algoliaBundle': 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
         'rangeSlider'  : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget'
 
-    }, deps : ['algoliaInstantSearch', 'algoliaInsights'], config: {
+    },
+    deps : [
+        'algoliaInstantSearch', 
+        'algoliaInsights'
+    ],
+    config: {
         mixins: {
             'Magento_Catalog/js/catalog-add-to-cart': {
                 'Algolia_AlgoliaSearch/js/insights/add-to-cart-mixin': true
             }
         }
-    }, shim : {
+    },
+    shim : {
         'algoliaHoganLib': {
             exports: 'Hogan'
         }

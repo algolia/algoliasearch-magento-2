@@ -1,12 +1,44 @@
 define([
     'jquery',
-    'algoliaBundle',
+
+    // Algolia core UI libs
+    'algoliaSearchLib',
+    'algoliaInstantSearchLib',
+
+    // Algolia integration dependencies
     'algoliaTemplateEngine',
+
+    // Magento core libs
     'Magento_Catalog/js/price-utils',
+
+    // TODO: Refactor legacy global object dependencies
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function ($, algoliaBundle, templateEngine, priceUtils) {
+], function ($, algoliasearch, instantsearch, templateEngine, priceUtils) {
+
+    /**
+     * @deprecated algoliaBundle is going away! 
+     * This mock only includes libraries available to this module
+     * The following have been removed:
+     *  - Hogan
+     *  - algoliasearchHelper
+     *  - autocomplete
+     *  - createAlgoliaInsightsPlugin
+     *  - createLocalStorageRecentSearchesPlugin
+     *  - createQuerySuggestionsPlugin
+     *  - getAlgoliaResults
+     * However if you've used or require any of these additional libs in your customizations,
+     * you can either augment this mock as you need or include the global dependency in your module
+     * and make it available to your hook.
+     * TODO: Mixin and documentation to come on how to do this... 
+     */
+    const mockAlgoliaBundle = {
+        $,
+        algoliasearch,
+        instantsearch
+    };
+    
     $(async function ($) {
         const templateProcessor = await templateEngine.getSelectedEngineAdapter(); 
 
@@ -131,7 +163,7 @@ define([
             );
         }
 
-        var searchClient = algoliaBundle.algoliasearch(
+        var searchClient = algoliasearch(
             algoliaConfig.applicationId,
             algoliaConfig.apiKey
         );
@@ -170,10 +202,10 @@ define([
         instantsearchOptions = algolia.triggerHooks(
             'beforeInstantsearchInit',
             instantsearchOptions,
-            algoliaBundle
+            mockAlgoliaBundle
         );
 
-        var search = algoliaBundle.instantsearch(instantsearchOptions);
+        var search = instantsearch(instantsearchOptions);
 
         search.client.addAlgoliaAgent(
             'Magento2 integration (' + algoliaConfig.extensionVersion + ')'
@@ -850,7 +882,7 @@ define([
         allWidgetConfiguration = algolia.triggerHooks(
             'beforeWidgetInitialization',
             allWidgetConfiguration,
-            algoliaBundle
+            mockAlgoliaBundle
         );
 
         $.each(allWidgetConfiguration, function (widgetType, widgetConfig) {
@@ -890,13 +922,13 @@ define([
             search = algolia.triggerHooks(
                 'beforeInstantsearchStart',
                 search,
-                algoliaBundle
+                mockAlgoliaBundle
             );
             search.start();
             search = algolia.triggerHooks(
                 'afterInstantsearchStart',
                 search,
-                algoliaBundle
+                mockAlgoliaBundle
             );
 
             isStarted = true;
@@ -911,9 +943,9 @@ define([
             search.addWidgets([config]);
             return;
         }
-        var widget = algoliaBundle.instantsearch.widgets[type];
+        var widget = instantsearch.widgets[type];
         if (config.panelOptions) {
-            widget = algoliaBundle.instantsearch.widgets.panel(config.panelOptions)(
+            widget = instantsearch.widgets.panel(config.panelOptions)(
                 widget
             );
             delete config.panelOptions;
@@ -924,7 +956,7 @@ define([
                     return options.range.min === 0 && options.range.max === 0;
                 },
             };
-            widget = algoliaBundle.instantsearch.widgets.panel(config.panelOptions)(
+            widget = instantsearch.widgets.panel(config.panelOptions)(
                 widget
             );
             delete config.panelOptions;

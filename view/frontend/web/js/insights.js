@@ -1,10 +1,9 @@
 define([
     'jquery',
-    'algoliaAnalytics',
-    'algoliaBundle',
+    'algoliaAnalyticsLib',
     'algoliaCommon',
     'mage/cookies',
-], function ($, algoliaAnalyticsWrapper, algoliaBundle) {
+], function ($, algoliaAnalyticsWrapper) {
     algoliaAnalytics = algoliaAnalyticsWrapper.default;
 
     window.algoliaInsights = {
@@ -223,7 +222,7 @@ define([
 
                     algolia.registerHook(
                         'afterInstantsearchStart',
-                        function (search, algoliaBundle) {
+                        function (search) {
                             var selectors = document.querySelectorAll(containers.join(', '));
                             selectors.forEach(function (e) {
                                 e.addEventListener('click', function (event) {

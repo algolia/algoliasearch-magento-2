@@ -31,16 +31,18 @@ define([
      * However if you've used or require any of these additional libs in your customizations,
      * you can either augment this mock as you need or include the global dependency in your module
      * and make it available to your hook.
-     * TODO: Mixin and documentation to come on how to do this... 
+     * TODO: Mixin and documentation to come on how to do this...
      */
-    const mockAlgoliaBundle = {
-        $,
-        algoliasearch,
-        instantsearch
+    const mockAlgoliaBundle = () => {
+        return {
+            $,
+            algoliasearch,
+            instantsearch
+        }
     };
-    
+
     $(async function ($) {
-        const templateProcessor = await templateEngine.getSelectedEngineAdapter(); 
+        const templateProcessor = await templateEngine.getSelectedEngineAdapter();
 
         /** We have nothing to do here if instantsearch is not enabled **/
         if (
@@ -202,7 +204,7 @@ define([
         instantsearchOptions = algolia.triggerHooks(
             'beforeInstantsearchInit',
             instantsearchOptions,
-            mockAlgoliaBundle
+            mockAlgoliaBundle()
         );
 
         var search = instantsearch(instantsearchOptions);
@@ -882,7 +884,7 @@ define([
         allWidgetConfiguration = algolia.triggerHooks(
             'beforeWidgetInitialization',
             allWidgetConfiguration,
-            mockAlgoliaBundle
+            mockAlgoliaBundle()
         );
 
         $.each(allWidgetConfiguration, function (widgetType, widgetConfig) {
@@ -922,13 +924,13 @@ define([
             search = algolia.triggerHooks(
                 'beforeInstantsearchStart',
                 search,
-                mockAlgoliaBundle
+                mockAlgoliaBundle()
             );
             search.start();
             search = algolia.triggerHooks(
                 'afterInstantsearchStart',
                 search,
-                mockAlgoliaBundle
+                mockAlgoliaBundle()
             );
 
             isStarted = true;
@@ -980,4 +982,13 @@ define([
 
         return options;
     }
+
+    console.log("### InstantSearch loaded");
+
+    return {
+        mockAlgoliaBundle,
+        algoliaInstantSearch: (...args) => {
+             console.log("#### algoliaInstantSearch˝:", this);
+        }
+    };
 });

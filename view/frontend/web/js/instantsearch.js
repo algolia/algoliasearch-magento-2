@@ -18,26 +18,9 @@ define([
     'algoliaHooks',
 ], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils) {
 
-
-    function addSearchForFacetValues(facet, options) {
-        if (facet.searchable === '1') {
-            options.searchable = true;
-            options.searchableIsAlwaysActive = false;
-            options.searchablePlaceholder =
-                algoliaConfig.translations.searchForFacetValuesPlaceholder;
-            options.templates = options.templates || {};
-            options.templates.searchableNoResults =
-                '<div class="sffv-no-results">' +
-                algoliaConfig.translations.noResults +
-                '</div>';
-        }
-
-        return options;
-    }    
-
     return Component.extend({
         initialize: function(config, element) {
-            console.log('IS initialized with', config, element);
+            // console.log('IS initialized with', config, element);
             this.buildInstantSearch($);
         },
 
@@ -685,7 +668,7 @@ define([
             };
     
             /** Add all facet widgets to instantsearch object **/
-            window.getFacetWidget = function (facet, templates) {
+            window.getFacetWidget = (facet, templates) => {
                 var panelOptions = {
                     templates: {
                         header:
@@ -765,7 +748,7 @@ define([
                         panelOptions: panelOptions,
                     };
     
-                    refinementListOptions = addSearchForFacetValues(
+                    refinementListOptions = this.addSearchForFacetValues(
                         facet,
                         refinementListOptions
                     );
@@ -789,7 +772,7 @@ define([
                         },
                     };
     
-                    refinementListOptions = addSearchForFacetValues(
+                    refinementListOptions = this.addSearchForFacetValues(
                         facet,
                         refinementListOptions
                     );
@@ -968,6 +951,22 @@ define([
             search.addWidgets([widget(config)]);
         },
 
+        addSearchForFacetValues: function(facet, options) {
+            if (facet.searchable === '1') {
+                options.searchable = true;
+                options.searchableIsAlwaysActive = false;
+                options.searchablePlaceholder =
+                    algoliaConfig.translations.searchForFacetValuesPlaceholder;
+                options.templates = options.templates || {};
+                options.templates.searchableNoResults =
+                    '<div class="sffv-no-results">' +
+                    algoliaConfig.translations.noResults +
+                    '</div>';
+            }
+    
+            return options;
+        },
+
         /**
          * @deprecated algoliaBundle is going away! 
          * This mock only includes libraries available to this module
@@ -985,7 +984,6 @@ define([
          * TODO: Mixin and documentation to come on how to do this...
          */
         mockAlgoliaBundle: function() {
-            console.log("#### REGULAR MOCK");
             return {
                 $,
                 algoliasearch,

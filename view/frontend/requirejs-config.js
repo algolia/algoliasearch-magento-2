@@ -33,7 +33,8 @@ const config = {
         'algoliaRecommendJsLib'  : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
 
         // Autocomplete plugins
-        'algoliaQuerySuggestionsPluginLib': 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
+        'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
+        'algoliaInsightsPluginLib'          : 'Algolia_AlgoliaSearch/js/lib/insights-plugin.min',
 
         // Autocomplete templates
         'algoliaAutocompleteProductsHtml'   : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',
@@ -49,13 +50,16 @@ const config = {
         'algoliaMustacheLib': 'Algolia_AlgoliaSearch/js/lib/mustache.min',
         'algoliaHoganLib'   : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
 
+        // Other plugins
+        'algoliaLocalStorageRecentSearchesLib'  : 'Algolia_AlgoliaSearch/js/lib/local-storage-recent-searches-plugin.min',
+
         // DEPRECATED - to be removed in a future release
         'algoliaBundle': 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
         'rangeSlider'  : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget'
 
     },
     deps : [
-        'algoliaInstantSearch', 
+        'algoliaInstantSearch',
         'algoliaInsights'
     ],
     config: {

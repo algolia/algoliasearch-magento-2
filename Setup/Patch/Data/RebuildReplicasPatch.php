@@ -63,7 +63,7 @@ class RebuildReplicasPatch implements DataPatchInterface
         // Delete all replicas before resyncing in case of incorrect replica assignments
         foreach ($storeIds as $storeId) {
             if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->logger->warning("Algolia credentials are not configured for store $storeId. Aborting replica rebuild patch. If you need to rebuild your replicas run `bin/magento algolia:replicas:rebuild`");
+                $this->logger->warning("Algolia credentials are not configured for store $storeId. Skipping auto replica rebuild for this store. If you need to rebuild your replicas run `bin/magento algolia:replicas:rebuild`");
                 continue;
             }
 

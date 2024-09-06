@@ -215,7 +215,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
     }
 
-    protected function getCurrentLandingPage(): LandingPage|null|false
+    protected function getCurrentLandingPage(): \Algolia\AlgoliaSearch\Model\LandingPage|null|false
     {
         $landingPageId = $this->getRequest()->getParam('landing_page_id');
         if (!$landingPageId) {

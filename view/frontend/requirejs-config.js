@@ -55,7 +55,6 @@ const config = {
 
     },
     deps : [
-        'algoliaInstantSearch', 
         'algoliaInsights'
     ],
     config: {

@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -40,12 +41,6 @@ class AlgoliaHelper extends AbstractHelper
     /** @var SearchClient[] */
     protected array $clients = [];
 
-    protected ConfigHelper $config;
-
-    protected ManagerInterface $messageManager;
-
-    protected ConsoleOutput $consoleOutput;
-
     protected ?int $maxRecordSize = null;
 
     /** @var string[] */
@@ -61,23 +56,14 @@ class AlgoliaHelper extends AbstractHelper
 
     protected static ?int $lastTaskId;
 
-    /**
-     * @param Context $context
-     * @param ConfigHelper $configHelper
-     * @param ManagerInterface $messageManager
-     * @param ConsoleOutput $consoleOutput
-     */
     public function __construct(
         Context $context,
-        ConfigHelper $configHelper,
-        ManagerInterface $messageManager,
-        ConsoleOutput $consoleOutput
+        protected ConfigHelper $config,
+        protected ManagerInterface $messageManager,
+        protected ConsoleOutput $consoleOutput,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
     ) {
         parent::__construct($context);
-
-        $this->config = $configHelper;
-        $this->messageManager = $messageManager;
-        $this->consoleOutput = $consoleOutput;
 
         $this->createClient();
         $this->addSegments();
@@ -92,10 +78,10 @@ class AlgoliaHelper extends AbstractHelper
     /**
      * @return void
      */
-    public function createClient(): void
+    protected function createClient(): void
     {
         $storeId = $this->getStoreId();
-        if ($this->config->getApplicationID($storeId) && $this->config->getAPIKey($storeId)) {
+        if ($this->algoliaCredentialsManager->checkCredentials($storeId)) {
             $config = SearchConfig::create(
                 $this->config->getApplicationID($storeId),
                 $this->config->getAPIKey($storeId)

@@ -4,10 +4,8 @@ namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Magento\Catalog\Model\Category;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Layout;
 use Magento\Framework\View\Page\Config as PageConfig;
@@ -28,9 +26,6 @@ class Observer implements ObserverInterface
     )
     {}
 
-    /**
-     * @throws NoSuchEntityException
-     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $actionName = $this->request->getFullActionName();
@@ -51,13 +46,13 @@ class Observer implements ObserverInterface
         }
     }
 
-    private function loadPreventBackendRenderingHandle(Layout $layout, int $storeId): void
+    private function loadPreventBackendRenderingHandle(Layout $layout, int $storeId)
     {
         if ($this->config->preventBackendRendering($storeId) === false) {
             return;
         }
 
-        /** @var Category $category */
+        /** @var \Magento\Catalog\Model\Category $category */
         $category = $this->registry->registry('current_category');
         if (!$category) {
             return;

@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Model\Search\SearchRulesResponse;
 use Algolia\AlgoliaSearch\Response\AbstractResponse;
 use Algolia\AlgoliaSearch\Response\BatchIndexingResponse;
 use Algolia\AlgoliaSearch\Response\MultiResponse;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -44,12 +45,6 @@ class AlgoliaHelper extends AbstractHelper
     /** @var SearchClient[] */
     protected array $clients = [];
 
-    protected ConfigHelper $config;
-
-    protected ManagerInterface $messageManager;
-
-    protected ConsoleOutput $consoleOutput;
-
     protected ?int $maxRecordSize = null;
 
     /** @var string[] */
@@ -65,23 +60,14 @@ class AlgoliaHelper extends AbstractHelper
 
     protected static ?int $lastTaskId;
 
-    /**
-     * @param Context $context
-     * @param ConfigHelper $configHelper
-     * @param ManagerInterface $messageManager
-     * @param ConsoleOutput $consoleOutput
-     */
     public function __construct(
         Context $context,
-        ConfigHelper $configHelper,
-        ManagerInterface $messageManager,
-        ConsoleOutput $consoleOutput
+        protected ConfigHelper $config,
+        protected ManagerInterface $messageManager,
+        protected ConsoleOutput $consoleOutput,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
     ) {
         parent::__construct($context);
-
-        $this->config = $configHelper;
-        $this->messageManager = $messageManager;
-        $this->consoleOutput = $consoleOutput;
 
         $this->createClient();
         $this->addSegments();
@@ -96,10 +82,10 @@ class AlgoliaHelper extends AbstractHelper
     /**
      * @return void
      */
-    public function createClient(): void
+    protected function createClient(): void
     {
         $storeId = $this->getStoreId();
-        if ($this->config->getApplicationID($storeId) && $this->config->getAPIKey($storeId)) {
+        if ($this->algoliaCredentialsManager->checkCredentials($storeId)) {
             $config = SearchConfig::create(
                 $this->config->getApplicationID($storeId),
                 $this->config->getAPIKey($storeId)
@@ -485,7 +471,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false): void
     {
-        $res = $this->client->saveRules($indexName, $rules, $forwardToReplicas);
+        $res = $this->getClient()->saveRules($indexName, $rules, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -566,8 +552,6 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function searchRules(string $indexName, array$searchRulesParams = null)
     {
-        $this->checkClient(__FUNCTION__);
-
         return $this->getClient()->searchRules($indexName, $searchRulesParams);
     }
 

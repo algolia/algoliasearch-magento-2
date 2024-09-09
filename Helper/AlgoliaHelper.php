@@ -769,9 +769,9 @@ class AlgoliaHelper extends AbstractHelper
 
     /**
      * @param $value
-     * @return float|int
+     * @return mixed
      */
-    protected function castAttribute($value): float|int
+    protected function castAttribute($value): mixed
     {
         if (is_numeric($value) && floatval($value) === floatval((int) $value)) {
             return (int) $value;

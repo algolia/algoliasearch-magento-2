@@ -35,7 +35,7 @@ const config = {
         // Autocomplete plugins
         'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
         'algoliaInsightsPluginLib'          : 'Algolia_AlgoliaSearch/js/lib/insights-plugin.min',
-        'algoliaRecentSearchesLib'          : 'Algolia_AlgoliaSearch/js/lib/recent-searches-plugin.min',
+        'algoliaRecentSearchesPluginLib'    : 'Algolia_AlgoliaSearch/js/lib/recent-searches-plugin.min',
 
         // Autocomplete templates
         'algoliaAutocompleteProductsHtml'   : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',

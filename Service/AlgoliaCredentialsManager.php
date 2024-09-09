@@ -46,22 +46,24 @@ class AlgoliaCredentialsManager
      * @param string $class
      * @param int|null $storeId
      * @return void
-     * @throws NoSuchEntityException
      */
     public function displayErrorMessage(string $class, ?int $storeId = null): void
     {
-        $storeInfo = $storeId ? ' for store '. $this->storeManager->getStore($storeId)->getName() : '';
-        $errorMessage = '
+        try {
+            $storeInfo = $storeId ? ' for store '. $this->storeManager->getStore($storeId)->getName() : '';
+            $errorMessage = '
 ' . $class . ': Algolia credentials missing' . $storeInfo . '
   => You need to configure your credentials in Stores > Configuration > Algolia Search.';
 
-        if (php_sapi_name() === 'cli') {
-            $this->output->writeln($errorMessage);
+            if (php_sapi_name() === 'cli') {
+                $this->output->writeln($errorMessage);
 
-            return;
+                return;
+            }
+
+            $this->messageManager->addErrorMessage($errorMessage);
+        } catch (NoSuchEntityException $exception) {
         }
-
-        $this->messageManager->addErrorMessage($errorMessage);
     }
 
     /**

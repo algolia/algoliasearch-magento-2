@@ -159,7 +159,7 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @return ListIndicesResponse
+     * @return ListIndicesResponse|array<string,mixed>
      * @throws AlgoliaException
      */
     public function listIndexes()

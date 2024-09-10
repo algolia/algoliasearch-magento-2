@@ -63,6 +63,7 @@ class AlgoliaCredentialsManager
 
             $this->messageManager->addErrorMessage($errorMessage);
         } catch (NoSuchEntityException $exception) {
+            $this->messageManager->addErrorMessage(__("Unable to locate store details: %1", $exception->getMessage()));
         }
     }
 

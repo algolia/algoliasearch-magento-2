@@ -26,6 +26,7 @@ const config = {
     paths: {
         // Core Search UI libs
         'algoliaSearchLib'       : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
+        'algoliaSearchHelperLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-search-helper.min',
         'algoliaInstantSearchLib': 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
         'algoliaAutocompleteLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
         'algoliaAnalyticsLib'    : 'Algolia_AlgoliaSearch/js/lib/search-insights.min',

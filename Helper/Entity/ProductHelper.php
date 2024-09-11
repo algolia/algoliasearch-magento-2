@@ -1207,12 +1207,12 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $indexName
+     * @param string $indexName
      * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function setFacetsQueryRules($indexName, int $storeId = null)
+    protected function setFacetsQueryRules(string $indexName, int $storeId = null)
     {
         $client = $this->algoliaHelper->getClient();
 

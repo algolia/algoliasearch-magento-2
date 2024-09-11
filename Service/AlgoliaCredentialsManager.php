@@ -46,7 +46,6 @@ class AlgoliaCredentialsManager
      * @param string $class
      * @param int|null $storeId
      * @return void
-     * @throws NoSuchEntityException
      */
     public function displayErrorMessage(string $class, ?int $storeId = null): void
     {

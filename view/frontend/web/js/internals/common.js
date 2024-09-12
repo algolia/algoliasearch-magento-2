@@ -613,34 +613,38 @@ define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
         );
     }
 
-    $(function ($) {
+    // TODO: Evaluate removal of these methods - referencing legacy DOM selector
+    const handleInputCrossAutocomplete = (input) => {
+        console.log("####", (new Error()).stack?.split("\n")[1]?.trim().split(" ")[1]);
+        if (input.val().length > 0) {
+            input.closest('#algolia-searchbox').find('.clear-query-autocomplete').show();
+            input.closest('#algolia-searchbox').find('.magnifying-glass').hide();
+        } else {
+            input.closest('#algolia-searchbox').find('.clear-query-autocomplete').hide();
+            input.closest('#algolia-searchbox').find('.magnifying-glass').show();
+        }
+    };
+
+    const handleAutoCompleteSubmit = (e) => {
+        let query = $(this).find(algoliaConfig.autocomplete.selector).val();
+
+        query = encodeURIComponent(query);
+
+        if (algoliaConfig.instant.enabled && query === '')
+            query = '__empty__';
+
+        window.location = $(this).attr('action') + '?q=' + query;
+
+        return false;
+    };
+
+    const initialize = () => {
         if (typeof algoliaConfig === 'undefined') {
             return;
         }
         $(algoliaConfig.autocomplete.selector).each(function () {
-            $(this).closest('form').on('submit', function (e) {
-                let query = $(this).find(algoliaConfig.autocomplete.selector).val();
-
-                query = encodeURIComponent(query);
-
-                if (algoliaConfig.instant.enabled && query === '')
-                    query = '__empty__';
-
-                window.location = $(this).attr('action') + '?q=' + query;
-
-                return false;
-            });
+            $(this).closest('form').on('submit', handleAutoCompleteSubmit);
         });
-
-        function handleInputCrossAutocomplete(input) {
-            if (input.val().length > 0) {
-                input.closest('#algolia-searchbox').find('.clear-query-autocomplete').show();
-                input.closest('#algolia-searchbox').find('.magnifying-glass').hide();
-            } else {
-                input.closest('#algolia-searchbox').find('.clear-query-autocomplete').hide();
-                input.closest('#algolia-searchbox').find('.magnifying-glass').show();
-            }
-        }
 
         $(document).on('click', '.clear-query-autocomplete', function () {
             var input = $(this).closest('#algolia-searchbox').find('input');
@@ -661,8 +665,18 @@ define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
             else
                 $(this).html('+ ' + algoliaConfig.translations.refine);
         });
+    }
 
 
+    $(function ($) {
+        initialize();
     });
+
+    return {
+        algolia,
+        routing,
+        AlgoliaBase64,
+        ...legacyGlobalFunctions
+    };
 
 });

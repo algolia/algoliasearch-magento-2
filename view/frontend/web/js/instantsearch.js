@@ -16,7 +16,7 @@ define([
     'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils) {
+], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils, algoliaCommon) {
 
     return Component.extend({
         initialize(config, element) {
@@ -161,7 +161,7 @@ define([
             var instantsearchOptions = {
                 searchClient: searchClient,
                 indexName   : indexName,
-                routing     : window.routing,
+                routing     : algoliaCommon.routing,
             };
     
             if (

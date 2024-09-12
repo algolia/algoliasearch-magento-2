@@ -360,9 +360,9 @@ class ProductHelper extends AbstractEntityHelper
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
-        $this->setFacetsQueryRules($indexName);
+        $this->setFacetsQueryRules($indexName, $storeId);
         if ($saveToTmpIndicesToo) {
-            $this->setFacetsQueryRules($indexNameTmp);
+            $this->setFacetsQueryRules($indexNameTmp, $storeId);
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
@@ -1207,18 +1207,19 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $indexName
+     * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function setFacetsQueryRules($indexName)
+    protected function setFacetsQueryRules(string $indexName, int $storeId = null)
     {
         $client = $this->algoliaHelper->getClient();
 
         $this->clearFacetsQueryRules($indexName);
 
         $rules = [];
-        $facets = $this->configHelper->getFacets();
+        $facets = $this->configHelper->getFacets($storeId);
         foreach ($facets as $facet) {
             if (!array_key_exists('create_rule', $facet) || $facet['create_rule'] !== '1') {
                 continue;

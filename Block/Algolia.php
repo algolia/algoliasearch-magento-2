@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
+use Algolia\AlgoliaSearch\Model\LandingPage as LandingPageModel;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
@@ -215,7 +216,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
     }
 
-    protected function getCurrentLandingPage(): LandingPage|null|false
+    protected function getCurrentLandingPage(): LandingPageModel|null|false
     {
         $landingPageId = $this->getRequest()->getParam('landing_page_id');
         if (!$landingPageId) {

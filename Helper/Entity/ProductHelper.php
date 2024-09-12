@@ -1269,7 +1269,7 @@ class ProductHelper extends AbstractEntityHelper
             $page = 0;
             do {
                 $client = $this->algoliaHelper->getClient();
-                $fetchedQueryRules = $this->algoliaHelper->searchRules($indexName, [
+                $fetchedQueryRules = $client->searchRules($indexName, [
                     'context' => 'magento_filters',
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,

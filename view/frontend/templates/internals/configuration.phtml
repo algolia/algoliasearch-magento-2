@@ -7,7 +7,7 @@ $configuration = $block->getConfiguration();
 if (class_exists('\Magento\Framework\View\Helper\SecureHtmlRenderer')) : ?>
     <?php
         /** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
-        if ($configuration['instant']['enabled'] === true && $configuration['isSearchPage'] === true)  {
+        if ($block->canLoadInstantSearch())  {
             $css = /* @noEscape */ $secureRenderer->renderTag('style', [],  $configuration['instant']['selector'] . ' {display:none}', false);
             /* @noEscape */ echo $secureRenderer->renderTag('script', [], 'document.write(\'' . $css . '\');' , false);
         }
@@ -17,7 +17,7 @@ if (class_exists('\Magento\Framework\View\Helper\SecureHtmlRenderer')) : ?>
 <?php else: ?>
     <script>
         <?php
-        if ($configuration['instant']['enabled'] === true && $configuration['isSearchPage'] === true) :
+        if ($block->canLoadInstantSearch()):
         $css = '<style type="text/css">' . $configuration['instant']['selector'] . ' {display:none}</style>';
         ?>
         // Hide the instant-search selector ASAP to remove flickering. Will be re-displayed later with JS.
@@ -29,3 +29,14 @@ if (class_exists('\Magento\Framework\View\Helper\SecureHtmlRenderer')) : ?>
         window.algoliaConfig = <?php /* @noEscape */ echo json_encode($configuration); ?>;
     </script>
 <?php endif; ?>
+
+
+<?php if ($block->canLoadInstantSearch()) : ?>
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "algoliaInstantSearch": {}
+            }
+        }
+    </script>
+<?php endif;?>

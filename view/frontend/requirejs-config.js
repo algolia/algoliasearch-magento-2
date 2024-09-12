@@ -26,6 +26,7 @@ const config = {
     paths: {
         // Core Search UI libs
         'algoliaSearchLib'       : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
+        'algoliaSearchHelperLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-search-helper.min',
         'algoliaInstantSearchLib': 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
         'algoliaAutocompleteLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
         'algoliaAnalyticsLib'    : 'Algolia_AlgoliaSearch/js/lib/search-insights.min',
@@ -33,7 +34,9 @@ const config = {
         'algoliaRecommendJsLib'  : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
 
         // Autocomplete plugins
-        'algoliaQuerySuggestionsPluginLib': 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
+        'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
+        'algoliaInsightsPluginLib'          : 'Algolia_AlgoliaSearch/js/lib/insights-plugin.min',
+        'algoliaRecentSearchesPluginLib'    : 'Algolia_AlgoliaSearch/js/lib/recent-searches-plugin.min',
 
         // Autocomplete templates
         'algoliaAutocompleteProductsHtml'   : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',

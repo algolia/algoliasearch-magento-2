@@ -613,18 +613,6 @@ define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
         );
     }
 
-    // TODO: Evaluate removal of these methods - referencing legacy DOM selector
-    const handleInputCrossAutocomplete = (input) => {
-        console.log("####", (new Error()).stack?.split("\n")[1]?.trim().split(" ")[1]);
-        if (input.val().length > 0) {
-            input.closest('#algolia-searchbox').find('.clear-query-autocomplete').show();
-            input.closest('#algolia-searchbox').find('.magnifying-glass').hide();
-        } else {
-            input.closest('#algolia-searchbox').find('.clear-query-autocomplete').hide();
-            input.closest('#algolia-searchbox').find('.magnifying-glass').show();
-        }
-    };
-
     const handleAutoCompleteSubmit = (e) => {
         let query = $(this).find(algoliaConfig.autocomplete.selector).val();
 
@@ -644,17 +632,6 @@ define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
         }
         $(algoliaConfig.autocomplete.selector).each(function () {
             $(this).closest('form').on('submit', handleAutoCompleteSubmit);
-        });
-
-        $(document).on('click', '.clear-query-autocomplete', function () {
-            var input = $(this).closest('#algolia-searchbox').find('input');
-
-            input.val('');
-            if (input.length) {
-                input.get(0).dispatchEvent(new Event('input'));
-            }
-
-            handleInputCrossAutocomplete(input);
         });
 
         /** Handle small screen **/

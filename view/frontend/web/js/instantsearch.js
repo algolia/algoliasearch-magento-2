@@ -782,6 +782,8 @@ define([
     
             /** Initialise searching **/
             startInstantSearch();
+
+            this.addMobileRefinementsToggle();
         },
 
         getFacetWidget(facet, templates) {
@@ -965,6 +967,16 @@ define([
             }
     
             return options;
+        },
+
+        addMobileRefinementsToggle() {
+            $('#refine-toggle').on('click', function () {
+                $('#instant-search-facets-container').toggleClass('hidden-sm').toggleClass('hidden-xs');
+                if ($(this).html().trim()[0] === '+')
+                    $(this).html('- ' + algoliaConfig.translations.refine);
+                else
+                    $(this).html('+ ' + algoliaConfig.translations.refine);
+            });
         },
 
         /**

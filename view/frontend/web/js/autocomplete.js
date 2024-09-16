@@ -9,6 +9,7 @@ define([
     'algoliaAutocompleteSuggestionsHtml',
     'algoliaAutocompleteAdditionalHtml',
     'algoliaCommon',
+    'algoliaBase64',
     'algoliaInsights',
     'algoliaHooks',
     'domReady!',
@@ -22,7 +23,8 @@ define([
     productsHtml,
     suggestionsHtml,
     additionalHtml,
-    algoliaCommon
+    algoliaCommon,
+    algoliaBase64
 ) {
     const DEFAULT_HITS_PER_SECTION = 2;
     const DEBOUNCE_MS = algoliaConfig.autocomplete.debounceMilliseconds;
@@ -198,7 +200,7 @@ define([
 
         hit.addToCart = {
             action : action,
-            uenc   : algoliaCommon.AlgoliaBase64.mageEncode(action),
+            uenc   : algoliaBase64.mageEncode(action),
             formKey: algoliaConfig.instant.addToCartParams.formKey,
         };
 

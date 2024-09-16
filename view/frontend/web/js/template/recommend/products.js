@@ -1,4 +1,4 @@
-define(['algoliaCommon'], function (algoliaCommon) {
+define(['algoliaCommon', 'algoliaBase64'], function (algoliaCommon, algoliaBase64) {
     return {
         getItemHtml: function (item, html, addTocart) {
             let correctFKey = algoliaCommon.getCookie('form_key');
@@ -14,7 +14,7 @@ define(['algoliaCommon'], function (algoliaCommon) {
                     ${addTocart && html`
                         <form class="addTocartForm" action="${action}" method="post" data-role="tocart-form">
                             <input type="hidden" name="form_key" value="${algoliaConfig.recommend.addToCartParams.formKey}" />
-                            <input type="hidden" name="unec" value="${algoliaCommon.AlgoliaBase64.mageEncode(action)}"/>
+                            <input type="hidden" name="unec" value="${algoliaBase64.mageEncode(action)}"/>
                             <input type="hidden" name="product" value="${item.objectID}" />
                             <button type="submit" class="action tocart primary">
                                 <span>${algoliaConfig.translations.addToCart}</span>

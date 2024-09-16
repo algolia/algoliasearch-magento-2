@@ -12,11 +12,13 @@ define([
     // Magento core libs
     'Magento_Catalog/js/price-utils',
 
-    // TODO: Refactor legacy global object dependencies
     'algoliaCommon',
+    'algoliaBase64',
+
+    // TODO: Refactor legacy global object dependencies
     'algoliaInsights',
     'algoliaHooks',
-], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils, algoliaCommon) {
+], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils, algoliaCommon, algoliaBase64) {
 
     return Component.extend({
         initialize(config, element) {
@@ -750,7 +752,7 @@ define([
                             const url = `${algoliaConfig.request.url}${window.location.search}`;
                             e.target.elements[
                                 algoliaConfig.instant.addToCartParams.redirectUrlParam
-                                ].value = algoliaCommon.AlgoliaBase64.mageEncode(url);
+                                ].value = algoliaBase64.mageEncode(url);
                         });
                     });
                 });

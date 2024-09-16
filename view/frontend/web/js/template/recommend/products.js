@@ -1,4 +1,4 @@
-define([algoliaCommon], function (algoliaCommon) {
+define(['algoliaCommon'], function (algoliaCommon) {
     return {
         getItemHtml: function (item, html, addTocart) {
             let correctFKey = algoliaCommon.getCookie('form_key');

@@ -62,69 +62,6 @@ define([
 
             const searchClient = this.getSearchClient();
 
-            const getNavigatorUrl = function (url) {
-                if (algoliaConfig.autocomplete.isNavigatorEnabled) {
-                    return url;
-                }
-            };
-
-            const buildSuggestionsPlugin = function () {
-                return querySuggestionsPlugin.createQuerySuggestionsPlugin(
-                    {
-                        searchClient,
-                        indexName: `${algoliaConfig.indexName}_suggestions`,
-                        getSearchParams() {
-                            return {
-                                hitsPerPage   : algoliaConfig.autocomplete.nbOfQueriesSuggestions,
-                                clickAnalytics: true,
-                            };
-                        },
-                        transformSource({source}) {
-                            return {
-                                ...source,
-                                getItems({query}) {
-                                    const items = filterMinChars(query, source.getItems());
-                                    const oldTransform = items.transformResponse;
-                                    items.transformResponse = (arg) => {
-                                        const hits = oldTransform ? oldTransform(arg) : arg.hits;
-                                        return hits.map((hit, i) => {
-                                            return {
-                                                ...hit,
-                                                position: i + 1,
-                                            };
-                                        });
-                                    };
-                                    return items;
-                                },
-                                getItemUrl({item}) {
-                                    return getNavigatorUrl(
-                                        algoliaConfig.resultPageUrl + `?q=${item.query}`
-                                    );
-                                },
-                                templates: {
-                                    noResults({html}) {
-                                        return suggestionsHtml.getNoResultHtml({html});
-                                    },
-                                    header({html, items}) {
-                                        return suggestionsHtml.getHeaderHtml({html, items});
-                                    },
-                                    item({item, components, html}) {
-                                        return suggestionsHtml.getItemHtml({item, components, html});
-                                    },
-                                    footer({html, items}) {
-                                        return suggestionsHtml.getFooterHtml({html, items});
-                                    },
-                                },
-                            };
-                        },
-                    }
-                );
-            };
-
-            const filterMinChars = (query, result) => {
-                return query.length >= MIN_SEARCH_LENGTH_CHARS ? result : [];
-            };
-
             const debouncePromise = (fn, time) => {
                 let timerId = undefined;
 
@@ -182,7 +119,7 @@ define([
 
             if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
                 suggestionSection = true; //relies on global - needs refactor
-                plugins.push(buildSuggestionsPlugin());
+                plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
             plugins = algoliaCommon.triggerHooks(
                 'afterAutocompletePlugins',
@@ -216,8 +153,8 @@ define([
                             `?q=${encodeURIComponent(data.state.query)}`;
                     }
                 },
-                getSources({query}) {
-                    return filterMinChars(query, debounced(autocompleteConfig));
+                getSources: ({query}) => {
+                    return this.filterMinChars(query, debounced(autocompleteConfig));
                 },
                 shouldPanelOpen({state}) {
                     return state.query.length >= MIN_SEARCH_LENGTH_CHARS;
@@ -371,7 +308,7 @@ define([
             };
 
             const getItemUrl = ({item}) => {
-                return getNavigatorUrl(item.url);
+                return this.getNavigatorUrl(item.url);
             };
 
             const transformResponse = ({results, hits}) => {
@@ -421,7 +358,7 @@ define([
                     header({items, html}) {
                         return productsHtml.getHeaderHtml({items, html});
                     },
-                    item: ({item, components, html}) =>{
+                    item: ({item, components, html}) => {
                         if (suggestionSection) {
                             $('.aa-Panel').addClass('productColumn2');
                             $('.aa-Panel').removeClass('productColumn1');
@@ -726,6 +663,69 @@ define([
             }
 
             return hit;
+        },
+
+        filterMinChars(query, result) {
+            return query.length >= MIN_SEARCH_LENGTH_CHARS ? result : [];
+        },
+
+        getNavigatorUrl(url) {
+            if (algoliaConfig.autocomplete.isNavigatorEnabled) {
+                return url;
+            }
+        },
+
+        buildSuggestionsPlugin(searchClient) {
+            return querySuggestionsPlugin.createQuerySuggestionsPlugin(
+                {
+                    searchClient,
+                    indexName: `${algoliaConfig.indexName}_suggestions`,
+                    getSearchParams() {
+                        return {
+                            hitsPerPage   : algoliaConfig.autocomplete.nbOfQueriesSuggestions,
+                            clickAnalytics: true,
+                        };
+                    },
+                    transformSource: ({source}) => {
+                        return {
+                            ...source,
+                            getItems: ({query}) => {
+                                const items = this.filterMinChars(query, source.getItems());
+                                const oldTransform = items.transformResponse;
+                                items.transformResponse = (arg) => {
+                                    const hits = oldTransform ? oldTransform(arg) : arg.hits;
+                                    return hits.map((hit, i) => {
+                                        return {
+                                            ...hit,
+                                            position: i + 1,
+                                        };
+                                    });
+                                };
+                                return items;
+                            },
+                            getItemUrl: ({item}) => {
+                                return this.getNavigatorUrl(
+                                    algoliaConfig.resultPageUrl + `?q=${item.query}`
+                                );
+                            },
+                            templates: {
+                                noResults({html}) {
+                                    return suggestionsHtml.getNoResultHtml({html});
+                                },
+                                header({html, items}) {
+                                    return suggestionsHtml.getHeaderHtml({html, items});
+                                },
+                                item({item, components, html}) {
+                                    return suggestionsHtml.getItemHtml({item, components, html});
+                                },
+                                footer({html, items}) {
+                                    return suggestionsHtml.getFooterHtml({html, items});
+                                },
+                            },
+                        };
+                    },
+                }
+            );
         }
     });
 });

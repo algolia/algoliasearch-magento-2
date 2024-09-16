@@ -1,30 +1,41 @@
 define([
+    'uiComponent',
     'jquery',
+
+    // Algolia core UI libs
     'algoliaSearchLib',
     'algoliaAutocompleteLib',
     'algoliaQuerySuggestionsPluginLib',
-    'algoliaAutocompletePagesHtml',
-    'algoliaAutocompleteCategoriesHtml',
-    'algoliaAutocompleteProductsHtml',
-    'algoliaAutocompleteSuggestionsHtml',
-    'algoliaAutocompleteAdditionalHtml',
+
+    // Algolia integration dependencies
     'algoliaCommon',
     'algoliaBase64',
+    
+    // HTML templates
+    'algoliaAutocompleteProductsHtml',
+    'algoliaAutocompleteCategoriesHtml',
+    'algoliaAutocompletePagesHtml',
+    'algoliaAutocompleteSuggestionsHtml',
+    'algoliaAutocompleteAdditionalHtml',
+    
+    // TODO: Refactor legacy global object dependencies
     'algoliaInsights',
     'algoliaHooks',
-    'domReady!',
+    
+    'domReady!'
 ], function (
+    Component,
     $,
     algoliasearch,
     autocomplete,
     querySuggestionsPlugin,
-    pagesHtml,
-    categoriesHtml,
-    productsHtml,
-    suggestionsHtml,
-    additionalHtml,
     algoliaCommon,
-    algoliaBase64
+    algoliaBase64,
+    productsHtml,
+    categoriesHtml,
+    pagesHtml,
+    suggestionsHtml,
+    additionalHtml
 ) {
     const DEFAULT_HITS_PER_SECTION = 2;
     const DEBOUNCE_MS = algoliaConfig.autocomplete.debounceMilliseconds;
@@ -704,4 +715,14 @@ define([
             '<style>.aa-Item[aria-selected="true"]{background-color: #f2f2f2;}</style>'
         );
     }
+
+    return Component.extend({
+        initialize(config, element) {
+            // console.log('AC initialized with', config, element);
+            this.buildAutocomplete($);
+        },
+        buildAutocomplete($) {
+            // stub
+        }
+    });
 });

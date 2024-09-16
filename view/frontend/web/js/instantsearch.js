@@ -7,18 +7,17 @@ define([
     'algoliaInstantSearchLib',
 
     // Algolia integration dependencies
-    'algoliaTemplateEngine',
-
-    // Magento core libs
-    'Magento_Catalog/js/price-utils',
-
     'algoliaCommon',
     'algoliaBase64',
+    'algoliaTemplateEngine',
+    
+    // Magento core libs
+    'Magento_Catalog/js/price-utils',
 
     // TODO: Refactor legacy global object dependencies
     'algoliaInsights',
     'algoliaHooks',
-], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils, algoliaCommon, algoliaBase64) {
+], function (Component, $, algoliasearch, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
 
     return Component.extend({
         initialize(config, element) {

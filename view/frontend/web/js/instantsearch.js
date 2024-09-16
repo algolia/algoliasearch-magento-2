@@ -71,28 +71,28 @@ define([
     
             /** BC of old hooks **/
             if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
-                algolia.registerHook(
+                algoliaCommon.algolia.registerHook(
                     'beforeInstantsearchInit',
                     algoliaHookBeforeInstantsearchInit
                 );
             }
     
             if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
-                algolia.registerHook(
+                algoliaCommon.algolia.registerHook(
                     'beforeWidgetInitialization',
                     algoliaHookBeforeWidgetInitialization
                 );
             }
     
             if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
-                algolia.registerHook(
+                algoliaCommon.algolia.registerHook(
                     'beforeInstantsearchStart',
                     algoliaHookBeforeInstantsearchStart
                 );
             }
     
             if (typeof algoliaHookAfterInstantsearchStart === 'function') {
-                algolia.registerHook(
+                algoliaCommon.algolia.registerHook(
                     'afterInstantsearchStart',
                     algoliaHookAfterInstantsearchStart
                 );
@@ -185,7 +185,7 @@ define([
                 }:"${algoliaConfig.request.path.replace(/"/g, '\\"')}"`;
             }
     
-            instantsearchOptions = algolia.triggerHooks(
+            instantsearchOptions = algoliaCommon.algolia.triggerHooks(
                 'beforeInstantsearchInit',
                 instantsearchOptions,
                 mockAlgoliaBundle
@@ -238,7 +238,7 @@ define([
                                 location.hash.length < 1
                             ) {
                                 return searchParameters.setQuery(
-                                    algolia.htmlspecialcharsDecode(algoliaConfig.request.query)
+                                    algoliaCommon.algolia.htmlspecialcharsDecode(algoliaConfig.request.query)
                                 );
                             }
                             return searchParameters;
@@ -511,7 +511,7 @@ define([
                             $('.page-title-wrapper span.base').html(
                                 algoliaConfig.translations.searchTitle +
                                 ": '" +
-                                algolia.htmlspecialcharsEncode(inputValue) +
+                                algoliaCommon.algolia.htmlspecialcharsEncode(inputValue) +
                                 "'"
                             );
                         }
@@ -540,8 +540,7 @@ define([
                     transformItems: function (items) {
                         return items.map(function (item) {
                             item.__indexName = search.helper.lastResults.index;
-                            item = transformHit(item, algoliaConfig.priceKey, search.helper);
-                            // FIXME: transformHit is a global
+                            item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
                             item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
                             return item;
                         });
@@ -578,8 +577,7 @@ define([
                         }
                         return items.map(function (item) {
                             item.__indexName = search.helper.lastResults.index;
-                            item = transformHit(item, algoliaConfig.priceKey, search.helper);
-                            // FIXME: transformHit is a global
+                            item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
                             item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
                             item.algoliaConfig = window.algoliaConfig;
                             return item;
@@ -621,7 +619,7 @@ define([
     
                     const hierarchicalMenuParams = {
                         container      : facet.wrapper.appendChild(
-                            createISWidgetContainer(facet.attribute)
+                            algoliaCommon.createISWidgetContainer(facet.attribute)
                         ),
                         attributes     : hierarchical_levels,
                         separator      : algoliaConfig.instant.categorySeparator,
@@ -725,7 +723,7 @@ define([
                 };
             }
     
-            allWidgetConfiguration = algolia.triggerHooks(
+            allWidgetConfiguration = algoliaCommon.algolia.triggerHooks(
                 'beforeWidgetInitialization',
                 allWidgetConfiguration,
                 mockAlgoliaBundle
@@ -752,7 +750,7 @@ define([
                             const url = `${algoliaConfig.request.url}${window.location.search}`;
                             e.target.elements[
                                 algoliaConfig.instant.addToCartParams.redirectUrlParam
-                                ].value = AlgoliaBase64.mageEncode(url);
+                                ].value = algoliaCommon.AlgoliaBase64.mageEncode(url);
                         });
                     });
                 });
@@ -765,13 +763,13 @@ define([
                     return;
                 }
     
-                search = algolia.triggerHooks(
+                search = algoliaCommon.algolia.triggerHooks(
                     'beforeInstantsearchStart',
                     search,
                     mockAlgoliaBundle
                 );
                 search.start();
-                search = algolia.triggerHooks(
+                search = algoliaCommon.algolia.triggerHooks(
                     'afterInstantsearchStart',
                     search,
                     mockAlgoliaBundle
@@ -832,7 +830,7 @@ define([
                     'rangeInput',
                     {
                         container   : facet.wrapper.appendChild(
-                            createISWidgetContainer(facet.attribute)
+                            algoliaCommon.createISWidgetContainer(facet.attribute)
                         ),
                         attribute   : facet.attribute,
                         templates   : $.extend(
@@ -853,7 +851,7 @@ define([
             if (facet.type === 'conjunctive') {
                 var refinementListOptions = {
                     container   : facet.wrapper.appendChild(
-                        createISWidgetContainer(facet.attribute)
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
                     ),
                     attribute   : facet.attribute,
                     limit       : algoliaConfig.maxValuesPerFacet,
@@ -877,7 +875,7 @@ define([
             if (facet.type === 'disjunctive') {
                 var refinementListOptions = {
                     container   : facet.wrapper.appendChild(
-                        createISWidgetContainer(facet.attribute)
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
                     ),
                     attribute   : facet.attribute,
                     limit       : algoliaConfig.maxValuesPerFacet,
@@ -905,7 +903,7 @@ define([
                     'rangeSlider',
                     {
                         container   : facet.wrapper.appendChild(
-                            createISWidgetContainer(facet.attribute)
+                            algoliaCommon.createISWidgetContainer(facet.attribute)
                         ),
                         attribute   : facet.attribute,
                         templates   : templates,

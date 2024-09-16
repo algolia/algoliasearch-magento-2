@@ -3,7 +3,7 @@ define([
     'algoliaAnalyticsLib',
     'algoliaCommon',
     'mage/cookies',
-], function ($, algoliaAnalyticsWrapper) {
+], function ($, algoliaAnalyticsWrapper, algoliaCommon) {
     algoliaAnalytics = algoliaAnalyticsWrapper.default;
 
     window.algoliaInsights = {
@@ -14,7 +14,7 @@ define([
 
         useCookie() {
             return !this.config.cookieConfiguration.cookieRestrictionModeEnabled
-                || !!getCookie(this.config.cookieConfiguration.consentCookieName);
+                || !!algoliaCommon.getCookie(this.config.cookieConfiguration.consentCookieName);
         },
 
         // Although events can accept both auth and anon tokens, queries can only accept a single token
@@ -59,8 +59,8 @@ define([
             algoliaAnalytics.addAlgoliaAgent(userAgent);
 
             // TODO: Reevaluate need for unset cookie
-            const userToken = getCookie(algoliaConfig.cookieConfiguration.customerTokenCookie);
-            const unsetAuthenticationToken = getCookie('unset_authentication_token');
+            const userToken = algoliaCommon.getCookie(algoliaConfig.cookieConfiguration.customerTokenCookie);
+            const unsetAuthenticationToken = algoliaCommon.getCookie('unset_authentication_token');
             if (userToken && userToken !== '') {
                 algoliaAnalytics.setAuthenticatedUserToken(userToken);
             } else if (unsetAuthenticationToken && unsetAuthenticationToken !== '') {
@@ -90,7 +90,7 @@ define([
                 return;
             }
 
-            algolia.registerHook(
+            algoliaCommon.algolia.registerHook(
                 'beforeWidgetInitialization',
                 (allWidgetConfiguration) => {
 
@@ -101,7 +101,7 @@ define([
                 }
             );
 
-            algolia.registerHook(
+            algoliaCommon.algolia.registerHook(
                 'afterAutocompleteProductSourceOptions',
                 (options) => {
                     return algoliaInsights.applyInsightsToSearchParams(options);
@@ -136,7 +136,7 @@ define([
             this.bindClickedEvents();
             this.bindViewedEvents();
 
-            algolia.triggerHooks('afterInsightsBindEvents', this);
+            algoliaCommon.algolia.triggerHooks('afterInsightsBindEvents', this);
         },
 
         bindClickedEvents() {
@@ -216,11 +216,11 @@ define([
                     var facets = this.config.facets;
                     var containers = [];
                     for (var i = 0; i < facets.length; i++) {
-                        var elem = createISWidgetContainer(facets[i].attribute);
+                        var elem = algoliaCommon.createISWidgetContainer(facets[i].attribute);
                         containers.push('.' + elem.className);
                     }
 
-                    algolia.registerHook(
+                    algoliaCommon.algolia.registerHook(
                         'afterInstantsearchStart',
                         function (search) {
                             var selectors = document.querySelectorAll(containers.join(', '));

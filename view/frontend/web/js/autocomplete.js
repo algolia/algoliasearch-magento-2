@@ -21,7 +21,8 @@ define([
     categoriesHtml,
     productsHtml,
     suggestionsHtml,
-    additionalHtml
+    additionalHtml,
+    algoliaCommon
 ) {
     const DEFAULT_HITS_PER_SECTION = 2;
     const DEBOUNCE_MS = algoliaConfig.autocomplete.debounceMilliseconds;
@@ -186,7 +187,7 @@ define([
             hit.objectID +
             '/';
 
-        const correctFKey = getCookie('form_key');
+        const correctFKey = algoliaCommon.getCookie('form_key');
 
         if (
             correctFKey != '' &&
@@ -197,7 +198,7 @@ define([
 
         hit.addToCart = {
             action : action,
-            uenc   : AlgoliaBase64.mageEncode(action),
+            uenc   : algoliaCommon.AlgoliaBase64.mageEncode(action),
             formKey: algoliaConfig.instant.addToCartParams.formKey,
         };
 
@@ -279,11 +280,11 @@ define([
             options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
 
             // Allow custom override
-            options = algolia.triggerHooks(
+            options = algoliaCommon.algolia.triggerHooks(
                 'beforeAutocompleteProductSourceOptions',
                 options
             ); //DEPRECATED - retaining for backward compatibility
-            source.options = algolia.triggerHooks(
+            source.options = algoliaCommon.algolia.triggerHooks(
                 'afterAutocompleteProductSourceOptions',
                 options
             );
@@ -529,12 +530,12 @@ define([
     let sources = algoliaConfig.autocomplete.sections.map((section) =>
         buildAutocompleteSource(section, searchClient)
     );
-    sources = algolia.triggerHooks(
+    sources = algoliaCommon.algolia.triggerHooks(
         'beforeAutocompleteSources',
         sources,
         searchClient
     ); // DEPRECATED
-    sources = algolia.triggerHooks(
+    sources = algoliaCommon.algolia.triggerHooks(
         'afterAutocompleteSources',
         sources,
         searchClient
@@ -546,7 +547,7 @@ define([
         suggestionSection = true; //relies on global - needs refactor
         plugins.push(buildSuggestionsPlugin());
     }
-    plugins = algolia.triggerHooks(
+    plugins = algoliaCommon.algolia.triggerHooks(
         'afterAutocompletePlugins',
         plugins,
         searchClient
@@ -559,7 +560,7 @@ define([
      **/
 
     let autocompleteConfig = [];
-    let options = algolia.triggerHooks('beforeAutocompleteOptions', {}); //DEPRECATED
+    let options = algoliaCommon.algolia.triggerHooks('beforeAutocompleteOptions', {}); //DEPRECATED
 
     options = {
         ...options,
@@ -586,7 +587,7 @@ define([
         },
     };
 
-    if (isMobile() === true) {
+    if (algoliaCommon.isMobile() === true) {
         // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
         options.debug = true;
     }
@@ -656,11 +657,11 @@ define([
     });
     options.plugins = plugins;
 
-    options = algolia.triggerHooks('afterAutocompleteOptions', options);
+    options = algoliaCommon.algolia.triggerHooks('afterAutocompleteOptions', options);
 
     /** Bind autocomplete feature to the input */
     let algoliaAutocompleteInstance = autocomplete.autocomplete(options);
-    algolia.triggerHooks(
+    algoliaCommon.algolia.triggerHooks(
         'afterAutocompleteStart',
         algoliaAutocompleteInstance
     );
@@ -679,7 +680,7 @@ define([
 
             let useCookie = algoliaConfig.cookieConfiguration
                 .cookieRestrictionModeEnabled
-                ? !!getCookie(algoliaConfig.cookieConfiguration.consentCookieName)
+                ? !!algoliaCommon.getCookie(algoliaConfig.cookieConfiguration.consentCookieName)
                 : true;
             if (useCookie !== false) {
                 algoliaInsights.initializeAnalytics();

@@ -406,6 +406,9 @@ define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
             return "";
         },
 
+        // @deprecated This function will be removed from this module in a future version
+        // This global function is highly specific to InstantSearch and has never been used for anything else
+        // It will eventually be relocated to the algoliaInstantSearch lib
         transformHit: (hit, price_key, helper) => {
             if (Array.isArray(hit.categories))
                 hit.categories = hit.categories.join(', ');
@@ -510,7 +513,7 @@ define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
             // Add to cart parameters
             var action = algoliaConfig.instant.addToCartParams.action + 'product/' + hit.objectID + '/';
     
-            var correctFKey = getCookie('form_key');
+            var correctFKey = this.getCookie('form_key');
     
             if (correctFKey != "" && algoliaConfig.instant.addToCartParams.formKey != correctFKey) {
                 algoliaConfig.instant.addToCartParams.formKey = correctFKey;

@@ -90,7 +90,7 @@ define([
                 return;
             }
 
-            algoliaCommon.algolia.registerHook(
+            algoliaCommon.registerHook(
                 'beforeWidgetInitialization',
                 (allWidgetConfiguration) => {
 
@@ -101,7 +101,7 @@ define([
                 }
             );
 
-            algoliaCommon.algolia.registerHook(
+            algoliaCommon.registerHook(
                 'afterAutocompleteProductSourceOptions',
                 (options) => {
                     return algoliaInsights.applyInsightsToSearchParams(options);
@@ -136,7 +136,7 @@ define([
             this.bindClickedEvents();
             this.bindViewedEvents();
 
-            algoliaCommon.algolia.triggerHooks('afterInsightsBindEvents', this);
+            algoliaCommon.triggerHooks('afterInsightsBindEvents', this);
         },
 
         bindClickedEvents() {
@@ -220,7 +220,7 @@ define([
                         containers.push('.' + elem.className);
                     }
 
-                    algoliaCommon.algolia.registerHook(
+                    algoliaCommon.registerHook(
                         'afterInstantsearchStart',
                         function (search) {
                             var selectors = document.querySelectorAll(containers.join(', '));

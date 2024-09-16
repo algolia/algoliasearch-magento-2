@@ -495,7 +495,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64'], function ($, inst
     });
 
     return {
-        algolia,
+        ...algolia,
         routing,
         ...legacyGlobalFunctions
     };

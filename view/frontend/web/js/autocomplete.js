@@ -282,11 +282,11 @@ define([
             options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
 
             // Allow custom override
-            options = algoliaCommon.algolia.triggerHooks(
+            options = algoliaCommon.triggerHooks(
                 'beforeAutocompleteProductSourceOptions',
                 options
             ); //DEPRECATED - retaining for backward compatibility
-            source.options = algoliaCommon.algolia.triggerHooks(
+            source.options = algoliaCommon.triggerHooks(
                 'afterAutocompleteProductSourceOptions',
                 options
             );
@@ -532,12 +532,12 @@ define([
     let sources = algoliaConfig.autocomplete.sections.map((section) =>
         buildAutocompleteSource(section, searchClient)
     );
-    sources = algoliaCommon.algolia.triggerHooks(
+    sources = algoliaCommon.triggerHooks(
         'beforeAutocompleteSources',
         sources,
         searchClient
     ); // DEPRECATED
-    sources = algoliaCommon.algolia.triggerHooks(
+    sources = algoliaCommon.triggerHooks(
         'afterAutocompleteSources',
         sources,
         searchClient
@@ -549,7 +549,7 @@ define([
         suggestionSection = true; //relies on global - needs refactor
         plugins.push(buildSuggestionsPlugin());
     }
-    plugins = algoliaCommon.algolia.triggerHooks(
+    plugins = algoliaCommon.triggerHooks(
         'afterAutocompletePlugins',
         plugins,
         searchClient
@@ -562,7 +562,7 @@ define([
      **/
 
     let autocompleteConfig = [];
-    let options = algoliaCommon.algolia.triggerHooks('beforeAutocompleteOptions', {}); //DEPRECATED
+    let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); //DEPRECATED
 
     options = {
         ...options,
@@ -659,11 +659,11 @@ define([
     });
     options.plugins = plugins;
 
-    options = algoliaCommon.algolia.triggerHooks('afterAutocompleteOptions', options);
+    options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
 
     /** Bind autocomplete feature to the input */
     let algoliaAutocompleteInstance = autocomplete.autocomplete(options);
-    algoliaCommon.algolia.triggerHooks(
+    algoliaCommon.triggerHooks(
         'afterAutocompleteStart',
         algoliaAutocompleteInstance
     );

@@ -73,28 +73,28 @@ define([
     
             /** BC of old hooks **/
             if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
-                algoliaCommon.algolia.registerHook(
+                algoliaCommon.registerHook(
                     'beforeInstantsearchInit',
                     algoliaHookBeforeInstantsearchInit
                 );
             }
     
             if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
-                algoliaCommon.algolia.registerHook(
+                algoliaCommon.registerHook(
                     'beforeWidgetInitialization',
                     algoliaHookBeforeWidgetInitialization
                 );
             }
     
             if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
-                algoliaCommon.algolia.registerHook(
+                algoliaCommon.registerHook(
                     'beforeInstantsearchStart',
                     algoliaHookBeforeInstantsearchStart
                 );
             }
     
             if (typeof algoliaHookAfterInstantsearchStart === 'function') {
-                algoliaCommon.algolia.registerHook(
+                algoliaCommon.registerHook(
                     'afterInstantsearchStart',
                     algoliaHookAfterInstantsearchStart
                 );
@@ -187,7 +187,7 @@ define([
                 }:"${algoliaConfig.request.path.replace(/"/g, '\\"')}"`;
             }
     
-            instantsearchOptions = algoliaCommon.algolia.triggerHooks(
+            instantsearchOptions = algoliaCommon.triggerHooks(
                 'beforeInstantsearchInit',
                 instantsearchOptions,
                 mockAlgoliaBundle
@@ -240,7 +240,7 @@ define([
                                 location.hash.length < 1
                             ) {
                                 return searchParameters.setQuery(
-                                    algoliaCommon.algolia.htmlspecialcharsDecode(algoliaConfig.request.query)
+                                    algoliaCommon.htmlspecialcharsDecode(algoliaConfig.request.query)
                                 );
                             }
                             return searchParameters;
@@ -513,7 +513,7 @@ define([
                             $('.page-title-wrapper span.base').html(
                                 algoliaConfig.translations.searchTitle +
                                 ": '" +
-                                algoliaCommon.algolia.htmlspecialcharsEncode(inputValue) +
+                                algoliaCommon.htmlspecialcharsEncode(inputValue) +
                                 "'"
                             );
                         }
@@ -725,7 +725,7 @@ define([
                 };
             }
     
-            allWidgetConfiguration = algoliaCommon.algolia.triggerHooks(
+            allWidgetConfiguration = algoliaCommon.triggerHooks(
                 'beforeWidgetInitialization',
                 allWidgetConfiguration,
                 mockAlgoliaBundle
@@ -765,13 +765,13 @@ define([
                     return;
                 }
     
-                search = algoliaCommon.algolia.triggerHooks(
+                search = algoliaCommon.triggerHooks(
                     'beforeInstantsearchStart',
                     search,
                     mockAlgoliaBundle
                 );
                 search.start();
-                search = algoliaCommon.algolia.triggerHooks(
+                search = algoliaCommon.triggerHooks(
                     'afterInstantsearchStart',
                     search,
                     mockAlgoliaBundle

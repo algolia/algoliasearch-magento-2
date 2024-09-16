@@ -396,14 +396,12 @@ define(['jquery', 'algoliaInstantSearchLib'], function ($, instantsearch) {
             return check;
         },
 
-        getCookie: () => {
-            var value = "; " + document.cookie;
-            var parts = value.split("; " + name + "=");
-            if (parts.length == 2) {
-                return parts.pop().split(";").shift();
-            }
-    
-            return "";
+        getCookie: (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            return (parts.length === 2) 
+                ? parts.pop().split(';').shift() 
+                : '';
         },
 
         // @deprecated This function will be removed from this module in a future version

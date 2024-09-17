@@ -22,10 +22,10 @@ define([
     return Component.extend({
         initialize(config, element) {
             // console.log('IS initialized with', config, element);
-            this.buildInstantSearch($);
+            this.buildInstantSearch();
         },
 
-        async buildInstantSearch($) {
+        async buildInstantSearch() {
             const templateProcessor = await templateEngine.getSelectedEngineAdapter();
             const mockAlgoliaBundle = this.mockAlgoliaBundle();
     

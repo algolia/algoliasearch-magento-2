@@ -54,7 +54,7 @@ define([
 
         initialize(config, element) {
             // console.log('AC initialized with', config, element);
-            this.buildAutocomplete($);
+            this.buildAutocomplete();
         },
 
         /**

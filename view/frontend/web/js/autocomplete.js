@@ -53,7 +53,6 @@ define([
             this.buildAutocomplete($);
         },
 
-
         /**
          * Setup the autocomplete search input
          * For autocomplete feature is used Algolia's autocomplete.js library
@@ -130,24 +129,6 @@ define([
                 debug: algoliaCommon.isMobile(),
                 plugins
             };
-
-            // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
-            if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
-                console.warn(
-                    "Deprecated! You are using an old API for Algolia's front end hooks. " +
-                    'Please, replace your hook method with new hook API. ' +
-                    'More information you can find on https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/'
-                );
-
-                const hookResult = algoliaHookBeforeAutocompleteStart(
-                    sources,
-                    options,
-                    searchClient
-                );
-
-                sources = hookResult.shift();
-                options = hookResult.shift();
-            }
 
             options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
             

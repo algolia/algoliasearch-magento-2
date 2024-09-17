@@ -62,66 +62,19 @@ define([
 
             const searchClient = this.getSearchClient();
             
-            const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
-
-            /**
-             * Load suggestions, products and categories as configured
-             * NOTE: Sequence matters!
-             * **/
-            if (algoliaConfig.autocomplete.nbOfCategoriesSuggestions > 0) {
-                algoliaConfig.autocomplete.sections.unshift({
-                    hitsPerPage: algoliaConfig.autocomplete.nbOfCategoriesSuggestions,
-                    label      : algoliaConfig.translations.categories,
-                    name       : 'categories',
-                });
-            }
-
-            if (algoliaConfig.autocomplete.nbOfProductsSuggestions > 0) {
-                algoliaConfig.autocomplete.sections.unshift({
-                    hitsPerPage: algoliaConfig.autocomplete.nbOfProductsSuggestions,
-                    label      : algoliaConfig.translations.products,
-                    name       : 'products',
-                });
-            }
-
-            /** Setup autocomplete data sources **/
-            let sources = algoliaConfig.autocomplete.sections.map((section) =>
-                this.buildAutocompleteSource(section, searchClient)
-            );
-
-            // DEPRECATED - retaining for backward compatibility but `beforeAutcompleteSources` will likely be removed in a future version
-            sources = algoliaCommon.triggerHooks(
-                'beforeAutocompleteSources',
-                sources,
-                searchClient
-            ); 
-
-            sources = algoliaCommon.triggerHooks(
-                'afterAutocompleteSources',
-                sources,
-                searchClient
-            );
-
-            let plugins = [];
-
-            if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
-                suggestionSection = true; //TODO: relies on global - needs refactor
-                plugins.push(this.buildSuggestionsPlugin(searchClient));
-            }
-            plugins = algoliaCommon.triggerHooks(
-                'afterAutocompletePlugins',
-                plugins,
-                searchClient
-            );
-
+            const sources = this.buildAutocompleteSources(searchClient);
+            
+            const plugins = this.buildAutocompletePlugins(searchClient);
+            
             /**
              * Setup the autocomplete search input
              * For autocomplete feature is used Algolia's autocomplete.js library
              * Docs: https://github.com/algolia/autocomplete.js
-             **/
-
-            let autocompleteConfig = [];
-            let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); //DEPRECATED
+            **/
+           const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
+           
+           let autocompleteConfig = [];
+           let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); //DEPRECATED
 
             options = {
                 ...options,
@@ -282,6 +235,55 @@ define([
         },
 
         /**
+         * Build all of the extension's federated sources for Autocomplete
+         * @param searchClient 
+         * @returns array of source objects
+         */
+        buildAutocompleteSources(searchClient) {
+             /**
+             * Load suggestions, products and categories as configured
+             * NOTE: Sequence matters!
+             * **/
+             if (algoliaConfig.autocomplete.nbOfCategoriesSuggestions > 0) {
+                algoliaConfig.autocomplete.sections.unshift({
+                    hitsPerPage: algoliaConfig.autocomplete.nbOfCategoriesSuggestions,
+                    label      : algoliaConfig.translations.categories,
+                    name       : 'categories',
+                });
+            }
+
+            if (algoliaConfig.autocomplete.nbOfProductsSuggestions > 0) {
+                algoliaConfig.autocomplete.sections.unshift({
+                    hitsPerPage: algoliaConfig.autocomplete.nbOfProductsSuggestions,
+                    label      : algoliaConfig.translations.products,
+                    name       : 'products',
+                });
+            }
+
+            /** Setup autocomplete data sources **/
+            let sources = algoliaConfig.autocomplete.sections.map((section) =>
+                this.buildAutocompleteSource(section, searchClient)
+            );
+
+            // DEPRECATED - retaining for backward compatibility but `beforeAutcompleteSources` will likely be removed in a future version
+            sources = algoliaCommon.triggerHooks(
+                'beforeAutocompleteSources',
+                sources,
+                searchClient
+            ); 
+
+            sources = algoliaCommon.triggerHooks(
+                'afterAutocompleteSources',
+                sources,
+                searchClient
+            );
+
+
+
+            return sources;
+        },
+
+        /**
          * Build pre-baked sources
          * @param section - object containing data for federated section in the autocomplete menu
          * @param searchClient 
@@ -302,6 +304,11 @@ define([
             }
         },
 
+        /**
+         * Build a default source configuration for all pre baked federated autocomplete sections
+         * @param section - object containing data for this section
+         * @returns 
+         */
         buildAutocompleteSourceDefault(section) {
             const options = {
                 hitsPerPage   : section.hitsPerPage || DEFAULT_HITS_PER_SECTION,
@@ -537,6 +544,20 @@ define([
                 },
             };
             return source;
+        },
+
+        buildAutocompletePlugins(searchClient) {
+            let plugins = [];
+            
+            if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
+                suggestionSection = true; //TODO: relies on global - needs refactor
+                plugins.push(this.buildSuggestionsPlugin(searchClient));
+            }
+            return algoliaCommon.triggerHooks(
+                'afterAutocompletePlugins',
+                plugins,
+                searchClient
+            );
         },
 
         transformAutocompleteHit(hit, price_key, helper) {

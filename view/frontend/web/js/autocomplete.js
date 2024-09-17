@@ -43,7 +43,9 @@ define([
 
     // global state
     let suggestionSection = false;
-    let algoliaFooter;
+    const state = {
+        hasRendered: false
+    };
 
     return Component.extend({
         initialize(config, element) {
@@ -67,16 +69,13 @@ define([
             
             const plugins = this.buildAutocompletePlugins(searchClient);
 
-            if (algoliaConfig.removeBranding === false) {
-                //TODO: relies on global - needs refactor
-                algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
-            }
-
             let options = this.buildAutocompleteOptions(searchClient, sources, plugins);
 
             this.startAutocomplete(options);
 
             this.trackClicks();
+
+            this.addFooter();
 
             if (algoliaConfig.autocomplete.isNavigatorEnabled) {
                 $('body').append(
@@ -117,6 +116,9 @@ define([
                             algoliaConfig.resultPageUrl +
                             `?q=${encodeURIComponent(query)}`;
                     }
+                },
+                onStateChange: ({ state }) => {
+                    this.handleAutocompleteStateChange(state);
                 },
                 getSources: ({query}) => {
                     return this.filterMinChars(query, debounced(this.transformSources(searchClient, sources)));
@@ -340,15 +342,7 @@ define([
                         $('.aa-Panel').removeClass('productColumn2');
                         $('.aa-Panel').addClass('productColumn1');
                     }
-                    //TODO: relies on global - needs refactor
-                    if (
-                        algoliaFooter &&
-                        algoliaFooter !== undefined &&
-                        algoliaFooter !== null &&
-                        $('#algoliaFooter').length === 0
-                    ) {
-                        $('.aa-PanelLayout').append(algoliaFooter);
-                    }
+                    
                     const _data = this.transformAutocompleteHit(item, algoliaConfig.priceKey);
                     return productsHtml.getItemHtml({item: _data, components, html});
                 },
@@ -828,5 +822,38 @@ define([
                 });
             }
         },
+
+        handleAutocompleteStateChange(autocompleteState) {
+            // console.log('The Autocomplete state has changed:', autocompleteState);
+            if (!state.hasRendered && autocompleteState.isOpen) {
+                this.addPanelObserver();
+                state.hasRendered = true;
+            }
+        },
+
+        addPanelObserver() {
+            const observer = new MutationObserver((mutationsList, observer) => {
+                for (let mutation of mutationsList) {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(node => {
+                            if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('aa-PanelLayout')) {
+                                this.addFooter();
+                                //We only care about the first occurrence
+                                observer.disconnect();
+                            }
+                        });
+                    }
+                }
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+        },
+
+        addFooter() {
+            if (!algoliaConfig.removeBranding) {
+                const algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
+                $('.aa-PanelLayout').append(algoliaFooter);
+            } 
+        }
     });
 });

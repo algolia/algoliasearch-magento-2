@@ -48,6 +48,10 @@ define([
     };
 
     return Component.extend({
+        DEFAULT_HITS_PER_SECTION,
+        DEBOUNCE_MS,
+        MIN_SEARCH_LENGTH_CHARS,
+
         initialize(config, element) {
             // console.log('AC initialized with', config, element);
             this.buildAutocomplete($);
@@ -99,7 +103,7 @@ define([
         },
 
         buildAutocompleteOptions(searchClient, sources, plugins) {
-            const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
+            const debounced = this.debounce(items => Promise.resolve(items), this.DEBOUNCE_MS);
         
             let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); 
 
@@ -123,7 +127,7 @@ define([
                     return this.filterMinChars(query, debounced(this.transformSources(searchClient, sources)));
                 },
                 shouldPanelOpen: ({state}) => {
-                    return state.query.length >= MIN_SEARCH_LENGTH_CHARS;
+                    return state.query.length >= this.MIN_SEARCH_LENGTH_CHARS;
                 },
                 // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
                 debug: algoliaCommon.isMobile(),
@@ -265,7 +269,7 @@ define([
          */
         buildAutocompleteSourceDefault(section) {
             const options = {
-                hitsPerPage   : section.hitsPerPage || DEFAULT_HITS_PER_SECTION,
+                hitsPerPage   : section.hitsPerPage || this.DEFAULT_HITS_PER_SECTION,
                 analyticsTags : 'autocomplete',
                 clickAnalytics: true,
                 distinct      : true,

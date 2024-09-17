@@ -89,11 +89,13 @@ define([
                 this.buildAutocompleteSource(section, searchClient)
             );
 
+            // DEPRECATED - retaining for backward compatibility but `beforeAutcompleteSources` will likely be removed in a future version
             sources = algoliaCommon.triggerHooks(
                 'beforeAutocompleteSources',
                 sources,
                 searchClient
-            ); // DEPRECATED
+            ); 
+
             sources = algoliaCommon.triggerHooks(
                 'afterAutocompleteSources',
                 sources,
@@ -103,7 +105,7 @@ define([
             let plugins = [];
 
             if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
-                suggestionSection = true; //relies on global - needs refactor
+                suggestionSection = true; //TODO: relies on global - needs refactor
                 plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
             plugins = algoliaCommon.triggerHooks(
@@ -152,10 +154,11 @@ define([
             }
 
             if (algoliaConfig.removeBranding === false) {
+                //TODO: relies on global - needs refactor
                 algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
             }
 
-            // Keep for backward compatibility
+            // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
             if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
                 console.warn(
                     "Deprecated! You are using an old API for Algolia's front end hooks. " +
@@ -268,7 +271,7 @@ define([
              * Initialise Algolia client
              * Docs: https://www.algolia.com/doc/api-client/getting-started/instantiate-client-index/
              **/
-              const searchClient = algoliasearch(
+            const searchClient = algoliasearch(
                 algoliaConfig.applicationId,
                 algoliaConfig.apiKey
             );
@@ -280,12 +283,27 @@ define([
 
         /**
          * Build pre-baked sources
-         * @param section
-         * @param searchClient
+         * @param section - object containing data for federated section in the autocomplete menu
+         * @param searchClient 
          * @returns object representing a single source
          */
         buildAutocompleteSource(section, searchClient) {
-            let options = {
+            const defaultSourceConfig = this.buildAutocompleteSourceDefault(section);
+
+            if (section.name === 'products') {
+                return this.buildAutocompleteSourceProducts(section, defaultSourceConfig);
+            } else if (section.name === 'categories') {
+                return this.buildAutocompleteSourceCategories(section, defaultSourceConfig);
+            } else if (section.name === 'pages') {
+                return this.buildAutocompleteSourcePages(section, defaultSourceConfig);
+            } else {
+                /** If is not products, categories, pages or suggestions, it's additional section **/
+                return this.buildAutocompleteSourceAdditional(section, defaultSourceConfig);
+            }
+        },
+
+        buildAutocompleteSourceDefault(section) {
+            const options = {
                 hitsPerPage   : section.hitsPerPage || DEFAULT_HITS_PER_SECTION,
                 analyticsTags : 'autocomplete',
                 clickAnalytics: true,
@@ -312,169 +330,212 @@ define([
 
             const defaultSectionIndex = `${algoliaConfig.indexName}_${section.name}`;
 
-            // Default values for source
-            const source = {
+            return {
                 sourceId : section.name,
                 options,
                 getItemUrl,
                 transformResponse,
                 indexName: defaultSectionIndex,
             };
+        },
 
-            if (section.name === 'products') {
-                options.facets = ['categories.level0'];
-                options.numericFilters = 'visibility_search=1';
-                options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
+        /**
+         * Build the source to be used for federated section showing product results
+         * @param section - object containing data for this section 
+         * @param source - default values for the source object
+         * @returns source object
+         */
+        buildAutocompleteSourceProducts(section, source, options) {
+            source.options = this.buildProductSourceOptions(section, source.options);
+            source.templates = {
+                noResults: ({html}) => {
+                    return productsHtml.getNoResultHtml({html});
+                },
+                header: ({items, html}) => {
+                    return productsHtml.getHeaderHtml({items, html});
+                },
+                item: ({item, components, html}) => {
+                    if (suggestionSection) { //TODO: relies on global - needs refactor
+                        $('.aa-Panel').addClass('productColumn2');
+                        $('.aa-Panel').removeClass('productColumn1');
+                    } else {
+                        $('.aa-Panel').removeClass('productColumn2');
+                        $('.aa-Panel').addClass('productColumn1');
+                    }
+                    //TODO: relies on global - needs refactor
+                    if (
+                        algoliaFooter &&
+                        algoliaFooter !== undefined &&
+                        algoliaFooter !== null &&
+                        $('#algoliaFooter').length === 0
+                    ) {
+                        $('.aa-PanelLayout').append(algoliaFooter);
+                    }
+                    const _data = this.transformAutocompleteHit(item, algoliaConfig.priceKey);
+                    return productsHtml.getItemHtml({item: _data, components, html});
+                },
+                footer: ({items, html}) => {
+                    const resultDetails = {};
+                    if (items.length) {
+                        const firstItem = items[0];
+                        resultDetails.allDepartmentsUrl =
+                            algoliaConfig.resultPageUrl +
+                            '?q=' +
+                            encodeURIComponent(firstItem.query);
+                        resultDetails.nbHits = firstItem.nbHits;
 
-                // Allow custom override
-                options = algoliaCommon.triggerHooks(
-                    'beforeAutocompleteProductSourceOptions',
-                    options
-                ); //DEPRECATED - retaining for backward compatibility
-                source.options = algoliaCommon.triggerHooks(
-                    'afterAutocompleteProductSourceOptions',
-                    options
-                );
-
-                source.templates = {
-                    noResults({html}) {
-                        return productsHtml.getNoResultHtml({html});
-                    },
-                    header({items, html}) {
-                        return productsHtml.getHeaderHtml({items, html});
-                    },
-                    item: ({item, components, html}) => {
-                        if (suggestionSection) {
-                            $('.aa-Panel').addClass('productColumn2');
-                            $('.aa-Panel').removeClass('productColumn1');
-                        } else {
-                            $('.aa-Panel').removeClass('productColumn2');
-                            $('.aa-Panel').addClass('productColumn1');
-                        }
                         if (
-                            algoliaFooter &&
-                            algoliaFooter !== undefined &&
-                            algoliaFooter !== null &&
-                            $('#algoliaFooter').length === 0
+                            algoliaConfig.facets.find(
+                                (facet) => facet.attribute === 'categories'
+                            )
                         ) {
-                            $('.aa-PanelLayout').append(algoliaFooter);
-                        }
-                        const _data = this.transformAutocompleteHit(item, algoliaConfig.priceKey);
-                        return productsHtml.getItemHtml({item: _data, components, html});
-                    },
-                    footer({items, html}) {
-                        const resultDetails = {};
-                        if (items.length) {
-                            const firstItem = items[0];
-                            resultDetails.allDepartmentsUrl =
-                                algoliaConfig.resultPageUrl +
-                                '?q=' +
-                                encodeURIComponent(firstItem.query);
-                            resultDetails.nbHits = firstItem.nbHits;
-
-                            if (
-                                algoliaConfig.facets.find(
-                                    (facet) => facet.attribute === 'categories'
-                                )
-                            ) {
-                                let allCategories = [];
-                                if (typeof firstItem.allCategories !== 'undefined') {
-                                    allCategories = Object.keys(firstItem.allCategories).map(
-                                        (key) => {
-                                            const url =
-                                                resultDetails.allDepartmentsUrl +
-                                                '&categories=' +
-                                                encodeURIComponent(key);
-                                            return {
-                                                name : key,
-                                                value: firstItem.allCategories[key],
-                                                url,
-                                            };
-                                        }
-                                    );
-                                }
-                                //reverse value sort apparently...
-                                allCategories.sort((a, b) => b.value - a.value);
-                                resultDetails.allCategories = allCategories.slice(0, 2);
+                            let allCategories = [];
+                            if (typeof firstItem.allCategories !== 'undefined') {
+                                allCategories = Object.keys(firstItem.allCategories).map(
+                                    (key) => {
+                                        const url =
+                                            resultDetails.allDepartmentsUrl +
+                                            '&categories=' +
+                                            encodeURIComponent(key);
+                                        return {
+                                            name : key,
+                                            value: firstItem.allCategories[key],
+                                            url,
+                                        };
+                                    }
+                                );
                             }
+                            //reverse value sort apparently...
+                            allCategories.sort((a, b) => b.value - a.value);
+                            resultDetails.allCategories = allCategories.slice(0, 2);
                         }
-                        return productsHtml.getFooterHtml({html, ...resultDetails});
-                    },
-                };
-                source.transformResponse = ({results, hits}) => {
-                    const resDetail = results[0];
-                    return hits.map((res) => {
-                        return res.map((hit, i) => {
-                            return {
-                                ...hit,
-                                nbHits       : resDetail.nbHits,
-                                allCategories: resDetail.facets['categories.level0'],
-                                query        : resDetail.query,
-                                position     : i + 1,
-                            };
-                        });
+                    }
+                    return productsHtml.getFooterHtml({html, ...resultDetails});
+                },
+            };
+            source.transformResponse = ({results, hits}) => {
+                const resDetail = results[0];
+                return hits.map((res) => {
+                    return res.map((hit, i) => {
+                        return {
+                            ...hit,
+                            nbHits       : resDetail.nbHits,
+                            allCategories: resDetail.facets['categories.level0'],
+                            query        : resDetail.query,
+                            position     : i + 1,
+                        };
                     });
-                };
-            } else if (section.name === 'categories') {
-                if (
-                    section.name === 'categories' &&
-                    algoliaConfig.showCatsNotIncludedInNavigation === false
-                ) {
-                    options.numericFilters = 'include_in_menu=1';
-                }
-                source.templates = {
-                    noResults({html}) {
-                        return categoriesHtml.getNoResultHtml({html});
-                    },
-                    header({html, items}) {
-                        return categoriesHtml.getHeaderHtml({section, html, items});
-                    },
-                    item({item, components, html}) {
-                        return categoriesHtml.getItemHtml({item, components, html});
-                    },
-                    footer({html, items}) {
-                        return categoriesHtml.getFooterHtml({section, html, items});
-                    },
-                };
-            } else if (section.name === 'pages') {
-                source.templates = {
-                    noResults({html}) {
-                        return pagesHtml.getNoResultHtml({html});
-                    },
-                    header({html, items}) {
-                        return pagesHtml.getHeaderHtml({section, html, items});
-                    },
-                    item({item, components, html}) {
-                        return pagesHtml.getItemHtml({item, components, html});
-                    },
-                    footer({html, items}) {
-                        return pagesHtml.getFooterHtml({section, html, items});
-                    },
-                };
-            } else {
-                /** If is not products, categories, pages or suggestions, it's additional section **/
-                source.indexName = `${algoliaConfig.indexName}_section_${section.name}`;
-                source.templates = {
-                    noResults({html}) {
-                        return additionalHtml.getNoResultHtml({html});
-                    },
-                    header({html, items}) {
-                        return additionalHtml.getHeaderHtml({section, html, items});
-                    },
-                    item({item, components, html}) {
-                        return additionalHtml.getItemHtml({
-                            item,
-                            components,
-                            html,
-                            section,
-                        });
-                    },
-                    footer({html, items}) {
-                        return additionalHtml.getFooterHtml({section, html, items});
-                    },
-                };
-            }
+                });
+            };
+            return source;
+        },
 
+        /**
+         * Build the source options for the products search results
+         * (Provides an alternate approach to customizing via mixin in addition to front end custom event hooks)
+         * @param section - object containing data for the product section (although not used in default implementation retained for accessibility through overrides)
+         * @param options - default values for the options object
+         * @returns options object
+         */
+        buildProductSourceOptions(section, options) {
+            options.facets = ['categories.level0'];
+            options.numericFilters = 'visibility_search=1';
+            options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
+
+            // DEPRECATED - retaining for backward compatibility but `beforeAutocompleteProductSourceOptions` will likely be removed in a future version
+            options = algoliaCommon.triggerHooks(
+                'beforeAutocompleteProductSourceOptions',
+                options
+            ); 
+            
+            options = algoliaCommon.triggerHooks(
+                'afterAutocompleteProductSourceOptions',
+                options
+            );
+            return options;
+        },
+
+        /**
+         * Build the source to be used for federated section showing category results
+         * @param section - object containing data for this section 
+         * @param source - default values for the source object
+         * @returns source object
+         */
+        buildAutocompleteSourceCategories(section, source) {
+            if (
+                section.name === 'categories' &&
+                algoliaConfig.showCatsNotIncludedInNavigation === false
+            ) {
+                options.numericFilters = 'include_in_menu=1';
+            }
+            source.templates = {
+                noResults: ({html}) => {
+                    return categoriesHtml.getNoResultHtml({html});
+                },
+                header: ({html, items}) => {
+                    return categoriesHtml.getHeaderHtml({section, html, items});
+                },
+                item: ({item, components, html}) => {
+                    return categoriesHtml.getItemHtml({item, components, html});
+                },
+                footer: ({html, items}) => {
+                    return categoriesHtml.getFooterHtml({section, html, items});
+                },
+            };
+            return source;
+        },
+
+         /**
+         * Build the source to be used for federated section showing CMS page results
+         * @param section - object containing data for this section 
+         * @param source - default values for the source object
+         * @returns source object
+         */
+        buildAutocompleteSourcePages(section, source) {
+            source.templates = {
+                noResults: ({html}) => {
+                    return pagesHtml.getNoResultHtml({html});
+                },
+                header: ({html, items}) => {
+                    return pagesHtml.getHeaderHtml({section, html, items});
+                },
+                item: ({item, components, html}) => {
+                    return pagesHtml.getItemHtml({item, components, html});
+                },
+                footer: ({html, items}) => {
+                    return pagesHtml.getFooterHtml({section, html, items});
+                },
+            };
+            return source;
+        },
+
+        /**
+         * Build the source to be used for federated sections based on product attributes
+         * @param section - object containing data for this section 
+         * @param source - default values for the source object
+         * @returns source object
+         */
+        buildAutocompleteSourceAdditional(section, source) {
+            source.indexName = `${algoliaConfig.indexName}_section_${section.name}`;
+            source.templates = {
+                noResults: ({html}) => {
+                    return additionalHtml.getNoResultHtml({html});
+                },
+                header: ({html, items}) => {
+                    return additionalHtml.getHeaderHtml({section, html, items});
+                },
+                item: ({item, components, html}) => {
+                    return additionalHtml.getItemHtml({
+                        item,
+                        components,
+                        html,
+                        section,
+                    });
+                },
+                footer: ({html, items}) => {
+                    return additionalHtml.getFooterHtml({section, html, items});
+                },
+            };
             return source;
         },
 

@@ -51,135 +51,30 @@ define([
             this.buildAutocomplete($);
         },
 
-        buildAutocomplete($) {
-            /** We have nothing to do here if autocomplete is disabled **/
-            if (
-                typeof algoliaConfig === 'undefined' ||
-                !algoliaConfig.autocomplete.enabled
-            ) {
-                return;
-            }
 
+        /**
+         * Setup the autocomplete search input
+         * For autocomplete feature is used Algolia's autocomplete.js library
+         * Docs: https://github.com/algolia/autocomplete.js
+        **/
+        buildAutocomplete() {
+            /** We have nothing to do here if autocomplete is disabled **/
+            if (typeof algoliaConfig === 'undefined' || !algoliaConfig.autocomplete.enabled) return;
+            
             const searchClient = this.getSearchClient();
             
             const sources = this.buildAutocompleteSources(searchClient);
             
             const plugins = this.buildAutocompletePlugins(searchClient);
-            
-            /**
-             * Setup the autocomplete search input
-             * For autocomplete feature is used Algolia's autocomplete.js library
-             * Docs: https://github.com/algolia/autocomplete.js
-            **/
-           const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
-           
-           let autocompleteConfig = [];
-           let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); //DEPRECATED
-
-            options = {
-                ...options,
-                container         : algoliaConfig.autocomplete.selector,
-                placeholder       : algoliaConfig.translations.placeholder,
-                debug             : algoliaConfig.autocomplete.isDebugEnabled,
-                detachedMediaQuery: 'none',
-                onSubmit(data) {
-                    if (
-                        data.state.query &&
-                        data.state.query !== null &&
-                        data.state.query !== ''
-                    ) {
-                        window.location.href =
-                            algoliaConfig.resultPageUrl +
-                            `?q=${encodeURIComponent(data.state.query)}`;
-                    }
-                },
-                getSources: ({query}) => {
-                    return this.filterMinChars(query, debounced(autocompleteConfig));
-                },
-                shouldPanelOpen({state}) {
-                    return state.query.length >= MIN_SEARCH_LENGTH_CHARS;
-                },
-            };
-
-            if (algoliaCommon.isMobile() === true) {
-                // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
-                options.debug = true;
-            }
 
             if (algoliaConfig.removeBranding === false) {
                 //TODO: relies on global - needs refactor
                 algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
             }
 
-            // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
-            if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
-                console.warn(
-                    "Deprecated! You are using an old API for Algolia's front end hooks. " +
-                    'Please, replace your hook method with new hook API. ' +
-                    'More information you can find on https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/'
-                );
+            let options = this.buildAutocompleteOptions(searchClient, sources, plugins);
 
-                const hookResult = algoliaHookBeforeAutocompleteStart(
-                    sources,
-                    options,
-                    searchClient
-                );
-
-                sources = hookResult.shift();
-                options = hookResult.shift();
-            }
-
-            sources.forEach((data) => {
-                if (!data.sourceId) {
-                    console.error(
-                        'Algolia Autocomplete: sourceId is required for custom sources'
-                    );
-                    return;
-                }
-                const getItems = ({query}) => {
-                    return autocomplete.getAlgoliaResults({
-                        searchClient,
-                        queries: [
-                            {
-                                query,
-                                indexName: data.indexName,
-                                params   : data.options,
-                            },
-                        ],
-                        // only set transformResponse if defined (necessary check for custom sources)
-                        ...(data.transformResponse && {
-                            transformResponse: data.transformResponse,
-                        }),
-                    });
-                };
-                const fallbackTemplates = {
-                    noResults: () => 'No results',
-                    header   : () => data.sourceId,
-                    item     : ({item}) => {
-                        console.error(
-                            `Algolia Autocomplete: No template defined for source "${data.sourceId}"`
-                        );
-                        return '[ITEM TEMPLATE MISSING]';
-                    },
-                };
-                autocompleteConfig.push({
-                    sourceId : data.sourceId,
-                    getItems,
-                    templates: {...fallbackTemplates, ...(data.templates || {})},
-                    // only set getItemUrl if defined (necessary check for custom sources)
-                    ...(data.getItemUrl && {getItemUrl: data.getItemUrl}),
-                });
-            });
-            options.plugins = plugins;
-
-            options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
-
-            /** Bind autocomplete feature to the input */
-            let algoliaAutocompleteInstance = autocomplete.autocomplete(options);
-            algoliaCommon.triggerHooks(
-                'afterAutocompleteStart',
-                algoliaAutocompleteInstance
-            );
+            this.startAutocomplete(options);
 
             //Autocomplete insight click conversion
             // TODO: Switch to insights plugin
@@ -234,6 +129,92 @@ define([
             return searchClient;
         },
 
+        buildAutocompleteOptions(searchClient, sources, plugins) {
+            const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
+        
+            const autocompleteConfig = [];
+
+            let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); 
+
+            options = {
+                ...options,
+                container         : algoliaConfig.autocomplete.selector,
+                placeholder       : algoliaConfig.translations.placeholder,
+                debug             : algoliaConfig.autocomplete.isDebugEnabled,
+                detachedMediaQuery: 'none',
+                onSubmit(data) {
+                    if (
+                        data.state.query &&
+                        data.state.query !== null &&
+                        data.state.query !== ''
+                    ) {
+                        window.location.href =
+                            algoliaConfig.resultPageUrl +
+                            `?q=${encodeURIComponent(data.state.query)}`;
+                    }
+                },
+                getSources: ({query}) => {
+                    return this.filterMinChars(query, debounced(autocompleteConfig));
+                },
+                shouldPanelOpen({state}) {
+                    return state.query.length >= MIN_SEARCH_LENGTH_CHARS;
+                },
+            };
+
+            if (algoliaCommon.isMobile() === true) {
+                // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
+                options.debug = true;
+            }
+
+            sources.forEach((data) => {
+                if (!data.sourceId) {
+                    console.error(
+                        'Algolia Autocomplete: sourceId is required for custom sources'
+                    );
+                    return;
+                }
+                const getItems = ({query}) => {
+                    return autocomplete.getAlgoliaResults({
+                        searchClient,
+                        queries: [
+                            {
+                                query,
+                                indexName: data.indexName,
+                                params   : data.options,
+                            },
+                        ],
+                        // only set transformResponse if defined (necessary check for custom sources)
+                        ...(data.transformResponse && {
+                            transformResponse: data.transformResponse,
+                        }),
+                    });
+                };
+                const fallbackTemplates = {
+                    noResults: () => 'No results',
+                    header   : () => data.sourceId,
+                    item     : ({item}) => {
+                        console.error(
+                            `Algolia Autocomplete: No template defined for source "${data.sourceId}"`
+                        );
+                        return '[ITEM TEMPLATE MISSING]';
+                    },
+                };
+                autocompleteConfig.push({
+                    sourceId : data.sourceId,
+                    getItems,
+                    templates: {...fallbackTemplates, ...(data.templates || {})},
+                    // only set getItemUrl if defined (necessary check for custom sources)
+                    ...(data.getItemUrl && {getItemUrl: data.getItemUrl}),
+                });
+            });
+
+            options.plugins = plugins;
+
+            options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
+            
+            return options;
+        },
+
         /**
          * Build all of the extension's federated sources for Autocomplete
          * @param searchClient 
@@ -265,7 +246,7 @@ define([
                 this.buildAutocompleteSource(section, searchClient)
             );
 
-            // DEPRECATED - retaining for backward compatibility but `beforeAutcompleteSources` will likely be removed in a future version
+            // DEPRECATED location - retaining for backward compatibility but `beforeAutcompleteSources` behavior belongs earlier in the process and will be relocated in a future version
             sources = algoliaCommon.triggerHooks(
                 'beforeAutocompleteSources',
                 sources,
@@ -277,8 +258,6 @@ define([
                 sources,
                 searchClient
             );
-
-
 
             return sources;
         },
@@ -557,6 +536,38 @@ define([
                 'afterAutocompletePlugins',
                 plugins,
                 searchClient
+            );
+        },
+
+        /**
+         * 
+         * @param options 
+         * @returns the Algolia Autocomplete instance 
+         */
+        startAutocomplete(searchClient, sources, options) {
+            // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
+            if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
+                console.warn(
+                    "Deprecated! You are using an old API for Algolia's front end hooks. " +
+                    'Please, replace your hook method with new hook API. ' +
+                    'More information you can find on https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/'
+                );
+
+                const hookResult = algoliaHookBeforeAutocompleteStart(
+                    sources,
+                    options,
+                    searchClient
+                );
+
+                sources = hookResult.shift();
+                options = hookResult.shift();
+            }
+
+            /** Bind autocomplete feature to the input */
+            let algoliaAutocompleteInstance = autocomplete.autocomplete(options);
+            return algoliaCommon.triggerHooks(
+                'afterAutocompleteStart',
+                algoliaAutocompleteInstance
             );
         },
 

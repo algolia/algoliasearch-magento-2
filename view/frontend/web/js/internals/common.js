@@ -471,34 +471,6 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64'], function ($, inst
         );
     }
 
-    // TODO move as mixable to autocomplete.js
-    const handleAutoCompleteSubmit = (e) => {
-        let query = $(this).find(algoliaConfig.autocomplete.selector).val();
-
-        query = encodeURIComponent(query);
-
-        if (algoliaConfig.instant.enabled && query === '')
-            query = '__empty__';
-
-        window.location = $(this).attr('action') + '?q=' + query;
-
-        return false;
-    };
-
-    const initialize = () => {
-        if (typeof algoliaConfig === 'undefined') {
-            return;
-        }
-        $(algoliaConfig.autocomplete.selector).each(function () {
-            $(this).closest('form').on('submit', handleAutoCompleteSubmit);
-        });
-    }
-
-
-    $(function ($) {
-        initialize();
-    });
-
     return {
         ...algolia,
         routing,

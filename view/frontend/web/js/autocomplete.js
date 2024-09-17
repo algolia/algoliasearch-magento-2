@@ -65,7 +65,7 @@ define([
             const debouncePromise = (fn, time) => {
                 let timerId = undefined;
 
-                return function debounced(...args) {
+                return (...args) => {
                     if (timerId) {
                         clearTimeout(timerId);
                     }
@@ -104,6 +104,7 @@ define([
             let sources = algoliaConfig.autocomplete.sections.map((section) =>
                 this.buildAutocompleteSource(section, searchClient)
             );
+
             sources = algoliaCommon.triggerHooks(
                 'beforeAutocompleteSources',
                 sources,

@@ -225,7 +225,7 @@ define([
                 this.buildAutocompleteSource(section, searchClient)
             );
 
-            // DEPRECATED location - retaining for backward compatibility but `beforeAutcompleteSources` behavior belongs earlier in the process and will be relocated in a future version
+            // DEPRECATED - retaining for backward compatibility but `beforeAutcompleteSources` may be removed or relocated in a future version
             sources = algoliaCommon.triggerHooks(
                 'beforeAutocompleteSources',
                 sources,
@@ -387,15 +387,15 @@ define([
          * @returns options object
          */
         buildProductSourceOptions(section, options) {
-            options.facets = ['categories.level0'];
-            options.numericFilters = 'visibility_search=1';
-            options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
-
-            // DEPRECATED - retaining for backward compatibility but `beforeAutocompleteProductSourceOptions` will likely be removed in a future version
+            // DEPRECATED - retaining for backward compatibility but `beforeAutocompleteProductSourceOptions` may be removed in a future version
             options = algoliaCommon.triggerHooks(
                 'beforeAutocompleteProductSourceOptions',
                 options
             ); 
+
+            options.facets = ['categories.level0'];
+            options.numericFilters = 'visibility_search=1';
+            options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
             
             options = algoliaCommon.triggerHooks(
                 'afterAutocompleteProductSourceOptions',

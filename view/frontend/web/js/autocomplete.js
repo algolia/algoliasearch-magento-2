@@ -61,24 +61,8 @@ define([
             }
 
             const searchClient = this.getSearchClient();
-
-            const debouncePromise = (fn, time) => {
-                let timerId = undefined;
-
-                return (...args) => {
-                    if (timerId) {
-                        clearTimeout(timerId);
-                    }
-
-                    return new Promise((resolve) => {
-                        timerId = setTimeout(() => resolve(fn(...args)), time);
-                    });
-                };
-            };
-            const debounced = debouncePromise(
-                (items) => Promise.resolve(items),
-                DEBOUNCE_MS
-            );
+            
+            const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
 
             /**
              * Load suggestions, products and categories as configured
@@ -668,6 +652,20 @@ define([
 
         filterMinChars(query, result) {
             return query.length >= MIN_SEARCH_LENGTH_CHARS ? result : [];
+        },
+
+        debounce(fn, time) {
+            let timerId = undefined;
+
+            return (...args) => {
+                if (timerId) {
+                    clearTimeout(timerId);
+                }
+
+                return new Promise((resolve) => {
+                    timerId = setTimeout(() => resolve(fn(...args)), time);
+                });
+            };
         },
 
         getNavigatorUrl(url) {

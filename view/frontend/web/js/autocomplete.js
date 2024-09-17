@@ -76,36 +76,7 @@ define([
 
             this.startAutocomplete(options);
 
-            //Autocomplete insight click conversion
-            // TODO: Switch to insights plugin
-            if (algoliaConfig.ccAnalytics.enabled) {
-                $(document).on('click', '.algoliasearch-autocomplete-hit', function () {
-                    const $this = $(this);
-                    if ($this.data('clicked')) return;
-
-                    const objectId = $this.attr('data-objectId');
-                    const indexName = $this.attr('data-index');
-                    const queryId = $this.attr('data-queryId');
-                    const position = $this.attr('data-position');
-
-                    let useCookie = algoliaConfig.cookieConfiguration
-                        .cookieRestrictionModeEnabled
-                        ? !!algoliaCommon.getCookie(algoliaConfig.cookieConfiguration.consentCookieName)
-                        : true;
-                    if (useCookie !== false) {
-                        algoliaInsights.initializeAnalytics();
-                        const eventData = algoliaInsights.buildEventData(
-                            'Clicked',
-                            objectId,
-                            indexName,
-                            position,
-                            queryId
-                        );
-                        algoliaInsights.trackClick(eventData);
-                        $this.attr('data-clicked', true);
-                    }
-                });
-            }
+            this.trackClicks();
 
             if (algoliaConfig.autocomplete.isNavigatorEnabled) {
                 $('body').append(
@@ -821,6 +792,41 @@ define([
                     },
                 }
             );
-        }
+        },
+
+        /**
+         * Autocomplete insight click conversion
+         */
+        trackClicks() {
+            // TODO: Switch to insights plugin
+            if (algoliaConfig.ccAnalytics.enabled) {
+                $(document).on('click', '.algoliasearch-autocomplete-hit', function () {
+                    const $this = $(this);
+                    if ($this.data('clicked')) return;
+
+                    const objectId = $this.attr('data-objectId');
+                    const indexName = $this.attr('data-index');
+                    const queryId = $this.attr('data-queryId');
+                    const position = $this.attr('data-position');
+
+                    let useCookie = algoliaConfig.cookieConfiguration
+                        .cookieRestrictionModeEnabled
+                        ? !!algoliaCommon.getCookie(algoliaConfig.cookieConfiguration.consentCookieName)
+                        : true;
+                    if (useCookie !== false) {
+                        algoliaInsights.initializeAnalytics();
+                        const eventData = algoliaInsights.buildEventData(
+                            'Clicked',
+                            objectId,
+                            indexName,
+                            position,
+                            queryId
+                        );
+                        algoliaInsights.trackClick(eventData);
+                        $this.attr('data-clicked', true);
+                    }
+                });
+            }
+        },
     });
 });

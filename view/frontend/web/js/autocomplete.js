@@ -80,11 +80,7 @@ define([
 
             this.addFooter();
 
-            if (algoliaConfig.autocomplete.isNavigatorEnabled) {
-                $('body').append(
-                    '<style>.aa-Item[aria-selected="true"]{background-color: #f2f2f2;}</style>'
-                );
-            }
+            this.addKeyboardNavigation();
         },
 
         getSearchClient() {
@@ -850,6 +846,14 @@ define([
                 $('.aa-Panel').addClass('productColumn1');
             }
             
+        },
+
+        addKeyboardNavigation() {
+            if (algoliaConfig.autocomplete.isNavigatorEnabled) {
+                $('body').append(
+                    '<style>.aa-Item[aria-selected="true"]{background-color: #f2f2f2;}</style>'
+                );
+            }
         }
     });
 });

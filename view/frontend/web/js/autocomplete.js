@@ -41,10 +41,10 @@ define([
     const DEBOUNCE_MS = algoliaConfig.autocomplete.debounceMilliseconds;
     const MIN_SEARCH_LENGTH_CHARS = algoliaConfig.autocomplete.minimumCharacters;
 
-    // global state
-    let suggestionSection = false;
+    // Global state
     const state = {
-        hasRendered: false
+        hasRendered: false,
+        hasSuggestionSection: false
     };
 
     return Component.extend({
@@ -316,14 +316,6 @@ define([
                     return productsHtml.getHeaderHtml({items, html});
                 },
                 item: ({item, components, html}) => {
-                    if (suggestionSection) { //TODO: relies on global - needs refactor
-                        $('.aa-Panel').addClass('productColumn2');
-                        $('.aa-Panel').removeClass('productColumn1');
-                    } else {
-                        $('.aa-Panel').removeClass('productColumn2');
-                        $('.aa-Panel').addClass('productColumn1');
-                    }
-                    
                     const _data = this.transformAutocompleteHit(item, algoliaConfig.priceKey);
                     return productsHtml.getItemHtml({item: _data, components, html});
                 },
@@ -496,7 +488,7 @@ define([
             let plugins = [];
             
             if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
-                suggestionSection = true; //TODO: relies on global - needs refactor
+                state.hasSuggestionSection = true; 
                 plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
             return algoliaCommon.triggerHooks(
@@ -696,6 +688,13 @@ define([
             return query.length >= MIN_SEARCH_LENGTH_CHARS ? result : [];
         },
 
+        /**
+         * Tells Autocomplete to “wait” for a set time after typing stops before returning results
+         * See https://www.algolia.com/doc/ui-libraries/autocomplete/guides/debouncing-sources/#select-a-debounce-delay
+         * @param fn Function to debounce
+         * @param time Delay in ms before function executes
+         * @returns 
+         */
         debounce(fn, time) {
             let timerId = undefined;
 
@@ -819,6 +818,7 @@ define([
                         mutation.addedNodes.forEach(node => {
                             if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('aa-PanelLayout')) {
                                 this.addFooter();
+                                this.handleSuggestionsLayout();
                                 //We only care about the first occurrence
                                 observer.disconnect();
                             }
@@ -835,6 +835,17 @@ define([
                 const algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
                 $('.aa-PanelLayout').append(algoliaFooter);
             } 
+        },
+
+        handleSuggestionsLayout() {
+            if (state.hasSuggestionSection) { 
+                $('.aa-Panel').addClass('productColumn2');
+                $('.aa-Panel').removeClass('productColumn1');
+            } else {
+                $('.aa-Panel').removeClass('productColumn2');
+                $('.aa-Panel').addClass('productColumn1');
+            }
+            
         }
     });
 });

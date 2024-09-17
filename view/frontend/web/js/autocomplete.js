@@ -132,8 +132,6 @@ define([
         buildAutocompleteOptions(searchClient, sources, plugins) {
             const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
         
-            const autocompleteConfig = this.transformSources(searchClient, sources);
-
             let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); 
 
             options = {
@@ -142,28 +140,23 @@ define([
                 placeholder       : algoliaConfig.translations.placeholder,
                 debug             : algoliaConfig.autocomplete.isDebugEnabled,
                 detachedMediaQuery: 'none',
-                onSubmit(data) {
-                    if (
-                        data.state.query &&
-                        data.state.query !== null &&
-                        data.state.query !== ''
-                    ) {
+                onSubmit: ({ state: { query } }) => {
+                    if (query) {
                         window.location.href =
                             algoliaConfig.resultPageUrl +
-                            `?q=${encodeURIComponent(data.state.query)}`;
+                            `?q=${encodeURIComponent(query)}`;
                     }
                 },
                 getSources: ({query}) => {
-                    return this.filterMinChars(query, debounced(autocompleteConfig));
+                    return this.filterMinChars(query, debounced(this.transformSources(searchClient, sources)));
                 },
-                shouldPanelOpen({state}) {
+                shouldPanelOpen: ({state}) => {
                     return state.query.length >= MIN_SEARCH_LENGTH_CHARS;
                 },
                 // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
                 debug: algoliaCommon.isMobile(),
                 plugins
             };
-
 
             // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
             if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
@@ -196,49 +189,51 @@ define([
          * @returns Algolia sources
          */
         transformSources(searchClient, sources) {
-            const autocompleteConfig = [];
-            sources.forEach((data) => {
-                if (!data.sourceId) {
-                    console.error(
-                        'Algolia Autocomplete: sourceId is required for custom sources'
-                    );
-                    return;
-                }
-                const getItems = ({query}) => {
-                    return autocomplete.getAlgoliaResults({
-                        searchClient,
-                        queries: [
-                            {
-                                query,
-                                indexName: data.indexName,
-                                params   : data.options,
-                            },
-                        ],
-                        // only set transformResponse if defined (necessary check for custom sources)
-                        ...(data.transformResponse && {
-                            transformResponse: data.transformResponse,
-                        }),
-                    });
-                };
-                const fallbackTemplates = {
-                    noResults: () => 'No results',
-                    header   : () => data.sourceId,
-                    item     : ({item}) => {
+            return sources
+                .filter(data => {
+                    if (!data.sourceId) {
                         console.error(
-                            `Algolia Autocomplete: No template defined for source "${data.sourceId}"`
+                            'Algolia Autocomplete: sourceId is required for custom sources'
                         );
-                        return '[ITEM TEMPLATE MISSING]';
-                    },
-                };
-                autocompleteConfig.push({
-                    sourceId : data.sourceId,
-                    getItems,
-                    templates: {...fallbackTemplates, ...(data.templates || {})},
-                    // only set getItemUrl if defined (necessary check for custom sources)
-                    ...(data.getItemUrl && {getItemUrl: data.getItemUrl}),
+                        return false;
+                    }
+                    return true;
+                })
+                .map((data) => {
+                    const getItems = ({query}) => {
+                        return autocomplete.getAlgoliaResults({
+                            searchClient,
+                            queries: [
+                                {
+                                    query,
+                                    indexName: data.indexName,
+                                    params   : data.options,
+                                },
+                            ],
+                            // only set transformResponse if defined (necessary check for custom sources)
+                            ...(data.transformResponse && {
+                                transformResponse: data.transformResponse,
+                            }),
+                        });
+                    };
+                    const fallbackTemplates = {
+                        noResults: () => 'No results',
+                        header   : () => data.sourceId,
+                        item     : ({item}) => {
+                            console.error(
+                                `Algolia Autocomplete: No template defined for source "${data.sourceId}"`
+                            );
+                            return '[ITEM TEMPLATE MISSING]';
+                        },
+                    };
+                    return {
+                        sourceId : data.sourceId,
+                        getItems,
+                        templates: {...fallbackTemplates, ...(data.templates || {})},
+                        // only set getItemUrl if defined (necessary check for custom sources)
+                        ...(data.getItemUrl && {getItemUrl: data.getItemUrl}),
+                    };
                 });
-            });
-            return autocompleteConfig;
         },
 
         /**

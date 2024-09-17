@@ -132,7 +132,7 @@ define([
         buildAutocompleteOptions(searchClient, sources, plugins) {
             const debounced = this.debounce(items => Promise.resolve(items), DEBOUNCE_MS);
         
-            const autocompleteConfig = [];
+            const autocompleteConfig = this.transformSources(searchClient, sources);
 
             let options = algoliaCommon.triggerHooks('beforeAutocompleteOptions', {}); 
 
@@ -159,12 +159,11 @@ define([
                 shouldPanelOpen({state}) {
                     return state.query.length >= MIN_SEARCH_LENGTH_CHARS;
                 },
+                // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
+                debug: algoliaCommon.isMobile(),
+                plugins
             };
 
-            if (algoliaCommon.isMobile() === true) {
-                // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
-                options.debug = true;
-            }
 
             // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
             if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
@@ -184,6 +183,20 @@ define([
                 options = hookResult.shift();
             }
 
+            options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
+            
+            return options;
+        },
+
+        /**
+         * Validate and merge behaviors for custom sources
+         * 
+         * @param searchClient
+         * @param sources Magento sources
+         * @returns Algolia sources
+         */
+        transformSources(searchClient, sources) {
+            const autocompleteConfig = [];
             sources.forEach((data) => {
                 if (!data.sourceId) {
                     console.error(
@@ -225,12 +238,7 @@ define([
                     ...(data.getItemUrl && {getItemUrl: data.getItemUrl}),
                 });
             });
-
-            options.plugins = plugins;
-
-            options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
-            
-            return options;
+            return autocompleteConfig;
         },
 
         /**

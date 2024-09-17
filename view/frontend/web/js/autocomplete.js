@@ -166,6 +166,24 @@ define([
                 options.debug = true;
             }
 
+            // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
+            if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
+                console.warn(
+                    "Deprecated! You are using an old API for Algolia's front end hooks. " +
+                    'Please, replace your hook method with new hook API. ' +
+                    'More information you can find on https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/'
+                );
+
+                const hookResult = algoliaHookBeforeAutocompleteStart(
+                    sources,
+                    options,
+                    searchClient
+                );
+
+                sources = hookResult.shift();
+                options = hookResult.shift();
+            }
+
             sources.forEach((data) => {
                 if (!data.sourceId) {
                     console.error(
@@ -544,27 +562,9 @@ define([
          * @param options 
          * @returns the Algolia Autocomplete instance 
          */
-        startAutocomplete(searchClient, sources, options) {
-            // DEPRECATED Do not use - Retained for backward compatibility but `algoliaHookBeforeAutocompleteStart` will be removed in a future version 
-            if (typeof algoliaHookBeforeAutocompleteStart === 'function') {
-                console.warn(
-                    "Deprecated! You are using an old API for Algolia's front end hooks. " +
-                    'Please, replace your hook method with new hook API. ' +
-                    'More information you can find on https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/'
-                );
-
-                const hookResult = algoliaHookBeforeAutocompleteStart(
-                    sources,
-                    options,
-                    searchClient
-                );
-
-                sources = hookResult.shift();
-                options = hookResult.shift();
-            }
-
+        startAutocomplete(options) {
             /** Bind autocomplete feature to the input */
-            let algoliaAutocompleteInstance = autocomplete.autocomplete(options);
+            const algoliaAutocompleteInstance = autocomplete.autocomplete(options);
             return algoliaCommon.triggerHooks(
                 'afterAutocompleteStart',
                 algoliaAutocompleteInstance

@@ -306,7 +306,7 @@ define([
          * @param source - default values for the source object
          * @returns source object
          */
-        buildAutocompleteSourceProducts(section, source, options) {
+        buildAutocompleteSourceProducts(section, source) {
             source.options = this.buildProductSourceOptions(section, source.options);
             source.templates = {
                 noResults: ({html}) => {
@@ -411,7 +411,7 @@ define([
                 section.name === 'categories' &&
                 algoliaConfig.showCatsNotIncludedInNavigation === false
             ) {
-                options.numericFilters = 'include_in_menu=1';
+                source.options.numericFilters = 'include_in_menu=1';
             }
             source.templates = {
                 noResults: ({html}) => {

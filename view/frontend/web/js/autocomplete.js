@@ -18,10 +18,8 @@ define([
     'algoliaAutocompleteSuggestionsHtml',
     'algoliaAutocompleteAdditionalHtml',
 
-    // TODO: Refactor legacy global object dependencies
     'algoliaInsights',
     'algoliaHooks',
-
     'domReady!'
 ], function (
     Component,
@@ -35,7 +33,8 @@ define([
     categoriesHtml,
     pagesHtml,
     suggestionsHtml,
-    additionalHtml
+    additionalHtml,
+    algoliaInsights
 ) {
     const DEFAULT_HITS_PER_SECTION = 2;
     const DEBOUNCE_MS = algoliaConfig.autocomplete.debounceMilliseconds;

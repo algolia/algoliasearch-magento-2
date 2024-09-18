@@ -4,13 +4,23 @@ define([
     'algoliaCommon',
     'mage/cookies',
 ], function ($, algoliaAnalyticsWrapper, algoliaCommon) {
+    const USE_GLOBALS = true;
+
     algoliaAnalytics = algoliaAnalyticsWrapper.default;
 
-    window.algoliaInsights = {
+    const algoliaInsights = {
         config            : null,
         defaultIndexName  : null,
         isTracking        : false,
         hasAddedParameters: false,
+
+        initialize() {
+            if (!window.algoliaConfig) return;
+
+            this.addSearchParameters();
+            this.bindConsentButtonClick(algoliaConfig);
+            this.track(algoliaConfig);            
+        },
 
         useCookie() {
             return !this.config.cookieConfiguration.cookieRestrictionModeEnabled
@@ -95,7 +105,7 @@ define([
                 (allWidgetConfiguration) => {
 
                     allWidgetConfiguration.configure =
-                        algoliaInsights.applyInsightsToSearchParams(allWidgetConfiguration.configure);
+                        this.applyInsightsToSearchParams(allWidgetConfiguration.configure);
 
                     return allWidgetConfiguration;
                 }
@@ -104,7 +114,7 @@ define([
             algoliaCommon.registerHook(
                 'afterAutocompleteProductSourceOptions',
                 (options) => {
-                    return algoliaInsights.applyInsightsToSearchParams(options);
+                    return this.applyInsightsToSearchParams(options);
                 }
             );
 
@@ -343,20 +353,19 @@ define([
                 algoliaConfig.cookieConfiguration.cookieAllowButtonSelector,
                 (event) => {
                     event.preventDefault();
-                    algoliaInsights.initializeAnalytics(algoliaConfig, true);
+                    this.initializeAnalytics(algoliaConfig, true);
                 }
             );
         }
     };
 
-    algoliaInsights.addSearchParameters();
-
     $(function ($) {
-        if (window.algoliaConfig) {
-            algoliaInsights.bindConsentButtonClick(algoliaConfig);
-            algoliaInsights.track(algoliaConfig);
-        }
+        algoliaInsights.initialize()
     });
+
+    if (USE_GLOBALS) {
+        window.algoliaInsights = algoliaInsights;
+    }
 
     return algoliaInsights;
 });

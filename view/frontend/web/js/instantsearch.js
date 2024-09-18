@@ -14,7 +14,6 @@ define([
     // Magento core libs
     'Magento_Catalog/js/price-utils',
 
-    // TODO: Refactor legacy global object dependencies
     'algoliaInsights',
     'algoliaHooks',
 ], function (Component, $, algoliasearch, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
@@ -793,7 +792,7 @@ define([
                         (facet.label ? facet.label : facet.attribute) +
                         '</div>',
                 },
-                hidden   : function (options) {
+                hidden: (options) => {
                     if (
                         options.results.nbPages <= 1 &&
                         algoliaConfig.instant.hidePagination === true

@@ -246,15 +246,16 @@ define([
         buildAutocompleteSource(section, searchClient) {
             const defaultSourceConfig = this.buildAutocompleteSourceDefault(section);
 
-            if (section.name === 'products') {
-                return this.buildAutocompleteSourceProducts(section, defaultSourceConfig);
-            } else if (section.name === 'categories') {
-                return this.buildAutocompleteSourceCategories(section, defaultSourceConfig);
-            } else if (section.name === 'pages') {
-                return this.buildAutocompleteSourcePages(section, defaultSourceConfig);
-            } else {
-                /** If is not products, categories, pages or suggestions, it's additional section **/
-                return this.buildAutocompleteSourceAdditional(section, defaultSourceConfig);
+            switch (section.name) {
+                case 'products':
+                    return this.buildAutocompleteSourceProducts(section, defaultSourceConfig);
+                case 'categories':
+                    return this.buildAutocompleteSourceCategories(section, defaultSourceConfig);
+                case 'pages':
+                    return this.buildAutocompleteSourcePages(section, defaultSourceConfig);
+                default:
+                    /** If is not products, categories, or pages, it's an additional section **/
+                    return this.buildAutocompleteSourceAdditional(section, defaultSourceConfig);
             }
         },
 

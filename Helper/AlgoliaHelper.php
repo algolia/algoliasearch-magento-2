@@ -93,7 +93,7 @@ class AlgoliaHelper extends AbstractHelper
     {
         $storeId = $this->getStoreId();
         if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
-            if ($storeId !== 0 || !$fromConstructor) {
+            if ($storeId !== self::ALGOLIA_DEFAULT_SCOPE || !$fromConstructor) {
                 $this->algoliaCredentialsManager->displayErrorMessage(AlgoliaHelper::class, $storeId);
             }
         }

@@ -59,9 +59,6 @@ class AlgoliaHelper extends AbstractHelper
 
     protected static ?int $lastTaskId;
 
-    /**
-     * @throws AlgoliaException
-     */
     public function __construct(
         Context $context,
         protected ConfigHelper $config,
@@ -79,7 +76,6 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param bool $fromConstructor
      * @return void
      */
     protected function createClient(): void

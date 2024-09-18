@@ -71,13 +71,6 @@ class AlgoliaHelper extends AbstractHelper
     ) {
         parent::__construct($context);
 
-        try {
-            $this->createClient(true);
-            $this->addAlgoliaUserAgent();
-        } catch (AlgoliaException $e) {
-            // feedback handled by algoliaCredentialsManager
-        }
-
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
             $this->nonCastableAttributes,
@@ -89,11 +82,11 @@ class AlgoliaHelper extends AbstractHelper
      * @param bool $fromConstructor
      * @return void
      */
-    protected function createClient(bool $fromConstructor = false): void
+    protected function createClient(): void
     {
         $storeId = $this->getStoreId();
         if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
-            if ($storeId !== self::ALGOLIA_DEFAULT_SCOPE || !$fromConstructor) {
+            if ($storeId !== self::ALGOLIA_DEFAULT_SCOPE) {
                 $this->algoliaCredentialsManager->displayErrorMessage(AlgoliaHelper::class, $storeId);
             }
         }
@@ -132,6 +125,7 @@ class AlgoliaHelper extends AbstractHelper
     {
         if (!isset($this->clients[$this->getStoreId()])) {
             $this->createClient();
+            $this->addAlgoliaUserAgent();
         }
 
         return $this->clients[$this->getStoreId()] ?? null;

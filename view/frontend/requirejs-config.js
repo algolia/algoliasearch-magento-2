@@ -52,6 +52,9 @@ const config = {
         'algoliaMustacheLib': 'Algolia_AlgoliaSearch/js/lib/mustache.min',
         'algoliaHoganLib'   : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
 
+        // Utils
+        'algoliaBase64' : 'Algolia_AlgoliaSearch/js/internals/base64',
+
         // DEPRECATED - to be removed in a future release
         'algoliaBundle': 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
         'rangeSlider'  : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget'

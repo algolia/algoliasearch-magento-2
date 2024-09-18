@@ -7,24 +7,24 @@ define([
     'algoliaInstantSearchLib',
 
     // Algolia integration dependencies
+    'algoliaCommon',
+    'algoliaBase64',
     'algoliaTemplateEngine',
-
+    
     // Magento core libs
     'Magento_Catalog/js/price-utils',
 
-    // TODO: Refactor legacy global object dependencies
-    'algoliaCommon',
     'algoliaInsights',
     'algoliaHooks',
-], function (Component, $, algoliasearch, instantsearch, templateEngine, priceUtils) {
+], function (Component, $, algoliasearch, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
 
     return Component.extend({
-        initialize: function(config, element) {
+        initialize(config, element) {
             // console.log('IS initialized with', config, element);
-            this.buildInstantSearch($);
+            this.buildInstantSearch();
         },
 
-        buildInstantSearch: async function($) {
+        async buildInstantSearch() {
             const templateProcessor = await templateEngine.getSelectedEngineAdapter();
             const mockAlgoliaBundle = this.mockAlgoliaBundle();
     
@@ -71,28 +71,28 @@ define([
     
             /** BC of old hooks **/
             if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
-                algolia.registerHook(
+                algoliaCommon.registerHook(
                     'beforeInstantsearchInit',
                     algoliaHookBeforeInstantsearchInit
                 );
             }
     
             if (typeof algoliaHookBeforeWidgetInitialization === 'function') {
-                algolia.registerHook(
+                algoliaCommon.registerHook(
                     'beforeWidgetInitialization',
                     algoliaHookBeforeWidgetInitialization
                 );
             }
     
             if (typeof algoliaHookBeforeInstantsearchStart === 'function') {
-                algolia.registerHook(
+                algoliaCommon.registerHook(
                     'beforeInstantsearchStart',
                     algoliaHookBeforeInstantsearchStart
                 );
             }
     
             if (typeof algoliaHookAfterInstantsearchStart === 'function') {
-                algolia.registerHook(
+                algoliaCommon.registerHook(
                     'afterInstantsearchStart',
                     algoliaHookAfterInstantsearchStart
                 );
@@ -161,7 +161,7 @@ define([
             var instantsearchOptions = {
                 searchClient: searchClient,
                 indexName   : indexName,
-                routing     : window.routing,
+                routing     : algoliaCommon.routing,
             };
     
             if (
@@ -185,7 +185,7 @@ define([
                 }:"${algoliaConfig.request.path.replace(/"/g, '\\"')}"`;
             }
     
-            instantsearchOptions = algolia.triggerHooks(
+            instantsearchOptions = algoliaCommon.triggerHooks(
                 'beforeInstantsearchInit',
                 instantsearchOptions,
                 mockAlgoliaBundle
@@ -238,7 +238,7 @@ define([
                                 location.hash.length < 1
                             ) {
                                 return searchParameters.setQuery(
-                                    algolia.htmlspecialcharsDecode(algoliaConfig.request.query)
+                                    algoliaCommon.htmlspecialcharsDecode(algoliaConfig.request.query)
                                 );
                             }
                             return searchParameters;
@@ -511,7 +511,7 @@ define([
                             $('.page-title-wrapper span.base').html(
                                 algoliaConfig.translations.searchTitle +
                                 ": '" +
-                                algolia.htmlspecialcharsEncode(inputValue) +
+                                algoliaCommon.htmlspecialcharsEncode(inputValue) +
                                 "'"
                             );
                         }
@@ -540,8 +540,7 @@ define([
                     transformItems: function (items) {
                         return items.map(function (item) {
                             item.__indexName = search.helper.lastResults.index;
-                            item = transformHit(item, algoliaConfig.priceKey, search.helper);
-                            // FIXME: transformHit is a global
+                            item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
                             item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
                             return item;
                         });
@@ -578,8 +577,7 @@ define([
                         }
                         return items.map(function (item) {
                             item.__indexName = search.helper.lastResults.index;
-                            item = transformHit(item, algoliaConfig.priceKey, search.helper);
-                            // FIXME: transformHit is a global
+                            item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
                             item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
                             item.algoliaConfig = window.algoliaConfig;
                             return item;
@@ -621,7 +619,7 @@ define([
     
                     const hierarchicalMenuParams = {
                         container      : facet.wrapper.appendChild(
-                            createISWidgetContainer(facet.attribute)
+                            algoliaCommon.createISWidgetContainer(facet.attribute)
                         ),
                         attributes     : hierarchical_levels,
                         separator      : algoliaConfig.instant.categorySeparator,
@@ -668,148 +666,8 @@ define([
             };
     
             /** Add all facet widgets to instantsearch object **/
-            window.getFacetWidget = (facet, templates) => {
-                var panelOptions = {
-                    templates: {
-                        header:
-                            '<div class="name">' +
-                            (facet.label ? facet.label : facet.attribute) +
-                            '</div>',
-                    },
-                    hidden   : function (options) {
-                        if (
-                            options.results.nbPages <= 1 &&
-                            algoliaConfig.instant.hidePagination === true
-                        ) {
-                            document.getElementById(
-                                'instant-search-pagination-container'
-                            ).style.display = 'none';
-                        } else {
-                            document.getElementById(
-                                'instant-search-pagination-container'
-                            ).style.display = 'block';
-                        }
-                        if (!options.results) return true;
-                        switch (facet.type) {
-                            case 'conjunctive':
-                                var facetsNames = options.results.facets.map(function (f) {
-                                    return f.name;
-                                });
-                                return facetsNames.indexOf(facet.attribute) === -1;
-                            case 'disjunctive':
-                                var disjunctiveFacetsNames =
-                                    options.results.disjunctiveFacets.map(function (f) {
-                                        return f.name;
-                                    });
-                                return disjunctiveFacetsNames.indexOf(facet.attribute) === -1;
-                            default:
-                                return false;
-                        }
-                    },
-                };
-                if (facet.type === 'priceRanges') {
-                    delete templates.item;
-    
-                    return [
-                        'rangeInput',
-                        {
-                            container   : facet.wrapper.appendChild(
-                                createISWidgetContainer(facet.attribute)
-                            ),
-                            attribute   : facet.attribute,
-                            templates   : $.extend(
-                                {
-                                    separatorText: algoliaConfig.translations.to,
-                                    submitText   : algoliaConfig.translations.go,
-                                },
-                                templates
-                            ),
-                            cssClasses  : {
-                                root: 'conjunctive',
-                            },
-                            panelOptions: panelOptions,
-                        },
-                    ];
-                }
-    
-                if (facet.type === 'conjunctive') {
-                    var refinementListOptions = {
-                        container   : facet.wrapper.appendChild(
-                            createISWidgetContainer(facet.attribute)
-                        ),
-                        attribute   : facet.attribute,
-                        limit       : algoliaConfig.maxValuesPerFacet,
-                        operator    : 'and',
-                        templates   : templates,
-                        sortBy      : ['count:desc', 'name:asc'],
-                        cssClasses  : {
-                            root: 'conjunctive',
-                        },
-                        panelOptions: panelOptions,
-                    };
-    
-                    refinementListOptions = this.addSearchForFacetValues(
-                        facet,
-                        refinementListOptions
-                    );
-    
-                    return ['refinementList', refinementListOptions];
-                }
-    
-                if (facet.type === 'disjunctive') {
-                    var refinementListOptions = {
-                        container   : facet.wrapper.appendChild(
-                            createISWidgetContainer(facet.attribute)
-                        ),
-                        attribute   : facet.attribute,
-                        limit       : algoliaConfig.maxValuesPerFacet,
-                        operator    : 'or',
-                        templates   : templates,
-                        sortBy      : ['count:desc', 'name:asc'],
-                        panelOptions: panelOptions,
-                        cssClasses  : {
-                            root: 'disjunctive',
-                        },
-                    };
-    
-                    refinementListOptions = this.addSearchForFacetValues(
-                        facet,
-                        refinementListOptions
-                    );
-    
-                    return ['refinementList', refinementListOptions];
-                }
-    
-                if (facet.type === 'slider') {
-                    delete templates.item;
-    
-                    return [
-                        'rangeSlider',
-                        {
-                            container   : facet.wrapper.appendChild(
-                                createISWidgetContainer(facet.attribute)
-                            ),
-                            attribute   : facet.attribute,
-                            templates   : templates,
-                            pips        : false,
-                            panelOptions: panelOptions,
-                            tooltips    : {
-                                format: function (formattedValue) {
-                                    return facet.attribute.match(/price/) === null
-                                        ? parseInt(formattedValue)
-                                        : priceUtils.formatPrice(
-                                            formattedValue,
-                                            algoliaConfig.priceFormat
-                                        );
-                                },
-                            },
-                        },
-                    ];
-                }
-            };
-    
             var wrapper = document.getElementById('instant-search-facets-container');
-            $.each(algoliaConfig.facets, function (i, facet) {
+            $.each(algoliaConfig.facets, (i, facet) => {
                 if (facet.attribute.indexOf('price') !== -1)
                     facet.attribute = facet.attribute + algoliaConfig.priceKey;
     
@@ -818,11 +676,11 @@ define([
                 var templates = {
                     item: $('#refinements-lists-item-template').html(),
                 };
-    
+
                 var widgetInfo =
                     customAttributeFacet[facet.attribute] !== undefined
                         ? customAttributeFacet[facet.attribute](facet, templates)
-                        : getFacetWidget(facet, templates);
+                        : this.getFacetWidget(facet, templates);
     
                 var widgetType = widgetInfo[0],
                     widgetConfig = widgetInfo[1];
@@ -865,7 +723,7 @@ define([
                 };
             }
     
-            allWidgetConfiguration = algolia.triggerHooks(
+            allWidgetConfiguration = algoliaCommon.triggerHooks(
                 'beforeWidgetInitialization',
                 allWidgetConfiguration,
                 mockAlgoliaBundle
@@ -892,7 +750,7 @@ define([
                             const url = `${algoliaConfig.request.url}${window.location.search}`;
                             e.target.elements[
                                 algoliaConfig.instant.addToCartParams.redirectUrlParam
-                                ].value = AlgoliaBase64.mageEncode(url);
+                                ].value = algoliaBase64.mageEncode(url);
                         });
                     });
                 });
@@ -905,13 +763,13 @@ define([
                     return;
                 }
     
-                search = algolia.triggerHooks(
+                search = algoliaCommon.triggerHooks(
                     'beforeInstantsearchStart',
                     search,
                     mockAlgoliaBundle
                 );
                 search.start();
-                search = algolia.triggerHooks(
+                search = algoliaCommon.triggerHooks(
                     'afterInstantsearchStart',
                     search,
                     mockAlgoliaBundle
@@ -922,9 +780,151 @@ define([
     
             /** Initialise searching **/
             startInstantSearch();
+
+            this.addMobileRefinementsToggle();
         },
 
-        addWidget: function(search, type, config) {
+        getFacetWidget(facet, templates) {
+            var panelOptions = {
+                templates: {
+                    header:
+                        '<div class="name">' +
+                        (facet.label ? facet.label : facet.attribute) +
+                        '</div>',
+                },
+                hidden: (options) => {
+                    if (
+                        options.results.nbPages <= 1 &&
+                        algoliaConfig.instant.hidePagination === true
+                    ) {
+                        document.getElementById(
+                            'instant-search-pagination-container'
+                        ).style.display = 'none';
+                    } else {
+                        document.getElementById(
+                            'instant-search-pagination-container'
+                        ).style.display = 'block';
+                    }
+                    if (!options.results) return true;
+                    switch (facet.type) {
+                        case 'conjunctive':
+                            var facetsNames = options.results.facets.map(function (f) {
+                                return f.name;
+                            });
+                            return facetsNames.indexOf(facet.attribute) === -1;
+                        case 'disjunctive':
+                            var disjunctiveFacetsNames =
+                                options.results.disjunctiveFacets.map(function (f) {
+                                    return f.name;
+                                });
+                            return disjunctiveFacetsNames.indexOf(facet.attribute) === -1;
+                        default:
+                            return false;
+                    }
+                },
+            };
+            if (facet.type === 'priceRanges') {
+                delete templates.item;
+
+                return [
+                    'rangeInput',
+                    {
+                        container   : facet.wrapper.appendChild(
+                            algoliaCommon.createISWidgetContainer(facet.attribute)
+                        ),
+                        attribute   : facet.attribute,
+                        templates   : $.extend(
+                            {
+                                separatorText: algoliaConfig.translations.to,
+                                submitText   : algoliaConfig.translations.go,
+                            },
+                            templates
+                        ),
+                        cssClasses  : {
+                            root: 'conjunctive',
+                        },
+                        panelOptions: panelOptions,
+                    },
+                ];
+            }
+
+            if (facet.type === 'conjunctive') {
+                var refinementListOptions = {
+                    container   : facet.wrapper.appendChild(
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
+                    ),
+                    attribute   : facet.attribute,
+                    limit       : algoliaConfig.maxValuesPerFacet,
+                    operator    : 'and',
+                    templates   : templates,
+                    sortBy      : ['count:desc', 'name:asc'],
+                    cssClasses  : {
+                        root: 'conjunctive',
+                    },
+                    panelOptions: panelOptions,
+                };
+
+                refinementListOptions = this.addSearchForFacetValues(
+                    facet,
+                    refinementListOptions
+                );
+
+                return ['refinementList', refinementListOptions];
+            }
+
+            if (facet.type === 'disjunctive') {
+                var refinementListOptions = {
+                    container   : facet.wrapper.appendChild(
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
+                    ),
+                    attribute   : facet.attribute,
+                    limit       : algoliaConfig.maxValuesPerFacet,
+                    operator    : 'or',
+                    templates   : templates,
+                    sortBy      : ['count:desc', 'name:asc'],
+                    panelOptions: panelOptions,
+                    cssClasses  : {
+                        root: 'disjunctive',
+                    },
+                };
+
+                refinementListOptions = this.addSearchForFacetValues(
+                    facet,
+                    refinementListOptions
+                );
+
+                return ['refinementList', refinementListOptions];
+            }
+
+            if (facet.type === 'slider') {
+                delete templates.item;
+
+                return [
+                    'rangeSlider',
+                    {
+                        container   : facet.wrapper.appendChild(
+                            algoliaCommon.createISWidgetContainer(facet.attribute)
+                        ),
+                        attribute   : facet.attribute,
+                        templates   : templates,
+                        pips        : false,
+                        panelOptions: panelOptions,
+                        tooltips    : {
+                            format: function (formattedValue) {
+                                return facet.attribute.match(/price/) === null
+                                    ? parseInt(formattedValue)
+                                    : priceUtils.formatPrice(
+                                        formattedValue,
+                                        algoliaConfig.priceFormat
+                                    );
+                            },
+                        },
+                    },
+                ];
+            }
+        },
+
+        addWidget(search, type, config) {
             if (type === 'custom') {
                 search.addWidgets([config]);
                 return;
@@ -951,7 +951,7 @@ define([
             search.addWidgets([widget(config)]);
         },
 
-        addSearchForFacetValues: function(facet, options) {
+        addSearchForFacetValues(facet, options) {
             if (facet.searchable === '1') {
                 options.searchable = true;
                 options.searchableIsAlwaysActive = false;
@@ -965,6 +965,16 @@ define([
             }
     
             return options;
+        },
+
+        addMobileRefinementsToggle() {
+            $('#refine-toggle').on('click', function () {
+                $('#instant-search-facets-container').toggleClass('hidden-sm').toggleClass('hidden-xs');
+                if ($(this).html().trim()[0] === '+')
+                    $(this).html('- ' + algoliaConfig.translations.refine);
+                else
+                    $(this).html('+ ' + algoliaConfig.translations.refine);
+            });
         },
 
         /**
@@ -983,7 +993,7 @@ define([
          * and make it available to your hook.
          * TODO: Mixin and documentation to come on how to do this...
          */
-        mockAlgoliaBundle: function() {
+        mockAlgoliaBundle() {
             return {
                 $,
                 algoliasearch,

@@ -85,6 +85,7 @@ class AlgoliaHelper extends AbstractHelper
             if ($storeId !== self::ALGOLIA_DEFAULT_SCOPE) {
                 $this->algoliaCredentialsManager->displayErrorMessage(AlgoliaHelper::class, $storeId);
             }
+            return;
         }
 
         $config = SearchConfig::create(

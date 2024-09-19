@@ -55,6 +55,9 @@ class AlgoliaHelper extends AbstractHelper
     /** @var int  */
     protected int $storeId = self::ALGOLIA_DEFAULT_SCOPE;
 
+    /** @var bool */
+    protected bool $userAgentsAdded = false;
+
     protected static ?string $lastUsedIndexName;
 
     protected static ?int $lastTaskId;
@@ -77,15 +80,13 @@ class AlgoliaHelper extends AbstractHelper
 
     /**
      * @return void
+     * @throws AlgoliaException
      */
     protected function createClient(): void
     {
         $storeId = $this->getStoreId();
         if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
-            if ($storeId !== self::ALGOLIA_DEFAULT_SCOPE) {
-                $this->algoliaCredentialsManager->displayErrorMessage(AlgoliaHelper::class, $storeId);
-            }
-            return;
+            throw new AlgoliaException('Client initialization could not be performed because Algolia credentials were not provided.');
         }
 
         $config = SearchConfig::create(
@@ -104,28 +105,32 @@ class AlgoliaHelper extends AbstractHelper
      */
     protected function addAlgoliaUserAgent(): void
     {
-        $clientName = $this->getClient()?->getClientConfig()?->getClientName();
+        $clientName = $this->getClient()->getClientConfig()?->getClientName();
 
         if ($clientName) {
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento2 integration', $this->config->getExtensionVersion());
             AlgoliaAgent::addAlgoliaAgent($clientName, 'PHP', phpversion());
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento', $this->config->getMagentoVersion());
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Edition', $this->config->getMagentoEdition());
+
+            $this->userAgentsAdded = true;
         }
     }
 
     /**
-     * @return SearchClient|null
+     * @return SearchClient
      * @throws AlgoliaException
      */
-    public function getClient(): ?SearchClient
+    public function getClient(): SearchClient
     {
         if (!isset($this->clients[$this->getStoreId()])) {
             $this->createClient();
-            $this->addAlgoliaUserAgent();
+            if (!$this->userAgentsAdded) {
+                $this->addAlgoliaUserAgent();
+            }
         }
 
-        return $this->clients[$this->getStoreId()] ?? null;
+        return $this->clients[$this->getStoreId()];
     }
 
     /**

@@ -55,8 +55,8 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                 } else {
                     $minPrice = $specialPrice[0];
                 }
-                $price     = $minPrice ?? $this->getTaxPrice($product, $subProduct->getFinalPrice(), $withTax);
-                $basePrice = $this->getTaxPrice($product, $subProduct->getPrice(), $withTax);
+                $price     = $minPrice ?? $this->getTaxPrice($product, $subProduct->getFinalPrice(), $withTax) + $this->weeeTax->getWeeeAmount($subProduct);
+                $basePrice = $this->getTaxPrice($product, $subProduct->getPrice(), $withTax) + $this->weeeTax->getWeeeAmount($subProduct);
                 $min = min($min, $price);
                 $original = min($original, $basePrice);
                 $max = max($max, $price);

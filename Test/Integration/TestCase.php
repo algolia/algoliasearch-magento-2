@@ -33,7 +33,7 @@ abstract class TestCase extends \TC
     /** @var ConfigHelper */
     protected $configHelper;
 
-    /** @var Magento23|Magento24 */
+    /** @var Magento246|Magento247 */
     protected $assertValues;
 
     public function setUp(): void

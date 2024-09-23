@@ -218,15 +218,9 @@ class ConfigTest extends TestCase
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
+            $this->algoliaHelper->waitLastTask();
             $indexName = $this->indexPrefix . 'default_' . $section;
-
             $this->algoliaHelper->setSettings($indexName, ['exactOnSingleWordQuery' => 'attribute']);
-        }
-
-        $this->algoliaHelper->waitLastTask();
-
-        foreach ($sections as $section) {
-            $indexName = $this->indexPrefix . 'default_' . $section;
 
             $currentSettings = $this->algoliaHelper->getSettings($indexName);
 
@@ -236,12 +230,9 @@ class ConfigTest extends TestCase
 
         foreach ($sections as $section) {
             $this->setConfig('algoliasearch_extra_settings/extra_settings/' . $section . '_extra_settings', '{"exactOnSingleWordQuery":"word"}');
-        }
+            $indicesConfigurator->saveConfigurationToAlgolia(1);
+            $this->algoliaHelper->waitLastTask();
 
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaHelper->waitLastTask();
-
-        foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
 
             $currentSettings = $this->algoliaHelper->getSettings($indexName);

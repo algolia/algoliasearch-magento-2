@@ -38,8 +38,8 @@ class ProductsIndexingTest extends IndexingTestCase
         $empty = $this->getSerializer()->serialize([]);
 
         $this->setConfig('algoliasearch_products/products/product_additional_attributes', $empty);
-        $this->setConfig('algoliasearch_instant/instant/facets', $empty);
-        $this->setConfig('algoliasearch_instant/instant/sorts', $empty);
+        $this->setConfig('algoliasearch_instant/instant_facets/facets', $empty);
+        $this->setConfig('algoliasearch_instant/instant_sorts/sorts', $empty);
         $this->setConfig('algoliasearch_products/products/custom_ranking_product_attributes', $empty);
 
         /** @var Product $indexer */

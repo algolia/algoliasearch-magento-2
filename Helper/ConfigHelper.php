@@ -446,7 +446,7 @@ class ConfigHelper
     }
 
     protected function serialize(array $value): string {
-        return $this->serializer->serialize($value);
+        return $this->serializer->serialize($value) ?: '';
     }
 
     /**

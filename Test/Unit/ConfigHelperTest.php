@@ -18,9 +18,18 @@ use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
 
+class ConfigHelperTestable extends ConfigHelper
+{
+    /** expose protected methods for unit testing */
+    public function serialize(array $value): string
+    {
+        return parent::serialize($value);
+    }
+}
+
 class ConfigHelperTest extends TestCase
 {
-    protected ConfigHelper $configHelper;
+    protected ConfigHelperTestable $configHelper;
     protected ScopeConfigInterface $configInterface;
     protected WriterInterface $configWriter;
     protected StoreManagerInterface $storeManager;
@@ -51,7 +60,7 @@ class ConfigHelperTest extends TestCase
         $this->groupExcludedWebsiteRepository = $this->createMock(GroupExcludedWebsiteRepositoryInterface::class);
         $this->cookieHelper = $this->createMock(CookieHelper::class);
 
-        $this->configHelper = new ConfigHelper(
+        $this->configHelper = new ConfigHelperTestable(
             $this->configInterface,
             $this->configWriter,
             $this->storeManager,
@@ -78,5 +87,23 @@ class ConfigHelperTest extends TestCase
     public function testGetIndexPrefixWhenNull() {
         $this->configInterface->method('getValue')->willReturn(null);
         $this->assertEquals('', $this->configHelper->getIndexPrefix());
+    }
+
+    public function testSerializerReturnsString() {
+        $this->serializer->method('serialize')->willReturn('{"foo":"bar"}');
+        $array = [
+            'foo' => 'bar'
+        ];
+        $result = $this->configHelper->serialize($array);
+        $this->assertEquals('{"foo":"bar"}', $result);
+    }
+
+    public function testSerializerFailure() {
+        $this->serializer->method('serialize')->willReturn(false);
+        $array = [
+            'foo' => 'bar'
+        ];
+        $result = $this->configHelper->serialize($array);
+        $this->assertEquals('', $result);
     }
 }

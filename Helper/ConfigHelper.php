@@ -1242,7 +1242,7 @@ class ConfigHelper
      */
     public function getIndexPrefix(int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

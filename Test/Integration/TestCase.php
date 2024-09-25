@@ -6,8 +6,8 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento23;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento24;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -33,7 +33,7 @@ abstract class TestCase extends \TC
     /** @var ConfigHelper */
     protected $configHelper;
 
-    /** @var Magento23|Magento24 */
+    /** @var Magento246|Magento247 */
     protected $assertValues;
 
     public function setUp(): void
@@ -97,10 +97,10 @@ abstract class TestCase extends \TC
             return;
         }
 
-        if (version_compare($this->getMagentoVersion(), '2.4.0', '<')) {
-            $this->assertValues = new Magento23();
+        if (version_compare($this->getMagentoVersion(), '2.4.7', '<')) {
+            $this->assertValues = new Magento246();
         } else {
-            $this->assertValues = new Magento24();
+            $this->assertValues = new Magento247();
         }
 
         $this->configHelper = $this->getObjectManager()->create(ConfigHelper::class);

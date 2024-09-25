@@ -145,7 +145,7 @@ class QueueTest extends TestCase
         $this->resetConfigs([
             'algoliasearch_queue/queue/number_of_job_to_run',
             'algoliasearch_advanced/queue/number_of_element_by_page',
-            'algoliasearch_instant/instant/facets',
+            'algoliasearch_instant/instant_facets/facets',
             'algoliasearch_products/products/product_additional_attributes',
         ]);
 

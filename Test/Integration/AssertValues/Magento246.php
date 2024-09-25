@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\AssertValues;
 
-class Magento24
+class Magento246
 {
     public $productsOnStockCount = 180;
     public $productsOutOfStockCount = 181;

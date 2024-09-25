@@ -33,54 +33,6 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->processTest($indexer, 'products', $this->assertValues->productsOutOfStockCount);
     }
 
-    public function testDefaultIndexableAttributes()
-    {
-        $empty = $this->getSerializer()->serialize([]);
-
-        $this->setConfig('algoliasearch_products/products/product_additional_attributes', $empty);
-        $this->setConfig('algoliasearch_instant/instant/facets', $empty);
-        $this->setConfig('algoliasearch_instant/instant/sorts', $empty);
-        $this->setConfig('algoliasearch_products/products/custom_ranking_product_attributes', $empty);
-
-        /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
-        $indexer->executeRow($this->getValidTestProduct());
-
-        $this->algoliaHelper->waitLastTask();
-
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
-        $hit = reset($results['results']);
-
-        $defaultAttributes = [
-            'objectID',
-            'name',
-            'url',
-            'visibility_search',
-            'visibility_catalog',
-            'categories',
-            'categories_without_path',
-            'thumbnail_url',
-            'image_url',
-            'in_stock',
-            'price',
-            'type_id',
-            'algoliaLastUpdateAtCET',
-            'categoryIds',
-        ];
-
-        if (!$hit) {
-            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
-        }
-
-        foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
-            unset($hit[$attribute]);
-        }
-
-        $extraAttributes = implode(', ', array_keys($hit));
-        $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
-    }
-
     public function testNoSpecialPrice()
     {
         /** @var Product $indexer */
@@ -137,6 +89,54 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->assertEquals($specialPrice, $algoliaProduct['price']['USD']['default']);
         $this->assertEquals($from, $algoliaProduct['price']['USD']['special_from_date']);
         $this->assertEquals($to, $algoliaProduct['price']['USD']['special_to_date']);
+    }
+
+    public function testDefaultIndexableAttributes()
+    {
+        $empty = $this->getSerializer()->serialize([]);
+
+        $this->setConfig('algoliasearch_products/products/product_additional_attributes', $empty);
+        $this->setConfig('algoliasearch_instant/instant_facets/facets', $empty);
+        $this->setConfig('algoliasearch_instant/instant_sorts/sorts', $empty);
+        $this->setConfig('algoliasearch_products/products/custom_ranking_product_attributes', $empty);
+
+        /** @var Product $indexer */
+        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer->executeRow($this->getValidTestProduct());
+
+        $this->algoliaHelper->waitLastTask();
+
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
+        $hit = reset($results['results']);
+
+        $defaultAttributes = [
+            'objectID',
+            'name',
+            'url',
+            'visibility_search',
+            'visibility_catalog',
+            'categories',
+            'categories_without_path',
+            'thumbnail_url',
+            'image_url',
+            'in_stock',
+            'price',
+            'type_id',
+            'algoliaLastUpdateAtCET',
+            'categoryIds',
+        ];
+
+        if (!$hit) {
+            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
+        }
+
+        foreach ($defaultAttributes as $key => $attribute) {
+            $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
+            unset($hit[$attribute]);
+        }
+
+        $extraAttributes = implode(', ', array_keys($hit));
+        $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
     }
 
     private function setOneProductOutOfStock()

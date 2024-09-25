@@ -61,9 +61,12 @@ class IndicesConfigurator
         $this->algoliaHelper->setStoreId($storeId);
 
         $this->setCategoriesSettings($storeId);
+        $this->algoliaHelper->waitLastTask();
+
         /* heck if we want to index CMS pages */
         if ($this->configHelper->isPagesIndexEnabled($storeId)) {
             $this->setPagesSettings($storeId);
+            $this->algoliaHelper->waitLastTask();
         } else {
             $this->logger->log('CMS Page Indexing is not enabled for the store.');
         }
@@ -71,16 +74,21 @@ class IndicesConfigurator
         //Check if we want to index Query Suggestions
         if ($this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             $this->setQuerySuggestionsSettings($storeId);
+            $this->algoliaHelper->waitLastTask();
         } else {
             $this->logger->log('Query Suggestions Indexing is not enabled for the store.');
         }
 
         $this->setAdditionalSectionsSettings($storeId);
+        $this->algoliaHelper->waitLastTask();
+
         $this->setProductsSettings($storeId, $useTmpIndex);
+        $this->algoliaHelper->waitLastTask();
 
         $this->setExtraSettings($storeId, $useTmpIndex);
 
         $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->waitLastTask();
     }
 
     /**

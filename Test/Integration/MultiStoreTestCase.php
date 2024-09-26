@@ -2,7 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManager;
 
@@ -29,13 +32,29 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         }
     }
 
-    protected function assertNbOfRecordsPerStore(string $storeCode, string $entity, int $expectedNumber)
+    /**
+     * @param string $storeCode
+     * @param string $entity
+     * @param int $expectedNumber
+     *
+     * @return void
+     * @throws AlgoliaException
+     */
+    protected function assertNbOfRecordsPerStore(string $storeCode, string $entity, int $expectedNumber): void
     {
         $resultsDefault = $this->algoliaHelper->query($this->indexPrefix .  $storeCode . '_' . $entity, '', []);
 
         $this->assertEquals($expectedNumber, $resultsDefault['results'][0]['nbHits']);
     }
 
+    /**
+     * @param StoreInterface $store
+     *
+     * @return void
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
     protected function setupStore(StoreInterface $store): void
     {
         $this->setConfig(

@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Queue;
 
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobsCollectionFactory;
+use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 

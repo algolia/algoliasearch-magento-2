@@ -1,13 +1,24 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
+use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 use Magento\CatalogInventory\Model\StockRegistry;
 
 class ProductsIndexingTest extends IndexingTestCase
 {
+    /** @var Product */
+    protected $productsIndexer;
+
     protected $testProductId;
+
+    public function setUp():void
+    {
+        parent::setUp();
+
+        $this->productsIndexer = $this->objectManager->get(Product::class);
+    }
 
     public function testOnlyOnStockProducts()
     {
@@ -35,9 +46,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
     public function testNoSpecialPrice()
     {
-        /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
-        $indexer->execute([9]);
+        $this->productsIndexer->execute([9]);
 
         $this->algoliaHelper->waitLastTask();
 

@@ -1,8 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Config;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 
 /**
  * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php

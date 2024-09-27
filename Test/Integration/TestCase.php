@@ -8,8 +8,8 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -21,6 +21,11 @@ if (class_exists('PHPUnit\Framework\TestCase')) {
 
 abstract class TestCase extends \TC
 {
+    /**
+     * @var ObjectManagerInterface
+     */
+    protected $objectManager;
+
     /** @var bool */
     private $boostrapped = false;
 
@@ -99,6 +104,8 @@ abstract class TestCase extends \TC
         if ($this->boostrapped === true) {
             return;
         }
+
+        $this->objectManager = Bootstrap::getObjectManager();
 
         if (version_compare($this->getMagentoVersion(), '2.4.7', '<')) {
             $this->assertValues = new Magento246();

@@ -19,13 +19,13 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
     public function setUp():void
     {
+        parent::setUp();
+
         /** @var StoreManager $storeManager */
-        $this->storeManager = $this->getObjectManager()->create(StoreManager::class);
+        $this->storeManager = $this->objectManager->get(StoreManager::class);
 
         /** @var IndicesConfigurator $indicesConfigurator */
-        $this->indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
-
-        parent::setUp();
+        $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
 
         foreach ($this->storeManager->getStores() as $store) {
             $this->setupStore($store);
@@ -45,6 +45,26 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         $resultsDefault = $this->algoliaHelper->query($this->indexPrefix .  $storeCode . '_' . $entity, '', []);
 
         $this->assertEquals($expectedNumber, $resultsDefault['results'][0]['nbHits']);
+    }
+
+    /**
+     * @param string $indexName
+     * @param string $recordId
+     * @param string $attribute
+     * @param string $expectedValue
+     *
+     * @return void
+     * @throws AlgoliaException
+     */
+    public function assertAlgoliaRecordValue(
+        string $indexName,
+        string $recordId,
+        string $attribute,
+        string $expectedValue
+    ) : void {
+        $res = $this->algoliaHelper->getObjects($indexName, [$recordId]);
+        $record = reset($res['results']);
+        $this->assertEquals($expectedValue, $record[$attribute]);
     }
 
     /**

@@ -57,6 +57,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
      */
     public function testMultiStoreCategoryIndices()
     {
+        // Check that every store has the right number of categories
         foreach ($this->storeManager->getStores() as $store) {
             $this->assertNbOfRecordsPerStore($store->getCode(), 'categories', $this->assertValues->expectedCategory);
         }
@@ -69,7 +70,6 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->assertEquals(self::BAGS_CATEGORY_NAME, $bagsCategory->getName());
 
         // Change a category name at store level
-
         $bagsCategoryAlt = $this->updateCategory(
             self::BAGS_CATEGORY_ID,
             $fixtureSecondStore->getId(),
@@ -92,6 +92,28 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             $this->indexPrefix . 'fixture_second_store_categories',
             (string) self::BAGS_CATEGORY_ID,
             ['name' => self::BAGS_CATEGORY_NAME_ALT]
+        );
+
+        // Disable this category at store level
+        $bagsCategoryAlt = $this->updateCategory(
+            self::BAGS_CATEGORY_ID,
+            $fixtureSecondStore->getId(),
+            ['is_active' => 0]
+        );
+
+        $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
+        $this->algoliaHelper->waitLastTask();
+
+        $this->assertNbOfRecordsPerStore(
+            $defaultStore->getCode(),
+            'categories',
+            $this->assertValues->expectedCategory
+        );
+
+        $this->assertNbOfRecordsPerStore(
+            $fixtureSecondStore->getCode(),
+            'categories',
+            $this->assertValues->expectedCategory - 1
         );
     }
 
@@ -142,7 +164,10 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->updateCategory(
             self::BAGS_CATEGORY_ID,
             $defaultStore->getId(),
-            ['name' => self::BAGS_CATEGORY_NAME]
+            [
+                'name' => self::BAGS_CATEGORY_NAME,
+                'is_active' => 1
+            ]
         );
 
         parent::tearDown();

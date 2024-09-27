@@ -82,18 +82,16 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
         $this->algoliaHelper->waitLastTask();
 
-        $this->assertAlgoliaRecordValue(
+        $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_categories',
-            (string)self::BAGS_CATEGORY_ID,
-            'name',
-            self::BAGS_CATEGORY_NAME
+            (string) self::BAGS_CATEGORY_ID,
+            ['name' => self::BAGS_CATEGORY_NAME]
         );
 
-        $this->assertAlgoliaRecordValue(
+        $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'fixture_second_store_categories',
-            (string)self::BAGS_CATEGORY_ID,
-            'name',
-            self::BAGS_CATEGORY_NAME_ALT
+            (string) self::BAGS_CATEGORY_ID,
+            ['name' => self::BAGS_CATEGORY_NAME_ALT]
         );
     }
 

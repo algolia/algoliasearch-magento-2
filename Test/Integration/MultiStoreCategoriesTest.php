@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\CategoryInterface;
@@ -47,6 +49,12 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->algoliaHelper->waitLastTask();
     }
 
+    /**
+     * @throws CouldNotSaveException
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     */
     public function testMultiStoreCategoryIndices()
     {
         foreach ($this->storeManager->getStores() as $store) {
@@ -65,7 +73,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $bagsCategoryAlt = $this->updateCategory(
             self::BAGS_CATEGORY_ID,
             $fixtureSecondStore->getId(),
-            self::BAGS_CATEGORY_NAME_ALT
+            ['name' => self::BAGS_CATEGORY_NAME_ALT]
         );
 
         $this->assertEquals(self::BAGS_CATEGORY_NAME, $bagsCategory->getName());
@@ -106,7 +114,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     /**
      * @param int $categoryId
      * @param int $storeId
-     * @param string $value
+     * @param array $values
      *
      * @return CategoryInterface
      * @throws CouldNotSaveException
@@ -114,16 +122,18 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
      *
      * @see Magento\Catalog\Block\Product\ListProduct\SortingTest
      */
-    private function updateCategory(int $categoryId, int $storeId, string $value): CategoryInterface
+    private function updateCategory(int $categoryId, int $storeId, array $values): CategoryInterface
     {
         $oldStoreId = $this->storeManager->getStore()->getId();
         $this->storeManager->setCurrentStore($storeId);
-        $bagsCategoryAlt = $this->loadCategory($categoryId, $storeId);
-        $bagsCategoryAlt->setName($value);
-        $bagsCategoryAlt = $this->categoryRepository->save($bagsCategoryAlt);
+        $category = $this->loadCategory($categoryId, $storeId);
+        foreach ($values as $attribute => $value) {
+            $category->setData($attribute, $value);
+        }
+        $categoryAlt = $this->categoryRepository->save($category);
         $this->storeManager->setCurrentStore($oldStoreId);
 
-        return $bagsCategoryAlt;
+        return $categoryAlt;
     }
 
     public function tearDown(): void
@@ -134,7 +144,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->updateCategory(
             self::BAGS_CATEGORY_ID,
             $defaultStore->getId(),
-            self::BAGS_CATEGORY_NAME
+            ['name' => self::BAGS_CATEGORY_NAME]
         );
 
         parent::tearDown();

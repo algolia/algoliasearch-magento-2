@@ -7,12 +7,16 @@ use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\Store\Model\StoreManager;
 
 abstract class MultiStoreTestCase extends IndexingTestCase
 {
     /** @var StoreManager */
     protected $storeManager;
+
+    /** @var StoreRepositoryInterface */
+    protected $storeRepository;
 
     /** @var IndicesConfigurator */
     protected $indicesConfigurator;
@@ -26,6 +30,9 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
         /** @var IndicesConfigurator $indicesConfigurator */
         $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
+
+        /** @var StoreRepositoryInterface $storeRepository */
+        $this->storeRepository = $this->objectManager->get(StoreRepositoryInterface::class);
 
         foreach ($this->storeManager->getStores() as $store) {
             $this->setupStore($store);

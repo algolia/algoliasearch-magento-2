@@ -10,7 +10,6 @@ use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Api\StoreRepositoryInterface;
 
 /**
  * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php
@@ -28,9 +27,6 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     /**  @var CollectionFactory */
     private $categoryCollectionFactory;
 
-    /** @var StoreRepositoryInterface */
-    protected $storeRepository;
-
     const BAGS_CATEGORY_ID = 4;
     const BAGS_CATEGORY_NAME = "Bags";
     const BAGS_CATEGORY_NAME_ALT = "Bags Alt";
@@ -41,7 +37,6 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
 
         $this->categoriesIndexer = $this->objectManager->get(Category::class);
         $this->categoryRepository = $this->objectManager->get(CategoryRepositoryInterface::class);
-        $this->storeRepository = $this->objectManager->get(StoreRepositoryInterface::class);
         $this->categoryCollectionFactory = $this->objectManager->get(CollectionFactory::class);
 
 

@@ -58,13 +58,16 @@ abstract class TestCase extends \TC
         }
     }
 
-    protected function setConfig($path, $value)
-    {
+    protected function setConfig(
+        $path,
+        $value,
+        $scopeCode = 'default'
+    ) {
         $this->getObjectManager()->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class)->setValue(
             $path,
             $value,
             ScopeInterface::SCOPE_STORE,
-            'default'
+            $scopeCode
         );
     }
 

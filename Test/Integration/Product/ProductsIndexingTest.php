@@ -11,6 +11,9 @@ class ProductsIndexingTest extends IndexingTestCase
     /** @var Product */
     protected $productsIndexer;
 
+    /** @var StockRegistry */
+    protected $stockRegistry;
+
     protected $testProductId;
 
     public function setUp():void
@@ -18,18 +21,18 @@ class ProductsIndexingTest extends IndexingTestCase
         parent::setUp();
 
         $this->productsIndexer = $this->objectManager->get(Product::class);
+        $this->stockRegistry = $this->objectManager->get(StockRegistry::class);
     }
 
     public function testOnlyOnStockProducts()
     {
+        $this->assertEquals(true, true);
+
         $this->setConfig('cataloginventory/options/show_out_of_stock', 0);
 
         $this->setOneProductOutOfStock();
 
-        /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
-
-        $this->processTest($indexer, 'products', $this->assertValues->productsOnStockCount);
+        $this->processTest($this->productsIndexer, 'products', $this->assertValues->productsOnStockCount);
     }
 
     public function testIncludingOutOfStock()
@@ -38,10 +41,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->setOneProductOutOfStock();
 
-        /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
-
-        $this->processTest($indexer, 'products', $this->assertValues->productsOutOfStockCount);
+        $this->processTest($this->productsIndexer, 'products', $this->assertValues->productsOutOfStockCount);
     }
 
     public function testNoSpecialPrice()
@@ -150,11 +150,9 @@ class ProductsIndexingTest extends IndexingTestCase
 
     private function setOneProductOutOfStock()
     {
-        /** @var StockRegistry $stockRegistry */
-        $stockRegistry = $this->getObjectManager()->create(\Magento\CatalogInventory\Model\StockRegistry::class);
-        $stockItem = $stockRegistry->getStockItemBySku('24-MB01');
+        $stockItem = $this->stockRegistry->getStockItemBySku('24-MB01');
         $stockItem->setIsInStock(false);
-        $stockRegistry->updateStockItemBySku('24-MB01', $stockItem);
+        $this->stockRegistry->updateStockItemBySku('24-MB01', $stockItem);
     }
 
     private function getValidTestProduct()

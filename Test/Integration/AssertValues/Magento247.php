@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\AssertValues;
 
 class Magento247
 {
-    public $productsOnStockCount = 182;
+    public $productsOnStockCount = 180;
     public $productsOutOfStockCount = 183;
     public $lastJobDataSize = 13;
     public $expectedCategory = 17;

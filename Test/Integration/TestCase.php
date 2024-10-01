@@ -49,6 +49,8 @@ abstract class TestCase extends \TC
     public function tearDown(): void
     {
         $this->clearIndices();
+        $this->algoliaHelper->waitLastTask();
+        $this->clearIndices(); // Remaining replicas
     }
 
     protected function resetConfigs($configs = [])

@@ -5,7 +5,12 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 use Magento\CatalogInventory\Model\StockRegistry;
+use Magento\Framework\Indexer\IndexerRegistry;
 
+/**
+ * @magentoDbIsolation disabled
+ * @magentoAppIsolation enabled
+ */
 class ProductsIndexingTest extends IndexingTestCase
 {
     /** @var Product */
@@ -13,6 +18,9 @@ class ProductsIndexingTest extends IndexingTestCase
 
     /** @var StockRegistry */
     protected $stockRegistry;
+
+    /*** @var IndexerRegistry */
+    protected $indexerRegistry;
 
     protected $testProductId;
 
@@ -22,6 +30,10 @@ class ProductsIndexingTest extends IndexingTestCase
 
         $this->productsIndexer = $this->objectManager->get(Product::class);
         $this->stockRegistry = $this->objectManager->get(StockRegistry::class);
+        $this->indexerRegistry = $this->objectManager->get(IndexerRegistry::class);
+
+        $priceIndexer = $this->indexerRegistry->get('catalog_product_price');
+        $priceIndexer->reindexAll();
     }
 
     public function testOnlyOnStockProducts()
@@ -42,6 +54,54 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->setOneProductOutOfStock();
 
         $this->processTest($this->productsIndexer, 'products', $this->assertValues->productsOutOfStockCount);
+    }
+
+    public function testDefaultIndexableAttributes()
+    {
+        $empty = $this->getSerializer()->serialize([]);
+
+        $this->setConfig('algoliasearch_products/products/product_additional_attributes', $empty);
+        $this->setConfig('algoliasearch_instant/instant_facets/facets', $empty);
+        $this->setConfig('algoliasearch_instant/instant_sorts/sorts', $empty);
+        $this->setConfig('algoliasearch_products/products/custom_ranking_product_attributes', $empty);
+
+        /** @var Product $indexer */
+        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer->executeRow($this->getValidTestProduct());
+
+        $this->algoliaHelper->waitLastTask();
+
+        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
+        $hit = reset($results['results']);
+
+        $defaultAttributes = [
+            'objectID',
+            'name',
+            'url',
+            'visibility_search',
+            'visibility_catalog',
+            'categories',
+            'categories_without_path',
+            'thumbnail_url',
+            'image_url',
+            'in_stock',
+            'price',
+            'type_id',
+            'algoliaLastUpdateAtCET',
+            'categoryIds',
+        ];
+
+        if (!$hit) {
+            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
+        }
+
+        foreach ($defaultAttributes as $key => $attribute) {
+            $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
+            unset($hit[$attribute]);
+        }
+
+        $extraAttributes = implode(', ', array_keys($hit));
+        $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
     }
 
     public function testNoSpecialPrice()
@@ -98,54 +158,6 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->assertEquals($specialPrice, $algoliaProduct['price']['USD']['default']);
         $this->assertEquals($from, $algoliaProduct['price']['USD']['special_from_date']);
         $this->assertEquals($to, $algoliaProduct['price']['USD']['special_to_date']);
-    }
-
-    public function testDefaultIndexableAttributes()
-    {
-        $empty = $this->getSerializer()->serialize([]);
-
-        $this->setConfig('algoliasearch_products/products/product_additional_attributes', $empty);
-        $this->setConfig('algoliasearch_instant/instant_facets/facets', $empty);
-        $this->setConfig('algoliasearch_instant/instant_sorts/sorts', $empty);
-        $this->setConfig('algoliasearch_products/products/custom_ranking_product_attributes', $empty);
-
-        /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
-        $indexer->executeRow($this->getValidTestProduct());
-
-        $this->algoliaHelper->waitLastTask();
-
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
-        $hit = reset($results['results']);
-
-        $defaultAttributes = [
-            'objectID',
-            'name',
-            'url',
-            'visibility_search',
-            'visibility_catalog',
-            'categories',
-            'categories_without_path',
-            'thumbnail_url',
-            'image_url',
-            'in_stock',
-            'price',
-            'type_id',
-            'algoliaLastUpdateAtCET',
-            'categoryIds',
-        ];
-
-        if (!$hit) {
-            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
-        }
-
-        foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
-            unset($hit[$attribute]);
-        }
-
-        $extraAttributes = implode(', ', array_keys($hit));
-        $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
     }
 
     private function setOneProductOutOfStock()

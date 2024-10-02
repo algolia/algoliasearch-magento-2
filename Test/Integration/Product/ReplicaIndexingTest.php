@@ -24,6 +24,8 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->indicesConfigurator = $this->getObjectManager()->get(IndicesConfigurator::class);
         $this->indexSuffix = 'products';
 
+        // Replicas will not get created if InstantSearch is not used
+        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 1);
     }
 
     protected function getIndexName(string $storeIndexPart): string
@@ -36,27 +38,26 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->processFullReindex($this->productIndexer, $this->indexSuffix);
     }
 
-    public function testReplicaIndex(): void
+    public function testReplicaConfig(): void
     {
         $sorting = $this->configHelper->getSorting();
         $sortAttr = 'created_at';
+        $sortDir = 'desc';
 
         // Has created_at sort
         $this->assertTrue(
             (bool)
             array_filter(
                 $sorting,
-                function($sort) use ($sortAttr) {
-                    return $sort['attribute'] == $sortAttr;
+                function($sort) use ($sortAttr, $sortDir) {
+                    return $sort['attribute'] == $sortAttr
+                        && $sort['sort'] == $sortDir;
                 }
             )
         );
 
         // Expected replica max
         $this->assertEquals($this->replicaManager->getMaxVirtualReplicasPerIndex(), 20);
-
-        // Replicas will not get created if InstantSearch is not used
-        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 1);
 
         $this->indicesConfigurator->saveConfigurationToAlgolia(1);
         $this->algoliaHelper->waitLastTask();
@@ -70,10 +71,16 @@ class ReplicaIndexingTest extends IndexingTestCase
             (bool)
             array_filter(
                 $currentSettings['replicas'],
-                function($replicaIndex) use ($indexName, $sortAttr) {
-                    return str_contains($replicaIndex, $indexName . '_' . $sortAttr);
+                function($replicaIndex) use ($indexName, $sortAttr, $sortDir) {
+                    return str_contains($replicaIndex, $indexName . '_' . $sortAttr . '_' . $sortDir);
                 }
             )
         );
+
+    }
+
+    public function tearDown(): void
+    {
+        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 0);
     }
 }

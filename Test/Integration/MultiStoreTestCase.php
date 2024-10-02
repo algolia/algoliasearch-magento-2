@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Api\StoreRepositoryInterface;
 use Magento\Store\Model\StoreManager;
 
 abstract class MultiStoreTestCase extends IndexingTestCase
@@ -14,18 +15,24 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     /** @var StoreManager */
     protected $storeManager;
 
+    /** @var StoreRepositoryInterface */
+    protected $storeRepository;
+
     /** @var IndicesConfigurator */
     protected $indicesConfigurator;
 
     public function setUp():void
     {
+        parent::setUp();
+
         /** @var StoreManager $storeManager */
-        $this->storeManager = $this->getObjectManager()->create(StoreManager::class);
+        $this->storeManager = $this->objectManager->get(StoreManager::class);
 
         /** @var IndicesConfigurator $indicesConfigurator */
-        $this->indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
+        $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
 
-        parent::setUp();
+        /** @var StoreRepositoryInterface $storeRepository */
+        $this->storeRepository = $this->objectManager->get(StoreRepositoryInterface::class);
 
         foreach ($this->storeManager->getStores() as $store) {
             $this->setupStore($store);
@@ -45,6 +52,26 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         $resultsDefault = $this->algoliaHelper->query($this->indexPrefix .  $storeCode . '_' . $entity, '', []);
 
         $this->assertEquals($expectedNumber, $resultsDefault['results'][0]['nbHits']);
+    }
+
+    /**
+     * @param string $indexName
+     * @param string $recordId
+     * @param array $expectedValues
+     *
+     * @return void
+     * @throws AlgoliaException
+     */
+    public function assertAlgoliaRecordValues(
+        string $indexName,
+        string $recordId,
+        array $expectedValues
+    ) : void {
+        $res = $this->algoliaHelper->getObjects($indexName, [$recordId]);
+        $record = reset($res['results']);
+        foreach ($expectedValues as $attribute => $expectedValue) {
+            $this->assertEquals($expectedValue, $record[$attribute]);
+        }
     }
 
     /**

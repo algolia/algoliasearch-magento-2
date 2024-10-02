@@ -46,8 +46,7 @@ class ReplicaIndexingTest extends IndexingTestCase
 
         // Has created_at sort
         $this->assertTrue(
-            (bool)
-            array_filter(
+            (bool) array_filter(
                 $sorting,
                 function($sort) use ($sortAttr, $sortDir) {
                     return $sort['attribute'] == $sortAttr
@@ -57,7 +56,7 @@ class ReplicaIndexingTest extends IndexingTestCase
         );
 
         // Expected replica max
-        $this->assertEquals($this->replicaManager->getMaxVirtualReplicasPerIndex(), 20);
+        $this->assertEquals(20, $this->replicaManager->getMaxVirtualReplicasPerIndex());
 
         $this->indicesConfigurator->saveConfigurationToAlgolia(1);
         $this->algoliaHelper->waitLastTask();
@@ -67,15 +66,25 @@ class ReplicaIndexingTest extends IndexingTestCase
         $currentSettings = $this->algoliaHelper->getSettings($indexName);
         $this->assertArrayHasKey('replicas', $currentSettings);
 
+        $sortIndexName = $indexName . '_' . $sortAttr . '_' . $sortDir;
+
         $this->assertTrue(
-            (bool)
-            array_filter(
+            (bool) array_filter(
                 $currentSettings['replicas'],
-                function($replicaIndex) use ($indexName, $sortAttr, $sortDir) {
-                    return str_contains($replicaIndex, $indexName . '_' . $sortAttr . '_' . $sortDir);
+                function($replica) use ($sortIndexName) {
+                    return str_contains($replica, $sortIndexName);
                 }
             )
         );
+
+        // Assert replica index created
+        $replicaSettings = $this->algoliaHelper->getSettings($sortIndexName);
+        $this->assertArrayHasKey('primary', $replicaSettings);
+        $this->assertEquals($indexName, $replicaSettings['primary']);
+
+        // Assert standard replica ranking config
+        $this->assertArrayHasKey('ranking', $replicaSettings);
+        $this->assertContains("$sortDir($sortAttr)", $replicaSettings['ranking']);
 
     }
 

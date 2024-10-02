@@ -1,9 +1,10 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Search;
 
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
+use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 
 class SearchTest extends TestCase
 {

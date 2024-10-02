@@ -1,9 +1,10 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Config;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
+use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 
 class ConfigTest extends TestCase
 {

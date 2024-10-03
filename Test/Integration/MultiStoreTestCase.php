@@ -55,26 +55,6 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * @param string $indexName
-     * @param string $recordId
-     * @param array $expectedValues
-     *
-     * @return void
-     * @throws AlgoliaException
-     */
-    public function assertAlgoliaRecordValues(
-        string $indexName,
-        string $recordId,
-        array $expectedValues
-    ) : void {
-        $res = $this->algoliaHelper->getObjects($indexName, [$recordId]);
-        $record = reset($res['results']);
-        foreach ($expectedValues as $attribute => $expectedValue) {
-            $this->assertEquals($expectedValue, $record[$attribute]);
-        }
-    }
-
-    /**
      * @param StoreInterface $store
      *
      * @return void

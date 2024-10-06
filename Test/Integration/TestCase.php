@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -78,6 +79,32 @@ abstract class TestCase extends \TC
         );
     }
 
+    protected function assertConfigInDb(
+        string $path,
+        mixed  $value,
+        string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+        int    $scopeId = 0
+    ): void
+    {
+        $connection = $this->objectManager->create(\Magento\Framework\App\ResourceConnection::class)
+            ->getConnection();
+
+        $select = $connection->select()
+            ->from('core_config_data', 'value')
+            ->where('path = ?', $path)
+            ->where('scope = ?', $scope)
+            ->where('scope_id = ?', $scopeId);
+
+        $configValue = $connection->fetchOne($select);
+
+        $this->assertEquals($value, $configValue);
+    }
+
+    protected function refreshConfigFromDb(): void
+    {
+        $this->objectManager->get(\Magento\Framework\App\Config\ReinitableConfigInterface::class)->reinit();
+    }
+
     protected function clearIndices()
     {
         $indices = $this->algoliaHelper->listIndexes();
@@ -107,7 +134,7 @@ abstract class TestCase extends \TC
             return;
         }
 
-        $this->objectManager = Bootstrap::getObjectManager();
+        $this->objectManager = $this->getObjectManager();
 
         if (version_compare($this->getMagentoVersion(), '2.4.7', '<')) {
             $this->assertValues = new Magento246();

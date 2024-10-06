@@ -10,14 +10,14 @@ use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 
 class ReplicaIndexingTest extends IndexingTestCase
 {
-    protected ?ReplicaManagerInterface $replicaManager;
-    protected ?ProductIndexer $productIndexer;
+    protected ?ReplicaManagerInterface $replicaManager = null;
+    protected ?ProductIndexer $productIndexer = null;
 
-    protected ?IndicesConfigurator $indicesConfigurator;
+    protected ?IndicesConfigurator $indicesConfigurator = null;
 
-    protected ?string $indexSuffix;
+    protected ?string $indexSuffix = null;
 
-    protected ?array $ogSortingState;
+    protected ?array $ogSortingState = null;
 
     public function setUp(): void
     {
@@ -107,6 +107,7 @@ class ReplicaIndexingTest extends IndexingTestCase
 
     /**
      * @magentoDbIsolation disabled
+     * @group virtual
      */
     public function testVirtualReplicaConfig(): void
     {
@@ -124,33 +125,13 @@ class ReplicaIndexingTest extends IndexingTestCase
             'sort' => $sortDir,
             'sortLabel' => $sortAttr
         ];
-        $encoded = json_encode($sorting);
-//        $this->setConfig('algoliasearch_instant/instant_sorts/sorts', $encoded);
         $this->configHelper->setSorting($sorting);
 
-        $connection = $this->objectManager->create(\Magento\Framework\App\ResourceConnection::class)
-            ->getConnection();
-//        $connection->beginTransaction();
-//        $this->objectManager->get(\Magento\Framework\App\Config\Storage\WriterInterface::class)->save(
-//            \Algolia\AlgoliaSearch\Helper\ConfigHelper::SORTING_INDICES,
-//            $encoded,
-//            'default'
-//        );
-//        $connection->commit();
+        $this->assertConfigInDb('algoliasearch_instant/instant_sorts/sorts', json_encode($sorting));
 
+        $this->refreshConfigFromDb();
 
-        $select = $connection->select()
-            ->from('core_config_data', 'value')
-            ->where('path = ?', 'algoliasearch_instant/instant_sorts/sorts')
-            ->where('scope = ?', 'default')
-            ->where('scope_id = ?', 0);
-
-        $configValue = $connection->fetchOne($select);
-
-        // Assert that the correct value was written to the database
-        $this->assertEquals($encoded, $configValue);
-
-//        $this->assertSortingAttribute($sortAttr, $sortDir);
+        $this->assertSortingAttribute($sortAttr, $sortDir);
 
     }
 

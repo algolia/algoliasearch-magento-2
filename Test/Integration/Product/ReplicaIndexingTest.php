@@ -96,7 +96,7 @@ class ReplicaIndexingTest extends IndexingTestCase
 
         // Assert standard replica ranking config
         $this->assertArrayHasKey('ranking', $replicaSettings);
-        $this->assertContains("$sortDir($sortAttr)", $replicaSettings['ranking']);
+        $this->assertEquals("$sortDir($sortAttr)", array_shift($replicaSettings['ranking']));
 
     }
 
@@ -153,6 +153,10 @@ class ReplicaIndexingTest extends IndexingTestCase
         $replicaSettings = $this->algoliaHelper->getSettings($sortIndexName);
         $this->assertArrayHasKey('primary', $replicaSettings);
         $this->assertEquals($indexName, $replicaSettings['primary']);
+
+        // Assert virtual replica ranking config
+        $this->assertArrayHasKey('customRanking', $replicaSettings);
+        $this->assertEquals("$sortDir($sortAttr)", array_shift($replicaSettings['customRanking']));
 
         // Restore prior state (for this test only)
         $this->algoliaHelper->setSettings($indexName, $ogAlgoliaSettings);

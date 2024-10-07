@@ -17,8 +17,6 @@ class ReplicaIndexingTest extends IndexingTestCase
 
     protected ?string $indexSuffix = null;
 
-    protected ?array $ogSortingState = null;
-
     public function setUp(): void
     {
         parent::setUp();
@@ -26,8 +24,6 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->replicaManager = $this->objectManager->get(ReplicaManagerInterface::class);
         $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
         $this->indexSuffix = 'products';
-
-        $this->ogSortingState = $this->configHelper->getSorting();
     }
 
     protected function getIndexName(string $storeIndexPart): string
@@ -38,28 +34,6 @@ class ReplicaIndexingTest extends IndexingTestCase
     public function processFullReindexProducts(): void
     {
         $this->processFullReindex($this->productIndexer, $this->indexSuffix);
-    }
-
-    protected function hasSortingAttribute($sortAttr, $sortDir): bool
-    {
-        $sorting = $this->configHelper->getSorting();
-        return (bool) array_filter(
-            $sorting,
-            function($sort) use ($sortAttr, $sortDir) {
-                return $sort['attribute'] == $sortAttr
-                    && $sort['sort'] == $sortDir;
-            }
-        );
-    }
-
-    protected function assertSortingAttribute($sortAttr, $sortDir): void
-    {
-        $this->assertTrue($this->hasSortingAttribute($sortAttr, $sortDir));
-    }
-
-    protected function assertNoSortingAttribute($sortAttr, $sortDir): void
-    {
-        $this->assertFalse($this->hasSortingAttribute($sortAttr, $sortDir));
     }
 
     public function testReplicaLimits()
@@ -101,6 +75,8 @@ class ReplicaIndexingTest extends IndexingTestCase
     }
 
     /**
+     * This test involves verifying modifications in the database
+     * so it must be responsible for its own set up and tear down
      * @magentoDbIsolation disabled
      * @group virtual
      */
@@ -108,6 +84,7 @@ class ReplicaIndexingTest extends IndexingTestCase
     {
         $indexName = $this->getIndexName('default_');
         $ogAlgoliaSettings = $this->algoliaHelper->getSettings($indexName);
+        $ogSortingState = $this->configHelper->getSorting();
 
         $this->assertFalse(array_key_exists('replicas', $ogAlgoliaSettings));
 
@@ -160,8 +137,8 @@ class ReplicaIndexingTest extends IndexingTestCase
 
         // Restore prior state (for this test only)
         $this->algoliaHelper->setSettings($indexName, $ogAlgoliaSettings);
+        $this->configHelper->setSorting($ogSortingState);
         $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 0);
-
     }
 
     /**
@@ -190,8 +167,31 @@ class ReplicaIndexingTest extends IndexingTestCase
         );
     }
 
+    protected function hasSortingAttribute($sortAttr, $sortDir): bool
+    {
+        $sorting = $this->configHelper->getSorting();
+        return (bool) array_filter(
+            $sorting,
+            function($sort) use ($sortAttr, $sortDir) {
+                return $sort['attribute'] == $sortAttr
+                    && $sort['sort'] == $sortDir;
+            }
+        );
+    }
+
+    protected function assertSortingAttribute($sortAttr, $sortDir): void
+    {
+        $this->assertTrue($this->hasSortingAttribute($sortAttr, $sortDir));
+    }
+
+    protected function assertNoSortingAttribute($sortAttr, $sortDir): void
+    {
+        $this->assertFalse($this->hasSortingAttribute($sortAttr, $sortDir));
+    }
+
     public function tearDown(): void
     {
-        $this->configHelper->setSorting($this->ogSortingState);
+        parent::tearDown();
     }
+
 }

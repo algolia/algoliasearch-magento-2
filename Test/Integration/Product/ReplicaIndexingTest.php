@@ -142,6 +142,48 @@ class ReplicaIndexingTest extends IndexingTestCase
     }
 
     /**
+     * @depends testReplicaSync
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     */
+    public function testReplicaRebuild(): void
+    {
+        $indexName = $this->getIndexName('default_');
+        $ogAlgoliaSettings = $this->algoliaHelper->getSettings($indexName);
+
+        $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand::class);
+        $this->assertTrue(true);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     */
+    public function testReplicaSync(): void
+    {
+        $indexName = $this->getIndexName('default_');
+        $ogAlgoliaSettings = $this->algoliaHelper->getSettings($indexName);
+        $this->assertFalse(array_key_exists('replicas', $ogAlgoliaSettings));
+        $sorting = $this->configHelper->getSorting();
+
+        $cmd = $this->objectManager->create(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
+
+        $this->mockProperty($cmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
+
+        $cmd->syncReplicas();
+
+//        $this->indicesConfigurator->saveConfigurationToAlgolia(1);
+//        $this->algoliaHelper->waitLastTask();
+
+        $currentSettings = $this->algoliaHelper->getSettings($indexName);
+        $this->assertArrayHasKey('replicas', $currentSettings);
+
+        $this->assertTrue(count($currentSettings['replicas']) >= count($sorting));
+
+        // reset
+        $this->algoliaHelper->setSettings($indexName, $ogAlgoliaSettings);
+    }
+
+
+    /**
      * @param string[] $replicaSetting
      * @param string $replicaIndexName
      * @return bool

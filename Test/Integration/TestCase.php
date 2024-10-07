@@ -100,9 +100,52 @@ abstract class TestCase extends \TC
         $this->assertEquals($value, $configValue);
     }
 
+    /**
+     * If testing classes that use WriterInterface under the hood to update the database
+     * then you need a way to refresh the in-memory cache
+     * This function achieves that while preserving the original bootstrap config
+     */
     protected function refreshConfigFromDb(): void
     {
+        $bootstrap = $this->getBootstrapConfig();
         $this->objectManager->get(\Magento\Framework\App\Config\ReinitableConfigInterface::class)->reinit();
+        $this->setConfigFromArray($bootstrap);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function getBootstrapConfig(): array
+    {
+        $config = $this->objectManager->get(ScopeConfigInterface::class);
+
+        $bootstrap = [
+            ConfigHelper::APPLICATION_ID,
+            ConfigHelper::SEARCH_ONLY_API_KEY,
+            ConfigHelper::API_KEY,
+            ConfigHelper::INDEX_PREFIX
+        ];
+
+        return array_combine(
+            $bootstrap,
+            array_map(
+                function($setting) use ($config) {
+                    return $config->getValue($setting, ScopeInterface::SCOPE_STORE);
+                },
+                $bootstrap
+            )
+        );
+    }
+
+    /**
+     * @param array<string, string> $settings
+     * @return void
+     */
+    protected function setConfigFromArray(array $settings): void
+    {
+        foreach ($settings as $key => $value) {
+            $this->setConfig($key, $value);
+        }
     }
 
     protected function clearIndices()

@@ -148,6 +148,18 @@ abstract class TestCase extends \TC
         }
     }
 
+    /**
+     * @throws \ReflectionException
+     */
+    protected function mockProperty($object, $propertyName, $propertyClass): void
+    {
+        $mock = $this->createMock($propertyClass);
+        $reflection = new \ReflectionClass($object);
+        $property = $reflection->getProperty($propertyName);
+        $property->setAccessible(true);
+        $property->setValue($object, $mock);
+    }
+
     protected function clearIndices()
     {
         $indices = $this->algoliaHelper->listIndexes();

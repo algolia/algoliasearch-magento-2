@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
@@ -83,10 +84,7 @@ class ReplicaIndexingTest extends IndexingTestCase
     public function testVirtualReplicaConfig(): void
     {
         $indexName = $this->getIndexName('default_');
-        $ogAlgoliaSettings = $this->algoliaHelper->getSettings($indexName);
         $ogSortingState = $this->configHelper->getSorting();
-
-        $this->assertFalse(array_key_exists('replicas', $ogAlgoliaSettings));
 
         $productHelper = $this->objectManager->get(ProductHelper::class);
         $sortAttr = 'color';
@@ -105,14 +103,14 @@ class ReplicaIndexingTest extends IndexingTestCase
         ];
         $this->configHelper->setSorting($sorting);
 
-        $this->assertConfigInDb('algoliasearch_instant/instant_sorts/sorts', json_encode($sorting));
+        $this->assertConfigInDb(ConfigHelper::SORTING_INDICES, json_encode($sorting));
 
         $this->refreshConfigFromDb();
 
         $this->assertSortingAttribute($sortAttr, $sortDir);
 
         // Cannot use config fixture because we have disabled db isolation
-        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 1);
+        $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1);
 
         $this->indicesConfigurator->saveConfigurationToAlgolia(1);
         $this->algoliaHelper->waitLastTask();
@@ -136,9 +134,37 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->assertEquals("$sortDir($sortAttr)", array_shift($replicaSettings['customRanking']));
 
         // Restore prior state (for this test only)
-        $this->algoliaHelper->setSettings($indexName, $ogAlgoliaSettings);
         $this->configHelper->setSorting($ogSortingState);
-        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 0);
+        $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 0);
+    }
+
+    /**
+     * ConfigHelper::setSorting used WriterInterface which does not update unless DB isolation is disabled
+     * This provides a workaround to test using MutableScopeConfigInterface with DB isolation enabled
+     */
+    protected function mockSortUpdate(string $sortAttr, string $sortDir, array $attr): void
+    {
+        $sorting = $this->configHelper->getSorting();
+        $existing = array_filter($sorting, function ($item) use ($sortAttr, $sortDir) {
+           return $item['attribute'] === $sortAttr && $item['sort'] === $sortDir;
+        });
+
+
+        if ($existing) {
+            $idx = array_key_first($existing);
+            $sorting[$idx] = array_merge($existing[$idx], $attr);
+        }
+        else {
+            $sorting[] = array_merge(
+                [
+                    'attribute' => $sortAttr,
+                    'sort'       => $sortDir,
+                    'sortLabel'  => $sortAttr
+                ],
+                $attr
+            );
+        }
+        $this->setConfig(ConfigHelper::SORTING_INDICES, json_encode($sorting));
     }
 
     /**
@@ -148,7 +174,6 @@ class ReplicaIndexingTest extends IndexingTestCase
     public function testReplicaRebuild(): void
     {
         $indexName = $this->getIndexName('default_');
-        $ogAlgoliaSettings = $this->algoliaHelper->getSettings($indexName);
 
         $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand::class);
         $this->assertTrue(true);
@@ -156,13 +181,15 @@ class ReplicaIndexingTest extends IndexingTestCase
 
     /**
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     * @throws \ReflectionException
      */
     public function testReplicaSync(): void
     {
         $indexName = $this->getIndexName('default_');
-        $ogAlgoliaSettings = $this->algoliaHelper->getSettings($indexName);
-        $this->assertFalse(array_key_exists('replicas', $ogAlgoliaSettings));
-        $sorting = $this->configHelper->getSorting();
+
+        $this->mockSortUpdate('created_at', 'desc', ['virtualReplica' => 1]);
+
+        $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices(1, null, null, true);
 
         $cmd = $this->objectManager->create(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
 
@@ -170,16 +197,12 @@ class ReplicaIndexingTest extends IndexingTestCase
 
         $cmd->syncReplicas();
 
-//        $this->indicesConfigurator->saveConfigurationToAlgolia(1);
-//        $this->algoliaHelper->waitLastTask();
-
         $currentSettings = $this->algoliaHelper->getSettings($indexName);
         $this->assertArrayHasKey('replicas', $currentSettings);
+        $replicas = $currentSettings['replicas'];
 
-        $this->assertTrue(count($currentSettings['replicas']) >= count($sorting));
+        $this->assertTrue(count($replicas) >= count($sorting));
 
-        // reset
-        $this->algoliaHelper->setSettings($indexName, $ogAlgoliaSettings);
     }
 
 

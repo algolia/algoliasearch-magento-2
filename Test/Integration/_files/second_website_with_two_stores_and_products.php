@@ -1,20 +1,24 @@
 <?php
 
+use Algolia\AlgoliaSearch\Test\Integration\Product\MultiStoreProductsTest;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\CatalogSearch\Model\Indexer\Fulltext;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Store\Api\WebsiteRepositoryInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
-$website = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->create(\Magento\Store\Model\Website::class);
+$website = Bootstrap::getObjectManager()->create(\Magento\Store\Model\Website::class);
 /** @var $website \Magento\Store\Model\Website */
 if (!$website->load('test', 'code')->getId()) {
     $website->setData(['code' => 'test', 'name' => 'Test Website', 'default_group_id' => '1', 'is_default' => '0']);
     $website->save();
 }
 $websiteId = $website->getId();
-$store = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->create(\Magento\Store\Model\Store::class);
+$store = Bootstrap::getObjectManager()->create(\Magento\Store\Model\Store::class);
 if (!$store->load('fixture_second_store', 'code')->getId()) {
-    $groupId = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->get(
-        \Magento\Store\Model\StoreManagerInterface::class
+    $groupId = Bootstrap::getObjectManager()->get(
+        StoreManagerInterface::class
     )->getWebsite()->getDefaultGroupId();
     $store->setCode(
         'fixture_second_store'
@@ -32,10 +36,10 @@ if (!$store->load('fixture_second_store', 'code')->getId()) {
     $store->save();
 }
 
-$store = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->create(\Magento\Store\Model\Store::class);
+$store = Bootstrap::getObjectManager()->create(\Magento\Store\Model\Store::class);
 if (!$store->load('fixture_third_store', 'code')->getId()) {
-    $groupId = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()->get(
-        \Magento\Store\Model\StoreManagerInterface::class
+    $groupId = Bootstrap::getObjectManager()->get(
+        StoreManagerInterface::class
     )->getWebsite()->getDefaultGroupId();
     $store->setCode(
         'fixture_third_store'
@@ -61,14 +65,17 @@ foreach ($websites as $website) {
     $websiteIds[] = $website->getId();
 }
 
-$productSkus = [
-    '24-MB01',
-    '24-MB04',
-    '24-MB03',
-    '24-MB05',
-    '24-MB06'
-];
-$productRepository = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()
+$configManager = $objectManager->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class);
+
+$configManager->setValue('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'));
+$configManager->setValue('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_API_KEY'));
+$configManager->setValue('algoliasearch_credentials/credentials/api_key', getenv('ALGOLIA_API_KEY'));
+$configManager->setValue('algoliasearch_credentials/credentials/index_prefix', 'TEMP');
+// Temporarily disable indexing during product assignment to stores
+$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0);
+
+$productSkus = MultiStoreProductsTest::SKUS;
+$productRepository = Bootstrap::getObjectManager()
     ->get(ProductRepositoryInterface::class);
 
 foreach ($productSkus as $sku) {
@@ -77,8 +84,10 @@ foreach ($productSkus as $sku) {
     $productRepository->save($product);
 }
 
+$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1);
+
 /* Refresh CatalogSearch index */
-/** @var \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry */
-$indexerRegistry = \Magento\TestFramework\Helper\Bootstrap::getObjectManager()
-    ->create(\Magento\Framework\Indexer\IndexerRegistry::class);
-$indexerRegistry->get(\Magento\CatalogSearch\Model\Indexer\Fulltext::INDEXER_ID)->reindexAll();
+/** @var IndexerRegistry $indexerRegistry */
+$indexerRegistry = Bootstrap::getObjectManager()
+    ->create(IndexerRegistry::class);
+$indexerRegistry->get(Fulltext::INDEXER_ID)->reindexAll();

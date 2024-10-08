@@ -1157,7 +1157,7 @@ class ConfigHelper
      * @param int|null $scopeId
      * @return void
      */
-    public function setSorting(array $sorting, ?string $scope = null, ?int $scopeId = null): void
+    public function setSorting(array $sorting, string $scope = Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT, ?int $scopeId = null): void
     {
         $this->configWriter->save(
             self::SORTING_INDICES,

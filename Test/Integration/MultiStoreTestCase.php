@@ -85,6 +85,8 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             $store->getCode()
         );
 
+        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 1, $store->getCode());
+
         $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
     }
 

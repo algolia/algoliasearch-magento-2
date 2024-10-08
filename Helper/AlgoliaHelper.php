@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Model\Search\SearchRulesResponse;
 use Algolia\AlgoliaSearch\Response\AbstractResponse;
 use Algolia\AlgoliaSearch\Response\BatchIndexingResponse;
 use Algolia\AlgoliaSearch\Response\MultiResponse;
@@ -519,6 +520,21 @@ class AlgoliaHelper extends AbstractHelper
             ]
         );
         self::setLastOperationInfo($fromIndexName, $response);
+    }
+
+    /**
+     * @param string $indexName
+     * @param array|null $searchRulesParams
+     *
+     * @return SearchRulesResponse|mixed[]
+     *
+     * @throws AlgoliaException
+     */
+    public function searchRules(string $indexName, array$searchRulesParams = null)
+    {
+        $this->checkClient(__FUNCTION__);
+
+        return $this->client->searchRules($indexName, $searchRulesParams);
     }
 
     /**

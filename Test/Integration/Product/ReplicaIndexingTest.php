@@ -325,9 +325,4 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->assertFalse($this->hasSortingAttribute($sortAttr, $sortDir));
     }
 
-    public function tearDown(): void
-    {
-        parent::tearDown();
-    }
-
 }

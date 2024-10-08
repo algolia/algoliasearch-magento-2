@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -56,13 +57,14 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
     /**
      * @param StoreInterface $store
+     * @param bool $enableInstantSearch
      *
      * @return void
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    protected function setupStore(StoreInterface $store): void
+    protected function setupStore(StoreInterface $store, bool $enableInstantSearch = false): void
     {
         $this->setConfig(
             'algoliasearch_credentials/credentials/application_id',
@@ -85,9 +87,11 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             $store->getCode()
         );
 
-        $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', 1, $store->getCode());
+        if ($enableInstantSearch) {
+            $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1, $store->getCode());
+        }
 
         $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
+        $this->algoliaHelper->waitLastTask();
     }
-
 }

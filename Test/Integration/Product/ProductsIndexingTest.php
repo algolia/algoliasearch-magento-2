@@ -30,6 +30,8 @@ class ProductsIndexingTest extends IndexingTestCase
 
     const SPECIAL_PRICE_TEST_PRODUCT_ID = 9;
 
+    const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
+
     public function setUp():void
     {
         parent::setUp();
@@ -46,7 +48,7 @@ class ProductsIndexingTest extends IndexingTestCase
     {
         $this->setConfig('cataloginventory/options/show_out_of_stock', 0);
 
-        $this->setOneProductOutOfStock();
+        $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
         $this->processTest($this->productsIndexer, 'products', $this->assertValues->productsOnStockCount);
     }
@@ -55,7 +57,7 @@ class ProductsIndexingTest extends IndexingTestCase
     {
         $this->setConfig('cataloginventory/options/show_out_of_stock', 1);
 
-        $this->setOneProductOutOfStock();
+        $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
         $this->processTest($this->productsIndexer, 'products', $this->assertValues->productsOutOfStockCount);
     }
@@ -155,11 +157,11 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->assertEquals("$32.00", $algoliaProduct['price']['USD']['default_original_formated']);
     }
 
-    private function setOneProductOutOfStock()
+    private function updateStockItem($sku, $isInStock)
     {
-        $stockItem = $this->stockRegistry->getStockItemBySku('24-MB01');
-        $stockItem->setIsInStock(false);
-        $this->stockRegistry->updateStockItemBySku('24-MB01', $stockItem);
+        $stockItem = $this->stockRegistry->getStockItemBySku($sku);
+        $stockItem->setIsInStock($isInStock);
+        $this->stockRegistry->updateStockItemBySku($sku, $stockItem);
     }
 
     private function getValidTestProduct()
@@ -182,6 +184,8 @@ class ProductsIndexingTest extends IndexingTestCase
         $product->setSpecialPrice(null);
         $product->getResource()->saveAttribute($product, 'special_price');
         $product->save();
+
+        $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, true);
 
         parent::tearDown();
     }

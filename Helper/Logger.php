@@ -35,7 +35,7 @@ class Logger
 
     public function getStoreName($storeId)
     {
-        if ($storeId === null) {
+        if ($storeId === null || !isset($this->stores[$storeId])) {
             return 'undefined store';
         }
 

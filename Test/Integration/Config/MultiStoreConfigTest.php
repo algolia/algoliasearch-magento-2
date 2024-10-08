@@ -23,7 +23,7 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $this->assertEquals(count($stores), 3);
 
         foreach ($stores as $store) {
-            $this->setupStore($store);
+            $this->setupStore($store, true);
         }
 
         $indicesCreatedByTest = 0;
@@ -107,5 +107,12 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         // Check that the Rule has only been created for the fixture store
         $this->assertEquals($defaultProductIndexRules['nbHits'], 0);
         $this->assertEquals($fixtureProductIndexRules['nbHits'], 1);
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 0);
     }
 }

@@ -133,12 +133,14 @@ class ReplicaManager implements ReplicaManagerInterface
      * relevant to the Magento integration
      *
      * @param string $primaryIndexName
+     * @param bool $refreshCache
      * @return string[] Array of replica index names
      * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
-    protected function getMagentoReplicaConfigurationFromAlgolia(string $primaryIndexName): array
+    protected function getMagentoReplicaConfigurationFromAlgolia(string $primaryIndexName, bool $refreshCache = false): array
     {
-        $algoliaReplicas = $this->getReplicaConfigurationFromAlgolia($primaryIndexName);
+        $algoliaReplicas = $this->getReplicaConfigurationFromAlgolia($primaryIndexName, $refreshCache);
         $magentoReplicas = $this->getMagentoReplicaSettings($primaryIndexName, $algoliaReplicas);
         return array_values(array_intersect($magentoReplicas, $algoliaReplicas));
     }
@@ -241,7 +243,7 @@ class ReplicaManager implements ReplicaManagerInterface
         $indexName = $this->indexNameFetcher->getProductIndexName($storeId);
         $sortingIndices = $this->sortingTransformer->getSortingIndices($storeId);
         $newMagentoReplicasSetting = $this->sortingTransformer->transformSortingIndicesToReplicaSetting($sortingIndices);
-        $oldMagentoReplicasSetting = $this->getMagentoReplicaConfigurationFromAlgolia($indexName);
+        $oldMagentoReplicasSetting = $this->getMagentoReplicaConfigurationFromAlgolia($indexName, true);
         $nonMagentoReplicasSetting = $this->getNonMagentoReplicaConfigurationFromAlgolia($indexName);
         $oldMagentoReplicaIndices = $this->getBareIndexNamesFromReplicaSetting($oldMagentoReplicasSetting);
         $newMagentoReplicaIndices = $this->getBareIndexNamesFromReplicaSetting($newMagentoReplicasSetting);

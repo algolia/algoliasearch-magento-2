@@ -151,13 +151,21 @@ abstract class TestCase extends \TC
     /**
      * @throws \ReflectionException
      */
-    protected function mockProperty($object, $propertyName, $propertyClass): void
+    protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
     {
         $mock = $this->createMock($propertyClass);
         $reflection = new \ReflectionClass($object);
         $property = $reflection->getProperty($propertyName);
-        $property->setAccessible(true);
         $property->setValue($object, $mock);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    protected function callReflectedMethod(object $object, string $method, mixed ...$args): void
+    {
+        $reflection = new \ReflectionClass($object);
+        $reflection->getMethod($method)->invoke($object, ...$args);
     }
 
     protected function clearIndices()

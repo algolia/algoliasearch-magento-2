@@ -3,6 +3,8 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
@@ -158,17 +160,43 @@ class ReplicaIndexingTest extends IndexingTestCase
     /**
      * @depends testReplicaSync
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws \ReflectionException
      */
     public function testReplicaRebuild(): void
     {
         $indexName = $this->getIndexName('default_');
 
-        $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand::class);
-        $this->assertTrue(true);
+        $this->mockSortUpdate('price', 'desc', ['virtualReplica' => 1]);
+        $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices(1, null, null, true);
+
+        $syncCmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
+        $this->mockProperty($syncCmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
+        $syncCmd->syncReplicas();
+        $this->algoliaHelper->waitLastTask();
+
+        $rebuildCmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand::class);
+        $this->callReflectedMethod(
+            $rebuildCmd,
+            'execute',
+            $this->createMock(\Symfony\Component\Console\Input\InputInterface::class),
+            $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class)
+        );
+        $this->algoliaHelper->waitLastTask();
+
+        $currentSettings = $this->algoliaHelper->getSettings($indexName);
+        $this->assertArrayHasKey('replicas', $currentSettings);
+        $replicas = $currentSettings['replicas'];
+
+        $this->assertEquals(count($sorting), count($replicas));
+        $this->assertSortToReplicaConfigParity($indexName, $sorting, $replicas);
     }
 
     /**
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
      * @throws \ReflectionException
      */
     public function testReplicaSync(): void
@@ -179,7 +207,7 @@ class ReplicaIndexingTest extends IndexingTestCase
 
         $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices(1, null, null, true);
 
-        $cmd = $this->objectManager->create(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
+        $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
 
         $this->mockProperty($cmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
 

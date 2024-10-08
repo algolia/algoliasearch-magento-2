@@ -65,7 +65,7 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->assertFalse($this->isVirtualReplica($currentSettings['replicas'], $sortIndexName));
 
         $replicaSettings = $this->assertReplicaIndexExists($indexName, $sortIndexName);
-        $this->assertStandardReplicaRanking($replicaSettings, $sortAttr, $sortDir);
+        $this->assertStandardReplicaRanking($replicaSettings, "$sortDir($sortAttr)");
     }
 
     /**
@@ -119,7 +119,7 @@ class ReplicaIndexingTest extends IndexingTestCase
 
         // Assert replica index created
         $replicaSettings = $this->assertReplicaIndexExists($indexName, $sortIndexName);
-        $this->assertVirtualReplicaRanking($replicaSettings, $sortAttr, $sortDir);
+        $this->assertVirtualReplicaRanking($replicaSettings, "$sortDir($sortAttr)");
 
         // Restore prior state (for this test only)
         $this->configHelper->setSorting($ogSortingState);
@@ -184,26 +184,33 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->mockProperty($cmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
 
         $cmd->syncReplicas();
+        $this->algoliaHelper->waitLastTask();
 
         $currentSettings = $this->algoliaHelper->getSettings($indexName);
         $this->assertArrayHasKey('replicas', $currentSettings);
         $replicas = $currentSettings['replicas'];
 
         $this->assertEquals(count($sorting), count($replicas));
-        $this->assertSortToReplicaConfigParity($sorting, $replicas);
-
-        // TODO: Test ranking
-
+        $this->assertSortToReplicaConfigParity($indexName, $sorting, $replicas);
     }
 
-    protected function assertSortToReplicaConfigParity(array $sorting, array $replicas): void
+    protected function assertSortToReplicaConfigParity(string $primaryIndexName, array $sorting, array $replicas): void
     {
         foreach ($sorting as $sortAttr) {
             $replicaIndexName = $sortAttr['name'];
-            $needle = array_key_exists('virtualReplica', $sortAttr) && $sortAttr['virtualReplica']
+            $isVirtual = array_key_exists('virtualReplica', $sortAttr) && $sortAttr['virtualReplica'];
+            $needle = $isVirtual
                 ? "virtual($replicaIndexName)"
                 : $replicaIndexName;
             $this->assertContains($needle, $replicas);
+
+            $replicaSettings = $this->assertReplicaIndexExists($primaryIndexName, $replicaIndexName);
+            $sort = reset($sortAttr['ranking']);
+            if ($isVirtual) {
+                $this->assertVirtualReplicaRanking($replicaSettings, $sort);
+            } else {
+                $this->assertStandardReplicaRanking($replicaSettings, $sort);
+            }
         }
     }
 
@@ -215,13 +222,28 @@ class ReplicaIndexingTest extends IndexingTestCase
         return $replicaSettings;
     }
 
-    protected function assertStandardReplicaRanking(array $replicaSettings, string $sortAttr, string $sortDir): void
+    protected function assertReplicaRanking(array $replicaSettings, string $rankingKey, string $sort) {
+        $this->assertArrayHasKey($rankingKey, $replicaSettings);
+        $this->assertEquals($sort, reset($replicaSettings[$rankingKey]));
+    }
+
+    protected function assertStandardReplicaRanking(array $replicaSettings, string $sort): void
+    {
+        $this->assertReplicaRanking($replicaSettings, 'ranking', $sort);
+    }
+
+    protected function assertVirtualReplicaRanking(array $replicaSettings, string $sort): void
+    {
+        $this->assertReplicaRanking($replicaSettings, 'customRanking', $sort);
+    }
+
+    protected function assertStandardReplicaRankingOld(array $replicaSettings, string $sortAttr, string $sortDir): void
     {
         $this->assertArrayHasKey('ranking', $replicaSettings);
         $this->assertEquals("$sortDir($sortAttr)", array_shift($replicaSettings['ranking']));
     }
 
-    protected function assertVirtualReplicaRanking(array $replicaSettings, string $sortAttr, string $sortDir): void
+    protected function assertVirtualReplicaRankingOld(array $replicaSettings, string $sortAttr, string $sortDir): void
     {
         $this->assertArrayHasKey('customRanking', $replicaSettings);
         $this->assertEquals("$sortDir($sortAttr)", array_shift($replicaSettings['customRanking']));

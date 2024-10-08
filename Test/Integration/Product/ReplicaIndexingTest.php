@@ -139,7 +139,7 @@ class ReplicaIndexingTest extends IndexingTestCase
     }
 
     /**
-     * ConfigHelper::setSorting used WriterInterface which does not update unless DB isolation is disabled
+     * ConfigHelper::setSorting uses WriterInterface which does not update unless DB isolation is disabled
      * This provides a workaround to test using MutableScopeConfigInterface with DB isolation enabled
      */
     protected function mockSortUpdate(string $sortAttr, string $sortDir, array $attr): void
@@ -201,7 +201,15 @@ class ReplicaIndexingTest extends IndexingTestCase
         $this->assertArrayHasKey('replicas', $currentSettings);
         $replicas = $currentSettings['replicas'];
 
-        $this->assertTrue(count($replicas) >= count($sorting));
+        $this->assertEquals(count($sorting), count($replicas));
+
+        foreach ($sorting as $sortAttr) {
+            $replicaIndexName = $sortAttr['name'];
+            $needle = array_key_exists('virtualReplica', $sortAttr) && $sortAttr['virtualReplica']
+                ? "virtual($replicaIndexName)"
+                : $replicaIndexName;
+            $this->assertContains($needle, $replicas);
+        }
 
     }
 

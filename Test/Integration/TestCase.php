@@ -83,6 +83,95 @@ abstract class TestCase extends \TC
         );
     }
 
+    protected function assertConfigInDb(
+        string $path,
+        mixed  $value,
+        string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+        int    $scopeId = 0
+    ): void
+    {
+        $connection = $this->objectManager->create(\Magento\Framework\App\ResourceConnection::class)
+            ->getConnection();
+
+        $select = $connection->select()
+            ->from('core_config_data', 'value')
+            ->where('path = ?', $path)
+            ->where('scope = ?', $scope)
+            ->where('scope_id = ?', $scopeId);
+
+        $configValue = $connection->fetchOne($select);
+
+        $this->assertEquals($value, $configValue);
+    }
+
+    /**
+     * If testing classes that use WriterInterface under the hood to update the database
+     * then you need a way to refresh the in-memory cache
+     * This function achieves that while preserving the original bootstrap config
+     */
+    protected function refreshConfigFromDb(): void
+    {
+        $bootstrap = $this->getBootstrapConfig();
+        $this->objectManager->get(\Magento\Framework\App\Config\ReinitableConfigInterface::class)->reinit();
+        $this->setConfigFromArray($bootstrap);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function getBootstrapConfig(): array
+    {
+        $config = $this->objectManager->get(ScopeConfigInterface::class);
+
+        $bootstrap = [
+            ConfigHelper::APPLICATION_ID,
+            ConfigHelper::SEARCH_ONLY_API_KEY,
+            ConfigHelper::API_KEY,
+            ConfigHelper::INDEX_PREFIX
+        ];
+
+        return array_combine(
+            $bootstrap,
+            array_map(
+                function($setting) use ($config) {
+                    return $config->getValue($setting, ScopeInterface::SCOPE_STORE);
+                },
+                $bootstrap
+            )
+        );
+    }
+
+    /**
+     * @param array<string, string> $settings
+     * @return void
+     */
+    protected function setConfigFromArray(array $settings): void
+    {
+        foreach ($settings as $key => $value) {
+            $this->setConfig($key, $value);
+        }
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
+    {
+        $mock = $this->createMock($propertyClass);
+        $reflection = new \ReflectionClass($object);
+        $property = $reflection->getProperty($propertyName);
+        $property->setValue($object, $mock);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    protected function callReflectedMethod(object $object, string $method, mixed ...$args): void
+    {
+        $reflection = new \ReflectionClass($object);
+        $reflection->getMethod($method)->invoke($object, ...$args);
+    }
+
     protected function clearIndices()
     {
         $indices = $this->algoliaHelper->listIndexes();
@@ -111,7 +200,7 @@ abstract class TestCase extends \TC
         if ($this->boostrapped === true) {
             return;
         }
-
+      
         $this->objectManager = Bootstrap::getObjectManager();
         $this->productMetadata = $this->objectManager->get(ProductMetadataInterface::class);
 

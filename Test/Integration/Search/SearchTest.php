@@ -8,18 +8,34 @@ use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 
 class SearchTest extends TestCase
 {
+    /** @var Product */
+    protected $productIndexer;
+
+    /** @var Data */
+    protected $helper;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->productIndexer = $this->objectManager->get(Product::class);
+        $this->helper = $this->getObjectManager()->create(Data::class);
+
+        $this->productIndexer->executeFull();
+        $this->algoliaHelper->waitLastTask();
+    }
+
     public function testSearch()
     {
-        /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
-        $indexer->executeFull();
+        list($results, $totalHits, $facetsFromAlgolia) = $this->helper->getSearchResult('', 1);
+        $this->assertNotEmpty($results);
+    }
 
-        $this->algoliaHelper->waitLastTask();
-
-        /** @var Data $helper */
-        $helper = $this->getObjectManager()->create(Data::class);
-        list($results, $totalHits, $facetsFromAlgolia) = $helper->getSearchResult('', 1);
-
+    public function testCategorySearch()
+    {
+        list($results, $totalHits, $facetsFromAlgolia) = $this->helper->getSearchResult('', 1, [
+            'facetFilters' => ['categoryIds:' . $this->assertValues->expectedCategory]
+        ]);
         $this->assertNotEmpty($results);
     }
 }

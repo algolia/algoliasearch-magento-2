@@ -20,7 +20,7 @@ class ReplicaIndexingTest extends TestCase
 
     protected ?string $indexSuffix = null;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->productIndexer = $this->objectManager->get(ProductIndexer::class);

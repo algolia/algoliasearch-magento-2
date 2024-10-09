@@ -25,7 +25,7 @@ class QueueTest extends TestCase
     /** @var Queue */
     private $queue;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

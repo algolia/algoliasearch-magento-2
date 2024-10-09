@@ -42,12 +42,12 @@ abstract class TestCase extends \TC
     /** @var Magento246|Magento247 */
     protected $assertValues;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->bootstrap();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $this->clearIndices();
         $this->algoliaHelper->waitLastTask();

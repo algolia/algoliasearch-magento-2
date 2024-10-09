@@ -44,7 +44,7 @@ class ConfigHelperTest extends TestCase
     protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
     protected CookieHelper $cookieHelper;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->configInterface = $this->createMock(ScopeConfigInterface::class);
         $this->configWriter = $this->createMock(WriterInterface::class);

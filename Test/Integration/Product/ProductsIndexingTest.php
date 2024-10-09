@@ -24,7 +24,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
     protected $testProductId;
 
-    public function setUp():void
+    protected function setUp(): void
     {
         parent::setUp();
 

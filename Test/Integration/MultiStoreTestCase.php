@@ -21,7 +21,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     /** @var IndicesConfigurator */
     protected $indicesConfigurator;
 
-    public function setUp():void
+    protected function setUp(): void
     {
         parent::setUp();
 

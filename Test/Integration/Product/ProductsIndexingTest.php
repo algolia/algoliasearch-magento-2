@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 use Magento\Catalog\Api\Data\SpecialPriceInterfaceFactory;
@@ -46,7 +47,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
     public function testOnlyOnStockProducts()
     {
-        $this->setConfig('cataloginventory/options/show_out_of_stock', 0);
+        $this->setConfig(ConfigHelper::SHOW_OUT_OF_STOCK, 0);
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
@@ -55,7 +56,7 @@ class ProductsIndexingTest extends IndexingTestCase
 
     public function testIncludingOutOfStock()
     {
-        $this->setConfig('cataloginventory/options/show_out_of_stock', 1);
+        $this->setConfig(ConfigHelper::SHOW_OUT_OF_STOCK, 1);
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
@@ -66,10 +67,10 @@ class ProductsIndexingTest extends IndexingTestCase
     {
         $empty = $this->getSerializer()->serialize([]);
 
-        $this->setConfig('algoliasearch_products/products/product_additional_attributes', $empty);
-        $this->setConfig('algoliasearch_instant/instant_facets/facets', $empty);
-        $this->setConfig('algoliasearch_instant/instant_sorts/sorts', $empty);
-        $this->setConfig('algoliasearch_products/products/custom_ranking_product_attributes', $empty);
+        $this->setConfig(ConfigHelper::PRODUCT_ATTRIBUTES, $empty);
+        $this->setConfig(ConfigHelper::FACETS, $empty);
+        $this->setConfig(ConfigHelper::SORTING_INDICES, $empty);
+        $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
         $this->productsIndexer->executeRow($this->getValidTestProduct());
         $this->algoliaHelper->waitLastTask();
@@ -181,7 +182,11 @@ class ProductsIndexingTest extends IndexingTestCase
         $product = $this->objectManager->create(\Magento\Catalog\Model\Product::class);
         $product->load(self::SPECIAL_PRICE_TEST_PRODUCT_ID);
 
-        $product->setSpecialPrice(null);
+        $product->setCustomAttributes([
+            'special_price' => null,
+            'special_from_date' => null,
+            'special_to_date' => null,
+        ]);
         $product->getResource()->saveAttribute($product, 'special_price');
         $product->save();
 

@@ -12,7 +12,7 @@ use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 
 /**
- * @magentoDataFixture ../../../../app/code/Algolia/AlgoliaSearch/Test/Integration/_files/second_website_with_two_stores_and_products.php
+ * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/second_website_with_two_stores_and_products.php
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
@@ -73,7 +73,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
                 $store->getCode(),
                 'products',
                 $store->getCode() === 'default' ?
-                    $this->assertValues->productsCountWithoutGiffcards :
+                    $this->assertValues->productsCountWithoutGiftcards :
                     count(self::SKUS)
             );
         }
@@ -131,7 +131,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),
             'products',
-            $this->assertValues->productsCountWithoutGiffcards
+            $this->assertValues->productsCountWithoutGiftcards
         );
 
         // Stores from test website must have one less product

@@ -19,8 +19,8 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $stores = $this->storeManager->getStores();
 
         // Check that stores and websites are properly created
-        $this->assertEquals(count($websites), 2);
-        $this->assertEquals(count($stores), 3);
+        $this->assertEquals(2, count($websites));
+        $this->assertEquals(3, count($stores));
 
         foreach ($stores as $store) {
             $this->setupStore($store, true);
@@ -38,7 +38,7 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         }
 
         // Check that the configuration created the appropriate number of indices (7 (4 mains + 3 replicas per store => 3*7=21)
-        $this->assertEquals($indicesCreatedByTest, 21);
+        $this->assertEquals(21, $indicesCreatedByTest);
 
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
@@ -89,6 +89,7 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         );
 
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
+        $this->algoliaHelper->waitLastTask();
 
         $defaultCategoryIndexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_categories');
         $fixtureCategoryIndexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'fixture_second_store_categories');
@@ -105,8 +106,8 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $fixtureProductIndexRules = $this->algoliaHelper->searchRules($this->indexPrefix . 'fixture_second_store_products');
 
         // Check that the Rule has only been created for the fixture store
-        $this->assertEquals($defaultProductIndexRules['nbHits'], 0);
-        $this->assertEquals($fixtureProductIndexRules['nbHits'], 1);
+        $this->assertEquals(0, $defaultProductIndexRules['nbHits']);
+        $this->assertEquals(1, $fixtureProductIndexRules['nbHits']);
     }
 
     public function tearDown(): void

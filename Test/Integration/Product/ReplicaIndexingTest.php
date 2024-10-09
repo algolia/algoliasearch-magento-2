@@ -9,9 +9,9 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
-use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
+use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 
-class ReplicaIndexingTest extends IndexingTestCase
+class ReplicaIndexingTest extends TestCase
 {
     protected ?ReplicaManagerInterface $replicaManager = null;
     protected ?ProductIndexer $productIndexer = null;
@@ -32,11 +32,6 @@ class ReplicaIndexingTest extends IndexingTestCase
     protected function getIndexName(string $storeIndexPart): string
     {
         return $this->indexPrefix . $storeIndexPart . $this->indexSuffix;
-    }
-
-    public function processFullReindexProducts(): void
-    {
-        $this->processFullReindex($this->productIndexer, $this->indexSuffix);
     }
 
     public function testReplicaLimits()

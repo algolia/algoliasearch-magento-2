@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
@@ -42,16 +43,27 @@ abstract class TestCase extends \TC
     /** @var Magento246|Magento247 */
     protected $assertValues;
 
+    protected ?string $indexSuffix = null;
+
     protected function setUp(): void
     {
         $this->bootstrap();
     }
 
+    /**
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     */
     protected function tearDown(): void
     {
         $this->clearIndices();
         $this->algoliaHelper->waitLastTask();
         $this->clearIndices(); // Remaining replicas
+    }
+
+    protected function getIndexName(string $storeIndexPart): string
+    {
+        return $this->indexPrefix . $storeIndexPart . ($this->indexSuffix ? '_' . $this->indexSuffix : '');
     }
 
     protected function resetConfigs($configs = [])

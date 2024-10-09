@@ -18,7 +18,7 @@ class ReplicaIndexingTest extends TestCase
 
     protected ?IndicesConfigurator $indicesConfigurator = null;
 
-    protected ?string $indexSuffix = null;
+    protected ?string $indexName = null;
 
     protected function setUp(): void
     {
@@ -27,11 +27,7 @@ class ReplicaIndexingTest extends TestCase
         $this->replicaManager = $this->objectManager->get(ReplicaManagerInterface::class);
         $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
         $this->indexSuffix = 'products';
-    }
-
-    protected function getIndexName(string $storeIndexPart): string
-    {
-        return $this->indexPrefix . $storeIndexPart . $this->indexSuffix;
+        $this->indexName = $this->getIndexName('default');
     }
 
     public function testReplicaLimits()
@@ -52,16 +48,16 @@ class ReplicaIndexingTest extends TestCase
         $this->algoliaHelper->waitLastTask();
 
         // Assert replica config created
-        $indexName = $this->getIndexName('default_');
-        $currentSettings = $this->algoliaHelper->getSettings($indexName);
+        $primaryIndexName = $this->indexName;
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
         $this->assertArrayHasKey('replicas', $currentSettings);
 
-        $sortIndexName = $indexName . '_' . $sortAttr . '_' . $sortDir;
+        $replicaIndexName = $primaryIndexName . '_' . $sortAttr . '_' . $sortDir;
 
-        $this->assertTrue($this->isStandardReplica($currentSettings['replicas'], $sortIndexName));
-        $this->assertFalse($this->isVirtualReplica($currentSettings['replicas'], $sortIndexName));
+        $this->assertTrue($this->isStandardReplica($currentSettings['replicas'], $replicaIndexName));
+        $this->assertFalse($this->isVirtualReplica($currentSettings['replicas'], $replicaIndexName));
 
-        $replicaSettings = $this->assertReplicaIndexExists($indexName, $sortIndexName);
+        $replicaSettings = $this->assertReplicaIndexExists($primaryIndexName, $replicaIndexName);
         $this->assertStandardReplicaRanking($replicaSettings, "$sortDir($sortAttr)");
     }
 
@@ -73,7 +69,7 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testVirtualReplicaConfig(): void
     {
-        $indexName = $this->getIndexName('default_');
+        $primaryIndexName = $this->getIndexName('default');
         $ogSortingState = $this->configHelper->getSorting();
 
         $productHelper = $this->objectManager->get(ProductHelper::class);
@@ -106,16 +102,16 @@ class ReplicaIndexingTest extends TestCase
         $this->algoliaHelper->waitLastTask();
 
         // Assert replica config created
-        $currentSettings = $this->algoliaHelper->getSettings($indexName);
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
         $this->assertArrayHasKey('replicas', $currentSettings);
 
-        $sortIndexName = $indexName . '_' . $sortAttr . '_' . $sortDir;
+        $replicaIndexName = $primaryIndexName . '_' . $sortAttr . '_' . $sortDir;
 
-        $this->assertTrue($this->isVirtualReplica($currentSettings['replicas'], $sortIndexName));
-        $this->assertFalse($this->isStandardReplica($currentSettings['replicas'], $sortIndexName));
+        $this->assertTrue($this->isVirtualReplica($currentSettings['replicas'], $replicaIndexName));
+        $this->assertFalse($this->isStandardReplica($currentSettings['replicas'], $replicaIndexName));
 
         // Assert replica index created
-        $replicaSettings = $this->assertReplicaIndexExists($indexName, $sortIndexName);
+        $replicaSettings = $this->assertReplicaIndexExists($primaryIndexName, $replicaIndexName);
         $this->assertVirtualReplicaRanking($replicaSettings, "$sortDir($sortAttr)");
 
         // Restore prior state (for this test only)
@@ -161,7 +157,7 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaRebuild(): void
     {
-        $indexName = $this->getIndexName('default_');
+        $primaryIndexName = $this->getIndexName('default');
 
         $this->mockSortUpdate('price', 'desc', ['virtualReplica' => 1]);
         $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices(1, null, null, true);
@@ -180,12 +176,12 @@ class ReplicaIndexingTest extends TestCase
         );
         $this->algoliaHelper->waitLastTask();
 
-        $currentSettings = $this->algoliaHelper->getSettings($indexName);
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
         $this->assertArrayHasKey('replicas', $currentSettings);
         $replicas = $currentSettings['replicas'];
 
         $this->assertEquals(count($sorting), count($replicas));
-        $this->assertSortToReplicaConfigParity($indexName, $sorting, $replicas);
+        $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
     }
 
     /**
@@ -196,8 +192,7 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaSync(): void
     {
-        $indexName = $this->getIndexName('default_');
-
+        $primaryIndexName = $this->getIndexName('default');
         $this->mockSortUpdate('created_at', 'desc', ['virtualReplica' => 1]);
 
         $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices(1, null, null, true);
@@ -209,12 +204,12 @@ class ReplicaIndexingTest extends TestCase
         $cmd->syncReplicas();
         $this->algoliaHelper->waitLastTask();
 
-        $currentSettings = $this->algoliaHelper->getSettings($indexName);
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
         $this->assertArrayHasKey('replicas', $currentSettings);
         $replicas = $currentSettings['replicas'];
 
         $this->assertEquals(count($sorting), count($replicas));
-        $this->assertSortToReplicaConfigParity($indexName, $sorting, $replicas);
+        $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
     }
 
     protected function assertSortToReplicaConfigParity(string $primaryIndexName, array $sorting, array $replicas): void

@@ -1213,8 +1213,6 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function setFacetsQueryRules($indexName, $storeId = null)
     {
-        $client = $this->algoliaHelper->getClient();
-
         $this->clearFacetsQueryRules($indexName);
 
         $rules = [];

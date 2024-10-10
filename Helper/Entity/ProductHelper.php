@@ -360,8 +360,11 @@ class ProductHelper extends AbstractEntityHelper
         }
 
         $this->setFacetsQueryRules($indexName, $storeId);
+        $this->algoliaHelper->waitLastTask();
+
         if ($saveToTmpIndicesToo) {
             $this->setFacetsQueryRules($indexNameTmp, $storeId);
+            $this->algoliaHelper->waitLastTask();
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);

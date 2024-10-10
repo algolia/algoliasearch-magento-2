@@ -22,12 +22,15 @@ class PricingTest extends TestCase
      */
     protected const PRODUCT_ID_SIMPLE_STANDARD_PRICE = 1;
     protected const PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE = 62;
+
+    protected const PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE = 1903;
     /**
      * @var array<int, float>
      */
     protected const ASSERT_PRODUCT_PRICES = [
-        self::PRODUCT_ID_SIMPLE_STANDARD_PRICE => 34,
-        self::PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE => 52
+        self::PRODUCT_ID_SIMPLE_STANDARD_PRICE           => 34,
+        self::PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE     => 52,
+        self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE => 39.2
     ];
 
     protected ?ProductIndexer $productIndexer = null;
@@ -100,6 +103,19 @@ class PricingTest extends TestCase
     public function testRegularPriceConfigurable(): void
     {
         $productId = self::PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE;
+        $this->indexProducts($productId);
+        $this->assertAlgoliaPrice($productId);
+    }
+
+    /**
+     * @depends testMagentoProductData
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
+     */
+    public function testCatalogPriceRule(): void
+    {
+        $productId = self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE;
         $this->indexProducts($productId);
         $this->assertAlgoliaPrice($productId);
     }

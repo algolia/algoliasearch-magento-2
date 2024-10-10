@@ -59,7 +59,7 @@ class PageHelper extends AbstractEntityHelper
             $magentoPages->addFieldToFilter('page_id', ['in' => $pageIds]);
         }
 
-        $excludedPages = $this->getExcludedPageIds();
+        $excludedPages = $this->getExcludedPageIds($storeId);
         if (count($excludedPages)) {
             $magentoPages->addFieldToFilter('identifier', ['nin' => $excludedPages]);
         }
@@ -116,9 +116,9 @@ class PageHelper extends AbstractEntityHelper
         return $pages;
     }
 
-    public function getExcludedPageIds()
+    public function getExcludedPageIds($storeId = null)
     {
-        $excludedPages = array_values($this->configHelper->getExcludedPages());
+        $excludedPages = array_values($this->configHelper->getExcludedPages($storeId));
         foreach ($excludedPages as &$excludedPage) {
             $excludedPage = $excludedPage['attribute'];
         }

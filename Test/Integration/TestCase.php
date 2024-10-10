@@ -165,26 +165,6 @@ abstract class TestCase extends \TC
         }
     }
 
-    /**
-     * @throws \ReflectionException
-     */
-    protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
-    {
-        $mock = $this->createMock($propertyClass);
-        $reflection = new \ReflectionClass($object);
-        $property = $reflection->getProperty($propertyName);
-        $property->setValue($object, $mock);
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    protected function callReflectedMethod(object $object, string $method, mixed ...$args): void
-    {
-        $reflection = new \ReflectionClass($object);
-        $reflection->getMethod($method)->invoke($object, ...$args);
-    }
-
     protected function clearIndices()
     {
         $indices = $this->algoliaHelper->listIndexes();
@@ -244,6 +224,18 @@ abstract class TestCase extends \TC
         $this->boostrapped = true;
     }
 
+
+    /**
+     * @throws \ReflectionException
+     */
+    protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
+    {
+        $mock = $this->createMock($propertyClass);
+        $reflection = new \ReflectionClass($object);
+        $property = $reflection->getProperty($propertyName);
+        $property->setValue($object, $mock);
+    }
+
     /**
      * Call protected/private method of a class.
      *
@@ -255,13 +247,10 @@ abstract class TestCase extends \TC
      *
      * @return mixed method return
      */
-    protected function invokeMethod(&$object, $methodName, array $parameters = [])
+    protected function invokeMethod(object $object, string $methodName, array $parameters = [])
     {
         $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($object, $parameters);
+        $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 
     private function getMagentoVersion()

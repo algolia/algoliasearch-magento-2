@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
-use Magento\Catalog\Api\Data\SpecialPriceInterfaceFactory;
 use Magento\Catalog\Model\Product;
 use Magento\CatalogInventory\Model\StockRegistry;
 use Magento\Framework\Indexer\IndexerRegistry;
@@ -176,7 +175,7 @@ class ProductsIndexingTest extends IndexingTestCase
         return $this->testProductId;
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         /** @var Product $product */
         $product = $this->objectManager->create(\Magento\Catalog\Model\Product::class);

@@ -168,11 +168,13 @@ class ReplicaIndexingTest extends TestCase
         $this->algoliaHelper->waitLastTask();
 
         $rebuildCmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand::class);
-        $this->callReflectedMethod(
+        $this->invokeMethod(
             $rebuildCmd,
             'execute',
-            $this->createMock(\Symfony\Component\Console\Input\InputInterface::class),
-            $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class)
+            [
+                $this->createMock(\Symfony\Component\Console\Input\InputInterface::class),
+                $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class)
+            ]
         );
         $this->algoliaHelper->waitLastTask();
 

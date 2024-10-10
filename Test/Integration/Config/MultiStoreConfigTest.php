@@ -110,7 +110,7 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $this->assertEquals(1, $fixtureProductIndexRules['nbHits']);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
 

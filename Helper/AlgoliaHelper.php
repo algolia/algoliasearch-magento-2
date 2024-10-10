@@ -9,6 +9,10 @@ use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Model\Search\SettingsResponse;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Model\Search\SearchRulesResponse;
+use Algolia\AlgoliaSearch\Response\AbstractResponse;
+use Algolia\AlgoliaSearch\Response\BatchIndexingResponse;
+use Algolia\AlgoliaSearch\Response\MultiResponse;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Exception;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -467,6 +471,19 @@ class AlgoliaHelper extends AbstractHelper
         self::setLastOperationInfo($indexName, $res);
     }
 
+    /**
+     * @param string $indexName
+     * @param array $rules
+     * @param bool $forwardToReplicas
+     * @return void
+     */
+    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false): void
+    {
+        $res = $this->getClient()->saveRules($indexName, $rules, $forwardToReplicas);
+
+        self::setLastOperationInfo($indexName, $res);
+    }
+
 
     /**
      * @param string $indexName
@@ -532,6 +549,41 @@ class AlgoliaHelper extends AbstractHelper
             ]
         );
         self::setLastOperationInfo($fromIndexName, $response);
+    }
+
+    /**
+     * @param string $indexName
+     * @param array|null $searchRulesParams
+     *
+     * @return SearchRulesResponse|mixed[]
+     *
+     * @throws AlgoliaException
+     */
+    public function searchRules(string $indexName, array$searchRulesParams = null)
+    {
+        $this->checkClient(__FUNCTION__);
+
+        return $this->client->searchRules($indexName, $searchRulesParams);
+    }
+
+    /**
+     * @param $methodName
+     * @return void
+     * @throws AlgoliaException
+     */
+    protected function checkClient($methodName): void
+    {
+        if (isset($this->client)) {
+            return;
+        }
+
+        $this->resetCredentialsFromConfig();
+
+        if (!isset($this->client)) {
+            $msg = 'Operation ' . $methodName . ' could not be performed because Algolia credentials were not provided.';
+
+            throw new AlgoliaException($msg);
+        }
     }
 
     /**

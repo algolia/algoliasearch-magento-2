@@ -361,8 +361,11 @@ class ProductHelper extends AbstractEntityHelper
         }
 
         $this->setFacetsQueryRules($indexName, $storeId);
+        $this->algoliaHelper->waitLastTask();
+
         if ($saveToTmpIndicesToo) {
             $this->setFacetsQueryRules($indexNameTmp, $storeId);
+            $this->algoliaHelper->waitLastTask();
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
@@ -1266,7 +1269,7 @@ class ProductHelper extends AbstractEntityHelper
             $page = 0;
             do {
                 $client = $this->algoliaHelper->getClient();
-                $fetchedQueryRules = $client->searchRules($indexName, [
+                $fetchedQueryRules = $this->algoliaHelper->searchRules($indexName, [
                     'context' => 'magento_filters',
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,

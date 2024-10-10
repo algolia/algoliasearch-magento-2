@@ -454,6 +454,19 @@ class AlgoliaHelper extends AbstractHelper
         self::setLastOperationInfo($indexName, $res);
     }
 
+    /**
+     * @param string $indexName
+     * @param array $rules
+     * @param bool $forwardToReplicas
+     * @return void
+     */
+    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false): void
+    {
+        $res = $this->client->saveRules($indexName, $rules, $forwardToReplicas);
+
+        self::setLastOperationInfo($indexName, $res);
+    }
+
 
     /**
      * @param string $indexName

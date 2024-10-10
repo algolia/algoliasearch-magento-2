@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246CE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246EE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247CE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247EE;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -200,7 +201,7 @@ abstract class TestCase extends \TC
         if ($this->boostrapped === true) {
             return;
         }
-      
+
         $this->objectManager = Bootstrap::getObjectManager();
         $this->productMetadata = $this->objectManager->get(ProductMetadataInterface::class);
 

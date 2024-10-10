@@ -27,7 +27,7 @@ class PricingTest extends TestCase
      */
     protected const ASSERT_PRODUCT_PRICES = [
         self::PRODUCT_ID_SIMPLE_STANDARD_PRICE => 34,
-        self::PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE => 62
+        self::PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE => 52
     ];
 
     protected ?ProductIndexer $productIndexer = null;
@@ -71,32 +71,63 @@ class PricingTest extends TestCase
         return reset($res['results']);
     }
 
-    /**
-     * @throws AlgoliaException
-     * @throws ExceededRetriesException
-     * @throws NoSuchEntityException
-     */
-    public function testRegularPrice(): void
+    protected function assertAlgoliaPrice(int $productId): void
     {
-        $productId = self::PRODUCT_ID_SIMPLE_STANDARD_PRICE;
-        $this->indexProducts($productId);
         $algoliaProduct = $this->getAlgoliaObjectById($productId);
         $this->assertNotNull($algoliaProduct, "Algolia product index was not successful.");
         $this->assertEquals(self::ASSERT_PRODUCT_PRICES[$productId], $algoliaProduct['price']['USD']['default']);
     }
 
-    // TODO: Add data provider
-    public function testProductAvailability(): void
+    /**
+     * @depends testMagentoProductData
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
+     */
+    public function testRegularPriceSimple(): void
+    {
+        $productId = self::PRODUCT_ID_SIMPLE_STANDARD_PRICE;
+        $this->indexProducts($productId);
+        $this->assertAlgoliaPrice($productId);
+    }
+
+    /**
+     * @depends testMagentoProductData
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
+     */
+    public function testRegularPriceConfigurable(): void
+    {
+        $productId = self::PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE;
+        $this->indexProducts($productId);
+        $this->assertAlgoliaPrice($productId);
+    }
+
+    /**
+     * @dataProvider productProvider
+     */
+    public function testMagentoProductData(int $productId, float $expectedPrice): void
     {
         /**
          * @var \Magento\Catalog\Model\Product $product
          */
-        $product = $this->objectManager->get('Magento\Catalog\Model\ProductRepository')->getById(self::PRODUCT_ID_SIMPLE_STANDARD_PRICE);
+        $product = $this->objectManager->get('Magento\Catalog\Model\ProductRepository')->getById($productId);
         $this->assertTrue($product->isInStock(), "Product is not in stock");
         $this->assertTrue($product->getIsSalable(), "Product is not salable");
-        $price = $product->getPrice();
-        $this->assertTrue($price > 0, "Product does not have a price");
+        $actualPrice = $product->getFinalPrice();
+        $this->assertEquals($actualPrice, $expectedPrice, "Product price does not match expectation");
+    }
 
+    public static function productProvider(): array
+    {
+        return array_map(
+            function ($key, $value) {
+                return [$key, $value];
+            },
+            array_keys(self::ASSERT_PRODUCT_PRICES),
+            self::ASSERT_PRODUCT_PRICES
+        );
     }
 
 }

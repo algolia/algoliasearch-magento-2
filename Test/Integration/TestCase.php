@@ -6,8 +6,10 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246CE;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246EE;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247CE;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247EE;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -39,8 +41,11 @@ abstract class TestCase extends \TC
     /** @var ConfigHelper */
     protected $configHelper;
 
-    /** @var Magento246|Magento247 */
+    /** @var Magento246CE|Magento246EE|Magento247CE|Magento247EE */
     protected $assertValues;
+
+    /** @var ProductMetadataInterface */
+    protected $productMetadata;
 
     public function setUp(): void
     {
@@ -197,12 +202,21 @@ abstract class TestCase extends \TC
             return;
         }
 
-        $this->objectManager = $this->getObjectManager();
+        $this->objectManager = Bootstrap::getObjectManager();
+        $this->productMetadata = $this->objectManager->get(ProductMetadataInterface::class);
 
         if (version_compare($this->getMagentoVersion(), '2.4.7', '<')) {
-            $this->assertValues = new Magento246();
+            if ($this->getMagentEdition() === 'Community') {
+                $this->assertValues = new Magento246CE();
+            } else {
+                $this->assertValues = new Magento246EE();
+            }
         } else {
-            $this->assertValues = new Magento247();
+            if ($this->getMagentEdition() === 'Community') {
+                $this->assertValues = new Magento247CE();
+            } else {
+                $this->assertValues = new Magento247EE();
+            }
         }
 
         $this->configHelper = $this->getObjectManager()->create(ConfigHelper::class);
@@ -240,10 +254,12 @@ abstract class TestCase extends \TC
 
     private function getMagentoVersion()
     {
-        /** @var ProductMetadataInterface $productMetadata */
-        $productMetadata = $this->getObjectManager()->get(ProductMetadataInterface::class);
+        return $this->productMetadata->getVersion();
+    }
 
-        return $productMetadata->getVersion();
+    private function getMagentEdition()
+    {
+        return $this->productMetadata->getEdition();
     }
 
     protected function getSerializer()

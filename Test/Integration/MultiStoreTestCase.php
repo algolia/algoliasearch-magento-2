@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -55,34 +56,15 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * @param string $indexName
-     * @param string $recordId
-     * @param array $expectedValues
-     *
-     * @return void
-     * @throws AlgoliaException
-     */
-    public function assertAlgoliaRecordValues(
-        string $indexName,
-        string $recordId,
-        array $expectedValues
-    ) : void {
-        $res = $this->algoliaHelper->getObjects($indexName, [$recordId]);
-        $record = reset($res['results']);
-        foreach ($expectedValues as $attribute => $expectedValue) {
-            $this->assertEquals($expectedValue, $record[$attribute]);
-        }
-    }
-
-    /**
      * @param StoreInterface $store
+     * @param bool $enableInstantSearch
      *
      * @return void
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    protected function setupStore(StoreInterface $store): void
+    protected function setupStore(StoreInterface $store, bool $enableInstantSearch = false): void
     {
         $this->setConfig(
             'algoliasearch_credentials/credentials/application_id',
@@ -105,7 +87,11 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             $store->getCode()
         );
 
-        $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
-    }
+        if ($enableInstantSearch) {
+            $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1, $store->getCode());
+        }
 
+        $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
+        $this->algoliaHelper->waitLastTask();
+    }
 }

@@ -61,12 +61,21 @@ class SearchTest extends TestCase
     public function testCategorySearch()
     {
         // Get products by categoryId
-        $results = $this->search('', 1, [
+        list($results, $totalHits, $facetsFromAlgolia) = $this->search('', 1, [
             'facetFilters' => ['categoryIds:' . $this->assertValues->expectedCategory]
         ]);
-        $result = $this->getFirstResult($results);
         // Category filter returns result
-        $this->assertNotEmpty($result, "Category filter didn't return result");
+        $this->assertNotEmpty($results, "Category filter didn't return result");
+
+        $collection = $this->objectManager->create(\Magento\Catalog\Model\ResourceModel\Product\Collection::class);
+        $collection
+            ->addAttributeToSelect('*')
+            ->addAttributeToFilter('status',\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)
+            ->addAttributeToFilter('visibility', \Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH)
+            ->addCategoriesFilter(["in" => $this->assertValues->expectedCategory])
+            ->setStore(1);
+        // Products in category count matches
+        $this->assertEquals(count($results), $collection->count(), "Indexed number of products in a category doesn't match with DB");
     }
 
     /**
@@ -82,6 +91,7 @@ class SearchTest extends TestCase
     /**
      * @param string $query
      * @param int $storeId
+     * @param array $params
      * @return array
      */
     protected function search(string $query = '', int $storeId = 1, array $params = []): array

@@ -4,10 +4,8 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Indexer\IndexerRegistry;
 
 /**
  * @magentoDbIsolation disabled
@@ -15,7 +13,6 @@ use Magento\Framework\Indexer\IndexerRegistry;
  */
 class PricingTest extends ProductsIndexingTestCase
 {
-
     /**
      * @var int
      */
@@ -35,20 +32,14 @@ class PricingTest extends ProductsIndexingTestCase
         self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE => 39.2
     ];
 
-    protected ?ProductIndexer $productIndexer = null;
     protected ?string $indexName = null;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->productIndexer = $this->objectManager->get(ProductIndexer::class);
+
         $this->indexSuffix = 'products';
         $this->indexName = $this->getIndexName('default');
-
-        $this->objectManager
-            ->get(IndexerRegistry::class)
-            ->get('catalog_product_price')
-            ->reindexAll();
     }
 
     /**
@@ -148,7 +139,7 @@ class PricingTest extends ProductsIndexingTestCase
         );
     }
 
-    public function testSpecialPrice()
+    public function testSpecialPrice(): void
     {
         $this->productIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaHelper->waitLastTask();

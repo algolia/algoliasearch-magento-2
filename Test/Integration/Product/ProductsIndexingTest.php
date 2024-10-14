@@ -5,9 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Magento\Catalog\Model\Product;
-use Magento\CatalogInventory\Model\StockRegistry;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
 
@@ -17,8 +15,6 @@ use Magento\Framework\Indexer\IndexerRegistry;
  */
 class ProductsIndexingTest extends ProductsIndexingTestCase
 {
-    /** @var ProductIndexer */
-    protected $productsIndexer;
 
     /*** @var IndexerRegistry */
     protected $indexerRegistry;
@@ -29,24 +25,13 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
     const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->productsIndexer = $this->objectManager->get(ProductIndexer::class);
-        $this->indexerRegistry = $this->objectManager->get(IndexerRegistry::class);
-
-        $this->productPriceIndexer = $this->indexerRegistry->get('catalog_product_price');
-        $this->productPriceIndexer->reindexAll();
-    }
-
     public function testOnlyOnStockProducts()
     {
         $this->setConfig(ConfigHelper::SHOW_OUT_OF_STOCK, 0);
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
-        $this->processTest($this->productsIndexer, 'products', $this->assertValues->productsOnStockCount);
+        $this->processTest($this->productIndexer, 'products', $this->assertValues->productsOnStockCount);
     }
 
     public function testIncludingOutOfStock()
@@ -55,7 +40,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
-        $this->processTest($this->productsIndexer, 'products', $this->assertValues->productsOutOfStockCount);
+        $this->processTest($this->productIndexer, 'products', $this->assertValues->productsOutOfStockCount);
     }
 
     public function testDefaultIndexableAttributes()
@@ -67,7 +52,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->setConfig(ConfigHelper::SORTING_INDICES, $empty);
         $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
-        $this->productsIndexer->executeRow($this->getValidTestProduct());
+        $this->productIndexer->executeRow($this->getValidTestProduct());
         $this->algoliaHelper->waitLastTask();
 
         $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);

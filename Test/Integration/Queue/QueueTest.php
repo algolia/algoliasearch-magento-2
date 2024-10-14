@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Queue;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
@@ -12,6 +13,10 @@ use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 
+/**
+ * @magentoDbIsolation disabled
+ * @magentoAppIsolation enabled
+ */
 class QueueTest extends TestCase
 {
     private const INCOMPLETE_REASON = "Must revisit transaction handling across connections.";
@@ -29,27 +34,27 @@ class QueueTest extends TestCase
     {
         parent::setUp();
 
-        $this->jobsCollectionFactory = $this->getObjectManager()->create(JobsCollectionFactory::class);
+        $this->jobsCollectionFactory = $this->objectManager->create(JobsCollectionFactory::class);
 
         /** @var ResourceConnection $resource */
-        $resource = $this->getObjectManager()->create(ResourceConnection::class);
+        $resource = $this->objectManager->get(ResourceConnection::class);
         $this->connection = $resource->getConnection();
 
-        $this->queue = $this->getObjectManager()->create(Queue::class);
+        $this->queue = $this->objectManager->get(Queue::class);
     }
 
     public function testFill()
     {
         $this->resetConfigs([
-            'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/queue/number_of_element_by_page',
+            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
         ]);
 
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer = $this->objectManager->get(Product::class);
         $indexer->executeFull();
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
@@ -82,16 +87,13 @@ class QueueTest extends TestCase
 
     /**
      * @depends testFill
-     * @magentoDbIsolation disabled
      */
     public function testExecute()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
 
         /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
+        $queue = $this->objectManager->get(Queue::class);
 
         // Run the first two jobs - saveSettings, batch
         $queue->runCron(2, true);
@@ -132,31 +134,28 @@ class QueueTest extends TestCase
         $this->assertTrue($existsDefaultProdIndex, 'Default product production index does not exists and it should');
 
         /** TODO: There are mystery items being added to queue from unknown save process on product_id=1 */
-        /* $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-        $this->assertEquals(0, count($rows)); */
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertEquals(0, count($rows));
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testSettings()
     {
         $this->markTestIncomplete(self::INCOMPLETE_REASON);
 
         $this->resetConfigs([
-            'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/queue/number_of_element_by_page',
-            'algoliasearch_instant/instant_facets/facets',
-            'algoliasearch_products/products/product_additional_attributes',
+            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
+            ConfigHelper::FACETS,
+            ConfigHelper::PRODUCT_ATTRIBUTES
         ]);
 
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
         // Reindex products multiple times
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer = $this->objectManager->get(Product::class);
         $indexer->executeFull();
         $indexer->executeFull();
         $indexer->executeFull();
@@ -166,7 +165,7 @@ class QueueTest extends TestCase
 
         // Process the whole queue
         /** @var QueueRunner $queueRunner */
-        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
+        $queueRunner = $this->objectManager->get(QueueRunner::class);
         $queueRunner->executeFull();
         $queueRunner->executeFull();
         $queueRunner->executeFull();
@@ -181,19 +180,16 @@ class QueueTest extends TestCase
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMergeSettings()
     {
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 1);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 300);
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 1);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
         /** @var Product $productIndexer */
-        $productIndexer = $this->getObjectManager()->create(Product::class);
+        $productIndexer = $this->objectManager->get(Product::class);
         $productIndexer->executeFull();
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
@@ -208,7 +204,7 @@ class QueueTest extends TestCase
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         /** @var QueueRunner $queueRunner */
-        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
+        $queueRunner = $this->objectManager->get(QueueRunner::class);
         $queueRunner->executeFull();
 
         $this->algoliaHelper->waitLastTask();
@@ -223,9 +219,6 @@ class QueueTest extends TestCase
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMerging()
     {
         $this->connection->query('DELETE FROM algoliasearch_queue');
@@ -434,9 +427,6 @@ class QueueTest extends TestCase
         $this->assertEquals($expectedProductJob, $productJob->toArray());
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMergingWithStaticMethods()
     {
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
@@ -587,9 +577,6 @@ class QueueTest extends TestCase
         $this->assertEquals('rebuildStoreProductIndex', $jobs[11]->getMethod());
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testGetJobs()
     {
         $this->markTestIncomplete(self::INCOMPLETE_REASON);
@@ -807,14 +794,11 @@ class QueueTest extends TestCase
         }
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testHugeJob()
     {
         // Default value - maxBatchSize = 1000
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $productIds = range(1, 5000);
         $jsonProductIds = json_encode($productIds);
@@ -851,8 +835,8 @@ class QueueTest extends TestCase
     public function testMaxSingleJobSize()
     {
         // Default value - maxBatchSize = 1000
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $productIds = range(1, 99);
         $jsonProductIds = json_encode($productIds);
@@ -889,25 +873,22 @@ class QueueTest extends TestCase
         $this->assertEquals($pid, $lastJob['pid']);
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMaxSingleJobsSizeOnProductReindex()
     {
         $this->resetConfigs([
-            'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/queue/number_of_element_by_page',
+            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
         ]);
 
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
 
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer = $this->objectManager->get(Product::class);
         $indexer->execute(range(1, 512));
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();

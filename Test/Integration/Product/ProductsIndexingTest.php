@@ -2,24 +2,23 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
-use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 use Magento\Catalog\Model\Product;
 use Magento\CatalogInventory\Model\StockRegistry;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
 
 /**
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
-class ProductsIndexingTest extends IndexingTestCase
+class ProductsIndexingTest extends ProductsIndexingTestCase
 {
     /** @var ProductIndexer */
     protected $productsIndexer;
-
-    /** @var StockRegistry */
-    protected $stockRegistry;
 
     /*** @var IndexerRegistry */
     protected $indexerRegistry;
@@ -28,8 +27,6 @@ class ProductsIndexingTest extends IndexingTestCase
 
     protected $testProductId;
 
-    const SPECIAL_PRICE_TEST_PRODUCT_ID = 9;
-
     const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
 
     protected function setUp(): void
@@ -37,7 +34,6 @@ class ProductsIndexingTest extends IndexingTestCase
         parent::setUp();
 
         $this->productsIndexer = $this->objectManager->get(ProductIndexer::class);
-        $this->stockRegistry = $this->objectManager->get(StockRegistry::class);
         $this->indexerRegistry = $this->objectManager->get(IndexerRegistry::class);
 
         $this->productPriceIndexer = $this->indexerRegistry->get('catalog_product_price');
@@ -107,63 +103,6 @@ class ProductsIndexingTest extends IndexingTestCase
         $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
     }
 
-    public function testSpecialPrice()
-    {
-        $this->productsIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
-        $this->algoliaHelper->waitLastTask();
-
-        $res = $this->algoliaHelper->getObjects(
-            $this->indexPrefix .
-            'default_products',
-            [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
-        );
-        $algoliaProduct = reset($res['results']);
-
-        if (!$algoliaProduct || !array_key_exists('price', $algoliaProduct)) {
-            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions.');
-        }
-
-        $this->assertEquals(32, $algoliaProduct['price']['USD']['default']);
-        $this->assertEquals('', $algoliaProduct['price']['USD']['special_from_date']);
-        $this->assertEquals('', $algoliaProduct['price']['USD']['special_to_date']);
-
-        $specialPrice = 29;
-        $fromDatetime = new \DateTime();
-        $toDatetime = new \DateTime();
-        $priceFrom = $fromDatetime->modify('-2 day')->format('Y-m-d H:i:s');
-        $priceTo = $toDatetime->modify('+2 day')->format('Y-m-d H:i:s');
-
-        $product = $this->objectManager->create(\Magento\Catalog\Model\Product::class);
-        $product->load(self::SPECIAL_PRICE_TEST_PRODUCT_ID);
-
-        $product->setCustomAttributes([
-            'special_price' => $specialPrice,
-            'special_from_date' => date($priceFrom),
-            'special_to_date' => date($priceTo),
-        ]);
-        $product->save();
-
-        $this->productsIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
-        $this->algoliaHelper->waitLastTask();
-
-        $res = $this->algoliaHelper->getObjects(
-            $this->indexPrefix .
-            'default_products',
-            [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
-        );
-        $algoliaProduct = reset($res['results']);
-
-        $this->assertEquals($specialPrice, $algoliaProduct['price']['USD']['default']);
-        $this->assertEquals("$32.00", $algoliaProduct['price']['USD']['default_original_formated']);
-    }
-
-    private function updateStockItem($sku, $isInStock)
-    {
-        $stockItem = $this->stockRegistry->getStockItemBySku($sku);
-        $stockItem->setIsInStock($isInStock);
-        $this->stockRegistry->updateStockItemBySku($sku, $stockItem);
-    }
-
     private function getValidTestProduct()
     {
         if (!$this->testProductId) {
@@ -175,22 +114,15 @@ class ProductsIndexingTest extends IndexingTestCase
         return $this->testProductId;
     }
 
+    /**
+     * @throws NoSuchEntityException
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     */
     protected function tearDown(): void
     {
-        /** @var Product $product */
-        $product = $this->objectManager->create(\Magento\Catalog\Model\Product::class);
-        $product->load(self::SPECIAL_PRICE_TEST_PRODUCT_ID);
-
-        $product->setCustomAttributes([
-            'special_price' => null,
-            'special_from_date' => null,
-            'special_to_date' => null,
-        ]);
-        $product->getResource()->saveAttribute($product, 'special_price');
-        $product->save();
+        parent::tearDown();
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, true);
-
-        parent::tearDown();
     }
 }

@@ -9,6 +9,8 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 class SearchTest extends TestCase
 {
+    const BAGS_CATEGORY_ID = 4;
+
     /** @var Product */
     protected $productIndexer;
 
@@ -62,7 +64,7 @@ class SearchTest extends TestCase
     {
         // Get products by categoryId
         list($results, $totalHits, $facetsFromAlgolia) = $this->search('', 1, [
-            'facetFilters' => ['categoryIds:' . $this->assertValues->expectedCategory]
+            'facetFilters' => ['categoryIds:' . self::BAGS_CATEGORY_ID]
         ]);
         // Category filter returns result
         $this->assertNotEmpty($results, "Category filter didn't return result");
@@ -72,7 +74,7 @@ class SearchTest extends TestCase
             ->addAttributeToSelect('*')
             ->addAttributeToFilter('status',\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)
             ->addAttributeToFilter('visibility', \Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH)
-            ->addCategoriesFilter(["in" => $this->assertValues->expectedCategory])
+            ->addCategoriesFilter(["in" => self::BAGS_CATEGORY_ID])
             ->setStore(1);
         // Products in category count matches
         $this->assertEquals(count($results), $collection->count(), "Indexed number of products in a category doesn't match with DB");

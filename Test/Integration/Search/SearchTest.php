@@ -22,7 +22,7 @@ class SearchTest extends TestCase
         parent::setUp();
 
         $this->productIndexer = $this->objectManager->get(Product::class);
-        $this->helper = $this->getObjectManager()->create(Data::class);
+        $this->helper = $this->objectManager->create(Data::class);
 
         $this->productIndexer->executeFull();
         $this->algoliaHelper->waitLastTask();

@@ -85,12 +85,14 @@ class QueueTest extends TestCase
         }
     }
 
-    /**
-     * @depends testFill
-     */
     public function testExecute()
     {
         $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+
+        /** @var Product $indexer */
+        $indexer = $this->objectManager->get(Product::class);
+        $indexer->executeFull();
 
         /** @var Queue $queue */
         $queue = $this->objectManager->get(Queue::class);
@@ -111,7 +113,7 @@ class QueueTest extends TestCase
 
         $this->assertTrue($existsDefaultTmpIndex, 'Default products production index does not exists and it should');
 
-        // Run the second two jobs - batch, move
+        // Run the last move - move
         $queue->runCron(2, true);
 
         $this->algoliaHelper->waitLastTask();
@@ -723,18 +725,12 @@ class QueueTest extends TestCase
 
         $expectedFirstJob = [
             'job_id' => '1',
-            'created' => '2017-09-01 12:00:00',
-            'pid' => null,
+            'pid' => $pid,
             'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
             'method' => 'rebuildStoreCategoryIndex',
             'data' => '{"store_id":"1","category_ids":["9","22"]}',
-            'max_retries' => '3',
-            'retries' => '0',
-            'error_log' => '',
-            'data_size' => 3,
             'merged_ids' => ['1', '7'],
             'store_id' => '1',
-            'is_full_reindex' => 0,
             'decoded_data' => [
                 'store_id' => '1',
                 'category_ids' => [
@@ -743,24 +739,16 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
-            'locked_at' => null,
-            'debug' => null,
         ];
 
         $expectedLastJob = [
             'job_id' => '6',
-            'created' => '2017-09-01 12:00:00',
-            'pid' => null,
+            'pid' => $pid,
             'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
             'method' => 'rebuildStoreProductIndex',
             'data' => '{"store_id":"3","product_ids":["448"]}',
-            'max_retries' => '3',
-            'retries' => '0',
-            'error_log' => '',
-            'data_size' => 2,
             'merged_ids' => ['6', '12'],
             'store_id' => '3',
-            'is_full_reindex' => 0,
             'decoded_data' => [
                 'store_id' => '3',
                 'product_ids' => [
@@ -768,18 +756,31 @@ class QueueTest extends TestCase
                     1 => '405',
                 ],
             ],
-            'locked_at' => null,
-            'debug' => null,
         ];
 
         /** @var Job $firstJob */
         $firstJob = reset($jobs);
+        $firstJob = $firstJob->toArray();
 
         /** @var Job $lastJob */
         $lastJob = end($jobs);
+        $lastJob = $lastJob->toArray();
 
-//        $this->assertEquals($expectedFirstJob, $firstJob->toArray());
-//        $this->assertEquals($expectedLastJob, $lastJob->toArray());
+        $valuesToCheck = [
+            'job_id',
+            'method',
+            'class',
+            'store_id',
+            'pid',
+            'data',
+            'merged_ids',
+            'decoded_data',
+        ];
+
+        foreach ($valuesToCheck as $valueToCheck) {
+            $this->assertEquals($expectedFirstJob[$valueToCheck], $firstJob[$valueToCheck]);
+            $this->assertEquals($expectedLastJob[$valueToCheck], $lastJob[$valueToCheck]);
+        }
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 

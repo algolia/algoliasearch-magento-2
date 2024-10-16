@@ -48,7 +48,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         '24-WB01'
     ];
 
-    public function setUp():void
+    protected function setUp():void
     {
         parent::setUp();
 
@@ -186,7 +186,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         return $productAlt;
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $defaultStore = $this->storeRepository->get('default');
 

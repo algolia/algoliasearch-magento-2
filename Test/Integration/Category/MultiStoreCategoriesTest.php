@@ -32,7 +32,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     const BAGS_CATEGORY_NAME = "Bags";
     const BAGS_CATEGORY_NAME_ALT = "Bags Alt";
 
-    public function setUp():void
+    protected function setUp():void
     {
         parent::setUp();
 
@@ -152,7 +152,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         return $categoryAlt;
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         $defaultStore = $this->storeRepository->get('default');
 

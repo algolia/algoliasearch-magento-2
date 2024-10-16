@@ -250,7 +250,7 @@ abstract class TestCase extends \TC
     protected function invokeMethod(object $object, string $methodName, array $parameters = [])
     {
         $reflection = new \ReflectionClass(get_class($object));
-        $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
+        return $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 
     private function getMagentoVersion()

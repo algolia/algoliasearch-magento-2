@@ -300,7 +300,7 @@ class AlgoliaHelper extends AbstractHelper
                 'destination' => $toIndexName
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response);
+        self::setLastOperationInfo($toIndexName, $response);
     }
 
     /**

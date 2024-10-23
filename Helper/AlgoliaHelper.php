@@ -361,6 +361,10 @@ class AlgoliaHelper extends AbstractHelper
 
         $removes = ['slaves', 'replicas', 'decompoundedAttributes'];
 
+        if (isset($onlineSettings['mode']) && $onlineSettings['mode'] == 'neuralSearch') {
+            $removes[] = 'mode';
+        }
+
         if (isset($settings['attributesToIndex'])) {
             $settings['searchableAttributes'] = $settings['attributesToIndex'];
             unset($settings['attributesToIndex']);

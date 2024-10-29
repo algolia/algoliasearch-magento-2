@@ -73,11 +73,11 @@ $isConfig = [
     <div class="algolia_merchandising_items_right_container" id="algolia_merchandising_items_right_container">
         <h2>Products shown on landing page</h2>
         <div id="algolia-stats"></div>
-        <div id="algolia_autocomplete_wrapper">
+        <span id="algolia_autocomplete_wrapper">
             <label for="algolia_merchandising_autocomplete">
                 <input type="text" id="algolia_merchandising_autocomplete" placeholder="Quickly find an item to promote..." />
             </label>
-        </div>
+        </span>
         <div id="algolia_sortby"></div>
         <div id="algolia_hit_per_page"></div>
         <div id="algolia_merchandising_hits"></div>
@@ -631,53 +631,9 @@ $isConfig = [
                 window.algoliaSearch = search;
                 window.algoliaSearchConfig = config;
 
-                $(document).on('click', '.algolia_merchandising_items_table a.pinIt', function(e) {
-                    var $row = $(this).closest('tr');
-                    pinIt($row);
-
-                    e.preventDefault();
-                    return false;
-                });
-
-                $(document).on('click', '.algolia_merchandising_items_table a.unpinIt', function(e) {
-                    $(this).closest('tr').removeClass('pinned');
-
-                    regeneratePositionsValue();
-
-                    e.preventDefault();
-                    return false;
-                });
-
-                $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
-                    var $row = $(this).closest('tr'),
-                        $previousRow = $row.prev();
-
-                    if ($previousRow.length > 0) {
-                        $previousRow.insertAfter($row);
-                        pinIt($row);
-                    }
-
-                    e.preventDefault();
-                    return false;
-                });
-
-                $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
-                    var $row = $(this).closest('tr'),
-                        $nextRow = $row.next();
-
-                    if ($nextRow.length > 0) {
-                        $nextRow.insertBefore($row);
-                        pinIt($row);
-                    }
-
-                    e.preventDefault();
-                    return false;
-                });
-
                 $('select[name="store_id"]').on('change', function(e) {
                     $('.ais-sort-by-selector').val(config.indexDataByStoreIds[$(this).val()].indexName + '_products').change();
                 });
-
 
                 // AUTOCOMPLETE - START
 
@@ -731,57 +687,7 @@ $isConfig = [
                         });
                 };
 
-                var initSortableTable = function() {
-                    $('.algolia_merchandising_items_table tbody').sortable({
-                        containment: 'parent',
-                        items: 'tr',
-                        tolerance: 'pointer',
-                        helper: sortableHelper,
-                        start: function (event, ui) {
-                            $(ui.item).css('margin-left', '10px');
-                        },
-                        stop: function (event, ui) {
-                            var $row = $(ui.item[0]);
-                            pinIt($row);
-                        }
-                    });
-
-                    $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
-                };
-
-                var pinIt = function($row) {
-                    if ($row.hasClass('pinned') === false) {
-                        $row.addClass('pinned');
-                    }
-
-                    regeneratePositionsValue();
-                };
-
-                var regeneratePositionsValue = function() {
-                    var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
-                        positions = {};
-
-                    $('.algolia_merchandising_items_table tbody tr').each(function(position) {
-                        if ($(this).hasClass('pinned')) {
-                            var objectId = $(this).data('objectid');
-                            positions[objectId] = position;
-                        }
-                    });
-
-                    $positionsInput.val(JSON.stringify(positions));
-                };
-
-                var sortableHelper = function(e, ui) {
-                    ui.children().each(function() {
-                        $(this).width($(this).width());
-                    });
-
-                    return ui;
-                };
-
-                $(".close-box").click(function() {
-                    $(this).parent().hide();
-                });
+                // AUTOCOMPLETE - END
             });
         }
 
@@ -790,6 +696,101 @@ $isConfig = [
         $('select[name="store_id"]').on('change', function(e) {
             initInstantSearch();
             e.preventDefault();
+        });
+
+        $(document).on('click', '.algolia_merchandising_items_table a.pinIt', function(e) {
+            var $row = $(this).closest('tr');
+            pinIt($row);
+
+            e.preventDefault();
+            return false;
+        });
+
+        $(document).on('click', '.algolia_merchandising_items_table a.unpinIt', function(e) {
+            $(this).closest('tr').removeClass('pinned');
+
+            regeneratePositionsValue();
+
+            e.preventDefault();
+            return false;
+        });
+
+        $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
+            var $row = $(this).closest('tr'),
+                $previousRow = $row.prev();
+
+            if ($previousRow.length > 0) {
+                $previousRow.insertAfter($row);
+                pinIt($row);
+            }
+
+            e.preventDefault();
+            return false;
+        });
+
+        $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
+            var $row = $(this).closest('tr'),
+                $nextRow = $row.next();
+
+            if ($nextRow.length > 0) {
+                $nextRow.insertBefore($row);
+                pinIt($row);
+            }
+
+            e.preventDefault();
+            return false;
+        });
+
+        var initSortableTable = function() {
+            $('.algolia_merchandising_items_table tbody').sortable({
+                containment: 'parent',
+                items: 'tr',
+                tolerance: 'pointer',
+                helper: sortableHelper,
+                start: function (event, ui) {
+                    $(ui.item).css('margin-left', '10px');
+                },
+                stop: function (event, ui) {
+                    var $row = $(ui.item[0]);
+                    pinIt($row);
+                }
+            });
+
+            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
+        };
+
+        var pinIt = function($row) {
+            if ($row.hasClass('pinned') === false) {
+                $row.addClass('pinned');
+            }
+
+            regeneratePositionsValue();
+        };
+
+        var regeneratePositionsValue = function() {
+            var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
+                positions = {};
+
+            $('.algolia_merchandising_items_table tbody tr').each(function(position) {
+                if ($(this).hasClass('pinned')) {
+                    var objectId = $(this).data('objectid');
+                    positions[objectId] = position;
+                }
+            });
+
+            $positionsInput.val(JSON.stringify(positions));
+        };
+
+        var sortableHelper = function(e, ui) {
+            ui.children().each(function() {
+                $(this).width($(this).width());
+            });
+
+            return ui;
+        };
+
+        $(".close-box").click(function() {
+            $(this).parent().hide();
         });
   });
 

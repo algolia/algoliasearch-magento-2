@@ -925,19 +925,29 @@ class Data
      */
     public function getIndexDataByStoreIds(): array
     {
+
         $indexNames = [];
-        $indexNames[0] = [
+        $indexNames[AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE] = [
             'appId' => $this->configHelper->getApplicationID(),
             'apiKey' => $this->configHelper->getAPIKey(),
             'indexName' => $this->getBaseIndexName(),
             'priceKey'  => '.' . $this->configHelper->getCurrencyCode() . '.default',
+            'facets' => $this->configHelper->getFacets(),
+            'currencyCode' => $this->configHelper->getCurrencyCode(),
+            'maxValuesPerFacet' => (int) $this->configHelper->getMaxValuesPerFacet(),
+            'categorySeparator' => $this->configHelper->getCategorySeparator(),
         ];
         foreach ($this->storeManager->getStores() as $store) {
-            $indexNames[$store->getId()] = [
-                'appId' => $this->configHelper->getApplicationID($store->getId()),
-                'apiKey' => $this->configHelper->getAPIKey($store->getId()),
-                'indexName' => $this->getBaseIndexName($store->getId()),
-                'priceKey' => '.' . $store->getCurrentCurrencyCode($store->getId()) . '.default',
+            $storeId = $store->getId();
+            $indexNames[$storeId] = [
+                'appId' => $this->configHelper->getApplicationID($storeId),
+                'apiKey' => $this->configHelper->getAPIKey($storeId),
+                'indexName' => $this->getBaseIndexName($storeId),
+                'priceKey' => '.' . $store->getCurrentCurrencyCode($storeId) . '.default',
+                'facets' => $this->configHelper->getFacets($storeId),
+                'currencyCode' => $this->configHelper->getCurrencyCode($storeId),
+                'maxValuesPerFacet' => (int) $this->configHelper->getMaxValuesPerFacet($storeId),
+                'categorySeparator' => $this->configHelper->getCategorySeparator($storeId),
             ];
         }
         return $indexNames;

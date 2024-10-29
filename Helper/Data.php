@@ -927,11 +927,15 @@ class Data
     {
         $indexNames = [];
         $indexNames[0] = [
+            'appId' => $this->configHelper->getApplicationID(),
+            'apiKey' => $this->configHelper->getAPIKey(),
             'indexName' => $this->getBaseIndexName(),
             'priceKey'  => '.' . $this->configHelper->getCurrencyCode() . '.default',
         ];
         foreach ($this->storeManager->getStores() as $store) {
             $indexNames[$store->getId()] = [
+                'appId' => $this->configHelper->getApplicationID($store->getId()),
+                'apiKey' => $this->configHelper->getAPIKey($store->getId()),
                 'indexName' => $this->getBaseIndexName($store->getId()),
                 'priceKey' => '.' . $store->getCurrentCurrencyCode($store->getId()) . '.default',
             ];

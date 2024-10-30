@@ -180,7 +180,7 @@ class CategoryHelper
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
-        $storeRootCategoryPath = sprintf('%d/%d', $this->getRootCategoryId(), $store->getRootCategoryId());
+        $storeRootCategoryPath = sprintf('%d/%d/', $this->getRootCategoryId(), $store->getRootCategoryId());
 
         $unserializedCategorysAttrs = $this->getAdditionalAttributes($storeId);
         $additionalAttr = array_column($unserializedCategorysAttrs, 'attribute');

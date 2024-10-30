@@ -1,5 +1,11 @@
 # CHANGE LOG
 
+## 3.13.6
+
+### Bug Fixes
+- Improve handling of insights params for URLs that already have a query string 
+- Improve query method for alternate root categories - Thank you @igorfigueiredogen
+
 ## 3.13.5
 
 ### Updates

@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
@@ -17,15 +16,6 @@ use Magento\Framework\Module\ResourceInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
-
-class ConfigHelperTestable extends ConfigHelper
-{
-    /** expose protected methods for unit testing */
-    public function serialize(array $value): string
-    {
-        return parent::serialize($value);
-    }
-}
 
 class ConfigHelperTest extends TestCase
 {

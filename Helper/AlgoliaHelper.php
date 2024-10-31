@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Model\Search\SearchRulesResponse;
 use Algolia\AlgoliaSearch\Response\AbstractResponse;
 use Algolia\AlgoliaSearch\Response\BatchIndexingResponse;
 use Algolia\AlgoliaSearch\Response\MultiResponse;
@@ -299,7 +300,7 @@ class AlgoliaHelper extends AbstractHelper
                 'destination' => $toIndexName
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response);
+        self::setLastOperationInfo($toIndexName, $response);
     }
 
     /**
@@ -359,6 +360,10 @@ class AlgoliaHelper extends AbstractHelper
         }
 
         $removes = ['slaves', 'replicas', 'decompoundedAttributes'];
+
+        if (isset($onlineSettings['mode']) && $onlineSettings['mode'] == 'neuralSearch') {
+            $removes[] = 'mode';
+        }
 
         if (isset($settings['attributesToIndex'])) {
             $settings['searchableAttributes'] = $settings['attributesToIndex'];
@@ -453,6 +458,19 @@ class AlgoliaHelper extends AbstractHelper
         self::setLastOperationInfo($indexName, $res);
     }
 
+    /**
+     * @param string $indexName
+     * @param array $rules
+     * @param bool $forwardToReplicas
+     * @return void
+     */
+    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false): void
+    {
+        $res = $this->client->saveRules($indexName, $rules, $forwardToReplicas);
+
+        self::setLastOperationInfo($indexName, $res);
+    }
+
 
     /**
      * @param string $indexName
@@ -519,6 +537,21 @@ class AlgoliaHelper extends AbstractHelper
             ]
         );
         self::setLastOperationInfo($fromIndexName, $response);
+    }
+
+    /**
+     * @param string $indexName
+     * @param array|null $searchRulesParams
+     *
+     * @return SearchRulesResponse|mixed[]
+     *
+     * @throws AlgoliaException
+     */
+    public function searchRules(string $indexName, array$searchRulesParams = null)
+    {
+        $this->checkClient(__FUNCTION__);
+
+        return $this->client->searchRules($indexName, $searchRulesParams);
     }
 
     /**

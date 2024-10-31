@@ -25,6 +25,7 @@ use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Search\Model\Query;
 use Magento\Search\Model\ResourceModel\Query\Collection as QueryCollection;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -925,18 +926,37 @@ class Data
      */
     public function getIndexDataByStoreIds(): array
     {
+
         $indexNames = [];
-        $indexNames[0] = [
-            'indexName' => $this->getBaseIndexName(),
-            'priceKey'  => '.' . $this->configHelper->getCurrencyCode() . '.default',
-        ];
+        $indexNames[AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE] = $this->buildIndexData();
         foreach ($this->storeManager->getStores() as $store) {
-            $indexNames[$store->getId()] = [
-                'indexName' => $this->getBaseIndexName($store->getId()),
-                'priceKey' => '.' . $store->getCurrentCurrencyCode($store->getId()) . '.default',
-            ];
+            $indexNames[$store->getId()] = $this->buildIndexData($store);
         }
         return $indexNames;
+    }
+
+    /**
+     * @param StoreInterface|null $store
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    protected function buildIndexData(StoreInterface $store = null): array
+    {
+        $storeId = !is_null($store) ? $store->getStoreId() : null;
+        $currencyCode = !is_null($store) ?
+            $store->getCurrentCurrencyCode($storeId) :
+            $this->configHelper->getCurrencyCode();
+
+        return [
+            'appId' => $this->configHelper->getApplicationID($storeId),
+            'apiKey' => $this->configHelper->getAPIKey($storeId),
+            'indexName' => $this->getBaseIndexName($storeId),
+            'priceKey' => '.' . $currencyCode . '.default',
+            'facets' => $this->configHelper->getFacets($storeId),
+            'currencyCode' => $this->configHelper->getCurrencyCode($storeId),
+            'maxValuesPerFacet' => (int) $this->configHelper->getMaxValuesPerFacet($storeId),
+            'categorySeparator' => $this->configHelper->getCategorySeparator($storeId),
+        ];
     }
 
     /**

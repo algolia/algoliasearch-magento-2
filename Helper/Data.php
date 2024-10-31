@@ -25,6 +25,7 @@ use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Search\Model\Query;
 use Magento\Search\Model\ResourceModel\Query\Collection as QueryCollection;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -927,30 +928,35 @@ class Data
     {
 
         $indexNames = [];
-        $indexNames[AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE] = [
-            'appId' => $this->configHelper->getApplicationID(),
-            'apiKey' => $this->configHelper->getAPIKey(),
-            'indexName' => $this->getBaseIndexName(),
-            'priceKey'  => '.' . $this->configHelper->getCurrencyCode() . '.default',
-            'facets' => $this->configHelper->getFacets(),
-            'currencyCode' => $this->configHelper->getCurrencyCode(),
-            'maxValuesPerFacet' => (int) $this->configHelper->getMaxValuesPerFacet(),
-            'categorySeparator' => $this->configHelper->getCategorySeparator(),
-        ];
+        $indexNames[AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE] = $this->buildIndexData();
         foreach ($this->storeManager->getStores() as $store) {
-            $storeId = $store->getId();
-            $indexNames[$storeId] = [
-                'appId' => $this->configHelper->getApplicationID($storeId),
-                'apiKey' => $this->configHelper->getAPIKey($storeId),
-                'indexName' => $this->getBaseIndexName($storeId),
-                'priceKey' => '.' . $store->getCurrentCurrencyCode($storeId) . '.default',
-                'facets' => $this->configHelper->getFacets($storeId),
-                'currencyCode' => $this->configHelper->getCurrencyCode($storeId),
-                'maxValuesPerFacet' => (int) $this->configHelper->getMaxValuesPerFacet($storeId),
-                'categorySeparator' => $this->configHelper->getCategorySeparator($storeId),
-            ];
+            $indexNames[$store->getId()] = $this->buildIndexData($store);
         }
         return $indexNames;
+    }
+
+    /**
+     * @param StoreInterface|null $store
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    protected function buildIndexData(StoreInterface $store = null): array
+    {
+        $storeId = !is_null($store) ? $store->getStoreId() : null;
+        $currencyCode = !is_null($store) ?
+            $store->getCurrentCurrencyCode($storeId) :
+            $this->configHelper->getCurrencyCode();
+
+        return [
+            'appId' => $this->configHelper->getApplicationID($storeId),
+            'apiKey' => $this->configHelper->getAPIKey($storeId),
+            'indexName' => $this->getBaseIndexName($storeId),
+            'priceKey' => '.' . $currencyCode . '.default',
+            'facets' => $this->configHelper->getFacets($storeId),
+            'currencyCode' => $this->configHelper->getCurrencyCode($storeId),
+            'maxValuesPerFacet' => (int) $this->configHelper->getMaxValuesPerFacet($storeId),
+            'categorySeparator' => $this->configHelper->getCategorySeparator($storeId),
+        ];
     }
 
     /**

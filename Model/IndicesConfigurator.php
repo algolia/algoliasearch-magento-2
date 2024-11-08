@@ -83,10 +83,8 @@ class IndicesConfigurator
         $this->algoliaHelper->waitLastTask();
 
         $this->setProductsSettings($storeId, $useTmpIndex);
-        $this->algoliaHelper->waitLastTask();
 
         $this->setExtraSettings($storeId, $useTmpIndex);
-        $this->algoliaHelper->waitLastTask();
 
         $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
@@ -232,6 +230,7 @@ class IndicesConfigurator
                     $this->logger->log('Index name: ' . $indexName);
                     $this->logger->log('Extra settings: ' . json_encode($extraSettings));
                     $this->algoliaHelper->setSettings($indexName, $extraSettings, true);
+                    $this->algoliaHelper->waitLastTask();
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {
                         $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;

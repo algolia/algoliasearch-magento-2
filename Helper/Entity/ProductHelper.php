@@ -350,6 +350,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function setSettings(string $indexName, string $indexNameTmp, int $storeId, bool $saveToTmpIndicesToo = false): void
     {
+        $this->algoliaHelper->setStoreId($storeId);
         $indexSettings = $this->getIndexSettings($storeId);
 
         $this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
@@ -378,6 +379,7 @@ class ProductHelper extends AbstractEntityHelper
                     ');
             } catch (AlgoliaException $e) {
                 $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
+                $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
             }
 
             try {
@@ -390,8 +392,10 @@ class ProductHelper extends AbstractEntityHelper
                 if ($e->getCode() !== 404) {
                     throw $e;
                 }
+                $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
             }
         }
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -1206,13 +1210,15 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $indexName
-     * @param $storeId
+     * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function setFacetsQueryRules($indexName, $storeId = null)
+    protected function setFacetsQueryRules(string $indexName, int $storeId = null)
     {
+        $client = $this->algoliaHelper->getClient();
+
         $this->clearFacetsQueryRules($indexName);
 
         $rules = [];
@@ -1247,7 +1253,7 @@ class ProductHelper extends AbstractEntityHelper
 
         if ($rules) {
             $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $this->algoliaHelper->saveRules($indexName, $rules, true);
+            $client->saveRules($indexName, $rules, true);
         }
     }
 
@@ -1262,7 +1268,8 @@ class ProductHelper extends AbstractEntityHelper
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $this->algoliaHelper->searchRules($indexName, [
+                $client = $this->algoliaHelper->getClient();
+                $fetchedQueryRules = $client->searchRules($indexName, [
                     'context' => 'magento_filters',
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
@@ -1274,7 +1281,7 @@ class ProductHelper extends AbstractEntityHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $this->algoliaHelper->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
+                    $client->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
                 }
 
                 $page++;

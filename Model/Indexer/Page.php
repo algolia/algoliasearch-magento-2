@@ -7,74 +7,21 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
-use Magento\Framework\Message\ManagerInterface;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Magento\Store\Model\StoreManagerInterface;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
-    /**
-     * @var Data
-     */
-    protected $fullAction;
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $storeManager;
-    /**
-     * @var PageHelper
-     */
-    protected $pageHelper;
-    /**
-     * @var AlgoliaHelper
-     */
-    protected $algoliaHelper;
-    /**
-     * @var Queue
-     */
-    protected $queue;
-    /**
-     * @var ConfigHelper
-     */
-    protected $configHelper;
-    /**
-     * @var ManagerInterface
-     */
-    protected $messageManager;
-    /**
-     * @var ConsoleOutput
-     */
-    protected $output;
-
-    /**
-     * @param StoreManagerInterface $storeManager
-     * @param PageHelper $pageHelper
-     * @param Data $helper
-     * @param AlgoliaHelper $algoliaHelper
-     * @param Queue $queue
-     * @param ConfigHelper $configHelper
-     * @param ManagerInterface $messageManager
-     * @param ConsoleOutput $output
-     */
     public function __construct(
-        StoreManagerInterface $storeManager,
-        PageHelper $pageHelper,
-        Data $helper,
-        AlgoliaHelper $algoliaHelper,
-        Queue $queue,
-        ConfigHelper $configHelper,
-        ManagerInterface $messageManager,
-        ConsoleOutput $output
-    ) {
-        $this->fullAction = $helper;
-        $this->storeManager = $storeManager;
-        $this->pageHelper = $pageHelper;
-        $this->algoliaHelper = $algoliaHelper;
-        $this->queue = $queue;
-        $this->configHelper = $configHelper;
-        $this->messageManager = $messageManager;
-        $this->output = $output;
-    }
+        protected StoreManagerInterface $storeManager,
+        protected PageHelper $pageHelper,
+        protected Data $fullAction,
+        protected AlgoliaHelper $algoliaHelper,
+        protected Queue $queue,
+        protected ConfigHelper $configHelper,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+    )
+    {}
 
     /**
      * @param $ids
@@ -82,28 +29,17 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
      */
     public function execute($ids)
     {
-        if (!$this->configHelper->getApplicationID()
-            || !$this->configHelper->getAPIKey()
-            || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed:
-                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
-
-            if (php_sapi_name() === 'cli') {
-                $this->output->writeln($errorMessage);
-
-                return;
-            }
-
-            $this->messageManager->addErrorMessage($errorMessage);
-
-            return;
-        }
-
         $storeIds = $this->pageHelper->getStores();
 
         foreach ($storeIds as $storeId) {
             if ($this->fullAction->isIndexingEnabled($storeId) === false) {
                 continue;
+            }
+
+            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
+                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
+
+                return;
             }
 
             if ($this->isPagesInAdditionalSections($storeId)) {
@@ -113,7 +49,7 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
                 }
 
                 $this->queue->addToQueue(
-                    $this->fullAction,
+                    Data::class,
                     'rebuildStorePageIndex',
                     $data,
                     is_array($ids) ? count($ids) : 1

@@ -55,13 +55,13 @@ class AlgoliaHelper extends AbstractHelper
     /** @var int  */
     protected int $storeId = self::ALGOLIA_DEFAULT_SCOPE;
 
+    /** @var bool */
+    protected bool $userAgentsAdded = false;
+
     protected static ?string $lastUsedIndexName;
 
     protected static ?int $lastTaskId;
 
-    /**
-     * @throws AlgoliaException
-     */
     public function __construct(
         Context $context,
         protected ConfigHelper $config,
@@ -70,9 +70,6 @@ class AlgoliaHelper extends AbstractHelper
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
     ) {
         parent::__construct($context);
-
-        $this->createClient();
-        $this->addAlgoliaUserAgent();
 
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
@@ -88,18 +85,18 @@ class AlgoliaHelper extends AbstractHelper
     protected function createClient(): void
     {
         $storeId = $this->getStoreId();
-        if ($this->algoliaCredentialsManager->checkCredentials($storeId)) {
-            $config = SearchConfig::create(
-                $this->config->getApplicationID($storeId),
-                $this->config->getAPIKey($storeId)
-            );
-            $config->setConnectTimeout($this->config->getConnectionTimeout($storeId));
-            $config->setReadTimeout($this->config->getReadTimeout($storeId));
-            $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
-            $this->clients[$storeId] = SearchClient::createWithConfig($config);
-        } else {
+        if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
             throw new AlgoliaException('Client initialization could not be performed because Algolia credentials were not provided.');
         }
+
+        $config = SearchConfig::create(
+            $this->config->getApplicationID($storeId),
+            $this->config->getAPIKey($storeId)
+        );
+        $config->setConnectTimeout($this->config->getConnectionTimeout($storeId));
+        $config->setReadTimeout($this->config->getReadTimeout($storeId));
+        $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
+        $this->clients[$storeId] = SearchClient::createWithConfig($config);
     }
 
     /**
@@ -115,6 +112,8 @@ class AlgoliaHelper extends AbstractHelper
             AlgoliaAgent::addAlgoliaAgent($clientName, 'PHP', phpversion());
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento', $this->config->getMagentoVersion());
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Edition', $this->config->getMagentoEdition());
+
+            $this->userAgentsAdded = true;
         }
     }
 
@@ -126,6 +125,9 @@ class AlgoliaHelper extends AbstractHelper
     {
         if (!isset($this->clients[$this->getStoreId()])) {
             $this->createClient();
+            if (!$this->userAgentsAdded) {
+                $this->addAlgoliaUserAgent();
+            }
         }
 
         return $this->clients[$this->getStoreId()];

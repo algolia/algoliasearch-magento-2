@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Category;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
@@ -55,8 +56,11 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     {
         // Check that every store has the right number of categories
         foreach ($this->storeManager->getStores() as $store) {
+            $this->algoliaHelper->setStoreId($store->getId());
             $this->assertNbOfRecordsPerStore($store->getCode(), 'categories', $this->assertValues->expectedCategory);
         }
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
@@ -78,12 +82,14 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
         $this->algoliaHelper->waitLastTask();
 
+        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_categories',
             (string) self::BAGS_CATEGORY_ID,
             ['name' => self::BAGS_CATEGORY_NAME]
         );
 
+        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'fixture_second_store_categories',
             (string) self::BAGS_CATEGORY_ID,
@@ -97,15 +103,18 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             ['is_active' => 0]
         );
 
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
         $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
         $this->algoliaHelper->waitLastTask();
 
+        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),
             'categories',
             $this->assertValues->expectedCategory
         );
 
+        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertNbOfRecordsPerStore(
             $fixtureSecondStore->getCode(),
             'categories',

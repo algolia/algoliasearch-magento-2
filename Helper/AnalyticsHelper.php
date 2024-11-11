@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 use Algolia\AlgoliaSearch\Api\AnalyticsClient;
 use Algolia\AlgoliaSearch\Configuration\AnalyticsConfig;
 use Algolia\AlgoliaSearch\DataProvider\Analytics\IndexEntityDataProvider;
-use Algolia\AlgoliaSearch\Logger\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Framework\Locale\ResolverInterface;
 
 class AnalyticsHelper
@@ -55,13 +55,13 @@ class AnalyticsHelper
     /**
      * @param ConfigHelper $configHelper
      * @param IndexEntityDataProvider $entityHelper
-     * @param Logger $logger
+     * @param DiagnosticsLogger $logger
      * @param ResolverInterface $localeResolver
      */
     public function __construct(
         private ConfigHelper            $configHelper,
         private IndexEntityDataProvider $entityHelper,
-        private Logger                  $logger,
+        private DiagnosticsLogger       $logger,
         private ResolverInterface       $localeResolver
     )
     {

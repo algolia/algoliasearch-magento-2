@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Logger\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use DateTime;
 use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
 use Magento\Catalog\Helper\Data as CatalogHelper;
@@ -60,7 +60,7 @@ abstract class ProductWithoutChildren
     private $productTierPrice;
 
     /**
-     * @var Logger
+     * @var DiagnosticsLogger
      */
     protected $logger;
 
@@ -80,7 +80,7 @@ abstract class ProductWithoutChildren
      * @param Rule $rule
      * @param ProductFactory $productloader
      * @param ScopedProductTierPriceManagementInterface $productTierPrice
-     * @param Logger $logger
+     * @param DiagnosticsLogger $logger
      */
     public function __construct(
         ConfigHelper $configHelper,
@@ -92,7 +92,7 @@ abstract class ProductWithoutChildren
         Rule $rule,
         ProductFactory $productloader,
         ScopedProductTierPriceManagementInterface $productTierPrice,
-        Logger $logger
+        DiagnosticsLogger $logger
     ) {
         $this->configHelper = $configHelper;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;

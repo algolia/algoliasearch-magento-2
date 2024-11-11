@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Observer\Insights;
 
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
-use Algolia\AlgoliaSearch\Logger\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
@@ -20,7 +20,7 @@ class CustomerLogout implements ObserverInterface
     public function __construct(
         private readonly CookieManagerInterface $cookieManager,
         private readonly CookieMetadataFactory  $cookieMetadataFactory,
-        private Logger                          $logger
+        private DiagnosticsLogger               $logger
     ) {
 
     }

@@ -11,7 +11,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
-use Algolia\AlgoliaSearch\Logger\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -41,7 +41,7 @@ class IndicesConfigurator
     /** @var AdditionalSectionHelper */
     protected $additionalSectionHelper;
 
-    /** @var \Algolia\AlgoliaSearch\Logger\Logger */
+    /** @var \Algolia\AlgoliaSearch\Logger\DiagnosticsLogger */
     protected $logger;
 
     /**
@@ -53,18 +53,18 @@ class IndicesConfigurator
      * @param PageHelper $pageHelper
      * @param SuggestionHelper $suggestionHelper
      * @param AdditionalSectionHelper $additionalSectionHelper
-     * @param Logger $logger
+     * @param DiagnosticsLogger $logger
      */
     public function __construct(
-        Data $baseHelper,
-        AlgoliaHelper $algoliaHelper,
-        ConfigHelper $configHelper,
-        ProductHelper $productHelper,
-        CategoryHelper $categoryHelper,
-        PageHelper $pageHelper,
-        SuggestionHelper $suggestionHelper,
+        Data                    $baseHelper,
+        AlgoliaHelper           $algoliaHelper,
+        ConfigHelper            $configHelper,
+        ProductHelper           $productHelper,
+        CategoryHelper          $categoryHelper,
+        PageHelper              $pageHelper,
+        SuggestionHelper        $suggestionHelper,
         AdditionalSectionHelper $additionalSectionHelper,
-        Logger $logger
+        DiagnosticsLogger       $logger
     ) {
         $this->baseHelper = $baseHelper;
         $this->algoliaHelper = $algoliaHelper;

@@ -14,7 +14,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
-use Algolia\AlgoliaSearch\Logger\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
@@ -94,7 +94,7 @@ class ProductHelper extends AbstractEntityHelper
         protected Config                                  $eavConfig,
         protected ConfigHelper                            $configHelper,
         protected AlgoliaHelper                           $algoliaHelper,
-        protected Logger                                  $logger,
+        protected DiagnosticsLogger                       $logger,
         protected StoreManagerInterface                   $storeManager,
         protected ManagerInterface                        $eventManager,
         protected Visibility                              $visibility,

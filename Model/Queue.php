@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Logger\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
 use Exception;
@@ -51,7 +51,7 @@ class Queue
     /** @var ConfigHelper */
     protected $configHelper;
 
-    /** @var Logger */
+    /** @var DiagnosticsLogger */
     protected $logger;
 
     protected $jobCollectionFactory;
@@ -74,19 +74,19 @@ class Queue
 
     /**
      * @param ConfigHelper $configHelper
-     * @param Logger $logger
+     * @param DiagnosticsLogger $logger
      * @param JobCollectionFactory $jobCollectionFactory
      * @param ResourceConnection $resourceConnection
      * @param ObjectManagerInterface $objectManager
      * @param ConsoleOutput $output
      */
     public function __construct(
-        ConfigHelper $configHelper,
-        Logger $logger,
-        JobCollectionFactory $jobCollectionFactory,
-        ResourceConnection $resourceConnection,
+        ConfigHelper           $configHelper,
+        DiagnosticsLogger      $logger,
+        JobCollectionFactory   $jobCollectionFactory,
+        ResourceConnection     $resourceConnection,
         ObjectManagerInterface $objectManager,
-        ConsoleOutput $output
+        ConsoleOutput          $output
     ) {
         $this->configHelper = $configHelper;
         $this->logger = $logger;

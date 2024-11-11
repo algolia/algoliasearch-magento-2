@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
-class Logger
+class DiagnosticsLogger
 {
     private $enabled;
     private $config;

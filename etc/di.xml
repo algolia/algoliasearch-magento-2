@@ -184,4 +184,13 @@
         </arguments>
     </type>
 
+    <type name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger">
+        <arguments>
+            <argument name="name" xsi:type="string">AlgoliaLogger</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Magento\Framework\Logger\Handler\System</item>
+                <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\LoggerHandler</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

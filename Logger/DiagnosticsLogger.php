@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Logger;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Store\Model\StoreManagerInterface;
-use Psr\Log\LoggerInterface;
 
 class DiagnosticsLogger
 {
@@ -18,7 +17,7 @@ class DiagnosticsLogger
     public function __construct(
         StoreManagerInterface $storeManager,
         ConfigHelper $configHelper,
-        LoggerInterface $logger
+        AlgoliaLogger $logger
     ) {
         $this->config = $configHelper;
         $this->enabled = $this->config->isLoggingEnabled();

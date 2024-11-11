@@ -1217,8 +1217,6 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function setFacetsQueryRules(string $indexName, int $storeId = null)
     {
-        $client = $this->algoliaHelper->getClient();
-
         $this->clearFacetsQueryRules($indexName);
 
         $rules = [];
@@ -1253,7 +1251,7 @@ class ProductHelper extends AbstractEntityHelper
 
         if ($rules) {
             $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $client->saveRules($indexName, $rules, true);
+            $this->algoliaHelper->saveRules($indexName, $rules, true);
         }
     }
 
@@ -1268,8 +1266,7 @@ class ProductHelper extends AbstractEntityHelper
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $client = $this->algoliaHelper->getClient();
-                $fetchedQueryRules = $client->searchRules($indexName, [
+                $fetchedQueryRules = $this->algoliaHelper->searchRules($indexName, [
                     'context' => 'magento_filters',
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
@@ -1281,7 +1278,7 @@ class ProductHelper extends AbstractEntityHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $client->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
+                    $this->algoliaHelper->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
                 }
 
                 $page++;

@@ -87,8 +87,9 @@ class MultiStoreConfigTest extends MultiStoreTestCase
             $fixtureSecondStore->getCode()
         );
 
+        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
-//        $this->algoliaHelper->waitLastTask();
+        $this->algoliaHelper->waitLastTask();
 
         $this->algoliaHelper->setStoreId($defaultStore->getId());
         $defaultCategoryIndexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_categories');

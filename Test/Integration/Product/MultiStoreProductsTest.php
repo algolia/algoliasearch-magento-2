@@ -155,6 +155,8 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             'products',
             count(self::SKUS) - 1
         );
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

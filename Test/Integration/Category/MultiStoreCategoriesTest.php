@@ -120,6 +120,8 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             'categories',
             $this->assertValues->expectedCategory - 1
         );
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

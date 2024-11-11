@@ -97,6 +97,8 @@ class MultiStorePagesTest extends MultiStoreTestCase
             'pages',
             $this->assertValues->expectedExcludePages - 1
         );
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

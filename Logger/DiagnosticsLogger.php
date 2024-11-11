@@ -3,46 +3,37 @@
 namespace Algolia\AlgoliaSearch\Logger;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Magento\Store\Model\StoreManagerInterface;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class DiagnosticsLogger
 {
-    private $enabled;
-    private $config;
-    private $logger;
-
-    private $timers = [];
-    private $stores = [];
+    /** @var string[]  */
+    protected array $timers = [];
+    protected bool $enabled = false;
 
     public function __construct(
-        StoreManagerInterface $storeManager,
-        ConfigHelper $configHelper,
-        AlgoliaLogger $logger
+        protected ConfigHelper     $config,
+        protected AlgoliaLogger    $logger,
+        protected StoreNameFetcher $storeNameFetcher
     ) {
-        $this->config = $configHelper;
         $this->enabled = $this->config->isLoggingEnabled();
-        $this->logger = $logger;
-
-        foreach ($storeManager->getStores() as $store) {
-            $this->stores[$store->getId()] = $store->getName();
-        }
     }
 
-    public function isEnable()
+    public function isEnabled(): bool
     {
         return $this->enabled;
     }
 
-    public function getStoreName($storeId)
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function getStoreName($storeId): string
     {
-        if ($storeId === null || !isset($this->stores[$storeId])) {
-            return 'undefined store';
-        }
-
-        return $storeId . ' (' . $this->stores[$storeId] . ')';
+        return $storeId . ' (' . $this->storeNameFetcher->getStoreName($storeId) . ')';
     }
 
-    public function start($action)
+    public function start($action): void
     {
         if ($this->enabled === false) {
             return;
@@ -54,7 +45,7 @@ class DiagnosticsLogger
         $this->timers[$action] = microtime(true);
     }
 
-    public function stop($action)
+    public function stop($action): void
     {
         if ($this->enabled === false) {
             return;
@@ -67,20 +58,20 @@ class DiagnosticsLogger
         $this->log('<<<<< END ' . $action . ' (' . $this->formatTime($this->timers[$action], microtime(true)) . ')');
     }
 
-    public function log($message)
+    public function log($message): void
     {
         if ($this->enabled) {
             $this->logger->info($message);
         }
     }
 
-    public function error($message) {
+    public function error($message): void {
         if ($this->enabled) {
             $this->logger->error($message);
         }
     }
 
-    private function formatTime($begin, $end)
+    private function formatTime($begin, $end): string
     {
         return ($end - $begin) . 'sec';
     }

@@ -3,9 +3,8 @@
 namespace Algolia\AlgoliaSearch\Observer\Insights;
 
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Logger\Logger;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
 use Magento\Framework\Stdlib\CookieManagerInterface;

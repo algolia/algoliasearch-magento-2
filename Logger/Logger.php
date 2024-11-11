@@ -1,7 +1,8 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Helper;
+namespace Algolia\AlgoliaSearch\Logger;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 

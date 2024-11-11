@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 use Algolia\AlgoliaSearch\Api\AnalyticsClient;
 use Algolia\AlgoliaSearch\Configuration\AnalyticsConfig;
 use Algolia\AlgoliaSearch\DataProvider\Analytics\IndexEntityDataProvider;
+use Algolia\AlgoliaSearch\Logger\Logger;
 use Magento\Framework\Locale\ResolverInterface;
 
 class AnalyticsHelper

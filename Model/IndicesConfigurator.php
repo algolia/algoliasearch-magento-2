@@ -11,7 +11,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Logger\Logger;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -41,7 +41,7 @@ class IndicesConfigurator
     /** @var AdditionalSectionHelper */
     protected $additionalSectionHelper;
 
-    /** @var Logger */
+    /** @var \Algolia\AlgoliaSearch\Logger\Logger */
     protected $logger;
 
     /**

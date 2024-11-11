@@ -11,6 +11,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
+use Algolia\AlgoliaSearch\Logger\Logger;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;

@@ -3,20 +3,20 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Logger\Logger;
 use DateTime;
+use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
 use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\CatalogRule\Model\ResourceModel\Rule;
-use Magento\Customer\Model\Group;
 use Magento\Customer\Api\Data\GroupInterface;
-use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
+use Magento\Customer\Model\Group;
+use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Helper\Data as TaxHelper;
 use Magento\Tax\Model\Config as TaxConfig;
-use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
 
 abstract class ProductWithoutChildren
 {

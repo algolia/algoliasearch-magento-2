@@ -5,24 +5,32 @@ namespace Algolia\AlgoliaSearch\Logger;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Monolog\Logger;
 
+/**
+ * This class provides a facade for both logging and profiling
+ */
 class DiagnosticsLogger
 {
-    /** @var string[]  */
-    protected array $timers = [];
-    protected bool $enabled = false;
+    protected bool $isLoggerEnabled = false;
+    protected bool $isProfilerEnabled = false;
 
     public function __construct(
         protected ConfigHelper     $config,
-        protected AlgoliaLogger    $logger,
+        protected TimedLogger      $logger,
         protected StoreNameFetcher $storeNameFetcher
     ) {
-        $this->enabled = $this->config->isLoggingEnabled();
+        $this->isLoggerEnabled = $this->config->isLoggingEnabled();
     }
 
-    public function isEnabled(): bool
+    public function isLoggerEnabled(): bool
     {
-        return $this->enabled;
+        return $this->isLoggerEnabled;
+    }
+
+    public function isProfilerEnabled(): bool
+    {
+        return $this->isProfilerEnabled;
     }
 
     /**
@@ -35,45 +43,35 @@ class DiagnosticsLogger
 
     public function start($action): void
     {
-        if ($this->enabled === false) {
+        if (!$this->isLoggerEnabled()) {
             return;
         }
 
-        $this->log('');
-        $this->log('');
-        $this->log('>>>>> BEGIN ' . $action);
-        $this->timers[$action] = microtime(true);
+        $this->logger->start($action);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function stop($action): void
     {
-        if ($this->enabled === false) {
+        if (!$this->isLoggerEnabled()) {
             return;
         }
 
-        if (false === isset($this->timers[$action])) {
-            throw new \Exception('Algolia Logger => non existing action');
-        }
-
-        $this->log('<<<<< END ' . $action . ' (' . $this->formatTime($this->timers[$action], microtime(true)) . ')');
+        $this->logger->stop($action);
     }
 
-    public function log($message): void
+    public function log(string $message, int $logLevel = Logger::INFO): void
     {
-        if ($this->enabled) {
-            $this->logger->info($message);
+        if ($this->isLoggerEnabled()) {
+            $this->logger->log($message, $logLevel);
         }
     }
 
     public function error($message): void {
-        if ($this->enabled) {
-            $this->logger->error($message);
+        if ($this->isLoggerEnabled()) {
+            $this->logger->log($message, Logger::ERROR);
         }
     }
-
-    private function formatTime($begin, $end): string
-    {
-        return ($end - $begin) . 'sec';
-    }
-
 }

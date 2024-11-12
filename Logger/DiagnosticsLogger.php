@@ -13,8 +13,11 @@ use Monolog\Logger;
  */
 class DiagnosticsLogger
 {
+    /** @var array */
+    protected const ALGOLIA_TAGS = ['group' => 'algolia'];
+    protected const PROFILE_LOG_MESSAGES = true;
     protected bool $isLoggerEnabled = false;
-    protected bool $isProfilerEnabled = true;
+    protected bool $isProfilerEnabled = false;
 
     public function __construct(
         protected ConfigHelper     $config,
@@ -22,6 +25,7 @@ class DiagnosticsLogger
         protected StoreNameFetcher $storeNameFetcher
     ) {
         $this->isLoggerEnabled = $this->config->isLoggingEnabled();
+        $this->isProfilerEnabled = $this->config->isProfilingEnabled();
     }
 
     public function isLoggerEnabled(): bool
@@ -42,7 +46,7 @@ class DiagnosticsLogger
         return $storeId . ' (' . $this->storeNameFetcher->getStoreName($storeId) . ')';
     }
 
-    public function start(string $action, bool $profileMethod = true): void
+    public function start(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES): void
     {
         if ($this->isLoggerEnabled) {
             $this->logger->start($action);
@@ -51,7 +55,7 @@ class DiagnosticsLogger
         if ($this->isProfilerEnabled && $profileMethod) {
             $timerName = $this->getCallingMethodName() ?: $action;
             if ($timerName) {
-                Profiler::start($timerName, ['group' => 'algolia']);
+                Profiler::start($timerName, self::ALGOLIA_TAGS);
             }
         }
     }
@@ -59,7 +63,7 @@ class DiagnosticsLogger
     /**
      * @throws \Exception
      */
-    public function stop(string $action, bool $profileMethod = false): void
+    public function stop(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES): void
     {
         if ($this->isLoggerEnabled) {
             $this->logger->stop($action);
@@ -68,7 +72,7 @@ class DiagnosticsLogger
         if ($this->isProfilerEnabled && $profileMethod) {
             $timerName = $this->getCallingMethodName() ?: $action;
             if ($timerName) {
-                Profiler::setDefaultTags(['group' => 'algolia']);
+                Profiler::setDefaultTags(self::ALGOLIA_TAGS);
                 Profiler::stop($timerName);
                 Profiler::setDefaultTags([]);
             }

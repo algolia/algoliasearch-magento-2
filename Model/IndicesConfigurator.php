@@ -130,6 +130,8 @@ class IndicesConfigurator
 
         $this->setExtraSettings($storeId, $useTmpIndex);
         $this->algoliaHelper->waitLastTask();
+
+        $this->logger->stop($logEventName);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Logger;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Profiler;
 use Monolog\Logger;
 
 /**
@@ -13,7 +14,7 @@ use Monolog\Logger;
 class DiagnosticsLogger
 {
     protected bool $isLoggerEnabled = false;
-    protected bool $isProfilerEnabled = false;
+    protected bool $isProfilerEnabled = true;
 
     public function __construct(
         protected ConfigHelper     $config,
@@ -41,37 +42,61 @@ class DiagnosticsLogger
         return $storeId . ' (' . $this->storeNameFetcher->getStoreName($storeId) . ')';
     }
 
-    public function start($action): void
+    public function start(string $action, bool $profileMethod = true): void
     {
-        if (!$this->isLoggerEnabled()) {
-            return;
+        if ($this->isLoggerEnabled) {
+            $this->logger->start($action);
         }
 
-        $this->logger->start($action);
+        if ($this->isProfilerEnabled && $profileMethod) {
+            $timerName = $this->getCallingMethodName() ?: $action;
+            if ($timerName) {
+                Profiler::start($timerName, ['group' => 'algolia']);
+            }
+        }
     }
 
     /**
      * @throws \Exception
      */
-    public function stop($action): void
+    public function stop(string $action, bool $profileMethod = false): void
     {
-        if (!$this->isLoggerEnabled()) {
-            return;
+        if ($this->isLoggerEnabled) {
+            $this->logger->stop($action);
         }
 
-        $this->logger->stop($action);
+        if ($this->isProfilerEnabled && $profileMethod) {
+            $timerName = $this->getCallingMethodName() ?: $action;
+            if ($timerName) {
+                Profiler::stop($timerName);
+            }
+        }
     }
 
     public function log(string $message, int $logLevel = Logger::INFO): void
     {
-        if ($this->isLoggerEnabled()) {
+        if ($this->isLoggerEnabled) {
             $this->logger->log($message, $logLevel);
         }
     }
 
-    public function error($message): void {
-        if ($this->isLoggerEnabled()) {
+    public function error(string $message): void {
+        if ($this->isLoggerEnabled) {
             $this->logger->log($message, Logger::ERROR);
         }
+    }
+
+    /**
+     * Gets the name of the method that called the diagnostics
+     *
+     * @return string|null
+     */
+    protected function getCallingMethodName(): ?string
+    {
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+        $level = 2;
+        return array_key_exists($level, $backtrace)
+            ? $backtrace[$level]['class'] . "::" . $backtrace[$level]['function']
+            : null;
     }
 }

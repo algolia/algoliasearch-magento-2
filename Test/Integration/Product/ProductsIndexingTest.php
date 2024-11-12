@@ -106,8 +106,8 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
      */
     protected function tearDown(): void
     {
-        parent::tearDown();
-
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, true);
+
+        parent::tearDown();
     }
 }

@@ -68,7 +68,9 @@ class DiagnosticsLogger
         if ($this->isProfilerEnabled && $profileMethod) {
             $timerName = $this->getCallingMethodName() ?: $action;
             if ($timerName) {
+                Profiler::setDefaultTags(['group' => 'algolia']);
                 Profiler::stop($timerName);
+                Profiler::setDefaultTags([]);
             }
         }
     }

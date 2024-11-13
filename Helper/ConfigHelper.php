@@ -446,7 +446,7 @@ class ConfigHelper
     }
 
     protected function serialize(array $value): string {
-        return $this->serializer->serialize($value);
+        return $this->serializer->serialize($value) ?: '';
     }
 
     /**
@@ -1157,7 +1157,7 @@ class ConfigHelper
      * @param int|null $scopeId
      * @return void
      */
-    public function setSorting(array $sorting, ?string $scope = null, ?int $scopeId = null): void
+    public function setSorting(array $sorting, string $scope = Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT, ?int $scopeId = null): void
     {
         $this->configWriter->save(
             self::SORTING_INDICES,
@@ -1242,7 +1242,7 @@ class ConfigHelper
      */
     public function getIndexPrefix(int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

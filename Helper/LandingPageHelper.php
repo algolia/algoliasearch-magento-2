@@ -59,7 +59,7 @@ class LandingPageHelper extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
 
-    public function getLandingPage($pageId)
+    public function getLandingPage($pageId): LandingPage|null|false
     {
         if ($pageId !== null && $pageId !== $this->landingPage->getId()) {
             $this->landingPage->setStoreId($this->storeManager->getStore()->getId());

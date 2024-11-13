@@ -359,9 +359,12 @@ class ProductHelper extends AbstractEntityHelper
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
-        $this->setFacetsQueryRules($indexName);
+        $this->setFacetsQueryRules($indexName, $storeId);
+        $this->algoliaHelper->waitLastTask();
+
         if ($saveToTmpIndicesToo) {
-            $this->setFacetsQueryRules($indexNameTmp);
+            $this->setFacetsQueryRules($indexNameTmp, $storeId);
+            $this->algoliaHelper->waitLastTask();
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
@@ -1204,17 +1207,16 @@ class ProductHelper extends AbstractEntityHelper
 
     /**
      * @param $indexName
+     * @param $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function setFacetsQueryRules($indexName)
+    protected function setFacetsQueryRules($indexName, $storeId = null)
     {
-        $client = $this->algoliaHelper->getClient();
-
         $this->clearFacetsQueryRules($indexName);
 
         $rules = [];
-        $facets = $this->configHelper->getFacets();
+        $facets = $this->configHelper->getFacets($storeId);
         foreach ($facets as $facet) {
             if (!array_key_exists('create_rule', $facet) || $facet['create_rule'] !== '1') {
                 continue;
@@ -1245,7 +1247,7 @@ class ProductHelper extends AbstractEntityHelper
 
         if ($rules) {
             $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $client->saveRules($indexName, $rules, true);
+            $this->algoliaHelper->saveRules($indexName, $rules, true);
         }
     }
 
@@ -1260,8 +1262,7 @@ class ProductHelper extends AbstractEntityHelper
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $client = $this->algoliaHelper->getClient();
-                $fetchedQueryRules = $client->searchRules($indexName, [
+                $fetchedQueryRules = $this->algoliaHelper->searchRules($indexName, [
                     'context' => 'magento_filters',
                     'page' => $page,
                     'hitsPerPage' => $hitsPerPage,
@@ -1273,7 +1274,7 @@ class ProductHelper extends AbstractEntityHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $client->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
+                    $this->algoliaHelper->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
                 }
 
                 $page++;

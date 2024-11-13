@@ -112,7 +112,7 @@ class ConfigPatch implements SchemaPatchInterface
             ],
         ],
 
-        'algoliasearch_instant/instant/facets' => [
+        'algoliasearch_instant/instant_facets/facets' => [
             [
                 'attribute' => 'price',
                 'type' => 'slider',
@@ -135,7 +135,7 @@ class ConfigPatch implements SchemaPatchInterface
                 'create_rule' => '2',
             ],
         ],
-        'algoliasearch_instant/instant/sorts' => [
+        'algoliasearch_instant/instant_sorts/sorts' => [
             [
                 'attribute' => 'price',
                 'sort' => 'asc',

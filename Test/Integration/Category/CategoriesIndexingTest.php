@@ -1,8 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Category;
 
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
+use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 
 class CategoriesIndexingTest extends IndexingTestCase
 {

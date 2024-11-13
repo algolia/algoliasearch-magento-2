@@ -1,9 +1,10 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Config;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
+use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 
 class ConfigTest extends TestCase
 {
@@ -70,7 +71,7 @@ class ConfigTest extends TestCase
             }
         }
 
-        $this->setConfig('algoliasearch_instant/instant/facets', $this->getSerializer()->serialize($facets));
+        $this->setConfig('algoliasearch_instant/instant_facets/facets', $this->getSerializer()->serialize($facets));
 
         // Set don't replace category pages with Algolia - categories attribute shouldn't be included in facets
         $this->setConfig('algoliasearch_instant/instant/replace_categories', '0');
@@ -179,7 +180,7 @@ class ConfigTest extends TestCase
         ];
 
         $this->setConfig('algoliasearch_instant/instant/is_instant_enabled', '1'); // Needed to set replicas to Algolia
-        $this->setConfig('algoliasearch_instant/instant/sorts', $this->getSerializer()->serialize($sortingIndicesData));
+        $this->setConfig('algoliasearch_instant/instant_sorts/sorts', $this->getSerializer()->serialize($sortingIndicesData));
         $this->setConfig('algoliasearch_advanced/advanced/customer_groups_enable', $enableCustomGroups);
 
         $sortingIndicesWithRankingWhichShouldBeCreated = [
@@ -221,13 +222,11 @@ class ConfigTest extends TestCase
             $indexName = $this->indexPrefix . 'default_' . $section;
 
             $this->algoliaHelper->setSettings($indexName, ['exactOnSingleWordQuery' => 'attribute']);
+            $this->algoliaHelper->waitLastTask();
         }
-
-        $this->algoliaHelper->waitLastTask();
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
-
             $currentSettings = $this->algoliaHelper->getSettings($indexName);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);

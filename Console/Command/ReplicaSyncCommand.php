@@ -11,7 +11,7 @@ use Algolia\AlgoliaSearch\Exceptions\BadRequestException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
-use Magento\Framework\App\State;
+use Magento\Framework\App\State as AppState;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -27,12 +27,12 @@ class ReplicaSyncCommand extends AbstractReplicaCommand implements ReplicaSyncCo
         protected ReplicaManagerInterface $replicaManager,
         protected ProductHelper           $productHelper,
         protected StoreManagerInterface   $storeManager,
-        State                             $state,
+        AppState                          $appState,
         StoreNameFetcher                  $storeNameFetcher,
         ?string                           $name = null
     )
     {
-        parent::__construct($state, $storeNameFetcher, $name);
+        parent::__construct($appState, $storeNameFetcher, $name);
     }
 
     protected function getReplicaCommandName(): string

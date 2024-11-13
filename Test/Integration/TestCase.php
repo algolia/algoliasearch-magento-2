@@ -3,13 +3,17 @@
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento23;
-use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento24;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246CE;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246EE;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247CE;
+use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247EE;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -21,6 +25,11 @@ if (class_exists('PHPUnit\Framework\TestCase')) {
 
 abstract class TestCase extends \TC
 {
+    /**
+     * @var ObjectManagerInterface
+     */
+    protected $objectManager;
+
     /** @var bool */
     private $boostrapped = false;
 
@@ -33,17 +42,33 @@ abstract class TestCase extends \TC
     /** @var ConfigHelper */
     protected $configHelper;
 
-    /** @var Magento23|Magento24 */
+    /** @var Magento246CE|Magento246EE|Magento247CE|Magento247EE */
     protected $assertValues;
 
-    public function setUp(): void
+    /** @var ProductMetadataInterface */
+    protected $productMetadata;
+
+    protected ?string $indexSuffix = null;
+
+    protected function setUp(): void
     {
         $this->bootstrap();
     }
 
-    public function tearDown(): void
+    /**
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     */
+    protected function tearDown(): void
     {
         $this->clearIndices();
+        $this->algoliaHelper->waitLastTask();
+        $this->clearIndices(); // Remaining replicas
+    }
+
+    protected function getIndexName(string $storeIndexPart): string
+    {
+        return $this->indexPrefix . $storeIndexPart . ($this->indexSuffix ? '_' . $this->indexSuffix : '');
     }
 
     protected function resetConfigs($configs = [])
@@ -58,14 +83,86 @@ abstract class TestCase extends \TC
         }
     }
 
-    protected function setConfig($path, $value)
-    {
+    protected function setConfig(
+        $path,
+        $value,
+        $scopeCode = 'default'
+    ) {
         $this->getObjectManager()->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class)->setValue(
             $path,
             $value,
             ScopeInterface::SCOPE_STORE,
-            'default'
+            $scopeCode
         );
+    }
+
+    protected function assertConfigInDb(
+        string $path,
+        mixed  $value,
+        string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+        int    $scopeId = 0
+    ): void
+    {
+        $connection = $this->objectManager->create(\Magento\Framework\App\ResourceConnection::class)
+            ->getConnection();
+
+        $select = $connection->select()
+            ->from('core_config_data', 'value')
+            ->where('path = ?', $path)
+            ->where('scope = ?', $scope)
+            ->where('scope_id = ?', $scopeId);
+
+        $configValue = $connection->fetchOne($select);
+
+        $this->assertEquals($value, $configValue);
+    }
+
+    /**
+     * If testing classes that use WriterInterface under the hood to update the database
+     * then you need a way to refresh the in-memory cache
+     * This function achieves that while preserving the original bootstrap config
+     */
+    protected function refreshConfigFromDb(): void
+    {
+        $bootstrap = $this->getBootstrapConfig();
+        $this->objectManager->get(\Magento\Framework\App\Config\ReinitableConfigInterface::class)->reinit();
+        $this->setConfigFromArray($bootstrap);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function getBootstrapConfig(): array
+    {
+        $config = $this->objectManager->get(ScopeConfigInterface::class);
+
+        $bootstrap = [
+            ConfigHelper::APPLICATION_ID,
+            ConfigHelper::SEARCH_ONLY_API_KEY,
+            ConfigHelper::API_KEY,
+            ConfigHelper::INDEX_PREFIX
+        ];
+
+        return array_combine(
+            $bootstrap,
+            array_map(
+                function($setting) use ($config) {
+                    return $config->getValue($setting, ScopeInterface::SCOPE_STORE);
+                },
+                $bootstrap
+            )
+        );
+    }
+
+    /**
+     * @param array<string, string> $settings
+     * @return void
+     */
+    protected function setConfigFromArray(array $settings): void
+    {
+        foreach ($settings as $key => $value) {
+            $this->setConfig($key, $value);
+        }
     }
 
     protected function clearIndices()
@@ -97,10 +194,21 @@ abstract class TestCase extends \TC
             return;
         }
 
-        if (version_compare($this->getMagentoVersion(), '2.4.0', '<')) {
-            $this->assertValues = new Magento23();
+        $this->objectManager = $this->getObjectManager();
+        $this->productMetadata = $this->objectManager->get(ProductMetadataInterface::class);
+
+        if (version_compare($this->getMagentoVersion(), '2.4.7', '<')) {
+            if ($this->getMagentEdition() === 'Community') {
+                $this->assertValues = new Magento246CE();
+            } else {
+                $this->assertValues = new Magento246EE();
+            }
         } else {
-            $this->assertValues = new Magento24();
+            if ($this->getMagentEdition() === 'Community') {
+                $this->assertValues = new Magento247CE();
+            } else {
+                $this->assertValues = new Magento247EE();
+            }
         }
 
         $this->configHelper = $this->getObjectManager()->create(ConfigHelper::class);
@@ -116,6 +224,18 @@ abstract class TestCase extends \TC
         $this->boostrapped = true;
     }
 
+
+    /**
+     * @throws \ReflectionException
+     */
+    protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
+    {
+        $mock = $this->createMock($propertyClass);
+        $reflection = new \ReflectionClass($object);
+        $property = $reflection->getProperty($propertyName);
+        $property->setValue($object, $mock);
+    }
+
     /**
      * Call protected/private method of a class.
      *
@@ -127,21 +247,20 @@ abstract class TestCase extends \TC
      *
      * @return mixed method return
      */
-    protected function invokeMethod(&$object, $methodName, array $parameters = [])
+    protected function invokeMethod(object $object, string $methodName, array $parameters = [])
     {
         $reflection = new \ReflectionClass(get_class($object));
-        $method = $reflection->getMethod($methodName);
-        $method->setAccessible(true);
-
-        return $method->invokeArgs($object, $parameters);
+        return $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 
     private function getMagentoVersion()
     {
-        /** @var ProductMetadataInterface $productMetadata */
-        $productMetadata = $this->getObjectManager()->get(ProductMetadataInterface::class);
+        return $this->productMetadata->getVersion();
+    }
 
-        return $productMetadata->getVersion();
+    private function getMagentEdition()
+    {
+        return $this->productMetadata->getEdition();
     }
 
     protected function getSerializer()

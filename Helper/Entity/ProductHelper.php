@@ -426,7 +426,8 @@ class ProductHelper extends AbstractEntityHelper
     {
         $storeId = $product->getStoreId();
 
-        $this->logger->start('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId));
+        $logEventName = 'CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId);
+        $this->logger->start($logEventName, true);
         $defaultData = [];
 
         $transport = new DataObject($defaultData);
@@ -495,7 +496,7 @@ class ProductHelper extends AbstractEntityHelper
         );
         $customData = $transport->getData();
 
-        $this->logger->stop('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId));
+        $this->logger->stop($logEventName, true);
 
         return $customData;
     }
@@ -887,6 +888,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function addAdditionalAttributes($customData, $additionalAttributes, Product $product, $subProducts)
     {
+        $this->logger->startProfiling(__METHOD__);
         foreach ($additionalAttributes as $attribute) {
             $attributeName = $attribute['attribute'];
 
@@ -922,6 +924,7 @@ class ProductHelper extends AbstractEntityHelper
 
             $customData = $this->addNullValue($customData, $subProducts, $attribute, $attributeResource);
         }
+        $this->logger->stopProfiling(__METHOD__);
 
         return $customData;
     }

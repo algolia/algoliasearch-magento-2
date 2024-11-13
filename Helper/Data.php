@@ -542,7 +542,8 @@ class Data
             );
         }
 
-        $this->logger->start('CREATE RECORDS ' . $this->logger->getStoreName($storeId));
+        $logEventName = 'CREATE RECORDS ' . $this->logger->getStoreName($storeId);
+        $this->logger->start($logEventName, true);
         $this->logger->log(count($collection) . ' product records to create');
         $salesData = $this->getSalesData($storeId, $collection);
         $transport = new ProductDataArray();
@@ -595,7 +596,7 @@ class Data
             $productsToRemove = array_merge($productsToRemove, $potentiallyDeletedProductsIds);
         }
 
-        $this->logger->stop('CREATE RECORDS ' . $this->logger->getStoreName($storeId));
+        $this->logger->stop($logEventName, true);
         return [
             'toIndex' => $productsToIndex,
             'toRemove' => array_unique($productsToRemove),
@@ -686,7 +687,7 @@ class Data
         $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
             page ' . $page . ',
             pageSize ' . $pageSize;
-        $this->logger->start($wrapperLogMessage);
+        $this->logger->start($wrapperLogMessage, true);
         if ($emulationInfo === null) {
             $this->startEmulation($storeId);
         }
@@ -715,10 +716,10 @@ class Data
         $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
             collection page: ' . $page . ',
             pageSize: ' . $pageSize;
-        $this->logger->start($logMessage);
+        $this->logger->start($logMessage, true);
         $collection->load();
         $this->logger->log('Loaded ' . count($collection) . ' products');
-        $this->logger->stop($logMessage);
+        $this->logger->stop($logMessage, true);
         $indexName = $this->productHelper->getIndexName($storeId, $useTmpIndex);
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
@@ -744,7 +745,7 @@ class Data
         if ($emulationInfo === null) {
             $this->stopEmulation();
         }
-        $this->logger->stop($wrapperLogMessage);
+        $this->logger->stop($wrapperLogMessage, true);
     }
 
     /**

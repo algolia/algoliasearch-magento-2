@@ -115,6 +115,7 @@ abstract class ProductWithoutChildren
      */
     public function addPriceData($customData, Product $product, $subProducts): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $this->customData = $customData;
         $this->store = $product->getStore();
         $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
@@ -165,6 +166,7 @@ abstract class ProductWithoutChildren
             }
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $this->customData;
     }
 
@@ -281,6 +283,7 @@ abstract class ProductWithoutChildren
      */
     protected function getTierPrice(Product $product, $currencyCode, $withTax)
     {
+        $this->logger->startProfiling(__METHOD__);
         $tierPrice = [];
         $tierPrices = [];
 
@@ -347,6 +350,7 @@ abstract class ProductWithoutChildren
             $tierPrice[$groupId] = $this->getTaxPrice($product, $currentTierPrice, $withTax);
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $tierPrice;
     }
 

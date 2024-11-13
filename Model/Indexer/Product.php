@@ -16,34 +16,17 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
-    private $storeManager;
-    private $productHelper;
-    private $algoliaHelper;
-    private $fullAction;
-    private $configHelper;
-    private $queue;
-    private $messageManager;
-    private $output;
 
     public function __construct(
-        StoreManagerInterface $storeManager,
-        ProductHelper $productHelper,
-        Data $helper,
-        AlgoliaHelper $algoliaHelper,
-        ConfigHelper $configHelper,
-        Queue $queue,
-        ManagerInterface $messageManager,
-        ConsoleOutput $output
-    ) {
-        $this->fullAction = $helper;
-        $this->storeManager = $storeManager;
-        $this->productHelper = $productHelper;
-        $this->algoliaHelper = $algoliaHelper;
-        $this->configHelper = $configHelper;
-        $this->queue = $queue;
-        $this->messageManager = $messageManager;
-        $this->output = $output;
-    }
+        protected StoreManagerInterface $storeManager,
+        protected ProductHelper $productHelper,
+        protected Data $mainHelper,
+        protected AlgoliaHelper $algoliaHelper,
+        protected ConfigHelper $configHelper,
+        protected Queue $queue,
+        protected ManagerInterface $messageManager,
+        protected ConsoleOutput $output
+    ) { }
 
     /**
      * @throws NoSuchEntityException
@@ -74,7 +57,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->mainHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -97,6 +80,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
             $useTmpIndex = $this->configHelper->isQueueActive($storeId);
             $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
+
             $size = $collection->getSize();
 
             $pages = ceil($size / $productsPerPage);

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Logger;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -15,7 +16,7 @@ class DiagnosticsLogger
 {
     /** @var array */
     protected const ALGOLIA_TAGS = ['group' => 'algolia'];
-    protected const PROFILE_LOG_MESSAGES = true;
+    protected const PROFILE_LOG_MESSAGES_DEFAULT = false;
     protected bool $isLoggerEnabled = false;
     protected bool $isProfilerEnabled = false;
 
@@ -46,7 +47,7 @@ class DiagnosticsLogger
         return $storeId . ' (' . $this->storeNameFetcher->getStoreName($storeId) . ')';
     }
 
-    public function start(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES): void
+    public function start(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES_DEFAULT): void
     {
         if ($this->isLoggerEnabled) {
             $this->logger->start($action);
@@ -55,15 +56,16 @@ class DiagnosticsLogger
         if ($this->isProfilerEnabled && $profileMethod) {
             $timerName = $this->getCallingMethodName() ?: $action;
             if ($timerName) {
-                Profiler::start($timerName, self::ALGOLIA_TAGS);
+                $this->startProfiling($timerName);
             }
         }
     }
 
+
     /**
-     * @throws \Exception
+     * @throws AlgoliaException
      */
-    public function stop(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES): void
+    public function stop(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES_DEFAULT): void
     {
         if ($this->isLoggerEnabled) {
             $this->logger->stop($action);
@@ -72,11 +74,25 @@ class DiagnosticsLogger
         if ($this->isProfilerEnabled && $profileMethod) {
             $timerName = $this->getCallingMethodName() ?: $action;
             if ($timerName) {
-                Profiler::setDefaultTags(self::ALGOLIA_TAGS);
-                Profiler::stop($timerName);
-                Profiler::setDefaultTags([]);
+                $this->stopProfiling($timerName);
             }
         }
+    }
+
+    public function startProfiling(string $timerName): void
+    {
+        if (!$this->isProfilerEnabled) return;
+
+        Profiler::start($timerName, self::ALGOLIA_TAGS);
+    }
+
+    public function stopProfiling(string $timerName): void
+    {
+        if (!$this->isProfilerEnabled) return;
+
+        Profiler::setDefaultTags(self::ALGOLIA_TAGS);
+        Profiler::stop($timerName);
+        Profiler::setDefaultTags([]);
     }
 
     public function log(string $message, int $logLevel = Logger::INFO): void
@@ -97,10 +113,9 @@ class DiagnosticsLogger
      *
      * @return string|null
      */
-    protected function getCallingMethodName(): ?string
+    protected function getCallingMethodName(int $level = 2): ?string
     {
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-        $level = 2;
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $level + 1);
         return array_key_exists($level, $backtrace)
             ? $backtrace[$level]['class'] . "::" . $backtrace[$level]['function']
             : null;

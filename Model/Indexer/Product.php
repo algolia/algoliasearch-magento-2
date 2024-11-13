@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
@@ -20,12 +21,13 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ProductHelper $productHelper,
-        protected Data $mainHelper,
+        protected Data $baseHelper,
         protected AlgoliaHelper $algoliaHelper,
         protected ConfigHelper $configHelper,
         protected Queue $queue,
         protected ManagerInterface $messageManager,
-        protected ConsoleOutput $output
+        protected ConsoleOutput $output,
+        protected DiagnosticsLogger $diag
     ) { }
 
     /**
@@ -57,7 +59,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($this->mainHelper->isIndexingEnabled($storeId) === false) {
+            if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -81,7 +83,10 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
             $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
 
+            $timerName = __METHOD__ . ' (Get product collection size)';
+            $this->diag->startProfiling($timerName);
             $size = $collection->getSize();
+            $this->diag->stopProfiling($timerName);
 
             $pages = ceil($size / $productsPerPage);
 

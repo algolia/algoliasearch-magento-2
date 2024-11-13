@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Logger;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Monolog\Logger;
 
 class TimedLogger
@@ -22,10 +23,13 @@ class TimedLogger
         $this->timers[$action] = microtime(true);
     }
 
+    /**
+     * @throws AlgoliaException
+     */
     public function stop($action): void
     {
         if (false === isset($this->timers[$action])) {
-            throw new \Exception('Algolia Logger => non existing action');
+            throw new AlgoliaException('Algolia Logger => non existing action');
         }
 
         $this->log('<<<<< END ' . $action . ' (' . $this->formatTime($this->timers[$action], microtime(true)) . ')');

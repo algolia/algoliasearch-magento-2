@@ -203,6 +203,7 @@ class ProductHelper extends AbstractEntityHelper
         bool $includeNotVisibleIndividually = false
     ): ProductCollection
     {
+        $this->logger->startProfiling(__METHOD__);
         $productCollection = $this->productCollectionFactory->create();
         $products = $productCollection
             ->setStoreId($storeId)
@@ -252,6 +253,7 @@ class ProductHelper extends AbstractEntityHelper
             ]
         );
 
+        $this->logger->stopProfiling(__METHOD__);
         return $products;
     }
 

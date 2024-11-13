@@ -716,10 +716,10 @@ class Data
         $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
             collection page: ' . $page . ',
             pageSize: ' . $pageSize;
-        $this->logger->start($logMessage, true);
+        $this->logger->start($logMessage);
         $collection->load();
         $this->logger->log('Loaded ' . count($collection) . ' products');
-        $this->logger->stop($logMessage, true);
+        $this->logger->stop($logMessage);
         $indexName = $this->productHelper->getIndexName($storeId, $useTmpIndex);
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {

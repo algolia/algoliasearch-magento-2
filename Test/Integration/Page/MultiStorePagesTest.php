@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Page;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Algolia\AlgoliaSearch\Model\Indexer\Page;
@@ -55,6 +56,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
     {
         // Check that every store has the right number of pages
         foreach ($this->storeManager->getStores() as $store) {
+            $this->algoliaHelper->setStoreId($store->getId());
             $this->assertNbOfRecordsPerStore(
                 $store->getCode(),
                 'pages',
@@ -63,6 +65,8 @@ class MultiStorePagesTest extends MultiStoreTestCase
                     $this->assertValues->expectedPages
             );
         }
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
@@ -80,17 +84,21 @@ class MultiStorePagesTest extends MultiStoreTestCase
         $this->pagesIndexer->execute([self::ABOUT_US_PAGE_ID]);
         $this->algoliaHelper->waitLastTask();
 
+        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),
             'pages',
             $this->assertValues->expectedPages
         );
 
+        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertNbOfRecordsPerStore(
             $fixtureSecondStore->getCode(),
             'pages',
             $this->assertValues->expectedExcludePages - 1
         );
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

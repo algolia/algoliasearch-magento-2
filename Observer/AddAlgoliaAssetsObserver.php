@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Model;
+namespace Algolia\AlgoliaSearch\Observer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
@@ -15,8 +15,9 @@ use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Algolia search observer model
+ * @todo Add AlgoliaCredentialsManager to this class once it's available
  */
-class Observer implements ObserverInterface
+class AddAlgoliaAssetsObserver implements ObserverInterface
 {
     public function __construct(
         protected ConfigHelper $config,

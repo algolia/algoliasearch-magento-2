@@ -317,30 +317,4 @@ class ReplicaIndexingTest extends TestCase
         $this->assertFalse($this->hasSortingAttribute($sortAttr, $sortDir));
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        // Makes sure that the original values are restored in case a test is failing and doesn't finish
-        $this->configHelper->setSorting(
-            [
-                [
-                    'attribute' => 'price',
-                    'sort' => 'asc',
-                    'sortLabel' => 'Lowest Price'
-                ],
-                [
-                    'attribute' => 'price',
-                    'sort' => 'desc',
-                    'sortLabel' => 'Highest Price'
-                ],
-                [
-                    'attribute' => 'created_at',
-                    'sort' => 'desc',
-                    'sortLabel' => 'Newest first'
-                ]
-            ]
-        );
-    }
-
 }

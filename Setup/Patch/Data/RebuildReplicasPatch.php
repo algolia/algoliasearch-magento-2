@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Setup\Patch\Data;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State as AppState;
@@ -18,14 +18,14 @@ use Psr\Log\LoggerInterface;
 class RebuildReplicasPatch implements DataPatchInterface
 {
     public function __construct(
-        protected ModuleDataSetupInterface  $moduleDataSetup,
-        protected StoreManagerInterface     $storeManager,
-        protected ReplicaManager            $replicaManager,
-        protected ProductHelper             $productHelper,
-        protected AppState                  $appState,
-        protected ReplicaState              $replicaState,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected LoggerInterface           $logger
+        protected ModuleDataSetupInterface $moduleDataSetup,
+        protected StoreManagerInterface    $storeManager,
+        protected ReplicaManager           $replicaManager,
+        protected ProductHelper            $productHelper,
+        protected AppState                 $appState,
+        protected ReplicaState             $replicaState,
+        protected ConfigHelper             $configHelper,
+        protected LoggerInterface          $logger
     )
     {}
 
@@ -52,6 +52,11 @@ class RebuildReplicasPatch implements DataPatchInterface
      */
     public function apply(): PatchInterface
     {
+        if (!$this->configHelper->credentialsAreConfigured()) {
+            $this->logger->warning("Algolia credentials are not configured. Aborting replica rebuild patch. If you need to rebuild your replicas run `bin/magento algolia:replicas:rebuild`");
+            return $this;
+        }
+
         $this->moduleDataSetup->getConnection()->startSetup();
         try {
             $this->appState->setAreaCode(Area::AREA_ADMINHTML);
@@ -62,19 +67,10 @@ class RebuildReplicasPatch implements DataPatchInterface
         $storeIds = array_keys($this->storeManager->getStores());
         // Delete all replicas before resyncing in case of incorrect replica assignments
         foreach ($storeIds as $storeId) {
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->logger->warning("Algolia credentials are not configured for store $storeId. Skipping auto replica rebuild for this store. If you need to rebuild your replicas run `bin/magento algolia:replicas:rebuild`");
-                continue;
-            }
-
             $this->replicaManager->deleteReplicasFromAlgolia($storeId);
         }
 
         foreach ($storeIds as $storeId) {
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                continue;
-            }
-
             $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_CHANGED, $storeId); // avoids latency
             $this->replicaManager->syncReplicasToAlgolia($storeId, $this->productHelper->getIndexSettings($storeId));
         }

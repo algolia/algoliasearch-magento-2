@@ -5,19 +5,34 @@ namespace Algolia\AlgoliaSearch\Model\Indexer;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
+    private $fullAction;
+    private $storeManager;
+    private $queue;
+    private $configHelper;
+    private $messageManager;
+    private $output;
+
     public function __construct(
-        protected StoreManagerInterface $storeManager,
-        protected Data $fullAction,
-        protected Queue $queue,
-        protected ConfigHelper $configHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    )
-    {}
+        StoreManagerInterface $storeManager,
+        Data $helper,
+        Queue $queue,
+        ConfigHelper $configHelper,
+        ManagerInterface $messageManager,
+        ConsoleOutput $output
+    ) {
+        $this->fullAction = $helper;
+        $this->storeManager = $storeManager;
+        $this->queue = $queue;
+        $this->configHelper = $configHelper;
+        $this->messageManager = $messageManager;
+        $this->output = $output;
+    }
 
     public function execute($ids)
     {
@@ -26,6 +41,21 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
 
     public function executeFull()
     {
+        if (!$this->configHelper->credentialsAreConfigured()) {
+            $errorMessage = 'Algolia reindexing failed:
+            You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
+
+            if (php_sapi_name() === 'cli') {
+                $this->output->writeln($errorMessage);
+
+                return;
+            }
+
+            $this->messageManager->addErrorMessage($errorMessage);
+
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
@@ -33,14 +63,8 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
                 continue;
             }
 
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-                return;
-            }
-
             $this->queue->addToQueue(
-                Data::class,
+                $this->fullAction,
                 'rebuildStoreAdditionalSectionsIndex',
                 ['storeId' => $storeId],
                 1

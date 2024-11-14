@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Helper\Configuration;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\ExtensionNotification;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\UrlInterface;
@@ -13,6 +12,30 @@ use Magento\Framework\View\Asset\Repository as AssetRepository;
 
 class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    /** @var ConfigHelper */
+    private $configHelper;
+
+    /** @var PersonalizationHelper */
+    private $personalizationHelper;
+
+    /** @var ModuleManager */
+    private $moduleManager;
+
+    /** @var ObjectManagerInterface */
+    private $objectManager;
+
+    /** @var ExtensionNotification */
+    private $extensionNotification;
+
+    /** @var JobCollectionFactory */
+    private $jobCollectionFactory;
+
+    /** @var UrlInterface */
+    protected $urlBuilder;
+
+    /** @var AssetRepository */
+    protected $assetRepository;
+
     /** @var string[] */
     protected $noticeFunctions = [
         'getQueueNotice',
@@ -22,7 +45,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'getPersonalizationNotice',
         'getRecommendNotice',
         'getCookieConfigurationNotice',
-        'getMultiApplicationIDsNotice',
     ];
 
     /** @var array[] */
@@ -38,17 +60,25 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     protected $notices;
 
     public function __construct(
-        protected \Magento\Framework\App\Helper\Context $context,
-        protected ConfigHelper $configHelper,
-        protected PersonalizationHelper $personalizationHelper,
-        protected ModuleManager $moduleManager,
-        protected ObjectManagerInterface $objectManager,
-        protected ExtensionNotification $extensionNotification,
-        protected JobCollectionFactory $jobCollectionFactory,
-        protected UrlInterface $urlBuilder,
-        protected AssetRepository $assetRepository,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        \Magento\Framework\App\Helper\Context $context,
+        ConfigHelper $configHelper,
+        PersonalizationHelper $personalizationHelper,
+        ModuleManager $moduleManager,
+        ObjectManagerInterface $objectManager,
+        ExtensionNotification $extensionNotification,
+        JobCollectionFactory $jobCollectionFactory,
+        UrlInterface $urlBuilder,
+        AssetRepository $assetRepository
     ) {
+        $this->configHelper = $configHelper;
+        $this->personalizationHelper = $personalizationHelper;
+        $this->moduleManager = $moduleManager;
+        $this->objectManager = $objectManager;
+        $this->extensionNotification = $extensionNotification;
+        $this->jobCollectionFactory = $jobCollectionFactory;
+        $this->urlBuilder = $urlBuilder;
+        $this->assetRepository = $assetRepository;
+
         foreach ($this->noticeFunctions as $noticeFunction) {
             call_user_func([$this, $noticeFunction]);
         }
@@ -340,27 +370,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
             'selector' => $selector,
             'method' => $method,
             'message' => $noticeContent,
-        ];
-    }
-
-    /**
-    * Displays a warning when multiple application IDs are configured
-    * @return void
-    */
-    protected function getMultiApplicationIDsNotice(): void
-    {
-        if (!$this->algoliaCredentialsManager->hasMultipleApplicationIDs()) {
-            return;
-        }
-
-        $noticeTitle = 'Multi Application IDs';
-        $noticeContent = '<p>You are currently using multiple Algolia application IDs with your Magento installation.</p>
-        <p>When verifying data in Algolia, please make sure you are referencing the correct application.</p>';
-
-        $this->notices[] = [
-            'selector' => '.entry-edit',
-            'method' => 'before',
-            'message' => $this->formatNotice($noticeTitle, $noticeContent),
         ];
     }
 }

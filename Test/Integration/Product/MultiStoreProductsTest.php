@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -70,7 +69,6 @@ class MultiStoreProductsTest extends MultiStoreTestCase
     {
         // Check that every store has the right number of products
         foreach ($this->storeManager->getStores() as $store) {
-            $this->algoliaHelper->setStoreId($store->getId());
             $this->assertNbOfRecordsPerStore(
                 $store->getCode(),
                 'products',
@@ -105,21 +103,17 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->productsIndexer->execute([self::VOYAGE_YOGA_BAG_ID]);
         $this->algoliaHelper->waitLastTask();
 
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_products',
             (string) self::VOYAGE_YOGA_BAG_ID,
             ['name' => self::VOYAGE_YOGA_BAG_NAME]
         );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'fixture_second_store_products',
             (string) self::VOYAGE_YOGA_BAG_ID,
             ['name' => self::VOYAGE_YOGA_BAG_NAME_ALT]
         );
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
         // Unassign product from a single website (removed from test website (second and third store))
         $baseWebsite = $this->websiteRepository->get('base');
@@ -134,7 +128,6 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->algoliaHelper->waitLastTask();
 
         // default store should have the same number of products
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),
             'products',
@@ -142,21 +135,17 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         );
 
         // Stores from test website must have one less product
-        $this->algoliaHelper->setStoreId($fixtureThirdStore->getId());
         $this->assertNbOfRecordsPerStore(
             $fixtureThirdStore->getCode(),
             'products',
             count(self::SKUS) - 1
         );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertNbOfRecordsPerStore(
             $fixtureSecondStore->getCode(),
             'products',
             count(self::SKUS) - 1
         );
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

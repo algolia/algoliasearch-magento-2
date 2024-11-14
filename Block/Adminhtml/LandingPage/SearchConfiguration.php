@@ -22,6 +22,9 @@ class SearchConfiguration extends \Magento\Backend\Block\Template
     /** @var Data */
     private $coreHelper;
 
+    /** @var int */
+    protected $planLevel;
+
     /**
      * @param Context $context
      * @param SessionManagerInterface $backendSession

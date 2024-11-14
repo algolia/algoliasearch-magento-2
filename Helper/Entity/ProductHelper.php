@@ -350,7 +350,6 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function setSettings(string $indexName, string $indexNameTmp, int $storeId, bool $saveToTmpIndicesToo = false): void
     {
-        $this->algoliaHelper->setStoreId($storeId);
         $indexSettings = $this->getIndexSettings($storeId);
 
         $this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
@@ -379,7 +378,6 @@ class ProductHelper extends AbstractEntityHelper
                     ');
             } catch (AlgoliaException $e) {
                 $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
-                $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
             }
 
             try {
@@ -392,10 +390,8 @@ class ProductHelper extends AbstractEntityHelper
                 if ($e->getCode() !== 404) {
                     throw $e;
                 }
-                $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
             }
         }
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -1210,12 +1206,12 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param $indexName
+     * @param $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function setFacetsQueryRules(string $indexName, int $storeId = null)
+    protected function setFacetsQueryRules($indexName, $storeId = null)
     {
         $this->clearFacetsQueryRules($indexName);
 

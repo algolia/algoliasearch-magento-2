@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Model\AbstractModel;
 
@@ -10,18 +10,26 @@ class PageObserver
 {
     private $indexer;
 
+    /**
+     * @var ConfigHelper
+     */
+    private $configHelper;
+
     public function __construct(
         IndexerRegistry $indexerRegistry,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        ConfigHelper $configHelper
     ) {
         $this->indexer = $indexerRegistry->get('algolia_pages');
+        $this->configHelper = $configHelper;
     }
 
     public function beforeSave(
         \Magento\Cms\Model\ResourceModel\Page $pageResource,
         AbstractModel $page
     ) {
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
             return [$page];
         }
 
@@ -38,7 +46,9 @@ class PageObserver
         \Magento\Cms\Model\ResourceModel\Page $pageResource,
         AbstractModel $page
     ) {
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
             return [$page];
         }
 

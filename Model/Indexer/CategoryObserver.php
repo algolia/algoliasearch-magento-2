@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Category as CategoryIndexer;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Magento\Catalog\Model\Category as CategoryModel;
 use Magento\Catalog\Model\ResourceModel\Category as CategoryResourceModel;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
@@ -12,15 +12,34 @@ use Magento\Framework\Indexer\IndexerRegistry;
 
 class CategoryObserver
 {
+    /** @var IndexerRegistry */
+    private $indexerRegistry;
+
     /** @var CategoryIndexer */
     private $indexer;
 
+    /** @var ConfigHelper */
+    private $configHelper;
+
+    /** @var ResourceConnection */
+    protected $resource;
+
+    /**
+     * CategoryObserver constructor.
+     *
+     * @param IndexerRegistry $indexerRegistry
+     * @param ConfigHelper $configHelper
+     * @param ResourceConnection $resource
+     */
     public function __construct(
         IndexerRegistry $indexerRegistry,
-        protected ResourceConnection $resource,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        ConfigHelper $configHelper,
+        ResourceConnection $resource
     ) {
+        $this->indexerRegistry = $indexerRegistry;
         $this->indexer = $indexerRegistry->get('algolia_categories');
+        $this->configHelper = $configHelper;
+        $this->resource = $resource;
     }
 
     /**
@@ -35,7 +54,9 @@ class CategoryObserver
         CategoryResourceModel $result,
         CategoryModel $category
     ) {
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
             return $result;
         }
         $categoryResource->addCommitCallback(function () use ($category) {

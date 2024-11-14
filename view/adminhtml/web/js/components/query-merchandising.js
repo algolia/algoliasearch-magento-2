@@ -16,6 +16,7 @@ define(
 					storeId: '',
 					imports: {
 						queryText: '${$.provider}:${$.dataScope}.query_text',
+						storeId: '${$.provider}:${$.dataScope}.store_id',
 					},
 				},
 
@@ -25,12 +26,12 @@ define(
 					$( document ).ready(function() {
 					    self.initSubscribers();
 					});
-
+					
 				},
 
 				initObservable: function () {
 					this._super().observe(
-						'queryText'
+						'queryText storeId'
 					);
 					return this;
 				},
@@ -43,7 +44,14 @@ define(
 								window.algoliaSearch.helper.setQuery(queryText).search();
 							}
 						}
-					);
+					); 
+					self.storeId.subscribe(
+						function (storeId) {
+							if (typeof window.algoliaSearch != "undefined") {
+								window.algoliaSearch.helper.setIndex(window.algoliaSearchConfig.indexDataByStoreIds[storeId].indexName + '_products').search();
+							}
+						}
+					);          
 				},
 			}
 		);

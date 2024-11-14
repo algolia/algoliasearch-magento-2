@@ -66,11 +66,13 @@ foreach ($websites as $website) {
 }
 
 $configManager = $objectManager->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class);
+
+$configManager->setValue('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'));
+$configManager->setValue('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_API_KEY'));
+$configManager->setValue('algoliasearch_credentials/credentials/api_key', getenv('ALGOLIA_API_KEY'));
+$configManager->setValue('algoliasearch_credentials/credentials/index_prefix', 'TEMP');
 // Temporarily disable indexing during product assignment to stores
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'admin');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'default');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'fixture_second_store');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'fixture_third_store');
+$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0);
 
 $productSkus = MultiStoreProductsTest::SKUS;
 $productRepository = Bootstrap::getObjectManager()
@@ -82,10 +84,7 @@ foreach ($productSkus as $sku) {
     $productRepository->save($product);
 }
 
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'admin');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'default');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'fixture_second_store');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'fixture_third_store');
+$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1);
 
 /* Refresh CatalogSearch index */
 /** @var IndexerRegistry $indexerRegistry */

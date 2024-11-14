@@ -2,11 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Configuration;
 
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\View\Asset\Repository as AssetRepository;
 
 class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    /** @var ConfigHelper */
+    private $configHelper;
+
+    /** @var AssetRepository */
+    private $assetRepository;
+
     /** @var array */
     private $videosConfig = [
         'algoliasearch_credentials' => [
@@ -183,9 +189,12 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        protected AssetRepository $assetRepository,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        ConfigHelper $configHelper,
+        AssetRepository $assetRepository
     ) {
+        $this->configHelper = $configHelper;
+        $this->assetRepository = $assetRepository;
+
         $this->icons = [
             'iconDocs' => $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/icon-docs.svg'),
             'iconFaq' => $this->assetRepository->getUrl('Algolia_AlgoliaSearch::images/icon-faq.svg'),
@@ -227,7 +236,9 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $configNotSet = false;
         // Check if all the mandatory credentials have been set
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
+        if (!$this->configHelper->getApplicationID()
+            || !$this->configHelper->getAPIKey()
+            || !$this->configHelper->getSearchOnlyAPIKey()) {
             $configNotSet = true;
         }
 

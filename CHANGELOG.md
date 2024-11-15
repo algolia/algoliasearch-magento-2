@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.15.0-beta.1
+
+## Updates
+- Added support for Multi-Application IDs
+
 ## 3.14.3
 
 ### Updates

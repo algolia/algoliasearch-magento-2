@@ -12,21 +12,23 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndicesConfigurator
 {
     public function __construct(
-        protected Data                    $baseHelper,
-        protected AlgoliaHelper           $algoliaHelper,
-        protected ConfigHelper            $configHelper,
-        protected ProductHelper           $productHelper,
-        protected CategoryHelper          $categoryHelper,
-        protected PageHelper              $pageHelper,
-        protected SuggestionHelper        $suggestionHelper,
-        protected AdditionalSectionHelper $additionalSectionHelper,
-        protected DiagnosticsLogger       $logger
+        protected Data                      $baseHelper,
+        protected AlgoliaHelper             $algoliaHelper,
+        protected ConfigHelper              $configHelper,
+        protected ProductHelper             $productHelper,
+        protected CategoryHelper            $categoryHelper,
+        protected PageHelper                $pageHelper,
+        protected SuggestionHelper          $suggestionHelper,
+        protected AdditionalSectionHelper   $additionalSectionHelper,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected DiagnosticsLogger         $logger
     ) {}
 
     /**
@@ -42,7 +44,7 @@ class IndicesConfigurator
         $logEventName = 'Save configuration to Algolia for store: ' . $this->logger->getStoreName($storeId);
         $this->logger->start($logEventName, true);
 
-        if (!($this->configHelper->getApplicationID() && $this->configHelper->getAPIKey())) {
+        if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
             $this->logger->log('Algolia credentials are not filled.');
             $this->logger->stop($logEventName, true);
 
@@ -54,6 +56,8 @@ class IndicesConfigurator
             $this->logger->stop($logEventName, true);
             return;
         }
+
+        $this->algoliaHelper->setStoreId($storeId);
 
         $this->setCategoriesSettings($storeId);
         $this->algoliaHelper->waitLastTask();
@@ -78,10 +82,10 @@ class IndicesConfigurator
         $this->algoliaHelper->waitLastTask();
 
         $this->setProductsSettings($storeId, $useTmpIndex);
-        $this->algoliaHelper->waitLastTask();
 
         $this->setExtraSettings($storeId, $useTmpIndex);
-        $this->algoliaHelper->waitLastTask();
+
+        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
         $this->logger->stop($logEventName, true);
     }
@@ -232,6 +236,7 @@ class IndicesConfigurator
                     $this->logger->log('Index name: ' . $indexName);
                     $this->logger->log('Extra settings: ' . json_encode($extraSettings));
                     $this->algoliaHelper->setSettings($indexName, $extraSettings, true);
+                    $this->algoliaHelper->waitLastTask();
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {
                         $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;

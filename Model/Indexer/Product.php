@@ -10,57 +10,47 @@ use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
 
     public function __construct(
-        protected StoreManagerInterface $storeManager,
-        protected ProductHelper $productHelper,
-        protected Data $baseHelper,
-        protected AlgoliaHelper $algoliaHelper,
-        protected ConfigHelper $configHelper,
-        protected Queue $queue,
-        protected ManagerInterface $messageManager,
-        protected ConsoleOutput $output,
-        protected DiagnosticsLogger $diag
-    ) { }
+        protected StoreManagerInterface     $storeManager,
+        protected ProductHelper             $productHelper,
+        protected Data                      $baseHelper,
+        protected AlgoliaHelper             $algoliaHelper,
+        protected ConfigHelper              $configHelper,
+        protected Queue                     $queue,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected DiagnosticsLogger         $diag
+    )
+    {}
 
     /**
      * @throws NoSuchEntityException
      */
     public function execute($productIds)
     {
-        if (!$this->configHelper->getApplicationID()
-            || !$this->configHelper->getAPIKey()
-            || !$this->configHelper->getSearchOnlyAPIKey()) {
-            $errorMessage = 'Algolia reindexing failed:
-                You need to configure your Algolia credentials in Stores > Configuration > Algolia Search.';
-
-            if (php_sapi_name() === 'cli') {
-                $this->output->writeln($errorMessage);
-
-                return;
-            }
-
-            $this->messageManager->addWarning($errorMessage);
-
-            return;
-        }
-
-        if ($productIds) {
-            $productIds = array_unique(array_merge($productIds, $this->productHelper->getParentProductIds($productIds)));
-        }
-
         $storeIds = array_keys($this->storeManager->getStores());
+        $areParentsLoaded = false;
 
         foreach ($storeIds as $storeId) {
             if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
                 continue;
+            }
+
+            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
+                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
+
+                return;
+            }
+
+            if ($productIds && !$areParentsLoaded) {
+                $productIds = array_unique(array_merge($productIds, $this->productHelper->getParentProductIds($productIds)));
+                $areParentsLoaded = true;
             }
 
             $productsPerPage = $this->configHelper->getNumberOfElementByPage();

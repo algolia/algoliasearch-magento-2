@@ -511,6 +511,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function getSubProducts(Product $product): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $type = $product->getTypeId();
 
         if (!in_array($type, ['bundle', 'grouped', 'configurable'], true)) {
@@ -540,6 +541,7 @@ class ProductHelper extends AbstractEntityHelper
             }
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $subProducts;
     }
 
@@ -552,11 +554,13 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function getParentProductIds(array $productIds): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $parentIds = [];
         foreach ($this->getCompositeTypes() as $typeInstance) {
             $parentIds = array_merge($parentIds, $typeInstance->getParentIdsByChild($productIds));
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $parentIds;
     }
 
@@ -756,6 +760,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function addCategoryData(array $algoliaData, Product $product): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $storeId = $product->getStoreId();
 
         $categoryData = $this->buildCategoryData($product);
@@ -769,6 +774,7 @@ class ProductHelper extends AbstractEntityHelper
             $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($autoAnchorPaths, $storeId);
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $algoliaData;
     }
 
@@ -1306,6 +1312,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
     {
+        $this->logger->startProfiling(__METHOD__);
         if ($product->isDeleted() === true) {
             throw (new ProductDeletedException())
                 ->withProduct($product)
@@ -1339,6 +1346,7 @@ class ProductHelper extends AbstractEntityHelper
                 ->withStoreId($storeId);
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return true;
     }
 

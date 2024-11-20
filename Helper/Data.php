@@ -385,10 +385,13 @@ class Data
         $this->startEmulation($storeId);
         $this->logger->start('Indexing');
         try {
-            $this->logger->start('ok');
             $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
+            $timerName = __METHOD__ . ' (Get product collection size)';
+            $this->logger->startProfiling($timerName);
             $size = $collection->getSize();
+            $this->logger->stopProfiling($timerName);
+
             if (!empty($productIds)) {
                 $size = max(count($productIds), $size);
             }
@@ -840,6 +843,7 @@ class Data
      */
     protected function getSalesData($storeId, Collection $collection)
     {
+        $this->logger->startProfiling(__METHOD__);
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
         if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
             && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
@@ -864,6 +868,7 @@ class Data
                 ->group('product_id');
             $salesData = $salesConnection->fetchAll($select, [], \PDO::FETCH_GROUP | \PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
         }
+        $this->logger->stopProfiling(__METHOD__);
         return $salesData;
     }
 

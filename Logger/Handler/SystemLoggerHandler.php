@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Logger;
+namespace Algolia\AlgoliaSearch\Logger\Handler;
 
 use Magento\Framework\Logger\Handler\System;
 use Monolog\Logger;

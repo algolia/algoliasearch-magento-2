@@ -188,8 +188,8 @@
         <arguments>
             <argument name="name" xsi:type="string">algolia</argument>
             <argument name="handlers" xsi:type="array">
-                <item name="system" xsi:type="object">Algolia\AlgoliaSearch\Logger\SystemLoggerHandler</item>
-                <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLoggerHandler</item>
+                <item name="system" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler</item>
+                <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler</item>
             </argument>
         </arguments>
     </type>

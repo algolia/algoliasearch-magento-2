@@ -3,8 +3,8 @@
 namespace Algolia\AlgoliaSearch\Test\Unit;
 
 use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
-use Algolia\AlgoliaSearch\Logger\AlgoliaLoggerHandler;
-use Algolia\AlgoliaSearch\Logger\SystemLoggerHandler;
+use Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler;
+use Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler;
 use PHPUnit\Framework\TestCase;
 
 class AlgoliaLoggerTest extends TestCase

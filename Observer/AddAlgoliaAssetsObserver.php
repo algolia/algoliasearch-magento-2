@@ -53,31 +53,13 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
         }
     }
 
-    /**
-     * Repository does not guarantee this underlying model but only the interface
-     * but getDisplayMode is only available on model
-     *
-     * @throws AlgoliaException
-     */
-    public function getCategory(): Category
-    {
-        $category = $this->category->get();
-        if (!$category instanceof Category) {
-            throw new AlgoliaException("Unexpected category object encountered.");
-        }
-        return $category;
-    }
-
-    /**
-     * @throws AlgoliaException
-     */
     private function loadPreventBackendRenderingHandle(Layout $layout, int $storeId): void
     {
         if (!$this->config->preventBackendRendering($storeId)) {
-        return;
-    }
+            return;
+        }
 
-        $category = $this->getCategory();
+        $category = $this->category->get();
 
         if (!$category->getId()) {
             return;
@@ -88,7 +70,8 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
         }
 
         $displayMode = $this->config->getBackendRenderingDisplayMode($storeId);
-        if ($displayMode === 'only_products' && $category->getDisplayMode() === 'PAGE') {
+        if ($displayMode === 'only_products'
+            && $category->getData('display_mode') === \Magento\Catalog\Model\Category::DM_PAGE) {
             return;
         }
 

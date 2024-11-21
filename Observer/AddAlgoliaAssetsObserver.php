@@ -15,7 +15,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Algolia search observer model
- * @todo Add AlgoliaCredentialsManager to this class once it's available
  */
 class AddAlgoliaAssetsObserver implements ObserverInterface
 {

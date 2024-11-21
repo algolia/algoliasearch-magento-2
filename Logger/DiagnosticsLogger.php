@@ -26,7 +26,7 @@ class DiagnosticsLogger
         protected StoreNameFetcher $storeNameFetcher
     ) {
         $this->isLoggerEnabled = $this->config->isLoggingEnabled();
-        $this->isProfilerEnabled = $this->config->isProfilingEnabled();
+        $this->isProfilerEnabled = $this->config->isProfilerEnabled();
     }
 
     public function isLoggerEnabled(): bool

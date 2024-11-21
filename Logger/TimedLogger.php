@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Logger;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class TimedLogger
 {
@@ -11,7 +12,7 @@ class TimedLogger
     protected array $timers = [];
 
     public function __construct(
-        protected AlgoliaLogger $logger
+        protected LoggerInterface $logger
     )
     {}
 

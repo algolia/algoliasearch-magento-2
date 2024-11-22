@@ -11,6 +11,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
@@ -44,7 +45,7 @@ class Data
         protected SuggestionHelper        $suggestionHelper,
         protected AdditionalSectionHelper $additionalSectionHelper,
         protected Emulation               $emulation,
-        protected Logger                  $logger,
+        protected DiagnosticsLogger       $logger,
         protected ResourceConnection      $resource,
         protected ManagerInterface        $eventManager,
         protected ScopeCodeResolver       $scopeCodeResolver,
@@ -384,10 +385,13 @@ class Data
         $this->startEmulation($storeId);
         $this->logger->start('Indexing');
         try {
-            $this->logger->start('ok');
             $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
+            $timerName = __METHOD__ . ' (Get product collection size)';
+            $this->logger->startProfiling($timerName);
             $size = $collection->getSize();
+            $this->logger->stopProfiling($timerName);
+
             if (!empty($productIds)) {
                 $size = max(count($productIds), $size);
             }
@@ -554,7 +558,8 @@ class Data
             );
         }
 
-        $this->logger->start('CREATE RECORDS ' . $this->logger->getStoreName($storeId));
+        $logEventName = 'CREATE RECORDS ' . $this->logger->getStoreName($storeId);
+        $this->logger->start($logEventName, true);
         $this->logger->log(count($collection) . ' product records to create');
         $salesData = $this->getSalesData($storeId, $collection);
         $transport = new ProductDataArray();
@@ -607,7 +612,7 @@ class Data
             $productsToRemove = array_merge($productsToRemove, $potentiallyDeletedProductsIds);
         }
 
-        $this->logger->stop('CREATE RECORDS ' . $this->logger->getStoreName($storeId));
+        $this->logger->stop($logEventName, true);
         return [
             'toIndex' => $productsToIndex,
             'toRemove' => array_unique($productsToRemove),
@@ -700,7 +705,7 @@ class Data
         $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
             page ' . $page . ',
             pageSize ' . $pageSize;
-        $this->logger->start($wrapperLogMessage);
+        $this->logger->start($wrapperLogMessage, true);
         if ($emulationInfo === null) {
             $this->startEmulation($storeId);
         }
@@ -761,7 +766,7 @@ class Data
 
         $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
-        $this->logger->stop($wrapperLogMessage);
+        $this->logger->stop($wrapperLogMessage, true);
     }
 
     /**
@@ -838,6 +843,7 @@ class Data
      */
     protected function getSalesData($storeId, Collection $collection)
     {
+        $this->logger->startProfiling(__METHOD__);
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
         if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
             && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
@@ -862,6 +868,7 @@ class Data
                 ->group('product_id');
             $salesData = $salesConnection->fetchAll($select, [], \PDO::FETCH_GROUP | \PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
         }
+        $this->logger->stopProfiling(__METHOD__);
         return $salesData;
     }
 
@@ -926,7 +933,6 @@ class Data
      */
     public function getIndexDataByStoreIds(): array
     {
-
         $indexNames = [];
         $indexNames[AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE] = $this->buildIndexData();
         foreach ($this->storeManager->getStores() as $store) {

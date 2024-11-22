@@ -14,7 +14,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
@@ -94,7 +94,7 @@ class ProductHelper extends AbstractEntityHelper
         protected Config                                  $eavConfig,
         protected ConfigHelper                            $configHelper,
         protected AlgoliaHelper                           $algoliaHelper,
-        protected Logger                                  $logger,
+        protected DiagnosticsLogger                       $logger,
         protected StoreManagerInterface                   $storeManager,
         protected ManagerInterface                        $eventManager,
         protected Visibility                              $visibility,
@@ -203,6 +203,7 @@ class ProductHelper extends AbstractEntityHelper
         bool $includeNotVisibleIndividually = false
     ): ProductCollection
     {
+        $this->logger->startProfiling(__METHOD__);
         $productCollection = $this->productCollectionFactory->create();
         $products = $productCollection
             ->setStoreId($storeId)
@@ -252,6 +253,7 @@ class ProductHelper extends AbstractEntityHelper
             ]
         );
 
+        $this->logger->stopProfiling(__METHOD__);
         return $products;
     }
 
@@ -428,7 +430,8 @@ class ProductHelper extends AbstractEntityHelper
     {
         $storeId = $product->getStoreId();
 
-        $this->logger->start('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId));
+        $logEventName = 'CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId);
+        $this->logger->start($logEventName, true);
         $defaultData = [];
 
         $transport = new DataObject($defaultData);
@@ -497,7 +500,7 @@ class ProductHelper extends AbstractEntityHelper
         );
         $customData = $transport->getData();
 
-        $this->logger->stop('CREATE RECORD ' . $product->getId() . ' ' . $this->logger->getStoreName($storeId));
+        $this->logger->stop($logEventName, true);
 
         return $customData;
     }
@@ -508,6 +511,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function getSubProducts(Product $product): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $type = $product->getTypeId();
 
         if (!in_array($type, ['bundle', 'grouped', 'configurable'], true)) {
@@ -537,6 +541,7 @@ class ProductHelper extends AbstractEntityHelper
             }
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $subProducts;
     }
 
@@ -549,11 +554,13 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function getParentProductIds(array $productIds): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $parentIds = [];
         foreach ($this->getCompositeTypes() as $typeInstance) {
             $parentIds = array_merge($parentIds, $typeInstance->getParentIdsByChild($productIds));
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $parentIds;
     }
 
@@ -753,6 +760,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function addCategoryData(array $algoliaData, Product $product): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $storeId = $product->getStoreId();
 
         $categoryData = $this->buildCategoryData($product);
@@ -766,6 +774,7 @@ class ProductHelper extends AbstractEntityHelper
             $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($autoAnchorPaths, $storeId);
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $algoliaData;
     }
 
@@ -889,6 +898,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function addAdditionalAttributes($customData, $additionalAttributes, Product $product, $subProducts)
     {
+        $this->logger->startProfiling(__METHOD__);
         foreach ($additionalAttributes as $attribute) {
             $attributeName = $attribute['attribute'];
 
@@ -924,6 +934,7 @@ class ProductHelper extends AbstractEntityHelper
 
             $customData = $this->addNullValue($customData, $subProducts, $attribute, $attributeResource);
         }
+        $this->logger->stopProfiling(__METHOD__);
 
         return $customData;
     }
@@ -1301,6 +1312,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
     {
+        $this->logger->startProfiling(__METHOD__);
         if ($product->isDeleted() === true) {
             throw (new ProductDeletedException())
                 ->withProduct($product)
@@ -1334,6 +1346,7 @@ class ProductHelper extends AbstractEntityHelper
                 ->withStoreId($storeId);
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return true;
     }
 

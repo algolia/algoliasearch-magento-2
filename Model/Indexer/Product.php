@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
@@ -15,14 +16,16 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
+
     public function __construct(
-        protected StoreManagerInterface $storeManager,
-        protected ProductHelper $productHelper,
-        protected Data $fullAction,
-        protected AlgoliaHelper $algoliaHelper,
-        protected ConfigHelper $configHelper,
-        protected Queue $queue,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected StoreManagerInterface     $storeManager,
+        protected ProductHelper             $productHelper,
+        protected Data                      $baseHelper,
+        protected AlgoliaHelper             $algoliaHelper,
+        protected ConfigHelper              $configHelper,
+        protected Queue                     $queue,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected DiagnosticsLogger         $diag
     )
     {}
 
@@ -35,7 +38,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
         $areParentsLoaded = false;
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -69,7 +72,11 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
             $useTmpIndex = $this->configHelper->isQueueActive($storeId);
             $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
+
+            $timerName = __METHOD__ . ' (Get product collection size)';
+            $this->diag->startProfiling($timerName);
             $size = $collection->getSize();
+            $this->diag->stopProfiling($timerName);
 
             $pages = ceil($size / $productsPerPage);
 

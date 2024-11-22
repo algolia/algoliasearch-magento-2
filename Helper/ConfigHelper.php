@@ -109,6 +109,8 @@ class ConfigHelper
     public const READ_TIMEOUT = 'algoliasearch_advanced/advanced/read_timeout';
     public const WRITE_TIMEOUT = 'algoliasearch_advanced/advanced/write_timeout';
 
+    public const PROFILER_ENABLED = 'algoliasearch_advanced/advanced/enable_profiler';
+
     public const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
     public const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
@@ -334,9 +336,18 @@ class ConfigHelper
      * @param $storeId
      * @return bool
      */
-    public function isLoggingEnabled($storeId = null)
+    public function isLoggingEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::LOGGING_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isProfilerEnabled($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::PROFILER_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

@@ -11,7 +11,7 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
@@ -63,7 +63,7 @@ class ReplicaManager implements ReplicaManagerInterface
         protected StoreNameFetcher               $storeNameFetcher,
         protected SortingTransformer             $sortingTransformer,
         protected StoreManagerInterface          $storeManager,
-        protected Logger                         $logger
+        protected DiagnosticsLogger              $logger
     )
     {}
 

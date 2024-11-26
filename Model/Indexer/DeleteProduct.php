@@ -6,16 +6,18 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Store\Model\StoreManagerInterface;
 
 class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected Data $fullAction,
+        protected Data $dataHelper,
         protected AlgoliaHelper $algoliaHelper,
         protected Queue $queue,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected ProductIndexBuilder $productIndexBuilder
     )
     {}
 
@@ -29,7 +31,7 @@ class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Mage
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -39,7 +41,7 @@ class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Mage
                 return;
             }
 
-            $this->fullAction->deleteInactiveProducts($storeId);
+            $this->productIndexBuilder->deleteInactiveProducts($storeId);
         }
     }
 

@@ -11,6 +11,7 @@ use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -20,7 +21,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     public function __construct(
         protected StoreManagerInterface     $storeManager,
         protected ProductHelper             $productHelper,
-        protected Data                      $baseHelper,
+        protected Data                      $dataHelper,
         protected AlgoliaHelper             $algoliaHelper,
         protected ConfigHelper              $configHelper,
         protected Queue                     $queue,
@@ -38,7 +39,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
         $areParentsLoaded = false;
 
         foreach ($storeIds as $storeId) {
-            if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
+            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -57,10 +58,10 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
 
             if (is_array($productIds) && count($productIds) > 0) {
                 foreach (array_chunk($productIds, $productsPerPage) as $chunk) {
-                    /** @uses Data::rebuildStoreProductIndex() */
+                    /** @uses ProductIndexBuilder::rebuildIndexIds() */
                     $this->queue->addToQueue(
-                        Data::class,
-                        'rebuildStoreProductIndex',
+                        ProductIndexBuilder::class,
+                        'rebuildIndexIds',
                         ['storeId' => $storeId, 'productIds' => $chunk],
                         count($chunk)
                     );
@@ -94,8 +95,14 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
                     'useTmpIndex' => $useTmpIndex,
                 ];
 
-                /** @uses Data::rebuildProductIndex() */
-                $this->queue->addToQueue(Data::class, 'rebuildProductIndex', $data, $productsPerPage, true);
+                /** @uses ProductIndexBuilder::rebuildIndex() */
+                $this->queue->addToQueue(
+                    ProductIndexBuilder::class,
+                    'rebuildIndex',
+                    $data,
+                    $productsPerPage,
+                    true
+                );
             }
 
             if ($useTmpIndex) {

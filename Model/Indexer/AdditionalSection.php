@@ -6,13 +6,14 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
 use Magento\Store\Model\StoreManagerInterface;
 
 class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected Data $fullAction,
+        protected Data $dataHelper,
         protected Queue $queue,
         protected ConfigHelper $configHelper,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
@@ -29,7 +30,7 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -39,9 +40,10 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
                 return;
             }
 
+            /** @uses AdditionalSectionIndexBuilder::rebuildIndex() */
             $this->queue->addToQueue(
-                Data::class,
-                'rebuildStoreAdditionalSectionsIndex',
+                AdditionalSectionIndexBuilder::class,
+                'rebuildIndex',
                 ['storeId' => $storeId],
                 1
             );

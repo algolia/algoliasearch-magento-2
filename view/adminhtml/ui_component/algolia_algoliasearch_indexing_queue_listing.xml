@@ -106,6 +106,17 @@
                 </item>
             </argument>
         </column>
+        <column name="class">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Algolia\AlgoliaSearch\Model\Source\JobClasses</item>
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">Magento_Ui/js/grid/columns/select</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="editor" xsi:type="string">select</item>
+                    <item name="label" xsi:type="string" translate="true">Class</item>
+                </item>
+            </argument>
+        </column>
         <column name="method">
             <argument name="data" xsi:type="array">
                 <item name="options" xsi:type="object">Algolia\AlgoliaSearch\Model\Source\JobMethods</item>

@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service\IndexBuilder;
+namespace Algolia\AlgoliaSearch\Service\Category;
 
 use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
@@ -8,13 +8,14 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
 
-class Category extends AbstractIndexBuilder
+class IndexBuilder extends AbstractIndexBuilder
 {
     public function __construct(
         protected ConfigHelper      $configHelper,

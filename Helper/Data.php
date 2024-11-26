@@ -5,12 +5,12 @@ namespace Algolia\AlgoliaSearch\Helper;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
-use Algolia\AlgoliaSearch\Service\IndexBuilder\AdditionalSection as AdditionalSectionIndexBuilder;
-use Algolia\AlgoliaSearch\Service\IndexBuilder\Category as CategoryIndexBuilder;
-use Algolia\AlgoliaSearch\Service\IndexBuilder\Page as PageIndexBuilder;
-use Algolia\AlgoliaSearch\Service\IndexBuilder\Product as ProductIndexBuilder;
-use Algolia\AlgoliaSearch\Service\IndexBuilder\Suggestion as SuggestionIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
@@ -39,7 +39,7 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\AdditionalSection::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder::rebuildIndex() instead
      */
     public function rebuildStoreAdditionalSectionsIndex(int $storeId): void
     {
@@ -54,7 +54,7 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Page::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Page\IndexBuilder::rebuildIndex() instead
      */
     public function rebuildStorePageIndex($storeId, array $pageIds = null): void
     {
@@ -69,7 +69,7 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Category::rebuildIndexIds() instead
+     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::rebuildIndexIds() instead
      */
     public function rebuildStoreCategoryIndex($storeId, $categoryIds = null): void
     {
@@ -84,7 +84,7 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Suggestion::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Suggestion:\IndexBuilder:rebuildIndex() instead
      */
     public function rebuildStoreSuggestionIndex(int $storeId): void
     {
@@ -98,7 +98,7 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Product::rebuildIndexIds() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::rebuildIndexIds() instead
      */
     public function rebuildStoreProductIndex(int $storeId, array $productIds): void
     {
@@ -115,7 +115,7 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Product::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::rebuildIndex() instead
      */
     public function rebuildProductIndex(int $storeId, ?array $productIds, int $page, int $pageSize, bool $useTmpIndex): void
     {
@@ -132,7 +132,7 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Category::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::rebuildIndex() instead
      */
     public function rebuildCategoryIndex(int $storeId, int $page, int $pageSize): void
     {
@@ -146,7 +146,7 @@ class Data
      * @throws AlgoliaException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Product::deleteInactiveProducts() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::deleteInactiveProducts() instead
      */
     public function deleteInactiveProducts($storeId): void
     {
@@ -163,7 +163,7 @@ class Data
      * @internal This method is currently unstable and should not be used. It may be revisited or fixed in a future version.
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\IndexBuilder\Product::getSearchResult() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::getSearchResult() instead
      */
     public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service\IndexBuilder;
+namespace Algolia\AlgoliaSearch\Service\Suggestion;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -8,13 +8,14 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Search\Model\Query;
 use Magento\Search\Model\ResourceModel\Query\Collection as QueryCollection;
 use Magento\Store\Model\App\Emulation;
 
-class Suggestion extends AbstractIndexBuilder
+class IndexBuilder extends AbstractIndexBuilder
 {
     public function __construct(
         protected ConfigHelper      $configHelper,

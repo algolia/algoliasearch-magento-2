@@ -1,18 +1,19 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service\IndexBuilder;
+namespace Algolia\AlgoliaSearch\Service\Page;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
 
-class Page extends AbstractIndexBuilder
+class IndexBuilder extends AbstractIndexBuilder
 {
     public function __construct(
         protected ConfigHelper      $configHelper,

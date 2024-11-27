@@ -35,7 +35,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function rebuildIndex(int $storeId): void
+    public function buildIndex(int $storeId): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;

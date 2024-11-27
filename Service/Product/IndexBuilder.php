@@ -48,14 +48,14 @@ class IndexBuilder extends AbstractIndexBuilder
      * @return void
      * @throws \Exception
      */
-    public function rebuildIndex(int $storeId, ?array $productIds, int $page, int $pageSize, bool $useTmpIndex): void
+    public function buildIndex(int $storeId, ?array $productIds, int $page, int $pageSize, bool $useTmpIndex): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
         $collection = $this->productHelper->getProductCollectionQuery($storeId, null, $onlyVisible);
-        $this->rebuildIndexPage($storeId, $collection, $page, $pageSize, null, $productIds, $useTmpIndex);
+        $this->buildIndexPage($storeId, $collection, $page, $pageSize, null, $productIds, $useTmpIndex);
     }
 
     /**
@@ -64,7 +64,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @return void
      * @throws \Exception
      */
-    public function rebuildIndexIds(int $storeId, array $productIds): void
+    public function rebuildEntityIds(int $storeId, array $productIds): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -91,7 +91,7 @@ class IndexBuilder extends AbstractIndexBuilder
                 $collection->clear();
                 $page = 1;
                 while ($page <= $pages) {
-                    $this->rebuildIndexPage(
+                    $this->buildIndexPage(
                         $storeId,
                         $collection,
                         $page,
@@ -154,7 +154,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @return void
      * @throws \Exception
      */
-    protected function rebuildIndexPage(
+    protected function buildIndexPage(
         $storeId,
         $collectionDefault,
         $page,

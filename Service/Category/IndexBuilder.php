@@ -37,7 +37,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function rebuildIndex(int $storeId, int $page, int $pageSize): void
+    public function buildIndex(int $storeId, int $page, int $pageSize): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -45,7 +45,7 @@ class IndexBuilder extends AbstractIndexBuilder
 
         $this->startEmulation($storeId);
         $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId, null);
-        $this->rebuildIndexPage($storeId, $collection, $page, $pageSize);
+        $this->buildIndexPage($storeId, $collection, $page, $pageSize);
         $this->stopEmulation();
     }
 
@@ -57,7 +57,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function rebuildIndexIds($storeId, $categoryIds = null): void
+    public function rebuildEntityIds($storeId, $categoryIds = null): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -77,7 +77,7 @@ class IndexBuilder extends AbstractIndexBuilder
                 $pages = ceil($size / $this->configHelper->getNumberOfElementByPage());
                 $page = 1;
                 while ($page <= $pages) {
-                    $this->rebuildIndexPage(
+                    $this->buildIndexPage(
                         $storeId,
                         $collection,
                         $page,
@@ -99,7 +99,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @throws NoSuchEntityException
      * @throws AlgoliaException|LocalizedException
      */
-    protected function rebuildIndexPage($storeId, $collection, $page, $pageSize, $categoryIds = null): void
+    protected function buildIndexPage($storeId, $collection, $page, $pageSize, $categoryIds = null): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;

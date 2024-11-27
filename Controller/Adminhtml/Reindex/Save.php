@@ -199,7 +199,7 @@ class Save extends \Magento\Backend\App\Action
             $productIds = [$product->getId()];
             $productIds = array_merge($productIds, $this->productHelper->getParentProductIds($productIds));
 
-            $this->productIndexBuilder->rebuildIndexIds($storeId, $productIds);
+            $this->productIndexBuilder->rebuildEntityIds($storeId, $productIds);
             $this->messageManager->addSuccessMessage(
                 __(
                     'The Product "%1" (%2) has been reindexed for store "%3 / %4 / %5".',

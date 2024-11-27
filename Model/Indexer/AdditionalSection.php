@@ -40,10 +40,10 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
                 return;
             }
 
-            /** @uses AdditionalSectionIndexBuilder::rebuildIndex() */
+            /** @uses AdditionalSectionIndexBuilder::buildIndex() */
             $this->queue->addToQueue(
                 AdditionalSectionIndexBuilder::class,
-                'rebuildIndex',
+                'buildIndex',
                 ['storeId' => $storeId],
                 1
             );

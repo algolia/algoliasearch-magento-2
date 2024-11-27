@@ -49,10 +49,10 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
                     $data['pageIds'] = $ids;
                 }
 
-                /** @uses PageIndexBuilder::rebuildIndex() */
+                /** @uses PageIndexBuilder::buildIndex() */
                 $this->queue->addToQueue(
                     PageIndexBuilder::class,
-                    'rebuildIndex',
+                    'buildIndex',
                     $data,
                     is_array($ids) ? count($ids) : 1
                 );

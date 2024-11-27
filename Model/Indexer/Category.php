@@ -81,10 +81,10 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
         if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
             $productsPerPage = $this->configHelper->getNumberOfElementByPage();
             foreach (array_chunk($affectedProducts, $productsPerPage) as $chunk) {
-                /** @uses ProductIndexBuilder::rebuildIndexIds() */
+                /** @uses ProductIndexBuilder::rebuildEntityIds() */
                 $this->queue->addToQueue(
                     ProductIndexBuilder::class,
-                    'rebuildIndexIds',
+                    'rebuildEntityIds',
                     [
                         'storeId' => $storeId,
                         'productIds' => $chunk,
@@ -103,10 +103,10 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
     private function processSpecificCategories($categoryIds, $categoriesPerPage, $storeId)
     {
         foreach (array_chunk($categoryIds, $categoriesPerPage) as $chunk) {
-            /** @uses CategoryIndexBuilder::rebuildIndexIds */
+            /** @uses CategoryIndexBuilder::rebuildEntityIds */
             $this->queue->addToQueue(
                 CategoryIndexBuilder::class,
-                'rebuildIndexIds',
+                'rebuildEntityIds',
                 [
                     'storeId' => $storeId,
                     'categoryIds' => $chunk,
@@ -140,8 +140,8 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
                 'pageSize' => $categoriesPerPage,
             ];
 
-            /** @uses CategoryIndexBuilder::rebuildIndex() */
-            $this->queue->addToQueue(CategoryIndexBuilder::class, 'rebuildIndex', $data, $categoriesPerPage, true);
+            /** @uses CategoryIndexBuilder::buildIndex() */
+            $this->queue->addToQueue(CategoryIndexBuilder::class, 'buildIndex', $data, $categoriesPerPage, true);
         }
     }
 }

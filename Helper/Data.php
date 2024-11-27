@@ -41,11 +41,11 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder::buildIndex() instead
      */
     public function rebuildStoreAdditionalSectionsIndex(int $storeId): void
     {
-        $this->additionalSectionIndexBuilder->rebuildIndex($storeId);
+        $this->additionalSectionIndexBuilder->buildIndex($storeId);
     }
 
     /**
@@ -56,11 +56,11 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Page\IndexBuilder::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Page\IndexBuilder::buildIndex() instead
      */
     public function rebuildStorePageIndex($storeId, array $pageIds = null): void
     {
-        $this->pageIndexBuilder->rebuildIndex($storeId, $pageIds);
+        $this->pageIndexBuilder->buildIndex($storeId, $pageIds);
     }
 
     /**
@@ -71,11 +71,11 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::rebuildIndexIds() instead
+     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::rebuildEntityIds() instead
      */
     public function rebuildStoreCategoryIndex($storeId, $categoryIds = null): void
     {
-        $this->categoryIndexBuilder->rebuildIndexIds($storeId, $categoryIds);
+        $this->categoryIndexBuilder->rebuildEntityIds($storeId, $categoryIds);
     }
 
     /**
@@ -86,11 +86,11 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Suggestion:\IndexBuilder:rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Suggestion:\IndexBuilder:buildIndex() instead
      */
     public function rebuildStoreSuggestionIndex(int $storeId): void
     {
-        $this->suggestionIndexBuilder->rebuildIndex($storeId);
+        $this->suggestionIndexBuilder->buildIndex($storeId);
     }
 
     /**
@@ -100,11 +100,11 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::rebuildIndexIds() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::rebuildEntityIds() instead
      */
     public function rebuildStoreProductIndex(int $storeId, array $productIds): void
     {
-        $this->productIndexBuilder->rebuildIndexIds($storeId, $productIds);
+        $this->productIndexBuilder->rebuildEntityIds($storeId, $productIds);
     }
 
     /**
@@ -117,11 +117,11 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::buildIndex() instead
      */
     public function rebuildProductIndex(int $storeId, ?array $productIds, int $page, int $pageSize, bool $useTmpIndex): void
     {
-        $this->productIndexBuilder->rebuildIndex($storeId, $productIds, $page, $pageSize, $useTmpIndex);
+        $this->productIndexBuilder->buildIndex($storeId, $productIds, $page, $pageSize, $useTmpIndex);
     }
 
     /**
@@ -134,11 +134,11 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::rebuildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::buildIndex() instead
      */
     public function rebuildCategoryIndex(int $storeId, int $page, int $pageSize): void
     {
-        $this->categoryIndexBuilder->rebuildIndex($storeId, $page, $pageSize);
+        $this->categoryIndexBuilder->buildIndex($storeId, $page, $pageSize);
     }
 
     /**

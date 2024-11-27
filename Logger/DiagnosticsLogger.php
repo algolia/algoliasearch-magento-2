@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Logger;
 
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -20,11 +20,15 @@ class DiagnosticsLogger
     protected bool $isLoggerEnabled = false;
     protected bool $isProfilerEnabled = false;
 
+    /** @var string[]  */
+    private array $timerStack = [];
+
     public function __construct(
         protected ConfigHelper     $config,
         protected TimedLogger      $logger,
         protected StoreNameFetcher $storeNameFetcher
-    ) {
+    )
+    {
         $this->isLoggerEnabled = $this->config->isLoggingEnabled();
         $this->isProfilerEnabled = $this->config->isProfilerEnabled();
     }
@@ -63,7 +67,7 @@ class DiagnosticsLogger
 
 
     /**
-     * @throws AlgoliaException
+     * @throws DiagnosticsException
      */
     public function stop(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES_DEFAULT): void
     {
@@ -83,12 +87,25 @@ class DiagnosticsLogger
     {
         if (!$this->isProfilerEnabled) return;
 
+        $timerName = $this->simplifyMethodName($timerName);
+        $this->timerStack[] = $timerName;
+
         Profiler::start($timerName, self::ALGOLIA_TAGS);
     }
 
+    /**
+     * @throws DiagnosticsException
+     */
     public function stopProfiling(string $timerName): void
     {
         if (!$this->isProfilerEnabled) return;
+
+        $lastTimerName = array_pop($this->timerStack); //$this->timerStack[count($this->timerStack) - 1];
+        $timerName = $this->simplifyMethodName($timerName);
+
+        if ($lastTimerName !== $timerName) {
+            throw new DiagnosticsException(__("Profiling on %1 was stopped before nested operation %2 completed.", $timerName, $lastTimerName));
+        }
 
         Profiler::setDefaultTags(self::ALGOLIA_TAGS);
         Profiler::stop($timerName);
@@ -102,7 +119,8 @@ class DiagnosticsLogger
         }
     }
 
-    public function error(string $message): void {
+    public function error(string $message): void
+    {
         if ($this->isLoggerEnabled) {
             $this->logger->log($message, Logger::ERROR);
         }
@@ -111,6 +129,7 @@ class DiagnosticsLogger
     /**
      * Gets the name of the method that called the diagnostics
      *
+     * @param int $level
      * @return string|null
      */
     protected function getCallingMethodName(int $level = 2): ?string
@@ -120,4 +139,21 @@ class DiagnosticsLogger
             ? $backtrace[$level]['class'] . "::" . $backtrace[$level]['function']
             : null;
     }
+
+    protected function simplifyMethodName(string $methodName, int $namespaceDepth = 2): string
+    {
+        $separator = '\\';
+        $parts = explode($separator, $methodName);
+
+        if (count($parts) <= $namespaceDepth) {
+            return $methodName;
+        }
+
+        $simplified = implode($separator, array_slice($parts, $namespaceDepth));
+        if (!count($this->timerStack)) {
+            $simplified = "ALGOLIA:" . $simplified;
+        }
+        return $simplified;
+    }
+
 }

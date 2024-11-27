@@ -7,14 +7,18 @@ class JobMethods implements \Magento\Framework\Data\OptionSourceInterface
     private $methods = [
         'saveConfigurationToAlgolia' => 'Save Configuration',
         'moveIndexWithSetSettings' => 'Move Index',
-        'deleteObjects' => 'Object deletion',
-        'rebuildStoreCategoryIndex' => 'Category Reindex',
-        'rebuildCategoryIndex' => 'Category Reindex',
-        'rebuildStoreProductIndex' => 'Product Reindex',
-        'rebuildProductIndex' => 'Product Reindex',
-        'rebuildStoreAdditionalSectionsIndex' => 'Additional Section Reindex',
-        'rebuildStoreSuggestionIndex' => 'Suggestion Reindex',
-        'rebuildStorePageIndex' => 'Page Reindex',
+        'buildIndex' => 'Build Full Index',
+        'rebuildEntityIds' => 'Update Index',
+        'deleteInactiveProducts' => 'Delete Inactive Products',
+        // @deprecated
+        'deleteObjects' => 'Object deletion (deprecated)',
+        'rebuildStoreCategoryIndex' => 'Category Reindex (deprecated)',
+        'rebuildCategoryIndex' => 'Category Reindex (deprecated)',
+        'rebuildStoreProductIndex' => 'Product Reindex (deprecated)',
+        'rebuildProductIndex' => 'Product Reindex (deprecated)',
+        'rebuildStoreAdditionalSectionsIndex' => 'Additional Section Reindex (deprecated)',
+        'rebuildStoreSuggestionIndex' => 'Suggestion Reindex (deprecated)',
+        'rebuildStorePageIndex' => 'Page Reindex (deprecated)',
     ];
 
     /** @return array */

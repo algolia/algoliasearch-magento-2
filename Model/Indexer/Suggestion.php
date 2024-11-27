@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
@@ -15,7 +16,7 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected SuggestionHelper $suggestionHelper,
-        protected Data $fullAction,
+        protected Data $dataHelper,
         protected AlgoliaHelper $algoliaHelper,
         protected Queue $queue,
         protected ConfigHelper $configHelper,
@@ -32,7 +33,7 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -42,7 +43,13 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 return;
             }
 
-            $this->queue->addToQueue(Data::class, 'rebuildStoreSuggestionIndex', ['storeId' => $storeId], 1);
+            /** @uses SuggestionIndexBuilder::buildIndex() */
+            $this->queue->addToQueue(
+                SuggestionIndexBuilder::class,
+                'buildIndex',
+                ['storeId' => $storeId],
+                1
+            );
         }
     }
 

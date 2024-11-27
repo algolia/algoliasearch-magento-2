@@ -17,6 +17,8 @@ class DiagnosticsLogger
     /** @var array */
     protected const ALGOLIA_TAGS = ['group' => 'algolia'];
     protected const PROFILE_LOG_MESSAGES_DEFAULT = false;
+    protected const DEFAULT_NAMESPACE_DEPTH = 2;
+
     protected bool $isLoggerEnabled = false;
     protected bool $isProfilerEnabled = false;
 
@@ -140,12 +142,12 @@ class DiagnosticsLogger
             : null;
     }
 
-    protected function simplifyMethodName(string $methodName, int $namespaceDepth = 2): string
+    protected function simplifyMethodName(string $methodName, int $namespaceDepth = self::DEFAULT_NAMESPACE_DEPTH): string
     {
         $separator = '\\';
         $parts = explode($separator, $methodName);
 
-        if (count($parts) <= $namespaceDepth) {
+        if (count($parts) <= abs($namespaceDepth)) {
             return $methodName;
         }
 

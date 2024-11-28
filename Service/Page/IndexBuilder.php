@@ -38,7 +38,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
      */
     public function buildIndexFull(int $storeId, array $options = null): void
     {
-        $this->buildIndex($storeId, isset($options['ids'])?: null, null);
+        $this->buildIndex($storeId, $options['ids'] ?? null, null);
     }
 
     /**

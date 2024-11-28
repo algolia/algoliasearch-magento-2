@@ -30,6 +30,7 @@ class Data extends \Magento\Ui\Component\Listing\Columns\Column
                         $stringValue = '';
                         foreach ($value as $k => $v) {
                             if (is_string($k)) {
+                                $v = !is_array($v) ?: implode(",", $v);
                                 $stringValue .= '<br>&nbsp;&nbsp;&nbsp; - <strong>' . $k . '</strong> : '. $v;
                             } else {
                                 $stringValue .= $v . ',';

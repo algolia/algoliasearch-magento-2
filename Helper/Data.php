@@ -41,11 +41,11 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder::buildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder::buildIndexFull() instead
      */
     public function rebuildStoreAdditionalSectionsIndex(int $storeId): void
     {
-        $this->additionalSectionIndexBuilder->buildIndex($storeId);
+        $this->additionalSectionIndexBuilder->buildIndexFull($storeId);
     }
 
     /**
@@ -56,26 +56,27 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Page\IndexBuilder::buildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Page\IndexBuilder::buildIndexFull() instead
      */
     public function rebuildStorePageIndex($storeId, array $pageIds = null): void
     {
-        $this->pageIndexBuilder->buildIndex($storeId, $pageIds);
+        $this->pageIndexBuilder->buildIndexFull($storeId, ['ids' => $pageIds]);
     }
 
     /**
      * @param $storeId
-     * @param $categoryIds
+     * @param null $categoryIds
      * @return void
+     * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::rebuildEntityIds() instead
+     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::buildIndexList() instead
      */
     public function rebuildStoreCategoryIndex($storeId, $categoryIds = null): void
     {
-        $this->categoryIndexBuilder->rebuildEntityIds($storeId, $categoryIds);
+        $this->categoryIndexBuilder->buildIndexList($storeId, $categoryIds);
     }
 
     /**
@@ -86,11 +87,11 @@ class Data
      * @throws NoSuchEntityException
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Suggestion:\IndexBuilder:buildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Suggestion:\IndexBuilder:buildIndexFull() instead
      */
     public function rebuildStoreSuggestionIndex(int $storeId): void
     {
-        $this->suggestionIndexBuilder->buildIndex($storeId);
+        $this->suggestionIndexBuilder->buildIndexFull($storeId);
     }
 
     /**
@@ -100,11 +101,11 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::rebuildEntityIds() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::buildIndexList() instead
      */
     public function rebuildStoreProductIndex(int $storeId, array $productIds): void
     {
-        $this->productIndexBuilder->rebuildEntityIds($storeId, $productIds);
+        $this->productIndexBuilder->buildIndexList($storeId, $productIds);
     }
 
     /**
@@ -117,11 +118,19 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::buildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Product\IndexBuilder::buildIndexFull() instead
      */
     public function rebuildProductIndex(int $storeId, ?array $productIds, int $page, int $pageSize, bool $useTmpIndex): void
     {
-        $this->productIndexBuilder->buildIndex($storeId, $productIds, $page, $pageSize, $useTmpIndex);
+        $this->productIndexBuilder->buildIndexFull(
+            $storeId,
+            [
+                'productIds' => $productIds,
+                'page' => $page,
+                'pageSize' => $pageSize,
+                'useTmpIndex' => $useTmpIndex
+            ]
+        );
     }
 
     /**
@@ -134,11 +143,11 @@ class Data
      * @throws \Exception
      *
      * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::buildIndex() instead
+     * Use Algolia\AlgoliaSearch\Service\Category\IndexBuilder::buildIndexFull() instead
      */
     public function rebuildCategoryIndex(int $storeId, int $page, int $pageSize): void
     {
-        $this->categoryIndexBuilder->buildIndex($storeId, $page, $pageSize);
+        $this->categoryIndexBuilder->buildIndexFull($storeId, ['page' => $page, 'pageSize' => $pageSize]);
     }
 
     /**

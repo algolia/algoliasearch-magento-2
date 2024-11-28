@@ -74,7 +74,7 @@ class QueueTest extends TestCase
 
             if ($i < 3) {
                 $this->assertEquals(\Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class, $row['class']);
-                $this->assertEquals('buildIndex', $row['method']);
+                $this->assertEquals('buildIndexFull', $row['method']);
                 $this->assertEquals(300, $row['data_size']);
 
                 continue;

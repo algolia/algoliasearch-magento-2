@@ -43,10 +43,10 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
                 return;
             }
 
-            /** @uses SuggestionIndexBuilder::buildIndex() */
+            /** @uses SuggestionIndexBuilder::buildIndexFull() */
             $this->queue->addToQueue(
                 SuggestionIndexBuilder::class,
-                'buildIndex',
+                'buildIndexFull',
                 ['storeId' => $storeId],
                 1
             );

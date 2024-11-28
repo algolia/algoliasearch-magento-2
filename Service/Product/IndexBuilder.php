@@ -104,7 +104,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @return void
      * @throws \Exception
      */
-    public function rebuildEntityIds(int $storeId, array $productIds): void
+    protected function rebuildEntityIds(int $storeId, array $productIds): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;

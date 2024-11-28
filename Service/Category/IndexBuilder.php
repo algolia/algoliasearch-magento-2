@@ -91,7 +91,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function rebuildEntityIds($storeId, $categoryIds = null): void
+    protected function rebuildEntityIds($storeId, $categoryIds = null): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;

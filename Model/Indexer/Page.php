@@ -46,13 +46,13 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
             if ($this->isPagesInAdditionalSections($storeId)) {
                 $data = ['storeId' => $storeId];
                 if (is_array($ids) && count($ids) > 0) {
-                    $data['pageIds'] = $ids;
+                    $data['options'] = ['ids' => $ids];
                 }
 
-                /** @uses PageIndexBuilder::buildIndex() */
+                /** @uses PageIndexBuilder::buildIndexFull() */
                 $this->queue->addToQueue(
                     PageIndexBuilder::class,
-                    'buildIndex',
+                    'buildIndexFull',
                     $data,
                     is_array($ids) ? count($ids) : 1
                 );

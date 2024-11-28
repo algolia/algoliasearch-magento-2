@@ -58,11 +58,11 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
 
             if (is_array($productIds) && count($productIds) > 0) {
                 foreach (array_chunk($productIds, $productsPerPage) as $chunk) {
-                    /** @uses ProductIndexBuilder::rebuildEntityIds() */
+                    /** @uses ProductIndexBuilder::buildIndexList() */
                     $this->queue->addToQueue(
                         ProductIndexBuilder::class,
-                        'rebuildEntityIds',
-                        ['storeId' => $storeId, 'productIds' => $chunk],
+                        'buildIndexList',
+                        ['storeId' => $storeId, 'ids' => $chunk],
                         count($chunk)
                     );
                 }
@@ -89,16 +89,18 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
             for ($i = 1; $i <= $pages; $i++) {
                 $data = [
                     'storeId' => $storeId,
-                    'productIds' => $productIds,
-                    'page' => $i,
-                    'pageSize' => $productsPerPage,
-                    'useTmpIndex' => $useTmpIndex,
+                    'options' => [
+                        'productIds' => $productIds,
+                        'page' => $i,
+                        'pageSize' => $productsPerPage,
+                        'useTmpIndex' => $useTmpIndex,
+                    ]
                 ];
 
-                /** @uses ProductIndexBuilder::buildIndex() */
+                /** @uses ProductIndexBuilder::buildIndexFull() */
                 $this->queue->addToQueue(
                     ProductIndexBuilder::class,
-                    'buildIndex',
+                    'buildIndexFull',
                     $data,
                     $productsPerPage,
                     true

@@ -27,9 +27,17 @@ class Data extends \Magento\Ui\Component\Listing\Columns\Column
             if (is_array($data)) {
                 foreach ($data as $key => $value) {
                     if (is_array($value)) {
-                        $value = implode(', ', $value);
+                        $stringValue = '';
+                        foreach ($value as $k => $v) {
+                            if (is_string($k)) {
+                                $stringValue .= '<br>&nbsp;&nbsp;&nbsp; - <strong>' . $k . '</strong> : '. $v;
+                            } else {
+                                $stringValue .= $v . ',';
+                            }
+                        }
+                        $value = rtrim($stringValue,",");
                     }
-                    $formattedData .= $key . ' : ' . $value . '<br>';
+                    $formattedData .= '- <strong>' .$key . '</strong> : ' . $value . '<br>';
                 }
             }
             $item[$fieldName] = $formattedData;

@@ -98,15 +98,26 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
         return check;
     };
 
-    window.getCookie = function (name) {
-        var value = "; " + document.cookie;
-        var parts = value.split("; " + name + "=");
-        if (parts.length == 2) {
-            return parts.pop().split(";").shift();
+    window.getCookie = function(name) {
+        var cookie,
+            i,
+            cookieName = name + "=",
+            cookieArr = document.cookie.split(';');
+
+        for (i = 0; i < cookieArr.length; i++) {
+            cookie = cookieArr[i];
+
+            while (cookie.charAt(0) === ' ') {
+                cookie = cookie.substring(1, cookie.length);
+            }
+
+            if (cookie.indexOf(cookieName) === 0) {
+                return cookie.substring(cookieName.length, cookie.length);
+            }
         }
 
         return "";
-    };
+    }
 
     window.transformHit = function (hit, price_key, helper) {
         if (Array.isArray(hit.categories))

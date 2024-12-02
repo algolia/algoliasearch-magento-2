@@ -511,12 +511,13 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function getSubProducts(Product $product): array
     {
-        $this->logger->startProfiling(__METHOD__);
         $type = $product->getTypeId();
 
         if (!in_array($type, ['bundle', 'grouped', 'configurable'], true)) {
             return [];
         }
+
+        $this->logger->startProfiling(__METHOD__);
 
         $storeId = $product->getStoreId();
         $typeInstance = $product->getTypeInstance();

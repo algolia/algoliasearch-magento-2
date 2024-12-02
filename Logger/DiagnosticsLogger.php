@@ -102,7 +102,7 @@ class DiagnosticsLogger
     {
         if (!$this->isProfilerEnabled) return;
 
-        $lastTimerName = array_pop($this->timerStack); //$this->timerStack[count($this->timerStack) - 1];
+        $lastTimerName = array_pop($this->timerStack);
         $timerName = $this->simplifyMethodName($timerName);
 
         if ($lastTimerName !== $timerName) {

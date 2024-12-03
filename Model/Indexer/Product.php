@@ -62,7 +62,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
                     $this->queue->addToQueue(
                         ProductIndexBuilder::class,
                         'buildIndexList',
-                        ['storeId' => $storeId, 'ids' => $chunk],
+                        ['storeId' => $storeId, 'entityIds' => $chunk],
                         count($chunk)
                     );
                 }
@@ -90,7 +90,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
                 $data = [
                     'storeId' => $storeId,
                     'options' => [
-                        'productIds' => $productIds,
+                        'entityIds' => $productIds,
                         'page' => $i,
                         'pageSize' => $productsPerPage,
                         'useTmpIndex' => $useTmpIndex,

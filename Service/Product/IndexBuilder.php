@@ -55,33 +55,33 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
     /**
      * @param int $storeId
-     * @param array|null $ids
+     * @param array|null $entityIds
      * @param array|null $options
      * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function buildIndexList(int $storeId, array $ids = null, array $options = null): void
+    public function buildIndexList(int $storeId, array $entityIds = null, array $options = null): void
     {
-        $this->buildIndex($storeId, $ids, $options);
+        $this->buildIndex($storeId, $entityIds, $options);
     }
 
     /**
      * @param int $storeId
-     * @param array|null $ids
+     * @param array|null $entityIds
      * @param array|null $options
      * @return void
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function buildIndex(int $storeId, ?array $ids, ?array $options): void
+    public function buildIndex(int $storeId, ?array $entityIds, ?array $options): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        if (!is_null($ids)) {
-            $this->rebuildEntityIds($storeId, $ids);
+        if (!is_null($entityIds)) {
+            $this->rebuildEntityIds($storeId, $entityIds);
             return;
         }
 
@@ -93,7 +93,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $options['page'],
             $options['pageSize'],
             null,
-            $options['productIds'],
+            $options['entityIds'],
             $options['useTmpIndex']
         );
     }

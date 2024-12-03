@@ -87,7 +87,7 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
                     'buildIndexList',
                     [
                         'storeId' => $storeId,
-                        'ids' => $chunk,
+                        'entityIds' => $chunk,
                     ],
                     count($chunk)
                 );
@@ -109,7 +109,7 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
                 'buildIndexList',
                 [
                     'storeId' => $storeId,
-                    'ids' => $chunk,
+                    'entityIds' => $chunk,
                 ],
                 count($chunk)
             );

@@ -60,7 +60,7 @@ class Data
      */
     public function rebuildStorePageIndex($storeId, array $pageIds = null): void
     {
-        $this->pageIndexBuilder->buildIndexFull($storeId, ['ids' => $pageIds]);
+        $this->pageIndexBuilder->buildIndexFull($storeId, ['entityIds' => $pageIds]);
     }
 
     /**

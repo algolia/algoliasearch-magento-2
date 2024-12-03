@@ -46,7 +46,7 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
             if ($this->isPagesInAdditionalSections($storeId)) {
                 $data = ['storeId' => $storeId];
                 if (is_array($ids) && count($ids) > 0) {
-                    $data['options'] = ['ids' => $ids];
+                    $data['options'] = ['entityIds' => $ids];
                 }
 
                 /** @uses PageIndexBuilder::buildIndexFull() */

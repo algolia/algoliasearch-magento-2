@@ -44,14 +44,14 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
     /**
      * @param int $storeId
-     * @param array|null $ids
+     * @param array|null $entityIds
      * @param array|null $options
      * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
      */
-    public function buildIndex(int $storeId, ?array $ids, ?array $options): void
+    public function buildIndex(int $storeId, ?array $entityIds, ?array $options): void
     {
         if ($this->isIndexingEnabled($storeId) === false || !$this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             return;

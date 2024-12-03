@@ -127,7 +127,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         // @todo Remove legacy checks on 3.16.0
         if ((!isset($decodedData['product_ids']) || count($decodedData['product_ids']) <= 0)
             && (!isset($decodedData['category_ids']) || count($decodedData['category_ids']) < 0)
-            && (!isset($decodedData['ids']) || count($decodedData['ids']) < 0)
+            && (!isset($decodedData['entity_ids']) || count($decodedData['entity_ids']) < 0)
             && (!isset($decodedData['page_ids']) || count($decodedData['page_ids']) < 0)) {
             return false;
         }
@@ -137,7 +137,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         // @todo Remove legacy checks on 3.16.0
         if ((!isset($candidateDecodedData['product_ids']) || count($candidateDecodedData['product_ids']) <= 0)
             && (!isset($candidateDecodedData['category_ids']) || count($candidateDecodedData['category_ids']) < 0)
-            && (!isset($candidateDecodedData['ids']) || count($candidateDecodedData['ids']) < 0)
+            && (!isset($candidateDecodedData['entity_ids']) || count($candidateDecodedData['entity_ids']) < 0)
             && (!isset($candidateDecodedData['page_ids']) || count($candidateDecodedData['page_ids']) < 0)) {
             return false;
         }
@@ -160,8 +160,8 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
             return false;
         }
 
-        if (isset($decodedData['ids'])
-            && count($decodedData['ids']) + count($candidateDecodedData['ids']) > $maxJobDataSize) {
+        if (isset($decodedData['entity_ids'])
+            && count($decodedData['entity_ids']) + count($candidateDecodedData['entity_ids']) > $maxJobDataSize) {
             return false;
         }
 
@@ -207,13 +207,13 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
             ));
 
             $dataSize = count($decodedData['page_ids']);
-        } elseif (isset($decodedData['ids'])) {
-            $decodedData['ids'] = array_unique(array_merge(
-                $decodedData['ids'],
-                $mergedJobDecodedData['ids']
+        } elseif (isset($decodedData['entity_ids'])) {
+            $decodedData['entity_ids'] = array_unique(array_merge(
+                $decodedData['entity_ids'],
+                $mergedJobDecodedData['entity_ids']
             ));
 
-            $dataSize = count($decodedData['ids']);
+            $dataSize = count($decodedData['entity_ids']);
         }
 
         $this->setDecodedData($decodedData);

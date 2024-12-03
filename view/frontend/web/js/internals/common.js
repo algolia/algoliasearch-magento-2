@@ -1,4 +1,5 @@
-define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
+define(
+    ['jquery', 'algoliaBundle', 'Magento_PageCache/js/form-key-provider',], function ($, algoliaBundle, formKeyInit) {
     // Character maps supplied for more performant Regex ops
     const SPECIAL_CHAR_ENCODE_MAP = {
         '&': '&amp;',
@@ -99,10 +100,10 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
     };
 
     window.getCookie = function(name) {
-        var cookie,
-            i,
-            cookieName = name + "=",
-            cookieArr = document.cookie.split(';');
+        let cookie, i;
+
+        const cookieName = name + "=",
+              cookieArr = document.cookie.split(';');
 
         for (i = 0; i < cookieArr.length; i++) {
             cookie = cookieArr[i];
@@ -223,11 +224,7 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
         // Add to cart parameters
         var action = algoliaConfig.instant.addToCartParams.action + 'product/' + hit.objectID + '/';
 
-        var correctFKey = getCookie('form_key');
-
-        if (correctFKey != "" && algoliaConfig.instant.addToCartParams.formKey != correctFKey) {
-            algoliaConfig.instant.addToCartParams.formKey = correctFKey;
-        }
+        algoliaConfig.instant.addToCartParams.formKey = getCookie('form_key');
 
         hit.addToCart = {
             'action': action,

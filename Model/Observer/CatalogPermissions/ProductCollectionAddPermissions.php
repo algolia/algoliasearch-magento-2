@@ -2,27 +2,23 @@
 
 namespace Algolia\AlgoliaSearch\Model\Observer\CatalogPermissions;
 
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Factory\CatalogPermissionsFactory;
 use Algolia\AlgoliaSearch\Factory\SharedCatalogFactory;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Customer\Model\ResourceModel\Group\Collection as CustomerGroupCollection;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 
 class ProductCollectionAddPermissions implements ObserverInterface
 {
-    private $permissionsFactory;
-    private $customerGroupCollection;
-    private $sharedCatalogFactory;
-
     public function __construct(
-        CustomerGroupCollection $customerGroupCollection,
-        CatalogPermissionsFactory $permissionsFactory,
-        SharedCatalogFactory $sharedCatalogFactory
-    ) {
-        $this->customerGroupCollection = $customerGroupCollection;
-        $this->permissionsFactory = $permissionsFactory;
-        $this->sharedCatalogFactory = $sharedCatalogFactory;
-    }
+        protected CustomerGroupCollection   $customerGroupCollection,
+        protected CatalogPermissionsFactory $permissionsFactory,
+        protected SharedCatalogFactory      $sharedCatalogFactory,
+        protected DiagnosticsLogger         $diag
+    )
+    { }
 
     public function execute(Observer $observer)
     {
@@ -42,7 +38,6 @@ class ProductCollectionAddPermissions implements ObserverInterface
         if ($this->sharedCatalogFactory->isSharedCatalogEnabled($storeId)) {
             $this->addSharedCatalogData($additionalData, $productIds);
         }
-
         return $this;
     }
 
@@ -50,11 +45,14 @@ class ProductCollectionAddPermissions implements ObserverInterface
      * @param $additionalData \Algolia\AlgoliaSearch\Helper\ProductDataArray
      * @param $productIds
      * @param $storeId
+     * @throws DiagnosticsException
      */
     protected function addProductPermissionsData($additionalData, $productIds, $storeId)
     {
+        $this->diag->startProfiling(__METHOD__);
         $productPermissionsCollection = $this->permissionsFactory->getProductPermissionsCollection();
         if (count($productPermissionsCollection) === 0) {
+            $this->diag->stopProfiling(__METHOD__);
             return;
         }
 
@@ -75,16 +73,20 @@ class ProductCollectionAddPermissions implements ObserverInterface
                 }
             }
         }
+        $this->diag->stopProfiling(__METHOD__);
     }
 
     /**
      * @param $additionalData \Algolia\AlgoliaSearch\Helper\ProductDataArray
      * @param $productIds
+     * @throws DiagnosticsException
      */
     protected function addSharedCatalogData($additionalData, $productIds)
     {
+        $this->diag->startProfiling(__METHOD__);
         $sharedCatalogCollection = $this->sharedCatalogFactory->getSharedProductItemCollection();
         if (count($sharedCatalogCollection) === 0) {
+            $this->diag->stopProfiling(__METHOD__);
             return;
         }
 
@@ -102,5 +104,6 @@ class ProductCollectionAddPermissions implements ObserverInterface
                 ]);
             }
         }
+        $this->diag->stopProfiling(__METHOD__);
     }
 }

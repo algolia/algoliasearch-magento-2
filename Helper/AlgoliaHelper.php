@@ -241,6 +241,11 @@ class AlgoliaHelper extends AbstractHelper
             $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom);
         }
 
+        // Removing synonyms from the settings to avoid duplication (synonyms must be managed within the algolia dashboard)
+        if (isset($settings['synonyms'])) {
+            unset($settings['synonyms']);
+        }
+
         $res = $this->getClient()->setSettings($indexName, $settings, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);

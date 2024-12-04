@@ -7,8 +7,8 @@ class JobMethods implements \Magento\Framework\Data\OptionSourceInterface
     private $methods = [
         'saveConfigurationToAlgolia' => 'Save Configuration',
         'moveIndexWithSetSettings' => 'Move Index',
-        'buildIndex' => 'Build Full Index',
-        'rebuildEntityIds' => 'Update Index',
+        'buildIndexFull' => 'Build Full Index',
+        'buildIndexList' => 'Update Index',
         'deleteInactiveProducts' => 'Delete Inactive Products',
         // @deprecated
         'deleteObjects' => 'Object deletion (deprecated)',

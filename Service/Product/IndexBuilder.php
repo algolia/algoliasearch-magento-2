@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
+use Algolia\AlgoliaSearch\Api\IndexBuilder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
@@ -14,12 +15,13 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Store\Model\App\Emulation;
 
-class IndexBuilder extends AbstractIndexBuilder
+class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilderInterface
 {
     protected IndexerInterface $priceIndexer;
 
@@ -41,21 +43,59 @@ class IndexBuilder extends AbstractIndexBuilder
 
     /**
      * @param int $storeId
-     * @param array|null $productIds
-     * @param int $page
-     * @param int $pageSize
-     * @param bool $useTmpIndex
+     * @param array|null $options
      * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function buildIndexFull(int $storeId, array $options = null): void
+    {
+        $this->buildIndex($storeId, null, $options);
+    }
+
+    /**
+     * @param int $storeId
+     * @param array|null $entityIds
+     * @param array|null $options
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function buildIndexList(int $storeId, array $entityIds = null, array $options = null): void
+    {
+        $this->buildIndex($storeId, $entityIds, $options);
+    }
+
+    /**
+     * @param int $storeId
+     * @param array|null $entityIds
+     * @param array|null $options
+     * @return void
+     * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function buildIndex(int $storeId, ?array $productIds, int $page, int $pageSize, bool $useTmpIndex): void
+    public function buildIndex(int $storeId, ?array $entityIds, ?array $options): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
+
+        if (!is_null($entityIds)) {
+            $this->rebuildEntityIds($storeId, $entityIds);
+            return;
+        }
+
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
         $collection = $this->productHelper->getProductCollectionQuery($storeId, null, $onlyVisible);
-        $this->buildIndexPage($storeId, $collection, $page, $pageSize, null, $productIds, $useTmpIndex);
+        $this->buildIndexPage(
+            $storeId,
+            $collection,
+            $options['page'],
+            $options['pageSize'],
+            null,
+            $options['entityIds'],
+            $options['useTmpIndex']
+        );
     }
 
     /**
@@ -64,7 +104,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @return void
      * @throws \Exception
      */
-    public function rebuildEntityIds(int $storeId, array $productIds): void
+    protected function rebuildEntityIds(int $storeId, array $productIds): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Suggestion;
 
+use Algolia\AlgoliaSearch\Api\IndexBuilder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
@@ -15,7 +16,7 @@ use Magento\Search\Model\Query;
 use Magento\Search\Model\ResourceModel\Query\Collection as QueryCollection;
 use Magento\Store\Model\App\Emulation;
 
-class IndexBuilder extends AbstractIndexBuilder
+class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 {
     public function __construct(
         protected ConfigHelper      $configHelper,
@@ -30,12 +31,27 @@ class IndexBuilder extends AbstractIndexBuilder
 
     /**
      * @param int $storeId
+     * @param array|null $options
      * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
      */
-    public function buildIndex(int $storeId): void
+    public function buildIndexFull(int $storeId, array $options = null): void
+    {
+        $this->buildIndex($storeId, null, null);
+    }
+
+    /**
+     * @param int $storeId
+     * @param array|null $entityIds
+     * @param array|null $options
+     * @return void
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
+     */
+    public function buildIndex(int $storeId, ?array $entityIds, ?array $options): void
     {
         if ($this->isIndexingEnabled($storeId) === false || !$this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             return;
@@ -116,7 +132,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @throws NoSuchEntityException
      * @throws ExceededRetriesException
      */
-    public function moveStoreSuggestionIndex(int $storeId): void
+    protected function moveStoreSuggestionIndex(int $storeId): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;

@@ -2,7 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Service\Page;
 
+use Algolia\AlgoliaSearch\Api\IndexBuilder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
@@ -13,7 +15,7 @@ use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
 
-class IndexBuilder extends AbstractIndexBuilder
+class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 {
     public function __construct(
         protected ConfigHelper      $configHelper,
@@ -27,13 +29,28 @@ class IndexBuilder extends AbstractIndexBuilder
     }
 
     /**
-     * @param $storeId
-     * @param array|null $pageIds
+     * @param int $storeId
+     * @param array|null $options
      * @return void
      * @throws AlgoliaException
+     * @throws ExceededRetriesException
      * @throws NoSuchEntityException
      */
-    public function buildIndex($storeId, array $pageIds = null): void
+    public function buildIndexFull(int $storeId, array $options = null): void
+    {
+        $this->buildIndex($storeId, $options['entityIds'] ?? null, null);
+    }
+
+    /**
+     * @param $storeId
+     * @param array|null $entityIds
+     * @param array|null $options
+     * @return void
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
+     */
+    public function buildIndex($storeId, ?array $entityIds, ?array $options): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -50,12 +67,12 @@ class IndexBuilder extends AbstractIndexBuilder
 
         $this->startEmulation($storeId);
 
-        $pages = $this->pageHelper->getPages($storeId, $pageIds);
+        $pages = $this->pageHelper->getPages($storeId, $entityIds);
 
         $this->stopEmulation();
 
         // if there are pageIds defined, do not index to _tmp
-        $isFullReindex = (!$pageIds);
+        $isFullReindex = (!$entityIds);
 
         if (isset($pages['toIndex']) && count($pages['toIndex'])) {
             $pagesToIndex = $pages['toIndex'];

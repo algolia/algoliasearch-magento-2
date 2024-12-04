@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Category;
 
+use Algolia\AlgoliaSearch\Api\IndexBuilder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
@@ -15,7 +16,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
 
-class IndexBuilder extends AbstractIndexBuilder
+class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilderInterface
 {
     public function __construct(
         protected ConfigHelper      $configHelper,
@@ -30,22 +31,55 @@ class IndexBuilder extends AbstractIndexBuilder
 
     /**
      * @param int $storeId
-     * @param int $page
-     * @param int $pageSize
+     * @param array|null $options
      * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
+     */
+    public function buildIndexFull(int $storeId, array $options = null): void
+    {
+        $this->buildIndex($storeId, null, $options);
+    }
+
+    /**
+     * @param int $storeId
+     * @param array|null $entityIds
+     * @param array|null $options
+     * @return void
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function buildIndexList(int $storeId, array $entityIds = null, array $options = null): void
+    {
+        $this->buildIndex($storeId, $entityIds, $options);
+    }
+
+    /**
+     * @param int $storeId
+     * @param array|null $entityIds
+     * @param array|null $options
+     * @return void
+     * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function buildIndex(int $storeId, int $page, int $pageSize): void
+    public function buildIndex(int $storeId, ?array $entityIds, ?array $options): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
 
+        if (!is_null($entityIds)) {
+            $this->rebuildEntityIds($storeId, $entityIds);
+            return;
+        }
+
         $this->startEmulation($storeId);
         $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId, null);
-        $this->buildIndexPage($storeId, $collection, $page, $pageSize);
+        $this->buildIndexPage($storeId, $collection, $options['page'], $options['pageSize']);
         $this->stopEmulation();
     }
 
@@ -57,7 +91,7 @@ class IndexBuilder extends AbstractIndexBuilder
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    public function rebuildEntityIds($storeId, $categoryIds = null): void
+    protected function rebuildEntityIds($storeId, $categoryIds = null): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;

@@ -56,11 +56,13 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     {
         // Check that every store has the right number of categories
         foreach ($this->storeManager->getStores() as $store) {
-            $this->algoliaHelper->setStoreId($store->getId());
-            $this->assertNbOfRecordsPerStore($store->getCode(), 'categories', $this->assertValues->expectedCategory);
+            $this->assertNbOfRecordsPerStore(
+                $store->getCode(),
+                'categories',
+                $this->assertValues->expectedCategory,
+                $store->getId()
+            );
         }
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
@@ -82,18 +84,18 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
         $this->algoliaHelper->waitLastTask();
 
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_categories',
             (string) self::BAGS_CATEGORY_ID,
-            ['name' => self::BAGS_CATEGORY_NAME]
+            ['name' => self::BAGS_CATEGORY_NAME],
+            $defaultStore->getId()
         );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'fixture_second_store_categories',
             (string) self::BAGS_CATEGORY_ID,
-            ['name' => self::BAGS_CATEGORY_NAME_ALT]
+            ['name' => self::BAGS_CATEGORY_NAME_ALT],
+            $fixtureSecondStore->getId()
         );
 
         // Disable this category at store level
@@ -103,25 +105,22 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             ['is_active' => 0]
         );
 
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
         $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
         $this->algoliaHelper->waitLastTask();
 
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),
             'categories',
-            $this->assertValues->expectedCategory
+            $this->assertValues->expectedCategory,
+            $defaultStore->getId()
         );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertNbOfRecordsPerStore(
             $fixtureSecondStore->getCode(),
             'categories',
-            $this->assertValues->expectedCategory - 1
+            $this->assertValues->expectedCategory - 1,
+            $fixtureSecondStore->getId()
         );
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

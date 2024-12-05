@@ -352,41 +352,53 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function setSettings(string $indexName, string $indexNameTmp, int $storeId, bool $saveToTmpIndicesToo = false): void
     {
-        $this->algoliaHelper->setStoreId($storeId);
         $indexSettings = $this->getIndexSettings($storeId);
 
-        $this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
+        $this->algoliaHelper->setSettings(
+            $indexName,
+            $indexSettings,
+            false,
+            true,
+            '',
+            $storeId
+        );
         $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo) {
-            $this->algoliaHelper->setSettings($indexNameTmp, $indexSettings, false, true, $indexName);
+            $this->algoliaHelper->setSettings(
+                $indexNameTmp,
+                $indexSettings,
+                false,
+                true,
+                $indexName,
+                $storeId
+            );
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
         $this->setFacetsQueryRules($indexName, $storeId);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaHelper->waitLastTask($storeId);
 
         if ($saveToTmpIndicesToo) {
             $this->setFacetsQueryRules($indexNameTmp, $storeId);
-            $this->algoliaHelper->waitLastTask();
+            $this->algoliaHelper->waitLastTask($storeId);
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
 
         if ($saveToTmpIndicesToo) {
             try {
-                $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp);
-                $this->algoliaHelper->waitLastTask();
+                $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp, $storeId);
+                $this->algoliaHelper->waitLastTask($storeId);
                 $this->logger->log('
                         Copying synonyms from production index to "' . $indexNameTmp . '" to not erase them with the index move.
                     ');
             } catch (AlgoliaException $e) {
                 $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
-                $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
             }
 
             try {
-                $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp);
-                $this->algoliaHelper->waitLastTask();
+                $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp, $storeId);
+                $this->algoliaHelper->waitLastTask($storeId);
                 $this->logger->log('
                         Copying query rules from production index to "' . $indexNameTmp . '" to not erase them with the index move.
                     ');
@@ -394,10 +406,8 @@ class ProductHelper extends AbstractEntityHelper
                 if ($e->getCode() !== 404) {
                     throw $e;
                 }
-                $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
             }
         }
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -1229,7 +1239,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function setFacetsQueryRules(string $indexName, int $storeId = null)
     {
-        $this->clearFacetsQueryRules($indexName);
+        $this->clearFacetsQueryRules($indexName, $storeId);
 
         $rules = [];
         $facets = $this->configHelper->getFacets($storeId);
@@ -1263,34 +1273,43 @@ class ProductHelper extends AbstractEntityHelper
 
         if ($rules) {
             $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $this->algoliaHelper->saveRules($indexName, $rules, true);
+            $this->algoliaHelper->saveRules($indexName, $rules, true, $storeId);
         }
     }
 
     /**
      * @param $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function clearFacetsQueryRules($indexName): void
+    protected function clearFacetsQueryRules($indexName, int $storeId = null): void
     {
         try {
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $this->algoliaHelper->searchRules($indexName, [
-                    'context' => 'magento_filters',
-                    'page' => $page,
-                    'hitsPerPage' => $hitsPerPage,
-                ]);
-
+                $fetchedQueryRules = $this->algoliaHelper->searchRules(
+                    $indexName,
+                    [
+                        'context' => 'magento_filters',
+                        'page' => $page,
+                        'hitsPerPage' => $hitsPerPage,
+                    ],
+                    $storeId
+                );
 
                 if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
                     break;
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $this->algoliaHelper->deleteRule($indexName, $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID], true);
+                    $this->algoliaHelper->deleteRule(
+                        $indexName,
+                        $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID],
+                        true,
+                        $storeId
+                    );
                 }
 
                 $page++;
@@ -1422,7 +1441,7 @@ class ProductHelper extends AbstractEntityHelper
                     $replicasToDelete = array_diff($oldReplicas, $newReplicas);
                     $this->algoliaHelper->setSettings($indexName, ['replicas' => $newReplicas]);
                     $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
-                    $this->algoliaHelper->waitLastTask($indexName, $setReplicasTaskId);
+                    $this->algoliaHelper->waitLastTask($storeId, $indexName, $setReplicasTaskId);
                     if (count($replicasToDelete) > 0) {
                         foreach ($replicasToDelete as $deletedReplica) {
                             $this->algoliaHelper->deleteIndex($deletedReplica);

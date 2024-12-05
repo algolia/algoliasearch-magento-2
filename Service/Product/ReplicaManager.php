@@ -257,10 +257,10 @@ class ReplicaManager implements ReplicaManagerInterface
             $indexName,
             [self::ALGOLIA_SETTINGS_KEY_REPLICAS => array_merge($newMagentoReplicasSetting, $nonMagentoReplicasSetting)]
         );
-        $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
-        $this->algoliaHelper->waitLastTask($indexName, $setReplicasTaskId);
+        $setReplicasTaskId = $this->algoliaHelper->getLastTaskId($storeId);
+        $this->algoliaHelper->waitLastTask($storeId, $indexName, $setReplicasTaskId);
         $this->clearAlgoliaReplicaSettingCache($indexName);
-        $this->deleteIndices($replicasToDelete);
+        $this->deleteIndices($replicasToDelete, false, $storeId);
 
         if (self::_DEBUG) {
             $this->logger->log(
@@ -356,15 +356,17 @@ class ReplicaManager implements ReplicaManagerInterface
     /**
      * @param array $replicasToDelete
      * @param bool $waitLastTask
+     * @param null $storeId
      * @return void
      * @throws AlgoliaException
+     * @throws ExceededRetriesException
      */
-    protected function deleteIndices(array $replicasToDelete, bool $waitLastTask = false): void
+    protected function deleteIndices(array $replicasToDelete, bool $waitLastTask = false, $storeId = null): void
     {
         foreach ($replicasToDelete as $deletedReplica) {
-            $this->algoliaHelper->deleteIndex($deletedReplica);
+            $this->algoliaHelper->deleteIndex($deletedReplica, $storeId);
             if ($waitLastTask) {
-                $this->algoliaHelper->waitLastTask($deletedReplica);
+                $this->algoliaHelper->waitLastTask($storeId, $deletedReplica);
             }
         }
     }
@@ -398,14 +400,22 @@ class ReplicaManager implements ReplicaManagerInterface
                 array_unshift($customRanking, $replica['ranking'][0]);
                 $this->algoliaHelper->setSettings(
                     $replicaName,
-                    [ 'customRanking' => $customRanking ]
+                    [ 'customRanking' => $customRanking ],
+                    false,
+                    false,
+                    '',
+                    $storeId
                 );
             // Standard replicas - exhaustive sort
             } else {
                 $primaryIndexSettings['ranking'] = $replica['ranking'];
                 $this->algoliaHelper->setSettings(
                     $replicaName,
-                    $primaryIndexSettings
+                    $primaryIndexSettings,
+                    false,
+                    false,
+                    '',
+                    $storeId
                 );
             }
         }
@@ -433,7 +443,7 @@ class ReplicaManager implements ReplicaManagerInterface
     protected function clearReplicasSettingInAlgolia(string $primaryIndexName): void
     {
         $this->algoliaHelper->setSettings($primaryIndexName, [ self::ALGOLIA_SETTINGS_KEY_REPLICAS => []]);
-        $this->algoliaHelper->waitLastTask($primaryIndexName);
+        $this->algoliaHelper->waitLastTask(null, $primaryIndexName);
     }
 
     /**

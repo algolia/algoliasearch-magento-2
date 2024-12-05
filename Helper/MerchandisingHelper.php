@@ -85,9 +85,7 @@ class MerchandisingHelper
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $this->algoliaHelper->setStoreId($storeId);
-        $this->algoliaHelper->saveRule($rule, $productsIndexName);
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->saveRule($rule, $productsIndexName, false, $storeId);
     }
 
     /**
@@ -108,9 +106,7 @@ class MerchandisingHelper
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $this->algoliaHelper->setStoreId($storeId);
-        $this->algoliaHelper->deleteRule($productsIndexName, $ruleId);
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->deleteRule($productsIndexName, $ruleId, false, $storeId);
     }
 
     /**

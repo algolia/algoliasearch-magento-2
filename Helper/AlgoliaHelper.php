@@ -34,54 +34,94 @@ class AlgoliaHelper
     ){}
 
     /**
+     * Ensure AlgoliaConnector targets the application configured on a particular store
+     *
+     * @param int|null $storeId
+     * @return void
+     */
+    protected function handleStoreContext(int|null $storeId): void
+    {
+        if (!is_null($storeId)) {
+            $this->algoliaConnector->setStoreId($storeId);
+        }
+    }
+
+    /**
+     * Restore AlgoliaConnector default Scope
+     *
+     * @return void
+     */
+    protected function restoreDefaultScope(): void
+    {
+        $this->algoliaConnector->setStoreId(self::ALGOLIA_DEFAULT_SCOPE);
+    }
+
+    /**
+     * @param int|null $storeId
      * @return SearchClient
      * @throws AlgoliaException
      */
-    public function getClient(): SearchClient
+    public function getClient(int $storeId = null): SearchClient
     {
-        return $this->algoliaConnector->getClient();
+        $this->handleStoreContext($storeId);
+        $client = $this->algoliaConnector->getClient();
+        $this->restoreDefaultScope();
+        return $client;
     }
 
     /**
      * @param int $storeId
      * @return void
      */
-    public function setStoreId(int $storeId): void
-    {
-        $this->algoliaConnector->setStoreId($storeId);
-    }
+//    public function setStoreId(int $storeId): void
+//    {
+//        $this->algoliaConnector->setStoreId($storeId);
+//    }
 
     /**
+     * @param int|null $storeId
+     *
      * @return ListIndicesResponse|array<string,mixed>
      * @throws AlgoliaException
      */
-    public function listIndexes()
+    public function listIndexes(int $storeId = null)
     {
-        return $this->algoliaConnector->listIndexes();
+        $this->handleStoreContext($storeId);
+        $indexes = $this->algoliaConnector->listIndexes();
+        $this->restoreDefaultScope();
+        return $indexes;
     }
 
     /**
      * @param string $indexName
      * @param string $q
      * @param array $params
+     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    public function query(string $indexName, string $q, array $params): array
+    public function query(string $indexName, string $q, array $params, int $storeId = null): array
     {
-        return $this->algoliaConnector->query($indexName, $q, $params);
+        $this->handleStoreContext($storeId);
+        $result = $this->algoliaConnector->query($indexName, $q, $params);
+        $this->restoreDefaultScope();
+        return $result;
     }
 
     /**
      * @param string $indexName
      * @param array $objectIds
+     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
      */
-    public function getObjects(string $indexName, array $objectIds): array
+    public function getObjects(string $indexName, array $objectIds, int $storeId = null): array
     {
-        return $this->algoliaConnector->getObjects($indexName, $objectIds);
+        $this->handleStoreContext($storeId);
+        $result = $this->algoliaConnector->getObjects($indexName, $objectIds);
+        $this->restoreDefaultScope();
+        return $result;
     }
 
     /**
@@ -90,7 +130,7 @@ class AlgoliaHelper
      * @param bool $forwardToReplicas
      * @param bool $mergeSettings
      * @param string $mergeSettingsFrom
-     *
+     * @param int|null $storeId
      * @throws AlgoliaException
      */
     public function setSettings(
@@ -98,8 +138,10 @@ class AlgoliaHelper
         $settings,
         bool $forwardToReplicas = false,
         bool $mergeSettings = false,
-        string $mergeSettingsFrom = ''
+        string $mergeSettingsFrom = '',
+        int $storeId = null
     ) {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->setSettings(
             $indexName,
             $settings,
@@ -107,38 +149,48 @@ class AlgoliaHelper
             $mergeSettings,
             $mergeSettingsFrom
         );
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteIndex(string $indexName): void
+    public function deleteIndex(string $indexName, int $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->deleteIndex($indexName);
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param array $ids
      * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteObjects(array $ids, string $indexName): void
+    public function deleteObjects(array $ids, string $indexName, int $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->deleteObjects($ids, $indexName);
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param string $fromIndexName
      * @param string $toIndexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function moveIndex(string $fromIndexName, string $toIndexName): void
+    public function moveIndex(string $fromIndexName, string $toIndexName, int $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->moveIndex($fromIndexName, $toIndexName);
+        $this->restoreDefaultScope();
     }
 
     /**
@@ -154,12 +206,16 @@ class AlgoliaHelper
 
     /**
      * @param string $indexName
+     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
      */
-    public function getSettings(string $indexName): array
+    public function getSettings(string $indexName, int $storeId = null): array
     {
-        return $this->algoliaConnector->getSettings($indexName);
+        $this->handleStoreContext($storeId);
+        $settings = $this->algoliaConnector->getSettings($indexName);
+        $this->restoreDefaultScope();
+        return $settings;
     }
 
     /**
@@ -167,12 +223,15 @@ class AlgoliaHelper
      * @param string $indexName
      * @param array $objects
      * @param bool $isPartialUpdate
+     * @param int|null $storeId
      * @return void
      * @throws Exception
      */
-    public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false): void
+    public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false, int $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->saveObjects($indexName, $objects, $isPartialUpdate);
+        $this->restoreDefaultScope();
     }
 
     /**
@@ -182,69 +241,91 @@ class AlgoliaHelper
      * @return void
      * @throws AlgoliaException
      */
-    public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false): void
+    public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false, int $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->saveRule($rule, $indexName, $forwardToReplicas);
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param string $indexName
      * @param array $rules
      * @param bool $forwardToReplicas
+     * @param null $storeId
      * @return void
      */
-    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false): void
+    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false, $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->saveRules($indexName, $rules, $forwardToReplicas);
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param string $indexName
      * @param string $objectID
      * @param bool $forwardToReplicas
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteRule(string $indexName, string $objectID, bool $forwardToReplicas = false): void
+    public function deleteRule(
+        string $indexName,
+        string $objectID,
+        bool $forwardToReplicas = false,
+        int $storeId = null
+    ) : void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->deleteRule($indexName, $objectID, $forwardToReplicas);
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param string $fromIndexName
      * @param string $toIndexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      */
-    public function copySynonyms(string $fromIndexName, string $toIndexName): void
+    public function copySynonyms(string $fromIndexName, string $toIndexName, int $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->copySynonyms($fromIndexName, $toIndexName);
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param string $fromIndexName
      * @param string $toIndexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      */
-    public function copyQueryRules(string $fromIndexName, string $toIndexName): void
+    public function copyQueryRules(string $fromIndexName, string $toIndexName, int $storeId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->copyQueryRules($fromIndexName, $toIndexName);
+        $this->restoreDefaultScope();
     }
 
     /**
      * @param string $indexName
      * @param array|null $searchRulesParams
-     *
+     * @param int|null $storeId
      * @return array
      *
      * @throws AlgoliaException
      */
-    public function searchRules(string $indexName, array$searchRulesParams = null)
+    public function searchRules(string $indexName, array$searchRulesParams = null, int $storeId = null)
     {
-        return $this->algoliaConnector->searchRules($indexName, $searchRulesParams);
+        $this->handleStoreContext($storeId);
+        $rules = $this->algoliaConnector->searchRules($indexName, $searchRulesParams);
+        $this->restoreDefaultScope();
+        return $rules;
     }
 
     /**
@@ -258,14 +339,18 @@ class AlgoliaHelper
     }
 
     /**
+     * @param int|null $storeId
      * @param string|null $lastUsedIndexName
      * @param int|null $lastTaskId
      * @return void
-     * @throws ExceededRetriesException|AlgoliaException
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
      */
-    public function waitLastTask(string $lastUsedIndexName = null, int $lastTaskId = null): void
+    public function waitLastTask(int $storeId = null, string $lastUsedIndexName = null, int $lastTaskId = null): void
     {
+        $this->handleStoreContext($storeId);
         $this->algoliaConnector->waitLastTask($lastUsedIndexName, $lastTaskId);
+        $this->restoreDefaultScope();
     }
 
     /**
@@ -278,10 +363,14 @@ class AlgoliaHelper
     }
 
     /**
+     * @param int|null $storeId
      * @return int
      */
-    public function getLastTaskId(): int
+    public function getLastTaskId(int $storeId = null): int
     {
-        return $this->algoliaConnector->getLastTaskId();
+        $this->handleStoreContext($storeId);
+        $lastTaskId = $this->algoliaConnector->getLastTaskId();
+        $this->restoreDefaultScope();
+        return $lastTaskId;
     }
 }

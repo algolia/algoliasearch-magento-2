@@ -56,17 +56,15 @@ class MultiStorePagesTest extends MultiStoreTestCase
     {
         // Check that every store has the right number of pages
         foreach ($this->storeManager->getStores() as $store) {
-            $this->algoliaHelper->setStoreId($store->getId());
             $this->assertNbOfRecordsPerStore(
                 $store->getCode(),
                 'pages',
                 $store->getCode() === 'fixture_second_store' ? // we excluded 2 pages on setupStore()
                     $this->assertValues->expectedExcludePages :
-                    $this->assertValues->expectedPages
+                    $this->assertValues->expectedPages,
+                $store->getId()
             );
         }
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
@@ -84,21 +82,19 @@ class MultiStorePagesTest extends MultiStoreTestCase
         $this->pagesIndexer->execute([self::ABOUT_US_PAGE_ID]);
         $this->algoliaHelper->waitLastTask();
 
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),
             'pages',
-            $this->assertValues->expectedPages
+            $this->assertValues->expectedPages,
+            $defaultStore->getId()
         );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->assertNbOfRecordsPerStore(
             $fixtureSecondStore->getCode(),
             'pages',
-            $this->assertValues->expectedExcludePages - 1
+            $this->assertValues->expectedExcludePages - 1,
+            $fixtureSecondStore->getId()
         );
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

@@ -159,8 +159,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     public function deleteInactiveProducts($storeId): void
     {
         $indexName = $this->productHelper->getIndexName($storeId);
-        $this->algoliaHelper->setStoreId($storeId);
-        $client = $this->algoliaHelper->getClient();
+        $client = $this->algoliaHelper->getClient($storeId);
         $objectIds = [];
         $counter = 0;
         $browseOptions = [
@@ -180,7 +179,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         if (!empty($objectIds)) {
             $this->deleteInactiveIds($storeId, $objectIds, $indexName);
         }
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -207,8 +205,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-
-        $this->algoliaHelper->setStoreId($storeId);
 
         $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
             page ' . $page . ',
@@ -250,7 +246,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->saveObjects($indexData['toIndex'], $indexName);
+            $this->saveObjects($indexData['toIndex'], $indexName, $storeId);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
@@ -259,7 +255,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove']);
             if (!empty($toRealRemove)) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
-                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName);
+                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName, $storeId);
                 $this->logger->log('Product IDs: ' . implode(', ', $toRealRemove));
                 $this->logger->stop('REMOVE FROM ALGOLIA');
             }
@@ -271,8 +267,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         if ($emulationInfo === null) {
             $this->stopEmulation();
         }
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
 
         $this->logger->stop($wrapperLogMessage, true);
     }
@@ -408,7 +402,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $dbIds = $collection->getAllIds();
         $collection = null;
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
-        $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName);
+        $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName, $storeId);
     }
 
     /**

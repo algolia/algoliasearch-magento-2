@@ -99,10 +99,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1, $store->getCode());
         }
 
-        $this->algoliaHelper->setStoreId($store->getId());
         $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
-        $this->algoliaHelper->waitLastTask();
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

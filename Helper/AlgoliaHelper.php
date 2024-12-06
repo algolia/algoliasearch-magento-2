@@ -241,11 +241,6 @@ class AlgoliaHelper extends AbstractHelper
             $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom);
         }
 
-        // Removing synonyms from the settings to avoid duplication (synonyms must be managed within the algolia dashboard)
-        if (isset($settings['synonyms'])) {
-            unset($settings['synonyms']);
-        }
-
         $res = $this->getClient()->setSettings($indexName, $settings, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
@@ -376,7 +371,7 @@ class AlgoliaHelper extends AbstractHelper
         } catch (Exception $e) {
         }
 
-        $removes = ['slaves', 'replicas', 'decompoundedAttributes'];
+        $removes = ['slaves', 'replicas', 'decompoundedAttributes', 'synonyms'];
 
         if (isset($onlineSettings['mode']) && $onlineSettings['mode'] == 'neuralSearch') {
             $removes[] = 'mode';

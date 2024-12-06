@@ -196,12 +196,16 @@ class AlgoliaHelper
     /**
      * @param string $key
      * @param array $params
+     * @param int|null $storeId
      * @return string
      * @throws AlgoliaException
      */
-    public function generateSearchSecuredApiKey(string $key, array $params = []): string
+    public function generateSearchSecuredApiKey(string $key, array $params = [], int $storeId = null): string
     {
-        return $this->algoliaConnector->generateSearchSecuredApiKey($key, $params);
+        $this->handleStoreContext($storeId);
+        $apiKey = $this->algoliaConnector->generateSearchSecuredApiKey($key, $params);
+        $this->restoreDefaultScope();
+        return $apiKey;
     }
 
     /**

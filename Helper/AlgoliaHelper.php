@@ -359,7 +359,7 @@ class AlgoliaHelper extends AbstractHelper
         } catch (\Exception $e) {
         }
 
-        $removes = ['slaves', 'replicas', 'decompoundedAttributes'];
+        $removes = ['slaves', 'replicas', 'decompoundedAttributes', 'synonyms'];
 
         if (isset($onlineSettings['mode']) && $onlineSettings['mode'] == 'neuralSearch') {
             $removes[] = 'mode';

@@ -2,6 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command;
 
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
+use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -9,6 +13,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SynonymDeduplicateCommand extends AbstractStoreCommand
 {
+    public function __construct(
+        protected AlgoliaHelper    $algoliaHelper,
+        protected IndexNameFetcher $indexNameFetcher,
+        protected State            $state,
+        protected StoreNameFetcher $storeNameFetcher,
+        ?string                    $name = null
+    ) {
+        parent::__construct($state, $storeNameFetcher, $name);
+    }
+
     protected function getCommandPrefix(): string
     {
         return parent::getCommandPrefix() . 'synonyms:';
@@ -56,6 +70,9 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
         return Cli::RETURN_SUCCESS;
     }
 
+    /**
+     * @throws NoSuchEntityException
+     */
     public function dedupeSynonyms(array $storeIds = []): void
     {
         if (count($storeIds)) {
@@ -67,11 +84,66 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
         }
     }
 
+    /**
+     * @throws NoSuchEntityException
+     * @throws \Exception
+     */
     public function dedupeSynonymsForStore(int $storeId): void
     {
-        $this->output->writeln('<info>Deduplicating synonyms for ' . $this->storeNameFetcher->getStoreName($storeId) . '...</info>');
+        $this->output->writeln('<info>De-duplicating synonyms for ' . $this->storeNameFetcher->getStoreName($storeId) . '...</info>');
+        $indexName = $this->indexNameFetcher->getProductIndexName($storeId);
+        $settings = $this->algoliaHelper->getSettings($indexName);
+        $deduped = $this->dedupeSpecificSettings(['synonyms', 'altCorrections'], $settings);
+
+        //bring over as is
+        $deduped['placeholders'] = $settings['placeholders'];
+
+        // Updating the synonyms requires a separate endpoint which is not currently not exposed in the PHP API client
+        // See https://www.algolia.com/doc/rest-api/search/#tag/Synonyms/operation/saveSynonyms
+        // This method will clear and then overwrite ... (does not handle one way synonyms which are not exposed in settings)
+        $this->algoliaHelper->clearSynonyms($indexName);
+        $this->algoliaHelper->setSettings($indexName, $deduped, false, false);
+        $this->algoliaHelper->waitLastTask($indexName);
     }
 
+    /**
+     * @param string[] $settingNames
+     * @param array<string, array> $settings
+     * @return array
+     */
+    protected function dedupeSpecificSettings(array $settingNames, array $settings): array
+    {
+        return array_filter(
+            array_combine(
+                $settingNames,
+                array_map(
+                    function($settingName) use ($settings) {
+                        return isset($settings[$settingName])
+                            ? $this->dedupeArrayOfArrays($settings[$settingName])
+                            : null;
+                    },
+                    $settingNames
+                )
+            ),
+            function($val) {
+                return $val !== null;
+            }
+        );
+    }
 
-
+    /**
+     * Find and remove the duplicates in an array of indexed arrays
+     * Does not work with associative arrays
+     * @param array $data
+     * @return array
+     */
+    protected function dedupeArrayOfArrays(array $data): array {
+        $encoded = array_map('json_encode', $data);
+        $unique = array_values(array_unique($encoded));
+        $decoded = array_map(function($item) {
+            return json_decode($item, true); },
+            $unique
+        );
+        return $decoded;
+    }
 }

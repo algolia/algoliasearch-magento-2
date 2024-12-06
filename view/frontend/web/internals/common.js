@@ -1,4 +1,5 @@
-define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
+define(
+    ['jquery', 'algoliaBundle', 'Magento_PageCache/js/form-key-provider',], function ($, algoliaBundle, formKeyInit) {
     // Character maps supplied for more performant Regex ops
     const SPECIAL_CHAR_ENCODE_MAP = {
         '&': '&amp;',
@@ -98,15 +99,26 @@ define(['jquery', 'algoliaBundle'], function ($, algoliaBundle) {
         return check;
     };
 
-    window.getCookie = function (name) {
-        var value = "; " + document.cookie;
-        var parts = value.split("; " + name + "=");
-        if (parts.length == 2) {
-            return parts.pop().split(";").shift();
+    window.getCookie = function(name) {
+        let cookie, i;
+
+        const cookieName = name + "=",
+            cookieArr = document.cookie.split(';');
+
+        for (i = 0; i < cookieArr.length; i++) {
+            cookie = cookieArr[i];
+
+            while (cookie.charAt(0) === ' ') {
+                cookie = cookie.substring(1, cookie.length);
+            }
+
+            if (cookie.indexOf(cookieName) === 0) {
+                return cookie.substring(cookieName.length, cookie.length);
+            }
         }
 
         return "";
-    };
+    }
 
     window.transformHit = function (hit, price_key, helper) {
         if (Array.isArray(hit.categories))

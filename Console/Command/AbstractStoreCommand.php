@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 abstract class AbstractStoreCommand extends Command
 {
@@ -19,8 +20,10 @@ abstract class AbstractStoreCommand extends Command
     protected ?OutputInterface $output = null;
     protected ?InputInterface $input = null;
 
-    abstract protected function getStoreArgumentDescription(): string;
     abstract protected function getCommandName(): string;
+    abstract protected function getCommandDescription(): string;
+    abstract protected function getAdditionalDefinition(): array;
+    abstract protected function getStoreArgumentDescription(): string;
 
     public function __construct(
         protected State            $state,
@@ -39,6 +42,21 @@ abstract class AbstractStoreCommand extends Command
     protected function getFullCommandName(): string
     {
         return $this->getCommandPrefix() . $this->getCommandName();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function configure(): void
+    {
+        $definition = [$this->getStoreArgumentDefinition()];
+        $definition = array_merge($definition, $this->getAdditionalDefinition());
+
+        $this->setName($this->getFullCommandName())
+            ->setDescription($this->getCommandDescription())
+            ->setDefinition($definition);
+
+        parent::configure();
     }
 
     protected function setAreaCode(): void
@@ -89,5 +107,22 @@ abstract class AbstractStoreCommand extends Command
         return ($storeIds)
             ? "<info>$msg: " . join(", ", $this->storeNameFetcher->getStoreNames($storeIds)) . '</info>'
             : "<info>$msg</info>";
+    }
+
+    protected function confirmOperation(string $okMessage = '', string $cancelMessage = 'Operation cancelled'): bool
+    {
+        $helper = $this->getHelper('question');
+        $question = new ConfirmationQuestion('<question>Are you sure wish to proceed? (y/n)</question> ', false);
+        if (!$helper->ask($this->input, $this->output, $question)) {
+            if ($cancelMessage) {
+                $this->output->writeln("<comment>$cancelMessage</comment>");
+            }
+            return false;
+        }
+
+        if ($okMessage) {
+            $this->output->writeln("<comment>$okMessage</comment>");
+        }
+        return true;
     }
 }

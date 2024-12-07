@@ -688,6 +688,7 @@ class Data
             page ' . $page . ',
             pageSize ' . $pageSize;
         $this->logger->start($wrapperLogMessage);
+
         if ($emulationInfo === null) {
             $this->startEmulation($storeId);
         }
@@ -713,6 +714,9 @@ class Data
                 'store'      => $storeId
             ]
         );
+
+        $this->missingPriceIndexHandler->refreshPriceIndex($collection);
+
         $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
             collection page: ' . $page . ',
             pageSize: ' . $pageSize;

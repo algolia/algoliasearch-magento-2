@@ -12,6 +12,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Product\MissingPriceIndexHandler;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
@@ -35,21 +36,22 @@ class Data
     protected IndexerInterface $priceIndexer;
 
     public function __construct(
-        protected AlgoliaHelper           $algoliaHelper,
-        protected ConfigHelper            $configHelper,
-        protected ProductHelper           $productHelper,
-        protected CategoryHelper          $categoryHelper,
-        protected PageHelper              $pageHelper,
-        protected SuggestionHelper        $suggestionHelper,
-        protected AdditionalSectionHelper $additionalSectionHelper,
-        protected Emulation               $emulation,
-        protected Logger                  $logger,
-        protected ResourceConnection      $resource,
-        protected ManagerInterface        $eventManager,
-        protected ScopeCodeResolver       $scopeCodeResolver,
-        protected StoreManagerInterface   $storeManager,
-        protected IndexNameFetcher        $indexNameFetcher,
-        IndexerRegistry                   $indexerRegistry
+        protected AlgoliaHelper            $algoliaHelper,
+        protected ConfigHelper             $configHelper,
+        protected ProductHelper            $productHelper,
+        protected CategoryHelper           $categoryHelper,
+        protected PageHelper               $pageHelper,
+        protected SuggestionHelper         $suggestionHelper,
+        protected AdditionalSectionHelper  $additionalSectionHelper,
+        protected Emulation                $emulation,
+        protected Logger                   $logger,
+        protected ResourceConnection       $resource,
+        protected ManagerInterface         $eventManager,
+        protected ScopeCodeResolver        $scopeCodeResolver,
+        protected StoreManagerInterface    $storeManager,
+        protected IndexNameFetcher         $indexNameFetcher,
+        protected MissingPriceIndexHandler $missingPriceIndexHandler,
+        IndexerRegistry                    $indexerRegistry
     )
     {
         $this->priceIndexer = $indexerRegistry->get('catalog_product_price');
@@ -78,7 +80,7 @@ class Data
         $this->algoliaHelper->deleteObjects($ids, $indexName);
     }
 
-    /**
+    /**`
      * @param string $query
      * @param int $storeId
      * @param array|null $searchParams
@@ -370,7 +372,7 @@ class Data
             return;
         }
 
-        $this->checkPriceIndex($productIds);
+        $this->missingPriceIndexHandler->refreshPriceIndex($productIds);
 
         $this->startEmulation($storeId);
         $this->logger->start('Indexing');
@@ -936,18 +938,4 @@ class Data
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
         $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName);
     }
-
-    /**
-     * If the price index is stale
-     * @param array $productIds
-     * @return void
-     */
-    protected function checkPriceIndex(array $productIds): void
-    {
-        $state = $this->priceIndexer->getState()->getStatus();
-        if ($state === \Magento\Framework\Indexer\StateInterface::STATUS_INVALID) {
-            $this->priceIndexer->reindexList($productIds);
-        }
-    }
-
 }

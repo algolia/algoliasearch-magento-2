@@ -1435,16 +1435,23 @@ class ProductHelper extends AbstractEntityHelper
             $newReplicas = $this->decorateReplicasSetting($sortingIndices);
 
             try {
-                $currentSettings = $this->algoliaHelper->getSettings($indexName);
+                $currentSettings = $this->algoliaHelper->getSettings($indexName, $storeId);
                 if (array_key_exists('replicas', $currentSettings)) {
                     $oldReplicas = $currentSettings['replicas'];
                     $replicasToDelete = array_diff($oldReplicas, $newReplicas);
-                    $this->algoliaHelper->setSettings($indexName, ['replicas' => $newReplicas]);
-                    $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
+                    $this->algoliaHelper->setSettings(
+                        $indexName,
+                        ['replicas' => $newReplicas],
+                        false,
+                        false,
+                        '',
+                        $storeId
+                    );
+                    $setReplicasTaskId = $this->algoliaHelper->getLastTaskId($storeId);
                     $this->algoliaHelper->waitLastTask($storeId, $indexName, $setReplicasTaskId);
                     if (count($replicasToDelete) > 0) {
                         foreach ($replicasToDelete as $deletedReplica) {
-                            $this->algoliaHelper->deleteIndex($deletedReplica);
+                            $this->algoliaHelper->deleteIndex($deletedReplica, $storeId);
                         }
                     }
                 }

@@ -58,7 +58,7 @@ class BackendSearch
             $params = array_merge($params, $searchParams);
         }
 
-        $response = $this->algoliaHelper->query($indexName, $query, $params);
+        $response = $this->algoliaHelper->query($indexName, $query, $params, $storeId);
         $answer = reset($response['results']);
 
         $data = [];

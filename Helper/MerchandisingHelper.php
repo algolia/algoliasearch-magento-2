@@ -138,7 +138,7 @@ class MerchandisingHelper
     public function copyQueryRules(int $storeId, int $entityIdFrom, int $entityIdTo, string $entityType): void
     {
         $productsIndexName = $this->productHelper->getIndexName($storeId);
-        $client = $this->algoliaHelper->getClient();
+        $client = $this->algoliaHelper->getClient($storeId);
         $context = $this->getQueryRuleId($entityIdFrom, $entityType);
         $queryRulesToSet = [];
 

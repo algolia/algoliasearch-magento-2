@@ -7,9 +7,12 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Magento\Framework\App\Helper\AbstractHelper;
 use Exception;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\RequestInterface;
 
-class AlgoliaHelper
+class AlgoliaHelper extends AbstractHelper
 {
     /**
      * @var string Case-sensitive object ID key
@@ -32,8 +35,19 @@ class AlgoliaHelper
     public const ALGOLIA_DEFAULT_SCOPE = 0;
 
     public function __construct(
+        Context $context,
         protected AlgoliaConnector $algoliaConnector
-    ){}
+    ){
+        parent::__construct($context);
+    }
+
+    /**
+     * @return RequestInterface
+     */
+    public function getRequest(): RequestInterface
+    {
+        return $this->_getRequest();
+    }
 
     /**
      * Ensure AlgoliaConnector targets the application configured on a particular store

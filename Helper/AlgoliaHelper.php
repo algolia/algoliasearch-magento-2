@@ -14,20 +14,22 @@ class AlgoliaHelper
     /**
      * @var string Case-sensitive object ID key
      */
-    public const string ALGOLIA_API_OBJECT_ID = 'objectID';
+    public const ALGOLIA_API_OBJECT_ID = 'objectID';
+
     /**
      * @var string
      */
-    public const string ALGOLIA_API_INDEX_NAME = 'indexName';
+    public const ALGOLIA_API_INDEX_NAME = 'indexName';
+
     /**
      * @var string
      */
-    public const string ALGOLIA_API_TASK_ID = 'taskID';
+    public const ALGOLIA_API_TASK_ID = 'taskID';
 
     /**
      * @var int
      */
-    public const int ALGOLIA_DEFAULT_SCOPE = 0;
+    public const ALGOLIA_DEFAULT_SCOPE = 0;
 
     public function __construct(
         protected AlgoliaConnector $algoliaConnector

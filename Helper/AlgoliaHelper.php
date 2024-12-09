@@ -86,15 +86,6 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param int $storeId
-     * @return void
-     */
-//    public function setStoreId(int $storeId): void
-//    {
-//        $this->algoliaConnector->setStoreId($storeId);
-//    }
-
-    /**
      * @param int|null $storeId
      *
      * @return ListIndicesResponse|array<string,mixed>

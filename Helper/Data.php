@@ -713,7 +713,9 @@ class Data
             ]
         );
 
-        $this->missingPriceIndexHandler->refreshPriceIndex($collection);
+        if ($this->configHelper->isAutoPriceIndexingEnabled($storeId)) {
+            $this->missingPriceIndexHandler->refreshPriceIndex($collection);
+        }
 
         $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
             collection page: ' . $page . ',

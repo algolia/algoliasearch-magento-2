@@ -2,11 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
-use Magento\Framework\DB\Select;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Select;
 use Magento\Framework\Indexer\IndexerInterface;
+use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Framework\Indexer\StateInterface;
 use Zend_Db_Select;
 
 class MissingPriceIndexHandler
@@ -18,6 +20,7 @@ class MissingPriceIndexHandler
     protected IndexerInterface $indexer;
     public function __construct(
         protected CollectionFactory $productCollectionFactory,
+        protected ResourceConnection $resourceConnection,
         IndexerRegistry $indexerRegistry
     )
     {
@@ -27,6 +30,7 @@ class MissingPriceIndexHandler
     /**
      * @param string[]|ProductCollection $products
      * @return string[] Array of product IDs that were reindexed by this repair operation
+     * @throws \Zend_Db_Select_Exception
      */
     public function refreshPriceIndex(array|ProductCollection $products): array
     {
@@ -43,15 +47,20 @@ class MissingPriceIndexHandler
     /**
      * @param string[]|ProductCollection $products
      * @return string[]
+     * @throws \Zend_Db_Select_Exception
      */
     protected function getProductIdsToReindex(array|ProductCollection $products): array
     {
         $productIds = $products instanceof ProductCollection
-            ? $this->getExpandedProductCollectionIds($products)
+            ? $this->getProductIdsFromCollection($products)
             : $products;
 
+        if (empty($productIds)) {
+            return [];
+        }
+
         $state = $this->indexer->getState()->getStatus();
-        if ($state === \Magento\Framework\Indexer\StateInterface::STATUS_INVALID) {
+        if ($state === StateInterface::STATUS_INVALID) {
             return $productIds;
         }
 
@@ -77,7 +86,38 @@ class MissingPriceIndexHandler
         return $collection->getAllIds();
     }
 
-    protected function getExpandedProductCollectionIds(ProductCollection $collection): array
+    /**
+     * Expand the query for product ids from the collection regardless of price index status
+     * @throws \Zend_Db_Select_Exception
+     * @return string[] An array of indices to be evaluated - array will be empty if no price index join found
+     */
+    protected function getProductIdsFromCollection(ProductCollection $collection): array
+    {
+
+        $select = clone $collection->getSelect();
+        // TODO: Log this exception - pending DiagnosticsLogger
+        $joins = $select->getPart(Zend_Db_Select::FROM);
+        $priceIndexJoin = $this->getPriceIndexJoinAlias($joins);
+
+        if (!$priceIndexJoin) {
+            // no price index on query - keep calm and carry on
+            return [];
+        }
+
+        $this->expandPricingJoin($joins, $priceIndexJoin);
+        $this->rebuildJoins($select, $joins);
+
+        return $this->resourceConnection->getConnection()->fetchCol($select);
+    }
+
+    protected function expandPricingJoin(array &$joins, string $priceIndexJoin): void
+    {
+        $modifyJoin = &$joins[$priceIndexJoin];
+        $modifyJoin['joinType'] = Zend_Db_Select::LEFT_JOIN;
+    }
+
+    /** Collection based approach - more memory intensive */
+    protected function getProductIdsFromCollectionOrig(ProductCollection $collection): array
     {
         $expandedCollection = clone $collection;
 
@@ -102,10 +142,14 @@ class MissingPriceIndexHandler
 
     protected function rebuildJoins(Select $select, array $joins): void
     {
+        $select->reset(Zend_Db_Select::COLUMNS);
         $select->reset(Zend_Db_Select::FROM);
         foreach ($joins as $alias => $joinData) {
             if ($joinData['joinType'] === Zend_Db_Select::FROM) {
-                $select->from([$alias => $joinData['tableName']]);
+                $select->from(
+                    [$alias => $joinData['tableName']],
+                    'entity_id'
+                );
             } elseif ($joinData['joinType'] === Zend_Db_Select::LEFT_JOIN) {
                 $select->joinLeft(
                     [$alias => $joinData['tableName']],
@@ -121,7 +165,6 @@ class MissingPriceIndexHandler
                     $joinData['schema']
                 );
             }
-            $sql = $select->__toString();
         }
     }
 

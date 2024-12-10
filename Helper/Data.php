@@ -372,8 +372,6 @@ class Data
             return;
         }
 
-        $this->missingPriceIndexHandler->refreshPriceIndex($productIds);
-
         $this->startEmulation($storeId);
         $this->logger->start('Indexing');
         try {

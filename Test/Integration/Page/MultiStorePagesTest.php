@@ -32,7 +32,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
     /**  @var CollectionFactory */
     private $pageCollectionFactory;
 
-    const ABOUT_US_PAGE_ID = 7;
+    const HOME_PAGE_ID = 2;
 
     public function setUp():void
     {
@@ -70,16 +70,16 @@ class MultiStorePagesTest extends MultiStoreTestCase
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
 
         try {
-            $aboutUsPage = $this->loadPage(self::ABOUT_US_PAGE_ID);
+            $homePage = $this->loadPage(self::HOME_PAGE_ID);
         } catch (\Exception $e) {
             $this->markTestIncomplete('Page could not be found.');
         }
 
         // Setting the page only for default store
-        $aboutUsPage->setStores([$defaultStore->getId()]);
-        $this->pageRepository->save($aboutUsPage);
+        $homePage->setStores([$defaultStore->getId()]);
+        $this->pageRepository->save($homePage);
 
-        $this->pagesIndexer->execute([self::ABOUT_US_PAGE_ID]);
+        $this->pagesIndexer->execute([self::HOME_PAGE_ID]);
         $this->algoliaHelper->waitLastTask();
 
         $this->assertNbOfRecordsPerStore(
@@ -129,7 +129,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
     {
         // Exclude 2 pages on second store
         $excludedPages = $store->getCode() === 'fixture_second_store' ?
-            [['attribute' => 'no-route'], ['attribute' => 'home']]:
+            [['attribute' => 'no-route'], ['attribute' => 'enable-cookies']]:
             [];
 
         $this->setConfig(
@@ -144,8 +144,8 @@ class MultiStorePagesTest extends MultiStoreTestCase
     public function tearDown(): void
     {
         // Restore page in case DB is not cleaned up
-        $aboutUsPage = $this->loadPage(self::ABOUT_US_PAGE_ID);
-        $this->resetPage($aboutUsPage);
+        $homePage = $this->loadPage(self::HOME_PAGE_ID);
+        $this->resetPage($homePage);
 
         parent::tearDown();
     }

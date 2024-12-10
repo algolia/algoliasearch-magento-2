@@ -18,6 +18,8 @@ class MissingPriceIndexHandler
     public const PRICE_INDEX_TABLE_ALIAS = 'price_index';
     public const MAIN_TABLE_ALIAS = 'e';
 
+    protected array $_indexedProducts = [];
+
     protected IndexerInterface $indexer;
     public function __construct(
         protected CollectionFactory $productCollectionFactory,
@@ -41,7 +43,7 @@ class MissingPriceIndexHandler
             return [];
         }
 
-        $this->logger->log(__("Pricing records missing for %1 product(s)", count($reindexIds)));
+        $this->logger->log(__("Pricing records missing or invalid for %1 product(s)", count($reindexIds)));
         $this->logger->log(__("Reindexing product ID(s): %1", implode(', ', $reindexIds)));
 
         $this->indexer->reindexList($reindexIds);
@@ -67,13 +69,18 @@ class MissingPriceIndexHandler
 
         $state = $this->indexer->getState()->getStatus();
         if ($state === StateInterface::STATUS_INVALID) {
-            return $productIds; //all records must be reindexed
+            return $this->filterProductIdsNotYetProcessed($productIds);
         }
 
-        return $this->filterProductIds($productIds);
+        $productIds = $this->filterProductIdsMissingPricing($productIds);
+        if (empty($productIds)) {
+            return [];
+        }
+
+        return $this->filterProductIdsNotYetProcessed($productIds);
     }
 
-    protected function filterProductIds(array $productIds): array
+    protected function filterProductIdsMissingPricing(array $productIds): array
     {
         $collection = $this->productCollectionFactory->create();
 
@@ -90,6 +97,20 @@ class MissingPriceIndexHandler
             ->where(self::MAIN_TABLE_ALIAS . '.entity_id IN (?)', $productIds);
 
         return $collection->getAllIds();
+    }
+
+    protected function filterProductIdsNotYetProcessed(array $productIds): array {
+        $pendingProcessing = array_fill_keys($productIds, true);
+
+        $notProcessed = array_diff_key($pendingProcessing, $this->_indexedProducts);
+
+        if (empty($notProcessed)) {
+            return [];
+        }
+
+        $this->_indexedProducts += $notProcessed;
+
+        return array_keys($notProcessed);
     }
 
     /**
@@ -122,30 +143,6 @@ class MissingPriceIndexHandler
         $modifyJoin['joinType'] = Zend_Db_Select::LEFT_JOIN;
     }
 
-    /** Collection based approach - more memory intensive */
-    protected function getProductIdsFromCollectionOrig(ProductCollection $collection): array
-    {
-        $expandedCollection = clone $collection;
-
-        $select = $expandedCollection->getSelect();
-
-        $joins = $select->getPart(Zend_Db_Select::FROM);
-
-        $priceIndexJoin = $this->getPriceIndexJoinAlias($joins);
-
-        if (!$priceIndexJoin) {
-            // nothing to do here - keep calm and carry on
-            return [];
-        }
-
-        $modifyJoin = &$joins[$priceIndexJoin];
-        $modifyJoin['joinType'] = Zend_Db_Select::LEFT_JOIN;
-
-        $this->rebuildJoins($select, $joins);
-
-        return $expandedCollection->getAllIds();
-    }
-
     protected function rebuildJoins(Select $select, array $joins): void
     {
         $select->reset(Zend_Db_Select::COLUMNS);
@@ -171,15 +168,6 @@ class MissingPriceIndexHandler
                     $joinData['schema']
                 );
             }
-        }
-    }
-
-    private function inspectJoins(array $joins): void {
-        foreach ($joins as $alias => $joinData) {
-            echo "Table Alias: $alias\n";
-            echo "Table Name: {$joinData['tableName']}\n";
-            echo "Join Type: {$joinData['joinType']}\n";
-            echo "Join Condition: " . ($joinData['joinCondition'] ?? 'N/A') . "\n\n";
         }
     }
 

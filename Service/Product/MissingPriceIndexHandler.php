@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
+use Algolia\AlgoliaSearch\Helper\Logger;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Framework\App\ResourceConnection;
@@ -21,6 +22,7 @@ class MissingPriceIndexHandler
     public function __construct(
         protected CollectionFactory $productCollectionFactory,
         protected ResourceConnection $resourceConnection,
+        protected Logger $logger,
         IndexerRegistry $indexerRegistry
     )
     {
@@ -39,14 +41,18 @@ class MissingPriceIndexHandler
             return [];
         }
 
+        $this->logger->log(__("Pricing records missing for %1 product(s)", count($reindexIds)));
+        $this->logger->log(__("Reindexing product ID(s): %1", implode(', ', $reindexIds)));
+
         $this->indexer->reindexList($reindexIds);
 
         return $reindexIds;
     }
 
     /**
-     * @param string[]|ProductCollection $products
-     * @return string[]
+     * Analyzes a product collection and determines which (if any) records should have their prices reindexed
+     * @param string[]|ProductCollection $products - either an explicit list of product ids or a product collection
+     * @return string[] IDs of products that require price reindexing (will be empty if no indexing is required)
      * @throws \Zend_Db_Select_Exception
      */
     protected function getProductIdsToReindex(array|ProductCollection $products): array
@@ -61,7 +67,7 @@ class MissingPriceIndexHandler
 
         $state = $this->indexer->getState()->getStatus();
         if ($state === StateInterface::STATUS_INVALID) {
-            return $productIds;
+            return $productIds; //all records must be reindexed
         }
 
         return $this->filterProductIds($productIds);

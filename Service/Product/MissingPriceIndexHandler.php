@@ -65,14 +65,14 @@ class MissingPriceIndexHandler
         $collection->addAttributeToSelect(['name', 'price']);
 
         $collection->getSelect()->joinLeft(
-            ['price_index' => 'catalog_product_index_price'],
-            'e.entity_id = price_index.entity_id',
+            [self::PRICE_INDEX_TABLE_ALIAS => self::PRICE_INDEX_TABLE],
+            self::MAIN_TABLE_ALIAS . '.entity_id = ' . self::PRICE_INDEX_TABLE_ALIAS . '.entity_id',
             []
         );
 
         $collection->getSelect()
-            ->where('price_index.entity_id IS NULL')
-            ->where('e.entity_id IN (?)', $productIds);
+            ->where(self::PRICE_INDEX_TABLE_ALIAS . '.entity_id IS NULL')
+            ->where(self::MAIN_TABLE_ALIAS . '.entity_id IN (?)', $productIds);
 
         return $collection->getAllIds();
     }

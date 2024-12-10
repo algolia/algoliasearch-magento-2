@@ -349,12 +349,6 @@ class AlgoliaConnector
         } catch (Exception $e) {
         }
 
-        $removes = ['slaves', 'replicas', 'decompoundedAttributes'];
-
-        if (isset($onlineSettings['mode']) && $onlineSettings['mode'] == 'neuralSearch') {
-            $removes[] = 'mode';
-        }
-
         if (isset($settings['attributesToIndex'])) {
             $settings['searchableAttributes'] = $settings['attributesToIndex'];
             unset($settings['attributesToIndex']);
@@ -365,7 +359,7 @@ class AlgoliaConnector
             unset($onlineSettings['attributesToIndex']);
         }
 
-        foreach ($removes as $remove) {
+        foreach ($this->getSettingsToRemove($onlineSettings) as $remove) {
             if (isset($onlineSettings[$remove])) {
                 unset($onlineSettings[$remove]);
             }
@@ -376,6 +370,34 @@ class AlgoliaConnector
         }
 
         return $onlineSettings;
+    }
+
+    /**
+     * These settings are to be managed by other processes
+     * @param string[] $onlineSettings
+     * @return string[]
+     */
+    protected function getSettingsToRemove(array $onlineSettings): array
+    {
+        $removals = ['slaves', 'replicas', 'decompoundedAttributes'];
+
+        if (isset($onlineSettings['mode']) && $onlineSettings['mode'] == 'neuralSearch') {
+            $removals[] = 'mode';
+        }
+
+        return array_merge($removals, $this->getSynonymSettingNames());
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function getSynonymSettingNames(): array
+    {
+        return [
+            'synonyms',
+            'altCorrections',
+            'placeholders'
+        ];
     }
 
     /**

@@ -34,7 +34,6 @@ class MissingPriceIndexHandler
     /**
      * @param string[]|ProductCollection $products
      * @return string[] Array of product IDs that were reindexed by this repair operation
-     * @throws \Zend_Db_Select_Exception
      */
     public function refreshPriceIndex(array|ProductCollection $products): array
     {
@@ -55,7 +54,6 @@ class MissingPriceIndexHandler
      * Analyzes a product collection and determines which (if any) records should have their prices reindexed
      * @param string[]|ProductCollection $products - either an explicit list of product ids or a product collection
      * @return string[] IDs of products that require price reindexing (will be empty if no indexing is required)
-     * @throws \Zend_Db_Select_Exception
      */
     protected function getProductIdsToReindex(array|ProductCollection $products): array
     {
@@ -115,15 +113,19 @@ class MissingPriceIndexHandler
 
     /**
      * Expand the query for product ids from the collection regardless of price index status
-     * @throws \Zend_Db_Select_Exception
      * @return string[] An array of indices to be evaluated - array will be empty if no price index join found
      */
     protected function getProductIdsFromCollection(ProductCollection $collection): array
     {
 
         $select = clone $collection->getSelect();
-        // TODO: Log this exception - pending DiagnosticsLogger
-        $joins = $select->getPart(Zend_Db_Select::FROM);
+        try {
+            $joins = $select->getPart(Zend_Db_Select::FROM);
+        } catch (\Zend_Db_Select_Exception $e) {
+            $this->logger->error("Unable to build query for missing product prices: " . $e->getMessage());
+            return [];
+        }
+
         $priceIndexJoin = $this->getPriceIndexJoinAlias($joins);
 
         if (!$priceIndexJoin) {

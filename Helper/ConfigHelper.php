@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Directory\Model\Currency as DirCurrency;
@@ -1482,7 +1483,7 @@ class ConfigHelper
             }
         }
         $attributes = array_merge($attributes, [
-            AlgoliaHelper::ALGOLIA_API_OBJECT_ID,
+            AlgoliaConnector::ALGOLIA_API_OBJECT_ID,
             'name',
             'url',
             'visibility_search',

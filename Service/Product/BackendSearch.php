@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class BackendSearch
@@ -44,7 +45,7 @@ class BackendSearch
 
         $params = [
             'hitsPerPage'            => $numberOfResults, // retrieve all the hits (hard limit is 1000)
-            'attributesToRetrieve'   => AlgoliaHelper::ALGOLIA_API_OBJECT_ID,
+            'attributesToRetrieve'   => AlgoliaConnector::ALGOLIA_API_OBJECT_ID,
             'attributesToHighlight'  => '',
             'attributesToSnippet'    => '',
             'numericFilters'         => ['visibility_search=1'],
@@ -64,7 +65,7 @@ class BackendSearch
         $data = [];
 
         foreach ($answer['hits'] as $i => $hit) {
-            $productId = $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
+            $productId = $hit[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];
 
             if ($productId) {
                 $data[$productId] = [

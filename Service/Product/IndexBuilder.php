@@ -11,6 +11,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\ProductDataArray;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
@@ -164,11 +165,11 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $counter = 0;
         $browseOptions = [
             'query'                => '',
-            'attributesToRetrieve' => [AlgoliaHelper::ALGOLIA_API_OBJECT_ID],
+            'attributesToRetrieve' => [AlgoliaConnector::ALGOLIA_API_OBJECT_ID],
         ];
         $hits = $client->browseObjects($indexName, $browseOptions);
         foreach ($hits as $hit) {
-            $objectIds[] = $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
+            $objectIds[] = $hit[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];
             $counter++;
             if ($counter === 1000) {
                 $this->deleteInactiveIds($storeId, $objectIds, $indexName);

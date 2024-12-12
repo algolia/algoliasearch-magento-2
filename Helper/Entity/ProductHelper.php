@@ -15,6 +15,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
@@ -463,12 +464,12 @@ class ProductHelper extends AbstractEntityHelper
         ];
 
         $customData = [
-            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $product->getId(),
-            'name'                               => $product->getName(),
-            'url'                                => $product->getUrlModel()->getUrl($product, $urlParams),
-            'visibility_search'                  => (int) (in_array($visibility, $visibleInSearch)),
-            'visibility_catalog'                 => (int) (in_array($visibility, $visibleInCatalog)),
-            'type_id'                            => $product->getTypeId(),
+            AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $product->getId(),
+            'name'                                  => $product->getName(),
+            'url'                                   => $product->getUrlModel()->getUrl($product, $urlParams),
+            'visibility_search'                     => (int) (in_array($visibility, $visibleInSearch)),
+            'visibility_catalog'                    => (int) (in_array($visibility, $visibleInCatalog)),
+            'type_id'                               => $product->getTypeId(),
         ];
 
         $additionalAttributes = $this->getAdditionalAttributes($product->getStoreId());
@@ -1257,7 +1258,7 @@ class ProductHelper extends AbstractEntityHelper
             ];
 
             $rules[] = [
-                AlgoliaHelper::ALGOLIA_API_OBJECT_ID => 'filter_' . $attribute,
+                AlgoliaConnector::ALGOLIA_API_OBJECT_ID => 'filter_' . $attribute,
                 'description' => 'Filter facet "' . $attribute . '"',
                 'conditions' => [$condition],
                 'consequence' => [
@@ -1306,7 +1307,7 @@ class ProductHelper extends AbstractEntityHelper
                 foreach ($fetchedQueryRules['hits'] as $hit) {
                     $this->algoliaHelper->deleteRule(
                         $indexName,
-                        $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID],
+                        $hit[AlgoliaConnector::ALGOLIA_API_OBJECT_ID],
                         true,
                         $storeId
                     );

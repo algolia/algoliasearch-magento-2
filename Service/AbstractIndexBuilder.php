@@ -97,8 +97,8 @@ abstract class AbstractIndexBuilder
         foreach (array_chunk($idsToRemove, 1000) as $chunk) {
             $objects = $this->algoliaHelper->getObjects($indexName, $chunk, $storeId);
             foreach ($objects['results'] as $object) {
-                if (isset($object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID])) {
-                    $toRealRemove[] = $object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
+                if (isset($object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID])) {
+                    $toRealRemove[] = $object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];
                 }
             }
         }

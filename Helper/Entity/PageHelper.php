@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Cms\Model\Page;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
@@ -88,7 +88,7 @@ class PageHelper extends AbstractEntityHelper
                 $content = $this->filterProvider->getPageFilter()->filter($content);
             }
 
-            $pageObject[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] = $page->getId();
+            $pageObject[AlgoliaConnector::ALGOLIA_API_OBJECT_ID] = $page->getId();
             $pageObject['url'] = $frontendUrlBuilder->getUrl(
                 null,
                 [

@@ -17,6 +17,26 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AlgoliaConnector
 {
+    /**
+     * @var string Case-sensitive object ID key
+     */
+    public const ALGOLIA_API_OBJECT_ID = 'objectID';
+
+    /**
+     * @var string
+     */
+    public const ALGOLIA_API_INDEX_NAME = 'indexName';
+
+    /**
+     * @var string
+     */
+    public const ALGOLIA_API_TASK_ID = 'taskID';
+
+    /**
+     * @var int
+     */
+    public const ALGOLIA_DEFAULT_SCOPE = 0;
+
     /** @var int This value should be configured based on system/full_page_cache/ttl
      *           (which is by default 86400) and/or the configuration block TTL
      */
@@ -33,15 +53,12 @@ class AlgoliaConnector
     /** @var string[] */
     protected array $nonCastableAttributes = ['sku', 'name', 'description', 'query'];
 
-    /** @var int  */
-    protected int $storeId = AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE;
-
     /** @var bool */
     protected bool $userAgentsAdded = false;
 
     protected static ?string $lastUsedIndexName;
 
-    protected static ?int $lastTaskId;
+    protected static ?string $lastTaskId;
 
     public function __construct(
         protected ConfigHelper $config,
@@ -57,12 +74,12 @@ class AlgoliaConnector
     }
 
     /**
+     * @param int $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function createClient(): void
+    protected function createClient(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
     {
-        $storeId = $this->getStoreId();
         if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
             throw new AlgoliaException('Client initialization could not be performed because Algolia credentials were not provided.');
         }
@@ -78,12 +95,13 @@ class AlgoliaConnector
     }
 
     /**
+     * @param int $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function addAlgoliaUserAgent(): void
+    protected function addAlgoliaUserAgent(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
     {
-        $clientName = $this->getClient()->getClientConfig()?->getClientName();
+        $clientName = $this->getClient($storeId)->getClientConfig()?->getClientName();
 
         if ($clientName) {
             AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento2 integration', $this->config->getExtensionVersion());
@@ -96,36 +114,24 @@ class AlgoliaConnector
     }
 
     /**
+     * @param int|null $storeId
      * @return SearchClient
      * @throws AlgoliaException
      */
-    public function getClient(): SearchClient
+    public function getClient(?int $storeId = self::ALGOLIA_DEFAULT_SCOPE): SearchClient
     {
-        if (!isset($this->clients[$this->getStoreId()])) {
-            $this->createClient();
+        if (is_null($storeId)) {
+            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
+        }
+
+        if (!isset($this->clients[$storeId])) {
+            $this->createClient($storeId);
             if (!$this->userAgentsAdded) {
-                $this->addAlgoliaUserAgent();
+                $this->addAlgoliaUserAgent($storeId);
             }
         }
 
-        return $this->clients[$this->getStoreId()];
-    }
-
-    /**
-     * @return int
-     */
-    public function getStoreId(): int
-    {
-        return $this->storeId;
-    }
-
-    /**
-     * @param int $storeId
-     * @return void
-     */
-    public function setStoreId(int $storeId): void
-    {
-        $this->storeId = $storeId;
+        return $this->clients[$storeId];
     }
 
     /**
@@ -142,20 +148,21 @@ class AlgoliaConnector
      * @return ListIndicesResponse|array<string,mixed>
      * @throws AlgoliaException
      */
-    public function listIndexes()
+    public function listIndexes(?int $storeId = null)
     {
-        return $this->getClient()->listIndices();
+        return $this->getClient($storeId)->listIndices();
     }
 
     /**
      * @param string $indexName
      * @param string $q
      * @param array $params
+     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    public function query(string $indexName, string $q, array $params): array
+    public function query(string $indexName, string $q, array $params, ?int $storeId = null): array
     {
         // TODO: Revisit - not compatible with PHP v4
         // if (isset($params['disjunctiveFacets'])) {
@@ -164,14 +171,14 @@ class AlgoliaConnector
 
         $params = array_merge(
             [
-                AlgoliaHelper::ALGOLIA_API_INDEX_NAME => $indexName,
+                self::ALGOLIA_API_INDEX_NAME => $indexName,
                 'query' => $q
             ],
             $params
         );
 
         // TODO: Validate return value for integration tests
-        return $this->getClient()->search([
+        return $this->getClient($storeId)->search([
             'requests' => [ $params ]
         ]);
     }
@@ -179,24 +186,25 @@ class AlgoliaConnector
     /**
      * @param string $indexName
      * @param array $objectIds
+     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
      */
-    public function getObjects(string $indexName, array $objectIds): array
+    public function getObjects(string $indexName, array $objectIds, ?int $storeId = null): array
     {
         $requests = array_values(
             array_map(
                 function($id) use ($indexName) {
                     return [
-                        AlgoliaHelper::ALGOLIA_API_INDEX_NAME => $indexName,
-                        AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $id
+                        self::ALGOLIA_API_INDEX_NAME => $indexName,
+                        self::ALGOLIA_API_OBJECT_ID => $id
                     ];
                 },
                 $objectIds
             )
         );
 
-        return $this->getClient()->getObjects([ 'requests' => $requests ]);
+        return $this->getClient($storeId)->getObjects([ 'requests' => $requests ]);
     }
 
     /**
@@ -205,7 +213,7 @@ class AlgoliaConnector
      * @param bool $forwardToReplicas
      * @param bool $mergeSettings
      * @param string $mergeSettingsFrom
-     *
+     * @param int|null $storeId
      * @throws AlgoliaException
      */
     public function setSettings(
@@ -213,13 +221,14 @@ class AlgoliaConnector
         $settings,
         bool $forwardToReplicas = false,
         bool $mergeSettings = false,
-        string $mergeSettingsFrom = ''
+        string $mergeSettingsFrom = '',
+        ?int $storeId = null
     ) {
         if ($mergeSettings === true) {
-            $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom);
+            $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom, $storeId);
         }
 
-        $res = $this->getClient()->setSettings($indexName, $settings, $forwardToReplicas);
+        $res = $this->getClient($storeId)->setSettings($indexName, $settings, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -227,12 +236,13 @@ class AlgoliaConnector
     /**
      * @param string $indexName
      * @param array $requests
+     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
      */
-    protected function performBatchOperation(string $indexName, array $requests): array
+    protected function performBatchOperation(string $indexName, array $requests, ?int $storeId = null): array
     {
-        $response = $this->getClient()->batch($indexName, [ 'requests' => $requests ] );
+        $response = $this->getClient($storeId)->batch($indexName, [ 'requests' => $requests ] );
 
         self::setLastOperationInfo($indexName, $response);
 
@@ -241,12 +251,13 @@ class AlgoliaConnector
 
     /**
      * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteIndex(string $indexName): void
+    public function deleteIndex(string $indexName, ?int $storeId = null): void
     {
-        $res = $this->getClient()->deleteIndex($indexName);
+        $res = $this->getClient($storeId)->deleteIndex($indexName);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -254,10 +265,11 @@ class AlgoliaConnector
     /**
      * @param array $ids
      * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteObjects(array $ids, string $indexName): void
+    public function deleteObjects(array $ids, string $indexName, ?int $storeId = null): void
     {
         $requests = array_values(
             array_map(
@@ -265,7 +277,7 @@ class AlgoliaConnector
                     return [
                         'action' => 'deleteObject',
                         'body'   => [
-                            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $id
+                            self::ALGOLIA_API_OBJECT_ID => $id
                         ]
                     ];
                 },
@@ -279,12 +291,13 @@ class AlgoliaConnector
     /**
      * @param string $fromIndexName
      * @param string $toIndexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function moveIndex(string $fromIndexName, string $toIndexName): void
+    public function moveIndex(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $response = $this->getClient()->operationIndex(
+        $response = $this->getClient($storeId)->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'move',
@@ -297,10 +310,11 @@ class AlgoliaConnector
     /**
      * @param string $key
      * @param array $params
+     * @param int|null $storeId
      * @return string
      * @throws AlgoliaException
      */
-    public function generateSearchSecuredApiKey(string $key, array $params = []): string
+    public function generateSearchSecuredApiKey(string $key, array $params = [], ?int $storeId = null): string
     {
         // This is to handle a difference between API client v1 and v2.
         if (! isset($params['tagFilters'])) {
@@ -309,7 +323,7 @@ class AlgoliaConnector
 
         $params['validUntil'] = time() + self::ALGOLIA_API_SECURED_KEY_TIMEOUT_SECONDS;
 
-        return $this->getClient()->generateSecuredApiKey($key, $params);
+        return $this->getClient($storeId)->generateSecuredApiKey($key, $params);
     }
 
     /**
@@ -317,10 +331,10 @@ class AlgoliaConnector
      * @return array<string, mixed>
      * @throws AlgoliaException
      */
-    public function getSettings(string $indexName): array
+    public function getSettings(string $indexName, ?int $storeId = null): array
     {
         try {
-            return $this->getClient()->getSettings($indexName);
+            return $this->getClient($storeId)->getSettings($indexName);
         } catch (Exception $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
@@ -330,12 +344,18 @@ class AlgoliaConnector
     }
 
     /**
-     * @param $indexName
-     * @param $settings
+     * @param string $indexName
+     * @param array $settings
      * @param string $mergeSettingsFrom
+     * @param int|null $storeId
      * @return SettingsResponse|array
      */
-    public function mergeSettings($indexName, $settings, string $mergeSettingsFrom = ''): SettingsResponse|array
+    protected function mergeSettings(
+        string $indexName,
+        array $settings,
+        string $mergeSettingsFrom = '',
+        ?int $storeId = null
+    ): SettingsResponse|array
     {
         $onlineSettings = [];
 
@@ -345,7 +365,7 @@ class AlgoliaConnector
                 $sourceIndex = $mergeSettingsFrom;
             }
 
-            $onlineSettings = $this->getClient()->getSettings($sourceIndex);
+            $onlineSettings = $this->getClient($storeId)->getSettings($sourceIndex);
         } catch (Exception $e) {
         }
 
@@ -401,26 +421,15 @@ class AlgoliaConnector
     }
 
     /**
-     * Legacy function signature to add objects to Algolia
-     * @param array $objects
-     * @param string $indexName
-     * @return void
-     * @throws Exception
-     * @deprecated Do not use. This method has been replaced by saveObjects and may be removed in the future.
-     */
-    public function addObjects(array $objects, string $indexName): void {
-        $this->saveObjects($indexName, $objects, $this->config->isPartialUpdateEnabled());
-    }
-
-    /**
      * Save objects to index (upserts records)
      * @param string $indexName
      * @param array $objects
      * @param bool $isPartialUpdate
+     * @param int|null $storeId
      * @return void
-     * @throws Exception
+     * @throws AlgoliaException
      */
-    public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false): void
+    public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false, ?int $storeId = null): void
     {
         $this->prepareRecords($objects, $indexName);
 
@@ -438,7 +447,7 @@ class AlgoliaConnector
             )
         );
 
-        $this->performBatchOperation($indexName, $requests);
+        $this->performBatchOperation($indexName, $requests, $storeId);
     }
 
     /**
@@ -449,21 +458,22 @@ class AlgoliaConnector
     protected static function setLastOperationInfo(string $indexName, array $response): void
     {
         self::$lastUsedIndexName = $indexName;
-        self::$lastTaskId = $response[AlgoliaHelper::ALGOLIA_API_TASK_ID] ?? null;
+        self::$lastTaskId= $response[self::ALGOLIA_API_TASK_ID] ?? null;
     }
 
     /**
      * @param array<string, mixed> $rule
      * @param string $indexName
      * @param bool $forwardToReplicas
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false): void
+    public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false, ?int $storeId = null): void
     {
-        $res = $this->getClient()->saveRule(
+        $res = $this->getClient($storeId)->saveRule(
             $indexName,
-            $rule[AlgoliaHelper::ALGOLIA_API_OBJECT_ID],
+            $rule[self::ALGOLIA_API_OBJECT_ID],
             $rule,
             $forwardToReplicas
         );
@@ -475,11 +485,12 @@ class AlgoliaConnector
      * @param string $indexName
      * @param array $rules
      * @param bool $forwardToReplicas
+     * @param int|null $storeId
      * @return void
      */
-    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false): void
+    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false, ?int $storeId = null): void
     {
-        $res = $this->getClient()->saveRules($indexName, $rules, $forwardToReplicas);
+        $res = $this->getClient($storeId)->saveRules($indexName, $rules, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -492,35 +503,28 @@ class AlgoliaConnector
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteRule(string $indexName, string $objectID, bool $forwardToReplicas = false): void
+    public function deleteRule(
+        string $indexName,
+        string $objectID,
+        bool $forwardToReplicas = false,
+        ?int $storeId = null
+    ): void
     {
-        $res = $this->getClient()->deleteRule($indexName, $objectID, $forwardToReplicas);
+        $res = $this->getClient($storeId)->deleteRule($indexName, $objectID, $forwardToReplicas);
 
         self::setLastOperationInfo($indexName, $res);
     }
 
     /**
-     * @param $indexName
-     * @param $synonyms
-     * @return void
-     * @throws AlgoliaException
-     * @deprecated Managing synonyms from Magento is no longer supported. Use the Algolia dashboard instead.
-     */
-    public function setSynonyms($indexName, $synonyms): void
-    {
-        throw new AlgoliaException("This method is no longer supported for PHP client v4!");
-    }
-
-    /**
      * @param string $fromIndexName
      * @param string $toIndexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
-     * @throws ExceededRetriesException
      */
-    public function copySynonyms(string $fromIndexName, string $toIndexName): void
+    public function copySynonyms(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $response = $this->getClient()->operationIndex(
+        $response = $this->getClient($storeId)->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'copy',
@@ -534,13 +538,13 @@ class AlgoliaConnector
     /**
      * @param string $fromIndexName
      * @param string $toIndexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
-     * @throws ExceededRetriesException
      */
-    public function copyQueryRules(string $fromIndexName, string $toIndexName): void
+    public function copyQueryRules(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $response = $this->getClient()->operationIndex(
+        $response = $this->getClient($storeId)->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'copy',
@@ -554,24 +558,25 @@ class AlgoliaConnector
     /**
      * @param string $indexName
      * @param array|null $searchRulesParams
-     *
+     * @param int|null $storeId
      * @return array
      *
      * @throws AlgoliaException
      */
-    public function searchRules(string $indexName, array$searchRulesParams = null)
+    public function searchRules(string $indexName, array$searchRulesParams = null, ?int $storeId = null)
     {
-        return $this->getClient()->searchRules($indexName, $searchRulesParams);
+        return $this->getClient($storeId)->searchRules($indexName, $searchRulesParams);
     }
 
     /**
      * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    public function clearIndex(string $indexName): void
+    public function clearIndex(string $indexName, ?int $storeId = null): void
     {
-        $res = $this->getClient()->clearObjects($indexName);
+        $res = $this->getClient($storeId)->clearObjects($indexName);
 
         self::setLastOperationInfo($indexName, $res);
     }
@@ -582,8 +587,12 @@ class AlgoliaConnector
      * @return void
      * @throws ExceededRetriesException|AlgoliaException
      */
-    public function waitLastTask(string $lastUsedIndexName = null, int $lastTaskId = null): void
+    public function waitLastTask(?int $storeId = null, ?string $lastUsedIndexName = null, ?int $lastTaskId = null): void
     {
+        if (is_null($storeId)) {
+            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
+        }
+
         if ($lastUsedIndexName === null && isset(self::$lastUsedIndexName)) {
             $lastUsedIndexName = self::$lastUsedIndexName;
         }
@@ -596,7 +605,7 @@ class AlgoliaConnector
             return;
         }
 
-        $this->getClient()->waitForTask($lastUsedIndexName, $lastTaskId);
+        $this->getClient($storeId)->waitForTask($lastUsedIndexName, $lastTaskId);
     }
 
     /**
@@ -624,13 +633,13 @@ class AlgoliaConnector
             if ($object === false) {
                 $longestAttribute = $this->getLongestAttribute($previousObject);
                 $modifiedIds[] = $indexName . '
-                    - ID ' . $previousObject[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] . ' - skipped - longest attribute: ' . $longestAttribute;
+                    - ID ' . $previousObject[self::ALGOLIA_API_OBJECT_ID] . ' - skipped - longest attribute: ' . $longestAttribute;
 
                 unset($objects[$key]);
 
                 continue;
             } elseif ($previousObject !== $object) {
-                $modifiedIds[] = $indexName . ' - ID ' . $previousObject[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] . ' - truncated';
+                $modifiedIds[] = $indexName . ' - ID ' . $previousObject[self::ALGOLIA_API_OBJECT_ID] . ' - truncated';
             }
 
             $object = $this->castRecord($object);
@@ -817,18 +826,31 @@ class AlgoliaConnector
     }
 
     /**
+     * @param int|null $storeId
      * @return string
      */
-    public function getLastIndexName(): string
+    public function getLastIndexName(?int $storeId = null): string
     {
-        return self::$lastUsedIndexName;
+        if (is_null($storeId)) {
+            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
+        }
+
+        if (!isset(self::$lastUsedIndexNames[$storeId])) {
+            return '';
+        }
+
+        return self::$lastUsedIndexNames[$storeId];
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getLastTaskId(): int
+    public function getLastTaskId(): int|null
     {
+        if (!isset(self::$lastUsedIndexName)) {
+            return null;
+        }
+
         return self::$lastTaskId;
     }
 
@@ -846,11 +868,12 @@ class AlgoliaConnector
      * @param $indexName
      * @param $q
      * @param $params
+     * @param int|null $storeId
      * @return mixed|null
      * @throws AlgoliaException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    protected function searchWithDisjunctiveFaceting($indexName, $q, $params): mixed
+    protected function searchWithDisjunctiveFaceting($indexName, $q, $params, ?int $storeId = null): mixed
     {
         throw new AlgoliaException("This function is not currently supported on PHP connector v4");
 
@@ -871,7 +894,7 @@ class AlgoliaConnector
 
         // Format disjunctive queries for multipleQueries call
         foreach ($disjunctiveQueries as &$disjunctiveQuery) {
-            $disjunctiveQuery[AlgoliaHelper::ALGOLIA_API_INDEX_NAME] = $indexName;
+            $disjunctiveQuery[self::ALGOLIA_API_INDEX_NAME] = $indexName;
             $disjunctiveQuery['query'] = $q;
             unset($disjunctiveQuery['disjunctiveFacets']);
         }
@@ -883,7 +906,7 @@ class AlgoliaConnector
 
         // format the hits query for multipleQueries call
         $params['query'] = $q;
-        $params[AlgoliaHelper::ALGOLIA_API_INDEX_NAME] = $indexName;
+        $params[self::ALGOLIA_API_INDEX_NAME] = $indexName;
         $params['facets'] = $facets;
 
         // Put the hit query first
@@ -892,7 +915,7 @@ class AlgoliaConnector
         /**
          * Do all queries in one call
          */
-        $results = $this->getClient()->multipleQueries(array_values($disjunctiveQueries));
+        $results = $this->getClient($storeId)->multipleQueries(array_values($disjunctiveQueries));
         $results = $results['results'];
 
         /**

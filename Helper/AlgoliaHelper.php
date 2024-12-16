@@ -294,10 +294,11 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
+     * @param int|null $storeId
      * @return int
      */
-    public function getLastTaskId(): int
+    public function getLastTaskId(?int $storeId = null): int
     {
-        return $this->algoliaConnector->getLastTaskId();
+        return $this->algoliaConnector->getLastTaskId($storeId);
     }
 }

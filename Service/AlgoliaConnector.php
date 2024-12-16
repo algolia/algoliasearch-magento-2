@@ -60,6 +60,8 @@ class AlgoliaConnector
 
     protected static ?string $lastTaskId;
 
+    protected static ?array $lastTaskInfoByStore;
+
     public function __construct(
         protected ConfigHelper $config,
         protected ManagerInterface $messageManager,
@@ -230,7 +232,7 @@ class AlgoliaConnector
 
         $res = $this->getClient($storeId)->setSettings($indexName, $settings, $forwardToReplicas);
 
-        self::setLastOperationInfo($indexName, $res);
+        self::setLastOperationInfo($indexName, $res, $storeId);
     }
 
     /**
@@ -244,7 +246,7 @@ class AlgoliaConnector
     {
         $response = $this->getClient($storeId)->batch($indexName, [ 'requests' => $requests ] );
 
-        self::setLastOperationInfo($indexName, $response);
+        self::setLastOperationInfo($indexName, $response, $storeId);
 
         return $response;
     }
@@ -259,7 +261,7 @@ class AlgoliaConnector
     {
         $res = $this->getClient($storeId)->deleteIndex($indexName);
 
-        self::setLastOperationInfo($indexName, $res);
+        self::setLastOperationInfo($indexName, $res, $storeId);
     }
 
     /**
@@ -285,7 +287,7 @@ class AlgoliaConnector
             )
         );
 
-        $this->performBatchOperation($indexName, $requests);
+        $this->performBatchOperation($indexName, $requests, $storeId);
     }
 
     /**
@@ -304,7 +306,7 @@ class AlgoliaConnector
                 'destination' => $toIndexName
             ]
         );
-        self::setLastOperationInfo($toIndexName, $response);
+        self::setLastOperationInfo($toIndexName, $response, $storeId);
     }
 
     /**
@@ -453,12 +455,20 @@ class AlgoliaConnector
     /**
      * @param string $indexName
      * @param array $response
+     * @param int|null $storeId
      * @return void
      */
-    protected static function setLastOperationInfo(string $indexName, array $response): void
+    protected static function setLastOperationInfo(string $indexName, array $response, ?int $storeId = null): void
     {
         self::$lastUsedIndexName = $indexName;
-        self::$lastTaskId= $response[self::ALGOLIA_API_TASK_ID] ?? null;
+        self::$lastTaskId = $response[self::ALGOLIA_API_TASK_ID] ?? null;
+
+        if (!is_null($storeId)) {
+            self::$lastTaskInfoByStore[$storeId] = [
+                'indexName' => $indexName,
+                'taskId' => $response[self::ALGOLIA_API_TASK_ID] ?? null
+            ];
+        }
     }
 
     /**
@@ -478,7 +488,7 @@ class AlgoliaConnector
             $forwardToReplicas
         );
 
-        self::setLastOperationInfo($indexName, $res);
+        self::setLastOperationInfo($indexName, $res, $storeId);
     }
 
     /**
@@ -492,7 +502,7 @@ class AlgoliaConnector
     {
         $res = $this->getClient($storeId)->saveRules($indexName, $rules, $forwardToReplicas);
 
-        self::setLastOperationInfo($indexName, $res);
+        self::setLastOperationInfo($indexName, $res, $storeId);
     }
 
 
@@ -512,7 +522,7 @@ class AlgoliaConnector
     {
         $res = $this->getClient($storeId)->deleteRule($indexName, $objectID, $forwardToReplicas);
 
-        self::setLastOperationInfo($indexName, $res);
+        self::setLastOperationInfo($indexName, $res, $storeId);
     }
 
     /**
@@ -532,7 +542,7 @@ class AlgoliaConnector
                 'scope'       => ['synonyms']
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response);
+        self::setLastOperationInfo($fromIndexName, $response, $storeId);
     }
 
     /**
@@ -552,7 +562,7 @@ class AlgoliaConnector
                 'scope'       => ['rules']
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response);
+        self::setLastOperationInfo($fromIndexName, $response, $storeId);
     }
 
     /**
@@ -578,7 +588,7 @@ class AlgoliaConnector
     {
         $res = $this->getClient($storeId)->clearObjects($indexName);
 
-        self::setLastOperationInfo($indexName, $res);
+        self::setLastOperationInfo($indexName, $res, $storeId);
     }
 
     /**
@@ -589,20 +599,28 @@ class AlgoliaConnector
      */
     public function waitLastTask(?int $storeId = null, ?string $lastUsedIndexName = null, ?int $lastTaskId = null): void
     {
-        if (is_null($storeId)) {
-            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
+        if (is_null($lastUsedIndexName)) {
+            if (!is_null($storeId) && isset(self::$lastTaskInfoByStore[$storeId])) {
+                $lastUsedIndexName = self::$lastTaskInfoByStore[$storeId]['indexName'];
+            } elseif (isset(self::$lastUsedIndexName)){
+                $lastUsedIndexName = self::$lastUsedIndexName;
+            }
         }
 
-        if ($lastUsedIndexName === null && isset(self::$lastUsedIndexName)) {
-            $lastUsedIndexName = self::$lastUsedIndexName;
-        }
-
-        if ($lastTaskId === null && isset(self::$lastTaskId)) {
-            $lastTaskId = self::$lastTaskId;
+        if (is_null($lastTaskId)) {
+            if (!is_null($storeId) && isset(self::$lastTaskInfoByStore[$storeId])) {
+                $lastTaskId = self::$lastTaskInfoByStore[$storeId]['taskId'];
+            } elseif (isset(self::$lastTaskId)){
+                $lastTaskId = self::$lastTaskId;
+            }
         }
 
         if (!$lastUsedIndexName || !$lastTaskId) {
             return;
+        }
+
+        if (is_null($storeId)) {
+            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
         }
 
         $this->getClient($storeId)->waitForTask($lastUsedIndexName, $lastTaskId);
@@ -827,31 +845,19 @@ class AlgoliaConnector
 
     /**
      * @param int|null $storeId
-     * @return string
-     */
-    public function getLastIndexName(?int $storeId = null): string
-    {
-        if (is_null($storeId)) {
-            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
-        }
-
-        if (!isset(self::$lastUsedIndexNames[$storeId])) {
-            return '';
-        }
-
-        return self::$lastUsedIndexNames[$storeId];
-    }
-
-    /**
      * @return int|null
      */
-    public function getLastTaskId(): int|null
+    public function getLastTaskId(?int $storeId = null): int|null
     {
-        if (!isset(self::$lastUsedIndexName)) {
-            return null;
+        $lastTaskId = null;
+
+        if (!is_null($storeId) && isset(self::$lastTaskInfoByStore[$storeId])) {
+            $lastTaskId = self::$lastTaskInfoByStore[$storeId]['taskId'];
+        } elseif (isset(self::$lastTaskId)){
+            $lastTaskId = self::$lastTaskId;
         }
 
-        return self::$lastTaskId;
+        return $lastTaskId;
     }
 
     /**

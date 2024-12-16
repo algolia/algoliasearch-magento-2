@@ -80,7 +80,9 @@ class MultiStorePagesTest extends MultiStoreTestCase
         $this->pageRepository->save($homePage);
 
         $this->pagesIndexer->execute([self::HOME_PAGE_ID]);
-        $this->algoliaHelper->waitLastTask();
+
+        $this->algoliaHelper->waitLastTask($defaultStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
 
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),

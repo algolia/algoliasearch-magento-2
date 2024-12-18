@@ -99,7 +99,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             return;
         }
 
-        $this->algoliaHelper->setStoreId($storeId);
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
@@ -115,13 +114,12 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             }
         }
         if (count($indexData) > 0) {
-            $this->saveObjects($indexData, $indexName);
+            $this->saveObjects($indexData, $indexName, $storeId);
         }
 
         unset($indexData);
         $collection->walk('clearInstance');
         $collection->clear();
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
         unset($collection);
     }
 
@@ -137,11 +135,9 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-        $this->algoliaHelper->setStoreId($storeId);
         $tmpIndexName = $this->suggestionHelper->getTempIndexName($storeId);
         $indexName = $this->suggestionHelper->getIndexName($storeId);
-        $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName);
-        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName, $storeId);
+        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName, $storeId);
     }
 }

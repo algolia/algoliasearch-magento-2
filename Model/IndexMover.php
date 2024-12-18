@@ -44,9 +44,7 @@ class IndexMover
             return;
         }
 
-        $this->algoliaHelper->setStoreId($storeId);
-        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName, $storeId);
     }
 
     /**

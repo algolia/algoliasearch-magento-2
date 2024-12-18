@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Eav\Model\Config;
@@ -69,8 +69,8 @@ class AdditionalSectionHelper extends AbstractEntityHelper
 
         $values = array_map(function ($value) use ($section, $storeId) {
             $record = [
-                AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $value,
-                'value'                              => $value,
+                AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $value,
+                'value'                                 => $value,
             ];
 
             $transport = new DataObject($record);

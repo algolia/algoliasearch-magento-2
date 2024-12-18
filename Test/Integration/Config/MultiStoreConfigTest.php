@@ -33,11 +33,8 @@ class MultiStoreConfigTest extends MultiStoreTestCase
 
         $indicesCreatedByTest = 0;
 
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
-        $indicesCreatedByTest += $this->countStoreIndices();
-
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
-        $indicesCreatedByTest += $this->countStoreIndices();
+        $indicesCreatedByTest += $this->countStoreIndices($defaultStore->getId());
+        $indicesCreatedByTest += $this->countStoreIndices($fixtureSecondStore->getId());
 
         // Check that the configuration created the appropriate number of indices (7 (4 mains + 3 replicas per store => 3*7=21)
         $this->assertEquals(21, $indicesCreatedByTest);
@@ -87,15 +84,17 @@ class MultiStoreConfigTest extends MultiStoreTestCase
             $fixtureSecondStore->getCode()
         );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
-        $this->algoliaHelper->waitLastTask();
 
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
-        $defaultCategoryIndexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_categories');
+        $defaultCategoryIndexSettings = $this->algoliaHelper->getSettings(
+            $this->indexPrefix . 'default_categories',
+            $defaultStore->getId()
+        );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
-        $fixtureCategoryIndexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'fixture_second_store_categories');
+        $fixtureCategoryIndexSettings = $this->algoliaHelper->getSettings(
+            $this->indexPrefix . 'fixture_second_store_categories',
+            $fixtureSecondStore->getId()
+        );
 
         $attributeFromConfig = 'unordered(' . self::ADDITIONAL_ATTRIBUTE . ')';
         $this->assertNotContains($attributeFromConfig, $defaultCategoryIndexSettings['searchableAttributes']);
@@ -105,26 +104,31 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $this->assertNotContains($rankingFromConfig, $defaultCategoryIndexSettings['customRanking']);
         $this->assertContains($rankingFromConfig, $fixtureCategoryIndexSettings['customRanking']);
 
-        $this->algoliaHelper->setStoreId($defaultStore->getId());
-        $defaultProductIndexRules = $this->algoliaHelper->searchRules($this->indexPrefix . 'default_products');
+        $defaultProductIndexRules = $this->algoliaHelper->searchRules(
+            $this->indexPrefix . 'default_products',
+            null,
+            $defaultStore->getId()
+        );
 
-        $this->algoliaHelper->setStoreId($fixtureSecondStore->getId());
-        $fixtureProductIndexRules = $this->algoliaHelper->searchRules($this->indexPrefix . 'fixture_second_store_products');
+        $fixtureProductIndexRules = $this->algoliaHelper->searchRules(
+            $this->indexPrefix . 'fixture_second_store_products',
+            null,
+            $fixtureSecondStore->getId()
+        );
 
         // Check that the Rule has only been created for the fixture store
         $this->assertEquals(0, $defaultProductIndexRules['nbHits']);
         $this->assertEquals(1, $fixtureProductIndexRules['nbHits']);
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
+     * @param int|null $storeId
      * @return int
      * @throws AlgoliaException
      */
-    protected function countStoreIndices(): int
+    protected function countStoreIndices(int $storeId = null): int
     {
-        $indices = $this->algoliaHelper->listIndexes();
+        $indices = $this->algoliaHelper->listIndexes($storeId);
 
         $indicesCreatedByTest = 0;
 

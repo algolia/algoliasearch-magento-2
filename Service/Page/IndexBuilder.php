@@ -61,8 +61,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             return;
         }
 
-        $this->algoliaHelper->setStoreId($storeId);
-
         $indexName = $this->pageHelper->getIndexName($storeId);
 
         $this->startEmulation($storeId);
@@ -80,7 +78,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
-                    $this->saveObjects($chunk, $toIndexName);
+                    $this->saveObjects($chunk, $toIndexName, $storeId);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;
@@ -92,7 +90,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $pagesToRemove = $pages['toRemove'];
             foreach (array_chunk($pagesToRemove, 100) as $chunk) {
                 try {
-                    $this->algoliaHelper->deleteObjects($chunk, $indexName);
+                    $this->algoliaHelper->deleteObjects($chunk, $indexName, $storeId);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;
@@ -102,10 +100,16 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if ($isFullReindex) {
             $tempIndexName = $this->pageHelper->getTempIndexName($storeId);
-            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName);
-            $this->algoliaHelper->moveIndex($tempIndexName, $indexName);
+            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName, $storeId);
+            $this->algoliaHelper->moveIndex($tempIndexName, $indexName, $storeId);
         }
-        $this->algoliaHelper->setSettings($indexName, $this->pageHelper->getIndexSettings($storeId));
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->setSettings(
+            $indexName,
+            $this->pageHelper->getIndexSettings($storeId),
+            false,
+            false,
+            '',
+            $storeId
+        );
     }
 }

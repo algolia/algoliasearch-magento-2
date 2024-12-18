@@ -56,8 +56,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             return;
         }
 
-        $this->algoliaHelper->setStoreId($storeId);
-
         $additionalSections = $this->configHelper->getAutocompleteSections();
 
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
@@ -74,15 +72,20 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
 
             foreach (array_chunk($attributeValues, 100) as $chunk) {
-                $this->saveObjects($chunk, $tempIndexName);
+                $this->saveObjects($chunk, $tempIndexName, $storeId);
             }
 
-            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName);
-            $this->algoliaHelper->moveIndex($tempIndexName, $indexName);
+            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName, $storeId);
+            $this->algoliaHelper->moveIndex($tempIndexName, $indexName, $storeId);
 
-            $this->algoliaHelper->setSettings($indexName, $this->additionalSectionHelper->getIndexSettings($storeId));
-
-            $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+            $this->algoliaHelper->setSettings(
+                $indexName,
+                $this->additionalSectionHelper->getIndexSettings($storeId),
+                false,
+                false,
+                '',
+                $storeId
+            );
         }
     }
 }

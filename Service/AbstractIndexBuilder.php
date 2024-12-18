@@ -70,21 +70,23 @@ abstract class AbstractIndexBuilder
     /**
      * @param array $objects
      * @param string $indexName
+     * @param int|null $storeId
      * @return void
      * @throws \Exception
      */
-    protected function saveObjects(array $objects, string $indexName): void
+    protected function saveObjects(array $objects, string $indexName, int $storeId = null): void
     {
-        $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled());
+        $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled(), $storeId);
     }
 
     /**
      * @param $indexName
      * @param $idsToRemove
+     * @param null $storeId
      * @return array|mixed
      * @throws AlgoliaException
      */
-    protected function getIdsToRealRemove($indexName, $idsToRemove)
+    protected function getIdsToRealRemove($indexName, $idsToRemove, $storeId = null)
     {
         if (count($idsToRemove) === 1) {
             return $idsToRemove;
@@ -93,10 +95,10 @@ abstract class AbstractIndexBuilder
         $toRealRemove = [];
         $idsToRemove = array_map('strval', $idsToRemove);
         foreach (array_chunk($idsToRemove, 1000) as $chunk) {
-            $objects = $this->algoliaHelper->getObjects($indexName, $chunk);
+            $objects = $this->algoliaHelper->getObjects($indexName, $chunk, $storeId);
             foreach ($objects['results'] as $object) {
-                if (isset($object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID])) {
-                    $toRealRemove[] = $object[AlgoliaHelper::ALGOLIA_API_OBJECT_ID];
+                if (isset($object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID])) {
+                    $toRealRemove[] = $object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];
                 }
             }
         }

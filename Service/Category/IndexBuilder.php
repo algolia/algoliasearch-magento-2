@@ -138,23 +138,22 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-        $this->algoliaHelper->setStoreId($storeId);
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
         $indexName = $this->categoryHelper->getIndexName($storeId);
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->saveObjects($indexData['toIndex'], $indexName);
+            $this->saveObjects($indexData['toIndex'], $indexName, $storeId);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
 
         if (!empty($indexData['toRemove'])) {
-            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove']);
+            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove'], $storeId);
             if (!empty($toRealRemove)) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
-                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName);
+                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName, $storeId);
                 $this->logger->log('Category IDs: ' . implode(', ', $toRealRemove));
                 $this->logger->stop('REMOVE FROM ALGOLIA');
             }
@@ -163,7 +162,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->walk('clearInstance');
         $collection->clear();
         unset($collection);
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**

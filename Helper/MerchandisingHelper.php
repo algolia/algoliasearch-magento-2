@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 
 class MerchandisingHelper
 {
@@ -57,7 +58,7 @@ class MerchandisingHelper
         ];
 
         $rule = [
-            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $this->getQueryRuleId($entityId, $entityType),
+            AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $this->getQueryRuleId($entityId, $entityType),
             'description' => 'MagentoGeneratedQueryRule',
             'consequence' => [
                 'filterPromotes' => true,
@@ -85,9 +86,7 @@ class MerchandisingHelper
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $this->algoliaHelper->setStoreId($storeId);
-        $this->algoliaHelper->saveRule($rule, $productsIndexName);
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->saveRule($rule, $productsIndexName, false, $storeId);
     }
 
     /**
@@ -108,9 +107,7 @@ class MerchandisingHelper
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $this->algoliaHelper->setStoreId($storeId);
-        $this->algoliaHelper->deleteRule($productsIndexName, $ruleId);
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
+        $this->algoliaHelper->deleteRule($productsIndexName, $ruleId, false, $storeId);
     }
 
     /**
@@ -123,7 +120,7 @@ class MerchandisingHelper
 
         foreach ($positions as $objectID => $position) {
             $transformedPositions[] = [
-                AlgoliaHelper::ALGOLIA_API_OBJECT_ID => (string) $objectID,
+                AlgoliaConnector::ALGOLIA_API_OBJECT_ID => (string) $objectID,
                 'position' => $position,
             ];
         }
@@ -142,7 +139,7 @@ class MerchandisingHelper
     public function copyQueryRules(int $storeId, int $entityIdFrom, int $entityIdTo, string $entityType): void
     {
         $productsIndexName = $this->productHelper->getIndexName($storeId);
-        $client = $this->algoliaHelper->getClient();
+        $client = $this->algoliaHelper->getClient($storeId);
         $context = $this->getQueryRuleId($entityIdFrom, $entityType);
         $queryRulesToSet = [];
 
@@ -164,7 +161,7 @@ class MerchandisingHelper
                     unset($hit['_highlightResult']);
 
                     $newContext = $this->getQueryRuleId($entityIdTo, $entityType);
-                    $hit[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] = $newContext;
+                    $hit[AlgoliaConnector::ALGOLIA_API_OBJECT_ID] = $newContext;
                     if (isset($hit['condition']['context']) && $hit['condition']['context'] == $context) {
                         $hit['condition']['context'] = $newContext;
                     }

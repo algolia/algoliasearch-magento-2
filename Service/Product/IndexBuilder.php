@@ -327,10 +327,13 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             }
 
             try {
+                $this->logger->startProfiling("canProductBeReindexed");
                 $this->productHelper->canProductBeReindexed($product, $storeId);
             } catch (ProductReindexingException $e) {
                 $productsToRemove[$productId] = $productId;
                 continue;
+            } finally {
+                $this->logger->stopProfiling("canProductBeReindexed");
             }
 
             if (isset($salesData[$productId])) {

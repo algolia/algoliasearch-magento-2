@@ -103,7 +103,10 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->assertEquals(self::VOYAGE_YOGA_BAG_NAME_ALT, $voyageYogaBagAlt->getName());
 
         $this->productsIndexer->execute([self::VOYAGE_YOGA_BAG_ID]);
-        $this->algoliaHelper->waitLastTask();
+
+        $this->algoliaHelper->waitLastTask($defaultStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureThirdStore->getId());
 
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_products',
@@ -129,7 +132,10 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->productPriceIndexer->reindexRow(self::VOYAGE_YOGA_BAG_ID);
 
         $this->productsIndexer->execute([self::VOYAGE_YOGA_BAG_ID]);
-        $this->algoliaHelper->waitLastTask();
+
+        $this->algoliaHelper->waitLastTask($defaultStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureThirdStore->getId());
 
         // default store should have the same number of products
         $this->assertNbOfRecordsPerStore(

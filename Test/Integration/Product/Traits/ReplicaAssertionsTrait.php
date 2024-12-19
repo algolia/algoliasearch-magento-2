@@ -1,10 +1,18 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Product;
+namespace Algolia\AlgoliaSearch\Test\Integration\Product\Traits;
+
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Magento\Store\Api\Data\StoreInterface;
 
 trait ReplicaAssertionsTrait
 {
-    protected function assertSortToReplicaConfigParity(string $primaryIndexName, array $sorting, array $replicas): void
+    protected function assertSortToReplicaConfigParity(
+        string $primaryIndexName,
+        array $sorting,
+        array $replicas,
+        ?int $storeId = null
+    ): void
     {
         foreach ($sorting as $sortAttr) {
             $replicaIndexName = $sortAttr['name'];
@@ -14,7 +22,7 @@ trait ReplicaAssertionsTrait
                 : $replicaIndexName;
             $this->assertContains($needle, $replicas);
 
-            $replicaSettings = $this->assertReplicaIndexExists($primaryIndexName, $replicaIndexName);
+            $replicaSettings = $this->assertReplicaIndexExists($primaryIndexName, $replicaIndexName, $storeId);
             $sort = reset($sortAttr['ranking']);
             if ($isVirtual) {
                 $this->assertVirtualReplicaRanking($replicaSettings, $sort);
@@ -109,5 +117,38 @@ trait ReplicaAssertionsTrait
     protected function assertNoSortingAttribute($sortAttr, $sortDir): void
     {
         $this->assertFalse($this->hasSortingAttribute($sortAttr, $sortDir));
+    }
+
+    /**
+     * ConfigHelper::setSorting uses WriterInterface which does not update unless DB isolation is disabled
+     * This provides a workaround to test using MutableScopeConfigInterface with DB isolation enabled
+     */
+    protected function mockSortUpdate(string $sortAttr, string $sortDir, array $attr, ?StoreInterface $store = null): void
+    {
+        $sorting = $this->configHelper->getSorting(!is_null($store) ? $store->getId() : null);
+        $existing = array_filter($sorting, function ($item) use ($sortAttr, $sortDir) {
+            return $item['attribute'] === $sortAttr && $item['sort'] === $sortDir;
+        });
+
+
+        if ($existing) {
+            $idx = array_key_first($existing);
+            $sorting[$idx] = array_merge($existing[$idx], $attr);
+        }
+        else {
+            $sorting[] = array_merge(
+                [
+                    'attribute' => $sortAttr,
+                    'sort'       => $sortDir,
+                    'sortLabel'  => $sortAttr
+                ],
+                $attr
+            );
+        }
+        $this->setConfig(
+            ConfigHelper::SORTING_INDICES,
+            json_encode($sorting),
+            !is_null($store) ? $store->getCode() : 'default'
+        );
     }
 }

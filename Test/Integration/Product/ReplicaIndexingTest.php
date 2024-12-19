@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
+use Algolia\AlgoliaSearch\Test\Integration\Product\Traits\ReplicaAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 
 class ReplicaIndexingTest extends TestCase
@@ -116,35 +117,6 @@ class ReplicaIndexingTest extends TestCase
         // Restore prior state (for this test only)
         $this->configHelper->setSorting($ogSortingState);
         $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 0);
-    }
-
-    /**
-     * ConfigHelper::setSorting uses WriterInterface which does not update unless DB isolation is disabled
-     * This provides a workaround to test using MutableScopeConfigInterface with DB isolation enabled
-     */
-    protected function mockSortUpdate(string $sortAttr, string $sortDir, array $attr): void
-    {
-        $sorting = $this->configHelper->getSorting();
-        $existing = array_filter($sorting, function ($item) use ($sortAttr, $sortDir) {
-           return $item['attribute'] === $sortAttr && $item['sort'] === $sortDir;
-        });
-
-
-        if ($existing) {
-            $idx = array_key_first($existing);
-            $sorting[$idx] = array_merge($existing[$idx], $attr);
-        }
-        else {
-            $sorting[] = array_merge(
-                [
-                    'attribute' => $sortAttr,
-                    'sort'       => $sortDir,
-                    'sortLabel'  => $sortAttr
-                ],
-                $attr
-            );
-        }
-        $this->setConfig(ConfigHelper::SORTING_INDICES, json_encode($sorting));
     }
 
     /**

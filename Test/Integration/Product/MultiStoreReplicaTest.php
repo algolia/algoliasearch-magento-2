@@ -3,10 +3,16 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand;
+use Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
+use Algolia\AlgoliaSearch\Test\Integration\Product\Traits\ReplicaAssertionsTrait;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Api\Data\StoreInterface;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php
@@ -53,6 +59,80 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         // Check replica config for color asc
         $this->checkReplicaIsStandard($defaultStore, self::COLOR_ATTR, self::ASC_DIR);
         $this->checkReplicaIsVirtual($fixtureSecondStore, self::COLOR_ATTR, self::ASC_DIR);
+
+        $this->resetAllSortings();
+    }
+
+    public function testReplicaCommands()
+    {
+        $defaultStore = $this->storeRepository->get('default');
+        $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
+
+        $defaultIndexName = $this->indexPrefix . $defaultStore->getCode() . '_products';
+        $fixtureIndexName = $this->indexPrefix . $fixtureSecondStore->getCode() . '_products';
+
+        // Update store config for fixture only
+        $this->mockSortUpdate('price', 'desc', ['virtualReplica' => 1], $fixtureSecondStore);
+
+        $defaultSortings = $this->objectManager->get(SortingTransformer::class)->getSortingIndices(
+            $defaultStore->getId(),
+            null,
+            null,
+            true
+        );
+
+        $fixtureSortings = $this->objectManager->get(SortingTransformer::class)->getSortingIndices(
+            $fixtureSecondStore->getId(),
+            null,
+            null,
+            true
+        );
+
+        // Executing commands - Start
+        $syncCmd = $this->objectManager->get(ReplicaSyncCommand::class);
+        $this->mockProperty($syncCmd, 'output', OutputInterface::class);
+        $syncCmd->syncReplicas();
+        $this->algoliaHelper->waitLastTask($defaultStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+
+        $rebuildCmd = $this->objectManager->get(ReplicaRebuildCommand::class);
+        $this->invokeMethod(
+            $rebuildCmd,
+            'execute',
+            [
+                $this->createMock(InputInterface::class),
+                $this->createMock(OutputInterface::class)
+            ]
+        );
+        $this->algoliaHelper->waitLastTask($defaultStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        // Executing commands - End
+
+        $currentDefaultSettings = $this->algoliaHelper->getSettings($defaultIndexName, $defaultStore->getId());
+        $currentFixtureSettings = $this->algoliaHelper->getSettings($fixtureIndexName, $fixtureSecondStore->getId());
+
+        $this->assertArrayHasKey('replicas', $currentDefaultSettings);
+        $this->assertArrayHasKey('replicas', $currentFixtureSettings);
+
+        $defaultReplicas = $currentDefaultSettings['replicas'];
+        $fixtureReplicas = $currentFixtureSettings['replicas'];
+
+        $this->assertEquals(count($defaultSortings), count($defaultReplicas));
+        $this->assertEquals(count($fixtureSortings), count($fixtureReplicas));
+
+        $this->assertSortToReplicaConfigParity(
+            $defaultIndexName,
+            $defaultSortings,
+            $defaultReplicas,
+            $defaultStore->getId()
+        );
+
+        $this->assertSortToReplicaConfigParity(
+            $fixtureIndexName,
+            $fixtureSortings,
+            $fixtureReplicas,
+            $fixtureSecondStore->getId()
+        );
     }
 
     protected function checkReplicaIsStandard(StoreInterface $store, $sortAttr, $sortDir)
@@ -112,7 +192,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $this->algoliaHelper->waitLastTask($store->getId());
     }
 
-    protected function tearDown(): void
+    protected function resetAllSortings()
     {
         $stores = $this->storeManager->getStores();
 
@@ -139,6 +219,11 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
                 $store->getCode()
             );
         }
+    }
+
+    protected function tearDown(): void
+    {
+        $this->resetAllSortings();
 
         parent::tearDown();
     }

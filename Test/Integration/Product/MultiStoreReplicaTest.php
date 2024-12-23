@@ -199,7 +199,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         foreach ($stores as $store) {
             $this->setConfig(
                 ConfigHelper::SORTING_INDICES,
-                [
+                $this->serializer->serialize([
                     [
                         'attribute' => 'price',
                         'sort' => 'asc',
@@ -215,7 +215,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
                         'sort' => 'desc',
                         'sortLabel' => 'Newest first'
                     ]
-                ],
+                ]),
                 $store->getCode()
             );
         }

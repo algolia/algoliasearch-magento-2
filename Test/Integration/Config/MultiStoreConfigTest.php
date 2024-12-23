@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Config;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Test\Integration\Config\Traits\ConfigAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 
 /**
@@ -12,6 +13,7 @@ use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
  */
 class MultiStoreConfigTest extends MultiStoreTestCase
 {
+    use ConfigAssertionsTrait;
 
     const ADDITIONAL_ATTRIBUTE = 'additional_attribute';
 
@@ -30,11 +32,13 @@ class MultiStoreConfigTest extends MultiStoreTestCase
 
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
+        $fixtureThirdStore = $this->storeRepository->get('fixture_third_store');
 
         $indicesCreatedByTest = 0;
 
-        $indicesCreatedByTest += $this->countStoreIndices($defaultStore->getId());
-        $indicesCreatedByTest += $this->countStoreIndices($fixtureSecondStore->getId());
+        $indicesCreatedByTest += $this->countStoreIndices($defaultStore);
+        $indicesCreatedByTest += $this->countStoreIndices($fixtureSecondStore);
+        $indicesCreatedByTest += $this->countStoreIndices($fixtureThirdStore);
 
         // Check that the configuration created the appropriate number of indices (7 (4 mains + 3 replicas per store => 3*7=21)
         $this->assertEquals(21, $indicesCreatedByTest);
@@ -119,28 +123,6 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         // Check that the Rule has only been created for the fixture store
         $this->assertEquals(0, $defaultProductIndexRules['nbHits']);
         $this->assertEquals(1, $fixtureProductIndexRules['nbHits']);
-    }
-
-    /**
-     * @param int|null $storeId
-     * @return int
-     * @throws AlgoliaException
-     */
-    protected function countStoreIndices(int $storeId = null): int
-    {
-        $indices = $this->algoliaHelper->listIndexes($storeId);
-
-        $indicesCreatedByTest = 0;
-
-        foreach ($indices['items'] as $index) {
-            $name = $index['name'];
-
-            if (mb_strpos($name, $this->indexPrefix) === 0) {
-                $indicesCreatedByTest++;
-            }
-        }
-
-        return $indicesCreatedByTest;
     }
 
     protected function tearDown(): void

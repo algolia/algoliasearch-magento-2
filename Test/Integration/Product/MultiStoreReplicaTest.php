@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand;
 use Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
+use Algolia\AlgoliaSearch\Test\Integration\Config\Traits\ConfigAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Algolia\AlgoliaSearch\Test\Integration\Product\Traits\ReplicaAssertionsTrait;
 use Magento\Framework\Serialize\SerializerInterface;
@@ -20,6 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class MultiStoreReplicaTest extends MultiStoreTestCase
 {
     use ReplicaAssertionsTrait;
+    use ConfigAssertionsTrait;
 
     const COLOR_ATTR = 'color';
     const CREATED_AT_ATTR = 'created_at';
@@ -59,6 +61,35 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         // Check replica config for color asc
         $this->checkReplicaIsStandard($defaultStore, self::COLOR_ATTR, self::ASC_DIR);
         $this->checkReplicaIsVirtual($fixtureSecondStore, self::COLOR_ATTR, self::ASC_DIR);
+
+        $this->resetAllSortings();
+    }
+
+    public function testCustomerGroupsConfig()
+    {
+        $defaultStore = $this->storeRepository->get('default');
+        $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
+        $fixtureThirdStore = $this->storeRepository->get('fixture_third_store');
+
+        // Enable customer groups for second fixture store and save configuration
+        $this->setConfig( ConfigHelper::CUSTOMER_GROUPS_ENABLE, 1, $fixtureSecondStore->getCode());
+        $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+
+        // 7 indices for default store and third store:
+        // - 1 for categories
+        // - 1 for pages
+        // - 1 for suggestions
+        // - 4 for products (1 main and 3 for sorting replicas)
+        $this->assertEquals(7, $this->countStoreIndices($defaultStore));
+        $this->assertEquals(7, $this->countStoreIndices($fixtureThirdStore));
+
+        // 13 indices for second store:
+        // - 1 for categories
+        // - 1 for pages
+        // - 1 for suggestions
+        // - 10 for products (1 main and 9 replicas (2 prices sortings * 4 customer groups + 1 other sorting (created_at))
+        $this->assertEquals(13, $this->countStoreIndices($fixtureSecondStore));
 
         $this->resetAllSortings();
     }
@@ -218,6 +249,8 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
                 ]),
                 $store->getCode()
             );
+
+            $this->setConfig( ConfigHelper::CUSTOMER_GROUPS_ENABLE, 0, $store->getCode());
         }
     }
 

@@ -1272,6 +1272,16 @@
                 <field id="write_timeout" translate="label comment" type="text" sortOrder="110" showInDefault="1">
                     <label>Write Timeout (In Seconds)</label>
                 </field>
+                <field id="auto_price_indexing" translate="label comment" type="select" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable automatic price indexing</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <model>Algolia\AlgoliaSearch\Model\Config\AutomaticPriceIndexingComment</model>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
             </group>
             <group id="queue" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Indexing Queue</label>

@@ -106,6 +106,7 @@ class ConfigHelper
     public const CONNECTION_TIMEOUT = 'algoliasearch_advanced/advanced/connection_timeout';
     public const READ_TIMEOUT = 'algoliasearch_advanced/advanced/read_timeout';
     public const WRITE_TIMEOUT = 'algoliasearch_advanced/advanced/write_timeout';
+    public const AUTO_PRICE_INDEXING_ENABLED = 'algoliasearch_advanced/advanced/auto_price_indexing';
 
     public const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
@@ -1220,6 +1221,15 @@ class ConfigHelper
     public function getWriteTimeout($storeId = null)
     {
         return $this->configInterface->getValue(self::WRITE_TIMEOUT, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function isAutoPriceIndexingEnabled(?int $storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::AUTO_PRICE_INDEXING_ENABLED,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     /**

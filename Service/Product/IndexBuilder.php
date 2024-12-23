@@ -27,15 +27,16 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     protected IndexerInterface $priceIndexer;
 
     public function __construct(
-        protected ConfigHelper       $configHelper,
-        protected DiagnosticsLogger  $logger,
-        protected Emulation          $emulation,
-        protected ScopeCodeResolver  $scopeCodeResolver,
-        protected AlgoliaHelper      $algoliaHelper,
-        protected ProductHelper      $productHelper,
-        protected ResourceConnection $resource,
-        protected ManagerInterface   $eventManager,
-        IndexerRegistry              $indexerRegistry
+        protected ConfigHelper             $configHelper,
+        protected DiagnosticsLogger        $logger,
+        protected Emulation                $emulation,
+        protected ScopeCodeResolver        $scopeCodeResolver,
+        protected AlgoliaHelper            $algoliaHelper,
+        protected ProductHelper            $productHelper,
+        protected ResourceConnection       $resource,
+        protected ManagerInterface         $eventManager,
+        protected MissingPriceIndexHandler $missingPriceIndexHandler,
+        IndexerRegistry                    $indexerRegistry
     ){
         parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
 
@@ -107,12 +108,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      */
     protected function rebuildEntityIds(int $storeId, array $productIds): void
     {
-        if ($this->isIndexingEnabled($storeId) === false) {
-            return;
-        }
-
-        $this->checkPriceIndex($productIds);
-
         $this->startEmulation($storeId);
         $this->logger->start('Indexing');
         try {
@@ -236,6 +231,11 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                 'store'      => $storeId
             ]
         );
+
+        if ($this->configHelper->isAutoPriceIndexingEnabled($storeId)) {
+            $this->missingPriceIndexHandler->refreshPriceIndex($collection);
+        }
+
         $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
             collection page: ' . $page . ',
             pageSize: ' . $pageSize;
@@ -322,10 +322,13 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             }
 
             try {
+                $this->logger->startProfiling("canProductBeReindexed");
                 $this->productHelper->canProductBeReindexed($product, $storeId);
             } catch (ProductReindexingException $e) {
                 $productsToRemove[$productId] = $productId;
                 continue;
+            } finally {
+                $this->logger->stopProfiling("canProductBeReindexed");
             }
 
             if (isset($salesData[$productId])) {

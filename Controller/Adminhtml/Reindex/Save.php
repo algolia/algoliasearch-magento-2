@@ -13,6 +13,7 @@ use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -110,6 +111,7 @@ class Save extends \Magento\Backend\App\Action
      * @param $stores
      * @return void
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     protected function checkAndReindex($product, $stores)
     {
@@ -199,7 +201,7 @@ class Save extends \Magento\Backend\App\Action
             $productIds = [$product->getId()];
             $productIds = array_merge($productIds, $this->productHelper->getParentProductIds($productIds));
 
-            $this->productIndexBuilder->rebuildEntityIds($storeId, $productIds);
+            $this->productIndexBuilder->buildIndexList($storeId, $productIds);
             $this->messageManager->addSuccessMessage(
                 __(
                     'The Product "%1" (%2) has been reindexed for store "%3 / %4 / %5".',

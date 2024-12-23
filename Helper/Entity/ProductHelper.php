@@ -1333,7 +1333,6 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
     {
-        $this->logger->startProfiling(__METHOD__);
         if ($product->isDeleted() === true) {
             throw (new ProductDeletedException())
                 ->withProduct($product)
@@ -1367,7 +1366,6 @@ class ProductHelper extends AbstractEntityHelper
                 ->withStoreId($storeId);
         }
 
-        $this->logger->stopProfiling(__METHOD__);
         return true;
     }
 

@@ -61,8 +61,6 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         // Check replica config for color asc
         $this->checkReplicaIsStandard($defaultStore, self::COLOR_ATTR, self::ASC_DIR);
         $this->checkReplicaIsVirtual($fixtureSecondStore, self::COLOR_ATTR, self::ASC_DIR);
-
-        $this->resetAllSortings();
     }
 
     public function testCustomerGroupsConfig()
@@ -90,8 +88,6 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         // - 1 for suggestions
         // - 10 for products (1 main and 9 replicas (2 prices sortings * 4 customer groups + 1 other sorting (created_at))
         $this->assertEquals(13, $this->countStoreIndices($fixtureSecondStore));
-
-        $this->resetAllSortings();
     }
 
     public function testReplicaCommands()

@@ -20,4 +20,8 @@
     <type name="Magento\Framework\View\Element\AbstractBlock">
         <plugin name="remove_related_upsell_block" type="Algolia\AlgoliaSearch\Plugin\RemovePdpProductsBlock" />
     </type>
+
+    <type name="Magento\Checkout\Model\Cart">
+        <plugin name="handle_redirect_for_insights" type="Algolia\AlgoliaSearch\Plugin\AddToCartRedirectForInsights" />
+    </type>
 </config>

@@ -85,6 +85,8 @@ $origFormatedVar = $block->escapeHtml('price' . $priceKey . '_original_formated'
                         <form data-role="tocart-form" action="{{ addToCart.action }}" method="post">
                             <input type="hidden" name="queryID" value="{{__queryID}}">
                             <input type="hidden" name="product" value="{{objectID}}">
+                            <input type="hidden" name="indexName" value="{{__indexName}}">
+                            <input type="hidden" name="referer" value="instantsearch">
                             {{#_highlightResult.default_bundle_options}}<input type="hidden" name="bundle_option[{{ optionId }}]" value="{{selectionId}}">{{/_highlightResult.default_bundle_options}}
                             <input type="hidden" name="{{ addToCart.redirectUrlParam }}" value="{{ addToCart.uenc }}">
                             <input name="form_key" type="hidden" value="{{ addToCart.formKey }}">

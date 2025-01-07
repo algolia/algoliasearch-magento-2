@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Plugin;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
@@ -27,6 +28,7 @@ class AddToCartRedirectForInsights
         protected Session $checkoutSession,
         protected StockRegistryInterface $stockRegistry,
         protected ManagerInterface $eventManager,
+        protected ConfigHelper $configHelper,
     ) {}
 
     /**
@@ -41,6 +43,11 @@ class AddToCartRedirectForInsights
      */
     public function beforeAddProduct(Cart $cartModel, int|Product $productInfo, array|int|DataObject $requestInfo = null)
     {
+        // First, check is Insights are enabled
+        if (!$this->configHelper->isClickConversionAnalyticsEnabled($this->storeManager->getStore()->getId())) {
+            return;
+        }
+
         // If the request doesn't have any insights info, no need to handle it
         if (!isset($requestInfo['referer']) || !isset($requestInfo['queryID']) || !isset($requestInfo['indexName'])) {
             return;

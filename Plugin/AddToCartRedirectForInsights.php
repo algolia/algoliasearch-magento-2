@@ -36,7 +36,7 @@ class AddToCartRedirectForInsights
      * @param int|Product $productInfo
      * @param array|int|DataObject|null $requestInfo
      *
-     * @return void
+     * @return null
      *
      * @throws LocalizedException
      * @throws NoSuchEntityException

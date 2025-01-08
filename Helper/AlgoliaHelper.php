@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -11,6 +12,7 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Exception;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * @deprecated (will be removed in v3.16.0)
@@ -54,29 +56,28 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param string $q
      * @param array $params
-     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    public function query(string $indexName, string $q, array $params, ?int $storeId = null): array
+    public function query(IndexOptionsInterface $indexOptions, string $q, array $params): array
     {
-        return $this->algoliaConnector->query($indexName, $q, $params, $storeId);
+        return $this->algoliaConnector->query($indexOptions, $q, $params);
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $objectIds
-     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function getObjects(string $indexName, array $objectIds, ?int $storeId = null): array
+    public function getObjects(IndexOptionsInterface $indexOptions, array $objectIds): array
     {
-        return $this->algoliaConnector->getObjects($indexName, $objectIds, $storeId);
+        return $this->algoliaConnector->getObjects($indexOptions, $objectIds);
     }
 
     /**
@@ -255,7 +256,7 @@ class AlgoliaHelper extends AbstractHelper
      *
      * @throws AlgoliaException
      */
-    public function searchRules(string $indexName, array$searchRulesParams = null, ?int $storeId = null)
+    public function searchRules(string $indexName, array $searchRulesParams = null, ?int $storeId = null)
     {
         return $this->algoliaConnector->searchRules($indexName, $searchRulesParams, $storeId);
     }

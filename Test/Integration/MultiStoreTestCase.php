@@ -2,10 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -57,11 +59,15 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         int $storeId = null
     ): void
     {
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix .  $storeCode . '_' . $entity,
+            IndexOptionsInterface::STORE_ID => $storeId,
+        ]);
+
         $resultsDefault = $this->algoliaHelper->query(
-            $this->indexPrefix .  $storeCode . '_' . $entity,
+            $indexOptions,
             '',
-            [],
-            $storeId
+            []
         );
 
         $this->assertEquals($expectedNumber, $resultsDefault['results'][0]['nbHits']);

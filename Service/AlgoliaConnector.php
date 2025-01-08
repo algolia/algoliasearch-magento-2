@@ -2,16 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Model\Search\SettingsResponse;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Exception;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -66,7 +67,8 @@ class AlgoliaConnector
         protected ConfigHelper $config,
         protected ManagerInterface $messageManager,
         protected ConsoleOutput $consoleOutput,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected IndexNameFetcher $indexNameFetcher
     ) {
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
@@ -156,20 +158,21 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param string $q
      * @param array $params
-     * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    public function query(string $indexName, string $q, array $params, ?int $storeId = null): array
+    public function query(IndexOptionsInterface $indexOptions, string $q, array $params): array
     {
         // TODO: Revisit - not compatible with PHP v4
         // if (isset($params['disjunctiveFacets'])) {
         //    return $this->searchWithDisjunctiveFaceting($indexName, $q, $params);
         //}
+
+        $indexName = $this->getIndexName($indexOptions);
 
         $params = array_merge(
             [
@@ -180,20 +183,21 @@ class AlgoliaConnector
         );
 
         // TODO: Validate return value for integration tests
-        return $this->getClient($storeId)->search([
+        return $this->getClient($indexOptions->getStoreId())->search([
             'requests' => [ $params ]
         ]);
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $objectIds
-     * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
-    public function getObjects(string $indexName, array $objectIds, ?int $storeId = null): array
+    public function getObjects(IndexOptionsInterface $indexOptions, array $objectIds): array
     {
+        $indexName = $this->getIndexName($indexOptions);
+
         $requests = array_values(
             array_map(
                 function($id) use ($indexName) {
@@ -206,7 +210,7 @@ class AlgoliaConnector
             )
         );
 
-        return $this->getClient($storeId)->getObjects([ 'requests' => $requests ]);
+        return $this->getClient($indexOptions->getStoreId())->getObjects([ 'requests' => $requests ]);
     }
 
     /**
@@ -1009,5 +1013,17 @@ class AlgoliaConnector
         }
 
         return $filters;
+    }
+
+    /**
+     * @param IndexOptionsInterface $indexOptions
+     * @return string|null
+     * @throws NoSuchEntityException
+     */
+    protected function getIndexName(IndexOptionsInterface $indexOptions): ?string
+    {
+        return !is_null($indexOptions->getEnforcedIndexName()) ?
+            $indexOptions->getEnforcedIndexName():
+            $this->indexNameFetcher->getIndexName($indexOptions->getIndexSuffix(), $indexOptions->getStoreId());
     }
 }

@@ -2,8 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -108,18 +110,26 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
         $this->algoliaHelper->waitLastTask($fixtureThirdStore->getId());
 
-        $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'default_products',
-            (string) self::VOYAGE_YOGA_BAG_ID,
-            ['name' => self::VOYAGE_YOGA_BAG_NAME],
-            $defaultStore->getId()
-        );
+        $defaultIndexOptions = new IndexOptions([
+            IndexOptionsInterface::STORE_ID => $defaultStore->getId(),
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_products'
+        ]);
 
         $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'fixture_second_store_products',
+            $defaultIndexOptions,
+            (string) self::VOYAGE_YOGA_BAG_ID,
+            ['name' => self::VOYAGE_YOGA_BAG_NAME],
+        );
+
+        $fixtureIndexOptions = new IndexOptions([
+            IndexOptionsInterface::STORE_ID => $fixtureSecondStore->getId(),
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'fixture_second_store_products'
+        ]);
+
+        $this->assertAlgoliaRecordValues(
+            $fixtureIndexOptions,
             (string) self::VOYAGE_YOGA_BAG_ID,
             ['name' => self::VOYAGE_YOGA_BAG_NAME_ALT],
-            $fixtureSecondStore->getId()
         );
 
         // Unassign product from a single website (removed from test website (second and third store))

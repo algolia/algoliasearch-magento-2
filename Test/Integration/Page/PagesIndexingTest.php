@@ -2,8 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Page;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Page;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 use Magento\Cms\Model\PageFactory;
 
@@ -37,7 +39,11 @@ class PagesIndexingTest extends IndexingTestCase
         $indexer = $this->getObjectManager()->create(Page::class);
         $this->processTest($indexer, 'pages', $this->assertValues->expectedExcludePages);
 
-        $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_pages',
+        ]);
+
+        $response = $this->algoliaHelper->query($indexOptions, '', []);
         $hits = reset($response['results'])['hits'];
 
         $noRoutePageExists = false;
@@ -67,7 +73,11 @@ class PagesIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', ['hitsPerPage' => 1]);
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_pages',
+        ]);
+
+        $response = $this->algoliaHelper->query($indexOptions, '', ['hitsPerPage' => 1]);
         $hits = reset($response['results']);
         $hit = reset($hits['hits']);
 

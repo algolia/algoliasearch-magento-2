@@ -2,10 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -29,9 +31,12 @@ class BackendSearch
      */
     public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
     {
-        $indexName = $targetedIndex !== null ?
-            $targetedIndex :
-            $this->productHelper->getIndexName($storeId);
+        $indexOptions = $targetedIndex !== null ?
+            new IndexOptions([IndexOptionsInterface::ENFORCED_INDEX_NAME, $targetedIndex]) :
+            new IndexOptions([
+                IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
+                IndexOptionsInterface::STORE_ID => $storeId
+           ]);
 
         $numberOfResults = 1000;
         if ($this->configHelper->isInstantEnabled()) {
@@ -59,7 +64,7 @@ class BackendSearch
             $params = array_merge($params, $searchParams);
         }
 
-        $response = $this->algoliaHelper->query($indexName, $query, $params, $storeId);
+        $response = $this->algoliaHelper->query($indexOptions, $query, $params);
         $answer = reset($response['results']);
 
         $data = [];

@@ -2,8 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -60,8 +62,12 @@ class PricingTest extends ProductsIndexingTestCase
 
     protected function getAlgoliaObjectById(int $productId): ?array
     {
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexName
+        ]);
+
         $res = $this->algoliaHelper->getObjects(
-            $this->indexName,
+            $indexOptions,
             [(string) $productId]
         );
         return reset($res['results']);
@@ -144,9 +150,12 @@ class PricingTest extends ProductsIndexingTestCase
         $this->productIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaHelper->waitLastTask();
 
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_products',
+        ]);
+
         $res = $this->algoliaHelper->getObjects(
-            $this->indexPrefix .
-            'default_products',
+            $indexOptions,
             [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
         );
         $algoliaProduct = reset($res['results']);
@@ -178,9 +187,12 @@ class PricingTest extends ProductsIndexingTestCase
         $this->productIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaHelper->waitLastTask();
 
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_products',
+        ]);
+
         $res = $this->algoliaHelper->getObjects(
-            $this->indexPrefix .
-            'default_products',
+            $indexOptions,
             [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
         );
         $algoliaProduct = reset($res['results']);

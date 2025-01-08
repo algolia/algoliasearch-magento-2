@@ -2,10 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Category;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\CategoryInterface;
@@ -86,18 +88,26 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->algoliaHelper->waitLastTask($defaultStore->getId());
         $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
 
-        $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'default_categories',
-            (string) self::BAGS_CATEGORY_ID,
-            ['name' => self::BAGS_CATEGORY_NAME],
-            $defaultStore->getId()
-        );
+        $defaultIndexOptions = new IndexOptions([
+            IndexOptionsInterface::STORE_ID => $defaultStore->getId(),
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_categories'
+        ]);
 
         $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'fixture_second_store_categories',
+            $defaultIndexOptions,
+            (string) self::BAGS_CATEGORY_ID,
+            ['name' => self::BAGS_CATEGORY_NAME],
+        );
+
+        $fixtureIndexOptions = new IndexOptions([
+            IndexOptionsInterface::STORE_ID => $fixtureSecondStore->getId(),
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'fixture_second_store_categories'
+        ]);
+
+        $this->assertAlgoliaRecordValues(
+            $fixtureIndexOptions,
             (string) self::BAGS_CATEGORY_ID,
             ['name' => self::BAGS_CATEGORY_NAME_ALT],
-            $fixtureSecondStore->getId()
         );
 
         // Disable this category at store level

@@ -2,7 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Category;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
 
 class CategoriesIndexingTest extends IndexingTestCase
@@ -27,7 +29,11 @@ class CategoriesIndexingTest extends IndexingTestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_categories', ['3']);
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_categories'
+        ]);
+
+        $results = $this->algoliaHelper->getObjects($indexOptions, ['3']);
         $hit = reset($results['results']);
 
         $defaultAttributes = [

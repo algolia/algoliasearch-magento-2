@@ -2,7 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\ActionInterface;
 
 abstract class IndexingTestCase extends TestCase
@@ -22,26 +25,29 @@ abstract class IndexingTestCase extends TestCase
 
         $this->algoliaHelper->waitLastTask();
 
-        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix . 'default_' . $indexSuffix, '', []);
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_' . $indexSuffix
+        ]);
+
+        $resultsDefault = $this->algoliaHelper->query($indexOptions, '', []);
 
         $this->assertEquals($expectedNbHits, $resultsDefault['results'][0]['nbHits']);
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param string $recordId
      * @param array $expectedValues
-     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     public function assertAlgoliaRecordValues(
-        string $indexName,
+        IndexOptionsInterface $indexOptions,
         string $recordId,
         array $expectedValues,
-        int $storeId = null
     ) : void {
-        $res = $this->algoliaHelper->getObjects($indexName, [$recordId], $storeId);
+        $res = $this->algoliaHelper->getObjects($indexOptions, [$recordId]);
         $record = reset($res['results']);
         foreach ($expectedValues as $attribute => $expectedValue) {
             $this->assertEquals($expectedValue, $record[$attribute]);

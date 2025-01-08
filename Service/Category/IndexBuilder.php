@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Category;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\IndexBuilder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
@@ -9,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
@@ -141,6 +143,10 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
         $indexName = $this->categoryHelper->getIndexName($storeId);
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::INDEX_SUFFIX => CategoryHelper::INDEX_NAME_SUFFIX,
+            IndexOptionsInterface::STORE_ID => $storeId
+        ]);
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
@@ -150,7 +156,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         }
 
         if (!empty($indexData['toRemove'])) {
-            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove'], $storeId);
+            $toRealRemove = $this->getIdsToRealRemove($indexOptions, $indexData['toRemove']);
             if (!empty($toRealRemove)) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
                 $this->algoliaHelper->deleteObjects($toRealRemove, $indexName, $storeId);

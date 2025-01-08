@@ -2,9 +2,11 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
@@ -55,7 +57,11 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->productIndexer->executeRow($this->getValidTestProduct());
         $this->algoliaHelper->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::ENFORCED_INDEX_NAME => $this->indexPrefix . 'default_products',
+        ]);
+
+        $results = $this->algoliaHelper->getObjects($indexOptions, [$this->getValidTestProduct()]);
         $hit = reset($results['results']);
 
         $defaultAttributes = [

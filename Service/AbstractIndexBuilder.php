@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -80,13 +81,13 @@ abstract class AbstractIndexBuilder
     }
 
     /**
-     * @param $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param $idsToRemove
-     * @param null $storeId
      * @return array|mixed
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function getIdsToRealRemove($indexName, $idsToRemove, $storeId = null)
+    protected function getIdsToRealRemove(IndexOptionsInterface $indexOptions, $idsToRemove)
     {
         if (count($idsToRemove) === 1) {
             return $idsToRemove;
@@ -95,7 +96,7 @@ abstract class AbstractIndexBuilder
         $toRealRemove = [];
         $idsToRemove = array_map('strval', $idsToRemove);
         foreach (array_chunk($idsToRemove, 1000) as $chunk) {
-            $objects = $this->algoliaHelper->getObjects($indexName, $chunk, $storeId);
+            $objects = $this->algoliaHelper->getObjects($indexOptions, $chunk);
             foreach ($objects['results'] as $object) {
                 if (isset($object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID])) {
                     $toRealRemove[] = $object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];

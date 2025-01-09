@@ -2,16 +2,18 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Model\Search\SettingsResponse;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Exception;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -66,7 +68,8 @@ class AlgoliaConnector
         protected ConfigHelper $config,
         protected ManagerInterface $messageManager,
         protected ConsoleOutput $consoleOutput,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected IndexNameFetcher $indexNameFetcher
     ) {
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
@@ -156,20 +159,21 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param string $q
      * @param array $params
-     * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    public function query(string $indexName, string $q, array $params, ?int $storeId = null): array
+    public function query(IndexOptionsInterface $indexOptions, string $q, array $params): array
     {
         // TODO: Revisit - not compatible with PHP v4
         // if (isset($params['disjunctiveFacets'])) {
         //    return $this->searchWithDisjunctiveFaceting($indexName, $q, $params);
         //}
+
+        $indexName = $this->getIndexName($indexOptions);
 
         $params = array_merge(
             [
@@ -180,20 +184,21 @@ class AlgoliaConnector
         );
 
         // TODO: Validate return value for integration tests
-        return $this->getClient($storeId)->search([
+        return $this->getClient($indexOptions->getStoreId())->search([
             'requests' => [ $params ]
         ]);
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $objectIds
-     * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
-    public function getObjects(string $indexName, array $objectIds, ?int $storeId = null): array
+    public function getObjects(IndexOptionsInterface $indexOptions, array $objectIds): array
     {
+        $indexName = $this->getIndexName($indexOptions);
+
         $requests = array_values(
             array_map(
                 function($id) use ($indexName) {
@@ -206,33 +211,34 @@ class AlgoliaConnector
             )
         );
 
-        return $this->getClient($storeId)->getObjects([ 'requests' => $requests ]);
+        return $this->getClient($indexOptions->getStoreId())->getObjects([ 'requests' => $requests ]);
     }
 
     /**
-     * @param $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param $settings
      * @param bool $forwardToReplicas
      * @param bool $mergeSettings
      * @param string $mergeSettingsFrom
-     * @param int|null $storeId
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     public function setSettings(
-        $indexName,
+        IndexOptionsInterface $indexOptions,
         $settings,
         bool $forwardToReplicas = false,
         bool $mergeSettings = false,
-        string $mergeSettingsFrom = '',
-        ?int $storeId = null
+        string $mergeSettingsFrom = ''
     ) {
+        $indexName = $this->getIndexName($indexOptions);
+
         if ($mergeSettings === true) {
-            $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom, $storeId);
+            $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom, $indexOptions->getStoreId());
         }
 
-        $res = $this->getClient($storeId)->setSettings($indexName, $settings, $forwardToReplicas);
+        $res = $this->getClient($indexOptions->getStoreId())->setSettings($indexName, $settings, $forwardToReplicas);
 
-        self::setLastOperationInfo($indexName, $res, $storeId);
+        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
     }
 
     /**
@@ -252,26 +258,26 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
-    public function deleteIndex(string $indexName, ?int $storeId = null): void
+    public function deleteIndex(IndexOptionsInterface $indexOptions): void
     {
-        $res = $this->getClient($storeId)->deleteIndex($indexName);
+        $indexName = $this->getIndexName($indexOptions);
 
-        self::setLastOperationInfo($indexName, $res, $storeId);
+        $res = $this->getClient($indexOptions->getStoreId())->deleteIndex($indexName);
+
+        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
     }
 
     /**
      * @param array $ids
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteObjects(array $ids, string $indexName, ?int $storeId = null): void
+    public function deleteObjects(array $ids, IndexOptionsInterface $indexOptions): void
     {
         $requests = array_values(
             array_map(
@@ -287,26 +293,31 @@ class AlgoliaConnector
             )
         );
 
-        $this->performBatchOperation($indexName, $requests, $storeId);
+        $indexName = $this->getIndexName($indexOptions);
+
+        $this->performBatchOperation($indexName, $requests, $indexOptions->getStoreId());
     }
 
     /**
-     * @param string $fromIndexName
-     * @param string $toIndexName
-     * @param int|null $storeId
+     * @param IndexOptions $fromIndexOptions
+     * @param IndexOptions $toIndexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function moveIndex(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
+    public function moveIndex(IndexOptions $fromIndexOptions, IndexOptions $toIndexOptions): void
     {
-        $response = $this->getClient($storeId)->operationIndex(
+        $fromIndexName = $this->getIndexName($fromIndexOptions);
+        $toIndexName = $this->getIndexName($toIndexOptions);
+
+        $response = $this->getClient($fromIndexOptions->getStoreId())->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'move',
                 'destination' => $toIndexName
             ]
         );
-        self::setLastOperationInfo($toIndexName, $response, $storeId);
+        self::setLastOperationInfo($toIndexName, $response, $toIndexOptions->getStoreId());
     }
 
     /**
@@ -329,14 +340,16 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
-    public function getSettings(string $indexName, ?int $storeId = null): array
+    public function getSettings(IndexOptionsInterface $indexOptions): array
     {
+        $indexName = $this->getIndexName($indexOptions);
+
         try {
-            return $this->getClient($storeId)->getSettings($indexName);
+            return $this->getClient($indexOptions->getStoreId())->getSettings($indexName);
         } catch (Exception $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
@@ -424,15 +437,17 @@ class AlgoliaConnector
 
     /**
      * Save objects to index (upserts records)
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $objects
      * @param bool $isPartialUpdate
-     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false, ?int $storeId = null): void
+    public function saveObjects(IndexOptionsInterface $indexOptions, array $objects, bool $isPartialUpdate = false): void
     {
+        $indexName = $this->getIndexName($indexOptions);
+
         $this->prepareRecords($objects, $indexName);
 
         $action = $isPartialUpdate ? 'partialUpdateObject' : 'addObject';
@@ -449,7 +464,7 @@ class AlgoliaConnector
             )
         );
 
-        $this->performBatchOperation($indexName, $requests, $storeId);
+        $this->performBatchOperation($indexName, $requests, $indexOptions->getStoreId());
     }
 
     /**
@@ -473,68 +488,78 @@ class AlgoliaConnector
 
     /**
      * @param array<string, mixed> $rule
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param bool $forwardToReplicas
-     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false, ?int $storeId = null): void
+    public function saveRule(array $rule, IndexOptionsInterface $indexOptions, bool $forwardToReplicas = false): void
     {
-        $res = $this->getClient($storeId)->saveRule(
+        $indexName = $this->getIndexName($indexOptions);
+
+        $res = $this->getClient($indexOptions->getStoreId())->saveRule(
             $indexName,
             $rule[self::ALGOLIA_API_OBJECT_ID],
             $rule,
             $forwardToReplicas
         );
 
-        self::setLastOperationInfo($indexName, $res, $storeId);
+        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $rules
      * @param bool $forwardToReplicas
-     * @param int|null $storeId
      * @return void
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false, ?int $storeId = null): void
+    public function saveRules(IndexOptionsInterface $indexOptions, array $rules, bool $forwardToReplicas = false): void
     {
-        $res = $this->getClient($storeId)->saveRules($indexName, $rules, $forwardToReplicas);
+        $indexName = $this->getIndexName($indexOptions);
 
-        self::setLastOperationInfo($indexName, $res, $storeId);
+        $res = $this->getClient($indexOptions->getStoreId())->saveRules($indexName, $rules, $forwardToReplicas);
+
+        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
     }
 
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param string $objectID
      * @param bool $forwardToReplicas
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     public function deleteRule(
-        string $indexName,
+        IndexOptionsInterface $indexOptions,
         string $objectID,
-        bool $forwardToReplicas = false,
-        ?int $storeId = null
+        bool $forwardToReplicas = false
     ): void
     {
-        $res = $this->getClient($storeId)->deleteRule($indexName, $objectID, $forwardToReplicas);
+        $indexName = $this->getIndexName($indexOptions);
 
-        self::setLastOperationInfo($indexName, $res, $storeId);
+        $res = $this->getClient($indexOptions->getStoreId())->deleteRule($indexName, $objectID, $forwardToReplicas);
+
+        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
     }
 
     /**
-     * @param string $fromIndexName
-     * @param string $toIndexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $fromIndexOptions
+     * @param IndexOptionsInterface $toIndexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function copySynonyms(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
+    public function copySynonyms(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
     {
-        $response = $this->getClient($storeId)->operationIndex(
+        $fromIndexName = $this->getIndexName($fromIndexOptions);
+        $toIndexName = $this->getIndexName($toIndexOptions);
+
+        $response = $this->getClient($fromIndexOptions->getStoreId())->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'copy',
@@ -542,19 +567,22 @@ class AlgoliaConnector
                 'scope'       => ['synonyms']
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response, $storeId);
+        self::setLastOperationInfo($fromIndexName, $response, $toIndexOptions->getStoreId());
     }
 
     /**
-     * @param string $fromIndexName
-     * @param string $toIndexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $fromIndexOptions
+     * @param IndexOptionsInterface $toIndexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function copyQueryRules(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
+    public function copyQueryRules(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
     {
-        $response = $this->getClient($storeId)->operationIndex(
+        $fromIndexName = $this->getIndexName($fromIndexOptions);
+        $toIndexName = $this->getIndexName($toIndexOptions);
+
+        $response = $this->getClient($fromIndexOptions->getStoreId())->operationIndex(
             $fromIndexName,
             [
                 'operation'   => 'copy',
@@ -562,33 +590,37 @@ class AlgoliaConnector
                 'scope'       => ['rules']
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response, $storeId);
+        self::setLastOperationInfo($fromIndexName, $response, $toIndexOptions->getStoreId());
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array|null $searchRulesParams
-     * @param int|null $storeId
      * @return array
      *
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function searchRules(string $indexName, array$searchRulesParams = null, ?int $storeId = null)
+    public function searchRules(IndexOptionsInterface $indexOptions, array$searchRulesParams = null)
     {
-        return $this->getClient($storeId)->searchRules($indexName, $searchRulesParams);
+        $indexName = $this->getIndexName($indexOptions);
+
+        return $this->getClient($indexOptions->getStoreId())->searchRules($indexName, $searchRulesParams);
     }
 
     /**
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function clearIndex(string $indexName, ?int $storeId = null): void
+    public function clearIndex(IndexOptionsInterface $indexOptions): void
     {
-        $res = $this->getClient($storeId)->clearObjects($indexName);
+        $indexName = $this->getIndexName($indexOptions);
 
-        self::setLastOperationInfo($indexName, $res, $storeId);
+        $res = $this->getClient($indexOptions->getStoreId())->clearObjects($indexName);
+
+        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
     }
 
     /**
@@ -1009,5 +1041,30 @@ class AlgoliaConnector
         }
 
         return $filters;
+    }
+
+    /**
+     * Determines the index name giving it suffix, store id and if it's temporary or not
+     * If an enforced index name has been set, it's automatically returned
+     *
+     * @param IndexOptionsInterface $indexOptions
+     * @return string|null
+     * @throws NoSuchEntityException
+     */
+    protected function getIndexName(IndexOptionsInterface $indexOptions): ?string
+    {
+        if (!is_null($indexOptions->getEnforcedIndexName())) {
+            return $indexOptions->getEnforcedIndexName();
+        }
+
+        if (is_null($indexOptions->getIndexSuffix())) {
+            return null;
+        }
+
+        return $this->indexNameFetcher->getIndexName(
+            $indexOptions->getIndexSuffix(),
+            $indexOptions->getStoreId(),
+            $indexOptions->isTmp()
+        );
     }
 }

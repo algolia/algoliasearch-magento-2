@@ -70,14 +70,13 @@ abstract class AbstractIndexBuilder
 
     /**
      * @param array $objects
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
-     * @throws \Exception
+     * @throws AlgoliaException
      */
-    protected function saveObjects(array $objects, string $indexName, int $storeId = null): void
+    protected function saveObjects(array $objects, IndexOptionsInterface $indexOptions): void
     {
-        $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled(), $storeId);
+        $this->algoliaHelper->saveObjects($indexOptions, $objects, $this->configHelper->isPartialUpdateEnabled());
     }
 
     /**

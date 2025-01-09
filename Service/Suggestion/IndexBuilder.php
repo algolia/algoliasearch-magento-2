@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Suggestion;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\IndexBuilder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -9,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -102,7 +104,10 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexName = $this->suggestionHelper->getTempIndexName($storeId);
+        $indexOptions = new IndexOptions([
+           IndexOptionsInterface::INDEX_SUFFIX => SuggestionHelper::INDEX_NAME_SUFFIX,
+           IndexOptionsInterface::STORE_ID => $storeId
+        ]);
         $indexData = [];
 
         /** @var Query $suggestion */
@@ -114,7 +119,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             }
         }
         if (count($indexData) > 0) {
-            $this->saveObjects($indexData, $indexName, $storeId);
+            $this->saveObjects($indexData, $indexOptions);
         }
 
         unset($indexData);

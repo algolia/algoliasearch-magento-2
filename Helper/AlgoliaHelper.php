@@ -165,16 +165,15 @@ class AlgoliaHelper extends AbstractHelper
 
     /**
      * Save objects to index (upserts records)
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $objects
      * @param bool $isPartialUpdate
-     * @param int|null $storeId
      * @return void
-     * @throws Exception
+     * @throws AlgoliaException
      */
-    public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false, ?int $storeId = null): void
+    public function saveObjects(IndexOptionsInterface $indexOptions, array $objects, bool $isPartialUpdate = false): void
     {
-        $this->algoliaConnector->saveObjects($indexName, $objects, $isPartialUpdate, $storeId);
+        $this->algoliaConnector->saveObjects($indexOptions, $objects, $isPartialUpdate);
     }
 
     /**

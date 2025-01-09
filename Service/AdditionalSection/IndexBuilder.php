@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\AdditionalSection;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\IndexBuilder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -9,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\App\Config\ScopeCodeResolver;
@@ -67,12 +69,23 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $indexName = $this->additionalSectionHelper->getIndexName($storeId);
             $indexName = $indexName . '_' . $section['name'];
 
+            $indexOptions = new IndexOptions([
+                IndexOptionsInterface::ENFORCED_INDEX_NAME => $indexName,
+                IndexOptionsInterface::STORE_ID => $storeId
+            ]);
+
             $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
 
             $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
 
+            $indexOptionsTemp = new IndexOptions([
+                IndexOptionsInterface::ENFORCED_INDEX_NAME => $indexName,
+                IndexOptionsInterface::STORE_ID => $storeId,
+                IndexOptionsInterface::IS_TMP => true
+            ]);
+
             foreach (array_chunk($attributeValues, 100) as $chunk) {
-                $this->saveObjects($chunk, $tempIndexName, $storeId);
+                $this->saveObjects($chunk, $indexOptionsTemp);
             }
 
             $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName, $storeId);

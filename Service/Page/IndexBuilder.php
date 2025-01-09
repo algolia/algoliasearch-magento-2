@@ -80,11 +80,15 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if (isset($pages['toIndex']) && count($pages['toIndex'])) {
             $pagesToIndex = $pages['toIndex'];
-            $toIndexName = $indexName . ($isFullReindex ? IndexNameFetcher::INDEX_TEMP_SUFFIX : '');
+            $toIndexOptions = new IndexOptions([
+                IndexOptionsInterface::INDEX_SUFFIX => PageHelper::INDEX_NAME_SUFFIX,
+                IndexOptionsInterface::STORE_ID => $storeId,
+                IndexOptionsInterface::IS_TMP => $isFullReindex
+            ]);
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
-                    $this->saveObjects($chunk, $toIndexName, $storeId);
+                    $this->saveObjects($chunk, $toIndexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;

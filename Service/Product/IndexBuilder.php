@@ -249,7 +249,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->load();
         $this->logger->log('Loaded ' . count($collection) . ' products');
         $this->logger->stop($logMessage);
-        $indexName = $this->productHelper->getIndexName($storeId, $useTmpIndex);
         $indexOptions = new IndexOptions([
             IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
             IndexOptionsInterface::STORE_ID => $storeId,
@@ -258,7 +257,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->saveObjects($indexData['toIndex'], $indexName, $storeId);
+            $this->saveObjects($indexData['toIndex'], $indexOptions);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }

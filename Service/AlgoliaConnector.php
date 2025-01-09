@@ -430,15 +430,17 @@ class AlgoliaConnector
 
     /**
      * Save objects to index (upserts records)
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $objects
      * @param bool $isPartialUpdate
-     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false, ?int $storeId = null): void
+    public function saveObjects(IndexOptionsInterface $indexOptions, array $objects, bool $isPartialUpdate = false): void
     {
+        $indexName = $this->getIndexName($indexOptions);
+
         $this->prepareRecords($objects, $indexName);
 
         $action = $isPartialUpdate ? 'partialUpdateObject' : 'addObject';
@@ -455,7 +457,7 @@ class AlgoliaConnector
             )
         );
 
-        $this->performBatchOperation($indexName, $requests, $storeId);
+        $this->performBatchOperation($indexName, $requests, $indexOptions->getStoreId());
     }
 
     /**
@@ -1026,6 +1028,10 @@ class AlgoliaConnector
     {
         return !is_null($indexOptions->getEnforcedIndexName()) ?
             $indexOptions->getEnforcedIndexName():
-            $this->indexNameFetcher->getIndexName($indexOptions->getIndexSuffix(), $indexOptions->getStoreId());
+            $this->indexNameFetcher->getIndexName(
+                $indexOptions->getIndexSuffix(),
+                $indexOptions->getStoreId(),
+                $indexOptions->isTmp()
+            );
     }
 }

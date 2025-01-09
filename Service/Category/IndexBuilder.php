@@ -142,7 +142,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         }
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexName = $this->categoryHelper->getIndexName($storeId);
         $indexOptions = new IndexOptions([
             IndexOptionsInterface::INDEX_SUFFIX => CategoryHelper::INDEX_NAME_SUFFIX,
             IndexOptionsInterface::STORE_ID => $storeId
@@ -150,7 +149,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->saveObjects($indexData['toIndex'], $indexName, $storeId);
+            $this->saveObjects($indexData['toIndex'], $indexOptions);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }

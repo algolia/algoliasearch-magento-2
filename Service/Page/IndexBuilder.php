@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Page;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\IndexBuilder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -9,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\App\Config\ScopeCodeResolver;
@@ -62,6 +64,10 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         }
 
         $indexName = $this->pageHelper->getIndexName($storeId);
+        $indexOptions = new IndexOptions([
+            IndexOptionsInterface::INDEX_SUFFIX => PageHelper::INDEX_NAME_SUFFIX,
+            IndexOptionsInterface::STORE_ID => $storeId
+        ]);
 
         $this->startEmulation($storeId);
 
@@ -90,7 +96,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $pagesToRemove = $pages['toRemove'];
             foreach (array_chunk($pagesToRemove, 100) as $chunk) {
                 try {
-                    $this->algoliaHelper->deleteObjects($chunk, $indexName, $storeId);
+                    $this->algoliaHelper->deleteObjects($chunk, $indexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;

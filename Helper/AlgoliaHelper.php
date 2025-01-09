@@ -119,14 +119,13 @@ class AlgoliaHelper extends AbstractHelper
 
     /**
      * @param array $ids
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteObjects(array $ids, string $indexName, ?int $storeId = null): void
+    public function deleteObjects(array $ids, IndexOptionsInterface $indexOptions): void
     {
-        $this->algoliaConnector->deleteObjects($ids, $indexName, $storeId);
+        $this->algoliaConnector->deleteObjects($ids, $indexOptions);
     }
 
     /**

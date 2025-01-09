@@ -271,12 +271,11 @@ class AlgoliaConnector
 
     /**
      * @param array $ids
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
      */
-    public function deleteObjects(array $ids, string $indexName, ?int $storeId = null): void
+    public function deleteObjects(array $ids, IndexOptionsInterface $indexOptions): void
     {
         $requests = array_values(
             array_map(
@@ -292,7 +291,9 @@ class AlgoliaConnector
             )
         );
 
-        $this->performBatchOperation($indexName, $requests, $storeId);
+        $indexName = $this->getIndexName($indexOptions);
+
+        $this->performBatchOperation($indexName, $requests, $indexOptions->getStoreId());
     }
 
     /**

@@ -159,7 +159,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $toRealRemove = $this->getIdsToRealRemove($indexOptions, $indexData['toRemove']);
             if (!empty($toRealRemove)) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
-                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName, $storeId);
+                $this->algoliaHelper->deleteObjects($toRealRemove, $indexOptions);
                 $this->logger->log('Category IDs: ' . implode(', ', $toRealRemove));
                 $this->logger->stop('REMOVE FROM ALGOLIA');
             }

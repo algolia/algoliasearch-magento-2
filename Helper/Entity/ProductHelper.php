@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
 use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
@@ -15,6 +16,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
@@ -1450,7 +1452,11 @@ class ProductHelper extends AbstractEntityHelper
                     $this->algoliaHelper->waitLastTask($storeId, $indexName, $setReplicasTaskId);
                     if (count($replicasToDelete) > 0) {
                         foreach ($replicasToDelete as $deletedReplica) {
-                            $this->algoliaHelper->deleteIndex($deletedReplica, $storeId);
+                            $indexOptions = new IndexOptions([
+                                IndexOptionsInterface::ENFORCED_INDEX_NAME => $deletedReplica,
+                                IndexOptionsInterface::STORE_ID => $storeId
+                            ]);
+                            $this->algoliaHelper->deleteIndex($indexOptions);
                         }
                     }
                 }

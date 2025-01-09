@@ -2,10 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246CE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246EE;
@@ -175,7 +177,10 @@ abstract class TestCase extends \TC
 
             if (mb_strpos($name, $this->indexPrefix) === 0) {
                 try {
-                    $this->algoliaHelper->deleteIndex($name);
+                    $indexOptions = new IndexOptions([
+                        IndexOptionsInterface::ENFORCED_INDEX_NAME => $name,
+                    ]);
+                    $this->algoliaHelper->deleteIndex($indexOptions);
                 } catch (AlgoliaException $e) {
                     // Might be a replica
                 }

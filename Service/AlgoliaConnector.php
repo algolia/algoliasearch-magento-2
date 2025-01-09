@@ -256,16 +256,17 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
-    public function deleteIndex(string $indexName, ?int $storeId = null): void
+    public function deleteIndex(IndexOptionsInterface $indexOptions): void
     {
-        $res = $this->getClient($storeId)->deleteIndex($indexName);
+        $indexName = $this->getIndexName($indexOptions);
 
-        self::setLastOperationInfo($indexName, $res, $storeId);
+        $res = $this->getClient($indexOptions->getStoreId())->deleteIndex($indexName);
+
+        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
     }
 
     /**

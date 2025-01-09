@@ -108,14 +108,13 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
-    public function deleteIndex(string $indexName, ?int $storeId = null): void
+    public function deleteIndex(IndexOptionsInterface $indexOptions): void
     {
-        $this->algoliaConnector->deleteIndex($indexName, $storeId);
+        $this->algoliaConnector->deleteIndex($indexOptions);
     }
 
     /**

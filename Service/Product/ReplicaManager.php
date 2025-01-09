@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exception\ReplicaLimitExceededException;
 use Algolia\AlgoliaSearch\Exception\TooManyCustomerGroupsAsReplicasException;
@@ -12,6 +13,7 @@ use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
@@ -376,7 +378,11 @@ class ReplicaManager implements ReplicaManagerInterface
     protected function deleteIndices(array $replicasToDelete, bool $waitLastTask = false, $storeId = null): void
     {
         foreach ($replicasToDelete as $deletedReplica) {
-            $this->algoliaHelper->deleteIndex($deletedReplica, $storeId);
+            $indexOptions = new IndexOptions([
+                IndexOptionsInterface::ENFORCED_INDEX_NAME => $deletedReplica,
+                IndexOptionsInterface::STORE_ID => $storeId
+            ]);
+            $this->algoliaHelper->deleteIndex($indexOptions);
             if ($waitLastTask) {
                 $this->algoliaHelper->waitLastTask($storeId, $deletedReplica);
             }

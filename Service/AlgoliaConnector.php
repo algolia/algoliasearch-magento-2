@@ -58,11 +58,20 @@ class AlgoliaConnector
     /** @var bool */
     protected bool $userAgentsAdded = false;
 
-    protected static ?string $lastUsedIndexName;
+    /**
+     * @var string|null
+     */
+    protected ?string $lastUsedIndexName;
 
-    protected static ?string $lastTaskId;
+    /**
+     * @var string|null
+     */
+    protected ?string $lastTaskId;
 
-    protected static ?array $lastTaskInfoByStore;
+    /**
+     * @var array|null
+     */
+    protected ?array $lastTaskInfoByStore;
 
     public function __construct(
         protected ConfigHelper $config,
@@ -238,21 +247,23 @@ class AlgoliaConnector
 
         $res = $this->getClient($indexOptions->getStoreId())->setSettings($indexName, $settings, $forwardToReplicas);
 
-        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
+        $this->setLastOperationInfo($indexOptions, $res);
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $requests
-     * @param int|null $storeId
      * @return array<string, mixed>
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function performBatchOperation(string $indexName, array $requests, ?int $storeId = null): array
+    protected function performBatchOperation(IndexOptionsInterface $indexOptions, array $requests): array
     {
-        $response = $this->getClient($storeId)->batch($indexName, [ 'requests' => $requests ] );
+        $indexName = $this->getIndexName($indexOptions);
 
-        self::setLastOperationInfo($indexName, $response, $storeId);
+        $response = $this->getClient($indexOptions->getStoreId())->batch($indexName, [ 'requests' => $requests ] );
+
+        $this->setLastOperationInfo($indexOptions, $response);
 
         return $response;
     }
@@ -268,14 +279,14 @@ class AlgoliaConnector
 
         $res = $this->getClient($indexOptions->getStoreId())->deleteIndex($indexName);
 
-        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
+        $this->setLastOperationInfo($indexOptions, $res);
     }
 
     /**
      * @param array $ids
      * @param IndexOptionsInterface $indexOptions
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function deleteObjects(array $ids, IndexOptionsInterface $indexOptions): void
     {
@@ -293,9 +304,7 @@ class AlgoliaConnector
             )
         );
 
-        $indexName = $this->getIndexName($indexOptions);
-
-        $this->performBatchOperation($indexName, $requests, $indexOptions->getStoreId());
+        $this->performBatchOperation($indexOptions, $requests);
     }
 
     /**
@@ -317,7 +326,7 @@ class AlgoliaConnector
                 'destination' => $toIndexName
             ]
         );
-        self::setLastOperationInfo($toIndexName, $response, $toIndexOptions->getStoreId());
+        $this->setLastOperationInfo($toIndexOptions, $response);
     }
 
     /**
@@ -464,22 +473,25 @@ class AlgoliaConnector
             )
         );
 
-        $this->performBatchOperation($indexName, $requests, $indexOptions->getStoreId());
+        $this->performBatchOperation($indexOptions, $requests);
     }
 
     /**
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param array $response
-     * @param int|null $storeId
      * @return void
+     * @throws NoSuchEntityException
      */
-    protected static function setLastOperationInfo(string $indexName, array $response, ?int $storeId = null): void
+    protected function setLastOperationInfo(IndexOptionsInterface $indexOptions, array $response): void
     {
-        self::$lastUsedIndexName = $indexName;
-        self::$lastTaskId = $response[self::ALGOLIA_API_TASK_ID] ?? null;
+        $indexName = $this->getIndexName($indexOptions);
+        $storeId = $indexOptions->getStoreId();
+
+        $this->lastUsedIndexName = $indexName;
+        $this->lastTaskId = $response[self::ALGOLIA_API_TASK_ID] ?? null;
 
         if (!is_null($storeId)) {
-            self::$lastTaskInfoByStore[$storeId] = [
+            $this->lastTaskInfoByStore[$storeId] = [
                 'indexName' => $indexName,
                 'taskId' => $response[self::ALGOLIA_API_TASK_ID] ?? null
             ];
@@ -505,7 +517,7 @@ class AlgoliaConnector
             $forwardToReplicas
         );
 
-        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
+        $this->setLastOperationInfo($indexOptions, $res);
     }
 
     /**
@@ -522,7 +534,7 @@ class AlgoliaConnector
 
         $res = $this->getClient($indexOptions->getStoreId())->saveRules($indexName, $rules, $forwardToReplicas);
 
-        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
+        $this->setLastOperationInfo($indexOptions, $res);
     }
 
 
@@ -544,7 +556,7 @@ class AlgoliaConnector
 
         $res = $this->getClient($indexOptions->getStoreId())->deleteRule($indexName, $objectID, $forwardToReplicas);
 
-        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
+        $this->setLastOperationInfo($indexOptions, $res);
     }
 
     /**
@@ -567,7 +579,7 @@ class AlgoliaConnector
                 'scope'       => ['synonyms']
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response, $toIndexOptions->getStoreId());
+        $this->setLastOperationInfo($fromIndexOptions, $response);
     }
 
     /**
@@ -590,7 +602,7 @@ class AlgoliaConnector
                 'scope'       => ['rules']
             ]
         );
-        self::setLastOperationInfo($fromIndexName, $response, $toIndexOptions->getStoreId());
+        $this->setLastOperationInfo($fromIndexOptions, $response);
     }
 
     /**
@@ -620,7 +632,7 @@ class AlgoliaConnector
 
         $res = $this->getClient($indexOptions->getStoreId())->clearObjects($indexName);
 
-        self::setLastOperationInfo($indexName, $res, $indexOptions->getStoreId());
+        $this->setLastOperationInfo($indexOptions, $res);
     }
 
     /**
@@ -632,18 +644,18 @@ class AlgoliaConnector
     public function waitLastTask(?int $storeId = null, ?string $lastUsedIndexName = null, ?int $lastTaskId = null): void
     {
         if (is_null($lastUsedIndexName)) {
-            if (!is_null($storeId) && isset(self::$lastTaskInfoByStore[$storeId])) {
-                $lastUsedIndexName = self::$lastTaskInfoByStore[$storeId]['indexName'];
-            } elseif (isset(self::$lastUsedIndexName)){
-                $lastUsedIndexName = self::$lastUsedIndexName;
+            if (!is_null($storeId) && isset($this->lastTaskInfoByStore[$storeId])) {
+                $lastUsedIndexName = $this->lastTaskInfoByStore[$storeId]['indexName'];
+            } elseif (isset($this->lastUsedIndexName)){
+                $lastUsedIndexName = $this->lastUsedIndexName;
             }
         }
 
         if (is_null($lastTaskId)) {
-            if (!is_null($storeId) && isset(self::$lastTaskInfoByStore[$storeId])) {
-                $lastTaskId = self::$lastTaskInfoByStore[$storeId]['taskId'];
-            } elseif (isset(self::$lastTaskId)){
-                $lastTaskId = self::$lastTaskId;
+            if (!is_null($storeId) && isset($this->lastTaskInfoByStore[$storeId])) {
+                $lastTaskId = $this->lastTaskInfoByStore[$storeId]['taskId'];
+            } elseif (isset($this->lastTaskId)){
+                $lastTaskId = $this->lastTaskId;
             }
         }
 
@@ -883,10 +895,10 @@ class AlgoliaConnector
     {
         $lastTaskId = null;
 
-        if (!is_null($storeId) && isset(self::$lastTaskInfoByStore[$storeId])) {
-            $lastTaskId = self::$lastTaskInfoByStore[$storeId]['taskId'];
-        } elseif (isset(self::$lastTaskId)){
-            $lastTaskId = self::$lastTaskId;
+        if (!is_null($storeId) && isset($this->lastTaskInfoByStore[$storeId])) {
+            $lastTaskId = $this->lastTaskInfoByStore[$storeId]['taskId'];
+        } elseif (isset($this->lastTaskId)){
+            $lastTaskId = $this->lastTaskId;
         }
 
         return $lastTaskId;

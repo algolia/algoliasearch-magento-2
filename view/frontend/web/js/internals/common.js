@@ -1,4 +1,4 @@
-define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64'], function ($, instantsearch, algoliaBase64) {
+define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache/js/form-key-provider'], function ($, instantsearch, algoliaBase64) {
     const USE_GLOBALS = true;
 
     // Character maps supplied for more performant Regex ops
@@ -243,23 +243,36 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64'], function ($, inst
             const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i;
             return mobileRegex.test(navigator.userAgent);
         },
-        
+
         isTouchDevice: () => {
             return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         }
     };
-    
+
     const legacyGlobalFunctions = {
         isMobile: () => {
             return utils.isMobileUserAgent() || utils.isTouchDevice();
         },
 
         getCookie: (name) => {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            return (parts.length === 2) 
-                ? parts.pop().split(';').shift() 
-                : '';
+            let cookie, i;
+
+            const cookieName = name + "=",
+                cookieArr = document.cookie.split(';');
+
+            for (i = 0; i < cookieArr.length; i++) {
+                cookie = cookieArr[i];
+
+                while (cookie.charAt(0) === ' ') {
+                    cookie = cookie.substring(1, cookie.length);
+                }
+
+                if (cookie.indexOf(cookieName) === 0) {
+                    return cookie.substring(cookieName.length, cookie.length);
+                }
+            }
+
+            return "";
         },
 
         // @deprecated This function will be removed from this module in a future version
@@ -365,27 +378,23 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64'], function ($, inst
                 }
                 hit._highlightResult.default_bundle_options = default_bundle_option;
             }
-    
+
             // Add to cart parameters
             var action = algoliaConfig.instant.addToCartParams.action + 'product/' + hit.objectID + '/';
-    
-            var correctFKey = this.getCookie('form_key');
-    
-            if (correctFKey != "" && algoliaConfig.instant.addToCartParams.formKey != correctFKey) {
-                algoliaConfig.instant.addToCartParams.formKey = correctFKey;
-            }
-    
+
+            algoliaConfig.instant.addToCartParams.formKey = getCookie('form_key');
+
             hit.addToCart = {
                 'action': action,
                 'redirectUrlParam': algoliaConfig.instant.addToCartParams.redirectUrlParam,
                 'uenc': algoliaBase64.mageEncode(action),
                 'formKey': algoliaConfig.instant.addToCartParams.formKey
             };
-    
+
             if (hit.__queryID) {
-    
+
                 hit.urlForInsights = hit.url;
-    
+
                 if (algoliaConfig.ccAnalytics.enabled
                     && algoliaConfig.ccAnalytics.conversionAnalyticsMode !== 'disabled') {
                     var insightsDataUrlString = $.param({

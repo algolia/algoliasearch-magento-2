@@ -3,20 +3,20 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use DateTime;
+use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
 use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\CatalogRule\Model\ResourceModel\Rule;
-use Magento\Customer\Model\Group;
 use Magento\Customer\Api\Data\GroupInterface;
-use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
+use Magento\Customer\Model\Group;
+use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Helper\Data as TaxHelper;
 use Magento\Tax\Model\Config as TaxConfig;
-use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
 
 abstract class ProductWithoutChildren
 {
@@ -60,7 +60,7 @@ abstract class ProductWithoutChildren
     private $productTierPrice;
 
     /**
-     * @var Logger
+     * @var DiagnosticsLogger
      */
     protected $logger;
 
@@ -80,7 +80,7 @@ abstract class ProductWithoutChildren
      * @param Rule $rule
      * @param ProductFactory $productloader
      * @param ScopedProductTierPriceManagementInterface $productTierPrice
-     * @param Logger $logger
+     * @param DiagnosticsLogger $logger
      */
     public function __construct(
         ConfigHelper $configHelper,
@@ -92,7 +92,7 @@ abstract class ProductWithoutChildren
         Rule $rule,
         ProductFactory $productloader,
         ScopedProductTierPriceManagementInterface $productTierPrice,
-        Logger $logger
+        DiagnosticsLogger $logger
     ) {
         $this->configHelper = $configHelper;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
@@ -115,6 +115,7 @@ abstract class ProductWithoutChildren
      */
     public function addPriceData($customData, Product $product, $subProducts): array
     {
+        $this->logger->startProfiling(__METHOD__);
         $this->customData = $customData;
         $this->store = $product->getStore();
         $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
@@ -165,6 +166,7 @@ abstract class ProductWithoutChildren
             }
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $this->customData;
     }
 
@@ -281,6 +283,7 @@ abstract class ProductWithoutChildren
      */
     protected function getTierPrice(Product $product, $currencyCode, $withTax)
     {
+        $this->logger->startProfiling(__METHOD__);
         $tierPrice = [];
         $tierPrices = [];
 
@@ -347,6 +350,7 @@ abstract class ProductWithoutChildren
             $tierPrice[$groupId] = $this->getTaxPrice($product, $currentTierPrice, $withTax);
         }
 
+        $this->logger->stopProfiling(__METHOD__);
         return $tierPrice;
     }
 

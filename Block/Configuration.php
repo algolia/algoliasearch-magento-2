@@ -247,7 +247,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'indexName' => $coreHelper->getBaseIndexName(),
             'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
                 $config->getSearchOnlyAPIKey(),
-                $attributesToFilter
+                $attributesToFilter,
+                $this->getStoreId()
             ),
             'attributeFilter' => $attributesToFilter,
             'facets' => $facets,

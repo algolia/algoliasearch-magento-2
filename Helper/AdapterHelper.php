@@ -3,7 +3,8 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Helper\Adapter\FiltersHelper;
-use Algolia\AlgoliaSearch\Helper\Data as AlgoliaDataHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
 use Magento\CatalogSearch\Helper\Data as CatalogSearchDataHelper;
 
 class AdapterHelper
@@ -11,35 +12,14 @@ class AdapterHelper
     public const INSTANTSEARCH_ORDER_PARAM = 'sortBy';
     public const BACKEND_ORDER_PARAM = 'product_list_order';
 
-    /** @var CatalogSearchDataHelper */
-    private $catalogSearchHelper;
-
-    /** @var AlgoliaDataHelper */
-    private $algoliaHelper;
-
-    /** @var FiltersHelper */
-    private $filtersHelper;
-
-    /** @var ConfigHelper */
-    private $configHelper;
-
-    /**
-     * @param CatalogSearchDataHelper $catalogSearchHelper
-     * @param AlgoliaDataHelper $algoliaHelper
-     * @param FiltersHelper $filtersHelper
-     * @param ConfigHelper $configHelper
-     */
     public function __construct(
-        CatalogSearchDataHelper $catalogSearchHelper,
-        AlgoliaDataHelper $algoliaHelper,
-        FiltersHelper $filtersHelper,
-        ConfigHelper $configHelper
-    ) {
-        $this->catalogSearchHelper = $catalogSearchHelper;
-        $this->algoliaHelper = $algoliaHelper;
-        $this->filtersHelper = $filtersHelper;
-        $this->configHelper = $configHelper;
-    }
+        protected CatalogSearchDataHelper $catalogSearchHelper,
+        protected BackendSearch $backendSearch,
+        protected FiltersHelper $filtersHelper,
+        protected ConfigHelper $configHelper,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+    )
+    {}
 
     /**
      * Get search result from Algolia
@@ -72,7 +52,7 @@ class AdapterHelper
             }
         }
 
-        return $this->algoliaHelper->getSearchResult($algoliaQuery, $storeId, $searchParams, $targetedIndex);
+        return $this->backendSearch->getSearchResult($algoliaQuery, $storeId, $searchParams, $targetedIndex);
     }
 
     /**
@@ -142,8 +122,7 @@ class AdapterHelper
         $storeId = $this->getStoreId();
 
         return
-            $this->configHelper->getApplicationID($storeId)
-            && $this->configHelper->getAPIKey($storeId)
+            $this->algoliaCredentialsManager->checkCredentials($storeId)
             && $this->configHelper->isEnabledFrontEnd($storeId)
             && $this->configHelper->makeSeoRequest($storeId);
     }

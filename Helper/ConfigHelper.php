@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Directory\Model\Currency as DirCurrency;
@@ -108,6 +109,9 @@ class ConfigHelper
     public const CONNECTION_TIMEOUT = 'algoliasearch_advanced/advanced/connection_timeout';
     public const READ_TIMEOUT = 'algoliasearch_advanced/advanced/read_timeout';
     public const WRITE_TIMEOUT = 'algoliasearch_advanced/advanced/write_timeout';
+    public const AUTO_PRICE_INDEXING_ENABLED = 'algoliasearch_advanced/advanced/auto_price_indexing';
+
+    public const PROFILER_ENABLED = 'algoliasearch_advanced/advanced/enable_profiler';
 
     public const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
 
@@ -334,9 +338,18 @@ class ConfigHelper
      * @param $storeId
      * @return bool
      */
-    public function isLoggingEnabled($storeId = null)
+    public function isLoggingEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::LOGGING_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isProfilerEnabled($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::PROFILER_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -446,7 +459,7 @@ class ConfigHelper
     }
 
     protected function serialize(array $value): string {
-        return $this->serializer->serialize($value);
+        return $this->serializer->serialize($value) ?: '';
     }
 
     /**
@@ -1157,7 +1170,7 @@ class ConfigHelper
      * @param int|null $scopeId
      * @return void
      */
-    public function setSorting(array $sorting, ?string $scope = null, ?int $scopeId = null): void
+    public function setSorting(array $sorting, string $scope = Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT, ?int $scopeId = null): void
     {
         $this->configWriter->save(
             self::SORTING_INDICES,
@@ -1201,6 +1214,7 @@ class ConfigHelper
     /**
      * @param $storeId
      * @return bool
+     * @deprecated Use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager instead
      */
     public function credentialsAreConfigured($storeId = null)
     {
@@ -1242,7 +1256,7 @@ class ConfigHelper
      */
     public function getIndexPrefix(int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -1270,6 +1284,15 @@ class ConfigHelper
     public function getWriteTimeout($storeId = null)
     {
         return $this->configInterface->getValue(self::WRITE_TIMEOUT, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function isAutoPriceIndexingEnabled(?int $storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::AUTO_PRICE_INDEXING_ENABLED,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     /**
@@ -1470,7 +1493,7 @@ class ConfigHelper
             }
         }
         $attributes = array_merge($attributes, [
-            AlgoliaHelper::ALGOLIA_API_OBJECT_ID,
+            AlgoliaConnector::ALGOLIA_API_OBJECT_ID,
             'name',
             'url',
             'visibility_search',

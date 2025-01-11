@@ -2,76 +2,66 @@
 
 namespace Algolia\AlgoliaSearch\Observer;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Registry\CurrentCategory;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Magento\Catalog\Model\Category;
+use Magento\Framework\App\Request\Http;
+use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\Registry;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Layout;
 use Magento\Framework\View\Page\Config as PageConfig;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Algolia search observer model
- * @todo Add AlgoliaCredentialsManager to this class once it's available
  */
 class AddAlgoliaAssetsObserver implements ObserverInterface
 {
-    protected $config;
-    protected $registry;
-    protected $storeManager;
-    protected $pageConfig;
-    protected $request;
+    public function __construct(
+        protected ConfigHelper $config,
+        protected CurrentCategory $category,
+        protected StoreManagerInterface $storeManager,
+        protected PageConfig $pageConfig,
+        protected Http $request,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+    )
+    {}
 
     /**
-     * @param ConfigHelper $configHelper
-     * @param Registry $registry
-     * @param StoreManagerInterface $storeManager
-     * @param PageConfig $pageConfig
-     * @param \Magento\Framework\App\Request\Http $http
+     * @throws NoSuchEntityException|AlgoliaException
      */
-    public function __construct(
-        ConfigHelper $configHelper,
-        Registry $registry,
-        StoreManagerInterface $storeManager,
-        PageConfig $pageConfig,
-        \Magento\Framework\App\Request\Http $http
-    ) {
-        $this->config = $configHelper;
-        $this->registry = $registry;
-        $this->storeManager = $storeManager;
-        $this->pageConfig = $pageConfig;
-        $this->request = $http;
-    }
-
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
         $actionName = $this->request->getFullActionName();
         if ($actionName === 'swagger_index_index') {
-            return $this;
+            return;
         }
-        if ($this->config->isEnabledFrontEnd()) {
-            if ($this->config->getApplicationID() && $this->config->getAPIKey()) {
-                if ($this->config->isAutoCompleteEnabled() || $this->config->isInstantEnabled()) {
+        $storeId = $this->storeManager->getStore()->getId();
+        if ($this->config->isEnabledFrontEnd($storeId)) {
+            if ($this->algoliaCredentialsManager->checkCredentials($storeId)) {
+                if ($this->config->isAutoCompleteEnabled($storeId) || $this->config->isInstantEnabled($storeId)) {
                     /** @var Layout $layout */
                     $layout = $observer->getData('layout');
                     $layout->getUpdate()->addHandle('algolia_search_handle');
 
-                    $this->loadPreventBackendRenderingHandle($layout);
+                    $this->loadPreventBackendRenderingHandle($layout, $storeId);
                 }
             }
         }
     }
 
-    private function loadPreventBackendRenderingHandle(Layout $layout)
+    private function loadPreventBackendRenderingHandle(Layout $layout, int $storeId): void
     {
-        $storeId = $this->storeManager->getStore()->getId();
-
-        if ($this->config->preventBackendRendering() === false) {
+        if (!$this->config->preventBackendRendering($storeId)) {
             return;
         }
 
-        /** @var \Magento\Catalog\Model\Category $category */
-        $category = $this->registry->registry('current_category');
-        if (!$category) {
+        $category = $this->category->get();
+
+        if (!$category->getId()) {
             return;
         }
 
@@ -79,8 +69,9 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
             return;
         }
 
-        $displayMode = $this->config->getBackendRenderingDisplayMode();
-        if ($displayMode === 'only_products' && $category->getDisplayMode() === 'PAGE') {
+        $displayMode = $this->config->getBackendRenderingDisplayMode($storeId);
+        if ($displayMode === 'only_products'
+            && $category->getData('display_mode') === \Magento\Catalog\Model\Category::DM_PAGE) {
             return;
         }
 

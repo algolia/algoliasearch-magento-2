@@ -4,9 +4,9 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
 use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Image;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Category as MagentoCategory;
@@ -125,7 +125,7 @@ class CategoryHelper extends AbstractEntityHelper
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
-        $storeRootCategoryPath = sprintf('%d/%d', $this->getRootCategoryId(), $store->getRootCategoryId());
+        $storeRootCategoryPath = sprintf('%d/%d/', $this->getRootCategoryId(), $store->getRootCategoryId());
 
         $unserializedCategorysAttrs = $this->getAdditionalAttributes($storeId);
         $additionalAttr = array_column($unserializedCategorysAttrs, 'attribute');
@@ -252,15 +252,15 @@ class CategoryHelper extends AbstractEntityHelper
         }
 
         $data = [
-            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $category->getId(),
-            'name'                               => $category->getName(),
-            'path'                               => $path,
-            'level'                              => $category->getLevel(),
-            'url'                                => $this->getUrl($category),
-            'include_in_menu'                    => $category->getIncludeInMenu(),
-            '_tags'                              => ['category'],
-            'popularity'                         => 1,
-            'product_count'                      => $category->getProductCount(),
+            AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $category->getId(),
+            'name'                                  => $category->getName(),
+            'path'                                  => $path,
+            'level'                                 => $category->getLevel(),
+            'url'                                   => $this->getUrl($category),
+            'include_in_menu'                       => $category->getIncludeInMenu(),
+            '_tags'                                 => ['category'],
+            'popularity'                            => 1,
+            'product_count'                         => $category->getProductCount(),
         ];
 
         if (!empty($imageUrl)) {

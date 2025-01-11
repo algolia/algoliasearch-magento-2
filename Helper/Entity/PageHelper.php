@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Cms\Model\Page;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
@@ -59,7 +59,7 @@ class PageHelper extends AbstractEntityHelper
             $magentoPages->addFieldToFilter('page_id', ['in' => $pageIds]);
         }
 
-        $excludedPages = $this->getExcludedPageIds();
+        $excludedPages = $this->getExcludedPageIds($storeId);
         if (count($excludedPages)) {
             $magentoPages->addFieldToFilter('identifier', ['nin' => $excludedPages]);
         }
@@ -88,7 +88,7 @@ class PageHelper extends AbstractEntityHelper
                 $content = $this->filterProvider->getPageFilter()->filter($content);
             }
 
-            $pageObject[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] = $page->getId();
+            $pageObject[AlgoliaConnector::ALGOLIA_API_OBJECT_ID] = $page->getId();
             $pageObject['url'] = $frontendUrlBuilder->getUrl(
                 null,
                 [
@@ -116,9 +116,9 @@ class PageHelper extends AbstractEntityHelper
         return $pages;
     }
 
-    public function getExcludedPageIds()
+    public function getExcludedPageIds($storeId = null)
     {
-        $excludedPages = array_values($this->configHelper->getExcludedPages());
+        $excludedPages = array_values($this->configHelper->getExcludedPages($storeId));
         foreach ($excludedPages as &$excludedPage) {
             $excludedPage = $excludedPage['attribute'];
         }

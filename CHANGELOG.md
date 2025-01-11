@@ -1,5 +1,24 @@
 # CHANGE LOG
 
+## 3.15.0-beta.1
+
+## Updates
+- Added support for Multi-Application IDs
+
+## 3.14.3
+
+### Updates
+- Updated PHP client version in the composer file
+- Tests: added new integration scenarios including multi-stores ones.
+
+### Bug Fixes
+- Fixed landing page typing error
+- Improved query method for alternate root categories - Thank you @igorfigueiredogen
+- Fixed an error where a missing prefix can throw errors with strong types added to ConfigHelper
+- Fixed an error where stale cache data was preventing ranking applied on replica
+- Fixed reindexing issue with NeuralSearch
+- Tests : Fixed current integration tests
+
 ## 3.14.2
 
 ### Updates

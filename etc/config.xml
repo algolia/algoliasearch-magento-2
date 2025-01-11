@@ -94,6 +94,8 @@
                 <connection_timeout>2</connection_timeout>
                 <read_timeout>30</read_timeout>
                 <write_timeout>30</write_timeout>
+                <auto_price_indexing>0</auto_price_indexing>
+                <enable_profiler>0</enable_profiler>
             </advanced>
             <queue>
                 <number_of_element_by_page>300</number_of_element_by_page>

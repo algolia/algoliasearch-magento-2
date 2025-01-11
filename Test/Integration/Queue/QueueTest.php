@@ -1,16 +1,22 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Queue;
 
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobsCollectionFactory;
+use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 
+/**
+ * @magentoDbIsolation disabled
+ * @magentoAppIsolation enabled
+ */
 class QueueTest extends TestCase
 {
     private const INCOMPLETE_REASON = "Must revisit transaction handling across connections.";
@@ -24,31 +30,31 @@ class QueueTest extends TestCase
     /** @var Queue */
     private $queue;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $this->jobsCollectionFactory = $this->getObjectManager()->create(JobsCollectionFactory::class);
+        $this->jobsCollectionFactory = $this->objectManager->create(JobsCollectionFactory::class);
 
         /** @var ResourceConnection $resource */
-        $resource = $this->getObjectManager()->create(ResourceConnection::class);
+        $resource = $this->objectManager->get(ResourceConnection::class);
         $this->connection = $resource->getConnection();
 
-        $this->queue = $this->getObjectManager()->create(Queue::class);
+        $this->queue = $this->objectManager->get(Queue::class);
     }
 
     public function testFill()
     {
         $this->resetConfigs([
-            'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/queue/number_of_element_by_page',
+            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
         ]);
 
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer = $this->objectManager->get(Product::class);
         $indexer->executeFull();
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
@@ -67,8 +73,8 @@ class QueueTest extends TestCase
             }
 
             if ($i < 3) {
-                $this->assertEquals(\Algolia\AlgoliaSearch\Helper\Data::class, $row['class']);
-                $this->assertEquals('rebuildProductIndex', $row['method']);
+                $this->assertEquals(\Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class, $row['class']);
+                $this->assertEquals('buildIndexFull', $row['method']);
                 $this->assertEquals(300, $row['data_size']);
 
                 continue;
@@ -79,18 +85,17 @@ class QueueTest extends TestCase
         }
     }
 
-    /**
-     * @depends testFill
-     * @magentoDbIsolation disabled
-     */
     public function testExecute()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        /** @var Product $indexer */
+        $indexer = $this->objectManager->get(Product::class);
+        $indexer->executeFull();
 
         /** @var Queue $queue */
-        $queue = $this->getObjectManager()->create(Queue::class);
+        $queue = $this->objectManager->get(Queue::class);
 
         // Run the first two jobs - saveSettings, batch
         $queue->runCron(2, true);
@@ -108,7 +113,7 @@ class QueueTest extends TestCase
 
         $this->assertTrue($existsDefaultTmpIndex, 'Default products production index does not exists and it should');
 
-        // Run the second two jobs - batch, move
+        // Run the last move - move
         $queue->runCron(2, true);
 
         $this->algoliaHelper->waitLastTask();
@@ -131,31 +136,26 @@ class QueueTest extends TestCase
         $this->assertTrue($existsDefaultProdIndex, 'Default product production index does not exists and it should');
 
         /** TODO: There are mystery items being added to queue from unknown save process on product_id=1 */
-        /* $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
-        $this->assertEquals(0, count($rows)); */
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        $this->assertEquals(0, count($rows));
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testSettings()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-
         $this->resetConfigs([
-            'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/queue/number_of_element_by_page',
-            'algoliasearch_instant/instant/facets',
-            'algoliasearch_products/products/product_additional_attributes',
+            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
+            ConfigHelper::FACETS,
+            ConfigHelper::PRODUCT_ATTRIBUTES
         ]);
 
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
         // Reindex products multiple times
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer = $this->objectManager->get(Product::class);
         $indexer->executeFull();
         $indexer->executeFull();
         $indexer->executeFull();
@@ -165,7 +165,7 @@ class QueueTest extends TestCase
 
         // Process the whole queue
         /** @var QueueRunner $queueRunner */
-        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
+        $queueRunner = $this->objectManager->get(QueueRunner::class);
         $queueRunner->executeFull();
         $queueRunner->executeFull();
         $queueRunner->executeFull();
@@ -180,19 +180,16 @@ class QueueTest extends TestCase
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMergeSettings()
     {
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 1);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 300);
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 1);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
         /** @var Product $productIndexer */
-        $productIndexer = $this->getObjectManager()->create(Product::class);
+        $productIndexer = $this->objectManager->get(Product::class);
         $productIndexer->executeFull();
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
@@ -207,7 +204,7 @@ class QueueTest extends TestCase
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         /** @var QueueRunner $queueRunner */
-        $queueRunner = $this->getObjectManager()->create(QueueRunner::class);
+        $queueRunner = $this->objectManager->get(QueueRunner::class);
         $queueRunner->executeFull();
 
         $this->algoliaHelper->waitLastTask();
@@ -222,9 +219,6 @@ class QueueTest extends TestCase
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMerging()
     {
         $this->connection->query('DELETE FROM algoliasearch_queue');
@@ -234,9 +228,9 @@ class QueueTest extends TestCase
                 'job_id' => 1,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"1","category_ids":["9","22"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"1","entity_ids":["9","22"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -245,9 +239,9 @@ class QueueTest extends TestCase
                 'job_id' => 2,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"2","category_ids":["9","22"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"2","entity_ids":["9","22"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -256,9 +250,9 @@ class QueueTest extends TestCase
                 'job_id' => 3,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"3","category_ids":["9","22"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"3","entity_ids":["9","22"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -267,9 +261,9 @@ class QueueTest extends TestCase
                 'job_id' => 4,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"1","product_ids":["448"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"1","entity_ids":["448"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -278,9 +272,9 @@ class QueueTest extends TestCase
                 'job_id' => 5,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"2","product_ids":["448"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"2","entity_ids":["448"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -289,9 +283,9 @@ class QueueTest extends TestCase
                 'job_id' => 6,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"3","product_ids":["448"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"3","entity_ids":["448"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -300,9 +294,9 @@ class QueueTest extends TestCase
                 'job_id' => 7,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"1","category_ids":["40"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"1","entity_ids":["40"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -311,9 +305,9 @@ class QueueTest extends TestCase
                 'job_id' => 8,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"2","category_ids":["40"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"2","entity_ids":["40"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -322,9 +316,9 @@ class QueueTest extends TestCase
                 'job_id' => 9,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"3","category_ids":["40"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"3","entity_ids":["40"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -333,9 +327,9 @@ class QueueTest extends TestCase
                 'job_id' => 10,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"1","product_ids":["405"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"1","entity_ids":["405"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -344,9 +338,9 @@ class QueueTest extends TestCase
                 'job_id' => 11,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"2","product_ids":["405"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"2","entity_ids":["405"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -355,9 +349,9 @@ class QueueTest extends TestCase
                 'job_id' => 12,
                 'created' => '2017-09-01 12:00:00',
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"3","product_ids":["405"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"3","entity_ids":["405"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -377,9 +371,9 @@ class QueueTest extends TestCase
             'job_id' => '1',
             'created' => '2017-09-01 12:00:00',
             'pid' => null,
-            'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-            'method' => 'rebuildStoreCategoryIndex',
-            'data' => '{"store_id":"1","category_ids":["9","22"]}',
+            'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+            'method' => 'buildIndexList',
+            'data' => '{"store_id":"1","entity_ids":["9","22"]}',
             'max_retries' => '3',
             'retries' => '0',
             'error_log' => '',
@@ -389,7 +383,7 @@ class QueueTest extends TestCase
             'is_full_reindex' => '0',
             'decoded_data' => [
                 'store_id' => '1',
-                'category_ids' => [
+                'entity_ids' => [
                     0 => '9',
                     1 => '22',
                     2 => '40',
@@ -407,9 +401,9 @@ class QueueTest extends TestCase
             'job_id' => '4',
             'created' => '2017-09-01 12:00:00',
             'pid' => null,
-            'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-            'method' => 'rebuildStoreProductIndex',
-            'data' => '{"store_id":"1","product_ids":["448"]}',
+            'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+            'method' => 'buildIndexList',
+            'data' => '{"store_id":"1","entity_ids":["448"]}',
             'max_retries' => '3',
             'retries' => '0',
             'error_log' => '',
@@ -419,7 +413,7 @@ class QueueTest extends TestCase
             'is_full_reindex' => '0',
             'decoded_data' => [
                 'store_id' => '1',
-                'product_ids' => [
+                'entity_ids' => [
                     0 => '448',
                     1 => '405',
                 ],
@@ -433,9 +427,6 @@ class QueueTest extends TestCase
         $this->assertEquals($expectedProductJob, $productJob->toArray());
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMergingWithStaticMethods()
     {
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
@@ -444,9 +435,9 @@ class QueueTest extends TestCase
             [
                 'job_id' => 1,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"1","category_ids":["9","22"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"1","entity_ids":["9","22"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -454,9 +445,9 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 2,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"2","category_ids":["9","22"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"2","entity_ids":["9","22"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -464,9 +455,9 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 3,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"3","category_ids":["9","22"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"3","entity_ids":["9","22"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -484,9 +475,9 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 5,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"2","product_ids":["448"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"2","entity_ids":["448"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -494,9 +485,9 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 6,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"3","product_ids":["448"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"3","entity_ids":["448"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -506,7 +497,7 @@ class QueueTest extends TestCase
                 'pid' => null,
                 'class' => IndicesConfigurator::class,
                 'method' => 'saveConfigurationToAlgolia',
-                'data' => '{"store_id":"1","category_ids":["40"]}',
+                'data' => '{"store_id":"1","entity_ids":["40"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -514,9 +505,9 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 8,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreCategoryIndex',
-                'data' => '{"store_id":"2","category_ids":["40"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"2","entity_ids":["40"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -526,7 +517,7 @@ class QueueTest extends TestCase
                 'pid' => null,
                 'class' => \Algolia\AlgoliaSearch\Model\IndexMover::class,
                 'method' => 'moveIndexWithSetSettings',
-                'data' => '{"store_id":"3","category_ids":["40"]}',
+                'data' => '{"store_id":"3","entity_ids":["40"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -534,9 +525,9 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 10,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"1","product_ids":["405"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"1","entity_ids":["405"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -546,7 +537,7 @@ class QueueTest extends TestCase
                 'pid' => null,
                 'class' => \Algolia\AlgoliaSearch\Model\IndexMover::class,
                 'method' => 'moveIndexWithSetSettings',
-                'data' => '{"store_id":"2","product_ids":["405"]}',
+                'data' => '{"store_id":"2","entity_ids":["405"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -554,9 +545,9 @@ class QueueTest extends TestCase
             ], [
                 'job_id' => 12,
                 'pid' => null,
-                'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
-                'method' => 'rebuildStoreProductIndex',
-                'data' => '{"store_id":"3","product_ids":["405"]}',
+                'class' => \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class,
+                'method' => 'buildIndexList',
+                'data' => '{"store_id":"3","entity_ids":["405"]}',
                 'max_retries' => 3,
                 'retries' => 0,
                 'error_log' => '',
@@ -572,27 +563,22 @@ class QueueTest extends TestCase
         $jobs = array_values($this->invokeMethod($this->queue, 'mergeJobs', [$jobs]));
         $this->assertEquals(12, count($jobs));
 
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[0]->getMethod());
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[1]->getMethod());
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[2]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[0]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[1]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[2]->getMethod());
         $this->assertEquals('deleteObjects', $jobs[3]->getMethod());
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[4]->getMethod());
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[5]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[4]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[5]->getMethod());
         $this->assertEquals('saveConfigurationToAlgolia', $jobs[6]->getMethod());
-        $this->assertEquals('rebuildStoreCategoryIndex', $jobs[7]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[7]->getMethod());
         $this->assertEquals('moveIndexWithSetSettings', $jobs[8]->getMethod());
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[9]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[9]->getMethod());
         $this->assertEquals('moveIndexWithSetSettings', $jobs[10]->getMethod());
-        $this->assertEquals('rebuildStoreProductIndex', $jobs[11]->getMethod());
+        $this->assertEquals('buildIndexList', $jobs[11]->getMethod());
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testGetJobs()
     {
-        $this->markTestIncomplete(self::INCOMPLETE_REASON);
-
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         $data = [
@@ -739,18 +725,12 @@ class QueueTest extends TestCase
 
         $expectedFirstJob = [
             'job_id' => '1',
-            'created' => '2017-09-01 12:00:00',
-            'pid' => null,
+            'pid' => $pid,
             'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
             'method' => 'rebuildStoreCategoryIndex',
             'data' => '{"store_id":"1","category_ids":["9","22"]}',
-            'max_retries' => '3',
-            'retries' => '0',
-            'error_log' => '',
-            'data_size' => 3,
             'merged_ids' => ['1', '7'],
             'store_id' => '1',
-            'is_full_reindex' => 0,
             'decoded_data' => [
                 'store_id' => '1',
                 'category_ids' => [
@@ -759,24 +739,16 @@ class QueueTest extends TestCase
                     2 => '40',
                 ],
             ],
-            'locked_at' => null,
-            'debug' => null,
         ];
 
         $expectedLastJob = [
             'job_id' => '6',
-            'created' => '2017-09-01 12:00:00',
-            'pid' => null,
+            'pid' => $pid,
             'class' => \Algolia\AlgoliaSearch\Helper\Data::class,
             'method' => 'rebuildStoreProductIndex',
             'data' => '{"store_id":"3","product_ids":["448"]}',
-            'max_retries' => '3',
-            'retries' => '0',
-            'error_log' => '',
-            'data_size' => 2,
             'merged_ids' => ['6', '12'],
             'store_id' => '3',
-            'is_full_reindex' => 0,
             'decoded_data' => [
                 'store_id' => '3',
                 'product_ids' => [
@@ -784,18 +756,31 @@ class QueueTest extends TestCase
                     1 => '405',
                 ],
             ],
-            'locked_at' => null,
-            'debug' => null,
         ];
 
         /** @var Job $firstJob */
         $firstJob = reset($jobs);
+        $firstJob = $firstJob->toArray();
 
         /** @var Job $lastJob */
         $lastJob = end($jobs);
+        $lastJob = $lastJob->toArray();
 
-        $this->assertEquals($expectedFirstJob, $firstJob->toArray());
-        $this->assertEquals($expectedLastJob, $lastJob->toArray());
+        $valuesToCheck = [
+            'job_id',
+            'method',
+            'class',
+            'store_id',
+            'pid',
+            'data',
+            'merged_ids',
+            'decoded_data',
+        ];
+
+        foreach ($valuesToCheck as $valueToCheck) {
+            $this->assertEquals($expectedFirstJob[$valueToCheck], $firstJob[$valueToCheck]);
+            $this->assertEquals($expectedLastJob[$valueToCheck], $lastJob[$valueToCheck]);
+        }
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
 
@@ -806,14 +791,11 @@ class QueueTest extends TestCase
         }
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testHugeJob()
     {
         // Default value - maxBatchSize = 1000
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $productIds = range(1, 5000);
         $jsonProductIds = json_encode($productIds);
@@ -850,8 +832,8 @@ class QueueTest extends TestCase
     public function testMaxSingleJobSize()
     {
         // Default value - maxBatchSize = 1000
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $productIds = range(1, 99);
         $jsonProductIds = json_encode($productIds);
@@ -888,25 +870,22 @@ class QueueTest extends TestCase
         $this->assertEquals($pid, $lastJob['pid']);
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
     public function testMaxSingleJobsSizeOnProductReindex()
     {
         $this->resetConfigs([
-            'algoliasearch_queue/queue/number_of_job_to_run',
-            'algoliasearch_advanced/queue/number_of_element_by_page',
+            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
         ]);
 
-        $this->setConfig('algoliasearch_queue/queue/active', '1');
+        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
 
-        $this->setConfig('algoliasearch_queue/queue/number_of_job_to_run', 10);
-        $this->setConfig('algoliasearch_advanced/queue/number_of_element_by_page', 100);
+        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         /** @var Product $indexer */
-        $indexer = $this->getObjectManager()->create(Product::class);
+        $indexer = $this->objectManager->get(Product::class);
         $indexer->execute(range(1, 512));
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();

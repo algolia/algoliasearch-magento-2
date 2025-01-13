@@ -11,7 +11,6 @@ use Magento\Framework\DB\Select;
 use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Indexer\StateInterface;
-use Zend_Db_Select;
 
 class MissingPriceIndexHandler
 {
@@ -125,7 +124,7 @@ class MissingPriceIndexHandler
 
         $select = clone $collection->getSelect();
         try {
-            $joins = $select->getPart(Zend_Db_Select::FROM);
+            $joins = $select->getPart(Select::FROM);
         } catch (\Zend_Db_Select_Exception $e) {
             $this->diagnostics->error("Unable to build query for missing product prices: " . $e->getMessage());
             return [];
@@ -147,20 +146,20 @@ class MissingPriceIndexHandler
     protected function expandPricingJoin(array &$joins, string $priceIndexJoin): void
     {
         $modifyJoin = &$joins[$priceIndexJoin];
-        $modifyJoin['joinType'] = Zend_Db_Select::LEFT_JOIN;
+        $modifyJoin['joinType'] = Select::LEFT_JOIN;
     }
 
     protected function rebuildJoins(Select $select, array $joins): void
     {
-        $select->reset(Zend_Db_Select::COLUMNS);
-        $select->reset(Zend_Db_Select::FROM);
+        $select->reset(Select::COLUMNS);
+        $select->reset(Select::FROM);
         foreach ($joins as $alias => $joinData) {
-            if ($joinData['joinType'] === Zend_Db_Select::FROM) {
+            if ($joinData['joinType'] === Select::FROM) {
                 $select->from(
                     [$alias => $joinData['tableName']],
                     'entity_id'
                 );
-            } elseif ($joinData['joinType'] === Zend_Db_Select::LEFT_JOIN) {
+            } elseif ($joinData['joinType'] === Select::LEFT_JOIN) {
                 $select->joinLeft(
                     [$alias => $joinData['tableName']],
                     $joinData['joinCondition'],

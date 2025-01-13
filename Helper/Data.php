@@ -126,7 +126,7 @@ class Data
         $this->productIndexBuilder->buildIndexFull(
             $storeId,
             [
-                'productIds' => $productIds,
+                'entityIds' => $productIds,
                 'page' => $page,
                 'pageSize' => $pageSize,
                 'useTmpIndex' => $useTmpIndex

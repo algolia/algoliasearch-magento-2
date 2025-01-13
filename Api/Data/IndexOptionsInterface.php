@@ -31,7 +31,7 @@ interface IndexOptionsInterface
      *
      * @return bool
      */
-    public function isTmp(): bool;
+    public function isTemporaryIndex(): bool;
 
     /**
      * Get field: enforced_index_name

@@ -308,6 +308,8 @@ class AlgoliaConnector
     }
 
     /**
+     * Warning: This method can't be performed across two different applications
+     *
      * @param IndexOptions $fromIndexOptions
      * @param IndexOptions $toIndexOptions
      * @return void
@@ -560,6 +562,8 @@ class AlgoliaConnector
     }
 
     /**
+     * Warning: This method can't be performed across two different applications
+     *
      * @param IndexOptionsInterface $fromIndexOptions
      * @param IndexOptionsInterface $toIndexOptions
      * @return void
@@ -583,6 +587,8 @@ class AlgoliaConnector
     }
 
     /**
+     * Warning: This method can't be performed across two different applications
+     *
      * @param IndexOptionsInterface $fromIndexOptions
      * @param IndexOptionsInterface $toIndexOptions
      * @return void
@@ -1062,6 +1068,7 @@ class AlgoliaConnector
      * @param IndexOptionsInterface $indexOptions
      * @return string|null
      * @throws NoSuchEntityException
+     * @throws AlgoliaException
      */
     protected function getIndexName(IndexOptionsInterface $indexOptions): ?string
     {
@@ -1070,13 +1077,13 @@ class AlgoliaConnector
         }
 
         if (is_null($indexOptions->getIndexSuffix())) {
-            return null;
+            throw new AlgoliaException('Index suffix is mandatory in case no enforced index name is specified.');
         }
 
         return $this->indexNameFetcher->getIndexName(
             $indexOptions->getIndexSuffix(),
             $indexOptions->getStoreId(),
-            $indexOptions->isTmp()
+            $indexOptions->isTemporaryIndex()
         );
     }
 }

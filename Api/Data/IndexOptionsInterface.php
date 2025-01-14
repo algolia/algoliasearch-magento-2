@@ -10,7 +10,7 @@ interface IndexOptionsInterface
 
     const IS_TMP = 'is_tmp';
 
-    const ENFORCED_INDEX_NAME = 'enforced_index_name';
+    const INDEX_NAME = 'index_name';
 
     /**
      * Get field: store_id
@@ -34,9 +34,17 @@ interface IndexOptionsInterface
     public function isTemporaryIndex(): bool;
 
     /**
-     * Get field: enforced_index_name
+     * Get field: index_name
      *
      * @return string|null
      */
-    public function getEnforcedIndexName(): ?string;
+    public function getIndexName(): ?string;
+
+    /**
+     * Set field: index_name
+     *
+     * @param string $indexName
+     * @return void
+     */
+    public function setIndexName(string $indexName): void;
 }

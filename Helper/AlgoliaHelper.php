@@ -2,13 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Exception;
 use Magento\Framework\App\Helper\Context;
@@ -22,7 +21,8 @@ class AlgoliaHelper extends AbstractHelper
 {
     public function __construct(
         Context $context,
-        protected AlgoliaConnector $algoliaConnector
+        protected AlgoliaConnector $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder
     ){
         parent::__construct($context);
     }
@@ -67,7 +67,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function query(string $indexName, string $q, array $params, ?int $storeId = null): array
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         return $this->algoliaConnector->query($indexOptions, $q, $params);
     }
@@ -77,11 +77,11 @@ class AlgoliaHelper extends AbstractHelper
      * @param array $objectIds
      * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException|NoSuchEntityException
+     * @throws AlgoliaException
      */
     public function getObjects(string $indexName, array $objectIds, ?int $storeId = null): array
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         return $this->algoliaConnector->getObjects($indexOptions, $objectIds);
     }
@@ -103,7 +103,7 @@ class AlgoliaHelper extends AbstractHelper
         string $mergeSettingsFrom = '',
         ?int $storeId = null
     ) {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -122,7 +122,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function deleteIndex(string $indexName, ?int $storeId = null): void
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->deleteIndex($indexOptions);
     }
@@ -132,11 +132,11 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $indexName
      * @param int|null $storeId
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function deleteObjects(array $ids, string $indexName, ?int $storeId = null): void
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->deleteObjects($ids, $indexOptions);
     }
@@ -150,8 +150,8 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function moveIndex(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $fromIndexOptions = $this->convertToIndexOptions($fromIndexName, $storeId);
-        $toIndexOptions = $this->convertToIndexOptions($toIndexName, $storeId);
+        $fromIndexOptions = $this->indexOptionsBuilder->convertToIndexOptions($fromIndexName, $storeId);
+        $toIndexOptions = $this->indexOptionsBuilder->convertToIndexOptions($toIndexName, $storeId);
 
         $this->algoliaConnector->moveIndex($fromIndexOptions, $toIndexOptions);
     }
@@ -176,7 +176,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function getSettings(string $indexName, ?int $storeId = null): array
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         return $this->algoliaConnector->getSettings($indexOptions);
     }
@@ -192,7 +192,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false, ?int $storeId = null): void
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->saveObjects($indexOptions, $objects, $isPartialUpdate);
     }
@@ -207,7 +207,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false, ?int $storeId = null): void
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->saveRule($rule, $indexOptions, $forwardToReplicas);
     }
@@ -223,7 +223,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false, ?int $storeId = null): void
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->saveRules($indexOptions, $rules, $forwardToReplicas);
     }
@@ -243,7 +243,7 @@ class AlgoliaHelper extends AbstractHelper
         ?int $storeId = null
     ) : void
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->deleteRule($indexOptions, $objectID, $forwardToReplicas);
     }
@@ -258,8 +258,8 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function copySynonyms(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $fromIndexOptions = $this->convertToIndexOptions($fromIndexName, $storeId);
-        $toIndexOptions = $this->convertToIndexOptions($toIndexName, $storeId);
+        $fromIndexOptions = $this->indexOptionsBuilder->convertToIndexOptions($fromIndexName, $storeId);
+        $toIndexOptions = $this->indexOptionsBuilder->convertToIndexOptions($toIndexName, $storeId);
 
         $this->algoliaConnector->copySynonyms($fromIndexOptions, $toIndexOptions);
     }
@@ -274,8 +274,8 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function copyQueryRules(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $fromIndexOptions = $this->convertToIndexOptions($fromIndexName, $storeId);
-        $toIndexOptions = $this->convertToIndexOptions($toIndexName, $storeId);
+        $fromIndexOptions = $this->indexOptionsBuilder->convertToIndexOptions($fromIndexName, $storeId);
+        $toIndexOptions = $this->indexOptionsBuilder->convertToIndexOptions($toIndexName, $storeId);
 
         $this->algoliaConnector->copyQueryRules($fromIndexOptions, $toIndexOptions);
     }
@@ -290,7 +290,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function searchRules(string $indexName, array $searchRulesParams = null, ?int $storeId = null)
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         return $this->algoliaConnector->searchRules($indexOptions, $searchRulesParams);
     }
@@ -303,7 +303,7 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function clearIndex(string $indexName, ?int $storeId = null): void
     {
-        $indexOptions = $this->convertToIndexOptions($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->convertToIndexOptions($indexName, $storeId);
 
         $this->algoliaConnector->clearIndex($indexOptions);
     }
@@ -337,23 +337,5 @@ class AlgoliaHelper extends AbstractHelper
     public function getLastTaskId(?int $storeId = null): int
     {
         return $this->algoliaConnector->getLastTaskId($storeId);
-    }
-
-    /**
-     * Automatically converts information related to an index into a IndexOptions objects
-     * This ensures compatibility of this deprecated class with the new method signatures of AlgoliaConnector
-     *
-     * @param string|null $indexName
-     * @param int|null $storeId
-     * @param bool|null $isTmp
-     * @return IndexOptions
-     */
-    protected function convertToIndexOptions(?string $indexName = null, ?int $storeId = null, ?bool $isTmp = false): IndexOptions
-    {
-        return new IndexOptions([
-            IndexOptionsInterface::ENFORCED_INDEX_NAME => $indexName,
-            IndexOptionsInterface::STORE_ID => $storeId,
-            IndexOptionsInterface::IS_TMP => $isTmp
-        ]);
     }
 }

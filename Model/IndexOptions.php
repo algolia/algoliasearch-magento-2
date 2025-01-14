@@ -41,15 +41,24 @@ class IndexOptions extends DataObject implements IndexOptionsInterface
         return $this->hasData(IndexOptionsInterface::IS_TMP) && $this->getData(IndexOptionsInterface::IS_TMP);
     }
 
+
     /**
-     * In case an enforced index name is used, this will override the index names fetched by the IndexNameFetcher service
+     * Returns the final index name computed by the IndexNameFetcher
      *
-     * @return string|null
+     * @return string
      */
-    public function getEnforcedIndexName(): ?string
+    public function getIndexName(): string
     {
-        return $this->hasData(IndexOptionsInterface::ENFORCED_INDEX_NAME) ?
-            (string) $this->getData(IndexOptionsInterface::ENFORCED_INDEX_NAME) :
-            null;
+        return $this->getData(IndexOptionsInterface::INDEX_NAME);
+    }
+
+    /**
+     * @param string $indexName
+     *
+     * @return void
+     */
+    public function setIndexName(string $indexName): void
+    {
+        $this->setData(IndexOptionsInterface::INDEX_NAME, $indexName);
     }
 }

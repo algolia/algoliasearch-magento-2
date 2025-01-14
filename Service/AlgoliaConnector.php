@@ -78,7 +78,8 @@ class AlgoliaConnector
         protected ManagerInterface $messageManager,
         protected ConsoleOutput $consoleOutput,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected IndexNameFetcher $indexNameFetcher
+        protected IndexNameFetcher $indexNameFetcher,
+        protected IndexOptionsBuilder $indexOptionsBuilder
     ) {
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
@@ -182,7 +183,7 @@ class AlgoliaConnector
         //    return $this->searchWithDisjunctiveFaceting($indexName, $q, $params);
         //}
 
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $params = array_merge(
             [
@@ -202,11 +203,11 @@ class AlgoliaConnector
      * @param IndexOptionsInterface $indexOptions
      * @param array $objectIds
      * @return array<string, mixed>
-     * @throws AlgoliaException|NoSuchEntityException
+     * @throws AlgoliaException
      */
     public function getObjects(IndexOptionsInterface $indexOptions, array $objectIds): array
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $requests = array_values(
             array_map(
@@ -239,7 +240,7 @@ class AlgoliaConnector
         bool $mergeSettings = false,
         string $mergeSettingsFrom = ''
     ) {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         if ($mergeSettings === true) {
             $settings = $this->mergeSettings($indexName, $settings, $mergeSettingsFrom, $indexOptions->getStoreId());
@@ -259,7 +260,7 @@ class AlgoliaConnector
      */
     protected function performBatchOperation(IndexOptionsInterface $indexOptions, array $requests): array
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $response = $this->getClient($indexOptions->getStoreId())->batch($indexName, [ 'requests' => $requests ] );
 
@@ -275,7 +276,7 @@ class AlgoliaConnector
      */
     public function deleteIndex(IndexOptionsInterface $indexOptions): void
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $res = $this->getClient($indexOptions->getStoreId())->deleteIndex($indexName);
 
@@ -318,8 +319,8 @@ class AlgoliaConnector
      */
     public function moveIndex(IndexOptions $fromIndexOptions, IndexOptions $toIndexOptions): void
     {
-        $fromIndexName = $this->getIndexName($fromIndexOptions);
-        $toIndexName = $this->getIndexName($toIndexOptions);
+        $fromIndexName = $fromIndexOptions->getIndexName();
+        $toIndexName = $toIndexOptions->getIndexName();
 
         $response = $this->getClient($fromIndexOptions->getStoreId())->operationIndex(
             $fromIndexName,
@@ -357,7 +358,7 @@ class AlgoliaConnector
      */
     public function getSettings(IndexOptionsInterface $indexOptions): array
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         try {
             return $this->getClient($indexOptions->getStoreId())->getSettings($indexName);
@@ -457,7 +458,7 @@ class AlgoliaConnector
      */
     public function saveObjects(IndexOptionsInterface $indexOptions, array $objects, bool $isPartialUpdate = false): void
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $this->prepareRecords($objects, $indexName);
 
@@ -486,7 +487,7 @@ class AlgoliaConnector
      */
     protected function setLastOperationInfo(IndexOptionsInterface $indexOptions, array $response): void
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
         $storeId = $indexOptions->getStoreId();
 
         $this->lastUsedIndexName = $indexName;
@@ -510,7 +511,7 @@ class AlgoliaConnector
      */
     public function saveRule(array $rule, IndexOptionsInterface $indexOptions, bool $forwardToReplicas = false): void
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $res = $this->getClient($indexOptions->getStoreId())->saveRule(
             $indexName,
@@ -532,7 +533,7 @@ class AlgoliaConnector
      */
     public function saveRules(IndexOptionsInterface $indexOptions, array $rules, bool $forwardToReplicas = false): void
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $res = $this->getClient($indexOptions->getStoreId())->saveRules($indexName, $rules, $forwardToReplicas);
 
@@ -554,7 +555,7 @@ class AlgoliaConnector
         bool $forwardToReplicas = false
     ): void
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $res = $this->getClient($indexOptions->getStoreId())->deleteRule($indexName, $objectID, $forwardToReplicas);
 
@@ -572,8 +573,8 @@ class AlgoliaConnector
      */
     public function copySynonyms(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
     {
-        $fromIndexName = $this->getIndexName($fromIndexOptions);
-        $toIndexName = $this->getIndexName($toIndexOptions);
+        $fromIndexName = $fromIndexOptions->getIndexName();
+        $toIndexName = $toIndexOptions->getIndexName();
 
         $response = $this->getClient($fromIndexOptions->getStoreId())->operationIndex(
             $fromIndexName,
@@ -597,8 +598,8 @@ class AlgoliaConnector
      */
     public function copyQueryRules(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
     {
-        $fromIndexName = $this->getIndexName($fromIndexOptions);
-        $toIndexName = $this->getIndexName($toIndexOptions);
+        $fromIndexName = $fromIndexOptions->getIndexName();
+        $toIndexName = $toIndexOptions->getIndexName();
 
         $response = $this->getClient($fromIndexOptions->getStoreId())->operationIndex(
             $fromIndexName,
@@ -621,7 +622,7 @@ class AlgoliaConnector
      */
     public function searchRules(IndexOptionsInterface $indexOptions, array$searchRulesParams = null)
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         return $this->getClient($indexOptions->getStoreId())->searchRules($indexName, $searchRulesParams);
     }
@@ -634,7 +635,7 @@ class AlgoliaConnector
      */
     public function clearIndex(IndexOptionsInterface $indexOptions): void
     {
-        $indexName = $this->getIndexName($indexOptions);
+        $indexName = $indexOptions->getIndexName();
 
         $res = $this->getClient($indexOptions->getStoreId())->clearObjects($indexName);
 
@@ -1059,31 +1060,5 @@ class AlgoliaConnector
         }
 
         return $filters;
-    }
-
-    /**
-     * Determines the index name giving it suffix, store id and if it's temporary or not
-     * If an enforced index name has been set, it's automatically returned
-     *
-     * @param IndexOptionsInterface $indexOptions
-     * @return string|null
-     * @throws NoSuchEntityException
-     * @throws AlgoliaException
-     */
-    protected function getIndexName(IndexOptionsInterface $indexOptions): ?string
-    {
-        if (!is_null($indexOptions->getEnforcedIndexName())) {
-            return $indexOptions->getEnforcedIndexName();
-        }
-
-        if (is_null($indexOptions->getIndexSuffix())) {
-            throw new AlgoliaException('Index suffix is mandatory in case no enforced index name is specified.');
-        }
-
-        return $this->indexNameFetcher->getIndexName(
-            $indexOptions->getIndexSuffix(),
-            $indexOptions->getStoreId(),
-            $indexOptions->isTemporaryIndex()
-        );
     }
 }

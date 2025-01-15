@@ -1,5 +1,18 @@
 # CHANGE LOG
 
+## 3.13.7
+
+### Features
+- Added a feature to enable automatic price indexing on the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products.)
+
+### Updates
+- Updated `getCookie` method to make it more consistent
+- Removed dependency to `catalog_product_price` indexer
+
+### Bug Fixes
+- Fixed a bug where the Landing Page Builder was crashing on save with customer group pricing was enabled.
+- Fixed issue where Insights information wasn't kept on the url after clicking "add to cart" on PLP powered by InstantSearch
+
 ## 3.13.6
 
 ### Bug Fixes

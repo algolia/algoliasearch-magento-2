@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
+use Algolia\AlgoliaSearch\Service\Product\MissingPriceIndexHandler;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
@@ -76,6 +77,11 @@ class Data
      */
     protected $storeManager;
 
+    /**
+     * @var MissingPriceIndexHandler
+     */
+    protected $missingPriceIndexHandler;
+
     protected $emulationRuns = false;
 
     /** @var \Magento\Framework\Indexer\IndexerInterface */
@@ -98,20 +104,21 @@ class Data
      * @param StoreManagerInterface $storeManager
      */
     public function __construct(
-        AlgoliaHelper           $algoliaHelper,
-        ConfigHelper            $configHelper,
-        ProductHelper           $producthelper,
-        CategoryHelper          $categoryHelper,
-        PageHelper              $pageHelper,
-        SuggestionHelper        $suggestionHelper,
-        AdditionalSectionHelper $additionalSectionHelper,
-        Emulation               $emulation,
-        Logger                  $logger,
-        ResourceConnection      $resource,
-        ManagerInterface        $eventManager,
-        ScopeCodeResolver       $scopeCodeResolver,
-        StoreManagerInterface   $storeManager,
-        IndexerRegistry         $indexerRegistry
+        AlgoliaHelper            $algoliaHelper,
+        ConfigHelper             $configHelper,
+        ProductHelper            $producthelper,
+        CategoryHelper           $categoryHelper,
+        PageHelper               $pageHelper,
+        SuggestionHelper         $suggestionHelper,
+        AdditionalSectionHelper  $additionalSectionHelper,
+        Emulation                $emulation,
+        Logger                   $logger,
+        ResourceConnection       $resource,
+        ManagerInterface         $eventManager,
+        ScopeCodeResolver        $scopeCodeResolver,
+        StoreManagerInterface    $storeManager,
+        MissingPriceIndexHandler $missingPriceIndexHandler,
+        IndexerRegistry          $indexerRegistry
 
     )
     {
@@ -128,6 +135,7 @@ class Data
         $this->eventManager = $eventManager;
         $this->scopeCodeResolver = $scopeCodeResolver;
         $this->storeManager = $storeManager;
+        $this->missingPriceIndexHandler = $missingPriceIndexHandler;
 
         $this->priceIndexer = $indexerRegistry->get('catalog_product_price');
     }
@@ -420,8 +428,6 @@ class Data
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-
-        $this->checkPriceIndex($productIds);
 
         $this->startEmulation($storeId);
         $this->logger->start('Indexing');
@@ -753,6 +759,11 @@ class Data
                 'store'      => $storeId
             ]
         );
+
+        if ($this->configHelper->isAutoPriceIndexingEnabled($storeId)) {
+            $this->missingPriceIndexHandler->refreshPriceIndex($collection);
+        }
+
         $logMessage = 'LOADING: ' . $this->logger->getStoreName($storeId) . ',
             collection page: ' . $page . ',
             pageSize: ' . $pageSize;
@@ -973,18 +984,4 @@ class Data
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
         $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName);
     }
-
-    /**
-     * If the price index is stale
-     * @param array $productIds
-     * @return void
-     */
-    protected function checkPriceIndex(array $productIds): void
-    {
-        $state = $this->priceIndexer->getState()->getStatus();
-        if ($state === \Magento\Framework\Indexer\StateInterface::STATUS_INVALID) {
-            $this->priceIndexer->reindexList($productIds);
-        }
-    }
-
 }

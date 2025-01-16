@@ -23,7 +23,11 @@ class IndexOptionsBuilder
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function createIndexOptions(?string $indexSuffix = null, ?int $storeId = null, ?bool $isTmp = false): IndexOptions
+    public function buildWithComputedIndex(
+        ?string $indexSuffix = null,
+        ?int $storeId = null,
+        ?bool $isTmp = false
+    ): IndexOptionsInterface
     {
         $indexOptions =  new IndexOptions([
             IndexOptionsInterface::STORE_ID => $storeId,
@@ -31,9 +35,7 @@ class IndexOptionsBuilder
             IndexOptionsInterface::IS_TMP => $isTmp
         ]);
 
-        $indexOptions->setIndexName($this->computeIndexName($indexOptions));
-
-        return $indexOptions;
+        return $this->build($indexOptions);
     }
 
     /**
@@ -42,13 +44,32 @@ class IndexOptionsBuilder
      * @param string|null $indexName
      * @param int|null $storeId
      * @return IndexOptions
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    public function convertToIndexOptions(?string $indexName = null, ?int $storeId = null): IndexOptions
+    public function buildWithEnforcedIndex(?string $indexName = null, ?int $storeId = null): IndexOptionsInterface
     {
-        return new IndexOptions([
+        $indexOptions = new IndexOptions([
             IndexOptionsInterface::INDEX_NAME => $indexName,
             IndexOptionsInterface::STORE_ID => $storeId
         ]);
+
+        return $this->build($indexOptions);
+    }
+
+    /**
+     * Build IndexOptions object by setting its index name
+     *
+     * @param IndexOptionsInterface $indexOptions
+     * @return IndexOptionsInterface
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     */
+    protected function build(IndexOptionsInterface $indexOptions): IndexOptionsInterface
+    {
+        $indexOptions->setIndexName($this->computeIndexName($indexOptions));
+
+        return $indexOptions;
     }
 
     /**
@@ -61,6 +82,10 @@ class IndexOptionsBuilder
      */
     protected function computeIndexName(IndexOptionsInterface $indexOptions): ?string
     {
+        if (!is_null($indexOptions->getIndexName())) {
+            return $indexOptions->getIndexName();
+        }
+
         if (is_null($indexOptions->getIndexSuffix())) {
             throw new AlgoliaException('Index suffix is mandatory in case no enforced index name is specified.');
         }

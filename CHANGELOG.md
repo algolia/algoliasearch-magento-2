@@ -2,6 +2,7 @@
 
 ## 3.14.4
 
+
 ### Features
 - Added a feature to enable automatic price indexing on the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products.)
 

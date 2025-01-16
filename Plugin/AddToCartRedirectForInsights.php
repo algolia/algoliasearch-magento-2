@@ -78,7 +78,7 @@ class AddToCartRedirectForInsights
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function beforeAddProduct(Cart $cartModel, int|Product $productInfo, array|int|DataObject $requestInfo = null)
+    public function beforeAddProduct(Cart $cartModel, $productInfo, $requestInfo = null)
     {
         // First, check is Insights are enabled
         if (!$this->configHelper->isClickConversionAnalyticsEnabled($this->storeManager->getStore()->getId())) {

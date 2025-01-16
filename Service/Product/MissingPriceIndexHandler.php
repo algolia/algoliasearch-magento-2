@@ -56,7 +56,7 @@ class MissingPriceIndexHandler
      * @param string[]|ProductCollection $products
      * @return string[] Array of product IDs that were reindexed by this repair operation
      */
-    public function refreshPriceIndex(array|ProductCollection $products): array
+    public function refreshPriceIndex($products): array
     {
         $reindexIds = $this->getProductIdsToReindex($products);
         if (empty($reindexIds)) {
@@ -76,7 +76,7 @@ class MissingPriceIndexHandler
      * @param string[]|ProductCollection $products - either an explicit list of product ids or a product collection
      * @return string[] IDs of products that require price reindexing (will be empty if no indexing is required)
      */
-    protected function getProductIdsToReindex(array|ProductCollection $products): array
+    protected function getProductIdsToReindex($products): array
     {
         $productIds = $products instanceof ProductCollection
             ? $this->getProductIdsFromCollection($products)

@@ -7,10 +7,12 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Exception;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * @deprecated (will be removed in v3.16.0)
@@ -19,7 +21,8 @@ class AlgoliaHelper extends AbstractHelper
 {
     public function __construct(
         Context $context,
-        protected AlgoliaConnector $algoliaConnector
+        protected AlgoliaConnector $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder
     ){
         parent::__construct($context);
     }
@@ -59,12 +62,14 @@ class AlgoliaHelper extends AbstractHelper
      * @param array $params
      * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
     public function query(string $indexName, string $q, array $params, ?int $storeId = null): array
     {
-        return $this->algoliaConnector->query($indexName, $q, $params, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        return $this->algoliaConnector->query($indexOptions, $q, $params);
     }
 
     /**
@@ -72,11 +77,13 @@ class AlgoliaHelper extends AbstractHelper
      * @param array $objectIds
      * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function getObjects(string $indexName, array $objectIds, ?int $storeId = null): array
     {
-        return $this->algoliaConnector->getObjects($indexName, $objectIds, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        return $this->algoliaConnector->getObjects($indexOptions, $objectIds);
     }
 
     /**
@@ -86,7 +93,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param bool $mergeSettings
      * @param string $mergeSettingsFrom
      * @param int|null $storeId
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function setSettings(
         $indexName,
@@ -96,13 +103,14 @@ class AlgoliaHelper extends AbstractHelper
         string $mergeSettingsFrom = '',
         ?int $storeId = null
     ) {
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
         $this->algoliaConnector->setSettings(
-            $indexName,
+            $indexOptions,
             $settings,
             $forwardToReplicas,
             $mergeSettings,
-            $mergeSettingsFrom,
-            $storeId
+            $mergeSettingsFrom
         );
     }
 
@@ -110,11 +118,13 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $indexName
      * @param int|null $storeId
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function deleteIndex(string $indexName, ?int $storeId = null): void
     {
-        $this->algoliaConnector->deleteIndex($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->deleteIndex($indexOptions);
     }
 
     /**
@@ -122,11 +132,13 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $indexName
      * @param int|null $storeId
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function deleteObjects(array $ids, string $indexName, ?int $storeId = null): void
     {
-        $this->algoliaConnector->deleteObjects($ids, $indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->deleteObjects($ids, $indexOptions);
     }
 
     /**
@@ -134,11 +146,14 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $toIndexName
      * @param int|null $storeId
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function moveIndex(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $this->algoliaConnector->moveIndex($fromIndexName, $toIndexName, $storeId);
+        $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($fromIndexName, $storeId);
+        $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($toIndexName, $storeId);
+
+        $this->algoliaConnector->moveIndex($fromIndexOptions, $toIndexOptions);
     }
 
     /**
@@ -157,11 +172,13 @@ class AlgoliaHelper extends AbstractHelper
      * @param string $indexName
      * @param int|null $storeId
      * @return array<string, mixed>
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function getSettings(string $indexName, ?int $storeId = null): array
     {
-        return $this->algoliaConnector->getSettings($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        return $this->algoliaConnector->getSettings($indexOptions);
     }
 
     /**
@@ -175,7 +192,9 @@ class AlgoliaHelper extends AbstractHelper
      */
     public function saveObjects(string $indexName, array $objects, bool $isPartialUpdate = false, ?int $storeId = null): void
     {
-        $this->algoliaConnector->saveObjects($indexName, $objects, $isPartialUpdate, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->saveObjects($indexOptions, $objects, $isPartialUpdate);
     }
 
     /**
@@ -184,11 +203,13 @@ class AlgoliaHelper extends AbstractHelper
      * @param bool $forwardToReplicas
      * @param int|null $storeId
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function saveRule(array $rule, string $indexName, bool $forwardToReplicas = false, ?int $storeId = null): void
     {
-        $this->algoliaConnector->saveRule($rule, $indexName, $forwardToReplicas, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->saveRule($rule, $indexOptions, $forwardToReplicas);
     }
 
     /**
@@ -197,10 +218,14 @@ class AlgoliaHelper extends AbstractHelper
      * @param bool $forwardToReplicas
      * @param int|null $storeId
      * @return void
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     public function saveRules(string $indexName, array $rules, bool $forwardToReplicas = false, ?int $storeId = null): void
     {
-        $this->algoliaConnector->saveRules($indexName, $rules, $forwardToReplicas, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->saveRules($indexOptions, $rules, $forwardToReplicas);
     }
 
     /**
@@ -209,7 +234,7 @@ class AlgoliaHelper extends AbstractHelper
      * @param bool $forwardToReplicas
      * @param int|null $storeId
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function deleteRule(
         string $indexName,
@@ -218,7 +243,9 @@ class AlgoliaHelper extends AbstractHelper
         ?int $storeId = null
     ) : void
     {
-        $this->algoliaConnector->deleteRule($indexName, $objectID, $forwardToReplicas, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->deleteRule($indexOptions, $objectID, $forwardToReplicas);
     }
 
     /**
@@ -227,11 +254,14 @@ class AlgoliaHelper extends AbstractHelper
      * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
-     * @throws ExceededRetriesException
+     * @throws ExceededRetriesException|NoSuchEntityException
      */
     public function copySynonyms(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $this->algoliaConnector->copySynonyms($fromIndexName, $toIndexName, $storeId);
+        $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($fromIndexName, $storeId);
+        $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($toIndexName, $storeId);
+
+        $this->algoliaConnector->copySynonyms($fromIndexOptions, $toIndexOptions);
     }
 
     /**
@@ -240,11 +270,14 @@ class AlgoliaHelper extends AbstractHelper
      * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
-     * @throws ExceededRetriesException
+     * @throws ExceededRetriesException|NoSuchEntityException
      */
     public function copyQueryRules(string $fromIndexName, string $toIndexName, ?int $storeId = null): void
     {
-        $this->algoliaConnector->copyQueryRules($fromIndexName, $toIndexName, $storeId);
+        $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($fromIndexName, $storeId);
+        $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($toIndexName, $storeId);
+
+        $this->algoliaConnector->copyQueryRules($fromIndexOptions, $toIndexOptions);
     }
 
     /**
@@ -253,22 +286,26 @@ class AlgoliaHelper extends AbstractHelper
      * @param int|null $storeId
      * @return array
      *
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
-    public function searchRules(string $indexName, array$searchRulesParams = null, ?int $storeId = null)
+    public function searchRules(string $indexName, array $searchRulesParams = null, ?int $storeId = null)
     {
-        return $this->algoliaConnector->searchRules($indexName, $searchRulesParams, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        return $this->algoliaConnector->searchRules($indexOptions, $searchRulesParams);
     }
 
     /**
      * @param string $indexName
      * @param int|null $storeId
      * @return void
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function clearIndex(string $indexName, ?int $storeId = null): void
     {
-        $this->algoliaConnector->clearIndex($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->clearIndex($indexOptions);
     }
 
     /**

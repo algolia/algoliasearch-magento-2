@@ -19,14 +19,36 @@ class MissingPriceIndexHandler
 
     protected array $_indexedProducts = [];
 
-    protected IndexerInterface $indexer;
+    /**
+     * @var CollectionFactory
+     */
+    protected $productCollectionFactory;
+
+    /**
+     * @var ResourceConnection
+     */
+    protected $resourceConnection;
+
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
+     * @var IndexerInterface
+     */
+    protected $indexer;
+
     public function __construct(
-        protected CollectionFactory $productCollectionFactory,
-        protected ResourceConnection $resourceConnection,
-        protected Logger $logger,
+        CollectionFactory $productCollectionFactory,
+        ResourceConnection $resourceConnection,
+        Logger $logger,
         IndexerRegistry $indexerRegistry
     )
     {
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->resourceConnection = $resourceConnection;
+        $this->logger = $logger;
         $this->indexer = $indexerRegistry->get('catalog_product_price');
     }
 

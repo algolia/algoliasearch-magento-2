@@ -58,7 +58,7 @@ class AddToCartRedirectForInsights
         Session $checkoutSession,
         StockRegistryInterface $stockRegistry,
         ManagerInterface $eventManager,
-        ConfigHelper $configHelper,
+        ConfigHelper $configHelper
     ) {
         $this->storeManager = $storeManager;
         $this->productRepository = $productRepository;

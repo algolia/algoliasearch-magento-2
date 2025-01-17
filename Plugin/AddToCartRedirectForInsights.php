@@ -22,14 +22,51 @@ class AddToCartRedirectForInsights
      */
     private $requestInfoFilter;
 
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var ProductRepositoryInterface
+     */
+    protected $productRepository;
+
+    /**
+     * @var Session
+     */
+    protected $checkoutSession;
+
+    /**
+     * @var StockRegistryInterface
+     */
+    protected $stockRegistry;
+
+    /**
+     * @var ManagerInterface
+     */
+    protected ManagerInterface $eventManager;
+
+    /**
+     * @var ConfigHelper
+     */
+    protected ConfigHelper $configHelper;
+
     public function __construct(
-        protected StoreManagerInterface $storeManager,
-        protected ProductRepositoryInterface $productRepository,
-        protected Session $checkoutSession,
-        protected StockRegistryInterface $stockRegistry,
-        protected ManagerInterface $eventManager,
-        protected ConfigHelper $configHelper,
-    ) {}
+        StoreManagerInterface $storeManager,
+        ProductRepositoryInterface $productRepository,
+        Session $checkoutSession,
+        StockRegistryInterface $stockRegistry,
+        ManagerInterface $eventManager,
+        ConfigHelper $configHelper
+    ) {
+        $this->storeManager = $storeManager;
+        $this->productRepository = $productRepository;
+        $this->checkoutSession = $checkoutSession;
+        $this->stockRegistry = $stockRegistry;
+        $this->eventManager = $eventManager;
+        $this->configHelper = $configHelper;
+    }
 
     /**
      * @param Cart $cartModel
@@ -41,7 +78,7 @@ class AddToCartRedirectForInsights
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function beforeAddProduct(Cart $cartModel, int|Product $productInfo, array|int|DataObject $requestInfo = null)
+    public function beforeAddProduct(Cart $cartModel, $productInfo, $requestInfo = null)
     {
         // First, check is Insights are enabled
         if (!$this->configHelper->isClickConversionAnalyticsEnabled($this->storeManager->getStore()->getId())) {

@@ -519,6 +519,11 @@ class AlgoliaHelper extends AbstractHelper
         throw new AlgoliaException("This method is no longer supported for PHP client v4!");
     }
 
+    public function clearSynonyms(string $indexName, bool $forwardToReplicas = false): void
+    {
+        $this->client->clearSynonyms($indexName, $forwardToReplicas);
+    }
+
     /**
      * @param string $fromIndexName
      * @param string $toIndexName

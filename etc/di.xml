@@ -152,6 +152,7 @@
                 <item name="replica_delete_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDeleteCommand</item>
                 <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand</item>
                 <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
+                <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
             </argument>
         </arguments>
     </type>

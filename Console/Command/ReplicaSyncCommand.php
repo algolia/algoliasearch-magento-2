@@ -35,7 +35,7 @@ class ReplicaSyncCommand extends AbstractReplicaCommand implements ReplicaSyncCo
         parent::__construct($appState, $storeNameFetcher, $name);
     }
 
-    protected function getReplicaCommandName(): string
+    protected function getCommandName(): string
     {
         return 'sync';
     }

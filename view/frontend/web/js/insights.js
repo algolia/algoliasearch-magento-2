@@ -6,7 +6,7 @@ define([
 ], function ($, algoliaAnalyticsWrapper, algoliaCommon) {
     const USE_GLOBALS = true;
 
-    algoliaAnalytics = algoliaAnalyticsWrapper.default;
+    const algoliaAnalytics = algoliaAnalyticsWrapper.default;
 
     const algoliaInsights = {
         config            : null,

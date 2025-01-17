@@ -7,9 +7,16 @@ use Magento\Framework\UrlInterface;
 
 class AutomaticPriceIndexingComment implements CommentInterface
 {
+    /**
+     * @var UrlInterface
+     */
+    protected $urlInterface;
+
     public function __construct(
-        protected UrlInterface $urlInterface
-    ) { }
+        UrlInterface $urlInterface
+    ) {
+        $this->urlInterface = $urlInterface;
+    }
 
     public function getCommentText($elementValue)
     {

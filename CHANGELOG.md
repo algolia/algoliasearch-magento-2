@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.13.8
+
+### Bug Fixes
+- Restored compatibility with PHP 7.4
+
 ## 3.13.7
 
 ### Features

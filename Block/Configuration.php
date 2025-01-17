@@ -13,7 +13,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     //Placeholder for future implementation (requires custom renderer for hierarchicalMenu widget)
     private const IS_CATEGORY_NAVIGATION_ENABLED = false;
 
-    public function isSearchPage()
+    public function isSearchPage(): bool
     {
         if ($this->getConfigHelper()->isInstantEnabled()) {
             /** @var Http $request */
@@ -79,8 +79,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $categoryHelper = $this->getCategoryHelper();
 
         $suggestionHelper = $this->getSuggestionHelper();
-
-        $productHelper = $this->getProductHelper();
 
         $algoliaHelper = $this->getAlgoliaHelper();
 
@@ -255,7 +253,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'attributeFilter' => $attributesToFilter,
             'facets' => $facets,
             'areCategoriesInFacets' => $areCategoriesInFacets,
-            'hitsPerPage' => (int) $config->getNumberOfProductResults(),
+            'hitsPerPage' => $config->getNumberOfProductResults(),
             'sortingIndices' => array_values($this->sortingTransformer->getSortingIndices(
                 $this->getStoreId(),
                 $customerGroupId
@@ -422,7 +420,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         return $ids;
     }
 
-    protected function isLandingPage()
+    protected function isLandingPage(): bool
     {
         return $this->getRequest()->getFullActionName() === 'algolia_landingpage_view';
     }
@@ -440,5 +438,16 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     protected function getLandingPageConfiguration()
     {
         return $this->isLandingPage() ? $this->getCurrentLandingPage()->getConfiguration() : json_encode([]);
+    }
+
+    public function canLoadInstantSearch(): bool
+    {
+        return $this->getConfigHelper()->isInstantEnabled()
+            && $this->isProductListingPage();
+    }
+
+    protected function isProductListingPage(): bool
+    {
+        return $this->isSearchPage() || $this->isLandingPage();
     }
 }

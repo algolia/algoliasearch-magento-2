@@ -158,28 +158,50 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     {
         if (count($subproducts) > 0) {
             $groupPriceList = [];
+            $subProductsMin = -1;
+            $subProductsMax = 0;
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
                 $minPrice = $min;
+
                 foreach ($subproducts as $subProduct) {
                     $subProduct->setData('customer_group_id', $groupId);
                     $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
                     $specialPrice = $this->getSpecialPrice($subProduct, $currencyCode, $withTax, []);
                     $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
                     $price     = $this->getTaxPrice($product, $subProduct->getPriceModel()->getFinalPrice(1, $subProduct), $withTax);
+
                     if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]){
                         $minPrice = $tierPrice[$groupId];
                     }
-                    $groupPriceList[$groupId]['min'] = min($minPrice, $price);
-                    $groupPriceList[$groupId]['max'] = max($max, $price);
+
+                    if (isset($tierPrice[$groupId]) && $tierPrice[$groupId] !== false) {
+                        $minPrice = $tierPrice[$groupId];
+                    }
+
+                    if ($subProductsMin == -1 || $price < $subProductsMin) {
+                        $subProductsMin = $price;
+                    }
+
+                    if ($price > $subProductsMax) {
+                        $subProductsMax = $price;
+                    }
+
+                    $groupPriceList[$groupId]['min'] = min($minPrice, $subProductsMin);
+                    $groupPriceList[$groupId]['max'] = $subProductsMax;
                     $subProduct->setData('customer_group_id', null);
+
                 }
+
+                $subProductsMin = -1;
+                $subProductsMax = 0;
             }
 
             $minArray = [];
             foreach ($groupPriceList as $key => $value) {
                 $minArray[$key]['price'] = $value['min'];
+                $minArray[$key]['price_max'] = $value['max'];
                 $minArray[$key]['formatted'] = $this->formattedConfigPrice($value['min'], $value['max'], $currencyCode);
                 if ($currencyCode !== $this->baseCurrencyCode) {
                     $minArray[$key]['formatted'] = $this->formattedConfigPrice($value['min'], $value['max'], $currencyCode);
@@ -190,6 +212,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                 $groupId = (int) $group->getData('customer_group_id');
                 $this->customData[$field][$currencyCode]['group_' . $groupId] = $minArray[$groupId]['price'];
                 $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] = $minArray[$groupId]['formatted'];
+                $this->customData[$field][$currencyCode]['group_' . $groupId . '_max'] = $minArray[$groupId]['price_max'];
             }
         } else {
             /** @var Group $group */

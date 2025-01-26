@@ -735,6 +735,8 @@ define([
         },
 
         /**
+         * Get raw search parameters for configure widget
+         * See https://www.algolia.com/doc/api-reference/widgets/configure/js/
          * @returns {*[]}
          */
         getSearchParameters() {

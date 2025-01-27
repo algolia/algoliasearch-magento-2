@@ -616,7 +616,7 @@ define([
                     for (let l = 0; l < 10; l++) {
                         hierarchical_levels.push('categories.level' + l.toString());
                     }
-    
+
                     const hierarchicalMenuParams = {
                         container      : facet.wrapper.appendChild(
                             algoliaCommon.createISWidgetContainer(facet.attribute)
@@ -626,7 +626,6 @@ define([
                         templates      : templates,
                         showParentLevel: true,
                         limit          : algoliaConfig.maxValuesPerFacet,
-                        rootPath       : algoliaConfig.request.path,
                         sortBy         : ['name:asc'],
                         transformItems(items) {
                             return algoliaConfig.isCategoryPage
@@ -642,10 +641,14 @@ define([
                                 : items;
                         },
                     };
-    
+
+                    if (algoliaConfig.isCategoryPage) {
+                        hierarchicalMenuParams.rootPath = algoliaConfig.request.path;
+                    }
+
                     hierarchicalMenuParams.templates.item =
                         '' +
-                        '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}">{{label}}' +
+                        '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}"><span class="ais-HierarchicalMenu-label">{{label}}</span>' +
                         ' ' +
                         '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
                         '</a>';
@@ -660,7 +663,7 @@ define([
                             return !items.length;
                         },
                     };
-    
+
                     return ['hierarchicalMenu', hierarchicalMenuParams];
                 },
             };

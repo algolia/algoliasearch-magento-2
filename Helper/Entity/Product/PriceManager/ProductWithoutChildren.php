@@ -15,6 +15,7 @@ use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Helper\Data as TaxHelper;
+use Magento\Weee\Model\Tax as WeeeTax;
 use Magento\Tax\Model\Config as TaxConfig;
 use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
 
@@ -40,6 +41,10 @@ abstract class ProductWithoutChildren
      * @var TaxHelper
      */
     protected $taxHelper;
+    /**
+     * @var WeeeTax
+     */
+    protected $weeeTax;
     /**
      * @var Rule
      */
@@ -89,6 +94,7 @@ abstract class ProductWithoutChildren
         PriceCurrencyInterface $priceCurrency,
         CatalogHelper $catalogHelper,
         TaxHelper $taxHelper,
+        WeeeTax $weeeTax,
         Rule $rule,
         ProductFactory $productloader,
         ScopedProductTierPriceManagementInterface $productTierPrice,
@@ -100,6 +106,7 @@ abstract class ProductWithoutChildren
         $this->priceCurrency = $priceCurrency;
         $this->catalogHelper = $catalogHelper;
         $this->taxHelper = $taxHelper;
+        $this->weeeTax = $weeeTax;
         $this->rule = $rule;
         $this->productloader = $productloader;
         $this->productTierPrice = $productTierPrice;
@@ -143,7 +150,7 @@ abstract class ProductWithoutChildren
             $product->setPriceCalculation(true);
             foreach ($currencies as $currencyCode) {
                 $this->customData[$field][$currencyCode] = [];
-                $price = $product->getPrice();
+                $price = $product->getPrice() + $this->weeeTax->getWeeeAmount($product);
                 if ($currencyCode !== $this->baseCurrencyCode) {
                     $price = $this->convertPrice($price, $currencyCode);
                 }
@@ -254,7 +261,7 @@ abstract class ProductWithoutChildren
             $specialPrices[$groupId] = [];
             $specialPrices[$groupId][] = $this->getRulePrice($groupId, $product, $subProducts);
             // The price with applied catalog rules
-            $specialPrices[$groupId][] = $product->getFinalPrice(); // The product's special price
+            $specialPrices[$groupId][] = $product->getFinalPrice() + $this->weeeTax->getWeeeAmount($product); // The product's special price
             $specialPrices[$groupId] = array_filter($specialPrices[$groupId], function ($price) {
                 return $price > 0;
             });

@@ -7,6 +7,9 @@ use Magento\Customer\Model\Group;
 
 abstract class ProductWithChildren extends ProductWithoutChildren
 {
+
+    const PRICE_NOT_SET = -1;
+
     /**
      * @param $product
      * @param $withTax
@@ -158,8 +161,8 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     {
         if (count($subproducts) > 0) {
             $groupPriceList = [];
-            $subProductsMin = -1;
-            $subProductsMax = 0;
+            $subProductsMin = self::PRICE_NOT_SET;
+            $subProductsMax = self::PRICE_NOT_SET;
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
@@ -172,30 +175,25 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                     $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
                     $price     = $this->getTaxPrice($product, $subProduct->getPriceModel()->getFinalPrice(1, $subProduct), $withTax);
 
-                    if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]){
+                    if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {
                         $minPrice = $tierPrice[$groupId];
                     }
 
-                    if (isset($tierPrice[$groupId]) && $tierPrice[$groupId] !== false) {
-                        $minPrice = $tierPrice[$groupId];
-                    }
-
-                    if ($subProductsMin == -1 || $price < $subProductsMin) {
+                    if ($subProductsMin === self::PRICE_NOT_SET || $price < $subProductsMin) {
                         $subProductsMin = $price;
                     }
 
-                    if ($price > $subProductsMax) {
+                    if ($subProductsMax === self::PRICE_NOT_SET || $price > $subProductsMax) {
                         $subProductsMax = $price;
                     }
 
                     $groupPriceList[$groupId]['min'] = min($minPrice, $subProductsMin);
                     $groupPriceList[$groupId]['max'] = $subProductsMax;
                     $subProduct->setData('customer_group_id', null);
-
                 }
 
-                $subProductsMin = -1;
-                $subProductsMax = 0;
+                $subProductsMin = self::PRICE_NOT_SET;
+                $subProductsMax = self::PRICE_NOT_SET;
             }
 
             $minArray = [];

@@ -1,3 +1,11 @@
+/**
+ * For templating the Mustache library is used by default
+ * Docs: https://github.com/janl/mustache.js
+ *
+ * Alternatively you can also use Hogan
+ * Docs:http://twitter.github.io/hogan.js/
+ **/
+
 define([], function () {
   const ENGINE_TYPE_HOGAN = 'hogan';
   const ENGINE_TYPE_MUSTACHE = 'mustache';
@@ -30,7 +38,7 @@ define([], function () {
     // Convenience method
     processTemplate: async function (template, data, measure = false) {
       const adapter = await this.getSelectedEngineAdapter();
-      return (measure) 
+      return (measure)
         ? adapter.processAndMeasure(template, data)
         : adapter.process(template, data);
     },

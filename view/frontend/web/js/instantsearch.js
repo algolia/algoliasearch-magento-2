@@ -470,7 +470,6 @@ define([
                         templates      : templates,
                         showParentLevel: true,
                         limit          : algoliaConfig.maxValuesPerFacet,
-                        rootPath       : algoliaConfig.request.path,
                         sortBy         : ['name:asc'],
                         transformItems(items) {
                             return algoliaConfig.isCategoryPage
@@ -487,9 +486,12 @@ define([
                         },
                     };
 
+                    if (algoliaConfig.isCategoryPage) {
+                        hierarchicalMenuParams.rootPath = algoliaConfig.request.path;
+                    }
+
                     hierarchicalMenuParams.templates.item =
-                        '' +
-                        '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}">{{label}}' +
+                        '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}"><span class="{{cssClasses.label}}">{{label}}</span>' +
                         ' ' +
                         '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
                         '</a>';

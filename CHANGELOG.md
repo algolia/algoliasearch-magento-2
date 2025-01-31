@@ -1,9 +1,26 @@
 # CHANGE LOG
 
-## 3.15.0-beta.1
+## 3.15.0-beta.2
 
-## Updates
-- Added support for Multi-Application IDs
+### Features
+- Added support for Multi-Application IDs (see [preview documentation](https://deploy-preview-9699--algolia-docs.netlify.app/doc/integration/magento-2/getting-started/quick-start/?client=php#support-for-multiple-application-ids))
+- Refactored frontend library ##TO_BE_DEVELOPED## (see [preview documentation](https://deploy-preview-9690--algolia-docs.netlify.app/doc/integration/magento-2/customize/custom-front-end-events/?client=php))
+- Added granular profiling ##TO_BE_DEVELOPED##
+
+### Updates
+- Tests: Added possibility to run tests with multiple applications IDs.
+- Introduced Index Builders which are services responsible for creating and filling indices with data.
+- **IMPORTANT**: As a result `AlgoliaHelper` is now deprecated and will be removed from the codebase in version 3.16.0
+- Added `BackendSearch` Service to move `getSearchResults` method into.
+- Updated Indexing Queue display in the admin by adding the `class` column
+- Updated Indexing Queue `data` column formatting
+- Added documentation link on the queue archive page
+- Removed `algoliaBundle` package
+
+### Bug Fixes
+- Fixed a bug where admin panels didn't display properly on Magento 2.4.7
+- Fixed customer groups prices ranges on configurable products
+- Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
 
 ## 3.14.4
 
@@ -116,6 +133,11 @@ If you have customized your Algolia implementation or are running on an older ve
 - Introduced PHP 8 constructor property promotion on affected classes
 - Added stronger typing to affected classes and methods
 - Added Looking Similar recommendations
+
+## 3.13.8
+
+### Bug Fixes
+- Restored compatibility with PHP 7.4
 
 ## 3.13.7
 

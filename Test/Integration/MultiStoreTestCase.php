@@ -46,13 +46,23 @@ abstract class MultiStoreTestCase extends IndexingTestCase
      * @param string $storeCode
      * @param string $entity
      * @param int $expectedNumber
-     *
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      */
-    protected function assertNbOfRecordsPerStore(string $storeCode, string $entity, int $expectedNumber): void
+    protected function assertNbOfRecordsPerStore(
+        string $storeCode,
+        string $entity,
+        int $expectedNumber,
+        int $storeId = null
+    ): void
     {
-        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix .  $storeCode . '_' . $entity, '', []);
+        $resultsDefault = $this->algoliaHelper->query(
+            $this->indexPrefix .  $storeCode . '_' . $entity,
+            '',
+            [],
+            $storeId
+        );
 
         $this->assertEquals($expectedNumber, $resultsDefault['results'][0]['nbHits']);
     }
@@ -99,10 +109,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1, $store->getCode());
         }
 
-        $this->algoliaHelper->setStoreId($store->getId());
         $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
-        $this->algoliaHelper->waitLastTask();
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 
     /**
@@ -118,17 +125,16 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     protected function clearStoresIndices($wait = false)
     {
         foreach ($this->storeManager->getStores() as $store) {
-            $this->algoliaHelper->setStoreId($store->getId());
             $deletedStoreIndices = 0;
 
-            $indices = $this->algoliaHelper->listIndexes();
+            $indices = $this->algoliaHelper->listIndexes($store->getId());
 
             foreach ($indices['items'] as $index) {
                 $name = $index['name'];
 
                 if (mb_strpos($name, $this->indexPrefix) === 0) {
                     try {
-                        $this->algoliaHelper->deleteIndex($name);
+                        $this->algoliaHelper->deleteIndex($name, $store->getId());
                         $deletedStoreIndices++;
                     } catch (AlgoliaException $e) {
                         // Might be a replica
@@ -137,10 +143,8 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             }
 
             if ($deletedStoreIndices > 0 && $wait) {
-                $this->algoliaHelper->waitLastTask();
+                $this->algoliaHelper->waitLastTask($store->getId());
             }
         }
-
-        $this->algoliaHelper->setStoreId(AlgoliaHelper::ALGOLIA_DEFAULT_SCOPE);
     }
 }

@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
@@ -15,7 +16,7 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected PageHelper $pageHelper,
-        protected Data $fullAction,
+        protected Data $dataHelper,
         protected AlgoliaHelper $algoliaHelper,
         protected Queue $queue,
         protected ConfigHelper $configHelper,
@@ -32,7 +33,7 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
         $storeIds = $this->pageHelper->getStores();
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -45,12 +46,13 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
             if ($this->isPagesInAdditionalSections($storeId)) {
                 $data = ['storeId' => $storeId];
                 if (is_array($ids) && count($ids) > 0) {
-                    $data['pageIds'] = $ids;
+                    $data['options'] = ['entityIds' => $ids];
                 }
 
+                /** @uses PageIndexBuilder::buildIndexFull() */
                 $this->queue->addToQueue(
-                    Data::class,
-                    'rebuildStorePageIndex',
+                    PageIndexBuilder::class,
+                    'buildIndexFull',
                     $data,
                     is_array($ids) ? count($ids) : 1
                 );

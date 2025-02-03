@@ -3,8 +3,8 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Helper\Adapter\FiltersHelper;
-use Algolia\AlgoliaSearch\Helper\Data as AlgoliaDataHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
 use Magento\CatalogSearch\Helper\Data as CatalogSearchDataHelper;
 
 class AdapterHelper
@@ -14,7 +14,7 @@ class AdapterHelper
 
     public function __construct(
         protected CatalogSearchDataHelper $catalogSearchHelper,
-        protected AlgoliaDataHelper $algoliaHelper,
+        protected BackendSearch $backendSearch,
         protected FiltersHelper $filtersHelper,
         protected ConfigHelper $configHelper,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
@@ -52,7 +52,7 @@ class AdapterHelper
             }
         }
 
-        return $this->algoliaHelper->getSearchResult($algoliaQuery, $storeId, $searchParams, $targetedIndex);
+        return $this->backendSearch->getSearchResult($algoliaQuery, $storeId, $searchParams, $targetedIndex);
     }
 
     /**

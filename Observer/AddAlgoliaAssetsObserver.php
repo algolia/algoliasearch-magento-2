@@ -2,13 +2,15 @@
 
 namespace Algolia\AlgoliaSearch\Observer;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Magento\Catalog\Model\Category;
 use Magento\Framework\App\Request\Http;
+use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Registry;
 use Magento\Framework\View\Layout;
 use Magento\Framework\View\Page\Config as PageConfig;
 use Magento\Store\Model\StoreManagerInterface;
@@ -20,7 +22,7 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
 {
     public function __construct(
         protected ConfigHelper $config,
-        protected Registry $registry,
+        protected CurrentCategory $category,
         protected StoreManagerInterface $storeManager,
         protected PageConfig $pageConfig,
         protected Http $request,
@@ -29,13 +31,13 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
     {}
 
     /**
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|AlgoliaException
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer): void
     {
         $actionName = $this->request->getFullActionName();
         if ($actionName === 'swagger_index_index') {
-            return $this;
+            return;
         }
         $storeId = $this->storeManager->getStore()->getId();
         if ($this->config->isEnabledFrontEnd($storeId)) {
@@ -53,13 +55,13 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
 
     private function loadPreventBackendRenderingHandle(Layout $layout, int $storeId): void
     {
-        if ($this->config->preventBackendRendering($storeId) === false) {
+        if (!$this->config->preventBackendRendering($storeId)) {
             return;
         }
 
-        /** @var Category $category */
-        $category = $this->registry->registry('current_category');
-        if (!$category) {
+        $category = $this->category->get();
+
+        if (!$category->getId()) {
             return;
         }
 
@@ -68,7 +70,8 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
         }
 
         $displayMode = $this->config->getBackendRenderingDisplayMode($storeId);
-        if ($displayMode === 'only_products' && $category->getDisplayMode() === 'PAGE') {
+        if ($displayMode === 'only_products'
+            && $category->getData('display_mode') === \Magento\Catalog\Model\Category::DM_PAGE) {
             return;
         }
 

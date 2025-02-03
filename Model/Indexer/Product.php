@@ -6,23 +6,27 @@ use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
+
     public function __construct(
-        protected StoreManagerInterface $storeManager,
-        protected ProductHelper $productHelper,
-        protected Data $fullAction,
-        protected AlgoliaHelper $algoliaHelper,
-        protected ConfigHelper $configHelper,
-        protected Queue $queue,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected StoreManagerInterface     $storeManager,
+        protected ProductHelper             $productHelper,
+        protected Data                      $dataHelper,
+        protected AlgoliaHelper             $algoliaHelper,
+        protected ConfigHelper              $configHelper,
+        protected Queue                     $queue,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected DiagnosticsLogger         $diag
     )
     {}
 
@@ -35,7 +39,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
         $areParentsLoaded = false;
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -54,11 +58,11 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
 
             if (is_array($productIds) && count($productIds) > 0) {
                 foreach (array_chunk($productIds, $productsPerPage) as $chunk) {
-                    /** @uses Data::rebuildStoreProductIndex() */
+                    /** @uses ProductIndexBuilder::buildIndexList() */
                     $this->queue->addToQueue(
-                        Data::class,
-                        'rebuildStoreProductIndex',
-                        ['storeId' => $storeId, 'productIds' => $chunk],
+                        ProductIndexBuilder::class,
+                        'buildIndexList',
+                        ['storeId' => $storeId, 'entityIds' => $chunk],
                         count($chunk)
                     );
                 }
@@ -69,7 +73,11 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
             $useTmpIndex = $this->configHelper->isQueueActive($storeId);
             $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
             $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
+
+            $timerName = __METHOD__ . ' (Get product collection size)';
+            $this->diag->startProfiling($timerName);
             $size = $collection->getSize();
+            $this->diag->stopProfiling($timerName);
 
             $pages = ceil($size / $productsPerPage);
 
@@ -81,14 +89,22 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
             for ($i = 1; $i <= $pages; $i++) {
                 $data = [
                     'storeId' => $storeId,
-                    'productIds' => $productIds,
-                    'page' => $i,
-                    'pageSize' => $productsPerPage,
-                    'useTmpIndex' => $useTmpIndex,
+                    'options' => [
+                        'entityIds' => $productIds,
+                        'page' => $i,
+                        'pageSize' => $productsPerPage,
+                        'useTmpIndex' => $useTmpIndex,
+                    ]
                 ];
 
-                /** @uses Data::rebuildProductIndex() */
-                $this->queue->addToQueue(Data::class, 'rebuildProductIndex', $data, $productsPerPage, true);
+                /** @uses ProductIndexBuilder::buildIndexFull() */
+                $this->queue->addToQueue(
+                    ProductIndexBuilder::class,
+                    'buildIndexFull',
+                    $data,
+                    $productsPerPage,
+                    true
+                );
             }
 
             if ($useTmpIndex) {

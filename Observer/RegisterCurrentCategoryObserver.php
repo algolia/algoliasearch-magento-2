@@ -21,7 +21,7 @@ class RegisterCurrentCategoryObserver implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        /** @var CategoryInterface */
+        /** @var $category CategoryInterface */
         $category = $observer->getEvent()->getData('category');
         $this->currentCategory->set($category);
     }

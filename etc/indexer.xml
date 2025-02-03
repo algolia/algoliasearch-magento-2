@@ -5,9 +5,6 @@
         <description translate="true">
             Rebuild products index.
         </description>
-        <dependencies>
-            <indexer id="catalog_product_price" />
-        </dependencies>
     </indexer>
     <indexer id="algolia_categories" view_id="algolia_categories" class="Algolia\AlgoliaSearch\Model\Indexer\Category">
         <title translate="true">Algolia Search Categories</title>

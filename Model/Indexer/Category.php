@@ -8,6 +8,8 @@ use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
@@ -17,7 +19,7 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected CategoryHelper $categoryHelper,
-        protected Data $fullAction,
+        protected Data $dataHelper,
         protected Queue $queue,
         protected ConfigHelper $configHelper,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
@@ -29,7 +31,7 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {
-            if ($this->fullAction->isIndexingEnabled($storeId) === false) {
+            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
                 continue;
             }
 
@@ -79,13 +81,13 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
         if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
             $productsPerPage = $this->configHelper->getNumberOfElementByPage();
             foreach (array_chunk($affectedProducts, $productsPerPage) as $chunk) {
-                /** @uses Data::rebuildStoreProductIndex() */
+                /** @uses ProductIndexBuilder::buildIndexList() */
                 $this->queue->addToQueue(
-                    Data::class,
-                    'rebuildStoreProductIndex',
+                    ProductIndexBuilder::class,
+                    'buildIndexList',
                     [
                         'storeId' => $storeId,
-                        'productIds' => $chunk,
+                        'entityIds' => $chunk,
                     ],
                     count($chunk)
                 );
@@ -101,13 +103,13 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
     private function processSpecificCategories($categoryIds, $categoriesPerPage, $storeId)
     {
         foreach (array_chunk($categoryIds, $categoriesPerPage) as $chunk) {
-            /** @uses Data::rebuildStoreCategoryIndex */
+            /** @uses CategoryIndexBuilder::buildIndexList */
             $this->queue->addToQueue(
-                Data::class,
-                'rebuildStoreCategoryIndex',
+                CategoryIndexBuilder::class,
+                'buildIndexList',
                 [
                     'storeId' => $storeId,
-                    'categoryIds' => $chunk,
+                    'entityIds' => $chunk,
                 ],
                 count($chunk)
             );
@@ -134,12 +136,20 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
         for ($i = 1; $i <= $pages; $i++) {
             $data = [
                 'storeId' => $storeId,
-                'page' => $i,
-                'pageSize' => $categoriesPerPage,
+                'options' => [
+                    'page' => $i,
+                    'pageSize' => $categoriesPerPage,
+                ]
             ];
 
-            /** @uses Data::rebuildCategoryIndex() */
-            $this->queue->addToQueue(Data::class, 'rebuildCategoryIndex', $data, $categoriesPerPage, true);
+            /** @uses CategoryIndexBuilder::buildIndexFull() */
+            $this->queue->addToQueue(
+                CategoryIndexBuilder::class,
+                'buildIndexFull',
+                $data,
+                $categoriesPerPage,
+                true
+            );
         }
     }
 }

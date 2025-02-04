@@ -23,6 +23,7 @@ class RecordBuilder implements RecordBuilderInterface
 {
     protected $categoryNames;
     protected $idColumn;
+    protected $coreCategories;
 
     public function __construct(
         protected ManagerInterface          $eventManager,

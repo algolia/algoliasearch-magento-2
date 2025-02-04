@@ -30,22 +30,24 @@ class RecordBuilder implements RecordBuilderInterface
             throw new AlgoliaException('Object must be a Page model');
         }
 
+        $page = $entity;
+
         $pageObject = [];
-        $pageObject['slug'] = $entity->getIdentifier();
-        $pageObject['name'] = $entity->getTitle();
+        $pageObject['slug'] = $page->getIdentifier();
+        $pageObject['name'] = $page->getTitle();
 
         $content = $entity->getContent();
         if ($this->configHelper->getRenderTemplateDirectives()) {
             $content = $this->filterProvider->getPageFilter()->filter($content);
         }
 
-        $frontendUrlBuilder = $this->frontendUrlFactory->create()->setScope($entity->getData('store_id'));
-        $pageObject[AlgoliaConnector::ALGOLIA_API_OBJECT_ID] = $entity->getId();
+        $frontendUrlBuilder = $this->frontendUrlFactory->create()->setScope($page->getData('store_id'));
+        $pageObject[AlgoliaConnector::ALGOLIA_API_OBJECT_ID] = $page->getId();
         $pageObject['url'] = $frontendUrlBuilder->getUrl(
             null,
             [
-                '_direct' => $entity->getIdentifier(),
-                '_secure' => $this->configHelper->useSecureUrlsInFrontend($entity->getData('store_id')),
+                '_direct' => $page->getIdentifier(),
+                '_secure' => $this->configHelper->useSecureUrlsInFrontend($page->getData('store_id')),
             ]
         );
         $pageObject['content'] = $this->strip($content, ['script', 'style']);
@@ -53,7 +55,7 @@ class RecordBuilder implements RecordBuilderInterface
         $transport = new DataObject($pageObject);
         $this->eventManager->dispatch(
             'algolia_after_create_page_object',
-            ['page' => $transport, 'pageObject' => $entity]
+            ['page' => $transport, 'pageObject' => $page]
         );
 
         return $transport->getData();

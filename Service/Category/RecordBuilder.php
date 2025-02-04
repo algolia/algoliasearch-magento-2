@@ -39,25 +39,27 @@ class RecordBuilder implements RecordBuilderInterface
             throw new AlgoliaException('Object must be a Category model');
         }
 
+        $category = $entity;
+
         /** @var Collection $productCollection */
-        $productCollection = $entity->getProductCollection();
-        $entity->setProductCount($productCollection->getSize());
+        $productCollection = $category->getProductCollection();
+        $category->setProductCount($productCollection->getSize());
 
         $transport = new DataObject();
         $this->eventManager->dispatch(
             'algolia_category_index_before',
-            ['category' => $entity, 'custom_data' => $transport]
+            ['category' => $category, 'custom_data' => $transport]
         );
         $customData = $transport->getData();
 
-        $storeId = $entity->getStoreId();
+        $storeId = $category->getStoreId();
 
         /** @var Url $urlInstance */
-        $urlInstance = $entity->getUrlInstance();
+        $urlInstance = $category->getUrlInstance();
         $urlInstance->setData('store', $storeId);
 
         $path = '';
-        foreach ($entity->getPathIds() as $categoryId) {
+        foreach ($category->getPathIds() as $categoryId) {
             if ($path !== '') {
                 $path .= ' / ';
             }
@@ -68,21 +70,21 @@ class RecordBuilder implements RecordBuilderInterface
         $imageUrl = null;
 
         try {
-            $imageUrl = $entity->getImageUrl();
+            $imageUrl = $category->getImageUrl();
         } catch (\Exception $e) {
             /* no image, no default: not fatal */
         }
 
         $data = [
-            AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $entity->getId(),
-            'name'                                  => $entity->getName(),
+            AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $category->getId(),
+            'name'                                  => $category->getName(),
             'path'                                  => $path,
-            'level'                                 => $entity->getLevel(),
-            'url'                                   => $this->getUrl($entity),
-            'include_in_menu'                       => $entity->getIncludeInMenu(),
+            'level'                                 => $category->getLevel(),
+            'url'                                   => $this->getUrl($category),
+            'include_in_menu'                       => $category->getIncludeInMenu(),
             '_tags'                                 => ['category'],
             'popularity'                            => 1,
-            'product_count'                         => $entity->getProductCount(),
+            'product_count'                         => $category->getProductCount(),
         ];
 
         if (!empty($imageUrl)) {
@@ -90,14 +92,14 @@ class RecordBuilder implements RecordBuilderInterface
         }
 
         foreach ($this->configHelper->getCategoryAdditionalAttributes($storeId) as $attribute) {
-            $value = $entity->getData($attribute['attribute']);
+            $value = $category->getData($attribute['attribute']);
 
             /** @var CategoryResource $resource */
-            $resource = $entity->getResource();
+            $resource = $category->getResource();
 
             $attributeResource = $resource->getAttribute($attribute['attribute']);
             if ($attributeResource) {
-                $value = $attributeResource->getFrontend()->getValue($entity);
+                $value = $attributeResource->getFrontend()->getValue($category);
             }
 
             if (isset($data[$attribute['attribute']])) {
@@ -114,7 +116,7 @@ class RecordBuilder implements RecordBuilderInterface
         $transport = new DataObject($data);
         $this->eventManager->dispatch(
             'algolia_after_create_category_object',
-            ['category' => $entity, 'categoryObject' => $transport]
+            ['category' => $category, 'categoryObject' => $transport]
         );
 
         return $transport->getData();

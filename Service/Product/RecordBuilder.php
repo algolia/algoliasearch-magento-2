@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\RecordBuilder\RecordBuilderInterface;
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
 use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
 use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
@@ -53,6 +54,18 @@ class RecordBuilder implements RecordBuilderInterface
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
     ){}
+
+    /**
+     * Builds a Product record
+     *
+     * @param DataObject $entity
+     * @return array
+     *
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws DiagnosticsException
+     */
     public function buildRecord(DataObject $entity): array
     {
         if (!$entity instanceof Product) {

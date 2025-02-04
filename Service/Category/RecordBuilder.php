@@ -34,6 +34,14 @@ class RecordBuilder implements RecordBuilderInterface
         protected Manager                   $moduleManager,
     ) {}
 
+    /**
+     * Builds a Category record
+     *
+     * @param DataObject $entity
+     * @return array
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     */
     public function buildRecord(DataObject $entity): array
     {
         if (!$entity instanceof MagentoCategory) {

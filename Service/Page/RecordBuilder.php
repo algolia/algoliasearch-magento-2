@@ -22,6 +22,11 @@ class RecordBuilder implements RecordBuilderInterface
     ){}
 
     /**
+     * Builds a Page record
+     *
+     * @param DataObject $entity
+     * @return array
+     *
      * @throws AlgoliaException
      */
     public function buildRecord(DataObject $entity): array

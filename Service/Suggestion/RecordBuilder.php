@@ -13,6 +13,12 @@ class RecordBuilder implements RecordBuilderInterface
         protected ManagerInterface $eventManager,
     ){}
 
+    /**
+     * Builds a Suggestion record
+     *
+     * @param DataObject $entity
+     * @return array
+     */
     public function buildRecord(DataObject $entity): array
     {
         $suggestionObject = [

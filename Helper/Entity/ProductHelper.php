@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
-use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
@@ -12,7 +11,6 @@ use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
-use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -22,7 +20,6 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Helper\Stock;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Directory\Model\Currency as CurrencyHelper;
@@ -159,6 +156,8 @@ class ProductHelper extends AbstractEntityHelper
      * @param $additionalAttributes
      * @param $attributeName
      * @return bool
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     public function isAttributeEnabled($additionalAttributes, $attributeName): bool
     {
@@ -268,6 +267,7 @@ class ProductHelper extends AbstractEntityHelper
     /**
      * @param int|null $storeId
      * @return array
+     *
      */
     protected function getAdditionalAttributes(?int $storeId = null): array
     {
@@ -390,51 +390,12 @@ class ProductHelper extends AbstractEntityHelper
      * @param Product $product
      * @return array|mixed|null
      * @throws \Exception
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     public function getObject(Product $product)
     {
         return $this->productRecordBuilder->buildRecord($product);
-    }
-
-    /**
-     * @param Product $product
-     * @return array|\Magento\Catalog\Api\Data\ProductInterface[]|DataObject[]
-     */
-    protected function getSubProducts(Product $product): array
-    {
-        $type = $product->getTypeId();
-
-        if (!in_array($type, ['bundle', 'grouped', 'configurable'], true)) {
-            return [];
-        }
-
-        $this->logger->startProfiling(__METHOD__);
-
-        $storeId = $product->getStoreId();
-        $typeInstance = $product->getTypeInstance();
-
-        if ($typeInstance instanceof Configurable) {
-            $subProducts = $typeInstance->getUsedProducts($product);
-        } elseif ($typeInstance instanceof BundleProductType) {
-            $subProducts = $typeInstance->getSelectionsCollection($typeInstance->getOptionsIds($product), $product)->getItems();
-        } else { // Grouped product
-            $subProducts = $typeInstance->getAssociatedProducts($product);
-        }
-
-        /**
-         * @var int $index
-         * @var Product $subProduct
-         */
-        foreach ($subProducts as $index => $subProduct) {
-            try {
-                $this->canProductBeReindexed($subProduct, $storeId, true);
-            } catch (ProductReindexingException) {
-                unset($subProducts[$index]);
-            }
-        }
-
-        $this->logger->stopProfiling(__METHOD__);
-        return $subProducts;
     }
 
     /**
@@ -481,6 +442,8 @@ class ProductHelper extends AbstractEntityHelper
      * @param $customData
      * @param Product $product
      * @return mixed
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     protected function addInStock($defaultData, $customData, Product $product)
     {
@@ -706,6 +669,8 @@ class ProductHelper extends AbstractEntityHelper
      * @param bool $isChildProduct
      *
      * @return bool
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
     {

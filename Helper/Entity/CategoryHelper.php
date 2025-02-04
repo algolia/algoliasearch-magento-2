@@ -23,6 +23,7 @@ class CategoryHelper extends AbstractEntityHelper
     use EntityHelperTrait;
     public const INDEX_NAME_SUFFIX = '_categories';
     protected $categoryAttributes;
+
     protected $rootCategoryId = -1;
 
     public function __construct(
@@ -200,6 +201,8 @@ class CategoryHelper extends AbstractEntityHelper
      * @param MagentoCategory $category
      * @return array|mixed|null
      * @throws LocalizedException
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     public function getObject(Category $category)
     {
@@ -255,6 +258,8 @@ class CategoryHelper extends AbstractEntityHelper
      * @param null $storeId
      *
      * @return string|null
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     public function getCategoryName($categoryId, $storeId = null)
     {
@@ -266,6 +271,8 @@ class CategoryHelper extends AbstractEntityHelper
      * @param $storeId
      * @return array
      * @throws LocalizedException
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     public function getCoreCategories($filterNotIncludedCategories = true, $storeId = null)
     {

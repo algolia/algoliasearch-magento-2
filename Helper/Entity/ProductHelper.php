@@ -684,6 +684,8 @@ class ProductHelper extends AbstractEntityHelper
      * @param int $storeId
      *
      * @return bool
+     *
+     * @deprecated (will be remove in a future version)
      */
     public function productIsInStock($product, $storeId): bool
     {

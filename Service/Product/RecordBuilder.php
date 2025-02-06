@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
-use Algolia\AlgoliaSearch\Api\RecordBuilder\RecordBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Builder\RecordBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
 use Algolia\AlgoliaSearch\Exception\ProductDisabledException;

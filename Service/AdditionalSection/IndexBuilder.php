@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\AdditionalSection;
 
-use Algolia\AlgoliaSearch\Api\IndexBuilder\IndexBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Builder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;

@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Category;
 
-use Algolia\AlgoliaSearch\Api\IndexBuilder\UpdatableIndexBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Builder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;

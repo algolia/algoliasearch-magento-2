@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
-use Algolia\AlgoliaSearch\Api\IndexBuilder\UpdatableIndexBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Builder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;

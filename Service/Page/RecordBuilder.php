@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Page;
 
-use Algolia\AlgoliaSearch\Api\RecordBuilder\RecordBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Builder\RecordBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;

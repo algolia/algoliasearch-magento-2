@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Api\IndexBuilder;
+namespace Algolia\AlgoliaSearch\Api\Builder;
 
 interface UpdatableIndexBuilderInterface extends IndexBuilderInterface
 {

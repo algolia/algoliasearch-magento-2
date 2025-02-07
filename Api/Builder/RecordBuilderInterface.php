@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Api\RecordBuilder;
+namespace Algolia\AlgoliaSearch\Api\Builder;
 
 use Magento\Framework\DataObject;
 

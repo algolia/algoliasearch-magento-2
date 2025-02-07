@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\AdditionalSection;
 
-use Algolia\AlgoliaSearch\Api\RecordBuilder\RecordBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Builder\RecordBuilderInterface;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;

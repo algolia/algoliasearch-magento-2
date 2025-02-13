@@ -26,7 +26,7 @@ Learn more at our [official website Adobe Commerce / Magento](https://www.algoli
 
 ### Demo
 
-Try the autocomplete and the instantsearch results page on our [live demo](https://magento2.algolia.com).
+Try the Autocomplete and the InstantSearch results page on our [live demo](https://flagship-magento.algolia.com).
 
 
 ## Magento 2.4 compatibility & extension versions End of Life

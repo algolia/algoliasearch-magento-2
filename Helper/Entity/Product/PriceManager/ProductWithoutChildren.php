@@ -302,24 +302,6 @@ abstract class ProductWithoutChildren
                     $productTierPrice->getValue()
                 );
             }
-        } else {
-            /** @var Group $group */
-            foreach ($this->groups as $group) {
-                $customerGroupId = (int) $group->getData('customer_group_id');
-                $productTierPrices = $this->productTierPrice->getList($product->getSku(), $customerGroupId);
-                if(!empty($productTierPrices)) {
-                    foreach ($productTierPrices as $productTierPrice) {
-                        if (!isset($tierPrices[$productTierPrice->getCustomerGroupId()])) {
-                            $tierPrices[$productTierPrice->getCustomerGroupId()] = $productTierPrice->getValue();
-                            continue;
-                        }
-                        $tierPrices[$productTierPrice->getCustomerGroupId()] = min(
-                            $tierPrices[$productTierPrice->getCustomerGroupId()],
-                            $productTierPrice->getValue()
-                        );
-                    }
-                }
-            }
         }
 
         /** @var Group $group */

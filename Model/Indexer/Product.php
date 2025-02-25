@@ -35,6 +35,10 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
      */
     public function execute($productIds)
     {
+        if (!$this->configHelper->isProductsIndexerEnabled()) {
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
         $areParentsLoaded = false;
 

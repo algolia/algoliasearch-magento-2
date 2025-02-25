@@ -30,6 +30,10 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
      */
     public function execute($ids)
     {
+        if (!$this->configHelper->isPagesIndexerEnabled()) {
+            return;
+        }
+
         $storeIds = $this->pageHelper->getStores();
 
         foreach ($storeIds as $storeId) {

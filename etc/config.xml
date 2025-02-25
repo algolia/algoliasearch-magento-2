@@ -56,6 +56,16 @@
                 <category_separator> /// </category_separator>
             </categories>
         </algoliasearch_categories>
+        <algoliasearch_indexing_manager>
+            <full_indexing>
+                <products>0</products>
+                <categories>0</categories>
+                <pages>0</pages>
+                <suggestions>0</suggestions>
+                <additional_sections>0</additional_sections>
+                <delete_products>0</delete_products>
+            </full_indexing>
+        </algoliasearch_indexing_manager>
         <algoliasearch_personalization>
             <personalization_group>
                 <personalization_click_events_group>

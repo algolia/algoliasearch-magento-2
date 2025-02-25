@@ -28,6 +28,10 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
 
     public function execute($categoryIds)
     {
+        if (!$this->configHelper->isCategoriesIndexerEnabled()) {
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {

@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
@@ -16,6 +17,7 @@ class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Mage
         protected Data $dataHelper,
         protected AlgoliaHelper $algoliaHelper,
         protected Queue $queue,
+        protected ConfigHelper $configHelper,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
         protected ProductIndexBuilder $productIndexBuilder
     )
@@ -28,6 +30,10 @@ class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Mage
 
     public function executeFull()
     {
+        if (!$this->configHelper->isDeleteProductsIndexerEnabled()) {
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {

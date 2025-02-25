@@ -27,6 +27,10 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
 
     public function executeFull()
     {
+        if (!$this->configHelper->isAdditionalSectionsIndexerEnabled()) {
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {

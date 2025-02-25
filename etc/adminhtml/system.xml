@@ -984,6 +984,69 @@
                 </field>
             </group>
         </section>
+        <section id="algoliasearch_indexing_manager" translate="label" type="text" sortOrder="66" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Indexing Manager</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="full_indexing" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Full indexing via Magento indexers</label>
+                <comment>Since version 3.16.0, the following Magento indexers are now disabled by default. We highly suggest to keep this configuration as it is and run the newly created CLI commands instead.</comment>
+                <field id="products" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Products Indexer (algolia_products)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:products</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="categories" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Categories Indexer (algolia_categories)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:categories</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="pages" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Pages Indexer (algolia_pages)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:pages</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="suggestions" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Suggestions Indexer (algolia_suggestions)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:suggestions</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="additional_sections" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Additional Sections Indexer (algolia_additional_sections)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:additional_sections</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="delete_products" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Delete Products Indexer (algolia_delete_products)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:delete_products</code> instead
+                        ]]>
+                    </comment>
+                </field>
+            </group>
+        </section>
         <section id="algoliasearch_cc_analytics" translate="label" type="text" sortOrder="67" showInDefault="1" showInWebsite="1" showInStore="1">
             <label><![CDATA[Click & Conversion Analytics]]></label>
             <tab>algolia</tab>

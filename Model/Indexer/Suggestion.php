@@ -30,6 +30,10 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
     public function executeFull()
     {
+        if (!$this->configHelper->isSuggestionsIndexerEnabled()) {
+            return;
+        }
+
         $storeIds = array_keys($this->storeManager->getStores());
 
         foreach ($storeIds as $storeId) {

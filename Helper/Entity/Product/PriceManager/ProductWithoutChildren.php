@@ -135,6 +135,7 @@ abstract class ProductWithoutChildren
             }
             if(count($excludedGroups) > 0) {
                 $this->groups->addFieldToFilter('main_table.customer_group_id', ["nin" => $excludedGroups]);
+                $this->groups->clear()
             }
         }
         // price/price_with_tax => true/false

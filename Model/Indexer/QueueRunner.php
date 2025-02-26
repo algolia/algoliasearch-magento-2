@@ -24,6 +24,10 @@ class QueueRunner implements \Magento\Framework\Indexer\ActionInterface, \Magent
 
     public function executeFull()
     {
+        if (!$this->configHelper->isQueueIndexerEnabled()) {
+            return;
+        }
+
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class);
 

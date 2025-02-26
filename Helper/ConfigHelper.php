@@ -165,6 +165,7 @@ class ConfigHelper
     public const ENABLE_INDEXER_SUGGESTIONS = 'algoliasearch_indexing_manager/full_indexing/suggestions';
     public const ENABLE_INDEXER_ADDITIONAL_SECTIONS = 'algoliasearch_indexing_manager/full_indexing/additional_sections';
     public const ENABLE_INDEXER_DELETE_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/delete_products';
+    public const ENABLE_INDEXER_QUEUE = 'algoliasearch_indexing_manager/full_indexing/queue';
 
     public function __construct(
         protected Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,
@@ -1915,10 +1916,9 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
-    public function isProductsIndexerEnabled()
+    public function isProductsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
             self::ENABLE_INDEXER_PRODUCTS,
@@ -1927,10 +1927,9 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
-    public function isCategoriesIndexerEnabled()
+    public function isCategoriesIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
             self::ENABLE_INDEXER_CATEGORIES,
@@ -1939,10 +1938,9 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
-    public function isPagesIndexerEnabled()
+    public function isPagesIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
             self::ENABLE_INDEXER_PAGES,
@@ -1951,10 +1949,9 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
-    public function isSuggestionsIndexerEnabled()
+    public function isSuggestionsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
             self::ENABLE_INDEXER_SUGGESTIONS,
@@ -1963,10 +1960,9 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
-    public function isAdditionalSectionsIndexerEnabled()
+    public function isAdditionalSectionsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
             self::ENABLE_INDEXER_ADDITIONAL_SECTIONS,
@@ -1975,13 +1971,23 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
-    public function isDeleteProductsIndexerEnabled()
+    public function isDeleteProductsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
             self::ENABLE_INDEXER_DELETE_PRODUCTS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isQueueIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_QUEUE,
             ScopeInterface::SCOPE_STORE
         );
     }

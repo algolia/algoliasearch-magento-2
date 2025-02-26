@@ -64,6 +64,7 @@
                 <suggestions>0</suggestions>
                 <additional_sections>0</additional_sections>
                 <delete_products>0</delete_products>
+                <queue>0</queue>
             </full_indexing>
         </algoliasearch_indexing_manager>
         <algoliasearch_personalization>

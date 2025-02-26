@@ -1036,12 +1036,21 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="delete_products" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="delete_products" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable Delete Products Indexer (algolia_delete_products)</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
                             We highly recommend to run <code>bin/magento algolia:reindex:delete_products</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="queue" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Algolia Queue Runner (algolia_queue_runner)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:process_queue</code> instead
                         ]]>
                     </comment>
                 </field>

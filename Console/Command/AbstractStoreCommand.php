@@ -72,10 +72,27 @@ abstract class AbstractStoreCommand extends Command
     /**
      * @param InputInterface $input
      * @return int[]
+     * @throws LocalizedException
      */
     protected function getStoreIds(InputInterface $input): array
     {
-        return (array) $input->getArgument(self::STORE_ARGUMENT);
+        return $this->validateStoreIds((array) $input->getArgument(self::STORE_ARGUMENT));
+    }
+
+    /**
+     * @param array $storeIds
+     * @return int[]
+     * @throws LocalizedException
+     */
+    protected function validateStoreIds(array $storeIds): array
+    {
+        foreach ($storeIds as $storeId) {
+            if (!ctype_digit($storeId) || (int) $storeId < 1) {
+                throw new LocalizedException(__("Store ID argument must be an integer"));
+            }
+        }
+
+        return array_map('intval', $storeIds);
     }
 
     protected function getStoreArgumentDefinition(): InputArgument {

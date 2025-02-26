@@ -248,9 +248,13 @@ class AlgoliaHelper extends AbstractHelper
         $this->algoliaConnector->deleteRule($indexOptions, $objectID, $forwardToReplicas);
     }
 
-    public function clearSynonyms(string $indexName, bool $forwardToReplicas = false): void
+    /**
+     * @throws AlgoliaException|NoSuchEntityException
+     */
+    public function clearSynonyms(string $indexName, bool $forwardToReplicas = false, ?int $storeId = null): void
     {
-        $this->client->clearSynonyms($indexName, $forwardToReplicas);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $this->algoliaConnector->clearSynonyms($indexOptions, $forwardToReplicas);
     }
 
     /**

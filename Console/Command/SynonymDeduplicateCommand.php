@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -15,11 +15,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SynonymDeduplicateCommand extends AbstractStoreCommand
 {
     public function __construct(
-        protected AlgoliaHelper         $algoliaHelper,
-        protected IndexNameFetcher      $indexNameFetcher,
+        protected AlgoliaConnector      $algoliaConnector,
         protected State                 $state,
         protected StoreNameFetcher      $storeNameFetcher,
         protected StoreManagerInterface $storeManager,
+        protected IndexOptionsBuilder   $indexOptionsBuilder,
         ?string                         $name = null
     ) {
         parent::__construct($state, $storeNameFetcher, $name);
@@ -111,8 +111,9 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
     public function dedupeSynonymsForStore(int $storeId): void
     {
         $this->output->writeln('<info>De-duplicating synonyms for ' . $this->storeNameFetcher->getStoreName($storeId) . '...</info>');
-        $indexName = $this->indexNameFetcher->getProductIndexName($storeId);
-        $settings = $this->algoliaHelper->getSettings($indexName);
+
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $settings = $this->algoliaConnector->getSettings($indexOptions);
         $deduped = $this->dedupeSpecificSettings(['synonyms', 'altCorrections'], $settings);
 
         //bring over as is (no de-dupe necessary)
@@ -123,9 +124,9 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
         // Updating the synonyms requires a separate endpoint which is not currently not exposed in the PHP API client
         // See https://www.algolia.com/doc/rest-api/search/#tag/Synonyms/operation/saveSynonyms
         // This method will clear and then overwrite ... (does not handle one way synonyms which are not exposed in settings)
-        $this->algoliaHelper->clearSynonyms($indexName);
-        $this->algoliaHelper->setSettings($indexName, $deduped, false, false);
-        $this->algoliaHelper->waitLastTask($indexName);
+        $this->algoliaConnector->clearSynonyms($indexOptions);
+        $this->algoliaConnector->setSettings($indexOptions, $deduped, false, false);
+        $this->algoliaConnector->waitLastTask($storeId);
     }
 
     /**

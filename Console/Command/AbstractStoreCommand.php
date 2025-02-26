@@ -15,7 +15,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 abstract class AbstractStoreCommand extends Command
 {
-    protected const STORE_ARGUMENT = 'store';
+    protected const STORE_ARGUMENT = 'store_id';
 
     protected ?OutputInterface $output = null;
     protected ?InputInterface $input = null;
@@ -63,8 +63,9 @@ abstract class AbstractStoreCommand extends Command
     {
         try {
             $this->state->setAreaCode(Area::AREA_CRONTAB);
-        } catch (LocalizedException) {
-            // Area code is already set - nothing to do
+        } catch (LocalizedException $e) {
+            // Area code is already set - nothing to do - but report regardless
+            $this->output->writeln("Unable to set area code due to the following error: " . $e->getMessage());
         }
     }
 

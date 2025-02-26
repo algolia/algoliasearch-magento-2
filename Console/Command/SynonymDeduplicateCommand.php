@@ -8,17 +8,19 @@ use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SynonymDeduplicateCommand extends AbstractStoreCommand
 {
     public function __construct(
-        protected AlgoliaHelper    $algoliaHelper,
-        protected IndexNameFetcher $indexNameFetcher,
-        protected State            $state,
-        protected StoreNameFetcher $storeNameFetcher,
-        ?string                    $name = null
+        protected AlgoliaHelper         $algoliaHelper,
+        protected IndexNameFetcher      $indexNameFetcher,
+        protected State                 $state,
+        protected StoreNameFetcher      $storeNameFetcher,
+        protected StoreManagerInterface $storeManager,
+        ?string                         $name = null
     ) {
         parent::__construct($state, $storeNameFetcher, $name);
     }
@@ -53,8 +55,13 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->input = $input;
         $this->output = $output;
         $this->setAreaCode();
+
+        if (!$this->confirmDedupeOperation()) {
+            return Cli::RETURN_SUCCESS;
+        }
 
         $storeIds = $this->getStoreIds($input);
 
@@ -71,6 +78,19 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
     }
 
     /**
+     * Due to limitations in PHP API client at the time of this implementation, one way synonyms cannot be processed
+     * and will be removed completely
+     * Verify with the end user first!
+     *
+     * @return bool
+     */
+    protected function confirmDedupeOperation(): bool
+    {
+        $this->output->writeln('<fg=red>This deduplicate process cannot handle one way synonyms and will remove them altogether!</fg=red>');
+        return $this->confirmOperation();
+    }
+
+    /**
      * @throws NoSuchEntityException
      */
     public function dedupeSynonyms(array $storeIds = []): void
@@ -80,7 +100,7 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
                 $this->dedupeSynonymsForStore($storeId);
             }
         } else {
-            // handle all
+            $this->dedupeSynonymsForAllStores();
         }
     }
 
@@ -104,6 +124,17 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
         $this->algoliaHelper->clearSynonyms($indexName);
         $this->algoliaHelper->setSettings($indexName, $deduped, false, false);
         $this->algoliaHelper->waitLastTask($indexName);
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function dedupeSynonymsForAllStores(): void
+    {
+        $storeIds = array_keys($this->storeManager->getStores());
+        foreach ($storeIds as $storeId) {
+            $this->dedupeSynonymsForStore($storeId);
+        }
     }
 
     /**

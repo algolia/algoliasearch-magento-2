@@ -37,12 +37,12 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return "Identify and remove duplicate synonyms in Algolia for the following types: synonyms, placeholders and alternative corrections. \n  <fg=red>WARNING:</fg=red> If you use one-way synonyms, do not use this command as it will remove these from your index.";
+        return "Identify and remove duplicate synonyms in Algolia for the following types: synonyms, placeholders and alternative corrections \n  <fg=red>WARNING:</fg=red> If you use one-way synonyms, do not use this command as it will remove these from your index.";
     }
 
     protected function getStoreArgumentDescription(): string
     {
-        return 'ID(s) for store(s) containing synonyms to deduplicate in Algolia (optional), if not specified, synonyms for all stores will be deduplicated. Pass multiple store IDs as a list of integers separated by spaces. e.g.: bin/magento algolia:synonyms:deduplicate 1 2 3';
+        return 'ID(s) for store(s) containing synonyms to deduplicate in Algolia (optional), if not specified, synonyms for all stores will be deduplicated. Pass multiple store IDs as a list of integers separated by spaces. e.g.: <info>bin/magento algolia:synonyms:deduplicate 1 2 3</info>';
     }
 
     protected function getAdditionalDefinition(): array

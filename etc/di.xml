@@ -185,4 +185,18 @@
         </arguments>
     </type>
 
+    <virtualType name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger" type="Monolog\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">algolia</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler</item>
+                <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Algolia\AlgoliaSearch\Logger\TimedLogger">
+        <arguments>
+            <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
+        </arguments>
+    </type>
 </config>

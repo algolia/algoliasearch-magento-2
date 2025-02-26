@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Category;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
@@ -55,7 +56,12 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     {
         // Check that every store has the right number of categories
         foreach ($this->storeManager->getStores() as $store) {
-            $this->assertNbOfRecordsPerStore($store->getCode(), 'categories', $this->assertValues->expectedCategory);
+            $this->assertNbOfRecordsPerStore(
+                $store->getCode(),
+                'categories',
+                $this->assertValues->expectedCategory,
+                $store->getId()
+            );
         }
 
         $defaultStore = $this->storeRepository->get('default');
@@ -76,18 +82,22 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->assertEquals(self::BAGS_CATEGORY_NAME_ALT, $bagsCategoryAlt->getName());
 
         $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
-        $this->algoliaHelper->waitLastTask();
+
+        $this->algoliaHelper->waitLastTask($defaultStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
 
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_categories',
             (string) self::BAGS_CATEGORY_ID,
-            ['name' => self::BAGS_CATEGORY_NAME]
+            ['name' => self::BAGS_CATEGORY_NAME],
+            $defaultStore->getId()
         );
 
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'fixture_second_store_categories',
             (string) self::BAGS_CATEGORY_ID,
-            ['name' => self::BAGS_CATEGORY_NAME_ALT]
+            ['name' => self::BAGS_CATEGORY_NAME_ALT],
+            $fixtureSecondStore->getId()
         );
 
         // Disable this category at store level
@@ -98,18 +108,22 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         );
 
         $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
-        $this->algoliaHelper->waitLastTask();
+
+        $this->algoliaHelper->waitLastTask($defaultStore->getId());
+        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
 
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),
             'categories',
-            $this->assertValues->expectedCategory
+            $this->assertValues->expectedCategory,
+            $defaultStore->getId()
         );
 
         $this->assertNbOfRecordsPerStore(
             $fixtureSecondStore->getCode(),
             'categories',
-            $this->assertValues->expectedCategory - 1
+            $this->assertValues->expectedCategory - 1,
+            $fixtureSecondStore->getId()
         );
     }
 

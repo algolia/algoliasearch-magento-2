@@ -1,5 +1,5 @@
-var config = {
-    map   : {
+const config = {
+    map: {
         '*': {
             // Magento FE libs
             'algoliaCommon'       : 'Algolia_AlgoliaSearch/js/internals/common',
@@ -8,26 +8,59 @@ var config = {
             'algoliaInsights'     : 'Algolia_AlgoliaSearch/js/insights',
             'algoliaHooks'        : 'Algolia_AlgoliaSearch/js/hooks',
 
-            // Autocomplete templates
-            'productsHtml'   : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',
-            'pagesHtml'      : 'Algolia_AlgoliaSearch/js/template/autocomplete/pages',
-            'categoriesHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/categories',
-            'suggestionsHtml': 'Algolia_AlgoliaSearch/js/template/autocomplete/suggestions',
-            'additionalHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/additional-section',
+            // Unbundled template processor
+            'algoliaTemplateEngine': 'Algolia_AlgoliaSearch/js/internals/template-engine',
 
-            // Recommend templates
-            'recommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products'
+            // DEPRECATED - migrated to new paths - these will be removed in a future release
+            'algoliaAnalytics'     : 'algoliaAnalyticsLib',
+            'recommend'            : 'algoliaRecommendLib',
+            'recommendJs'          : 'algoliaRecommendJsLib',
+            'productsHtml'         : 'algoliaAutocompleteProductsHtml',
+            'pagesHtml'            : 'algoliaAutocompletePagesHtml',
+            'categoriesHtml'       : 'algoliaAutocompleteCategoriesHtml',
+            'suggestionsHtml'      : 'algoliaAutocompleteSuggestionsHtml',
+            'additionalHtml'       : 'algoliaAutocompleteAdditionalHtml',
+            'recommendProductsHtml': 'algoliaRecommendProductsHtml'
         }
     },
-    paths : {
-        'algoliaBundle'   : 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
-        'algoliaAnalytics': 'Algolia_AlgoliaSearch/js/internals/search-insights',
-        'recommend'       : 'Algolia_AlgoliaSearch/js/internals/recommend.min',
-        'recommendJs'     : 'Algolia_AlgoliaSearch/js/internals/recommend-js.min',
-        'rangeSlider'     : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget',
+    paths: {
+        // Core Search UI libs
+        'algoliaSearchLib'       : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
+        'algoliaSearchHelperLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-search-helper.min',
+        'algoliaInstantSearchLib': 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
+        'algoliaAutocompleteLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
+        'algoliaAnalyticsLib'    : 'Algolia_AlgoliaSearch/js/lib/search-insights.min',
+        'algoliaRecommendLib'    : 'Algolia_AlgoliaSearch/js/lib/recommend.min',
+        'algoliaRecommendJsLib'  : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
+
+        // Autocomplete plugins
+        'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
+        'algoliaInsightsPluginLib'          : 'Algolia_AlgoliaSearch/js/lib/insights-plugin.min',
+        'algoliaRecentSearchesPluginLib'    : 'Algolia_AlgoliaSearch/js/lib/recent-searches-plugin.min',
+
+        // Autocomplete templates
+        'algoliaAutocompleteProductsHtml'   : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',
+        'algoliaAutocompletePagesHtml'      : 'Algolia_AlgoliaSearch/js/template/autocomplete/pages',
+        'algoliaAutocompleteCategoriesHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/categories',
+        'algoliaAutocompleteSuggestionsHtml': 'Algolia_AlgoliaSearch/js/template/autocomplete/suggestions',
+        'algoliaAutocompleteAdditionalHtml' : 'Algolia_AlgoliaSearch/js/template/autocomplete/additional-section',
+
+        // Recommend templates
+        'algoliaRecommendProductsHtml': 'Algolia_AlgoliaSearch/js/template/recommend/products',
+
+        // Parser libs for legacy templating
+        'algoliaMustacheLib': 'Algolia_AlgoliaSearch/js/lib/mustache.min',
+        'algoliaHoganLib'   : 'Algolia_AlgoliaSearch/js/lib/hogan.min',
+
+        // Utils
+        'algoliaBase64' : 'Algolia_AlgoliaSearch/js/internals/base64',
+
+        // DEPRECATED - to be removed in a future release
+        'algoliaBundle': 'Algolia_AlgoliaSearch/js/internals/algoliaBundle.min',
+        'rangeSlider'  : 'Algolia_AlgoliaSearch/js/navigation/range-slider-widget'
+
     },
-    deps  : [
-        'algoliaInstantSearch',
+    deps : [
         'algoliaInsights'
     ],
     config: {
@@ -35,6 +68,11 @@ var config = {
             'Magento_Catalog/js/catalog-add-to-cart': {
                 'Algolia_AlgoliaSearch/js/insights/add-to-cart-mixin': true
             }
+        }
+    },
+    shim : {
+        'algoliaHoganLib': {
+            exports: 'Hogan'
         }
     }
 };

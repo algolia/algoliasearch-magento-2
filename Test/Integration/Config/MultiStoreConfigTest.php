@@ -2,7 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Config;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Test\Integration\Config\Traits\ConfigAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 
 /**
@@ -10,6 +13,7 @@ use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
  */
 class MultiStoreConfigTest extends MultiStoreTestCase
 {
+    use ConfigAssertionsTrait;
 
     const ADDITIONAL_ATTRIBUTE = 'additional_attribute';
 
@@ -26,22 +30,18 @@ class MultiStoreConfigTest extends MultiStoreTestCase
             $this->setupStore($store, true);
         }
 
+        $defaultStore = $this->storeRepository->get('default');
+        $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
+        $fixtureThirdStore = $this->storeRepository->get('fixture_third_store');
+
         $indicesCreatedByTest = 0;
-        $indices = $this->algoliaHelper->listIndexes();
 
-        foreach ($indices['items'] as $index) {
-            $name = $index['name'];
-
-            if (mb_strpos($name, $this->indexPrefix) === 0) {
-                $indicesCreatedByTest++;
-            }
-        }
+        $indicesCreatedByTest += $this->countStoreIndices($defaultStore);
+        $indicesCreatedByTest += $this->countStoreIndices($fixtureSecondStore);
+        $indicesCreatedByTest += $this->countStoreIndices($fixtureThirdStore);
 
         // Check that the configuration created the appropriate number of indices (7 (4 mains + 3 replicas per store => 3*7=21)
         $this->assertEquals(21, $indicesCreatedByTest);
-
-        $defaultStore = $this->storeRepository->get('default');
-        $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
 
         // Change category configuration at store level (attributes and ranking)
         $attributesFromConfig = $this->configHelper->getCategoryAdditionalAttributes($defaultStore->getId());
@@ -89,10 +89,16 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         );
 
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
-        $this->algoliaHelper->waitLastTask();
 
-        $defaultCategoryIndexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_categories');
-        $fixtureCategoryIndexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'fixture_second_store_categories');
+        $defaultCategoryIndexSettings = $this->algoliaHelper->getSettings(
+            $this->indexPrefix . 'default_categories',
+            $defaultStore->getId()
+        );
+
+        $fixtureCategoryIndexSettings = $this->algoliaHelper->getSettings(
+            $this->indexPrefix . 'fixture_second_store_categories',
+            $fixtureSecondStore->getId()
+        );
 
         $attributeFromConfig = 'unordered(' . self::ADDITIONAL_ATTRIBUTE . ')';
         $this->assertNotContains($attributeFromConfig, $defaultCategoryIndexSettings['searchableAttributes']);
@@ -102,8 +108,17 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $this->assertNotContains($rankingFromConfig, $defaultCategoryIndexSettings['customRanking']);
         $this->assertContains($rankingFromConfig, $fixtureCategoryIndexSettings['customRanking']);
 
-        $defaultProductIndexRules = $this->algoliaHelper->searchRules($this->indexPrefix . 'default_products');
-        $fixtureProductIndexRules = $this->algoliaHelper->searchRules($this->indexPrefix . 'fixture_second_store_products');
+        $defaultProductIndexRules = $this->algoliaHelper->searchRules(
+            $this->indexPrefix . 'default_products',
+            null,
+            $defaultStore->getId()
+        );
+
+        $fixtureProductIndexRules = $this->algoliaHelper->searchRules(
+            $this->indexPrefix . 'fixture_second_store_products',
+            null,
+            $fixtureSecondStore->getId()
+        );
 
         // Check that the Rule has only been created for the fixture store
         $this->assertEquals(0, $defaultProductIndexRules['nbHits']);

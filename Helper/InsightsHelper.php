@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Insights\EventProcessorInterface;
 use Algolia\AlgoliaSearch\Api\Insights\EventProcessorInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\InsightsClient;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Customer\Model\Customer;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Exception\LocalizedException;
@@ -51,7 +52,7 @@ class InsightsHelper
         private readonly CustomerSession                $customerSession,
         private readonly EventProcessorInterfaceFactory $eventProcessorFactory,
         private readonly StoreManagerInterface          $storeManager,
-        private readonly Logger                         $logger
+        private readonly DiagnosticsLogger              $logger
     )
     {}
 

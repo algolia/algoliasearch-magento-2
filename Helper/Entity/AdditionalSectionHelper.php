@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
+use Algolia\AlgoliaSearch\Service\AdditionalSection\RecordBuilder as AdditionalSectionRecordBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Eav\Model\Config;
@@ -15,16 +15,20 @@ class AdditionalSectionHelper extends AbstractEntityHelper
     public const INDEX_NAME_SUFFIX = '_section';
 
     public function __construct(
-        protected ManagerInterface  $eventManager,
-        protected CollectionFactory $collectionFactory,
-        protected Config            $eavConfig,
-        protected IndexNameFetcher  $indexNameFetcher,
-    )
-    {
+        protected ManagerInterface               $eventManager,
+        protected CollectionFactory              $collectionFactory,
+        protected Config                         $eavConfig,
+        protected AdditionalSectionRecordBuilder $additionalSectionRecordBuilder,
+        protected IndexNameFetcher               $indexNameFetcher,
+    ) {
         parent::__construct($indexNameFetcher);
     }
 
-    public function getIndexSettings($storeId): array
+    /**
+     * @param int|null $storeId
+     * @return array
+     */
+    public function getIndexSettings(?int $storeId = null): array
     {
         $indexSettings = [
             'searchableAttributes' => ['unordered(value)'],
@@ -68,23 +72,13 @@ class AdditionalSectionHelper extends AbstractEntityHelper
         }
 
         $values = array_map(function ($value) use ($section, $storeId) {
-            $record = [
-                AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $value,
-                'value'                              => $value,
-            ];
+            $dataObject = new DataObject([
+                'value' => $value,
+                'section' => $section,
+                'store_id' => $storeId
+            ]);
 
-            $transport = new DataObject($record);
-            $this->eventManager->dispatch(
-                'algolia_additional_section_item_index_before',
-                ['section' => $section, 'record' => $transport, 'store_id' => $storeId]
-            );
-            $this->eventManager->dispatch(
-                'algolia_additional_section_items_before_index',
-                ['section' => $section, 'record' => $transport, 'store_id' => $storeId]
-            );
-            $record = $transport->getData();
-
-            return $record;
+            return $this->additionalSectionRecordBuilder->buildRecord($dataObject);
         }, $values);
 
         return $values;

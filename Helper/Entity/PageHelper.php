@@ -2,15 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Page\RecordBuilder as PageRecordBuilder;
 use Magento\Cms\Model\Page;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as PageCollectionFactory;
-use Magento\Cms\Model\Template\FilterProvider;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
-use Magento\Framework\UrlFactory;
 use Magento\Store\Model\StoreManagerInterface;
 
 class PageHelper extends AbstractEntityHelper
@@ -22,16 +20,18 @@ class PageHelper extends AbstractEntityHelper
         protected ManagerInterface      $eventManager,
         protected PageCollectionFactory $pageCollectionFactory,
         protected ConfigHelper          $configHelper,
-        protected FilterProvider        $filterProvider,
         protected StoreManagerInterface $storeManager,
-        protected UrlFactory            $frontendUrlFactory,
         protected IndexNameFetcher      $indexNameFetcher,
-    )
-    {
+        protected PageRecordBuilder     $pageRecordBuilder,
+    ) {
         parent::__construct($indexNameFetcher);
     }
 
-    public function getIndexSettings($storeId)
+    /**
+     * @param int|null $storeId
+     * @return array
+     */
+    public function getIndexSettings(?int $storeId = null): array
     {
         $indexSettings = [
             'searchableAttributes' => ['unordered(slug)', 'unordered(name)', 'unordered(content)'],
@@ -50,7 +50,6 @@ class PageHelper extends AbstractEntityHelper
 
     public function getPages($storeId, array $pageIds = null)
     {
-        /** @var \Magento\Cms\Model\ResourceModel\Page\Collection $magentoPages */
         $magentoPages = $this->pageCollectionFactory->create()
             ->addStoreFilter($storeId)
             ->addFieldToFilter('is_active', 1);
@@ -68,42 +67,15 @@ class PageHelper extends AbstractEntityHelper
 
         $pages = [];
 
-        $frontendUrlBuilder = $this->frontendUrlFactory->create()->setScope($storeId);
-
         /** @var Page $page */
         foreach ($magentoPages as $page) {
-            $pageObject = [];
-
-            $pageObject['slug'] = $page->getIdentifier();
-            $pageObject['name'] = $page->getTitle();
-
             $page->setData('store_id', $storeId);
 
             if (!$page->getId()) {
                 continue;
             }
 
-            $content = $page->getContent();
-            if ($this->configHelper->getRenderTemplateDirectives()) {
-                $content = $this->filterProvider->getPageFilter()->filter($content);
-            }
-
-            $pageObject[AlgoliaHelper::ALGOLIA_API_OBJECT_ID] = $page->getId();
-            $pageObject['url'] = $frontendUrlBuilder->getUrl(
-                null,
-                [
-                    '_direct' => $page->getIdentifier(),
-                    '_secure' => $this->configHelper->useSecureUrlsInFrontend($storeId),
-                ]
-            );
-            $pageObject['content'] = $this->strip($content, ['script', 'style']);
-
-            $transport = new DataObject($pageObject);
-            $this->eventManager->dispatch(
-                'algolia_after_create_page_object',
-                ['page' => $transport, 'pageObject' => $page]
-            );
-            $pageObject = $transport->getData();
+            $pageObject = $this->pageRecordBuilder->buildRecord($page);
 
             if (isset($pageIdsToRemove[$page->getId()])) {
                 unset($pageIdsToRemove[$page->getId()]);
@@ -146,42 +118,5 @@ class PageHelper extends AbstractEntityHelper
         }
 
         return $storeIds;
-    }
-
-    private function strip($s, $completeRemoveTags = [])
-    {
-        if ($completeRemoveTags && $completeRemoveTags !== [] && $s) {
-            $dom = new \DOMDocument();
-            libxml_use_internal_errors(true);
-            $encodedStr = mb_encode_numericentity($s, [0x80, 0x10fffff, 0, ~0]);
-            $dom->loadHTML($encodedStr);
-            libxml_use_internal_errors(false);
-
-            $toRemove = [];
-            foreach ($completeRemoveTags as $tag) {
-                $removeTags = $dom->getElementsByTagName($tag);
-
-                foreach ($removeTags as $item) {
-                    $toRemove[] = $item;
-                }
-            }
-
-            foreach ($toRemove as $item) {
-                $item->parentNode->removeChild($item);
-            }
-
-            $s = $dom->saveHTML();
-        }
-
-        $s = html_entity_decode($s, 0, 'UTF-8');
-
-        $s = trim(preg_replace('/\s+/', ' ', $s));
-        $s = preg_replace('/&nbsp;/', ' ', $s);
-        $s = preg_replace('!\s+!', ' ', $s);
-        $s = preg_replace('/\{\{[^}]+\}\}/', ' ', $s);
-        $s = strip_tags($s);
-        $s = trim($s);
-
-        return $s;
     }
 }

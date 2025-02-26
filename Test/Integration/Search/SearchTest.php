@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Search;
 
-use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
+use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -14,15 +14,15 @@ class SearchTest extends TestCase
     /** @var Product */
     protected $productIndexer;
 
-    /** @var Data */
-    protected $helper;
+    /** @var BackendSearch */
+    protected $backendSearch;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->productIndexer = $this->objectManager->get(Product::class);
-        $this->helper = $this->objectManager->create(Data::class);
+        $this->backendSearch = $this->objectManager->create(BackendSearch::class);
 
         $this->productIndexer->executeFull();
         $this->algoliaHelper->waitLastTask();
@@ -99,7 +99,7 @@ class SearchTest extends TestCase
     protected function search(string $query = '', int $storeId = 1, array $params = []): array
     {
         try {
-            return $this->helper->getSearchResult($query, $storeId, $params);
+            return $this->backendSearch->getSearchResult($query, $storeId, $params);
         } catch (NoSuchEntityException $e) {
             return [];
         }

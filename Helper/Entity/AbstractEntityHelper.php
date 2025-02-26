@@ -18,6 +18,14 @@ abstract class AbstractEntityHelper
     abstract public function getIndexNameSuffix(): string;
 
     /**
+     * Get the settings related to an entity to index
+     *
+     * @param int|null $storeId
+     * @return array
+     */
+    abstract public function getIndexSettings(?int $storeId = null): array;
+
+    /**
      * For a given entity helper, return the Algolia index for the specified store
      * @param int $storeId The store index desired
      * @param bool $tmp (Optional) Specify whether to obtain the temp index

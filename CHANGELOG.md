@@ -1,5 +1,54 @@
 # CHANGE LOG
 
+## 3.15.0-beta.2
+
+### Features
+- Added support for Multi-Application IDs (see [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/getting-started/quick-start/#support-for-multiple-application-ids))
+- Refactored frontend library to no longer utilize the legacy `algoliaBundle` (see [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/customize/custom-front-end-events/?client=php#frontend-javascript-libraries-and-the-legacy-bundle))
+- Added support for core Algolia UI library overrides via RequireJS
+- Added support for mixins through RequireJS in addition to [front end custom events](https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events) 
+- See our `CustomAlgolia` demo extension's [1.4.0 release](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/releases/tag/1.4.0) for examples on how to take advantage of these changes
+- Added granular profiling through the [Magento Profiler](https://experienceleague.adobe.com/en/docs/commerce-operations/configuration-guide/setup/mage-profiler) to aid in troubleshooting indexing performance issues
+- Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
+
+### Updates
+- Tests: Added possibility to run tests with multiple applications IDs.
+- Introduced Index Builders which are services responsible for creating and filling indices with data.
+- **IMPORTANT**: As a result `AlgoliaHelper` is now deprecated and will be removed from the codebase in version 3.16.0
+- Added `BackendSearch` Service to move `getSearchResults` method into.
+- Updated Indexing Queue display in the admin by adding the `class` column
+- Updated Indexing Queue `data` column formatting
+- Added documentation link on the queue archive page
+- Debugging information now writes to `algolia.log`
+- Removed dependency on `algoliaBundle` package
+- Removed dependency on JavaScript global `window` objects with the exception of `algoliaConfig`
+- The Hogan.js library is still packaged for injection as needed but be advised that Mustache.js is now used internally instead (see [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/customize/instant-search-page/?client=php#mustache-templates))
+- JavaScript bundling is supported but to use the RequireJS Optimizer transpiling will be needed for ES6 constructs
+
+### Bug Fixes
+- Fixed a bug where admin menus didn't display properly on Magento 2.4.7
+- Fixed customer groups prices ranges on configurable products
+- Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
+
+### Breaking Changes
+- If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/troubleshooting/front-end-issues/))
+
+
+
+## 3.14.4
+
+### Features
+- Added a feature to enable automatic price indexing on the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products.)
+
+### Updates
+- Updated `getCookie` method to make it more consistent
+- Removed dependency to `catalog_product_price` indexer
+
+### Bug Fixes
+- Fixed a bug where the Landing Page Builder was crashing on save with customer group pricing was enabled.
+- Fixed issue where Insights information wasn't kept on the url after clicking "add to cart" on PLP powered by InstantSearch
+- Fixed a bug where synonyms were unintentionally duplicated on the Algolia dashboard
+
 ## 3.14.3
 
 ### Updates
@@ -97,6 +146,30 @@ If you have customized your Algolia implementation or are running on an older ve
 - Introduced PHP 8 constructor property promotion on affected classes
 - Added stronger typing to affected classes and methods
 - Added Looking Similar recommendations
+
+## 3.13.8
+
+### Bug Fixes
+- Restored compatibility with PHP 7.4
+
+## 3.13.7
+
+### Features
+- Added a feature to enable automatic price indexing on the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products.)
+
+### Updates
+- Updated `getCookie` method to make it more consistent
+- Removed dependency to `catalog_product_price` indexer
+
+### Bug Fixes
+- Fixed a bug where the Landing Page Builder was crashing on save with customer group pricing was enabled.
+- Fixed issue where Insights information wasn't kept on the url after clicking "add to cart" on PLP powered by InstantSearch
+
+## 3.13.6
+
+### Bug Fixes
+- Improve handling of insights params for URLs that already have a query string
+- Improve query method for alternate root categories - Thank you @igorfigueiredogen
 
 ## 3.13.5
 

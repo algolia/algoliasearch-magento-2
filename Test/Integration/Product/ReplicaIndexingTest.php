@@ -7,14 +7,15 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
+use Algolia\AlgoliaSearch\Test\Integration\Product\Traits\ReplicaAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 
 class ReplicaIndexingTest extends TestCase
 {
+    use ReplicaAssertionsTrait;
+
     protected ?ReplicaManagerInterface $replicaManager = null;
-    protected ?ProductIndexer $productIndexer = null;
 
     protected ?IndicesConfigurator $indicesConfigurator = null;
 
@@ -23,7 +24,6 @@ class ReplicaIndexingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->productIndexer = $this->objectManager->get(ProductIndexer::class);
         $this->replicaManager = $this->objectManager->get(ReplicaManagerInterface::class);
         $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
         $this->indexSuffix = 'products';
@@ -120,35 +120,6 @@ class ReplicaIndexingTest extends TestCase
     }
 
     /**
-     * ConfigHelper::setSorting uses WriterInterface which does not update unless DB isolation is disabled
-     * This provides a workaround to test using MutableScopeConfigInterface with DB isolation enabled
-     */
-    protected function mockSortUpdate(string $sortAttr, string $sortDir, array $attr): void
-    {
-        $sorting = $this->configHelper->getSorting();
-        $existing = array_filter($sorting, function ($item) use ($sortAttr, $sortDir) {
-           return $item['attribute'] === $sortAttr && $item['sort'] === $sortDir;
-        });
-
-
-        if ($existing) {
-            $idx = array_key_first($existing);
-            $sorting[$idx] = array_merge($existing[$idx], $attr);
-        }
-        else {
-            $sorting[] = array_merge(
-                [
-                    'attribute' => $sortAttr,
-                    'sort'       => $sortDir,
-                    'sortLabel'  => $sortAttr
-                ],
-                $attr
-            );
-        }
-        $this->setConfig(ConfigHelper::SORTING_INDICES, json_encode($sorting));
-    }
-
-    /**
      * @depends testReplicaSync
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      * @throws AlgoliaException
@@ -214,107 +185,29 @@ class ReplicaIndexingTest extends TestCase
         $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
     }
 
-    protected function assertSortToReplicaConfigParity(string $primaryIndexName, array $sorting, array $replicas): void
+    protected function tearDown(): void
     {
-        foreach ($sorting as $sortAttr) {
-            $replicaIndexName = $sortAttr['name'];
-            $isVirtual = array_key_exists('virtualReplica', $sortAttr) && $sortAttr['virtualReplica'];
-            $needle = $isVirtual
-                ? "virtual($replicaIndexName)"
-                : $replicaIndexName;
-            $this->assertContains($needle, $replicas);
+        parent::tearDown();
 
-            $replicaSettings = $this->assertReplicaIndexExists($primaryIndexName, $replicaIndexName);
-            $sort = reset($sortAttr['ranking']);
-            if ($isVirtual) {
-                $this->assertVirtualReplicaRanking($replicaSettings, $sort);
-            } else {
-                $this->assertStandardReplicaRanking($replicaSettings, $sort);
-            }
-        }
-    }
-
-    protected function assertReplicaIndexExists(string $primaryIndexName, string $replicaIndexName): array
-    {
-        $replicaSettings = $this->algoliaHelper->getSettings($replicaIndexName);
-        $this->assertArrayHasKey('primary', $replicaSettings);
-        $this->assertEquals($primaryIndexName, $replicaSettings['primary']);
-        return $replicaSettings;
-    }
-
-    protected function assertReplicaRanking(array $replicaSettings, string $rankingKey, string $sort) {
-        $this->assertArrayHasKey($rankingKey, $replicaSettings);
-        $this->assertEquals($sort, reset($replicaSettings[$rankingKey]));
-    }
-
-    protected function assertStandardReplicaRanking(array $replicaSettings, string $sort): void
-    {
-        $this->assertReplicaRanking($replicaSettings, 'ranking', $sort);
-    }
-
-    protected function assertVirtualReplicaRanking(array $replicaSettings, string $sort): void
-    {
-        $this->assertReplicaRanking($replicaSettings, 'customRanking', $sort);
-    }
-
-    protected function assertStandardReplicaRankingOld(array $replicaSettings, string $sortAttr, string $sortDir): void
-    {
-        $this->assertArrayHasKey('ranking', $replicaSettings);
-        $this->assertEquals("$sortDir($sortAttr)", array_shift($replicaSettings['ranking']));
-    }
-
-    protected function assertVirtualReplicaRankingOld(array $replicaSettings, string $sortAttr, string $sortDir): void
-    {
-        $this->assertArrayHasKey('customRanking', $replicaSettings);
-        $this->assertEquals("$sortDir($sortAttr)", array_shift($replicaSettings['customRanking']));
-    }
-
-    /**
-     * @param string[] $replicaSetting
-     * @param string $replicaIndexName
-     * @return bool
-     */
-    protected function isVirtualReplica(array $replicaSetting, string $replicaIndexName): bool
-    {
-        return (bool) array_filter(
-            $replicaSetting,
-            function ($replica) use ($replicaIndexName) {
-                return str_contains($replica, "virtual($replicaIndexName)");
-            }
+        // Makes sure that the original values are restored in case a test is failing and doesn't finish
+        $this->configHelper->setSorting(
+            [
+                [
+                    'attribute' => 'price',
+                    'sort' => 'asc',
+                    'sortLabel' => 'Lowest Price'
+                ],
+                [
+                    'attribute' => 'price',
+                    'sort' => 'desc',
+                    'sortLabel' => 'Highest Price'
+                ],
+                [
+                    'attribute' => 'created_at',
+                    'sort' => 'desc',
+                    'sortLabel' => 'Newest first'
+                ]
+            ]
         );
     }
-
-    protected function isStandardReplica(array $replicaSetting, string $replicaIndexName): bool
-    {
-        return (bool) array_filter(
-            $replicaSetting,
-            function ($replica) use ($replicaIndexName) {
-                $regex = '/^' . preg_quote($replicaIndexName) . '$/';
-                return preg_match($regex, $replica);
-            }
-        );
-    }
-
-    protected function hasSortingAttribute($sortAttr, $sortDir): bool
-    {
-        $sorting = $this->configHelper->getSorting();
-        return (bool) array_filter(
-            $sorting,
-            function($sort) use ($sortAttr, $sortDir) {
-                return $sort['attribute'] == $sortAttr
-                    && $sort['sort'] == $sortDir;
-            }
-        );
-    }
-
-    protected function assertSortingAttribute($sortAttr, $sortDir): void
-    {
-        $this->assertTrue($this->hasSortingAttribute($sortAttr, $sortDir));
-    }
-
-    protected function assertNoSortingAttribute($sortAttr, $sortDir): void
-    {
-        $this->assertFalse($this->hasSortingAttribute($sortAttr, $sortDir));
-    }
-
 }

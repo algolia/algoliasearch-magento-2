@@ -115,8 +115,10 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
         $settings = $this->algoliaHelper->getSettings($indexName);
         $deduped = $this->dedupeSpecificSettings(['synonyms', 'altCorrections'], $settings);
 
-        //bring over as is
-        $deduped['placeholders'] = $settings['placeholders'];
+        //bring over as is (no de-dupe necessary)
+        if (array_key_exists('placeholders', $settings)) {
+            $deduped['placeholders'] = $settings['placeholders'];
+        }
 
         // Updating the synonyms requires a separate endpoint which is not currently not exposed in the PHP API client
         // See https://www.algolia.com/doc/rest-api/search/#tag/Synonyms/operation/saveSynonyms

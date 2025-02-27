@@ -1,0 +1,17 @@
+<?php
+
+/** @var \Algolia\AlgoliaSearch\Block\Adminhtml\IndexingManager\Section $block */
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\IndexingManager\Section $view */
+$view = $block->getViewModel();
+$view->setEntity($block->getData('entity'));
+$relatedIndices = $view->getRelatedIndices();
+?>
+
+<div class="algolia-indexing-manager-section">
+    <h2><?php echo $block->escapeHtml($view->getSectionTitle()) ?></h2>
+    <?php if (count($relatedIndices) > 0) : ?>
+        <?php foreach ($relatedIndices as $storeId => $relatedIndex) : ?>
+            <p><?php echo $relatedIndex['name'] ?> : <a href="<?php echo $view->getIndexUrl($relatedIndex['index'], $storeId) ?>" target="_blank" ><?php echo $relatedIndex['index'] ?></a></p>
+        <?php endforeach; ?>
+    <?php endif ?>
+</div>

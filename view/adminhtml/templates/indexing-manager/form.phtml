@@ -1,0 +1,35 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\IndexingManager\Form $form */
+$form = $block->getViewModel();
+?>
+
+<div class="algolia-indexing-manager-form">
+    <form id="algolia-indexing-entity-form" data-mage-init='{"validation":{}}' action="<?php echo $form->getFormAction() ?>" method="post">
+        <input type="hidden" name="form_key" value="<?php echo $block->getFormKey() ?>" />
+        <div class="inline-field">
+            <p>Reindex your entities in one click: </p>
+        </div>
+        <div class="inline-field">
+            Store(s): <select name="store_id" class="select admin__control-select">
+                <?php foreach ($form->getStores() as $key => $section) : ?>
+                    <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('store_id')) ? ' selected' : '' ?>>
+                        <?php echo ucwords($section) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="inline-field">
+            Entities: <select name="entity" class="select admin__control-select">
+                <?php foreach ($form->getEntities() as $key => $section) : ?>
+                    <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('entity')) ? ' selected' : '' ?>>
+                        <?php echo ucwords($section) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <button type="submit" class="action submit primary ">
+            <?php echo $block->escapeHtml(__('Reindex')) ?>
+        </button>
+    </form>
+</div>

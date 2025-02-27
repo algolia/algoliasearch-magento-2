@@ -1,0 +1,30 @@
+.algolia-indexing-manager-overview {
+    margin-bottom: 1.2rem;
+    padding: 1.5rem 0;
+}
+
+.algolia-indexing-manager-section {
+    border: 1px solid #e3e3e3;
+    margin: 1.5rem 0;
+    padding: 1.5rem 3rem;
+}
+
+.algolia-actions-buttons {
+    text-align: right;
+}
+
+.algolia-indexing-manager-form {
+    margin-top: .7rem;
+    float: right;
+}
+
+.algolia-indexing-manager-form .inline-field {
+    display: inline-block;
+    vertical-align: top;
+}
+.algolia-indexing-manager-form .inline-field select,
+.algolia-indexing-manager-form .inline-field p {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    margin-right: 1.5rem;
+}

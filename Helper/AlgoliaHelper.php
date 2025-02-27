@@ -249,6 +249,15 @@ class AlgoliaHelper extends AbstractHelper
     }
 
     /**
+     * @throws AlgoliaException|NoSuchEntityException
+     */
+    public function clearSynonyms(string $indexName, bool $forwardToReplicas = false, ?int $storeId = null): void
+    {
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $this->algoliaConnector->clearSynonyms($indexOptions, $forwardToReplicas);
+    }
+
+    /**
      * @param string $fromIndexName
      * @param string $toIndexName
      * @param int|null $storeId

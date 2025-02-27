@@ -45,9 +45,9 @@ class IndexOptions extends DataObject implements IndexOptionsInterface
     /**
      * Returns the final index name computed by the IndexNameFetcher
      *
-     * @return string
+     * @return string|null
      */
-    public function getIndexName(): string
+    public function getIndexName(): ?string
     {
         return $this->getData(IndexOptionsInterface::INDEX_NAME);
     }

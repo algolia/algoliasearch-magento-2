@@ -588,6 +588,14 @@ class AlgoliaConnector
     }
 
     /**
+     * @throws AlgoliaException
+     */
+    public function clearSynonyms(IndexOptionsInterface $indexOptions, bool $forwardToReplicas = false): void
+    {
+        $this->getClient($indexOptions->getStoreId())->clearSynonyms($indexOptions->getIndexName(), $forwardToReplicas);
+    }
+
+    /**
      * Warning: This method can't be performed across two different applications
      *
      * @param IndexOptionsInterface $fromIndexOptions

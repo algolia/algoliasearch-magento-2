@@ -47,7 +47,7 @@ class FacetBuilder
         foreach ($facets as $facet) {
             if ($facet['attribute'] === 'price') {
                 foreach ($currencies as $currency_code) {
-                    $facet['attribute'] = 'price.' . $currency_code . '.default';
+                    $attributesForFaceting[] = 'price.' . $currency_code . '.default';
 
                     if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
                         foreach ($this->groupCollection as $group) {
@@ -59,23 +59,29 @@ class FacetBuilder
                             $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $groupId;
                         }
                     }
-
-                    $attributesForFaceting[] = $facet['attribute'];
                 }
             } else {
-                $attribute = $facet['attribute'];
-                if (array_key_exists('searchable', $facet)) {
-                    if ($facet['searchable'] === '1') {
-                        $attribute = 'searchable(' . $attribute . ')';
-                    } elseif ($facet['searchable'] === '3') {
-                        $attribute = 'filterOnly(' . $attribute . ')';
-                    }
-                }
-
-                $attributesForFaceting[] = $attribute;
+                $attributesForFaceting[] = $this->decorateAttributeForFaceting($facet);
             }
         }
 
+        return $this->addCategoryAttributes($storeId, $attributesForFaceting);
+    }
+
+    protected function decorateAttributeForFaceting($facet): string {
+        $attribute = $facet['attribute'];
+        if (array_key_exists('searchable', $facet)) {
+            if ($facet['searchable'] === '1') {
+                $attribute = 'searchable(' . $attribute . ')';
+            } elseif ($facet['searchable'] === '3') {
+                $attribute = 'filterOnly(' . $attribute . ')';
+            }
+        }
+        return $attribute;
+    }
+
+    protected function addCategoryAttributes(int $storeId, array $attributesForFaceting): array
+    {
         if ($this->configHelper->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
             $attributesForFaceting[] = 'categories';
         }
@@ -89,4 +95,5 @@ class FacetBuilder
 
         return $attributesForFaceting;
     }
+
 }

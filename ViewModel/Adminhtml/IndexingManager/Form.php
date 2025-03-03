@@ -61,11 +61,11 @@ class Form implements \Magento\Framework\View\Element\Block\ArgumentInterface
      */
     public function getConfirmMessage(): string
     {
-        $message = 'You\'re about to perform an entity full reindexing to Algolia.<br>';
+        $message = 'You\'re about to perform an entity full reindexing to Algolia.\n';
 
         if (!$this->configHelper->isQueueActive()) {
-            $message .= '<strong>Warning :</strong> Your Indexing Queue is not activated. Depending on the size of the data you want to index, it may takes a lot of time and resources.<br>';
-            $message .= 'We highly suggest to turn it on if you\'re performing a full product reindexing with a large catalog.<br>';
+            $message .= 'Warning : Your Indexing Queue is not activated. Depending on the size of the data you want to index, it may takes a lot of time and resources.\n';
+            $message .= 'We highly suggest to turn it on if you\'re performing a full product reindexing with a large catalog.\n';
         }
 
         $message .= 'Do you want to proceed ?';

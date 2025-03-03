@@ -28,7 +28,7 @@ $form = $block->getViewModel();
                 <?php endforeach; ?>
             </select>
         </div>
-        <button type="submit" class="action submit primary ">
+        <button id="algolia-indexing-entity-submit" type="button" class="action submit primary ">
             <?php echo $block->escapeHtml(__('Reindex')) ?>
         </button>
     </form>
@@ -37,11 +37,13 @@ $form = $block->getViewModel();
 <script type="text/javascript">
     require(["jquery", "mage/backend/form", 'mage/tooltip'], function($) {
         var indexingForm = $('#algolia-indexing-entity-form').form();
-        indexingForm.on('submit', function(e) {
+        var indexingSubmit = $('#algolia-indexing-entity-submit');
+        indexingSubmit.on('click', function(e) {
             e.preventDefault();
-            e.stopImmediatePropagation();
-
-            confirmSetLocation('<?php echo $block->escapeJsQuote(__($form->getConfirmMessage())) ?>', '<?php echo $form->getFormAction() ?>')
+            /** todo: enhance this prompt */
+            if(confirm('<?php echo $block->escapeJsQuote(__($form->getConfirmMessage())) ?>')) {
+                indexingForm.submit();
+            }
         });
     });
 </script>

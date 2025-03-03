@@ -32,12 +32,6 @@
                         <argument name="entity" xsi:type="string">pages</argument>
                     </arguments>
                 </block>
-                <block class="Magento\Backend\Block\Template" name="indexing_manager_suggestions" template="Algolia_AlgoliaSearch::indexing-manager/section.phtml">
-                    <arguments>
-                        <argument name="view_model" xsi:type="object">Algolia\AlgoliaSearch\ViewModel\Adminhtml\IndexingManager\Section</argument>
-                        <argument name="entity" xsi:type="string">suggestions</argument>
-                    </arguments>
-                </block>
             </block>
         </referenceContainer>
     </body>

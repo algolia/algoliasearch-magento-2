@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\IndexingManager;
 use Magento\Backend\App\Action;
 use Magento\Backend\Model\View\Result\Redirect;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\DataObject;
 
 class Reindex extends Action
 {

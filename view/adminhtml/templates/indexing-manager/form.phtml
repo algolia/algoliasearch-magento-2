@@ -33,3 +33,15 @@ $form = $block->getViewModel();
         </button>
     </form>
 </div>
+
+<script type="text/javascript">
+    require(["jquery", "mage/backend/form", 'mage/tooltip'], function($) {
+        var indexingForm = $('#algolia-indexing-entity-form').form();
+        indexingForm.on('submit', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            confirmSetLocation('<?php echo $block->escapeJsQuote(__($form->getConfirmMessage())) ?>', '<?php echo $form->getFormAction() ?>')
+        });
+    });
+</script>

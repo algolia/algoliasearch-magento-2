@@ -12,6 +12,8 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class FacetBuilder
 {
+    public const FACET_ATTRIBUTE_PRICE = 'price';
+
     public function __construct(
         protected ConfigHelper                            $configHelper,
         protected StoreManagerInterface                   $storeManager,
@@ -39,27 +41,10 @@ class FacetBuilder
     public function getAttributesForFaceting(int $storeId): array
     {
         $attributesForFaceting = [];
-
-        $currencies = $this->currencyManager->getConfigAllowCurrencies();
-
         $facets = $this->configHelper->getFacets($storeId);
-        $websiteId = (int)$this->storeManager->getStore($storeId)->getWebsiteId();
         foreach ($facets as $facet) {
-            if ($facet['attribute'] === 'price') {
-                foreach ($currencies as $currency_code) {
-                    $attributesForFaceting[] = 'price.' . $currency_code . '.default';
-
-                    if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
-                        foreach ($this->groupCollection as $group) {
-                            $groupId = (int)$group->getData('customer_group_id');
-                            $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
-                            if (in_array($websiteId, $excludedWebsites)) {
-                                continue;
-                            }
-                            $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $groupId;
-                        }
-                    }
-                }
+            if ($facet['attribute'] === self::FACET_ATTRIBUTE_PRICE) {
+                $attributesForFaceting = array_merge($attributesForFaceting, $this->getPricingAttributesForFaceting($storeId));
             } else {
                 $attributesForFaceting[] = $this->decorateAttributeForFaceting($facet);
             }
@@ -67,6 +52,31 @@ class FacetBuilder
 
         return $this->addCategoryAttributes($storeId, $attributesForFaceting);
     }
+
+    protected function getPricingAttributesForFaceting(int $storeId): array
+    {
+        $pricingAttributes = [];
+        $currencies = $this->currencyManager->getConfigAllowCurrencies();
+        $websiteId = (int) $this->storeManager->getStore($storeId)->getWebsiteId();
+
+        foreach ($currencies as $currency_code) {
+            $pricingAttributes[] = 'price.' . $currency_code . '.default';
+
+            if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
+                foreach ($this->groupCollection as $group) {
+                    $groupId = (int)$group->getData('customer_group_id');
+                    $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
+                    if (in_array($websiteId, $excludedWebsites)) {
+                        continue;
+                    }
+                    $pricingAttributes[] = 'price.' . $currency_code . '.group_' . $groupId;
+                }
+            }
+        }
+
+        return $pricingAttributes;
+    }
+
 
     protected function decorateAttributeForFaceting($facet): string {
         $attribute = $facet['attribute'];

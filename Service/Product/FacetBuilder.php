@@ -19,6 +19,10 @@ class FacetBuilder
     public const FACET_KEY_ATTRIBUTE_NAME = 'attribute';
     public const FACET_KEY_SEARCHABLE = 'searchable';
 
+    public const FACET_SEARCHABLE_SEARCHABLE = '1';
+    public const FACET_SEARCHABLE_NOT_SEARCHABLE = '2';
+    public const FACET_SEARCHABLE_FILTER_ONLY = '3';
+
     // Local raw facet cache, indexed by $storeId
     protected array $facets = [];
 
@@ -30,6 +34,22 @@ class FacetBuilder
         protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
     )
     {}
+
+    /**
+     * @param int $storeId
+     * @return string[]
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getAttributesForFaceting(int $storeId): array
+    {
+        return array_map(
+            function($facet) {
+                return $this->decorateAttributeForFaceting($facet);
+            },
+            $this->getRawFacets($storeId)
+        );
+    }
 
     /**
      * @param int $storeId
@@ -91,13 +111,13 @@ class FacetBuilder
     /**
      * @param string $attribute
      * @param bool $searchable
-     * @return array<string, string|int>
+     * @return array<string, string>
      */
     protected function getRawFacet(string $attribute, bool $searchable = false): array
     {
         return [
             self::FACET_KEY_ATTRIBUTE_NAME => $attribute,
-            self::FACET_KEY_SEARCHABLE => $searchable ? 1 : 0,
+            self::FACET_KEY_SEARCHABLE => $searchable ? self::FACET_SEARCHABLE_SEARCHABLE : self::FACET_SEARCHABLE_NOT_SEARCHABLE,
         ];
     }
 
@@ -158,25 +178,6 @@ class FacetBuilder
         return $facets;
     }
 
-
-    /**
-     * @param int $storeId
-     * @return string[]
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    public function getAttributesForFaceting(int $storeId): array
-    {
-
-        $attributesForFaceting = [];
-        $facets = $this->getRawFacets($storeId);
-        foreach ($facets as $facet) {
-            $attributesForFaceting[] = $this->decorateAttributeForFaceting($facet);
-        }
-
-        return $attributesForFaceting;
-    }
-
     /**
      * @param int $storeId
      * @return string[]
@@ -227,34 +228,13 @@ class FacetBuilder
     protected function decorateAttributeForFaceting(array $facet): string {
         $attribute = $facet[self::FACET_KEY_ATTRIBUTE_NAME];
         if (array_key_exists(self::FACET_KEY_SEARCHABLE, $facet)) {
-            if ($facet[self::FACET_KEY_SEARCHABLE] === '1') {
+            if ($facet[self::FACET_KEY_SEARCHABLE] == self::FACET_SEARCHABLE_SEARCHABLE) {
                 $attribute = 'searchable(' . $attribute . ')';
-            } elseif ($facet[self::FACET_KEY_SEARCHABLE] === '3') {
+            } elseif ($facet[self::FACET_KEY_SEARCHABLE] == self::FACET_SEARCHABLE_FILTER_ONLY) {
                 $attribute = 'filterOnly(' . $attribute . ')';
             }
         }
         return $attribute;
-    }
-
-    /**
-     * @param int $storeId
-     * @param string[] $attributesForFaceting
-     * @return string[]
-     */
-    protected function addCategoryAttributes(int $storeId, array $attributesForFaceting): array
-    {
-        if ($this->configHelper->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
-            $attributesForFaceting[] = self::FACET_ATTRIBUTE_CATEGORIES;
-        }
-
-        // Added for legacy merchandising features
-        $attributesForFaceting[] = 'categoryIds';
-
-        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
-            $attributesForFaceting[] = 'searchable(' . $this->configHelper->getCategoryPageIdAttributeName($storeId) . ')';
-        }
-
-        return $attributesForFaceting;
     }
 
 }

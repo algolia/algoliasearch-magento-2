@@ -157,6 +157,10 @@
                 <item name="reindex_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand</item>
                 <item name="reindex_categories_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand</item>
                 <item name="reindex_pages_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand</item>
+                <item name="reindex_suggestions_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexSuggestionsCommand</item>
+                <item name="reindex_additional_sections_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAdditionalSectionsCommand</item>
+                <item name="delete_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\DeleteProductsCommand</item>
+                <item name="process_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand</item>
             </argument>
         </arguments>
     </type>

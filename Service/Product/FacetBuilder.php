@@ -44,7 +44,7 @@ class FacetBuilder
         $facets = $this->configHelper->getFacets($storeId);
         foreach ($facets as $facet) {
             if ($facet['attribute'] === self::FACET_ATTRIBUTE_PRICE) {
-                $attributesForFaceting = array_merge($attributesForFaceting, $this->getPricingAttributesForFaceting($storeId));
+                $attributesForFaceting = array_merge($attributesForFaceting, $this->getPricingAttributes($storeId));
             } else {
                 $attributesForFaceting[] = $this->decorateAttributeForFaceting($facet);
             }
@@ -53,32 +53,54 @@ class FacetBuilder
         return $this->addCategoryAttributes($storeId, $attributesForFaceting);
     }
 
-    protected function getPricingAttributesForFaceting(int $storeId): array
+    /**
+     * @param int $storeId
+     * @return string[]
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     */
+    protected function getPricingAttributes(int $storeId): array
     {
         $pricingAttributes = [];
         $currencies = $this->currencyManager->getConfigAllowCurrencies();
-        $websiteId = (int) $this->storeManager->getStore($storeId)->getWebsiteId();
-
-        foreach ($currencies as $currency_code) {
-            $pricingAttributes[] = 'price.' . $currency_code . '.default';
-
-            if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
-                foreach ($this->groupCollection as $group) {
-                    $groupId = (int)$group->getData('customer_group_id');
-                    $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
-                    if (in_array($websiteId, $excludedWebsites)) {
-                        continue;
-                    }
-                    $pricingAttributes[] = 'price.' . $currency_code . '.group_' . $groupId;
-                }
-            }
+        foreach ($currencies as $currencyCode) {
+            $pricingAttributes[] = 'price.' . $currencyCode . '.default';
+            $pricingAttributes = array_merge($pricingAttributes, $this->getGroupPricingAttributes($storeId, $currencyCode));
         }
 
         return $pricingAttributes;
     }
 
+    /**
+     * @param int $storeId
+     * @param string $currencyCode
+     * @return string[]
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     */
+    protected function getGroupPricingAttributes(int $storeId, string $currencyCode): array
+    {
+        $groupPricingAttributes = [];
+        $websiteId = (int) $this->storeManager->getStore($storeId)->getWebsiteId();
+        if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
+            foreach ($this->groupCollection as $group) {
+                $groupId = (int)$group->getData('customer_group_id');
+                $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
+                if (in_array($websiteId, $excludedWebsites)) {
+                    continue;
+                }
+                $groupPricingAttributes[] = 'price.' . $currencyCode . '.group_' . $groupId;
+            }
+        }
+        return $groupPricingAttributes;
+    }
 
-    protected function decorateAttributeForFaceting($facet): string {
+
+    /**
+     * @param array $facet
+     * @return string
+     */
+    protected function decorateAttributeForFaceting(array $facet): string {
         $attribute = $facet['attribute'];
         if (array_key_exists('searchable', $facet)) {
             if ($facet['searchable'] === '1') {
@@ -90,6 +112,11 @@ class FacetBuilder
         return $attribute;
     }
 
+    /**
+     * @param int $storeId
+     * @param string[] $attributesForFaceting
+     * @return string[]
+     */
     protected function addCategoryAttributes(int $storeId, array $attributesForFaceting): array
     {
         if ($this->configHelper->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {

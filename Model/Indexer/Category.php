@@ -3,28 +3,18 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
-use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
-use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
-use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Category\QueueBuilder as CategoryQueueBuilder;
 use Magento\Store\Model\StoreManagerInterface;
 
 class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
-    public static $affectedProductIds = [];
+
 
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected CategoryHelper $categoryHelper,
-        protected Data $dataHelper,
-        protected Queue $queue,
         protected ConfigHelper $configHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    )
-    {}
+        protected CategoryQueueBuilder $categoryQueueBuilder
+    ) {}
 
     public function execute($categoryIds)
     {
@@ -32,30 +22,8 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
             return;
         }
 
-        $storeIds = array_keys($this->storeManager->getStores());
-
-        foreach ($storeIds as $storeId) {
-            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
-                continue;
-            }
-
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-                return;
-            }
-
-            $this->rebuildAffectedProducts($storeId);
-
-            $categoriesPerPage = $this->configHelper->getNumberOfElementByPage();
-
-            if (is_array($categoryIds) && count($categoryIds) > 0) {
-                $this->processSpecificCategories($categoryIds, $categoriesPerPage, $storeId);
-
-                continue;
-            }
-
-            $this->processFullReindex($storeId, $categoriesPerPage);
+        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+            $this->categoryQueueBuilder->buildQueue($storeId, $categoryIds);
         }
     }
 
@@ -72,88 +40,5 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
     public function executeRow($id)
     {
         $this->execute([$id]);
-    }
-
-    /**
-     * @param int $storeId
-     */
-    private function rebuildAffectedProducts($storeId)
-    {
-        $affectedProducts = self::$affectedProductIds;
-        $affectedProductsCount = count($affectedProducts);
-
-        if ($affectedProductsCount > 0 && $this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
-            $productsPerPage = $this->configHelper->getNumberOfElementByPage();
-            foreach (array_chunk($affectedProducts, $productsPerPage) as $chunk) {
-                /** @uses ProductIndexBuilder::buildIndexList() */
-                $this->queue->addToQueue(
-                    ProductIndexBuilder::class,
-                    'buildIndexList',
-                    [
-                        'storeId' => $storeId,
-                        'entityIds' => $chunk,
-                    ],
-                    count($chunk)
-                );
-            }
-        }
-    }
-
-    /**
-     * @param array $categoryIds
-     * @param int $categoriesPerPage
-     * @param int $storeId
-     */
-    private function processSpecificCategories($categoryIds, $categoriesPerPage, $storeId)
-    {
-        foreach (array_chunk($categoryIds, $categoriesPerPage) as $chunk) {
-            /** @uses CategoryIndexBuilder::buildIndexList */
-            $this->queue->addToQueue(
-                CategoryIndexBuilder::class,
-                'buildIndexList',
-                [
-                    'storeId' => $storeId,
-                    'entityIds' => $chunk,
-                ],
-                count($chunk)
-            );
-        }
-    }
-
-    /**
-     * @param int $storeId
-     * @param int $categoriesPerPage
-     *
-     * @throws Magento\Framework\Exception\LocalizedException
-     * @throws Magento\Framework\Exception\NoSuchEntityException
-     */
-    private function processFullReindex($storeId, $categoriesPerPage)
-    {
-        /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
-        $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', ['storeId' => $storeId]);
-
-        $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId);
-        $size = $collection->getSize();
-
-        $pages = ceil($size / $categoriesPerPage);
-
-        for ($i = 1; $i <= $pages; $i++) {
-            $data = [
-                'storeId' => $storeId,
-                'options' => [
-                    'page' => $i,
-                    'pageSize' => $categoriesPerPage,
-                ]
-            ];
-
-            /** @uses CategoryIndexBuilder::buildIndexFull() */
-            $this->queue->addToQueue(
-                CategoryIndexBuilder::class,
-                'buildIndexFull',
-                $data,
-                $categoriesPerPage,
-                true
-            );
-        }
     }
 }

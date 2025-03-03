@@ -153,6 +153,10 @@
                 <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand</item>
                 <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
                 <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
+                <!-- customr indexers -->
+                <item name="reindex_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand</item>
+                <item name="reindex_categories_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand</item>
+                <item name="reindex_pages_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand</item>
             </argument>
         </arguments>
     </type>

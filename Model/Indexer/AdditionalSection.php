@@ -3,22 +3,16 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AdditionalSection\QueueBuilder as AdditionalSectionQueueBuilder;
 use Magento\Store\Model\StoreManagerInterface;
 
 class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected Data $dataHelper,
-        protected Queue $queue,
         protected ConfigHelper $configHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    )
-    {}
+        protected AdditionalSectionQueueBuilder $additionalSectionQueueBuilder
+    ) {}
 
     public function execute($ids)
     {
@@ -31,26 +25,8 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
             return;
         }
 
-        $storeIds = array_keys($this->storeManager->getStores());
-
-        foreach ($storeIds as $storeId) {
-            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
-                continue;
-            }
-
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-                return;
-            }
-
-            /** @uses AdditionalSectionIndexBuilder::buildIndexFull() */
-            $this->queue->addToQueue(
-                AdditionalSectionIndexBuilder::class,
-                'buildIndexFull',
-                ['storeId' => $storeId],
-                1
-            );
+        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+            $this->additionalSectionQueueBuilder->buildQueue($storeId);
         }
     }
 

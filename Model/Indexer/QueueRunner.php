@@ -14,8 +14,7 @@ class QueueRunner implements \Magento\Framework\Indexer\ActionInterface, \Magent
         protected ConfigHelper $configHelper,
         protected Queue $queue,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    )
-    {}
+    ) {}
 
     public function execute($ids)
     {

@@ -29,7 +29,7 @@ class DeleteProductsCommand extends AbstractIndexerCommand
 
     protected function getCommandDescription(): string
     {
-        return 'Delete unwanted products from Algolia product indices';
+        return 'Delete inactive products from Algolia product indices';
     }
 
     protected function getAdditionalDefinition(): array

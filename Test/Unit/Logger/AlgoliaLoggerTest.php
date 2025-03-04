@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit;
+namespace Algolia\AlgoliaSearch\Test\Unit\Logger;
 
 use Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler;
 use Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler;

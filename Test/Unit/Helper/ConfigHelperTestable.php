@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit;
+namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 

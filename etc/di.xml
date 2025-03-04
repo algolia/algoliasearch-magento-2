@@ -161,6 +161,7 @@
                 <item name="reindex_additional_sections_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAdditionalSectionsCommand</item>
                 <item name="delete_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\DeleteProductsCommand</item>
                 <item name="process_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand</item>
+                <item name="reindex_all_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand</item>
             </argument>
         </arguments>
     </type>

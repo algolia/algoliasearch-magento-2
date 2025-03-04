@@ -207,9 +207,10 @@ class FacetBuilder
     {
         $groupPricingAttributes = [];
         $websiteId = (int) $this->storeManager->getStore($storeId)->getWebsiteId();
+
         if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
             foreach ($this->groupCollection as $group) {
-                $groupId = (int)$group->getData('customer_group_id');
+                $groupId = (int) $group->getData('customer_group_id');
                 $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
                 if (in_array($websiteId, $excludedWebsites)) {
                     continue;
@@ -225,7 +226,8 @@ class FacetBuilder
      * @param array<string, string|int> $facet
      * @return string
      */
-    protected function decorateAttributeForFaceting(array $facet): string {
+    protected function decorateAttributeForFaceting(array $facet): string
+    {
         $attribute = $facet[self::FACET_KEY_ATTRIBUTE_NAME];
         if (array_key_exists(self::FACET_KEY_SEARCHABLE, $facet)) {
             if ($facet[self::FACET_KEY_SEARCHABLE] == self::FACET_SEARCHABLE_SEARCHABLE) {

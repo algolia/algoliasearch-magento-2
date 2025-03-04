@@ -6,6 +6,10 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 
+/**
+ * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:process_queue` command instead
+ * If you want to re-enable it, you can do it in the Magento configuration ("Algolia Search > Indexing Manager" section)
+ */
 class QueueRunner implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public const INDEXER_ID = 'algolia_queue_runner';

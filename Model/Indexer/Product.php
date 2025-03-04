@@ -7,9 +7,12 @@ use Algolia\AlgoliaSearch\Service\Product\QueueBuilder as ProductQueueBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:products` command instead
+ * If you want to re-enable it, you can do it in the Magento configuration ("Algolia Search > Indexing Manager" section)
+ */
 class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
-
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,

@@ -6,7 +6,10 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Service\Page\QueueBuilder as PageQueueBuilder;
 
-
+/**
+ * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:pages` command instead
+ * If you want to re-enable it, you can do it in the Magento configuration ("Algolia Search > Indexing Manager" section)
+ */
 class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(

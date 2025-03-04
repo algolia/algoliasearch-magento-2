@@ -11,8 +11,8 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
 {
 
     public function __construct(
-        protected StoreManagerInterface     $storeManager,
-        protected ConfigHelper              $configHelper,
+        protected StoreManagerInterface $storeManager,
+        protected ConfigHelper $configHelper,
         protected ProductQueueBuilder $productQueueBuilder
     ) {}
 

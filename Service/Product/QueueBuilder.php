@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Builder\QueueBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -25,7 +26,8 @@ class QueueBuilder implements QueueBuilderInterface
         protected ProductHelper $productHelper,
         protected Queue $queue,
         protected DiagnosticsLogger $diag,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected ProductIndexBuilder $productIndexBuilder
     ){}
 
     /**
@@ -113,5 +115,26 @@ class QueueBuilder implements QueueBuilderInterface
                 'storeId' => $storeId,
             ], 1, true);
         }
+    }
+
+    /**
+     * @param int $storeId
+     * @return void
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
+     */
+    public function deleteInactiveProducts(int $storeId): void
+    {
+        if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
+            return;
+        }
+
+        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
+            $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
+
+            return;
+        }
+
+        $this->productIndexBuilder->deleteInactiveProducts($storeId);
     }
 }

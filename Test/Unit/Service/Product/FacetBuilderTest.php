@@ -195,6 +195,35 @@ class FacetBuilderTest extends TestCase
      * @throws NoSuchEntityException
      * @throws LocalizedException
      */
+    public function testRenderingContentsFormatsCategoriesAttribute(): void
+    {
+        $storeId = 1;
+        $websiteId = 2;
+        $this->configHelper
+            ->method('getFacets')
+            ->willReturn([
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color'],
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size']
+            ]);
+
+        $this->mockGroups();
+        $this->mockStoreConfig($storeId, $websiteId);
+
+        $this->configHelper
+            ->method('replaceCategories')
+            ->with($storeId)
+            ->willReturn(true);
+
+        $result = $this->facetBuilder->getRenderingContent($storeId);
+
+        $this->assertContains('categories.level0', $result['facetOrdering']['facets']['order']);
+        $this->assertArrayHasKey('categories.level0', $result['facetOrdering']['values']);
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     */
     public function testGetRawFacetsReturnsCorrectStructure(): void
     {
         $storeId = 1;

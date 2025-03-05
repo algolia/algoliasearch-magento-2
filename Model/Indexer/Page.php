@@ -24,10 +24,6 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
      */
     public function execute($ids)
     {
-        if (!$this->configHelper->isPagesIndexerEnabled()) {
-            return;
-        }
-
         foreach ($this->pageHelper->getStores() as $storeId) {
             $this->pageBatchQueueProcessor->processBatch($storeId, $ids);
         }
@@ -38,6 +34,10 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
      */
     public function executeFull()
     {
+        if (!$this->configHelper->isPagesIndexerEnabled()) {
+            return;
+        }
+
         $this->execute(null);
     }
 

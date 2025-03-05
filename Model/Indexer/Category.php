@@ -20,10 +20,6 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
 
     public function execute($categoryIds)
     {
-        if (!$this->configHelper->isCategoriesIndexerEnabled()) {
-            return;
-        }
-
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
             $this->categoryBatchQueueProcessor->processBatch($storeId, $categoryIds);
         }
@@ -31,6 +27,10 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
 
     public function executeFull()
     {
+        if (!$this->configHelper->isCategoriesIndexerEnabled()) {
+            return;
+        }
+
         $this->execute(null);
     }
 

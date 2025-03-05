@@ -24,10 +24,6 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
      */
     public function execute($productIds)
     {
-        if (!$this->configHelper->isProductsIndexerEnabled()) {
-            return;
-        }
-
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
             $this->productBatchQueueProcessor->processBatch($storeId, $productIds);
         }
@@ -35,6 +31,10 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
 
     public function executeFull()
     {
+        if (!$this->configHelper->isProductsIndexerEnabled()) {
+            return;
+        }
+
         $this->execute(null);
     }
 

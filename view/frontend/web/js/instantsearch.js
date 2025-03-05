@@ -41,27 +41,11 @@ define([
 
             this.setupWrapper(templateProcessor);
 
-            const indexName = algoliaConfig.indexName + '_products';
-
-            const instantsearchOptions = algoliaCommon.triggerHooks(
-                'beforeInstantsearchInit',
-                {
-                    searchClient: algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey),
-                    indexName   : indexName,
-                    routing     : algoliaCommon.routing,
-                },
-                mockAlgoliaBundle
-            );
-
-            const search = instantsearch(instantsearchOptions);
+            const search = instantsearch(this.getInstantSearchOptions(mockAlgoliaBundle));
 
             search.client.addAlgoliaAgent(this.getAlgoliaAgent());
 
-            /** Prepare sorting indices data */
-            algoliaConfig.sortingIndices.unshift({
-                name : indexName,
-                label: algoliaConfig.translations.relevance,
-            });
+            this.prepareSortingIndices();
 
             // TODO: Revisit use of closures
             const currentRefinementsAttributes = this.getCurrentRefinementsAttributes();
@@ -569,21 +553,7 @@ define([
                 };
             }
 
-            allWidgetConfiguration = algoliaCommon.triggerHooks(
-                'beforeWidgetInitialization',
-                allWidgetConfiguration,
-                mockAlgoliaBundle
-            );
-
-            $.each(allWidgetConfiguration, (widgetType, widgetConfig) => {
-                if (Array.isArray(widgetConfig) === true) {
-                    $.each(widgetConfig, (i, widgetConfig) => {
-                        this.addWidget(search, widgetType, widgetConfig);
-                    });
-                } else {
-                    this.addWidget(search, widgetType, widgetConfig);
-                }
-            });
+            this.initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle);
 
             // Capture active redirect URL with IS facet params for add to cart from PLP
             if (algoliaConfig.instant.isAddToCartEnabled) {
@@ -605,6 +575,51 @@ define([
             this.startInstantSearch(search, mockAlgoliaBundle);
 
             this.addMobileRefinementsToggle();
+        },
+
+        initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle) {
+            allWidgetConfiguration = algoliaCommon.triggerHooks(
+                'beforeWidgetInitialization',
+                allWidgetConfiguration,
+                mockAlgoliaBundle
+            );
+
+            Object.entries(allWidgetConfiguration).forEach(([widgetType, widgetConfig]) => {
+                if (Array.isArray(widgetConfig)) {
+                    for (const subWidgetConfig of widgetConfig) {
+                        this.addWidget(search, widgetType, subWidgetConfig);
+                    }
+                } else {
+                    this.addWidget(search, widgetType, widgetConfig);
+                }
+            });
+        },
+
+        getProductIndexName() {
+            return algoliaConfig.indexName + '_products';
+        },
+
+        /**
+         * @param mockAlgoliaBundle to be removed in a future release
+         * @returns {*}
+         */
+        getInstantSearchOptions(mockAlgoliaBundle = {}) {
+            return algoliaCommon.triggerHooks(
+                'beforeInstantsearchInit',
+                {
+                    searchClient: algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey),
+                    indexName   : this.getProductIndexName(),
+                    routing     : algoliaCommon.routing,
+                },
+                mockAlgoliaBundle
+            );
+        },
+
+        prepareSortingIndices() {
+            algoliaConfig.sortingIndices.unshift({
+                name : this.getProductIndexName(),
+                label: algoliaConfig.translations.relevance,
+            });
         },
 
         /**

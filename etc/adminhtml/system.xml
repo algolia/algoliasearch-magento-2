@@ -580,13 +580,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="include_non_visible_products_in_index" translate="label comment" type="select" sortOrder="55" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Include non visible products in index</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        Include non visible products in index. Default value is <strong>No</strong>
-                    </comment>
-                </field>
                 <field id="category_page_id_attribute_name" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Category page ID attribute</label>
                     <comment>
@@ -598,6 +591,13 @@
                     <depends>
                         <field id="enable_visual_merchandising">1</field>
                     </depends>
+                </field>
+                <field id="include_non_visible_products_in_index" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Include non visible products in index</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        Include non visible products in index. Default value is <strong>No</strong>
+                    </comment>
                 </field>
             </group>
         </section>

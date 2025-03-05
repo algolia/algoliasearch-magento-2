@@ -35,7 +35,7 @@ class IndexAllCommand extends AbstractIndexerCommand
 
     protected function getCommandDescription(): string
     {
-        return 'Reindex all entities to Algolia';
+        return 'Reindex all entities to Algolia (if the queue is enabled, indexing will be processed asynchronously)';
     }
 
     protected function getAdditionalDefinition(): array
@@ -48,6 +48,11 @@ class IndexAllCommand extends AbstractIndexerCommand
         $this->output = $output;
         $this->input = $input;
         $this->setAreaCode();
+
+        $output->writeln('Reindex all entities to Algolia (if the queue is enabled, indexing will be processed asynchronously)');
+        if (!$this->confirmOperation()) {
+            return CLI::RETURN_SUCCESS;
+        }
 
         foreach ($this->commandsList as $commandName) {
             $command = $this->getApplication()->find($commandName);

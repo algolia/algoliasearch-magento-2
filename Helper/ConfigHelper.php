@@ -158,6 +158,15 @@ class ConfigHelper
     public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/queue/number_of_element_by_page';
     public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
 
+    // Indexing Manager settings
+    public const ENABLE_INDEXER_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/products';
+    public const ENABLE_INDEXER_CATEGORIES = 'algoliasearch_indexing_manager/full_indexing/categories';
+    public const ENABLE_INDEXER_PAGES = 'algoliasearch_indexing_manager/full_indexing/pages';
+    public const ENABLE_INDEXER_SUGGESTIONS = 'algoliasearch_indexing_manager/full_indexing/suggestions';
+    public const ENABLE_INDEXER_ADDITIONAL_SECTIONS = 'algoliasearch_indexing_manager/full_indexing/additional_sections';
+    public const ENABLE_INDEXER_DELETE_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/delete_products';
+    public const ENABLE_INDEXER_QUEUE = 'algoliasearch_indexing_manager/full_indexing/queue';
+
     public function __construct(
         protected Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,
         protected Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
@@ -1904,5 +1913,82 @@ class ConfigHelper
     public function getCookieLifetime($storeId = null)
     {
         return $this->configInterface->getValue(self::COOKIE_LIFETIME, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProductsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_PRODUCTS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCategoriesIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_CATEGORIES,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPagesIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_PAGES,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSuggestionsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_SUGGESTIONS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAdditionalSectionsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_ADDITIONAL_SECTIONS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDeleteProductsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_DELETE_PRODUCTS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isQueueIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_QUEUE,
+            ScopeInterface::SCOPE_STORE
+        );
     }
 }

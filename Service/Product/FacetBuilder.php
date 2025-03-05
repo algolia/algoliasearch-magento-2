@@ -63,7 +63,7 @@ class FacetBuilder
         if (empty($facets)) {
             return null;
         }
-        $attributes = $this->extractFacetAttributeNames($facets);
+        $attributes = $this->getRenderingContentAttributes($this->extractFacetAttributeNames($facets));
         return [
             'facetOrdering' => [
                 'facets' => [
@@ -89,22 +89,31 @@ class FacetBuilder
     }
 
     /**
-     * @param string[] $facets
+     * @param string[] $attributes
      * @return array<string, array>
      */
-    protected function getRenderingContentValues(array $facets): array
+    protected function getRenderingContentValues(array $attributes): array
     {
         return array_combine(
-            array_map(
-                function(string $attribute) {
-                    if ($attribute === self::FACET_ATTRIBUTE_CATEGORIES) {
-                        $attribute = self::FACET_ATTRIBUTE_CATEGORIES . '.level0';
-                    }
-                    return $attribute;
-                },
-                $facets
-            ),
-            array_fill(0, count($facets), [ 'sortRemainingBy' => 'alpha' ])
+            $attributes,
+            array_fill(0, count($attributes), [ 'sortRemainingBy' => 'alpha' ])
+        );
+    }
+
+    /**
+     * @param string[] $facets
+     * @return string[]
+     */
+    protected function getRenderingContentAttributes(array $facets): array
+    {
+        return array_map(
+            function(string $attribute) {
+                if ($attribute === self::FACET_ATTRIBUTE_CATEGORIES) {
+                    $attribute = self::FACET_ATTRIBUTE_CATEGORIES . '.level0';
+                }
+                return $attribute;
+            },
+            $facets
         );
     }
 
@@ -206,9 +215,8 @@ class FacetBuilder
     protected function getGroupPricingAttributes(int $storeId, string $currencyCode): array
     {
         $groupPricingAttributes = [];
-        $websiteId = (int) $this->storeManager->getStore($storeId)->getWebsiteId();
-
         if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
+            $websiteId = (int) $this->storeManager->getStore($storeId)->getWebsiteId();
             foreach ($this->groupCollection as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
                 $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);

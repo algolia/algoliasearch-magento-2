@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\Category\QueueBuilder as CategoryQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -15,7 +15,7 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,
-        protected CategoryQueueBuilder $categoryQueueBuilder
+        protected CategoryBatchQueueProcessor $categoryBatchQueueProcessor
     ) {}
 
     public function execute($categoryIds)
@@ -25,7 +25,7 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
         }
 
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
-            $this->categoryQueueBuilder->buildQueue($storeId, $categoryIds);
+            $this->categoryBatchQueueProcessor->processBatch($storeId, $categoryIds);
         }
     }
 

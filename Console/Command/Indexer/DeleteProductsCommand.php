@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command\Indexer;
 
-use Algolia\AlgoliaSearch\Service\Product\QueueBuilder as ProductQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class DeleteProductsCommand extends AbstractIndexerCommand
 {
     public function __construct(
-        protected ProductQueueBuilder $productQueueBuilder,
+        protected ProductBatchQueueProcessor $productBatchQueueProcessor,
         protected StoreManagerInterface $storeManager,
         State $state,
         StoreNameFetcher $storeNameFetcher,
@@ -46,7 +46,7 @@ class DeleteProductsCommand extends AbstractIndexerCommand
 
         foreach ($storeIds as $storeId) {
             $output->writeln('<info>Deleting inactive products for ' . $this->storeNameFetcher->getStoreName($storeId)) . '</info>';
-            $this->productQueueBuilder->deleteInactiveProducts($storeId);
+            $this->productBatchQueueProcessor->deleteInactiveProducts($storeId);
         }
 
         return Cli::RETURN_SUCCESS;

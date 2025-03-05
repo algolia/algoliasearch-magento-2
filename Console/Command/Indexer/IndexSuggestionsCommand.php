@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Console\Command\Indexer;
 
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
-use Algolia\AlgoliaSearch\Service\Suggestion\QueueBuilder as SuggestionQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Suggestion\BatchQueueProcessor as SuggestionBatchQueueProcessor;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Store\Model\StoreManagerInterface;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class IndexSuggestionsCommand extends AbstractIndexerCommand
 {
     public function __construct(
-        protected SuggestionQueueBuilder $suggestionQueueBuilder,
+        protected SuggestionBatchQueueProcessor $suggestionBatchQueueProcessor,
         protected StoreManagerInterface $storeManager,
         State $state,
         StoreNameFetcher $storeNameFetcher,
@@ -46,7 +46,7 @@ class IndexSuggestionsCommand extends AbstractIndexerCommand
 
         foreach ($storeIds as $storeId) {
             $output->writeln('<info>Reindexing suggestions for ' . $this->storeNameFetcher->getStoreName($storeId)) . '</info>';
-            $this->suggestionQueueBuilder->buildQueue($storeId);
+            $this->suggestionBatchQueueProcessor->processBatch($storeId);
         }
 
         return Cli::RETURN_SUCCESS;

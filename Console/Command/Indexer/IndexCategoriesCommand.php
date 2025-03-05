@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command\Indexer;
 
-use Algolia\AlgoliaSearch\Service\Category\QueueBuilder as CategoryQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class IndexCategoriesCommand extends AbstractIndexerCommand
 {
     public function __construct(
-        protected CategoryQueueBuilder $categoryQueueBuilder,
+        protected CategoryBatchQueueProcessor $categoryBatchQueueProcessor,
         protected StoreManagerInterface $storeManager,
         State $state,
         StoreNameFetcher $storeNameFetcher,
@@ -46,7 +46,7 @@ class IndexCategoriesCommand extends AbstractIndexerCommand
 
         foreach ($storeIds as $storeId) {
             $output->writeln('<info>Reindexing categories for ' . $this->storeNameFetcher->getStoreName($storeId)) . '</info>';
-            $this->categoryQueueBuilder->buildQueue($storeId);
+            $this->categoryBatchQueueProcessor->processBatch($storeId);
         }
 
         return Cli::RETURN_SUCCESS;

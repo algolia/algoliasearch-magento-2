@@ -2,13 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
-use Algolia\AlgoliaSearch\Service\Product\QueueBuilder as ProductQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -20,7 +15,7 @@ class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Mage
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,
-        protected ProductQueueBuilder $productQueueBuilder
+        protected ProductBatchQueueProcessor $productBatchQueueProcessor
     ) {}
 
     public function execute($ids)
@@ -35,7 +30,7 @@ class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Mage
         }
 
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
-            $this->productQueueBuilder->deleteInactiveProducts($storeId);
+            $this->productBatchQueueProcessor->deleteInactiveProducts($storeId);
         }
     }
 

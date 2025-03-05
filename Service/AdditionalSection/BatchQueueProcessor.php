@@ -2,13 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Service\AdditionalSection;
 
-use Algolia\AlgoliaSearch\Api\Builder\QueueBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 
-class QueueBuilder implements QueueBuilderInterface
+class BatchQueueProcessor implements BatchQueueProcessorInterface
 {
     public function __construct(
         protected Data $dataHelper,
@@ -16,7 +16,7 @@ class QueueBuilder implements QueueBuilderInterface
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
     ){}
 
-    public function buildQueue(int $storeId, ?array $entityIds = null): void
+    public function processBatch(int $storeId, ?array $entityIds = null): void
     {
         if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
             return;

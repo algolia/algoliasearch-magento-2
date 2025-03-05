@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
-use Algolia\AlgoliaSearch\Service\Page\QueueBuilder as PageQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 
 /**
  * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:pages` command instead
@@ -15,7 +15,7 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
     public function __construct(
         protected PageHelper $pageHelper,
         protected ConfigHelper $configHelper,
-        protected PageQueueBuilder $pageQueueBuilder
+        protected PageBatchQueueProcessor $pageBatchQueueProcessor
     ) {}
 
     /**
@@ -29,7 +29,7 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
         }
 
         foreach ($this->pageHelper->getStores() as $storeId) {
-            $this->pageQueueBuilder->buildQueue($storeId, $ids);
+            $this->pageBatchQueueProcessor->processBatch($storeId, $ids);
         }
     }
 

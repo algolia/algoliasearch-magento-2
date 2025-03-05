@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\Product\QueueBuilder as ProductQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -16,7 +16,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,
-        protected ProductQueueBuilder $productQueueBuilder
+        protected ProductBatchQueueProcessor $productBatchQueueProcessor
     ) {}
 
     /**
@@ -29,7 +29,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
         }
 
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
-            $this->productQueueBuilder->buildQueue($storeId, $productIds);
+            $this->productBatchQueueProcessor->processBatch($storeId, $productIds);
         }
     }
 

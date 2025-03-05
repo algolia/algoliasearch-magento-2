@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\Suggestion\QueueBuilder as SuggestionQueueBuilder;
+use Algolia\AlgoliaSearch\Service\Suggestion\BatchQueueProcessor as SuggestionBatchQueueProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -15,7 +15,7 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,
-        protected SuggestionQueueBuilder $suggestionQueueBuilder
+        protected SuggestionBatchQueueProcessor $suggestionBatchQueueProcessor
     ) {}
 
     public function execute($ids)
@@ -29,7 +29,7 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
         }
 
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
-            $this->suggestionQueueBuilder->buildQueue($storeId);
+            $this->suggestionBatchQueueProcessor->processBatch($storeId);
         }
     }
 

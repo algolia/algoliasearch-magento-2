@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
-use Algolia\AlgoliaSearch\Api\Builder\QueueBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -16,7 +16,7 @@ use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
-class QueueBuilder implements QueueBuilderInterface
+class BatchQueueProcessor implements BatchQueueProcessorInterface
 {
     protected bool $areParentsLoaded = false;
 
@@ -37,7 +37,7 @@ class QueueBuilder implements QueueBuilderInterface
      * @throws NoSuchEntityException
      * @throws DiagnosticsException
      */
-    public function buildQueue(int $storeId, ?array $entityIds = null): void
+    public function processBatch(int $storeId, ?array $entityIds = null): void
     {
         if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
             return;

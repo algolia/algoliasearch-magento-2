@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\AdditionalSection\QueueBuilder as AdditionalSectionQueueBuilder;
+use Algolia\AlgoliaSearch\Service\AdditionalSection\BatchQueueProcessor as AdditionalSectionBatchQueueProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -15,7 +15,7 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,
-        protected AdditionalSectionQueueBuilder $additionalSectionQueueBuilder
+        protected AdditionalSectionBatchQueueProcessor $additionalSectionBatchQueueProcessor
     ) {}
 
     public function execute($ids)
@@ -30,7 +30,7 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
         }
 
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
-            $this->additionalSectionQueueBuilder->buildQueue($storeId);
+            $this->additionalSectionBatchQueueProcessor->processBatch($storeId);
         }
     }
 

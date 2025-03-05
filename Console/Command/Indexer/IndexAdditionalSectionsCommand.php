@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command\Indexer;
 
-use Algolia\AlgoliaSearch\Service\AdditionalSection\QueueBuilder as AdditionalSectionQueueBuilder;
+use Algolia\AlgoliaSearch\Service\AdditionalSection\BatchQueueProcessor as AdditionalSectionBatchQueueProcessorr;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class IndexAdditionalSectionsCommand extends AbstractIndexerCommand
 {
     public function __construct(
-        protected AdditionalSectionQueueBuilder $additionalSectionQueueBuilder,
+        protected AdditionalSectionBatchQueueProcessorr $additionalSectionBatchQueueProcessorr,
         protected StoreManagerInterface $storeManager,
         State $state,
         StoreNameFetcher $storeNameFetcher,
@@ -47,7 +47,7 @@ class IndexAdditionalSectionsCommand extends AbstractIndexerCommand
         foreach ($storeIds as $storeId) {
             $output->writeln(
                 '<info>Reindexing additional sections for ' . $this->storeNameFetcher->getStoreName($storeId)) . '</info>';
-            $this->additionalSectionQueueBuilder->buildQueue($storeId);
+            $this->additionalSectionBatchQueueProcessorr->processBatch($storeId);
         }
 
         return Cli::RETURN_SUCCESS;

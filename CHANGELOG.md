@@ -1,15 +1,15 @@
 # CHANGE LOG
 
-## 3.15.0-beta.2
+## 3.15.0
 
 ### Features
-- Added support for Multi-Application IDs (see [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/getting-started/quick-start/#support-for-multiple-application-ids))
-- Refactored frontend library to no longer utilize the legacy `algoliaBundle` (see [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/customize/custom-front-end-events/?client=php#frontend-javascript-libraries-and-the-legacy-bundle))
+- Added support for Multi-Application IDs (see [documentation](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/#support-for-multiple-application-ids))
+- Refactored frontend library to no longer utilize the legacy `algoliaBundle` (see [documentation](https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/?client=php#frontend-javascript-libraries-and-the-legacy-bundle))
 - Added support for core Algolia UI library overrides via RequireJS
 - Added support for mixins through RequireJS in addition to [front end custom events](https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events) 
 - See our `CustomAlgolia` demo extension's [1.4.0 release](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/releases/tag/1.4.0) for examples on how to take advantage of these changes
 - Added granular profiling through the [Magento Profiler](https://experienceleague.adobe.com/en/docs/commerce-operations/configuration-guide/setup/mage-profiler) to aid in troubleshooting indexing performance issues
-- Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
+- Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
 
 ### Updates
 - Tests: Added possibility to run tests with multiple applications IDs.
@@ -22,17 +22,17 @@
 - Debugging information now writes to `algolia.log`
 - Removed dependency on `algoliaBundle` package
 - Removed dependency on JavaScript global `window` objects with the exception of `algoliaConfig`
-- The Hogan.js library is still packaged for injection as needed but be advised that Mustache.js is now used internally instead (see [preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/customize/instant-search-page/?client=php#mustache-templates))
+- The Hogan.js library is still packaged for injection as needed but be advised that Mustache.js is now used internally instead (see [documentation](https://www.algolia.com/doc/integration/magento-2/customize/instant-search-page/?client=php#mustache-templates))
 - JavaScript bundling is supported but to use the RequireJS Optimizer transpiling will be needed for ES6 constructs
 
 ### Bug Fixes
 - Fixed a bug where admin menus didn't display properly on Magento 2.4.7
 - Fixed customer groups prices ranges on configurable products
 - Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
+- Fixed a bug where excluded websites weren't taken into account while indexing customer prices on products. (thanks @kamilszewczyk)
 
 ### Breaking Changes
-- If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our preview documentation](https://deploy-preview-9703--algolia-docs.netlify.app/doc/integration/magento-2/troubleshooting/front-end-issues/))
-
+- If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/front-end-issues/))
 
 
 ## 3.14.4

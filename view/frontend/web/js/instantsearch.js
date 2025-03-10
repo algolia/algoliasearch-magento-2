@@ -47,7 +47,6 @@ define([
 
             this.prepareSortingIndices();
 
-            // TODO: Revisit use of closures
             const currentRefinementsAttributes = this.getCurrentRefinementsAttributes();
 
             let allWidgetConfiguration = {
@@ -219,94 +218,9 @@ define([
                         };
                     }),
                 },
-                /**
-                 * currentRefinements
-                 * Widget displays all filters and refinements applied on query. It also let your customer to clear them one by one
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/current-refinements/js/
-                 **/
-                currentRefinements: {
-                    container: '#current-refinements',
-                    // TODO: Remove this - it does nothing
-                    templates         : {
-                        item: $('#current-refinements-template').html(),
-                    },
-                    includedAttributes: currentRefinementsAttributes.map((attribute) => {
-                        if (
-                            attribute.name.indexOf('categories') === -1 ||
-                            !algoliaConfig.isCategoryPage
-                        )
-                            // For category browse, requires a custom renderer to prevent removal of the root node from hierarchicalMenu widget
-                            return attribute.name;
-                    }),
 
-                    transformItems: (items) => {
-                        return (
-                            items
-                                // This filter is only applicable if categories facet is included as an attribute
-                                .filter((item) => {
-                                    return (
-                                        !algoliaConfig.isCategoryPage ||
-                                        item.refinements.filter(
-                                            (refinement) =>
-                                                refinement.value !== algoliaConfig.request.path
-                                        ).length
-                                    ); // do not expose the category root
-                                })
-                                .map((item) => {
-                                    const attribute = currentRefinementsAttributes.filter((_attribute) => {
-                                        return item.attribute === _attribute.name;
-                                    })[0];
-                                    if (!attribute) return item;
-                                    item.label = attribute.label;
-                                    item.refinements.forEach(function (refinement) {
-                                        if (refinement.type !== 'hierarchical') return refinement;
-
-                                        const levels = refinement.label.split(
-                                            algoliaConfig.instant.categorySeparator
-                                        );
-                                        const lastLevel = levels[levels.length - 1];
-                                        refinement.label = lastLevel;
-                                    });
-                                    return item;
-                                })
-                        );
-                    },
-                },
-
-                /*
-                 * clearRefinements
-                 * Widget displays a button that lets the user clean every refinement applied to the search. You can control which attributes are impacted by the button with the options.
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/clear-refinements/js/
-                 **/
-                clearRefinements: {
-                    container         : '#clear-refinements',
-                    templates         : {
-                        resetLabel: algoliaConfig.translations.clearAll,
-                    },
-                    includedAttributes: currentRefinementsAttributes.map(function (attribute) {
-                        if (
-                            !(
-                                algoliaConfig.isCategoryPage &&
-                                attribute.name.indexOf('categories') > -1
-                            )
-                        ) {
-                            return attribute.name;
-                        }
-                    }),
-                    cssClasses        : {
-                        button: ['action', 'primary'],
-                    },
-                    transformItems    : function (items) {
-                        return items.map(function (item) {
-                            var attribute = currentRefinementsAttributes.filter(function (_attribute) {
-                                return item.attribute === _attribute.name;
-                            })[0];
-                            if (!attribute) return item;
-                            item.label = attribute.label;
-                            return item;
-                        });
-                    },
-                },
+                currentRefinements: this.getCurrentRefinements(currentRefinementsAttributes),
+                clearRefinements: this.getClearRefinements(currentRefinementsAttributes),
 
                 /*
                  * queryRuleCustomData
@@ -459,6 +373,7 @@ define([
 
             this.initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle);
 
+            // TODO: Refactor
             // Capture active redirect URL with IS facet params for add to cart from PLP
             if (algoliaConfig.instant.isAddToCartEnabled) {
                 search.on('render', () => {
@@ -479,6 +394,101 @@ define([
             this.startInstantSearch(search, mockAlgoliaBundle);
 
             this.addMobileRefinementsToggle();
+        },
+
+        /**
+         * currentRefinements
+         * Widget displays all filters and refinements applied on query. It also let your customer to clear them one by one
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/current-refinements/js/
+         *
+         * @param currentRefinementsAttributes
+         * @returns {{container: string, transformItems: (function(*): *), includedAttributes: *}}
+         */
+        getCurrentRefinements (currentRefinementsAttributes) {
+            return {
+                container: '#current-refinements',
+                includedAttributes: currentRefinementsAttributes.map((attribute) => {
+                    if (
+                        attribute.name.indexOf('categories') === -1 ||
+                        !algoliaConfig.isCategoryPage
+                    )
+                        // For category browse, requires a custom renderer to prevent removal of the root node from hierarchicalMenu widget
+                        return attribute.name;
+                }),
+
+                transformItems: (items) => {
+                    return (
+                        items
+                            // This filter is only applicable if categories facet is included as an attribute
+                            .filter((item) => {
+                                return (
+                                    !algoliaConfig.isCategoryPage ||
+                                    item.refinements.filter(
+                                        (refinement) =>
+                                            refinement.value !== algoliaConfig.request.path
+                                    ).length
+                                ); // do not expose the category root
+                            })
+                            .map((item) => {
+                                const attribute = currentRefinementsAttributes.filter((_attribute) => {
+                                    return item.attribute === _attribute.name;
+                                })[0];
+                                if (!attribute) return item;
+                                item.label = attribute.label;
+                                item.refinements.forEach(function (refinement) {
+                                    if (refinement.type !== 'hierarchical') return refinement;
+
+                                    const levels = refinement.label.split(
+                                        algoliaConfig.instant.categorySeparator
+                                    );
+                                    const lastLevel = levels[levels.length - 1];
+                                    refinement.label = lastLevel;
+                                });
+                                return item;
+                            })
+                    );
+                },
+            };
+        },
+
+        /**
+         * clearRefinements
+         * Widget displays a button that lets the user clean every refinement applied to the search. You can control which attributes are impacted by the button with the options.
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/clear-refinements/js/
+         *
+         * @param currentRefinementsAttributes
+         * @returns {{container: string, cssClasses: {button: string[]}, transformItems: (function(*): *), templates: {resetLabel: (string|*)}, includedAttributes: *}}
+         */
+        getClearRefinements(currentRefinementsAttributes) {
+            return {
+                container         : '#clear-refinements',
+                templates         : {
+                    resetLabel: algoliaConfig.translations.clearAll,
+                },
+                includedAttributes: currentRefinementsAttributes.map(function (attribute) {
+                    if (
+                        !(
+                            algoliaConfig.isCategoryPage &&
+                            attribute.name.indexOf('categories') > -1
+                        )
+                    ) {
+                        return attribute.name;
+                    }
+                }),
+                cssClasses        : {
+                    button: ['action', 'primary'],
+                },
+                transformItems    : function (items) {
+                    return items.map(function (item) {
+                        const attribute = currentRefinementsAttributes.filter(function (_attribute) {
+                            return item.attribute === _attribute.name;
+                        })[0];
+                        if (!attribute) return item;
+                        item.label = attribute.label;
+                        return item;
+                    });
+                },
+            };
         },
 
         /**

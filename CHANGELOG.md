@@ -128,25 +128,6 @@ If you have customized your Algolia implementation or are running on an older ve
 - Dropped support for Magento 2.3
 - PHP 8.1+ required
 
-## 3.14.0-beta.2
-
-### Updates
-
-- Introduced new admin groups to InstantSearch for improved UX
-- Updated `ConfigHelper` to use new paths
-- Added data patch to migrate old configurations
-- Bugfix for query rule disable on facets with new admin groupings
-- Added new sorting admin option via source model
-- Added derived virtual replica enablement to `ConfigHelper` based on `ArraySerialized`
-- Intro’d simplified data structures to avoid array diff mismatches
-- Intro’d new `ReplicaManager` abstraction to map Magento sorting to Algolia replica configuration
-- Removed dependencies in backend models to handle replica config updates in Algolia addressing stale data
-- Added `ReplicaState` registry for tracking changes to sorting configuration to minimize number of replica build operations
-- Added logic to preserve replicas created outside of Magento such as Merchandising Studio "sorting strategies"
-- Introduced PHP 8 constructor property promotion on affected classes
-- Added stronger typing to affected classes and methods
-- Added Looking Similar recommendations
-
 ## 3.13.8
 
 ### Bug Fixes
@@ -187,20 +168,6 @@ If you have customized your Algolia implementation or are running on an older ve
 - Fixed Algolia merchandising product listing issue
 - Fixed lock timeout issue on indexing queue integration test
 - Community fix added - job queue dropping jobs from sandwiched full reindexes - thank you @pikulsky
-
-## 3.14.0-beta.1
-
-### Updates:
-
-- New PHP API client (v4) under the hood for communicating with Algolia
-- Authenticated user tokens now utilized for backend and frontend events to track entire customer journey
-- Revenue data now sent with all events including application of Magento specific discounts such as catalog price rules and customer group pricing
-- Support for event subtypes allowing the capture of conversion data for both "Add to cart" and "Place order" events
-- Increased protection of PII in the event data
-
-### Bug fixes:
-- Fixed issue with how Algolia extension handles end user consent for allowing cookies
-- Improved handling of user tokens across insights events and corresponding queries
 
 ## 3.13.3
 

@@ -322,117 +322,19 @@ define([
             };
 
             if (algoliaConfig.instant.isSearchBoxEnabled) {
-                /**
-                 * searchBox
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/search-box/js/
-                 **/
-                allWidgetConfiguration.searchBox = {
-                    container  : '#instant-search-bar',
-                    placeholder: algoliaConfig.translations.searchFor,
-                    showSubmit : false,
-                    queryHook  : (inputValue, search) => {
-                        if (
-                            algoliaConfig.isSearchPage &&
-                            !algoliaConfig.request.categoryId &&
-                            !algoliaConfig.request.landingPageId.length
-                        ) {
-                            $('.page-title-wrapper span.base').html(
-                                algoliaConfig.translations.searchTitle +
-                                ": '" +
-                                algoliaCommon.htmlspecialcharsEncode(inputValue) +
-                                "'"
-                            );
-                        }
-                        return search(inputValue);
-                    },
-                };
+                allWidgetConfiguration.searchBox = this.getSearchBox()
             }
 
-            if (algoliaConfig.instant.infiniteScrollEnabled === true) {
-                /**
-                 * infiniteHits
-                 * This widget renders all products into result page
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/infinite-hits/js/
-                 **/
-                allWidgetConfiguration.infiniteHits = {
-                    container     : '#instant-search-results-container',
-                    templates     : {
-                        empty       : '',
-                        item        : $('#instant-hit-template').html(),
-                        showMoreText: algoliaConfig.translations.showMore,
-                    },
-                    cssClasses    : {
-                        loadPrevious: ['action', 'primary'],
-                        loadMore    : ['action', 'primary'],
-                    },
-                    transformItems: function (items) {
-                        return items.map(function (item) {
-                            item.__indexName = search.helper.lastResults.index;
-                            item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
-                            item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
-                            return item;
-                        });
-                    },
-                    showPrevious  : true,
-                    escapeHits    : true,
-                };
-
+            if (algoliaConfig.instant.infiniteScrollEnabled) {
+                allWidgetConfiguration.infiniteHits = this.getInfiniteHits(search);
                 delete allWidgetConfiguration.hits;
             } else {
-                /**
-                 * hits
-                 * This widget renders all products into result page
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/hits/js/
-                 **/
-                allWidgetConfiguration.hits = {
-                    container     : '#instant-search-results-container',
-                    templates     : {
-                        empty: '',
-                        item : $('#instant-hit-template').html(),
-                    },
-                    transformItems: function (items, {results}) {
-                        if (
-                            results.nbPages <= 1 &&
-                            algoliaConfig.instant.hidePagination === true
-                        ) {
-                            document.getElementById(
-                                'instant-search-pagination-container'
-                            ).style.display = 'none';
-                        } else {
-                            document.getElementById(
-                                'instant-search-pagination-container'
-                            ).style.display = 'block';
-                        }
-                        return items.map(function (item) {
-                            item.__indexName = search.helper.lastResults.index;
-                            item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
-                            item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
-                            item.algoliaConfig = window.algoliaConfig;
-                            return item;
-                        });
-                    },
-                };
-
-                /**
-                 * pagination
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/pagination/js/
-                 **/
-                allWidgetConfiguration.pagination = {
-                    container   : '#instant-search-pagination-container',
-                    showFirst   : false,
-                    showLast    : false,
-                    showNext    : true,
-                    showPrevious: true,
-                    totalPages  : 1000,
-                    templates   : {
-                        previous: algoliaConfig.translations.previousPage,
-                        next    : algoliaConfig.translations.nextPage,
-                    },
-                };
-
+                allWidgetConfiguration.hits = this.getHits(search);
+                allWidgetConfiguration.pagination = this.getPagination();
                 delete allWidgetConfiguration.infiniteHits;
             }
 
+            // TODO: Refactor
             /**
              * Here are specified custom attributes widgets which require special code to run properly
              * Custom widgets can be added to this object like [attribute]: function(facet, templates)
@@ -495,6 +397,7 @@ define([
                 },
             };
 
+            // TODO: Refactor
             /** Add all facet widgets to instantsearch object **/
             var wrapper = document.getElementById('instant-search-facets-container');
             $.each(algoliaConfig.facets, (i, facet) => {
@@ -522,6 +425,7 @@ define([
                 }
             });
 
+            // TODO: Refactor
             if (algoliaConfig.analytics.enabled) {
                 if (typeof algoliaAnalyticsPushFunction !== 'function') {
                     var algoliaAnalyticsPushFunction = function (
@@ -575,6 +479,122 @@ define([
             this.startInstantSearch(search, mockAlgoliaBundle);
 
             this.addMobileRefinementsToggle();
+        },
+
+        /**
+         * hits
+         * This widget renders products into result page as paginated hits
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/hits/js/
+         *
+         * @param search
+         * @returns {{container: string, transformItems: (function(*, {results: *}): *), templates: {item: string, empty: string}}}
+         */
+        getHits(search) {
+            return {
+                container     : '#instant-search-results-container',
+                templates     : {
+                    empty: '',
+                    item : $('#instant-hit-template').html(),
+                },
+                transformItems: function (items, {results}) {
+                    if (algoliaConfig.instant.hidePagination) {
+                        document.getElementById(
+                            'instant-search-pagination-container'
+                        ).style.display = results.nbPages <= 1 ? 'none' : 'block';
+                    }
+
+                    return items.map(function (item) {
+                        item.__indexName = search.helper.lastResults.index;
+                        item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
+                        item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
+                        item.algoliaConfig = window.algoliaConfig;
+                        return item;
+                    });
+                },
+            };
+        },
+
+        /**
+         * pagination
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/pagination/js/
+         *
+         * @returns {{container: string, templates: {next: string, previous: string, totalPages: number, showLast: boolean, showFirst: boolean, showNext: boolean, showPrevious: boolean}}
+         */
+        getPagination() {
+            return {
+                container   : '#instant-search-pagination-container',
+                showFirst   : false,
+                showLast    : false,
+                showNext    : true,
+                showPrevious: true,
+                totalPages  : 1000,
+                templates   : {
+                    previous: algoliaConfig.translations.previousPage,
+                    next    : algoliaConfig.translations.nextPage,
+                },
+            }
+        },
+
+        /**
+         * infiniteHits
+         * This widget renders products into result page as infinite scrolling hits
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/infinite-hits/js/
+         *
+         * @param search
+         * @returns {{container: string, cssClasses: {loadPrevious: string[], loadMore: string[]}, transformItems: (function(*): *), templates: {item: string, showMoreText: string, empty: string}, escapeHits: boolean, showPrevious: boolean}}
+         */
+        getInfiniteHits(search) {
+            return {
+                container     : '#instant-search-results-container',
+                templates     : {
+                    empty       : '',
+                    item        : $('#instant-hit-template').html(),
+                    showMoreText: algoliaConfig.translations.showMore,
+                },
+                cssClasses    : {
+                    loadPrevious: ['action', 'primary'],
+                    loadMore    : ['action', 'primary'],
+                },
+                transformItems: function (items) {
+                    return items.map(function (item) {
+                        item.__indexName = search.helper.lastResults.index;
+                        item = algoliaCommon.transformHit(item, algoliaConfig.priceKey, search.helper);
+                        item.isAddToCartEnabled = algoliaConfig.instant.isAddToCartEnabled;
+                        return item;
+                    });
+                },
+                showPrevious  : true,
+                escapeHits    : true,
+            };
+        },
+
+        /**
+         * searchBox
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/search-box/js/
+         *
+         * @returns {{container: string, showSubmit: boolean, placeholder: *, queryHook: (function(*, *): *)}}
+         */
+        getSearchBox() {
+            return {
+                container  : '#instant-search-bar',
+                placeholder: algoliaConfig.translations.searchFor,
+                showSubmit : false,
+                queryHook  : (inputValue, search) => {
+                    if (
+                        algoliaConfig.isSearchPage &&
+                        !algoliaConfig.request.categoryId &&
+                        !algoliaConfig.request.landingPageId.length
+                    ) {
+                        $('.page-title-wrapper span.base').html(
+                            algoliaConfig.translations.searchTitle +
+                            ": '" +
+                            algoliaCommon.htmlspecialcharsEncode(inputValue) +
+                            "'"
+                        );
+                    }
+                    return search(inputValue);
+                },
+            };
         },
 
         initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle) {

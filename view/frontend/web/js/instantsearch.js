@@ -173,66 +173,14 @@ define([
                         },
                     },
                 ],
-                /**
-                 * stats
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/stats/js/
-                 **/
-                stats: {
-                    container: '#algolia-stats',
-                    templates: {
-                        text: function (data) {
-                            data.first = data.page * data.hitsPerPage + 1;
-                            data.last = Math.min(
-                                data.page * data.hitsPerPage + data.hitsPerPage,
-                                data.nbHits
-                            );
-                            data.seconds = data.processingTimeMS / 1000;
-                            data.translations = window.algoliaConfig.translations;
 
-                            // TODO: Revisit this injected jQuery logic
-                            const searchParams = new URLSearchParams(window.location.search);
-                            const searchQuery = searchParams.has('q') || '';
-                            if (searchQuery === '' && !algoliaConfig.isSearchPage) {
-                                $('.algolia-instant-replaced-content').show();
-                                $('.algolia-instant-selector-results').hide();
-                            } else {
-                                $('.algolia-instant-replaced-content').hide();
-                                $('.algolia-instant-selector-results').show();
-                            }
-
-                            const template = $('#instant-stats-template').html();
-                            return templateProcessor.process(template, data);
-                        },
-                    },
-                },
-                /**
-                 * sortBy
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/sort-by/js/
-                 **/
-                sortBy: {
-                    container: '#algolia-sorts',
-                    items    : algoliaConfig.sortingIndices.map(function (sortingIndice) {
-                        return {
-                            label: sortingIndice.label,
-                            value: sortingIndice.name,
-                        };
-                    }),
-                },
+                stats: this.getStats(templateProcessor),
+                sortBy: this.getSortBy(),
 
                 currentRefinements: this.getCurrentRefinements(currentRefinementsAttributes),
                 clearRefinements: this.getClearRefinements(currentRefinementsAttributes),
 
-                /*
-                 * queryRuleCustomData
-                 * The queryRuleCustomData widget displays custom data from Query Rules.
-                 * Docs: https://www.algolia.com/doc/api-reference/widgets/query-rule-custom-data/js/
-                 **/
-                queryRuleCustomData: {
-                    container: '#algolia-banner',
-                    templates: {
-                        default: '{{#items}} {{#banner}} {{{banner}}} {{/banner}} {{/items}}',
-                    },
-                },
+                queryRuleCustomData: this.getQueryRuleCustomData(),
             };
 
             if (algoliaConfig.instant.isSearchBoxEnabled) {
@@ -394,6 +342,67 @@ define([
             this.startInstantSearch(search, mockAlgoliaBundle);
 
             this.addMobileRefinementsToggle();
+        },
+
+        /**
+         * stats
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/stats/js/
+         *
+         * @param templateProcessor
+         * @returns {{container: string, templates: {text: (function(*): *)}}}
+         */
+        getStats(templateProcessor) {
+            return {
+                container: '#algolia-stats',
+                templates: {
+                    text: function (data) {
+                        data.first = data.page * data.hitsPerPage + 1;
+                        data.last = Math.min(
+                            data.page * data.hitsPerPage + data.hitsPerPage,
+                            data.nbHits
+                        );
+                        data.seconds = data.processingTimeMS / 1000;
+                        data.translations = window.algoliaConfig.translations;
+
+                        const template = $('#instant-stats-template').html();
+                        return templateProcessor.process(template, data);
+                    },
+                },
+            }
+        },
+
+        /**
+         * sortBy
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/sort-by/js/
+         *
+         * @returns {{container: string, items: *}}
+         */
+        getSortBy() {
+            return {
+                container: '#algolia-sorts',
+                items    : algoliaConfig.sortingIndices.map((sortingIndice) => {
+                    return {
+                        label: sortingIndice.label,
+                        value: sortingIndice.name,
+                    };
+                }),
+            };
+        },
+
+        /**
+         * queryRuleCustomData
+         * The queryRuleCustomData widget displays custom data from Query Rules.
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/query-rule-custom-data/js/
+         *
+         * @returns {{container: string, templates: {default: string}}}
+         */
+        getQueryRuleCustomData() {
+            return {
+                container: '#algolia-banner',
+                templates: {
+                    default: '{{#items}} {{#banner}} {{{banner}}} {{/banner}} {{/items}}',
+                },
+            };
         },
 
         /**

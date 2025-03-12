@@ -140,36 +140,40 @@ define([
             return allWidgetConfiguration;
         },
 
+        /**
+         * Add all facet widgets to allWidgetConfiguration
+         *
+         * @param allWidgetConfiguration
+         * @returns {*}
+         */
         initializeFacets(allWidgetConfiguration) {
             const customAttributeFacets = this.getCustomAttributeFacets();
 
-            // TODO: Refactor
-            /** Add all facet widgets to allWidgetConfiguration **/
             const wrapper = document.getElementById('instant-search-facets-container');
-            $.each(algoliaConfig.facets, (i, facet) => {
-                if (facet.attribute.indexOf('price') !== -1)
-                    facet.attribute = facet.attribute + algoliaConfig.priceKey;
+            algoliaConfig.facets.forEach(
+                facet => {
+                    facet.wrapper = wrapper;
 
-                facet.wrapper = wrapper;
+                    if (facet.attribute.includes('price')) {
+                        facet.attribute += algoliaConfig.priceKey;
+                    }
 
-                var templates = {
-                    item: $('#refinements-lists-item-template').html(),
-                };
+                    const templates = {
+                        item: document.querySelector('#refinements-lists-item-template')?.innerHTML
+                    };
 
-                var widgetInfo =
-                    customAttributeFacets[facet.attribute] !== undefined
-                        ? customAttributeFacets[facet.attribute](facet, templates)
-                        : this.getFacetWidget(facet, templates);
+                    const widgetInfo = customAttributeFacets[facet.attribute]?.(facet, templates) 
+                        ?? this.getFacetWidget(facet, templates);
+                        
+                    const [widgetType, widgetConfig] = widgetInfo;
 
-                var widgetType = widgetInfo[0],
-                    widgetConfig = widgetInfo[1];
-
-                if (typeof allWidgetConfiguration[widgetType] === 'undefined') {
-                    allWidgetConfiguration[widgetType] = [widgetConfig];
-                } else {
-                    allWidgetConfiguration[widgetType].push(widgetConfig);
+                    if (allWidgetConfiguration.hasOwnProperty(widgetType)) {
+                        allWidgetConfiguration[widgetType].push(widgetConfig);
+                    } else {
+                        allWidgetConfiguration[widgetType] = [widgetConfig];
+                    }
                 }
-            });
+            );
 
             return allWidgetConfiguration;
         },
@@ -178,6 +182,7 @@ define([
          * Here are specified custom attributes widgets which require special code to run properly
          * Custom widgets can be added to this object like [attribute]: function(facet, templates)
          * Function must return an object {<widget name>: string, <widget options>: object}
+         * (Same as getFacetWidget() which handles generic facets)
          *
          * @returns {Object<string, function>}
          */

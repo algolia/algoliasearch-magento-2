@@ -180,7 +180,7 @@ define([
         /**
          * Here are specified custom attributes widgets which require special code to run properly
          * Custom widgets can be added to this object like [attribute]: function(facet, templates)
-         * Function must return an object {<widget name>: string, <widget options>: object}
+         * Function must return an array [<widget name>: string, <widget options>: object]
          * (Same as getFacetWidget() which handles generic facets)
          *
          * @returns {Object<string, function>}
@@ -881,22 +881,24 @@ define([
          */
         getCurrentRefinementsAttributes() {
             const attributes = [];
-            $.each(algoliaConfig.facets, (i, facet) => {
-                let name = facet.attribute;
+            algoliaConfig.facets.forEach(
+                facet => {
+                    let name = facet.attribute;
 
-                if (name === 'categories') {
-                    name = 'categories.level0';
+                    if (name === 'categories') {
+                        name = 'categories.level0';
+                    }
+
+                    if (name === 'price') {
+                        name = facet.attribute + algoliaConfig.priceKey;
+                    }
+
+                    attributes.push({
+                        name : name,
+                        label: facet.label ? facet.label : facet.attribute,
+                    });
                 }
-
-                if (name === 'price') {
-                    name = facet.attribute + algoliaConfig.priceKey;
-                }
-
-                attributes.push({
-                    name : name,
-                    label: facet.label ? facet.label : facet.attribute,
-                });
-            });
+            );
             return attributes;
         },
 
@@ -918,45 +920,17 @@ define([
             this.isStarted = true;
         },
 
+        /**
+         * Function must return an array [<widget name>: string, <widget options>: object]
+         * (Same objects in array returned by implementations of getCustomAttributeFacets())
+         *
+         * @param facet
+         * @param templates
+         * @returns {[string,Object]}
+         */
         getFacetWidget(facet, templates) {
-            var panelOptions = {
-                templates: {
-                    header:
-                        '<div class="name">' +
-                        (facet.label ? facet.label : facet.attribute) +
-                        '</div>',
-                },
-                hidden: (options) => {
-                    if (
-                        options.results.nbPages <= 1 &&
-                        algoliaConfig.instant.hidePagination === true
-                    ) {
-                        document.getElementById(
-                            'instant-search-pagination-container'
-                        ).style.display = 'none';
-                    } else {
-                        document.getElementById(
-                            'instant-search-pagination-container'
-                        ).style.display = 'block';
-                    }
-                    if (!options.results) return true;
-                    switch (facet.type) {
-                        case 'conjunctive':
-                            var facetsNames = options.results.facets.map(function (f) {
-                                return f.name;
-                            });
-                            return facetsNames.indexOf(facet.attribute) === -1;
-                        case 'disjunctive':
-                            var disjunctiveFacetsNames =
-                                options.results.disjunctiveFacets.map(function (f) {
-                                    return f.name;
-                                });
-                            return disjunctiveFacetsNames.indexOf(facet.attribute) === -1;
-                        default:
-                            return false;
-                    }
-                },
-            };
+            const panelOptions = this.getFacetPanelOptions(facet);
+
             if (facet.type === 'priceRanges') {
                 delete templates.item;
 
@@ -1056,6 +1030,28 @@ define([
                     },
                 ];
             }
+        },
+
+        getFacetPanelOptions(facet) {
+            return  {
+                templates: {
+                    header: `<div class="name">${facet.label || facet.attribute}</div>`,
+                },
+                hidden: (options) => {
+                    if (!options.results) return true;
+
+                    const facetSearch = f => f.name === facet.attribute;
+
+                    switch (facet.type) {
+                        case 'conjunctive':
+                            return !options.results.facets.find(facetSearch);
+                        case 'disjunctive':
+                            return !options.results.disjunctiveFacets.find(facetSearch);
+                        default:
+                            return false;
+                    }
+                },
+            };
         },
 
         addWidget(search, type, config) {

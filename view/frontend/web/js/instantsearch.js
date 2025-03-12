@@ -51,126 +51,7 @@ define([
 
             let allWidgetConfiguration = {
                 configure   : this.getSearchParameters(),
-                custom      : [
-                    /**
-                     * Custom widget - this widget is used to refine results for search page or catalog page
-                     * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
-                     **/
-                    {
-                        getWidgetSearchParameters: function (searchParameters) {
-                            if (
-                                algoliaConfig.request.query.length > 0 &&
-                                location.hash.length < 1
-                            ) {
-                                return searchParameters.setQuery(
-                                    algoliaCommon.htmlspecialcharsDecode(algoliaConfig.request.query)
-                                );
-                            }
-                            return searchParameters;
-                        },
-                        init                     : function (data) {
-                            var page = data.helper.state.page;
-
-                            if (algoliaConfig.request.refinementKey.length > 0) {
-                                data.helper.toggleRefine(
-                                    algoliaConfig.request.refinementKey,
-                                    algoliaConfig.request.refinementValue
-                                );
-                            }
-
-                            if (algoliaConfig.isCategoryPage) {
-                                data.helper.addNumericRefinement('visibility_catalog', '=', 1);
-                            } else {
-                                data.helper.addNumericRefinement('visibility_search', '=', 1);
-                            }
-
-                            data.helper.setPage(page);
-                        },
-                        render                   : function (data) {
-                            if (!algoliaConfig.isSearchPage) {
-                                if (
-                                    data.results.query.length === 0 &&
-                                    data.results.nbHits === 0
-                                ) {
-                                    $('.algolia-instant-replaced-content').show();
-                                    $('.algolia-instant-selector-results').hide();
-                                } else {
-                                    $('.algolia-instant-replaced-content').hide();
-                                    $('.algolia-instant-selector-results').show();
-                                }
-                            }
-                        },
-                    },
-                    /**
-                     * Custom widget - Suggestions
-                     * This widget renders suggestion queries which might be interesting for your customer
-                     * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
-                     **/
-                    {
-                        suggestions: [],
-                        init       : function () {
-                            if (algoliaConfig.showSuggestionsOnNoResultsPage) {
-                                var $this = this;
-                                $.each(
-                                    algoliaConfig.popularQueries.slice(
-                                        0,
-                                        Math.min(4, algoliaConfig.popularQueries.length)
-                                    ),
-                                    function (i, query) {
-                                        query = $('<div>').html(query).text(); //xss
-                                        $this.suggestions.push(
-                                            '<a href="' +
-                                            algoliaConfig.baseUrl +
-                                            '/catalogsearch/result/?q=' +
-                                            encodeURIComponent(query) +
-                                            '">' +
-                                            query +
-                                            '</a>'
-                                        );
-                                    }
-                                );
-                            }
-                        },
-                        render     : function (data) {
-                            if (data.results.hits.length === 0) {
-                                var content = '<div class="no-results">';
-                                content +=
-                                    '<div><b>' +
-                                    algoliaConfig.translations.noProducts +
-                                    ' "' +
-                                    $('<div>').text(data.results.query).html() +
-                                    '</b>"</div>';
-                                content += '<div class="popular-searches">';
-
-                                if (
-                                    algoliaConfig.showSuggestionsOnNoResultsPage &&
-                                    this.suggestions.length > 0
-                                ) {
-                                    content +=
-                                        '<div>' +
-                                        algoliaConfig.translations.popularQueries +
-                                        '</div>' +
-                                        this.suggestions.join(', ');
-                                }
-
-                                content += '</div>';
-                                content +=
-                                    algoliaConfig.translations.or +
-                                    ' <a href="' +
-                                    algoliaConfig.baseUrl +
-                                    '/catalogsearch/result/?q=__empty__">' +
-                                    algoliaConfig.translations.seeAll +
-                                    '</a>';
-
-                                content += '</div>';
-
-                                $('#instant-empty-results-container').html(content);
-                            } else {
-                                $('#instant-empty-results-container').html('');
-                            }
-                        },
-                    },
-                ],
+                custom      : this.getCustomWidgets(),
 
                 stats: this.getStats(templateProcessor),
                 sortBy: this.getSortBy(),
@@ -338,6 +219,141 @@ define([
             this.startInstantSearch(search, mockAlgoliaBundle);
 
             this.addMobileRefinementsToggle();
+        },
+
+        getCustomWidgets() {
+            return [
+                this.getRefineResultsWidget(),
+                this.getSuggestionsWidget()
+            ];
+        },
+
+
+        /**
+         * Custom widget - this widget is used to refine results for search page or catalog page
+         * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
+         *
+         * @returns {{init: *, getWidgetSearchParameters: ((function(*): (*))|*), render: *}}
+         */
+        getRefineResultsWidget() {
+            return {
+                getWidgetSearchParameters: function (searchParameters) {
+                    if (
+                        algoliaConfig.request.query.length > 0 &&
+                        location.hash.length < 1
+                    ) {
+                        return searchParameters.setQuery(
+                            algoliaCommon.htmlspecialcharsDecode(algoliaConfig.request.query)
+                        );
+                    }
+                    return searchParameters;
+                },
+                init                     : function (data) {
+                    var page = data.helper.state.page;
+
+                    if (algoliaConfig.request.refinementKey.length > 0) {
+                        data.helper.toggleRefine(
+                            algoliaConfig.request.refinementKey,
+                            algoliaConfig.request.refinementValue
+                        );
+                    }
+
+                    if (algoliaConfig.isCategoryPage) {
+                        data.helper.addNumericRefinement('visibility_catalog', '=', 1);
+                    } else {
+                        data.helper.addNumericRefinement('visibility_search', '=', 1);
+                    }
+
+                    data.helper.setPage(page);
+                },
+                render                   : function (data) {
+                    if (!algoliaConfig.isSearchPage) {
+                        if (
+                            data.results.query.length === 0 &&
+                            data.results.nbHits === 0
+                        ) {
+                            $('.algolia-instant-replaced-content').show();
+                            $('.algolia-instant-selector-results').hide();
+                        } else {
+                            $('.algolia-instant-replaced-content').hide();
+                            $('.algolia-instant-selector-results').show();
+                        }
+                    }
+                },
+            };
+        },
+
+        /**
+         * Custom widget - Suggestions
+         * This widget renders suggestion queries which might be interesting for your customer
+         * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
+         *
+         * @returns {{init(): void, suggestions: *[], render(*): void}}
+         */
+        getSuggestionsWidget() {
+            return {
+                suggestions: [],
+                init: function() {
+                    if (algoliaConfig.showSuggestionsOnNoResultsPage) {
+                        $.each(
+                            algoliaConfig.popularQueries.slice(
+                                0,
+                                Math.min(4, algoliaConfig.popularQueries.length)
+                            ),
+                            (i, query) => {
+                                query = $('<div>').html(query).text(); //xss
+                                this.suggestions.push(
+                                    '<a href="' +
+                                    algoliaConfig.baseUrl +
+                                    '/catalogsearch/result/?q=' +
+                                    encodeURIComponent(query) +
+                                    '">' +
+                                    query +
+                                    '</a>'
+                                );
+                            }
+                        );
+                    }
+                },
+                render: function(data) {
+                    if (data.results.hits.length === 0) {
+                        let content = '<div class="no-results">';
+                        content +=
+                            '<div><b>' +
+                            algoliaConfig.translations.noProducts +
+                            ' "' +
+                            $('<div>').text(data.results.query).html() +
+                            '</b>"</div>';
+                        content += '<div class="popular-searches">';
+
+                        if (
+                            algoliaConfig.showSuggestionsOnNoResultsPage &&
+                            this.suggestions.length > 0
+                        ) {
+                            content +=
+                                '<div>' +
+                                algoliaConfig.translations.popularQueries +
+                                '</div>' +
+                                this.suggestions.join(', ');
+                        }
+
+                        content += '</div>';
+                        content +=
+                            algoliaConfig.translations.or +
+                            ' <a href="' +
+                            algoliaConfig.baseUrl +
+                            '/catalogsearch/result/?q=__empty__">' +
+                            algoliaConfig.translations.seeAll +
+                            '</a>';
+
+                        content += '</div>';
+
+                        $('#instant-empty-results-container').html(content);
+                    } else {
+                        $('#instant-empty-results-container').html('');
+                    }
+                },
+            };
         },
 
         /**
@@ -1016,7 +1032,7 @@ define([
                 search.addWidgets([config]);
                 return;
             }
-            var widget = instantsearch.widgets[type];
+            let widget = instantsearch.widgets[type];
             if (config.panelOptions) {
                 widget = instantsearch.widgets.panel(config.panelOptions)(
                     widget
@@ -1029,9 +1045,7 @@ define([
                         return options.range.min === 0 && options.range.max === 0;
                     },
                 };
-                widget = instantsearch.widgets.panel(config.panelOptions)(
-                    widget
-                );
+                widget = instantsearch.widgets.panel(config.panelOptions)(widget);
                 delete config.panelOptions;
             }
 

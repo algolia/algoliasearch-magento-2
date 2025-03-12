@@ -26,6 +26,8 @@ define([
 
         isStarted: false,
 
+        minQuerySuggestions: 4,
+
         /**
          * Initialize search results using Algolia's InstantSearch.js library v4
          * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/
@@ -221,11 +223,18 @@ define([
             this.addMobileRefinementsToggle();
         },
 
+        /**
+         * Return an array of custom widgets
+         * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
+         *
+         * @returns {({init(*): void, getWidgetSearchParameters(*): *, render(*): void})[]}
+         */
         getCustomWidgets() {
-            return [
-                this.getRefineResultsWidget(),
-                this.getSuggestionsWidget()
-            ];
+            const customWidgets = [ this.getRefineResultsWidget() ];
+            if (algoliaConfig.showSuggestionsOnNoResultsPage) {
+                customWidgets.push(this.getSuggestionsWidget(this.minQuerySuggestions));
+            }
+            return customWidgets;
         },
 
 
@@ -233,11 +242,11 @@ define([
          * Custom widget - this widget is used to refine results for search page or catalog page
          * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
          *
-         * @returns {{init: *, getWidgetSearchParameters: ((function(*): (*))|*), render: *}}
+         * @returns {{init(*): void, getWidgetSearchParameters(*): (*), render(*): void}|*}
          */
         getRefineResultsWidget() {
             return {
-                getWidgetSearchParameters: function (searchParameters) {
+                getWidgetSearchParameters(searchParameters) {
                     if (
                         algoliaConfig.request.query.length > 0 &&
                         location.hash.length < 1
@@ -248,8 +257,8 @@ define([
                     }
                     return searchParameters;
                 },
-                init                     : function (data) {
-                    var page = data.helper.state.page;
+                init(data) {
+                    const page = data.helper.state.page;
 
                     if (algoliaConfig.request.refinementKey.length > 0) {
                         data.helper.toggleRefine(
@@ -266,7 +275,7 @@ define([
 
                     data.helper.setPage(page);
                 },
-                render                   : function (data) {
+                render(data) {
                     if (!algoliaConfig.isSearchPage) {
                         if (
                             data.results.query.length === 0 &&
@@ -288,70 +297,40 @@ define([
          * This widget renders suggestion queries which might be interesting for your customer
          * Docs: https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/
          *
+         * @param {number} minQuerySuggestions - postive integer for number of suggestions to display
          * @returns {{init(): void, suggestions: *[], render(*): void}}
          */
-        getSuggestionsWidget() {
+        getSuggestionsWidget(minQuerySuggestions) {
             return {
                 suggestions: [],
-                init: function() {
-                    if (algoliaConfig.showSuggestionsOnNoResultsPage) {
-                        $.each(
-                            algoliaConfig.popularQueries.slice(
-                                0,
-                                Math.min(4, algoliaConfig.popularQueries.length)
-                            ),
-                            (i, query) => {
-                                query = $('<div>').html(query).text(); //xss
-                                this.suggestions.push(
-                                    '<a href="' +
-                                    algoliaConfig.baseUrl +
-                                    '/catalogsearch/result/?q=' +
-                                    encodeURIComponent(query) +
-                                    '">' +
-                                    query +
-                                    '</a>'
-                                );
-                            }
-                        );
-                    }
-                },
-                render: function(data) {
-                    if (data.results.hits.length === 0) {
-                        let content = '<div class="no-results">';
-                        content +=
-                            '<div><b>' +
-                            algoliaConfig.translations.noProducts +
-                            ' "' +
-                            $('<div>').text(data.results.query).html() +
-                            '</b>"</div>';
-                        content += '<div class="popular-searches">';
-
-                        if (
-                            algoliaConfig.showSuggestionsOnNoResultsPage &&
-                            this.suggestions.length > 0
-                        ) {
-                            content +=
-                                '<div>' +
-                                algoliaConfig.translations.popularQueries +
-                                '</div>' +
-                                this.suggestions.join(', ');
+                init() {
+                    algoliaConfig.popularQueries.slice(
+                        0,
+                        Math.min(minQuerySuggestions, algoliaConfig.popularQueries.length)
+                    ).forEach(
+                        (query) => {
+                            query = algoliaCommon.htmlspecialcharsEncode(query);
+                            this.suggestions.push(
+                                `<a href="${algoliaConfig.baseUrl}/catalogsearch/result/?q=${encodeURIComponent(query)}">${query}</a>`
+                            );
                         }
-
-                        content += '</div>';
-                        content +=
-                            algoliaConfig.translations.or +
-                            ' <a href="' +
-                            algoliaConfig.baseUrl +
-                            '/catalogsearch/result/?q=__empty__">' +
-                            algoliaConfig.translations.seeAll +
-                            '</a>';
-
-                        content += '</div>';
-
-                        $('#instant-empty-results-container').html(content);
-                    } else {
-                        $('#instant-empty-results-container').html('');
+                    );
+                },
+                render(data) {
+                    let content = '';
+                    if (data.results.hits.length === 0) {
+                        const query = algoliaCommon.htmlspecialcharsEncode(data.results.query);
+                        content = `<div class="no-results">`;
+                        content += `<div><strong>${algoliaConfig.translations.noProducts} "${query}"</strong></div>`;
+                        content += `<div class="popular-searches">`;
+                        content += `<div>${algoliaConfig.translations.popularQueries}</div>`;
+                        content += this.suggestions.join(', ');
+                        content += `</div>`;
+                        content += algoliaConfig.translations.or;
+                        content += `<a href="${algoliaConfig.baseUrl}/catalogsearch/result/?q=__empty__">${algoliaConfig.translations.seeAll}</a>`;
+                        content += `</div>`;
                     }
+                    document.querySelector('#instant-empty-results-container').innerHTML = content;
                 },
             };
         },

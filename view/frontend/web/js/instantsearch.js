@@ -274,21 +274,7 @@ define([
                     }
 
                     data.helper.setPage(page);
-                },
-                render(data) {
-                    if (!algoliaConfig.isSearchPage) {
-                        if (
-                            data.results.query.length === 0 &&
-                            data.results.nbHits === 0
-                        ) {
-                            $('.algolia-instant-replaced-content').show();
-                            $('.algolia-instant-selector-results').hide();
-                        } else {
-                            $('.algolia-instant-replaced-content').hide();
-                            $('.algolia-instant-selector-results').show();
-                        }
-                    }
-                },
+                }
             };
         },
 

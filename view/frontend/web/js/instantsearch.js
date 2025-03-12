@@ -19,9 +19,8 @@ define([
 ], function (Component, $, algoliasearch, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
 
     return Component.extend({
-        initialize(config, element) {
-            // console.log('IS initialized with', config, element);
-            this.buildInstantSearch();
+        initialize(_config, _element) {
+            this.buildInstantSearch().then(() => console.log("[Algolia] InstantSearch build complete"));
         },
 
         isStarted: false,
@@ -159,12 +158,12 @@ define([
                     }
 
                     const templates = {
-                        item: document.querySelector('#refinements-lists-item-template')?.innerHTML
+                        item: this.getTemplateContentsFromDOM('#refinements-lists-item-template')
                     };
 
-                    const widgetInfo = customAttributeFacets[facet.attribute]?.(facet, templates) 
+                    const widgetInfo = customAttributeFacets[facet.attribute]?.(facet, templates)
                         ?? this.getFacetWidget(facet, templates);
-                        
+
                     const [widgetType, widgetConfig] = widgetInfo;
 
                     if (allWidgetConfiguration.hasOwnProperty(widgetType)) {
@@ -360,7 +359,7 @@ define([
             return {
                 container: '#algolia-stats',
                 templates: {
-                    text: function (data) {
+                    text: (data) => {
                         data.first = data.page * data.hitsPerPage + 1;
                         data.last = Math.min(
                             data.page * data.hitsPerPage + data.hitsPerPage,
@@ -369,7 +368,7 @@ define([
                         data.seconds = data.processingTimeMS / 1000;
                         data.translations = window.algoliaConfig.translations;
 
-                        const template = $('#instant-stats-template').html();
+                        const template = this.getTemplateContentsFromDOM('#instant-stats-template');
                         return templateProcessor.process(template, data);
                     },
                 },
@@ -546,7 +545,7 @@ define([
                 container     : '#instant-search-results-container',
                 templates     : {
                     empty: '<div></div>',
-                    item : $('#instant-hit-template').html(),
+                    item : this.getTemplateContentsFromDOM('#instant-hit-template')
                 },
                 transformItems: function (items, {results}) {
                     if (algoliaConfig.instant.hidePagination) {
@@ -570,7 +569,7 @@ define([
          * pagination
          * Docs: https://www.algolia.com/doc/api-reference/widgets/pagination/js/
          *
-         * @returns {{container: string, templates: {next: string, previous: string, totalPages: number, showLast: boolean, showFirst: boolean, showNext: boolean, showPrevious: boolean}}
+         * @returns {{container: string, templates: {next: string, previous: string, totalPages: number, showLast: boolean, showFirst: boolean, showNext: boolean, showPrevious: boolean}}}
          */
         getPagination() {
             return {
@@ -600,7 +599,7 @@ define([
                 container     : '#instant-search-results-container',
                 templates     : {
                     empty       : '<div></div>',
-                    item        : $('#instant-hit-template').html(),
+                    item        : this.getTemplateContentsFromDOM('#instant-hit-template'),
                     showMoreText: algoliaConfig.translations.showMore,
                 },
                 cssClasses    : {
@@ -794,7 +793,7 @@ define([
                 '<div class="algolia-instant-selector-results"></div>'
             );
 
-            const template = $('#instant_wrapper_template').html();
+            const template = this.getTemplateContentsFromDOM('#instant_wrapper_template');
             const templateVars = {
                 second_bar      : algoliaConfig.instant.enabled,
                 findAutocomplete: this.findAutocomplete(),
@@ -804,6 +803,17 @@ define([
 
             const wrapperHtml = templateProcessor.process(template, templateVars);
             $('.algolia-instant-selector-results').html(wrapperHtml).show();
+        },
+
+        /**
+         * @param selector
+         * @returns {string}
+         */
+        getTemplateContentsFromDOM(selector) {
+            const element = document.querySelector(selector);
+            if (element) return element.innerHTML;
+
+            throw new Error(`[Algolia] Invalid template selector: ${selector}`);
         },
 
         /**

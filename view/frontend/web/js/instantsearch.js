@@ -50,8 +50,6 @@ define([
             const currentRefinementsAttributes = this.getCurrentRefinementsAttributes();
 
             let allWidgetConfiguration = {
-                infiniteHits: {},
-                hits        : {},
                 configure   : this.getSearchParameters(),
                 custom      : [
                     /**
@@ -189,11 +187,9 @@ define([
 
             if (algoliaConfig.instant.infiniteScrollEnabled) {
                 allWidgetConfiguration.infiniteHits = this.getInfiniteHits(search);
-                delete allWidgetConfiguration.hits;
             } else {
                 allWidgetConfiguration.hits = this.getHits(search);
                 allWidgetConfiguration.pagination = this.getPagination();
-                delete allWidgetConfiguration.infiniteHits;
             }
 
             // TODO: Refactor
@@ -512,7 +508,7 @@ define([
             return {
                 container     : '#instant-search-results-container',
                 templates     : {
-                    empty: '',
+                    empty: '<div></div>',
                     item : $('#instant-hit-template').html(),
                 },
                 transformItems: function (items, {results}) {
@@ -566,7 +562,7 @@ define([
             return {
                 container     : '#instant-search-results-container',
                 templates     : {
-                    empty       : '',
+                    empty       : '<div></div>',
                     item        : $('#instant-hit-template').html(),
                     showMoreText: algoliaConfig.translations.showMore,
                 },

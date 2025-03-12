@@ -104,96 +104,7 @@ define([
 
             allWidgetConfiguration = this.initializeRefinements(allWidgetConfiguration);
 
-            // TODO: Refactor
-            /**
-             * Here are specified custom attributes widgets which require special code to run properly
-             * Custom widgets can be added to this object like [attribute]: function(facet, templates)
-             * Function must return an array [<widget name>: string, <widget options>: object]
-             **/
-            const customAttributeFacet = {
-                categories: function (facet, templates) {
-                    const hierarchical_levels = [];
-                    for (let l = 0; l < 10; l++) {
-                        hierarchical_levels.push('categories.level' + l.toString());
-                    }
-
-                    const hierarchicalMenuParams = {
-                        container      : facet.wrapper.appendChild(
-                            algoliaCommon.createISWidgetContainer(facet.attribute)
-                        ),
-                        attributes     : hierarchical_levels,
-                        separator      : algoliaConfig.instant.categorySeparator,
-                        templates      : templates,
-                        showParentLevel: true,
-                        limit          : algoliaConfig.maxValuesPerFacet,
-                        sortBy         : ['name:asc'],
-                        transformItems(items) {
-                            return algoliaConfig.isCategoryPage
-                                ? items.map((item) => {
-                                    return {
-                                        ...item,
-                                        categoryUrl: algoliaConfig.instant
-                                            .isCategoryNavigationEnabled
-                                            ? algoliaConfig.request.childCategories[item.value]['url']
-                                            : '',
-                                    };
-                                })
-                                : items;
-                        },
-                    };
-
-                    if (algoliaConfig.isCategoryPage) {
-                        hierarchicalMenuParams.rootPath = algoliaConfig.request.path;
-                    }
-
-                    hierarchicalMenuParams.templates.item =
-                        '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}"><span class="{{cssClasses.label}}">{{label}}</span>' +
-                        ' ' +
-                        '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
-                        '</a>';
-                    hierarchicalMenuParams.panelOptions = {
-                        templates: {
-                            header:
-                                '<div class="name">' +
-                                (facet.label ? facet.label : facet.attribute) +
-                                '</div>',
-                        },
-                        hidden   : function ({items}) {
-                            return !items.length;
-                        },
-                    };
-
-                    return ['hierarchicalMenu', hierarchicalMenuParams];
-                },
-            };
-
-            // TODO: Refactor
-            /** Add all facet widgets to instantsearch object **/
-            var wrapper = document.getElementById('instant-search-facets-container');
-            $.each(algoliaConfig.facets, (i, facet) => {
-                if (facet.attribute.indexOf('price') !== -1)
-                    facet.attribute = facet.attribute + algoliaConfig.priceKey;
-
-                facet.wrapper = wrapper;
-
-                var templates = {
-                    item: $('#refinements-lists-item-template').html(),
-                };
-
-                var widgetInfo =
-                    customAttributeFacet[facet.attribute] !== undefined
-                        ? customAttributeFacet[facet.attribute](facet, templates)
-                        : this.getFacetWidget(facet, templates);
-
-                var widgetType = widgetInfo[0],
-                    widgetConfig = widgetInfo[1];
-
-                if (typeof allWidgetConfiguration[widgetType] === 'undefined') {
-                    allWidgetConfiguration[widgetType] = [widgetConfig];
-                } else {
-                    allWidgetConfiguration[widgetType].push(widgetConfig);
-                }
-            });
+            allWidgetConfiguration = this.initializeFacets(allWidgetConfiguration);
 
             // TODO: Refactor
             if (algoliaConfig.analytics.enabled) {
@@ -227,6 +138,113 @@ define([
                 };
             }
             return allWidgetConfiguration;
+        },
+
+        initializeFacets(allWidgetConfiguration) {
+            const customAttributeFacets = this.getCustomAttributeFacets();
+
+            // TODO: Refactor
+            /** Add all facet widgets to allWidgetConfiguration **/
+            const wrapper = document.getElementById('instant-search-facets-container');
+            $.each(algoliaConfig.facets, (i, facet) => {
+                if (facet.attribute.indexOf('price') !== -1)
+                    facet.attribute = facet.attribute + algoliaConfig.priceKey;
+
+                facet.wrapper = wrapper;
+
+                var templates = {
+                    item: $('#refinements-lists-item-template').html(),
+                };
+
+                var widgetInfo =
+                    customAttributeFacets[facet.attribute] !== undefined
+                        ? customAttributeFacets[facet.attribute](facet, templates)
+                        : this.getFacetWidget(facet, templates);
+
+                var widgetType = widgetInfo[0],
+                    widgetConfig = widgetInfo[1];
+
+                if (typeof allWidgetConfiguration[widgetType] === 'undefined') {
+                    allWidgetConfiguration[widgetType] = [widgetConfig];
+                } else {
+                    allWidgetConfiguration[widgetType].push(widgetConfig);
+                }
+            });
+
+            return allWidgetConfiguration;
+        },
+
+        /**
+         * Here are specified custom attributes widgets which require special code to run properly
+         * Custom widgets can be added to this object like [attribute]: function(facet, templates)
+         * Function must return an object {<widget name>: string, <widget options>: object}
+         *
+         * @returns {Object<string, function>}
+         */
+        getCustomAttributeFacets() {
+            return {
+                categories: this.getCategoriesFacet()
+            };
+        },
+
+        /**
+         * Get custom attribute function to generate params for categories hierarchicalMenu widget
+         */
+        getCategoriesFacet() {
+            return (facet, templates) => {
+                const hierarchical_levels = [];
+                for (let l = 0; l < 10; l++) {
+                    hierarchical_levels.push('categories.level' + l.toString());
+                }
+
+                const hierarchicalMenuParams = {
+                    container      : facet.wrapper.appendChild(
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
+                    ),
+                    attributes     : hierarchical_levels,
+                    separator      : algoliaConfig.instant.categorySeparator,
+                    templates      : templates,
+                    showParentLevel: true,
+                    limit          : algoliaConfig.maxValuesPerFacet,
+                    sortBy         : ['name:asc'],
+                    transformItems(items) {
+                        return algoliaConfig.isCategoryPage
+                            ? items.map((item) => {
+                                return {
+                                    ...item,
+                                    categoryUrl: algoliaConfig.instant
+                                        .isCategoryNavigationEnabled
+                                        ? algoliaConfig.request.childCategories[item.value]['url']
+                                        : '',
+                                };
+                            })
+                            : items;
+                    },
+                };
+
+                if (algoliaConfig.isCategoryPage) {
+                    hierarchicalMenuParams.rootPath = algoliaConfig.request.path;
+                }
+
+                hierarchicalMenuParams.templates.item =
+                    '<a class="{{cssClasses.link}} {{#isRefined}}{{cssClasses.link}}--selected{{/isRefined}}" href="{{categoryUrl}}"><span class="{{cssClasses.label}}">{{label}}</span>' +
+                    ' ' +
+                    '<span class="{{cssClasses.count}}">{{#helpers.formatNumber}}{{count}}{{/helpers.formatNumber}}</span>' +
+                    '</a>';
+                hierarchicalMenuParams.panelOptions = {
+                    templates: {
+                        header:
+                            '<div class="name">' +
+                            (facet.label ? facet.label : facet.attribute) +
+                            '</div>',
+                    },
+                    hidden   : function ({items}) {
+                        return !items.length;
+                    },
+                };
+
+                return ['hierarchicalMenu', hierarchicalMenuParams];
+            };
         },
 
         /**

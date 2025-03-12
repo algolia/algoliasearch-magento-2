@@ -49,18 +49,11 @@ define([
 
             this.prepareSortingIndices();
 
-            const currentRefinementsAttributes = this.getCurrentRefinementsAttributes();
-
             let allWidgetConfiguration = {
                 configure   : this.getSearchParameters(),
                 custom      : this.getCustomWidgets(),
-
                 stats: this.getStats(templateProcessor),
                 sortBy: this.getSortBy(),
-
-                currentRefinements: this.getCurrentRefinements(currentRefinementsAttributes),
-                clearRefinements: this.getClearRefinements(currentRefinementsAttributes),
-
                 queryRuleCustomData: this.getQueryRuleCustomData(),
             };
 
@@ -74,6 +67,8 @@ define([
                 allWidgetConfiguration.hits = this.getHits(search);
                 allWidgetConfiguration.pagination = this.getPagination();
             }
+
+            allWidgetConfiguration = this.initializeRefinements(allWidgetConfiguration);
 
             // TODO: Refactor
             /**
@@ -230,13 +225,12 @@ define([
          * @returns {({init(*): void, getWidgetSearchParameters(*): *, render(*): void})[]}
          */
         getCustomWidgets() {
-            const customWidgets = [ this.getRefineResultsWidget() ];
+            const customWidgets = [ this.getInitializeResultsWidget() ];
             if (algoliaConfig.showSuggestionsOnNoResultsPage) {
                 customWidgets.push(this.getSuggestionsWidget(this.minQuerySuggestions));
             }
             return customWidgets;
         },
-
 
         /**
          * Custom widget - this widget is used to refine results for search page or catalog page
@@ -244,7 +238,7 @@ define([
          *
          * @returns {{init(*): void, getWidgetSearchParameters(*): (*), render(*): void}|*}
          */
-        getRefineResultsWidget() {
+        getInitializeResultsWidget() {
             return {
                 getWidgetSearchParameters(searchParameters) {
                     if (
@@ -380,6 +374,17 @@ define([
                     default: '{{#items}} {{#banner}} {{{banner}}} {{/banner}} {{/items}}',
                 },
             };
+        },
+
+        /**
+         * @param allWidgetConfiguration
+         * @returns {*}
+         */
+        initializeRefinements(allWidgetConfiguration) {
+            const currentRefinementsAttributes = this.getCurrentRefinementsAttributes();
+            allWidgetConfiguration.currentRefinements = this.getCurrentRefinements(currentRefinementsAttributes);
+            allWidgetConfiguration.clearRefinements = this.getClearRefinements(currentRefinementsAttributes);
+            return allWidgetConfiguration;
         },
 
         /**

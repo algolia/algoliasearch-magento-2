@@ -33,11 +33,11 @@ define([
          * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/
          */
         async buildInstantSearch() {
+            if (!this.checkInstantSearchEnablement()) return;
+
             const templateProcessor = await templateEngine.getSelectedEngineAdapter();
 
             const mockAlgoliaBundle = this.mockAlgoliaBundle();
-
-            if (!this.checkInstantSearchEnablement()) return;
 
             this.invokeLegacyHooks();
 
@@ -49,6 +49,45 @@ define([
 
             this.prepareSortingIndices();
 
+            this.initializeWidgets(
+                search,
+                this.getAllWidgetConfiguration(search, templateProcessor),
+                mockAlgoliaBundle
+            );
+
+            // TODO: Refactor
+            // Capture active redirect URL with IS facet params for add to cart from PLP
+            if (algoliaConfig.instant.isAddToCartEnabled) {
+                search.on('render', () => {
+                    const cartForms = document.querySelectorAll(
+                        '[data-role="tocart-form"]'
+                    );
+                    cartForms.forEach((form, i) => {
+                        form.addEventListener('submit', (e) => {
+                            const url = `${algoliaConfig.request.url}${window.location.search}`;
+                            e.target.elements[
+                                algoliaConfig.instant.addToCartParams.redirectUrlParam
+                                ].value = algoliaBase64.mageEncode(url);
+                        });
+                    });
+                });
+            }
+
+            this.startInstantSearch(search, mockAlgoliaBundle);
+
+            this.addMobileRefinementsToggle();
+        },
+
+        /**
+         * Builds the allWidgetConfiguration that is used to define the widgets added to InstantSearch
+         * This object is also passed to the `beforeWidgetInitialization` hook
+         * See https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/#instantsearch-page-events
+         *
+         * @param search
+         * @param templateProcessor
+         * @returns {Object<string, Object>}
+         */
+        getAllWidgetConfiguration(search, templateProcessor) {
             let allWidgetConfiguration = {
                 configure   : this.getSearchParameters(),
                 custom      : this.getCustomWidgets(),
@@ -61,12 +100,7 @@ define([
                 allWidgetConfiguration.searchBox = this.getSearchBox()
             }
 
-            if (algoliaConfig.instant.infiniteScrollEnabled) {
-                allWidgetConfiguration.infiniteHits = this.getInfiniteHits(search);
-            } else {
-                allWidgetConfiguration.hits = this.getHits(search);
-                allWidgetConfiguration.pagination = this.getPagination();
-            }
+            allWidgetConfiguration = this.initializeHits(allWidgetConfiguration, search);
 
             allWidgetConfiguration = this.initializeRefinements(allWidgetConfiguration);
 
@@ -192,30 +226,7 @@ define([
                     pushInitialSearch     : algoliaConfig.analytics.pushInitialSearch,
                 };
             }
-
-            this.initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle);
-
-            // TODO: Refactor
-            // Capture active redirect URL with IS facet params for add to cart from PLP
-            if (algoliaConfig.instant.isAddToCartEnabled) {
-                search.on('render', () => {
-                    const cartForms = document.querySelectorAll(
-                        '[data-role="tocart-form"]'
-                    );
-                    cartForms.forEach((form, i) => {
-                        form.addEventListener('submit', (e) => {
-                            const url = `${algoliaConfig.request.url}${window.location.search}`;
-                            e.target.elements[
-                                algoliaConfig.instant.addToCartParams.redirectUrlParam
-                                ].value = algoliaBase64.mageEncode(url);
-                        });
-                    });
-                });
-            }
-
-            this.startInstantSearch(search, mockAlgoliaBundle);
-
-            this.addMobileRefinementsToggle();
+            return allWidgetConfiguration;
         },
 
         /**
@@ -480,6 +491,23 @@ define([
                     });
                 },
             };
+        },
+
+        /**
+         * Setup hits and pagination based on configuration
+         *
+         * @param allWidgetConfiguration
+         * @param search
+         * @returns {*}
+         */
+        initializeHits(allWidgetConfiguration, search) {
+            if (algoliaConfig.instant.infiniteScrollEnabled) {
+                allWidgetConfiguration.infiniteHits = this.getInfiniteHits(search);
+            } else {
+                allWidgetConfiguration.hits = this.getHits(search);
+                allWidgetConfiguration.pagination = this.getPagination();
+            }
+            return allWidgetConfiguration;
         },
 
         /**

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <settings>
+        <buttons>
+            <button class="Algolia\AlgoliaSearch\Block\Adminhtml\Reindex\ReindexAll\Page" name="algolia_reindex_all" />
+        </buttons>
+    </settings>
     <listingToolbar name="listing_top">
         <massaction name="listing_massaction">
             <action name="algolia_reindex">

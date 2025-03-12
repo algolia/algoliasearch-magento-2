@@ -36,34 +36,32 @@ class Reindex extends Action
     /**
      * @throws ExceededRetriesException
      * @throws AlgoliaException
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|DiagnosticsException
      */
     public function execute()
     {
-        $storeIds = is_null($this->getRequest()->getParam("store_id")) ||  $this->getRequest()->getParam("store_id") === '0' ?
+        $params = $this->getRequest()->getParams();
+        $storeIds = !isset($params["store_id"]) || $params["store_id"] === '0' ?
             array_keys($this->storeManager->getStores()) :
-            [(int) $this->getRequest()->getParam("store_id")];
+            [(int) $params["store_id"]];
 
-        $entities = $this->defineEntitiesToIndex();
-        $entityIds = !is_null($this->getRequest()->getParam('selected')) ?
-            $this->getRequest()->getParam('selected') :
-            null;
+        $entities = $this->defineEntitiesToIndex($params);
+        $entityIds = $params['selected'] ?? null;
 
         $this->reindexEntities($entities, $storeIds, $entityIds);
 
         /** @var Redirect $resultRedirect */
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
 
-        return $resultRedirect->setPath($this->defineRedirectPath());
+        return $resultRedirect->setPath($this->defineRedirectPath($params));
     }
 
     /**
      * @return array|string[]
      */
-    protected function defineEntitiesToIndex(): array
+    protected function defineEntitiesToIndex(array $params): array
     {
         $entities = [];
-        $params = $this->getRequest()->getParams();
         if (isset($params["entity"])) {
             $entities = $params["entity"] === 'all' ?
                 ['products', 'categories', 'pages'] :
@@ -80,13 +78,17 @@ class Reindex extends Action
     }
 
     /**
+     * @param array $params
      * @return string
      */
-    protected function defineRedirectPath(): string
+    protected function defineRedirectPath(array $params): string
     {
         $redirect = '*/*/';
 
-        $params = $this->getRequest()->getParams();
+        if (isset($params["redirect"])) {
+            return $params["redirect"];
+        }
+
         if (isset($params["namespace"])) {
             $redirect = match ($params["namespace"]) {
                 'product_listing' => 'catalog/product/index',

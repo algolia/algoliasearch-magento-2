@@ -931,105 +931,118 @@ define([
         getFacetWidget(facet, templates) {
             const panelOptions = this.getFacetPanelOptions(facet);
 
-            if (facet.type === 'priceRanges') {
-                delete templates.item;
-
-                return [
-                    'rangeInput',
-                    {
-                        container   : facet.wrapper.appendChild(
-                            algoliaCommon.createISWidgetContainer(facet.attribute)
-                        ),
-                        attribute   : facet.attribute,
-                        templates   : $.extend(
-                            {
-                                separatorText: algoliaConfig.translations.to,
-                                submitText   : algoliaConfig.translations.go,
-                            },
-                            templates
-                        ),
-                        cssClasses  : {
-                            root: 'conjunctive',
-                        },
-                        panelOptions: panelOptions,
-                    },
-                ];
+            switch (facet.type) {
+                case 'priceRanges':
+                    return this.getRangeInputFacetConfig(facet, templates, panelOptions);
+                case 'conjunctive':
+                    return this.getConjunctiveFacetConfig(facet, templates, panelOptions);
+                case 'disjunctive':
+                    return this.getDisjunctiveFacetConfig(facet, templates, panelOptions);
+                case 'slider':
+                    return this.getRangeSliderFacetConfig(facet, templates, panelOptions);
             }
 
-            if (facet.type === 'conjunctive') {
-                var refinementListOptions = {
+            throw new Error(`[Algolia] Invalid facet widget type: ${facet.type}`);
+        },
+
+        getRangeInputFacetConfig(facet, templates, panelOptions) {
+            delete templates.item;
+
+            return [
+                'rangeInput',
+                {
                     container   : facet.wrapper.appendChild(
                         algoliaCommon.createISWidgetContainer(facet.attribute)
                     ),
                     attribute   : facet.attribute,
-                    limit       : algoliaConfig.maxValuesPerFacet,
-                    operator    : 'and',
-                    templates   : templates,
-                    sortBy      : ['count:desc', 'name:asc'],
+                    templates   : $.extend(
+                        {
+                            separatorText: algoliaConfig.translations.to,
+                            submitText   : algoliaConfig.translations.go,
+                        },
+                        templates
+                    ),
                     cssClasses  : {
                         root: 'conjunctive',
                     },
                     panelOptions: panelOptions,
-                };
+                },
+            ];
+        },
 
-                refinementListOptions = this.addSearchForFacetValues(
-                    facet,
-                    refinementListOptions
-                );
+        getConjunctiveFacetConfig(facet, templates, panelOptions) {
+            let refinementListOptions = {
+                container   : facet.wrapper.appendChild(
+                    algoliaCommon.createISWidgetContainer(facet.attribute)
+                ),
+                attribute   : facet.attribute,
+                limit       : algoliaConfig.maxValuesPerFacet,
+                operator    : 'and',
+                templates   : templates,
+                sortBy      : ['count:desc', 'name:asc'],
+                cssClasses  : {
+                    root: 'conjunctive',
+                },
+                panelOptions: panelOptions,
+            };
 
-                return ['refinementList', refinementListOptions];
-            }
+            refinementListOptions = this.addSearchForFacetValues(
+                facet,
+                refinementListOptions
+            );
 
-            if (facet.type === 'disjunctive') {
-                var refinementListOptions = {
+            return ['refinementList', refinementListOptions];
+        },
+
+        getDisjunctiveFacetConfig(facet, templates, panelOptions) {
+            let refinementListOptions = {
+                container   : facet.wrapper.appendChild(
+                    algoliaCommon.createISWidgetContainer(facet.attribute)
+                ),
+                attribute   : facet.attribute,
+                limit       : algoliaConfig.maxValuesPerFacet,
+                operator    : 'or',
+                templates   : templates,
+                sortBy      : ['count:desc', 'name:asc'],
+                panelOptions: panelOptions,
+                cssClasses  : {
+                    root: 'disjunctive',
+                },
+            };
+
+            refinementListOptions = this.addSearchForFacetValues(
+                facet,
+                refinementListOptions
+            );
+
+            return ['refinementList', refinementListOptions];
+        },
+
+        getRangeSliderFacetConfig(facet, templates, panelOptions) {
+            delete templates.item;
+
+            return [
+                'rangeSlider',
+                {
                     container   : facet.wrapper.appendChild(
                         algoliaCommon.createISWidgetContainer(facet.attribute)
                     ),
                     attribute   : facet.attribute,
-                    limit       : algoliaConfig.maxValuesPerFacet,
-                    operator    : 'or',
                     templates   : templates,
-                    sortBy      : ['count:desc', 'name:asc'],
+                    pips        : false,
                     panelOptions: panelOptions,
-                    cssClasses  : {
-                        root: 'disjunctive',
-                    },
-                };
-
-                refinementListOptions = this.addSearchForFacetValues(
-                    facet,
-                    refinementListOptions
-                );
-
-                return ['refinementList', refinementListOptions];
-            }
-
-            if (facet.type === 'slider') {
-                delete templates.item;
-
-                return [
-                    'rangeSlider',
-                    {
-                        container   : facet.wrapper.appendChild(
-                            algoliaCommon.createISWidgetContainer(facet.attribute)
-                        ),
-                        attribute   : facet.attribute,
-                        templates   : templates,
-                        pips        : false,
-                        panelOptions: panelOptions,
-                        tooltips    : {
-                            format: function (formattedValue) {
-                                return facet.attribute.match(/price/) === null
-                                    ? parseInt(formattedValue)
-                                    : priceUtils.formatPrice(
-                                        formattedValue,
-                                        algoliaConfig.priceFormat
-                                    );
-                            },
+                    tooltips    : {
+                        format(value) {
+                            return facet.attribute.match(/price/) === null
+                                ? parseInt(value)
+                                : priceUtils.formatPrice(
+                                    value,
+                                    algoliaConfig.priceFormat
+                                );
                         },
                     },
-                ];
-            }
+                },
+            ];
         },
 
         getFacetPanelOptions(facet) {

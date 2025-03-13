@@ -404,9 +404,10 @@
                     <backend_model>Algolia\AlgoliaSearch\Model\Backend\Facets</backend_model>
                     <comment>
                         <![CDATA[
-                            Specify the filtering options you want to offer on a search results page.<br>
-                                &nbsp; - Disjunctive allows a selection of different values per facet (e.g. hotels with 4 OR 5 stars).<br>
-                                &nbsp; - Conjunctive allows a selection of only one value per facet (e.g. only "Size M").
+                            Specify the <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#conjunctive-and-disjunctive-faceting" target="_blank">filtering options</a> you want to offer on a search results page.<br>
+                                &nbsp; - Disjunctive facets filter your results on <em>any</em> match (e.g. hotels with 4 OR 5 stars).<br>
+                                &nbsp; - Conjunctive facets filter your results on <em>all</em> matches (e.g. shirts that come in "Size M" AND "Size L").
+
                             <br><br>
                             Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
                             <br><br>

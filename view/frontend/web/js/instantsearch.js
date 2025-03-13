@@ -970,52 +970,45 @@ define([
             ];
         },
 
-        getConjunctiveFacetConfig(facet, templates, panelOptions) {
-            let refinementListOptions = {
+        getRefinementListOptions(facet, templates, panelOptions) {
+            return {
                 container   : facet.wrapper.appendChild(
                     algoliaCommon.createISWidgetContainer(facet.attribute)
                 ),
                 attribute   : facet.attribute,
                 limit       : algoliaConfig.maxValuesPerFacet,
-                operator    : 'and',
                 templates   : templates,
                 sortBy      : ['count:desc', 'name:asc'],
-                cssClasses  : {
-                    root: 'conjunctive',
-                },
                 panelOptions: panelOptions,
             };
+        },
 
-            refinementListOptions = this.addSearchForFacetValues(
-                facet,
-                refinementListOptions
-            );
+        getConjunctiveFacetConfig(facet, templates, panelOptions) {
+            const defaultOptions = this.getRefinementListOptions(facet, templates, panelOptions);
 
-            return ['refinementList', refinementListOptions];
+            const refinementListOptions = {
+                ...defaultOptions,
+                operator    : 'and',
+                cssClasses  : {
+                    root: 'conjunctive',
+                }
+            };
+
+            return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
         },
 
         getDisjunctiveFacetConfig(facet, templates, panelOptions) {
-            let refinementListOptions = {
-                container   : facet.wrapper.appendChild(
-                    algoliaCommon.createISWidgetContainer(facet.attribute)
-                ),
-                attribute   : facet.attribute,
-                limit       : algoliaConfig.maxValuesPerFacet,
+            const defaultOptions = this.getRefinementListOptions(facet, templates, panelOptions);
+
+            const refinementListOptions = {
+                ...defaultOptions,
                 operator    : 'or',
-                templates   : templates,
-                sortBy      : ['count:desc', 'name:asc'],
-                panelOptions: panelOptions,
                 cssClasses  : {
                     root: 'disjunctive',
-                },
-            };
+                }
+            }
 
-            refinementListOptions = this.addSearchForFacetValues(
-                facet,
-                refinementListOptions
-            );
-
-            return ['refinementList', refinementListOptions];
+            return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
         },
 
         getRangeSliderFacetConfig(facet, templates, panelOptions) {
@@ -1100,9 +1093,7 @@ define([
                     algoliaConfig.translations.searchForFacetValuesPlaceholder;
                 options.templates = options.templates || {};
                 options.templates.searchableNoResults =
-                    '<div class="sffv-no-results">' +
-                    algoliaConfig.translations.noResults +
-                    '</div>';
+                    `<div class="sffv-no-results">${algoliaConfig.translations.noResults}</div>`;
             }
 
             return options;

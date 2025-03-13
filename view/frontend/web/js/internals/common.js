@@ -276,9 +276,9 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             return "";
         },
 
-        // @deprecated This function will be removed from this module in a future version
+        // @deprecated This function will be removed from this module in v3.17
         // This global function is highly specific to InstantSearch and has never been used for anything else
-        // It will eventually be relocated to the algoliaInstantSearch lib
+        // It will be relocated to the algoliaInstantSearch lib
         transformHit: (hit, price_key, helper) => {
             if (Array.isArray(hit.categories))
                 hit.categories = hit.categories.join(', ');
@@ -414,7 +414,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             return hit;
         },
 
-        /** @deprecated This function should no longer be used and will be removed in a future version */
+        /** @deprecated This function should no longer be used and will be removed in a version 3.17 */
         fixAutocompleteCssHeight: () => {
             if ($(document).width() > 768) {
                 $(".other-sections").css('min-height', '0');
@@ -424,7 +424,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             }
         },
 
-        /** @deprecated This function should no longer be used and will be removed in a future version */
+        /** @deprecated This function should no longer be used and will be removed in version 3.17 */
         fixAutocompleteCssSticky: (menu) => {
             var dropdown_menu = $('#algolia-autocomplete-container .aa-dropdown-menu');
             var autocomplete_container = $('#algolia-autocomplete-container');
@@ -462,10 +462,9 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
         },
 
         createISWidgetContainer: (attributeName) => {
-            var div = document.createElement('div');
+            const div = document.createElement('div');
             div.className = 'is-widget-container-' + attributeName.split('.').join('_');
             div.dataset.attr = attributeName;
-
             return div;
         }
     };

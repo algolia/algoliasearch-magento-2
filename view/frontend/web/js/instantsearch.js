@@ -117,13 +117,9 @@ define([
                         facet.attribute += algoliaConfig.priceKey;
                     }
 
-                    const templates = {
-                        item: this.getTemplateContentsFromDOM('#refinements-lists-item-template')
-                    };
-
                     const facetBuilder = customFacetBuilders[facet.attribute] ?? this.getFacetConfig.bind(this);
 
-                    const widgetInfo = facetBuilder(facet, templates);
+                    const widgetInfo = facetBuilder(facet);
 
                     const [widgetType, widgetConfig] = widgetInfo;
 
@@ -139,8 +135,17 @@ define([
         },
 
         /**
+         * @returns {{item: string}}
+         */
+        getRefinementsListTemplate() {
+            return {
+                item: this.getTemplateContentsFromDOM('#refinements-lists-item-template')
+            };
+        },
+
+        /**
          * Here are specified custom attributes widgets which require special code to run properly
-         * Custom widgets can be added to this object like [attribute]: function(facet, templates)
+         * Custom widgets can be added to this object like [attribute]: function(facet)
          * Function must return an array [<widget name>: string, <widget options>: object]
          * (Same as getFacetConfig() which handles generic facets)
          *
@@ -162,9 +167,11 @@ define([
 
         /**
          * Get custom attribute function to generate config to ultimately build a categories hierarchicalMenu widget
+         *
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/hierarchical-menu/js/
          */
         getCategoriesFacetConfigBuilder() {
-            return (facet, templates) => {
+            return (facet) => {
                 const hierarchical_levels = [];
                 for (let l = 0; l < 10; l++) {
                     hierarchical_levels.push('categories.level' + l.toString());
@@ -176,7 +183,7 @@ define([
                     ),
                     attributes     : hierarchical_levels,
                     separator      : algoliaConfig.instant.categorySeparator,
-                    templates      : templates,
+                    templates      : [],
                     showParentLevel: true,
                     limit          : algoliaConfig.maxValuesPerFacet,
                     sortBy         : ['name:asc'],
@@ -944,18 +951,18 @@ define([
          *
          * @see getCustomFacetBuilders
          */
-        getFacetConfig(facet, templates) {
+        getFacetConfig(facet) {
             const panelOptions = this.getFacetPanelOptions(facet);
 
             switch (facet.type) {
                 case 'priceRanges':
-                    return this.getRangeInputFacetConfig(facet, templates, panelOptions);
+                    return this.getRangeInputFacetConfig(facet, panelOptions);
                 case 'conjunctive':
-                    return this.getConjunctiveFacetConfig(facet, templates, panelOptions);
+                    return this.getConjunctiveFacetConfig(facet, panelOptions);
                 case 'disjunctive':
-                    return this.getDisjunctiveFacetConfig(facet, templates, panelOptions);
+                    return this.getDisjunctiveFacetConfig(facet, panelOptions);
                 case 'slider':
-                    return this.getRangeSliderFacetConfig(facet, templates, panelOptions);
+                    return this.getRangeSliderFacetConfig(facet, panelOptions);
             }
 
             throw new Error(`[Algolia] Invalid facet widget type: ${facet.type}`);
@@ -966,12 +973,10 @@ define([
          *             but rather an integration specific config structure
          */
         getFacetWidget(facet, templates) {
-            return this.getFacetConfig(facet, templates);
+            return this.getFacetConfig(facet);
         },
 
-        getRangeInputFacetConfig(facet, templates, panelOptions) {
-            delete templates.item;
-
+        getRangeInputFacetConfig(facet, panelOptions) {
             return [
                 'rangeInput',
                 {
@@ -979,36 +984,36 @@ define([
                         algoliaCommon.createISWidgetContainer(facet.attribute)
                     ),
                     attribute   : facet.attribute,
-                    templates   : $.extend(
-                        {
-                            separatorText: algoliaConfig.translations.to,
-                            submitText   : algoliaConfig.translations.go,
-                        },
-                        templates
-                    ),
+                    templates   : {
+                        separatorText: algoliaConfig.translations.to,
+                        submitText   : algoliaConfig.translations.go,
+                    },
                     cssClasses  : {
                         root: 'conjunctive',
                     },
-                    panelOptions: panelOptions,
+                    panelOptions
                 },
             ];
         },
 
-        getRefinementListOptions(facet, templates, panelOptions) {
+        getRefinementListOptions(facet, panelOptions) {
             return {
                 container   : facet.wrapper.appendChild(
                     algoliaCommon.createISWidgetContainer(facet.attribute)
                 ),
                 attribute   : facet.attribute,
                 limit       : algoliaConfig.maxValuesPerFacet,
-                templates   : templates,
+                templates   : this.getRefinementsListTemplate(),
                 sortBy      : ['count:desc', 'name:asc'],
                 panelOptions: panelOptions,
             };
         },
 
-        getConjunctiveFacetConfig(facet, templates, panelOptions) {
-            const defaultOptions = this.getRefinementListOptions(facet, templates, panelOptions);
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/refinement-list/js/
+         */
+        getConjunctiveFacetConfig(facet, panelOptions) {
+            const defaultOptions = this.getRefinementListOptions(facet, panelOptions);
 
             const refinementListOptions = {
                 ...defaultOptions,
@@ -1021,8 +1026,11 @@ define([
             return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
         },
 
-        getDisjunctiveFacetConfig(facet, templates, panelOptions) {
-            const defaultOptions = this.getRefinementListOptions(facet, templates, panelOptions);
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/refinement-list/js/
+         */
+        getDisjunctiveFacetConfig(facet, panelOptions) {
+            const defaultOptions = this.getRefinementListOptions(facet, panelOptions);
 
             const refinementListOptions = {
                 ...defaultOptions,
@@ -1035,9 +1043,10 @@ define([
             return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
         },
 
-        getRangeSliderFacetConfig(facet, templates, panelOptions) {
-            delete templates.item;
-
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-slider/js/
+         */
+        getRangeSliderFacetConfig(facet, panelOptions) {
             return [
                 'rangeSlider',
                 {
@@ -1045,7 +1054,6 @@ define([
                         algoliaCommon.createISWidgetContainer(facet.attribute)
                     ),
                     attribute   : facet.attribute,
-                    templates   : templates,
                     pips        : false,
                     panelOptions: panelOptions,
                     tooltips    : {

@@ -54,28 +54,15 @@ define([
                 mockAlgoliaBundle
             );
 
-            // TODO: Refactor
-            // Capture active redirect URL with IS facet params for add to cart from PLP
             if (algoliaConfig.instant.isAddToCartEnabled) {
-                search.on('render', () => {
-                    const cartForms = document.querySelectorAll(
-                        '[data-role="tocart-form"]'
-                    );
-                    cartForms.forEach((form, i) => {
-                        form.addEventListener('submit', (e) => {
-                            const url = `${algoliaConfig.request.url}${window.location.search}`;
-                            e.target.elements[
-                                algoliaConfig.instant.addToCartParams.redirectUrlParam
-                                ].value = algoliaBase64.mageEncode(url);
-                        });
-                    });
-                });
+                this.handleAddToCart(search);
             }
 
             this.startInstantSearch(search, mockAlgoliaBundle);
 
             this.addMobileRefinementsToggle();
         },
+
 
         /**
          * Builds the allWidgetConfiguration that is used to define the widgets added to InstantSearch
@@ -88,54 +75,27 @@ define([
          */
         getAllWidgetConfiguration(search, templateProcessor) {
             let allWidgetConfiguration = {
-                configure   : this.getSearchParameters(),
-                custom      : this.getCustomWidgets(),
-                stats: this.getStats(templateProcessor),
-                sortBy: this.getSortBy(),
-                queryRuleCustomData: this.getQueryRuleCustomData(),
+                configure          : this.getSearchParameters(),
+                custom             : this.getCustomWidgets(),
+                stats              : this.getStatsWidget(templateProcessor),
+                sortBy             : this.getSortByWidget(),
+                queryRuleCustomData: this.getQueryRuleCustomDataWidget(),
             };
 
             if (algoliaConfig.instant.isSearchBoxEnabled) {
-                allWidgetConfiguration.searchBox = this.getSearchBox()
+                allWidgetConfiguration.searchBox = this.getSearchBoxWidget()
             }
 
-            allWidgetConfiguration = this.initializeHits(allWidgetConfiguration, search);
+            allWidgetConfiguration = this.configureHits(allWidgetConfiguration, search);
 
-            allWidgetConfiguration = this.initializeRefinements(allWidgetConfiguration);
+            allWidgetConfiguration = this.configureRefinements(allWidgetConfiguration);
 
-            allWidgetConfiguration = this.initializeFacets(allWidgetConfiguration);
+            allWidgetConfiguration = this.configureFacets(allWidgetConfiguration);
 
-            // TODO: Refactor
             if (algoliaConfig.analytics.enabled) {
-                if (typeof algoliaAnalyticsPushFunction !== 'function') {
-                    var algoliaAnalyticsPushFunction = function (
-                        formattedParameters,
-                        state,
-                        results
-                    ) {
-                        var trackedUrl =
-                            '/catalogsearch/result/?q=' +
-                            state.query +
-                            '&' +
-                            formattedParameters +
-                            '&numberOfHits=' +
-                            results.nbHits;
-
-                        // Universal Analytics
-                        if (typeof window.ga !== 'undefined') {
-                            window.ga('set', 'page', trackedUrl);
-                            window.ga('send', 'pageView');
-                        }
-                    };
-                }
-
-                allWidgetConfiguration['analytics'] = {
-                    pushFunction          : algoliaAnalyticsPushFunction,
-                    delay                 : algoliaConfig.analytics.delay,
-                    triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
-                    pushInitialSearch     : algoliaConfig.analytics.pushInitialSearch,
-                };
+                allWidgetConfiguration.analytics = this.getAnalyticsWidget()
             }
+
             return allWidgetConfiguration;
         },
 
@@ -145,8 +105,8 @@ define([
          * @param allWidgetConfiguration
          * @returns {*}
          */
-        initializeFacets(allWidgetConfiguration) {
-            const customAttributeFacets = this.getCustomAttributeFacets();
+        configureFacets(allWidgetConfiguration) {
+            const customFacetBuilders = this.getCustomFacetBuilders();
 
             const wrapper = document.getElementById('instant-search-facets-container');
             algoliaConfig.facets.forEach(
@@ -161,8 +121,9 @@ define([
                         item: this.getTemplateContentsFromDOM('#refinements-lists-item-template')
                     };
 
-                    const widgetInfo = customAttributeFacets[facet.attribute]?.(facet, templates)
-                        ?? this.getFacetWidget(facet, templates);
+                    const facetBuilder = customFacetBuilders[facet.attribute] ?? this.getFacetConfig.bind(this);
+
+                    const widgetInfo = facetBuilder(facet, templates);
 
                     const [widgetType, widgetConfig] = widgetInfo;
 
@@ -181,20 +142,21 @@ define([
          * Here are specified custom attributes widgets which require special code to run properly
          * Custom widgets can be added to this object like [attribute]: function(facet, templates)
          * Function must return an array [<widget name>: string, <widget options>: object]
-         * (Same as getFacetWidget() which handles generic facets)
+         * (Same as getFacetConfig() which handles generic facets)
          *
          * @returns {Object<string, function>}
+         * @see getFacetConfig
          */
-        getCustomAttributeFacets() {
+        getCustomFacetBuilders() {
             return {
-                categories: this.getCategoriesFacet()
+                categories: this.getCategoriesFacetConfigBuilder()
             };
         },
 
         /**
-         * Get custom attribute function to generate params for categories hierarchicalMenu widget
+         * Get custom attribute function to generate config to ultimately build a categories hierarchicalMenu widget
          */
-        getCategoriesFacet() {
+        getCategoriesFacetConfigBuilder() {
             return (facet, templates) => {
                 const hierarchical_levels = [];
                 for (let l = 0; l < 10; l++) {
@@ -355,7 +317,7 @@ define([
          * @param templateProcessor
          * @returns {{container: string, templates: {text: (function(*): *)}}}
          */
-        getStats(templateProcessor) {
+        getStatsWidget(templateProcessor) {
             return {
                 container: '#algolia-stats',
                 templates: {
@@ -381,7 +343,7 @@ define([
          *
          * @returns {{container: string, items: *}}
          */
-        getSortBy() {
+        getSortByWidget() {
             return {
                 container: '#algolia-sorts',
                 items    : algoliaConfig.sortingIndices.map((sortingIndice) => {
@@ -400,7 +362,7 @@ define([
          *
          * @returns {{container: string, templates: {default: string}}}
          */
-        getQueryRuleCustomData() {
+        getQueryRuleCustomDataWidget() {
             return {
                 container: '#algolia-banner',
                 templates: {
@@ -413,10 +375,10 @@ define([
          * @param allWidgetConfiguration
          * @returns {*}
          */
-        initializeRefinements(allWidgetConfiguration) {
+        configureRefinements(allWidgetConfiguration) {
             const currentRefinementsAttributes = this.getCurrentRefinementsAttributes();
-            allWidgetConfiguration.currentRefinements = this.getCurrentRefinements(currentRefinementsAttributes);
-            allWidgetConfiguration.clearRefinements = this.getClearRefinements(currentRefinementsAttributes);
+            allWidgetConfiguration.currentRefinements = this.getCurrentRefinementsWidget(currentRefinementsAttributes);
+            allWidgetConfiguration.clearRefinements = this.getClearRefinementsWidget(currentRefinementsAttributes);
             return allWidgetConfiguration;
         },
 
@@ -428,7 +390,7 @@ define([
          * @param currentRefinementsAttributes
          * @returns {{container: string, transformItems: (function(*): *), includedAttributes: *}}
          */
-        getCurrentRefinements (currentRefinementsAttributes) {
+        getCurrentRefinementsWidget(currentRefinementsAttributes) {
             return {
                 container: '#current-refinements',
                 includedAttributes: currentRefinementsAttributes.map((attribute) => {
@@ -483,7 +445,7 @@ define([
          * @param currentRefinementsAttributes
          * @returns {{container: string, cssClasses: {button: string[]}, transformItems: (function(*): *), templates: {resetLabel: (string|*)}, includedAttributes: *}}
          */
-        getClearRefinements(currentRefinementsAttributes) {
+        getClearRefinementsWidget(currentRefinementsAttributes) {
             return {
                 container         : '#clear-refinements',
                 templates         : {
@@ -522,12 +484,12 @@ define([
          * @param search
          * @returns {*}
          */
-        initializeHits(allWidgetConfiguration, search) {
+        configureHits(allWidgetConfiguration, search) {
             if (algoliaConfig.instant.infiniteScrollEnabled) {
-                allWidgetConfiguration.infiniteHits = this.getInfiniteHits(search);
+                allWidgetConfiguration.infiniteHits = this.getInfiniteHitsWidget(search);
             } else {
-                allWidgetConfiguration.hits = this.getHits(search);
-                allWidgetConfiguration.pagination = this.getPagination();
+                allWidgetConfiguration.hits = this.getHitsWidget(search);
+                allWidgetConfiguration.pagination = this.getPaginationWidget();
             }
             return allWidgetConfiguration;
         },
@@ -540,7 +502,7 @@ define([
          * @param search
          * @returns {{container: string, transformItems: (function(*, {results: *}): *), templates: {item: string, empty: string}}}
          */
-        getHits(search) {
+        getHitsWidget(search) {
             return {
                 container     : '#instant-search-results-container',
                 templates     : {
@@ -571,7 +533,7 @@ define([
          *
          * @returns {{container: string, templates: {next: string, previous: string, totalPages: number, showLast: boolean, showFirst: boolean, showNext: boolean, showPrevious: boolean}}}
          */
-        getPagination() {
+        getPaginationWidget() {
             return {
                 container   : '#instant-search-pagination-container',
                 showFirst   : false,
@@ -594,7 +556,7 @@ define([
          * @param search
          * @returns {{container: string, cssClasses: {loadPrevious: string[], loadMore: string[]}, transformItems: (function(*): *), templates: {item: string, showMoreText: string, empty: string}, escapeHits: boolean, showPrevious: boolean}}
          */
-        getInfiniteHits(search) {
+        getInfiniteHitsWidget(search) {
             return {
                 container     : '#instant-search-results-container',
                 templates     : {
@@ -625,7 +587,7 @@ define([
          *
          * @returns {{container: string, showSubmit: boolean, placeholder: *, queryHook: (function(*, *): *)}}
          */
-        getSearchBox() {
+        getSearchBoxWidget() {
             return {
                 container  : '#instant-search-bar',
                 placeholder: algoliaConfig.translations.searchFor,
@@ -646,6 +608,49 @@ define([
                     return search(inputValue);
                 },
             };
+        },
+
+        /**
+         * Preserved for backward compat but uses Universal Analytics which was sunsetted July 1, 2023
+         * TODO: Introduce GA4
+         */
+        getAnalyticsWidget() {
+            return {
+                pushFunction(formattedParameters, state, results) {
+                    const trackedUrl =
+                        '/catalogsearch/result/?q=' +
+                        state.query +
+                        '&' +
+                        formattedParameters +
+                        '&numberOfHits=' +
+                        results.nbHits;
+
+                    if (typeof window.ga !== 'undefined') {
+                        window.ga('set', 'page', trackedUrl);
+                        window.ga('send', 'pageView');
+                    }
+                },
+                delay                 : algoliaConfig.analytics.delay,
+                triggerOnUIInteraction: algoliaConfig.analytics.triggerOnUiInteraction,
+                pushInitialSearch     : algoliaConfig.analytics.pushInitialSearch,
+            };
+        },
+
+        // Capture active redirect URL with IS facet params for add to cart from PLP
+        handleAddToCart(search) {
+            search.on('render', () => {
+                const cartForms = document.querySelectorAll(
+                    '[data-role="tocart-form"]'
+                );
+                cartForms.forEach((form) => {
+                    form.addEventListener('submit', e => {
+                        const url = `${algoliaConfig.request.url}${window.location.search}`;
+                        e.target.elements[
+                            algoliaConfig.instant.addToCartParams.redirectUrlParam
+                            ].value = algoliaBase64.mageEncode(url);
+                    });
+                });
+            });
         },
 
         initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle) {
@@ -694,7 +699,7 @@ define([
         },
 
         /**
-         * @deprecated - these hooks will be removed in a future version
+         * @deprecated - these old hooks are scheduled to be removed in version 3.17
          */
         invokeLegacyHooks() {
             if (typeof algoliaHookBeforeInstantsearchInit === 'function') {
@@ -922,13 +927,17 @@ define([
 
         /**
          * Function must return an array [<widget name>: string, <widget options>: object]
-         * (Same objects in array returned by implementations of getCustomAttributeFacets())
+         * (Same objects in array returned by implementations of getCustomFacetBuilders())
          *
          * @param facet
          * @param templates
-         * @returns {[string,Object]}
+         * @returns {[string,Object]} The second element in the array is a config for a facet
+         *     The config contains widget specific details along additional info
+         *     such as panelOptions (this is not a valid IS widget config and must be processed further)
+         *
+         * @see getCustomFacetBuilders
          */
-        getFacetWidget(facet, templates) {
+        getFacetConfig(facet, templates) {
             const panelOptions = this.getFacetPanelOptions(facet);
 
             switch (facet.type) {
@@ -943,6 +952,14 @@ define([
             }
 
             throw new Error(`[Algolia] Invalid facet widget type: ${facet.type}`);
+        },
+
+        /**
+         * @deprecated This method has been renamed - as the method does not return a true widget
+         *             but rather an integration specific config structure
+         */
+        getFacetWidget(facet, templates) {
+            return this.getFacetConfig(facet, templates);
         },
 
         getRangeInputFacetConfig(facet, templates, panelOptions) {
@@ -1060,6 +1077,13 @@ define([
             };
         },
 
+        /**
+         * Process a passed config object and add to InstantSearch
+         *
+         * @param search
+         * @param type
+         * @param config
+         */
         addWidget(search, type, config) {
             if (type === 'custom') {
                 search.addWidgets([config]);

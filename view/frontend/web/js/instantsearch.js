@@ -144,13 +144,20 @@ define([
          * Function must return an array [<widget name>: string, <widget options>: object]
          * (Same as getFacetConfig() which handles generic facets)
          *
+         * Any facet builders returned by this function will take precedence over getFacetConfig()
+         *
          * @returns {Object<string, function>}
          * @see getFacetConfig
          */
         getCustomFacetBuilders() {
-            return {
+            const builders = {
                 categories: this.getCategoriesFacetConfigBuilder()
             };
+
+            return algoliaCommon.triggerHooks(
+                'beforeFacetInitialization',
+                builders
+            );
         },
 
         /**
@@ -611,7 +618,7 @@ define([
         },
 
         /**
-         * Preserved for backward compat but uses Universal Analytics which was sunsetted July 1, 2023
+         * @deprecated Preserved for backward compat but this widget uses Universal Analytics which was sunsetted July 1, 2023
          * TODO: Introduce GA4
          */
         getAnalyticsWidget() {

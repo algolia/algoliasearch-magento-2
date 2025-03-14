@@ -121,7 +121,7 @@ define([
          * @returns {*}
          */
         configureFacets(allWidgetConfiguration) {
-            const customFacetBuilders = this.getCustomFacetBuilders();
+            const customFacetBuilders = this.getCustomAttributeFacetBuilders();
 
             const wrapper = document.getElementById('instant-search-facets-container');
             algoliaConfig.facets.forEach(
@@ -149,10 +149,198 @@ define([
             return allWidgetConfiguration;
         },
 
+
+        /**
+         * This is a generic facet builder that builds a widget config by facet *type*
+         * (Defined facet types are Magento specific and not valid InstantSearch widget types)
+         *
+         * Function must return an array [<widget name>: string, <widget options>: object]
+         * (Same objects in array returned by implementations of `getCustomAttributeFacetBuilders()`)
+         *
+         * @param facet
+         * @returns {[string,Object]} The second element in the array is a config for a facet
+         *     The config contains widget specific details + `panelOptions`
+         *     (As is this is not a valid IS widget config and must be processed further)
+         *
+         * @see getCustomAttributeFacetBuilders
+         */
+        getFacetConfig(facet) {
+            switch (facet.type) {
+                case 'priceRanges':
+                    return this.getRangeInputFacetConfig(facet);
+                case 'conjunctive':
+                    return this.getConjunctiveFacetConfig(facet);
+                case 'disjunctive':
+                    return this.getDisjunctiveFacetConfig(facet);
+                case 'slider':
+                    return this.getRangeSliderFacetConfig(facet);
+            }
+
+            throw new Error(`[Algolia] Invalid facet widget type: ${facet.type}`);
+        },
+
+        /**
+         * @deprecated This method has been renamed - as the method does not return a true widget
+         *             but rather an integration specific config structure that also contains `panelOptions`
+         *
+         *             The `templates` parameter is also now no longer used
+         * @see getFacetConfig
+         */
+        getFacetWidget(facet, _templates) {
+            return this.getFacetConfig(facet);
+        },
+
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-input/js/
+         */
+        getRangeInputFacetConfig(facet) {
+            return [
+                'rangeInput',
+                {
+                    container   : facet.wrapper.appendChild(
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
+                    ),
+                    attribute   : facet.attribute,
+                    templates   : {
+                        separatorText: algoliaConfig.translations.to,
+                        submitText   : algoliaConfig.translations.go,
+                    },
+                    cssClasses  : {
+                        root: 'conjunctive',
+                    },
+                    panelOptions: this.getPricingFacetPanelOptions(facet)
+                },
+            ];
+        },
+
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-slider/js/
+         */
+        getRangeSliderFacetConfig(facet) {
+            return [
+                'rangeSlider',
+                {
+                    container   : facet.wrapper.appendChild(
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
+                    ),
+                    attribute   : facet.attribute,
+                    pips        : false,
+                    panelOptions: this.getPricingFacetPanelOptions(facet),
+                    tooltips    : {
+                        format(value) {
+                            return facet.attribute.match(/price/) === null
+                                ? parseInt(value)
+                                : priceUtils.formatPrice(
+                                    value,
+                                    algoliaConfig.priceFormat
+                                );
+                        },
+                    },
+                },
+            ];
+        },
+
+        getPricingFacetPanelOptions(facet) {
+            return {
+                templates: this.getDefaultFacetPanelTemplates(facet),
+                hidden(options) {
+                    return options.range.min === options.range.max;
+                }
+            }
+        },
+
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/refinement-list/js/
+         */
+        getConjunctiveFacetConfig(facet) {
+            const defaultOptions = this.getRefinementListOptions(facet);
+
+            const refinementListOptions = {
+                ...defaultOptions,
+                operator    : 'and',
+                cssClasses  : {
+                    root: 'conjunctive',
+                }
+            };
+
+            return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
+        },
+
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/refinement-list/js/
+         */
+        getDisjunctiveFacetConfig(facet) {
+            const defaultOptions = this.getRefinementListOptions(facet);
+
+            const refinementListOptions = {
+                ...defaultOptions,
+                operator    : 'or',
+                cssClasses  : {
+                    root: 'disjunctive',
+                }
+            }
+
+            return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
+        },
+
+        getRefinementListOptions(facet) {
+            return {
+                container   : facet.wrapper.appendChild(
+                    algoliaCommon.createISWidgetContainer(facet.attribute)
+                ),
+                attribute   : facet.attribute,
+                limit       : algoliaConfig.maxValuesPerFacet,
+                templates   : this.getRefinementsListTemplates(),
+                sortBy      : ['count:desc', 'name:asc'],
+                panelOptions: this.getRefinementFacetPanelOptions(facet)
+            };
+        },
+
+        getRefinementFacetPanelOptions(facet) {
+            return  {
+                templates: this.getDefaultFacetPanelTemplates(facet),
+                hidden: (options) => {
+                    if (!options.results) return true;
+
+                    const facetSearch = f => f.name === facet.attribute;
+
+                    switch (facet.type) {
+                        case 'conjunctive':
+                            return !options.results.facets.find(facetSearch);
+                        case 'disjunctive':
+                            return !options.results.disjunctiveFacets.find(facetSearch);
+                        default:
+                            return false;
+                    }
+                },
+            };
+        },
+
+        getDefaultFacetPanelTemplates(facet) {
+            return {
+                header: `<div class="name">${facet.label || facet.attribute}</div>`,
+            };
+        },
+
+
+        addSearchForFacetValues(facet, options) {
+            if (facet.searchable === '1') {
+                options.searchable = true;
+                options.searchableIsAlwaysActive = false;
+                options.searchablePlaceholder =
+                    algoliaConfig.translations.searchForFacetValuesPlaceholder;
+                options.templates = options.templates || {};
+                options.templates.searchableNoResults =
+                    `<div class="sffv-no-results">${algoliaConfig.translations.noResults}</div>`;
+            }
+
+            return options;
+        },
+
         /**
          * @returns {{item: string}}
          */
-        getRefinementsListTemplate() {
+        getRefinementsListTemplates() {
             return {
                 item: this.getTemplateContentsFromDOM('#refinements-lists-item-template')
             };
@@ -160,6 +348,9 @@ define([
 
         /**
          * Here are specified custom attributes widgets which require special code to run properly
+         * The facet builder returns by *attribute*
+         * Generic facets by *type* are built by getFacetConfig()
+         *
          * Custom widgets can be added to this object like [attribute]: function(facet)
          * Function must return an array [<widget name>: string, <widget options>: object]
          * (Same as getFacetConfig() which handles generic facets)
@@ -171,7 +362,7 @@ define([
          * @returns {Object<string, function>}
          * @see getFacetConfig
          */
-        getCustomFacetBuilders() {
+        getCustomAttributeFacetBuilders() {
             const builders = {
                 categories: this.getCategoriesFacetConfigBuilder()
             };
@@ -671,7 +862,10 @@ define([
             };
         },
 
-        // Capture active redirect URL with IS facet params for add to cart from PLP
+        /**
+         * Capture active redirect URL with IS facet params for add to cart from PLP
+         * @param search
+         */
         handleAddToCart(search) {
             search.on('render', () => {
                 const cartForms = document.querySelectorAll(
@@ -991,173 +1185,7 @@ define([
         },
 
         /**
-         * Function must return an array [<widget name>: string, <widget options>: object]
-         * (Same objects in array returned by implementations of getCustomFacetBuilders())
-         *
-         * @param facet
-         * @param templates
-         * @returns {[string,Object]} The second element in the array is a config for a facet
-         *     The config contains widget specific details along additional info
-         *     such as panelOptions (this is not a valid IS widget config and must be processed further)
-         *
-         * @see getCustomFacetBuilders
-         */
-        getFacetConfig(facet) {
-            const panelOptions = this.getFacetPanelOptions(facet);
-
-            switch (facet.type) {
-                case 'priceRanges':
-                    return this.getRangeInputFacetConfig(facet, panelOptions);
-                case 'conjunctive':
-                    return this.getConjunctiveFacetConfig(facet, panelOptions);
-                case 'disjunctive':
-                    return this.getDisjunctiveFacetConfig(facet, panelOptions);
-                case 'slider':
-                    return this.getRangeSliderFacetConfig(facet);
-            }
-
-            throw new Error(`[Algolia] Invalid facet widget type: ${facet.type}`);
-        },
-
-        /**
-         * @deprecated This method has been renamed - as the method does not return a true widget
-         *             but rather an integration specific config structure
-         */
-        getFacetWidget(facet, templates) {
-            return this.getFacetConfig(facet);
-        },
-
-        /**
-         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-input/js/
-         */
-        getRangeInputFacetConfig(facet, panelOptions) {
-            return [
-                'rangeInput',
-                {
-                    container   : facet.wrapper.appendChild(
-                        algoliaCommon.createISWidgetContainer(facet.attribute)
-                    ),
-                    attribute   : facet.attribute,
-                    templates   : {
-                        separatorText: algoliaConfig.translations.to,
-                        submitText   : algoliaConfig.translations.go,
-                    },
-                    cssClasses  : {
-                        root: 'conjunctive',
-                    },
-                    panelOptions
-                },
-            ];
-        },
-
-        /**
-         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-slider/js/
-         */
-        getRangeSliderFacetConfig(facet) {
-            const panelOptions = {
-                templates: this.getDefaultFacetPanelTemplates(facet),
-                hidden(options) {
-                    return options.range.min === 0 && options.range.max === 0;
-                },
-            };
-            return [
-                'rangeSlider',
-                {
-                    container   : facet.wrapper.appendChild(
-                        algoliaCommon.createISWidgetContainer(facet.attribute)
-                    ),
-                    attribute   : facet.attribute,
-                    pips        : false,
-                    panelOptions,
-                    tooltips    : {
-                        format(value) {
-                            return facet.attribute.match(/price/) === null
-                                ? parseInt(value)
-                                : priceUtils.formatPrice(
-                                    value,
-                                    algoliaConfig.priceFormat
-                                );
-                        },
-                    },
-                },
-            ];
-        },
-
-        getRefinementListOptions(facet, panelOptions) {
-            return {
-                container   : facet.wrapper.appendChild(
-                    algoliaCommon.createISWidgetContainer(facet.attribute)
-                ),
-                attribute   : facet.attribute,
-                limit       : algoliaConfig.maxValuesPerFacet,
-                templates   : this.getRefinementsListTemplate(),
-                sortBy      : ['count:desc', 'name:asc'],
-                panelOptions
-            };
-        },
-
-        /**
-         * Docs: https://www.algolia.com/doc/api-reference/widgets/refinement-list/js/
-         */
-        getConjunctiveFacetConfig(facet, panelOptions) {
-            const defaultOptions = this.getRefinementListOptions(facet, panelOptions);
-
-            const refinementListOptions = {
-                ...defaultOptions,
-                operator    : 'and',
-                cssClasses  : {
-                    root: 'conjunctive',
-                }
-            };
-
-            return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
-        },
-
-        /**
-         * Docs: https://www.algolia.com/doc/api-reference/widgets/refinement-list/js/
-         */
-        getDisjunctiveFacetConfig(facet, panelOptions) {
-            const defaultOptions = this.getRefinementListOptions(facet, panelOptions);
-
-            const refinementListOptions = {
-                ...defaultOptions,
-                operator    : 'or',
-                cssClasses  : {
-                    root: 'disjunctive',
-                }
-            }
-
-            return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
-        },
-
-        getDefaultFacetPanelTemplates(facet) {
-            return {
-                header: `<div class="name">${facet.label || facet.attribute}</div>`,
-            };
-        },
-
-        getFacetPanelOptions(facet) {
-            return  {
-                templates: this.getDefaultFacetPanelTemplates(facet),
-                hidden: (options) => {
-                    if (!options.results) return true;
-
-                    const facetSearch = f => f.name === facet.attribute;
-
-                    switch (facet.type) {
-                        case 'conjunctive':
-                            return !options.results.facets.find(facetSearch);
-                        case 'disjunctive':
-                            return !options.results.disjunctiveFacets.find(facetSearch);
-                        default:
-                            return false;
-                    }
-                },
-            };
-        },
-
-        /**
-         * Process a passed config object and add to InstantSearch
+         * Process a passed widget config object and add to InstantSearch
          *
          * @param search
          * @param type
@@ -1176,22 +1204,7 @@ define([
                 delete config.panelOptions;
             }
 
-            // TODO: Assumes panel widget - problematic
             search.addWidgets([widget(config)]);
-        },
-
-        addSearchForFacetValues(facet, options) {
-            if (facet.searchable === '1') {
-                options.searchable = true;
-                options.searchableIsAlwaysActive = false;
-                options.searchablePlaceholder =
-                    algoliaConfig.translations.searchForFacetValuesPlaceholder;
-                options.templates = options.templates || {};
-                options.templates.searchableNoResults =
-                    `<div class="sffv-no-results">${algoliaConfig.translations.noResults}</div>`;
-            }
-
-            return options;
         },
 
         addMobileRefinementsToggle() {

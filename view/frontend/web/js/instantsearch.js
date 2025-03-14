@@ -1013,7 +1013,7 @@ define([
                 case 'disjunctive':
                     return this.getDisjunctiveFacetConfig(facet, panelOptions);
                 case 'slider':
-                    return this.getRangeSliderFacetConfig(facet, panelOptions);
+                    return this.getRangeSliderFacetConfig(facet);
             }
 
             throw new Error(`[Algolia] Invalid facet widget type: ${facet.type}`);
@@ -1050,6 +1050,39 @@ define([
             ];
         },
 
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-slider/js/
+         */
+        getRangeSliderFacetConfig(facet) {
+            const panelOptions = {
+                templates: this.getDefaultFacetPanelTemplates(facet),
+                hidden(options) {
+                    return options.range.min === 0 && options.range.max === 0;
+                },
+            };
+            return [
+                'rangeSlider',
+                {
+                    container   : facet.wrapper.appendChild(
+                        algoliaCommon.createISWidgetContainer(facet.attribute)
+                    ),
+                    attribute   : facet.attribute,
+                    pips        : false,
+                    panelOptions,
+                    tooltips    : {
+                        format(value) {
+                            return facet.attribute.match(/price/) === null
+                                ? parseInt(value)
+                                : priceUtils.formatPrice(
+                                    value,
+                                    algoliaConfig.priceFormat
+                                );
+                        },
+                    },
+                },
+            ];
+        },
+
         getRefinementListOptions(facet, panelOptions) {
             return {
                 container   : facet.wrapper.appendChild(
@@ -1059,7 +1092,7 @@ define([
                 limit       : algoliaConfig.maxValuesPerFacet,
                 templates   : this.getRefinementsListTemplate(),
                 sortBy      : ['count:desc', 'name:asc'],
-                panelOptions: panelOptions,
+                panelOptions
             };
         },
 
@@ -1097,38 +1130,15 @@ define([
             return ['refinementList', this.addSearchForFacetValues(facet, refinementListOptions)];
         },
 
-        /**
-         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-slider/js/
-         */
-        getRangeSliderFacetConfig(facet, panelOptions) {
-            return [
-                'rangeSlider',
-                {
-                    container   : facet.wrapper.appendChild(
-                        algoliaCommon.createISWidgetContainer(facet.attribute)
-                    ),
-                    attribute   : facet.attribute,
-                    pips        : false,
-                    panelOptions,
-                    tooltips    : {
-                        format(value) {
-                            return facet.attribute.match(/price/) === null
-                                ? parseInt(value)
-                                : priceUtils.formatPrice(
-                                    value,
-                                    algoliaConfig.priceFormat
-                                );
-                        },
-                    },
-                },
-            ];
+        getDefaultFacetPanelTemplates(facet) {
+            return {
+                header: `<div class="name">${facet.label || facet.attribute}</div>`,
+            };
         },
 
         getFacetPanelOptions(facet) {
             return  {
-                templates: {
-                    header: `<div class="name">${facet.label || facet.attribute}</div>`,
-                },
+                templates: this.getDefaultFacetPanelTemplates(facet),
                 hidden: (options) => {
                     if (!options.results) return true;
 
@@ -1165,16 +1175,8 @@ define([
                 );
                 delete config.panelOptions;
             }
-            if (type === 'rangeSlider' && config.attribute.indexOf('price.') < 0) {
-                config.panelOptions = {
-                    hidden(options) {
-                        return options.range.min === 0 && options.range.max === 0;
-                    },
-                };
-                widget = instantsearch.widgets.panel(config.panelOptions)(widget);
-                delete config.panelOptions;
-            }
 
+            // TODO: Assumes panel widget - problematic
             search.addWidgets([widget(config)]);
         },
 

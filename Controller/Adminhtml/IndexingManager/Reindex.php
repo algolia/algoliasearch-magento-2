@@ -67,7 +67,7 @@ class Reindex extends Action
             $entities = $this->isFullIndex($params) ?
                 ['products', 'categories', 'pages'] :
                 [$params["entity"]];
-        } else if ($this->isComingFromGrid($params)) {
+        } else if ($this->isMassAction($params)) {
             $entities = match ($params["namespace"]) {
                 'product_listing' => ['products'],
                 'cms_page_listing' => ['pages'],
@@ -90,7 +90,7 @@ class Reindex extends Action
             return $params["redirect"];
         }
 
-        if ($this->isComingFromGrid($params)) {
+        if ($this->isMassAction($params)) {
             $redirect = match ($params["namespace"]) {
                 'product_listing' => 'catalog/product/index',
                 'cms_page_listing' => 'cms/page/index',
@@ -118,7 +118,7 @@ class Reindex extends Action
      * @param array $params
      * @return bool
      */
-    protected function isComingFromGrid(array $params): bool
+    protected function isMassAction(array $params): bool
     {
         return isset($params["namespace"]);
     }

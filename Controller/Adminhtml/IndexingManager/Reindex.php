@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Backend\App\Action;
@@ -41,7 +42,7 @@ class Reindex extends Action
     public function execute()
     {
         $params = $this->getRequest()->getParams();
-        $storeIds = !isset($params["store_id"]) || $params["store_id"] === '0' ?
+        $storeIds = !isset($params["store_id"]) || $params["store_id"] === (string) AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE ?
             array_keys($this->storeManager->getStores()) :
             [(int) $params["store_id"]];
 
@@ -63,10 +64,10 @@ class Reindex extends Action
     {
         $entities = [];
         if (isset($params["entity"])) {
-            $entities = $params["entity"] === 'all' ?
+            $entities = $this->isFullIndex($params) ?
                 ['products', 'categories', 'pages'] :
                 [$params["entity"]];
-        } else if (isset($params["namespace"])) {
+        } else if ($this->isComingFromGrid($params)) {
             $entities = match ($params["namespace"]) {
                 'product_listing' => ['products'],
                 'cms_page_listing' => ['pages'],
@@ -89,7 +90,7 @@ class Reindex extends Action
             return $params["redirect"];
         }
 
-        if (isset($params["namespace"])) {
+        if ($this->isComingFromGrid($params)) {
             $redirect = match ($params["namespace"]) {
                 'product_listing' => 'catalog/product/index',
                 'cms_page_listing' => 'cms/page/index',
@@ -98,6 +99,28 @@ class Reindex extends Action
         }
 
         return $redirect;
+    }
+
+    /**
+     * Defines if all entities need to be reindex
+     *
+     * @param array $params
+     * @return bool
+     */
+    protected function isFullIndex(array $params): bool
+    {
+        return isset($params["entity"]) && $params["entity"] === 'all';
+    }
+
+    /**
+     * Check if the request is coming from a grid (products or pages)
+     *
+     * @param array $params
+     * @return bool
+     */
+    protected function isComingFromGrid(array $params): bool
+    {
+        return isset($params["namespace"]);
     }
 
     /**

@@ -52,7 +52,7 @@ abstract class AbstractReindexAllButton implements ButtonProviderInterface
         $url = $this->context->getUrlBuilder()->getUrl('algolia_algoliasearch/indexingmanager/reindex');
 
         return [
-            'label'      => __('Reindex All items to Algolia'),
+            'label'      => __('Reindex All ' . ucfirst($this->getEntity()) . ' to Algolia'),
             'class'      => 'algolia_reindex_all',
             'on_click'   => "deleteConfirm('{$message}', '{$url}', {data:{'entity':'{$entity}', 'redirect': '{$redirectPath}'}})",
             'sort_order' => 5,

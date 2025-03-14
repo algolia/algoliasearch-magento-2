@@ -244,7 +244,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             ],
             'extensionVersion' => $config->getExtensionVersion(),
             'applicationId' => $config->getApplicationID(),
+            // Legacy misnomer - retained for backward compatibility
             'indexName' => $coreHelper->getBaseIndexName(),
+            'baseIndexName' => $coreHelper->getBaseIndexName(),
             'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
                 $config->getSearchOnlyAPIKey(),
                 $attributesToFilter,

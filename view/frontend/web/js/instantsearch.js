@@ -28,7 +28,22 @@ define([
         minQuerySuggestions: 4,
 
         /**
-         * Initialize search results using Algolia's InstantSearch.js library v4
+         * Load and display search results using Algolia's InstantSearch.js library v4
+         *
+         * This is the main entry point for building the Magento InstantSearch experience.
+         *
+         * Rough overview of build process:
+         *
+         * - Initializes dependencies
+         * - Creates the DOM elements where InstantSearch widgets will be inserted on the PLP
+         * - Creates the InstantSearch object with configured options
+         * - All widgets are preconfigured using the `allWidgetConfiguration` object
+         *      - This object houses all widgets to be displayed in the frontend experience and is important for customization
+         *      - Passed to `beforeWidgetInitialization` hook
+         *      - Implementation is specific to Magento index object data structure
+         * - Loads `allWidgetConfiguration` into InstantSearch
+         * - Starts InstantSearch which adds the widgets to the DOM and performs first search
+         *
          * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/
          */
         async buildInstantSearch() {
@@ -150,6 +165,8 @@ define([
          * (Same as getFacetConfig() which handles generic facets)
          *
          * Any facet builders returned by this function will take precedence over getFacetConfig()
+         *
+         * Triggers the hook: beforeFacetInitialization
          *
          * @returns {Object<string, function>}
          * @see getFacetConfig
@@ -386,6 +403,10 @@ define([
         },
 
         /**
+         * Loads refinements management capabilities
+         * i.e. As refinements are applied to search results via faceting,
+         * this feature allows you to selectively remove one or all refinements.
+         *
          * @param allWidgetConfiguration
          * @returns {*}
          */
@@ -667,6 +688,15 @@ define([
             });
         },
 
+        /**
+         * Load the supplied widget configuration into InstantSearch
+         *
+         * Triggers the hook: beforeWidgetInitialization
+         *
+         * @param search
+         * @param allWidgetConfiguration
+         * @param mockAlgoliaBundle
+         */
         initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle) {
             allWidgetConfiguration = algoliaCommon.triggerHooks(
                 'beforeWidgetInitialization',
@@ -690,6 +720,11 @@ define([
         },
 
         /**
+         * Get the configuration options for creating the InstantSearch object
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/#options
+         *
+         * Triggers the hook: beforeInstantsearchInit
+         *
          * @param mockAlgoliaBundle to be removed in a future release
          * @returns {*}
          */
@@ -705,6 +740,9 @@ define([
             );
         },
 
+        /**
+         * NOTE: The initial (relevant) sort is based on the main index
+         */
         prepareSortingIndices() {
             algoliaConfig.sortingIndices.unshift({
                 name : this.getProductIndexName(),
@@ -796,7 +834,8 @@ define([
         },
 
         /**
-         * Build wrapper DOM object to contain InstantSearch
+         * Build wrapper DOM object to contain InstantSearch widgets
+         *
          * @param templateProcessor
          */
         setupWrapper(templateProcessor) {
@@ -921,6 +960,18 @@ define([
             return attributes;
         },
 
+        /**
+         * Starts InstantSearch which adds all pre-loaded widgets to the DOM and triggers the first search
+         *
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/#widget-param-start
+         *
+         * Triggers the hooks:
+         *  - beforeInstantsearchStart
+         *  - afterInstantsearchStart
+         *
+         * @param search
+         * @param mockAlgoliaBundle
+         */
         startInstantSearch(search, mockAlgoliaBundle) {
             if (this.isStarted) {
                 return;
@@ -976,6 +1027,9 @@ define([
             return this.getFacetConfig(facet);
         },
 
+        /**
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/range-input/js/
+         */
         getRangeInputFacetConfig(facet, panelOptions) {
             return [
                 'rangeInput',
@@ -1055,7 +1109,7 @@ define([
                     ),
                     attribute   : facet.attribute,
                     pips        : false,
-                    panelOptions: panelOptions,
+                    panelOptions,
                     tooltips    : {
                         format(value) {
                             return facet.attribute.match(/price/) === null

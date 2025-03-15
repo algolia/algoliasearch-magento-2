@@ -208,16 +208,20 @@ define([
 
             const configuredWidget = widget(config);
 
-            if (algoliaConfig.instant.isDynamicWidgetsEnabled ?? true) { //TODO: Implement this config
-                if (this.isDynamicWidgetsEligible(type)) {
-                    this.dynamicWidgets.push(configuredWidget);
-                    return;
-                }
+            if (algoliaConfig.instant.isDynamicFacetsEnabled && this.isDynamicFacetsEligible(type)) {
+                this.dynamicWidgets.push(configuredWidget);
+                return;
             }
 
             search.addWidgets([configuredWidget]);
         },
 
+        /**
+         * Assigns designated facets to InstantSearch dynamicWidgets
+         *
+         * Docs: https://www.algolia.com/doc/api-reference/widgets/dynamic-facets/js/
+         * @param search
+         */
         initializeDynamicWidgets(search) {
             const { dynamicWidgets } = instantsearch.widgets;
             search.addWidget(
@@ -235,7 +239,7 @@ define([
          * @param widgetType
          * @returns {boolean}
          */
-        isDynamicWidgetsEligible(widgetType) {
+        isDynamicFacetsEligible(widgetType) {
             return [
                 'refinementList',
                 'menu',
@@ -467,7 +471,7 @@ define([
         /**
          * Add all facet widgets to allWidgetConfiguration
          * This is dynamically driven by the Magento facet configuration
-         * Invokes facet builder function by attribute or type (where attribute builders take precendence)
+         * Invokes facet builder function by attribute or type (where attribute builders take precedence)
          * The builders are responsible for flushing out the widget configuration for each facet
          *
          * @param allWidgetConfiguration

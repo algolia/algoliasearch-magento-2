@@ -434,6 +434,21 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="enable_dynamic_facets" translate="label comment" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable dynamic facets</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            While the rendering of facets is configured based on your Magento admin settings, it is possible to override
+                            these settings via merchandising rules in Algolia. Enable "dynamic facets" to allow InstantSearch
+                            to render facets based on the rule conditions you define in either the Algolia Dashboard or Merchandising Studio.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_instant_enabled">1</field>
+                    </depends>
+                </field>
                 <depends>
                     <field id="algoliasearch_instant/instant/is_instant_enabled">1</field>
                 </depends>

@@ -1377,6 +1377,7 @@ class ConfigHelper
     /**
      * @param $storeId
      * @return bool
+     * @deprecated This feature is deprecated and will be replaced in an upcoming version
      */
     public function preventBackendRendering($storeId = null)
     {

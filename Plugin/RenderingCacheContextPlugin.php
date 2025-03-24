@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Plugin;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\App\Request\Http;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -15,7 +16,7 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class RenderingCacheContextPlugin
 {
-    public const RENDERING_CONTEXT = 'rendering_context';
+    public const RENDERING_CONTEXT = 'algolia_rendering_context';
     public const RENDERING_WITH_BACKEND = 'with_backend';
     public const RENDERING_WITHOUT_BACKEND = 'without_backend';
 
@@ -34,29 +35,31 @@ class RenderingCacheContextPlugin
     }
 
     /**
-     * Add Rendering context for caching purposes
-     * (If the prevent rendering configuration is enabled and the user agent has no white card to display it,
+     * Add a rendering context to the vary string to distinguish how which versions of the category PLP should be cached
+     * (If the "prevent backend rendering" configuration is enabled and the user agent is not whitelisted to display it,
      * we set a different page variation, and the FPC stores a different cached page)
      *
      * @param HttpContext $subject
-     * @param string[] $data
      *
-     * @return array
+     * @return array original params
+     * @throws NoSuchEntityException
      */
-    public function afterGetData(HttpContext $subject, $data)
-    {
+    public function beforeGetVaryString(HttpContext $subject): array {
         $storeId = $this->storeManager->getStore()->getId();
-        if (!($this->request->getControllerName() === 'category'
-            && $this->configHelper->replaceCategories($storeId) === true)) {
-            return $data;
+        if ($this->request->getControllerName() != 'category' || !$this->configHelper->replaceCategories($storeId)) {
+            return [];
         }
 
         $context = $this->configHelper->preventBackendRendering() ?
             self::RENDERING_WITHOUT_BACKEND :
             self::RENDERING_WITH_BACKEND;
 
-        $data[self::RENDERING_CONTEXT] = $context;
+        $subject->setValue(
+            self::RENDERING_CONTEXT,
+            $context,
+            $context
+        );
 
-        return $data;
+        return [];
     }
 }

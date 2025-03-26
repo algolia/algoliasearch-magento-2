@@ -80,6 +80,7 @@ class RenderingCacheContextPlugin
      * @return bool
      */
     protected function isCategoryRoute(string $path): bool {
+        $path = ltrim($path, '/');
         return str_starts_with($path, self::CATEGORY_ROUTE);
     }
 

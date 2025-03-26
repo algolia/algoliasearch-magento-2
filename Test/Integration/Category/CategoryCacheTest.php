@@ -2,11 +2,11 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Category;
 
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Cache\Manager as CacheManager;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Response\Http as ResponseHttp;
 use Magento\Framework\App\ResponseInterface;
-use Magento\Framework\Data\Form\FormKey;
-use Magento\TestFramework\Helper\Bootstrap;
+use Magento\Store\Model\ScopeInterface;
 
 class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractController
 {
@@ -25,13 +25,15 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
     protected function setUp(): void
     {
         parent::setUp();
-        $this->cacheManager = $this->_objectManager->get(\Magento\Framework\App\Cache\Manager::class);
+        $this->cacheManager = $this->_objectManager->get(CacheManager::class);
     }
 
     /**
      * @dataProvider getCategoryProvider
      * @depends      testFullPageCacheAvailable
-     * @magentoConfigFixture default/system/full_page_cache/caching_application 1
+     * @magentoConfigFixture current_store system/full_page_cache/caching_application 1
+     * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 0
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoCache full_page enabled
      * @param int $categoryId
      * @param string $name
@@ -39,6 +41,10 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
      */
     public function testCategoryPlpMiss(int $categoryId, string $name): void
     {
+        $config = $this->_objectManager->get(ScopeConfigInterface::class);
+        $replace = $config->getValue('algoliasearch_instant/instant/replace_categories', ScopeInterface::SCOPE_STORE);
+        $this->assertEquals(1, $replace,"Replace categories must be enabled for this test.");
+
         $this->cacheManager->clean(['full_page']);
         $this->dispatch($this->url . $categoryId);
         $response = $this->getResponse();
@@ -70,7 +76,9 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
      *
      * @dataProvider getCategoryProvider
      * @depends      testCategoryPlpMiss
-     * @magentoConfigFixture default/system/full_page_cache/caching_application 1
+     * @magentoConfigFixture current_store system/full_page_cache/caching_application 1
+     * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 0
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoCache full_page enabled
      * @param int $categoryId
      * @param string $name

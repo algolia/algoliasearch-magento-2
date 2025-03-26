@@ -20,19 +20,11 @@ class RenderingCacheContextPlugin
     public const RENDERING_WITH_BACKEND = 'with_backend';
     public const RENDERING_WITHOUT_BACKEND = 'without_backend';
 
-    private $configHelper;
-    private $storeManager;
-    private $request;
-
     public function __construct(
-        ConfigHelper $configHelper,
-        StoreManagerInterface $storeManager,
-        Http $request
-    ) {
-        $this->configHelper = $configHelper;
-        $this->storeManager = $storeManager;
-        $this->request = $request;
-    }
+        protected ConfigHelper $configHelper,
+        protected StoreManagerInterface $storeManager,
+        protected Http $request
+    ) { }
 
     /**
      * Add a rendering context to the vary string to distinguish how which versions of the category PLP should be cached
@@ -45,8 +37,7 @@ class RenderingCacheContextPlugin
      * @throws NoSuchEntityException
      */
     public function beforeGetVaryString(HttpContext $subject): array {
-        $storeId = $this->storeManager->getStore()->getId();
-        if ($this->request->getControllerName() != 'category' || !$this->configHelper->replaceCategories($storeId)) {
+        if (!$this->applyCacheContext()) {
             return [];
         }
 
@@ -61,5 +52,15 @@ class RenderingCacheContextPlugin
         );
 
         return [];
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    protected function applyCacheContext(): bool
+    {
+        $storeId = $this->storeManager->getStore()->getId();
+        return $this->request->getControllerName() == 'category' && $this->configHelper->replaceCategories($storeId);
     }
 }

@@ -7,6 +7,7 @@ use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\UrlRewrite\Model\UrlFinderInterface;
 
 /**
  * The purpose of this class is to render different cached versions of the pages according to the user agent.
@@ -23,7 +24,8 @@ class RenderingCacheContextPlugin
     public function __construct(
         protected ConfigHelper $configHelper,
         protected StoreManagerInterface $storeManager,
-        protected Http $request
+        protected Http $request,
+        protected UrlFinderInterface $urlFinder
     ) { }
 
     /**
@@ -37,7 +39,7 @@ class RenderingCacheContextPlugin
      * @throws NoSuchEntityException
      */
     public function beforeGetVaryString(HttpContext $subject): array {
-        if (!$this->applyCacheContext()) {
+        if (!$this->shouldApplyCacheContext()) {
             return [];
         }
 
@@ -55,12 +57,38 @@ class RenderingCacheContextPlugin
     }
 
     /**
+     * @param int $storeId
+     * @return string
+     */
+    protected function getOriginalRoute(int $storeId): string
+    {
+        $requestUri = $this->request->getRequestUri();
+
+        $rewrite = $this->urlFinder->findOneByData([
+            'request_path' => ltrim($requestUri, '/'),
+            'store_id'     => $storeId,
+        ]);
+
+        return $rewrite?->getTargetPath() ?? "";
+    }
+
+    /**
+     * @param int $storeId
+     * @return bool
+     */
+    protected function isCategoryPage(int $storeId): bool
+    {
+        $controller = $this->request->getControllerName();
+        return $controller === 'category' || str_starts_with($this->getOriginalRoute($storeId), 'catalog/category');
+    }
+
+    /**
      * @return bool
      * @throws NoSuchEntityException
      */
-    protected function applyCacheContext(): bool
+    protected function shouldApplyCacheContext(): bool
     {
         $storeId = $this->storeManager->getStore()->getId();
-        return $this->request->getControllerName() == 'category' && $this->configHelper->replaceCategories($storeId);
+        return $this->isCategoryPage($storeId) && $this->configHelper->replaceCategories($storeId);
     }
 }

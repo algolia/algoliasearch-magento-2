@@ -21,6 +21,9 @@ class RenderingCacheContextPlugin
     public const RENDERING_WITH_BACKEND = 'with_backend';
     public const RENDERING_WITHOUT_BACKEND = 'without_backend';
 
+    public const CATEGORY_CONTROLLER = 'category';
+    public const CATEGORY_ROUTE = 'catalog/category/view';
+
     public function __construct(
         protected ConfigHelper $configHelper,
         protected StoreManagerInterface $storeManager,
@@ -29,31 +32,31 @@ class RenderingCacheContextPlugin
     ) { }
 
     /**
-     * Add a rendering context to the vary string to distinguish how which versions of the category PLP should be cached
+     * Add a rendering context to the vary string data to distinguish which versions of the category PLP should be cached
      * (If the "prevent backend rendering" configuration is enabled and the user agent is not whitelisted to display it,
      * we set a different page variation, and the FPC stores a different cached page)
      *
-     * @param HttpContext $subject
+     * IMPORTANT:
+     * Magento\Framework\App\Http\Context::getData can be called multiple times over the course of the request lifecycle
+     * it is important that this plugin return the data consistently - or the cache will be invalidated unexpectedly!
      *
+     * @param HttpContext $subject
+     * @param array $data
      * @return array original params
      * @throws NoSuchEntityException
      */
-    public function beforeGetVaryString(HttpContext $subject): array {
+    public function afterGetData(HttpContext $subject, array $data): array {
         if (!$this->shouldApplyCacheContext()) {
-            return [];
+            return $data;
         }
 
         $context = $this->configHelper->preventBackendRendering() ?
             self::RENDERING_WITHOUT_BACKEND :
             self::RENDERING_WITH_BACKEND;
 
-        $subject->setValue(
-            self::RENDERING_CONTEXT,
-            $context,
-            $context
-        );
+        $data[self::RENDERING_CONTEXT] = $context;
 
-        return [];
+        return $data;
     }
 
     /**
@@ -73,13 +76,24 @@ class RenderingCacheContextPlugin
     }
 
     /**
+     * @param string $path
+     * @return bool
+     */
+    protected function isCategoryRoute(string $path): bool {
+        return str_starts_with($path, self::CATEGORY_ROUTE);
+    }
+
+    /**
+     * This can be called in a variety of contexts - so this should always be called consistently
+     *
      * @param int $storeId
      * @return bool
      */
     protected function isCategoryPage(int $storeId): bool
     {
-        $controller = $this->request->getControllerName();
-        return $controller === 'category' || str_starts_with($this->getOriginalRoute($storeId), 'catalog/category');
+        return $this->request->getControllerName() === self::CATEGORY_CONTROLLER
+            || $this->isCategoryRoute($this->request->getRequestUri())
+            || $this->isCategoryRoute($this->getOriginalRoute($storeId));
     }
 
     /**

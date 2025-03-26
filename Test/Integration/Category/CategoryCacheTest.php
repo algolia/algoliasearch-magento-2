@@ -17,7 +17,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
     public static function getCategoryProvider(): array
     {
         return [
-            ['categoryId' => 20, 'name' => 'Women'], // not a category controller
+            ['categoryId' => 20, 'name' => 'Women'],
             ['categoryId' => 21, 'name' => 'Women > Tops'],
         ];
     }

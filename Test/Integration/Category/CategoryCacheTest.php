@@ -17,8 +17,8 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
     public static function getCategoryProvider(): array
     {
         return [
-            ['categoryId' => 20, 'name' => 'Ladies'],
-            ['categoryId' => 21, 'name' => 'Ladies Tops'],
+            ['categoryId' => 20, 'name' => 'Women'],
+            ['categoryId' => 21, 'name' => 'Women > Tops'],
         ];
     }
 
@@ -47,6 +47,11 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
             'MISS',
             $response->getHeader('X-Magento-Cache-Debug')->getFieldValue(),
             "expected MISS on category {$name} id {$categoryId}"
+        );
+        $this->assertContains(
+            'FPC',
+            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            "expected FPC tag on category {$name} id {$categoryId}"
         );
     }
 
@@ -109,17 +114,6 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
         $this->dispatch("catalog/category/view/id/{$categoryId}");
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
-    }
-
-    public function xtestCategoryPlpHit(int $categoryId, string $name): void
-    {
-        $this->dispatch("catalog/category/view/id/{$categoryId}");
-        $response = $this->getResponse();
-        $this->assertEquals(
-            'HIT',
-            $response->getHeader('X-Magento-Cache-Debug')->getFieldValue(),
-            "expected HIT on category {$name} id {$categoryId}"
-        );
     }
 
     public function testFullPageCacheAvailable(): void

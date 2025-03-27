@@ -38,17 +38,9 @@ class CategoryCacheTest extends AbstractController
         $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
     }
 
-    protected function resetCache($testMethod): void
-    {
-        if (!in_array($testMethod, self::$cacheResets)) {
-            $this->cacheManager->clean(['full_page']);
-            self::$cacheResets[] = $testMethod;
-        }
-    }
-
     public static function setUpBeforeClass(): void
     {
-        // self::reindexAll();
+         self::reindexAll();
     }
 
     /** You must index to OpenSearch to get the default backend render  */
@@ -67,6 +59,21 @@ class CategoryCacheTest extends AbstractController
 
         foreach ($indexerCodes as $indexerCode) {
             $indexerRegistry->get($indexerCode)->reindexAll();
+        }
+    }
+
+    /**
+     * Selectively refresh the FPC cache (must be done at intervals)
+     * Warm the cache via MISS tests but only reset the cache once per MISS test
+     * Due to data provider test methods can be called multiple times
+     * @param $testMethod
+     * @return void
+     */
+    protected function resetCache($testMethod): void
+    {
+        if (!in_array($testMethod, self::$cacheResets)) {
+            $this->cacheManager->clean(['full_page']);
+            self::$cacheResets[] = $testMethod;
         }
     }
 
@@ -101,40 +108,6 @@ class CategoryCacheTest extends AbstractController
             "expected FPC tag on category {$name} id {$categoryId}"
         );
         $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
-    }
-
-    /**
-     * The \Magento\TestFramework\TestCase\AbstractController::dispatch is flawed for this use case as it does not
-     * populate the URI which is used to build the cache key in \Magento\Framework\App\PageCache\Identifier::getValue
-     *
-     * This provides a workaround
-     *
-     * @param string $uri
-     * @return void
-     */
-    protected function dispatchHttpRequest(string $uri): void
-    {
-        $request = $this->_objectManager->get(\Magento\Framework\App\Request\Http::class);
-        $request->setDispatched(false);
-        $request->setUri($uri);
-        $request->setRequestUri($uri);
-        $this->_getBootstrap()->runApp();
-    }
-
-    /**
-     * It is imperative to always use the same URL format between MISS and HIT to ensure
-     * that the cache key is generated consistently
-     * @param int $categoryId
-     * @return string
-     */
-    protected function getCategoryUrl(int $categoryId): string
-    {
-        return $this->url . $categoryId;
-    }
-
-    protected function dispatchCategoryPlpRequest(int $categoryId): void
-    {
-        $this->dispatchHttpRequest($this->getCategoryUrl($categoryId));
     }
 
     /**
@@ -258,6 +231,77 @@ class CategoryCacheTest extends AbstractController
     }
 
     /**
+     * @dataProvider getCategoryProvider
+     * @depends      testCategoryPlpMissBackendRenderOff
+     * @magentoConfigFixture current_store system/full_page_cache/caching_application 1
+     * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 1
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
+     * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/backend_render_user_agents.php
+     * @magentoCache full_page enabled
+     * @param int $categoryId
+     * @param string $name
+     * @return void
+     */
+    public function testCategoryPlpHitBackendRenderWhiteList(int $categoryId, string $name): void
+    {
+        $config = $this->_objectManager->get(ScopeConfigInterface::class);
+        $preventBackend = $config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
+        $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
+
+        $testUserAgent = "Foobot";
+        $whitelist = $this->config->getValue('algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents', ScopeInterface::SCOPE_STORE);
+        $this->assertStringContainsString($testUserAgent, $whitelist, "Allowed user agents for backend render must include $testUserAgent");
+
+        $this->registerPageHitSpy();
+
+        $_SERVER['HTTP_USER_AGENT'] = $testUserAgent;
+
+        $this->dispatchCategoryPlpRequest($categoryId);
+        $response = $this->getResponse();
+        $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
+    }
+
+    public function testFullPageCacheAvailable(): void
+    {
+        $types = $this->cacheManager->getAvailableTypes();
+        $this->assertContains('full_page', $types);
+    }
+
+    /**
+     * The \Magento\TestFramework\TestCase\AbstractController::dispatch is flawed for this use case as it does not
+     * populate the URI which is used to build the cache key in \Magento\Framework\App\PageCache\Identifier::getValue
+     *
+     * This provides a workaround
+     *
+     * @param string $uri
+     * @return void
+     */
+    protected function dispatchHttpRequest(string $uri): void
+    {
+        $request = $this->_objectManager->get(\Magento\Framework\App\Request\Http::class);
+        $request->setDispatched(false);
+        $request->setUri($uri);
+        $request->setRequestUri($uri);
+        $this->_getBootstrap()->runApp();
+    }
+
+    /**
+     * It is imperative to always use the same URL format between MISS and HIT to ensure
+     * that the cache key is generated consistently
+     * @param int $categoryId
+     * @return string
+     */
+    protected function getCategoryUrl(int $categoryId): string
+    {
+        return $this->url . $categoryId;
+    }
+
+    protected function dispatchCategoryPlpRequest(int $categoryId): void
+    {
+        $this->dispatchHttpRequest($this->getCategoryUrl($categoryId));
+    }
+
+    /**
      *  The response object is modified differently by the BuiltinPlugin which prevents anything useful
      *  being returned by AbstractController::getResponse when a HIT is encountered
      *
@@ -300,12 +344,6 @@ class CategoryCacheTest extends AbstractController
             $cachePluginMock,
             $mockedPluginClass
         );
-    }
-
-    public function testFullPageCacheAvailable(): void
-    {
-        $types = $this->cacheManager->getAvailableTypes();
-        $this->assertContains('full_page', $types);
     }
 
 }

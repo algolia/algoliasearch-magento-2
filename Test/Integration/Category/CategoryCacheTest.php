@@ -17,7 +17,8 @@ class CategoryCacheTest extends AbstractController
 
     protected static $cacheResets = [];
 
-    protected $url = '/catalog/category/view/id/';
+    public const BASE_CATEGORY_URL = '/catalog/category/view/id/';
+    public const TEST_USER_AGENT = 'Foobot';
 
     public static function getCategoryProvider(): array
     {
@@ -88,8 +89,7 @@ class CategoryCacheTest extends AbstractController
      */
     public function testCategoryPlpMissBackendRenderOn(int $categoryId, string $name, bool $hasProducts): void
     {
-        $replace = $this->config->getValue('algoliasearch_instant/instant/replace_categories', ScopeInterface::SCOPE_STORE);
-        $this->assertEquals(1, $replace,"Replace categories must be enabled for this test.");
+        $this->assertReplaceCategories();
 
         $this->resetCache(__METHOD__);
         $this->dispatchCategoryPlpRequest($categoryId);
@@ -121,8 +121,7 @@ class CategoryCacheTest extends AbstractController
      */
     public function testCategoryPlpHitBackendRenderOn(int $categoryId, string $name): void
     {
-        $replace = $this->config->getValue('algoliasearch_instant/instant/replace_categories', ScopeInterface::SCOPE_STORE);
-        $this->assertEquals(1, $replace,"Replace categories must be enabled for this test.");
+        $this->assertReplaceCategories();
 
         $this->registerPageHitSpy();
 
@@ -141,8 +140,7 @@ class CategoryCacheTest extends AbstractController
      */
     public function testCategoryPlpMissBackendRenderOff(int $categoryId, string $name, bool $hasProducts): void
     {
-        $preventBackend = $this->config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
-        $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
+        $this->assertPreventBackend();
 
         $this->resetCache(__METHOD__);
         $this->dispatchCategoryPlpRequest($categoryId);
@@ -174,8 +172,7 @@ class CategoryCacheTest extends AbstractController
      */
     public function testCategoryPlpHitBackendRenderOff(int $categoryId, string $name): void
     {
-        $preventBackend = $this->config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
-        $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
+        $this->assertPreventBackend();
 
         $this->registerPageHitSpy();
 
@@ -196,14 +193,9 @@ class CategoryCacheTest extends AbstractController
      */
     public function testCategoryPlpMissBackendRenderWhiteList(int $categoryId, string $name, bool $hasProducts): void
     {
-        $preventBackend = $this->config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
-        $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
+        $this->assertPreventBackend();
 
-        $testUserAgent = "Foobot";
-        $whitelist = $this->config->getValue('algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents', ScopeInterface::SCOPE_STORE);
-        $this->assertStringContainsString($testUserAgent, $whitelist, "Allowed user agents for backend render must include $testUserAgent");
-
-        $_SERVER['HTTP_USER_AGENT'] = $testUserAgent;
+        $this->setupUserAgent();
 
         $this->dispatchCategoryPlpRequest($categoryId);
 
@@ -236,17 +228,11 @@ class CategoryCacheTest extends AbstractController
      */
     public function testCategoryPlpHitBackendRenderWhiteList(int $categoryId, string $name): void
     {
-        $config = $this->_objectManager->get(ScopeConfigInterface::class);
-        $preventBackend = $config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
-        $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
+        $this->assertPreventBackend();
 
-        $testUserAgent = "Foobot";
-        $whitelist = $this->config->getValue('algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents', ScopeInterface::SCOPE_STORE);
-        $this->assertStringContainsString($testUserAgent, $whitelist, "Allowed user agents for backend render must include $testUserAgent");
+        $this->setupUserAgent();
 
         $this->registerPageHitSpy();
-
-        $_SERVER['HTTP_USER_AGENT'] = $testUserAgent;
 
         $this->dispatchCategoryPlpRequest($categoryId);
         $response = $this->getResponse();
@@ -257,6 +243,46 @@ class CategoryCacheTest extends AbstractController
     {
         $types = $this->cacheManager->getAvailableTypes();
         $this->assertContains('full_page', $types);
+    }
+
+
+    protected function assertConfig(string $path, string $expected, string $message): void
+    {
+        $this->assertEquals($expected, $this->config->getValue($path, ScopeInterface::SCOPE_STORE), $message);
+    }
+
+    protected function assertReplaceCategories(): void
+    {
+        $this->assertConfig(
+            'algoliasearch_instant/instant/replace_categories',
+            1,
+            "Replace categories must be enabled for this test."
+        );
+    }
+
+    protected function assertPreventBackend(): void
+    {
+        $this->assertConfig(
+            'algoliasearch_advanced/advanced/prevent_backend_rendering',
+            1,
+            "Prevent backend rendering must be enabled for this test."
+        );
+    }
+
+    protected function assertUserAgentAllowed(string $userAgent): void
+    {
+        $this->assertStringContainsString(
+            $userAgent,
+            $this->config->getValue('algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents', ScopeInterface::SCOPE_STORE),
+            "Allowed user agents for backend render must include $userAgent"
+        );
+    }
+
+    protected function setupUserAgent(): void
+    {
+        $testUserAgent = self::TEST_USER_AGENT;
+        $this->assertUserAgentAllowed($testUserAgent);
+        $_SERVER['HTTP_USER_AGENT'] = $testUserAgent;
     }
 
     /**
@@ -285,9 +311,12 @@ class CategoryCacheTest extends AbstractController
      */
     protected function getCategoryUrl(int $categoryId): string
     {
-        return $this->url . $categoryId;
+        return self::BASE_CATEGORY_URL . $categoryId;
     }
 
+    /**
+     * Dispatches a request using a properly formatted URL to ensure consistent cache key creation
+     */
     protected function dispatchCategoryPlpRequest(int $categoryId): void
     {
         $this->dispatchHttpRequest($this->getCategoryUrl($categoryId));

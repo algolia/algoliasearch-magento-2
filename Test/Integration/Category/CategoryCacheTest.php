@@ -15,6 +15,8 @@ class CategoryCacheTest extends AbstractController
     protected ?CacheManager $cacheManager;
     protected ?ScopeConfigInterface $config;
 
+    protected static $cacheResets = [];
+
     protected $url = '/catalog/category/view/id/';
 
     public static function getCategoryProvider(): array
@@ -34,6 +36,14 @@ class CategoryCacheTest extends AbstractController
 
         // Default user agent
         $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
+    }
+
+    protected function resetCache($testMethod): void
+    {
+        if (!in_array($testMethod, self::$cacheResets)) {
+            $this->cacheManager->clean(['full_page']);
+            self::$cacheResets[] = $testMethod;
+        }
     }
 
     public static function setUpBeforeClass(): void
@@ -76,8 +86,8 @@ class CategoryCacheTest extends AbstractController
         $replace = $this->config->getValue('algoliasearch_instant/instant/replace_categories', ScopeInterface::SCOPE_STORE);
         $this->assertEquals(1, $replace,"Replace categories must be enabled for this test.");
 
-        $this->cacheManager->clean(['full_page']);
-        $this->dispatchHttpRequest($this->url . $categoryId);
+        $this->resetCache(__METHOD__);
+        $this->dispatchCategoryPlpRequest($categoryId);
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
         $this->assertEquals(
@@ -102,13 +112,29 @@ class CategoryCacheTest extends AbstractController
      * @param string $uri
      * @return void
      */
-    public function dispatchHttpRequest(string $uri): void
+    protected function dispatchHttpRequest(string $uri): void
     {
         $request = $this->_objectManager->get(\Magento\Framework\App\Request\Http::class);
         $request->setDispatched(false);
         $request->setUri($uri);
         $request->setRequestUri($uri);
         $this->_getBootstrap()->runApp();
+    }
+
+    /**
+     * It is imperative to always use the same URL format between MISS and HIT to ensure
+     * that the cache key is generated consistently
+     * @param int $categoryId
+     * @return string
+     */
+    protected function getCategoryUrl(int $categoryId): string
+    {
+        return $this->url . $categoryId;
+    }
+
+    protected function dispatchCategoryPlpRequest(int $categoryId): void
+    {
+        $this->dispatchHttpRequest($this->getCategoryUrl($categoryId));
     }
 
     /**
@@ -129,7 +155,7 @@ class CategoryCacheTest extends AbstractController
 
         $this->registerPageHitSpy();
 
-        $this->dispatchHttpRequest("catalog/category/view/id/{$categoryId}");
+        $this->dispatchCategoryPlpRequest($categoryId);
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
     }
@@ -150,8 +176,8 @@ class CategoryCacheTest extends AbstractController
         $preventBackend = $this->config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
         $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
 
-        $this->cacheManager->clean(['full_page']);
-        $this->dispatchHttpRequest($this->url . $categoryId);
+        $this->resetCache(__METHOD__);
+        $this->dispatchCategoryPlpRequest($categoryId);
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
         $this->assertEquals(
@@ -185,8 +211,9 @@ class CategoryCacheTest extends AbstractController
 
         $this->registerPageHitSpy();
 
-        $this->dispatchHttpRequest("catalog/category/view/id/{$categoryId}");
+        $this->dispatchCategoryPlpRequest($categoryId);
         $response = $this->getResponse();
+
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
     }
 
@@ -213,7 +240,8 @@ class CategoryCacheTest extends AbstractController
 
         $_SERVER['HTTP_USER_AGENT'] = $testUserAgent;
 
-        $this->dispatchHttpRequest($this->url . $categoryId);
+        $this->dispatchCategoryPlpRequest($categoryId);
+
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
         $this->assertEquals(

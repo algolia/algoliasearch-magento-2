@@ -1,12 +1,10 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Config;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Config;
 
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Test\Integration\Config\Traits\ConfigAssertionsTrait;
-use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits\ConfigAssertionsTrait;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 
 /**
  * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php

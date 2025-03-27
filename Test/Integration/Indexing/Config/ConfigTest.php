@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Config;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Config;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;

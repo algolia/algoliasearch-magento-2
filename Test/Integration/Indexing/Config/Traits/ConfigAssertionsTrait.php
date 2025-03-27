@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Config\Traits;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Magento\Store\Api\Data\StoreInterface;

@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Category;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
-use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;

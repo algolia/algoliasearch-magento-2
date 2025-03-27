@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Category;
+namespace Algolia\AlgoliaSearch\Test\Integration\Frontend\Category;
 
 use Magento\Framework\App\Cache\Manager as CacheManager;
 use Magento\Framework\App\Config\ScopeConfigInterface;

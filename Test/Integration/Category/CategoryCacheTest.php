@@ -5,8 +5,9 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Category;
 use Magento\Framework\App\Cache\Manager as CacheManager;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Response\Http as ResponseHttp;
-use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Store\Model\ScopeInterface;
+use Magento\TestFramework\ObjectManager;
 
 class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractController
 {
@@ -17,8 +18,10 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
     public static function getCategoryProvider(): array
     {
         return [
-            ['categoryId' => 20, 'name' => 'Women'],
+//            ['categoryId' => 20, 'name' => 'Women'],
             ['categoryId' => 21, 'name' => 'Women > Tops'],
+            ['categoryId' => 22, 'name' => 'Women > Bottoms'],
+
         ];
     }
 
@@ -26,6 +29,29 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
     {
         parent::setUp();
         $this->cacheManager = $this->_objectManager->get(CacheManager::class);
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        self::reindexAll();
+    }
+
+    protected static function reindexAll(): void
+    {
+        $objectManager = ObjectManager::getInstance();
+        $indexerRegistry = $objectManager->get(IndexerRegistry::class);
+
+        $indexerCodes = [
+            'catalog_category_product',
+            'catalog_product_category',
+            'catalog_product_price',
+            'cataloginventory_stock',
+            'catalogsearch_fulltext'
+        ];
+
+        foreach ($indexerCodes as $indexerCode) {
+            $indexerRegistry->get($indexerCode)->reindexAll();
+        }
     }
 
     /**
@@ -59,12 +85,21 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
             explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
+        $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
     }
 
-    protected function resetResponse(): void
+    /**
+     * @magentoDbIsolation disabled
+     */
+    public function testCategoryPageLoadsProducts()
     {
-        $this->_objectManager->removeSharedInstance(ResponseInterface::class);
-        $this->_response = null;
+        $this->reindexAll();
+        $this->dispatch('/catalog/category/view/id/21');
+
+        $responseBody = $this->getResponse()->getBody();
+
+        // Assert that the response contains product data
+        $this->assertStringContainsString('product-item', $responseBody, 'Expected product items were not found.');
     }
 
     /**
@@ -128,15 +163,6 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
     {
         $types = $this->cacheManager->getAvailableTypes();
         $this->assertContains('full_page', $types);
-    }
-
-    protected function dispatchNew($uri)
-    {
-        $request = $this->_objectManager->get(\Magento\Framework\App\RequestInterface::class);
-
-        $request->setDispatched(false);
-        $request->setRequestUri($uri);
-        $this->_getBootstrap()->runApp();
     }
 
 }

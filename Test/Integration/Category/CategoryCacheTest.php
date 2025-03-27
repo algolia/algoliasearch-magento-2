@@ -21,7 +21,6 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
 //            ['categoryId' => 20, 'name' => 'Women'],
             ['categoryId' => 21, 'name' => 'Women > Tops'],
             ['categoryId' => 22, 'name' => 'Women > Bottoms'],
-
         ];
     }
 
@@ -29,6 +28,9 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
     {
         parent::setUp();
         $this->cacheManager = $this->_objectManager->get(CacheManager::class);
+
+        // Default user agent
+        $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36';
     }
 
     public static function setUpBeforeClass(): void
@@ -65,7 +67,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
      * @param string $name
      * @return void
      */
-    public function testCategoryPlpMiss(int $categoryId, string $name): void
+    public function testCategoryPlpMissBackendRenderOn(int $categoryId, string $name): void
     {
         $config = $this->_objectManager->get(ScopeConfigInterface::class);
         $replace = $config->getValue('algoliasearch_instant/instant/replace_categories', ScopeInterface::SCOPE_STORE);
@@ -88,19 +90,6 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
         $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
     }
 
-    /**
-     * @magentoDbIsolation disabled
-     */
-    public function testCategoryPageLoadsProducts()
-    {
-        $this->reindexAll();
-        $this->dispatch('/catalog/category/view/id/21');
-
-        $responseBody = $this->getResponse()->getBody();
-
-        // Assert that the response contains product data
-        $this->assertStringContainsString('product-item', $responseBody, 'Expected product items were not found.');
-    }
 
     /**
      * The response object is modified differently by the BuiltinPlugin which prevents anything useful
@@ -110,7 +99,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
      * when the cache has been warmed (by the first MISS)
      *
      * @dataProvider getCategoryProvider
-     * @depends      testCategoryPlpMiss
+     * @depends      testCategoryPlpMissBackendRenderOn
      * @magentoConfigFixture current_store system/full_page_cache/caching_application 1
      * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 0
      * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
@@ -119,8 +108,78 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
      * @param string $name
      * @return void
      */
-    public function testCategoryPlpHit(int $categoryId, string $name): void
+    public function testCategoryPlpHitBackendRenderOn(int $categoryId, string $name): void
     {
+        $config = $this->_objectManager->get(ScopeConfigInterface::class);
+        $replace = $config->getValue('algoliasearch_instant/instant/replace_categories', ScopeInterface::SCOPE_STORE);
+        $this->assertEquals(1, $replace,"Replace categories must be enabled for this test.");
+
+        $this->registerPageHitSpy();
+
+        $this->dispatch("catalog/category/view/id/{$categoryId}");
+        $response = $this->getResponse();
+        $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
+    }
+
+    /**
+     * @dataProvider getCategoryProvider
+     * @depends      testFullPageCacheAvailable
+     * @magentoConfigFixture current_store system/full_page_cache/caching_application 1
+     * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 1
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
+     * @magentoCache full_page enabled
+     * @param int $categoryId
+     * @param string $name
+     * @return void
+     */
+    public function testCategoryPlpMissBackendRenderOff(int $categoryId, string $name): void
+    {
+        $config = $this->_objectManager->get(ScopeConfigInterface::class);
+        $preventBackend = $config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
+        $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
+
+        $this->cacheManager->clean(['full_page']);
+        $this->dispatch($this->url . $categoryId);
+        $response = $this->getResponse();
+        $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
+        $this->assertEquals(
+            'MISS',
+            $response->getHeader('X-Magento-Cache-Debug')->getFieldValue(),
+            "expected MISS on category {$name} id {$categoryId}"
+        );
+        $this->assertContains(
+            'FPC',
+            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            "expected FPC tag on category {$name} id {$categoryId}"
+        );
+        $this->assertDoesNotMatchRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
+    }
+
+    /**
+     * @dataProvider getCategoryProvider
+     * @depends      testCategoryPlpMissBackendRenderOff
+     * @magentoConfigFixture current_store system/full_page_cache/caching_application 1
+     * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 1
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
+     * @magentoCache full_page enabled
+     * @param int $categoryId
+     * @param string $name
+     * @return void
+     */
+    public function testCategoryPlpHitBackendRenderOff(int $categoryId, string $name): void
+    {
+        $config = $this->_objectManager->get(ScopeConfigInterface::class);
+        $preventBackend = $config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
+        $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
+
+        $this->registerPageHitSpy();
+
+        $this->dispatch("catalog/category/view/id/{$categoryId}");
+        $response = $this->getResponse();
+        $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
+    }
+
+    protected function registerPageHitSpy() {
         $mockedPluginClass = \Magento\PageCache\Model\App\FrontController\BuiltinPlugin::class;
         $mockedPluginMethod = 'addDebugHeader';
         $cachePluginMock = $this->getMockBuilder($mockedPluginClass)
@@ -143,7 +202,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
             )
             ->willReturnCallback(
                 function (ResponseHttp $response, $name, $value, $replace)
-                    use ($mockedPluginClass, $mockedPluginMethod, $cachePluginMock)
+                use ($mockedPluginClass, $mockedPluginMethod, $cachePluginMock)
                 {
                     $originalMethod = new \ReflectionMethod($mockedPluginClass, $mockedPluginMethod);
                     return $originalMethod->invoke($cachePluginMock, $response, $name, $value, $replace);
@@ -153,10 +212,6 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
             $cachePluginMock,
             $mockedPluginClass
         );
-
-        $this->dispatch("catalog/category/view/id/{$categoryId}");
-        $response = $this->getResponse();
-        $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
     }
 
     public function testFullPageCacheAvailable(): void

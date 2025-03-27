@@ -22,9 +22,12 @@ class CategoryCacheTest extends AbstractController
     public static function getCategoryProvider(): array
     {
         return [
-//            ['categoryId' => 20, 'name' => 'Women'],
-            ['categoryId' => 21, 'name' => 'Women > Tops'],
-            ['categoryId' => 22, 'name' => 'Women > Bottoms'],
+            ['categoryId' => 20, 'name' => 'Women', 'hasProducts' => false],
+            ['categoryId' => 21, 'name' => 'Women > Tops', 'hasProducts' => true],
+            ['categoryId' => 22, 'name' => 'Women > Bottoms', 'hasProducts' => true],
+            ['categoryId' => 11, 'name' => 'Men', 'hasProducts' => false],
+            ['categoryId' => 12, 'name' => 'Men > Tops', 'hasProducts' => true],
+            ['categoryId' => 13, 'name' => 'Men > Bottoms', 'hasProducts' => true],
         ];
     }
 
@@ -66,10 +69,8 @@ class CategoryCacheTest extends AbstractController
      * Selectively refresh the FPC cache (must be done at intervals)
      * Warm the cache via MISS tests but only reset the cache once per MISS test
      * Due to data provider test methods can be called multiple times
-     * @param $testMethod
-     * @return void
      */
-    protected function resetCache($testMethod): void
+    protected function resetCache(string $testMethod): void
     {
         if (!in_array($testMethod, self::$cacheResets)) {
             $this->cacheManager->clean(['full_page']);
@@ -84,11 +85,8 @@ class CategoryCacheTest extends AbstractController
      * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 0
      * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoCache full_page enabled
-     * @param int $categoryId
-     * @param string $name
-     * @return void
      */
-    public function testCategoryPlpMissBackendRenderOn(int $categoryId, string $name): void
+    public function testCategoryPlpMissBackendRenderOn(int $categoryId, string $name, bool $hasProducts): void
     {
         $replace = $this->config->getValue('algoliasearch_instant/instant/replace_categories', ScopeInterface::SCOPE_STORE);
         $this->assertEquals(1, $replace,"Replace categories must be enabled for this test.");
@@ -107,7 +105,10 @@ class CategoryCacheTest extends AbstractController
             explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
-        $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
+
+        if ($hasProducts) {
+            $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), 'Backend content was not rendered.');
+        }
     }
 
     /**
@@ -117,9 +118,6 @@ class CategoryCacheTest extends AbstractController
      * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 0
      * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoCache full_page enabled
-     * @param int $categoryId
-     * @param string $name
-     * @return void
      */
     public function testCategoryPlpHitBackendRenderOn(int $categoryId, string $name): void
     {
@@ -140,11 +138,8 @@ class CategoryCacheTest extends AbstractController
      * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 1
      * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoCache full_page enabled
-     * @param int $categoryId
-     * @param string $name
-     * @return void
      */
-    public function testCategoryPlpMissBackendRenderOff(int $categoryId, string $name): void
+    public function testCategoryPlpMissBackendRenderOff(int $categoryId, string $name, bool $hasProducts): void
     {
         $preventBackend = $this->config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
         $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
@@ -163,7 +158,10 @@ class CategoryCacheTest extends AbstractController
             explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
-        $this->assertDoesNotMatchRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
+
+        if ($hasProducts) {
+            $this->assertDoesNotMatchRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), 'Backend content was rendered.');
+        }
     }
 
     /**
@@ -173,9 +171,6 @@ class CategoryCacheTest extends AbstractController
      * @magentoConfigFixture current_store algoliasearch_advanced/advanced/prevent_backend_rendering 1
      * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoCache full_page enabled
-     * @param int $categoryId
-     * @param string $name
-     * @return void
      */
     public function testCategoryPlpHitBackendRenderOff(int $categoryId, string $name): void
     {
@@ -198,11 +193,8 @@ class CategoryCacheTest extends AbstractController
      * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/backend_render_user_agents.php
      * @magentoCache full_page enabled
-     * @param int $categoryId
-     * @param string $name
-     * @return void
      */
-    public function testCategoryPlpMissBackendRenderWhiteList(int $categoryId, string $name): void
+    public function testCategoryPlpMissBackendRenderWhiteList(int $categoryId, string $name, bool $hasProducts): void
     {
         $preventBackend = $this->config->getValue('algoliasearch_advanced/advanced/prevent_backend_rendering', ScopeInterface::SCOPE_STORE);
         $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
@@ -227,7 +219,10 @@ class CategoryCacheTest extends AbstractController
             explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
-        $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
+
+        if ($hasProducts) {
+            $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), 'Backend content was not rendered.');
+        }
     }
 
     /**
@@ -238,9 +233,6 @@ class CategoryCacheTest extends AbstractController
      * @magentoConfigFixture current_store algoliasearch_instant/instant/replace_categories 1
      * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/backend_render_user_agents.php
      * @magentoCache full_page enabled
-     * @param int $categoryId
-     * @param string $name
-     * @return void
      */
     public function testCategoryPlpHitBackendRenderWhiteList(int $categoryId, string $name): void
     {

@@ -8,8 +8,9 @@ use Magento\Framework\App\Response\Http as ResponseHttp;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\ObjectManager;
+use Magento\TestFramework\TestCase\AbstractController;
 
-class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractController
+class CategoryCacheTest extends AbstractController
 {
     protected ?CacheManager $cacheManager;
     protected ?ScopeConfigInterface $config;
@@ -40,6 +41,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
         // self::reindexAll();
     }
 
+    /** You must index to OpenSearch to get the default backend render  */
     protected static function reindexAll(): void
     {
         $objectManager = ObjectManager::getInstance();
@@ -75,7 +77,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
         $this->assertEquals(1, $replace,"Replace categories must be enabled for this test.");
 
         $this->cacheManager->clean(['full_page']);
-        $this->dispatch($this->url . $categoryId);
+        $this->dispatchHttpRequest($this->url . $categoryId);
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
         $this->assertEquals(
@@ -91,6 +93,23 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
         $this->assertMatchesRegularExpression('/<div.*class=.*products-grid.*>/', $response->getContent(), $response->getContent(), 'Backend content was not rendered.');
     }
 
+    /**
+     * The \Magento\TestFramework\TestCase\AbstractController::dispatch is flawed for this use case as it does not
+     * populate the URI which is used to build the cache key in \Magento\Framework\App\PageCache\Identifier::getValue
+     *
+     * This provides a workaround
+     *
+     * @param string $uri
+     * @return void
+     */
+    public function dispatchHttpRequest(string $uri): void
+    {
+        $request = $this->_objectManager->get(\Magento\Framework\App\Request\Http::class);
+        $request->setDispatched(false);
+        $request->setUri($uri);
+        $request->setRequestUri($uri);
+        $this->_getBootstrap()->runApp();
+    }
 
     /**
      * @dataProvider getCategoryProvider
@@ -110,7 +129,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
 
         $this->registerPageHitSpy();
 
-        $this->dispatch("catalog/category/view/id/{$categoryId}");
+        $this->dispatchHttpRequest("catalog/category/view/id/{$categoryId}");
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
     }
@@ -132,7 +151,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
         $this->assertEquals(1, $preventBackend,"Prevent backend rendering must be enabled for this test.");
 
         $this->cacheManager->clean(['full_page']);
-        $this->dispatch($this->url . $categoryId);
+        $this->dispatchHttpRequest($this->url . $categoryId);
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
         $this->assertEquals(
@@ -166,7 +185,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
 
         $this->registerPageHitSpy();
 
-        $this->dispatch("catalog/category/view/id/{$categoryId}");
+        $this->dispatchHttpRequest("catalog/category/view/id/{$categoryId}");
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
     }
@@ -194,7 +213,7 @@ class CategoryCacheTest extends \Magento\TestFramework\TestCase\AbstractControll
 
         $_SERVER['HTTP_USER_AGENT'] = $testUserAgent;
 
-        $this->dispatch($this->url . $categoryId);
+        $this->dispatchHttpRequest($this->url . $categoryId);
         $response = $this->getResponse();
         $this->assertEquals(200, $response->getHttpResponseCode(), 'Request failed');
         $this->assertEquals(

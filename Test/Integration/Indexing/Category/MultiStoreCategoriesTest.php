@@ -1,10 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Category;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Category;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
 use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Magento\Catalog\Api\CategoryRepositoryInterface;

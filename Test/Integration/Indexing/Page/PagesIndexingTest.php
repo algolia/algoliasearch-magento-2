@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Page;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Page;
 
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Page;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Category;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Category;
 
 use Algolia\AlgoliaSearch\Model\Indexer\Category;
 use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;

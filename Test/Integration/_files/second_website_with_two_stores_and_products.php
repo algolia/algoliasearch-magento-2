@@ -1,6 +1,6 @@
 <?php
 
-use Algolia\AlgoliaSearch\Test\Integration\Product\MultiStoreProductsTest;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\MultiStoreProductsTest;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\CatalogSearch\Model\Indexer\Fulltext;
 use Magento\Framework\Indexer\IndexerRegistry;

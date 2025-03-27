@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Queue;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Queue;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;

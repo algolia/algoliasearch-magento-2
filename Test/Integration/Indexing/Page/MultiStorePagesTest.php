@@ -1,17 +1,15 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Page;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Page;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
 use Algolia\AlgoliaSearch\Model\Indexer\Page;
-use Magento\Cms\Api\PageRepositoryInterface;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Cms\Api\Data\PageInterface;
+use Magento\Cms\Api\PageRepositoryInterface;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory;
-use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;

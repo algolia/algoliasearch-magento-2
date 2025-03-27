@@ -1,10 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Magento\Framework\Exception\LocalizedException;

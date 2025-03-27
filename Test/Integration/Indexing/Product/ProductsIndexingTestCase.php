@@ -1,9 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Product;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
-use Algolia\AlgoliaSearch\Test\Integration\IndexingTestCase;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\IndexingTestCase;
 use Magento\CatalogInventory\Model\StockRegistry;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;

@@ -1364,6 +1364,8 @@
                             <span class="algolia-config-warning">&#9888;</span>
                             Algolia injects its search results via InstantSearch in place of default search results. Enable this setting to hide default search results completely.
                             By preventing your store from backend rendering you might break your SEO and accessibility of your store by search crawlers.
+                            <br/><br/>
+                            <em>This feature is deprecated and will be replaced in a future version.</em>
                         ]]>
                     </comment>
                 </field>

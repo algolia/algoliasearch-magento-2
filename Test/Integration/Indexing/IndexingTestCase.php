@@ -1,8 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\Indexer\ActionInterface;
 
 abstract class IndexingTestCase extends TestCase

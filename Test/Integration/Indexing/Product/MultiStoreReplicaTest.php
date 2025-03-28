@@ -1,15 +1,15 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Product;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand;
 use Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
-use Algolia\AlgoliaSearch\Test\Integration\Config\Traits\ConfigAssertionsTrait;
-use Algolia\AlgoliaSearch\Test\Integration\MultiStoreTestCase;
-use Algolia\AlgoliaSearch\Test\Integration\Product\Traits\ReplicaAssertionsTrait;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits\ConfigAssertionsTrait;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\Traits\ReplicaAssertionsTrait;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Symfony\Component\Console\Input\InputInterface;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Search;
+namespace Algolia\AlgoliaSearch\Test\Integration\Frontend\Search;
 
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Service\Product\BackendSearch;

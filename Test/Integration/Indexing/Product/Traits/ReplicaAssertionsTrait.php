@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Integration\Product\Traits;
+namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\Traits;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Store\Api\Data\StoreInterface;

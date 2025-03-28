@@ -5,7 +5,9 @@ namespace Algolia\AlgoliaSearch\Plugin;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\App\Request\Http;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\UrlRewrite\Model\UrlFinderInterface;
 
 /**
  * The purpose of this class is to render different cached versions of the pages according to the user agent.
@@ -15,39 +17,36 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class RenderingCacheContextPlugin
 {
-    public const RENDERING_CONTEXT = 'rendering_context';
+    public const RENDERING_CONTEXT = 'algolia_rendering_context';
     public const RENDERING_WITH_BACKEND = 'with_backend';
     public const RENDERING_WITHOUT_BACKEND = 'without_backend';
 
-    private $configHelper;
-    private $storeManager;
-    private $request;
+    public const CATEGORY_CONTROLLER = 'category';
+    public const CATEGORY_ROUTE = 'catalog/category/view';
 
     public function __construct(
-        ConfigHelper $configHelper,
-        StoreManagerInterface $storeManager,
-        Http $request
-    ) {
-        $this->configHelper = $configHelper;
-        $this->storeManager = $storeManager;
-        $this->request = $request;
-    }
+        protected ConfigHelper $configHelper,
+        protected StoreManagerInterface $storeManager,
+        protected Http $request,
+        protected UrlFinderInterface $urlFinder
+    ) { }
 
     /**
-     * Add Rendering context for caching purposes
-     * (If the prevent rendering configuration is enabled and the user agent has no white card to display it,
+     * Add a rendering context to the vary string data to distinguish which versions of the category PLP should be cached
+     * (If the "prevent backend rendering" configuration is enabled and the user agent is not whitelisted to display it,
      * we set a different page variation, and the FPC stores a different cached page)
      *
-     * @param HttpContext $subject
-     * @param string[] $data
+     * IMPORTANT:
+     * Magento\Framework\App\Http\Context::getData can be called multiple times over the course of the request lifecycle
+     * it is important that this plugin return the data consistently - or the cache will be invalidated unexpectedly!
      *
-     * @return array
+     * @param HttpContext $subject
+     * @param array $data
+     * @return array original params
+     * @throws NoSuchEntityException
      */
-    public function afterGetData(HttpContext $subject, $data)
-    {
-        $storeId = $this->storeManager->getStore()->getId();
-        if (!($this->request->getControllerName() === 'category'
-            && $this->configHelper->replaceCategories($storeId) === true)) {
+    public function afterGetData(HttpContext $subject, array $data): array {
+        if (!$this->shouldApplyCacheContext()) {
             return $data;
         }
 
@@ -58,5 +57,53 @@ class RenderingCacheContextPlugin
         $data[self::RENDERING_CONTEXT] = $context;
 
         return $data;
+    }
+
+    /**
+     * @param int $storeId
+     * @return string
+     */
+    protected function getOriginalRoute(int $storeId): string
+    {
+        $requestUri = $this->request->getRequestUri();
+
+        $rewrite = $this->urlFinder->findOneByData([
+            'request_path' => ltrim($requestUri, '/'),
+            'store_id'     => $storeId,
+        ]);
+
+        return $rewrite?->getTargetPath() ?? "";
+    }
+
+    /**
+     * @param string $path
+     * @return bool
+     */
+    protected function isCategoryRoute(string $path): bool {
+        $path = ltrim($path, '/');
+        return str_starts_with($path, self::CATEGORY_ROUTE);
+    }
+
+    /**
+     * This can be called in a variety of contexts - so this should always be called consistently
+     *
+     * @param int $storeId
+     * @return bool
+     */
+    protected function isCategoryPage(int $storeId): bool
+    {
+        return $this->request->getControllerName() === self::CATEGORY_CONTROLLER
+            || $this->isCategoryRoute($this->request->getRequestUri())
+            || $this->isCategoryRoute($this->getOriginalRoute($storeId));
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    protected function shouldApplyCacheContext(): bool
+    {
+        $storeId = $this->storeManager->getStore()->getId();
+        return $this->isCategoryPage($storeId) && $this->configHelper->replaceCategories($storeId);
     }
 }

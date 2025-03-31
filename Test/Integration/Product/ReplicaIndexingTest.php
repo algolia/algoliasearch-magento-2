@@ -5,11 +5,19 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Product;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Helper\Logger;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
+use Algolia\AlgoliaSearch\Registry\ReplicaState;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
+use Algolia\AlgoliaSearch\Validator\VirtualReplicaValidatorFactory;
+use Magento\Store\Model\StoreManagerInterface;
 
 class ReplicaIndexingTest extends TestCase
 {
@@ -195,9 +203,61 @@ class ReplicaIndexingTest extends TestCase
     public function testReplicaSync(): void
     {
         $primaryIndexName = $this->getIndexName('default');
+
+        // Make one replica virtual
         $this->mockSortUpdate('created_at', 'desc', ['virtualReplica' => 1]);
 
-        $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices(1, null, null, true);
+        $sorting = $this->populateReplicas(1);
+
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $this->assertArrayHasKey('replicas', $currentSettings);
+        $replicas = $currentSettings['replicas'];
+
+        $this->assertEquals(count($sorting), count($replicas));
+        $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     */
+    public function testReplicaDelete(): void
+    {
+        $primaryIndexName = $this->indexName;
+
+        // Make one replica virtual
+        $this->mockSortUpdate('price', 'asc', ['virtualReplica' => 1]);
+
+        $sorting = $this->populateReplicas(1);
+
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $this->assertArrayHasKey('replicas', $currentSettings);
+        $replicas = $currentSettings['replicas'];
+
+        $this->assertEquals(count($sorting), count($replicas));
+
+        $this->replicaManager->deleteReplicasFromAlgolia(1);
+
+        $newSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $this->assertArrayNotHasKey('replicas', $newSettings);
+        foreach ($replicas as $replica) {
+            $this->assertIndexNotExists($this->extractIndexFromReplicaSetting($replica));
+        }
+    }
+
+    protected function extractIndexFromReplicaSetting(string $setting): string {
+        return preg_replace('/^virtual\((.*)\)$/', '$1', $setting);
+    }
+
+    /**
+     * Populate replica indices for test based on store id and return sorting configuration used
+     *
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws \ReflectionException
+     */
+    protected function populateReplicas(int $storeId): array
+    {
+        $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices($storeId, null, null, true);
 
         $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
 
@@ -206,12 +266,7 @@ class ReplicaIndexingTest extends TestCase
         $cmd->syncReplicas();
         $this->algoliaHelper->waitLastTask();
 
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayHasKey('replicas', $currentSettings);
-        $replicas = $currentSettings['replicas'];
-
-        $this->assertEquals(count($sorting), count($replicas));
-        $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
+        return $sorting;
     }
 
     protected function assertSortToReplicaConfigParity(string $primaryIndexName, array $sorting, array $replicas): void
@@ -242,7 +297,14 @@ class ReplicaIndexingTest extends TestCase
         return $replicaSettings;
     }
 
-    protected function assertReplicaRanking(array $replicaSettings, string $rankingKey, string $sort) {
+    protected function assertIndexNotExists($indexName): void
+    {
+        $indexSettings = $this->algoliaHelper->getSettings($indexName);
+        $this->assertCount(0, $indexSettings, "Settings found for index that should not exist");
+    }
+
+    protected function assertReplicaRanking(array $replicaSettings, string $rankingKey, string $sort): void
+    {
         $this->assertArrayHasKey($rankingKey, $replicaSettings);
         $this->assertEquals($sort, reset($replicaSettings[$rankingKey]));
     }

@@ -12,6 +12,8 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
+    public static $affectedProductIds = [];
+
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,
@@ -41,6 +43,9 @@ class Category implements \Magento\Framework\Indexer\ActionInterface, \Magento\F
 
     public function executeRow($id)
     {
+        if (count(self::$affectedProductIds)) {
+            $this->categoryBatchQueueProcessor->setAffectedProductIds(self::$affectedProductIds);
+        }
         $this->execute([$id]);
     }
 }

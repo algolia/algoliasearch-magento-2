@@ -202,7 +202,7 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaSync(): void
     {
-        $primaryIndexName = $this->getIndexName('default');
+        $primaryIndexName = $this->indexName;
 
         // Make one replica virtual
         $this->mockSortUpdate('created_at', 'desc', ['virtualReplica' => 1]);
@@ -244,8 +244,75 @@ class ReplicaIndexingTest extends TestCase
         }
     }
 
+    /**
+     * Test
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     */
+    public function testReplicaDeleteUnreliable(): void
+    {
+        $primaryIndexName = $this->indexName;
+
+        $sorting = $this->populateReplicas(1);
+
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $this->assertArrayHasKey('replicas', $currentSettings);
+        $replicas = $currentSettings['replicas'];
+
+        $this->assertEquals(count($sorting), count($replicas));
+
+        $this->getCrippledReplicaManager()->deleteReplicasFromAlgolia(1);
+
+        $newSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $this->assertArrayNotHasKey('replicas', $newSettings);
+        foreach ($replicas as $replica) {
+            $this->assertIndexNotExists($this->extractIndexFromReplicaSetting($replica));
+        }
+    }
+
     protected function extractIndexFromReplicaSetting(string $setting): string {
         return preg_replace('/^virtual\((.*)\)$/', '$1', $setting);
+    }
+
+    /**
+     * If a replica fails to detach from the primary it can create deletion errors
+     * Typically this is the result of latency even if task reports as completed from the API (hypothesis)
+     * This aims to reproduce this potential scenario by not disassociating the replica
+     *
+     */
+    protected function getCrippledReplicaManager(): ReplicaManagerInterface
+    {
+        $mockedClass = \Algolia\AlgoliaSearch\Service\Product\ReplicaManager::class;
+        $mockedMethod = 'clearReplicasSettingInAlgolia';
+        $mockedReplicaManager = $this->getMockBuilder($mockedClass)
+            ->setConstructorArgs([
+                $this->objectManager->get(ConfigHelper::class),
+                $this->objectManager->get(AlgoliaHelper::class),
+                $this->objectManager->get(ReplicaState::class),
+                $this->objectManager->get(VirtualReplicaValidatorFactory::class),
+                $this->objectManager->get(IndexNameFetcher::class),
+                $this->objectManager->get(StoreNameFetcher::class),
+                $this->objectManager->get(SortingTransformer::class),
+                $this->objectManager->get(StoreManagerInterface::class),
+                $this->objectManager->get(Logger::class)
+            ])
+            ->onlyMethods([$mockedMethod])
+            ->getMock();
+        $mockedReplicaManager
+            ->expects($this->once())
+            ->method($mockedMethod)
+            ->willReturnCallback(
+                function (...$params)
+                use ($mockedClass, $mockedMethod, $mockedReplicaManager)
+                {
+                    // DO NOTHING
+                    return;
+
+                    // If aiming to test a throttle on retry invoke after a specified number of failures
+                    //$originalMethod = new \ReflectionMethod($mockedClass, $mockedMethod);
+                    //return $originalMethod->invoke($mockedReplicaManager, ...$params);
+                }
+            );
+        return $mockedReplicaManager;
     }
 
     /**

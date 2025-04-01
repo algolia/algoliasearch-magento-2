@@ -41,6 +41,7 @@ use Magento\Store\Model\StoreManagerInterface;
 class ReplicaManager implements ReplicaManagerInterface
 {
     public const ALGOLIA_SETTINGS_KEY_REPLICAS = 'replicas';
+    public const ALGOLIA_SETTINGS_KEY_PRIMARY = 'primary';
 
     protected const _DEBUG = true;
 
@@ -260,7 +261,7 @@ class ReplicaManager implements ReplicaManagerInterface
         $setReplicasTaskId = $this->algoliaHelper->getLastTaskId();
         $this->algoliaHelper->waitLastTask($indexName, $setReplicasTaskId);
         $this->clearAlgoliaReplicaSettingCache($indexName);
-        $this->deleteIndices($replicasToDelete);
+        $this->deleteReplicas($replicasToDelete);
 
         if (self::_DEBUG) {
             $this->logger->log(
@@ -354,19 +355,72 @@ class ReplicaManager implements ReplicaManagerInterface
     }
 
     /**
-     * @param array $replicasToDelete
-     * @param bool $waitLastTask
+     * Delete replica indices
+     *
+     * @param array $replicasToDelete - which replicas to delete
+     * @param bool $waitLastTask - wait until deleting next replica (default: false)
+     * @param bool $prevalidate - verify replica is not attached to a primary index before attempting to delete (default: false)
      * @return void
      * @throws AlgoliaException
+     * @throws ExceededRetriesException
      */
-    protected function deleteIndices(array $replicasToDelete, bool $waitLastTask = false): void
+    protected function deleteReplicas(array $replicasToDelete, bool $waitLastTask = false, bool $prevalidate = false): void
     {
         foreach ($replicasToDelete as $deletedReplica) {
-            $this->algoliaHelper->deleteIndex($deletedReplica);
+            $this->deleteReplica($deletedReplica, $prevalidate);
             if ($waitLastTask) {
                 $this->algoliaHelper->waitLastTask($deletedReplica);
             }
         }
+    }
+
+    /**
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     */
+    protected function deleteReplica(string $replicaIndexName, bool $precheck = false): void
+    {
+        if ($precheck) {
+            $settings = $this->algoliaHelper->getSettings($replicaIndexName);
+            if (isset($settings[self::ALGOLIA_SETTINGS_KEY_PRIMARY])) {
+                $this->detachReplica($settings[self::ALGOLIA_SETTINGS_KEY_PRIMARY], $replicaIndexName);
+            }
+        }
+
+        $this->algoliaHelper->deleteIndex($replicaIndexName);
+    }
+
+    /**
+     * Detach a single replica from its primary index
+     *
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     */
+    protected function detachReplica(string $primaryIndexName, string $replicaIndexName): void
+    {
+        $settings = $this->algoliaHelper->getSettings($primaryIndexName);
+        if (!isset($settings[self::ALGOLIA_SETTINGS_KEY_REPLICAS])) {
+            return;
+        }
+        $newReplicas = $this->removeReplicaFromReplicaSetting($settings[self::ALGOLIA_SETTINGS_KEY_REPLICAS], $replicaIndexName);
+        $this->algoliaHelper->setSettings($primaryIndexName, [ self::ALGOLIA_SETTINGS_KEY_REPLICAS => $newReplicas]);
+        $this->algoliaHelper->waitLastTask($primaryIndexName);
+    }
+
+    /**
+     * Remove a single replica from the replica setting array
+     * (Can feature virtual or standard)
+     */
+    protected function removeReplicaFromReplicaSetting(array $replicaSetting, string $replicaToRemove): array
+    {
+        return array_filter(
+            $replicaSetting,
+            function ($replicaIndexSetting) use ($replicaToRemove) {
+                $escaped = preg_quote($replicaToRemove);
+                $regex = '/^' . $escaped . '|virtual\(' . $escaped . '\)$/';
+                return !preg_match($regex, $replicaToRemove);
+            }
+        );
     }
 
     /**
@@ -416,7 +470,7 @@ class ReplicaManager implements ReplicaManagerInterface
      */
     public function isReplicaSyncEnabled(int $storeId): bool
     {
-        return $this->configHelper->isInstantEnabled($storeId);
+        return $this->configHelper->isInstantEnabled($storeId) && $this->configHelper->isEnabledBackend($storeId);
     }
 
     /**
@@ -449,7 +503,7 @@ class ReplicaManager implements ReplicaManagerInterface
             $this->clearReplicasSettingInAlgolia($primaryIndexName);
         }
 
-        $this->deleteIndices($replicasToDelete);
+        $this->deleteReplicas($replicasToDelete, true, true);
 
         if ($unused) {
             $this->clearUnusedReplicaIndicesCache($storeId);

@@ -31,7 +31,7 @@ interface ReplicaManagerInterface
     /**
      * Delete the replica indices on a store index
      * @param int $storeId
-     * @param bool $unused Defaults to false - if true identifies any straggler indices and deletes those, otherwise deletes the replicas it knows aobut
+     * @param bool $unused Defaults to false - if true identifies any straggler indices and deletes those, otherwise deletes the replicas it knows about
      * @return void
      *
      * @throws LocalizedException

@@ -44,7 +44,14 @@ trait ReplicaAssertionsTrait
         return $replicaSettings;
     }
 
-    protected function assertReplicaRanking(array $replicaSettings, string $rankingKey, string $sort) {
+    protected function assertIndexNotExists(string $indexName, ?int $storeId = null): void
+    {
+        $indexSettings = $this->algoliaHelper->getSettings($indexName, $storeId);
+        $this->assertCount(0, $indexSettings, "Settings found for index that should not exist");
+    }
+
+    protected function assertReplicaRanking(array $replicaSettings, string $rankingKey, string $sort): void
+    {
         $this->assertArrayHasKey($rankingKey, $replicaSettings);
         $this->assertEquals($sort, reset($replicaSettings[$rankingKey]));
     }

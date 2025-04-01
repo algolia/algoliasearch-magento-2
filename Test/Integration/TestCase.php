@@ -275,4 +275,22 @@ abstract class TestCase extends \TC
     {
         return $this->getObjectManager()->get(\Magento\Framework\Serialize\SerializerInterface::class);
     }
+
+    /**
+     * Run a callback once and only once
+     * @param callable $callback
+     * @param string|null $key - a unique key for this operation - if null a unique key will be derived
+     * @return mixed
+     */
+    function runOnce(callable $callback, string $key = null): mixed
+    {
+        static $executed = [];
+        $key ??= is_string($callback) ? $callback : spl_object_hash((object) $callback);
+        if (!isset($executed[$key])) {
+            $executed[$key] = true;
+            return $callback();
+        }
+
+        return null;
+    }
 }

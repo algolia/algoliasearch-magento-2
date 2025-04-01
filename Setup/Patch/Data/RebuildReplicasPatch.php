@@ -67,10 +67,13 @@ class RebuildReplicasPatch implements DataPatchInterface
             // Area code is already set - nothing to do
         }
 
-        $storeIds = array_keys($this->storeManager->getStores());
-        // Delete all replicas before resyncing in case of incorrect replica assignments
+        $storeIds = array_filter(
+            array_keys($this->storeManager->getStores()),
+            function (int $storeId) { return $this->replicaManager->isReplicaSyncEnabled($storeId); }
+        );
 
         try {
+            // Delete all replicas before resyncing in case of incorrect replica assignments
             foreach ($storeIds as $storeId) {
                 $this->retryDeleteReplica($storeId);
             }
@@ -81,7 +84,8 @@ class RebuildReplicasPatch implements DataPatchInterface
             }
         }
         catch (AlgoliaException $e) {
-            $this->logger->error("Could not rebuild replicas - a full reindex will be required.");
+            // Log the error but do not prevent setup:update
+            $this->logger->error("Could not rebuild replicas - a full reindex may be required.");
         }
 
         $this->moduleDataSetup->getConnection()->endSetup();

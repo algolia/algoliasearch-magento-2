@@ -172,15 +172,10 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaRebuild(): void
     {
-        $primaryIndexName = $this->getIndexName('default');
-
+        // Make one replica virtual
         $this->mockSortUpdate('price', 'desc', ['virtualReplica' => 1]);
-        $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices(1, null, null, true);
 
-        $syncCmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
-        $this->mockProperty($syncCmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
-        $syncCmd->syncReplicas();
-        $this->algoliaHelper->waitLastTask();
+        $sorting = $this->populateReplicas(1);
 
         $rebuildCmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand::class);
         $this->invokeMethod(
@@ -193,12 +188,9 @@ class ReplicaIndexingTest extends TestCase
         );
         $this->algoliaHelper->waitLastTask();
 
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayHasKey('replicas', $currentSettings);
-        $replicas = $currentSettings['replicas'];
+        $replicas = $this->assertReplicasCreated($sorting);
 
-        $this->assertEquals(count($sorting), count($replicas));
-        $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
+        $this->assertSortToReplicaConfigParity($this->indexName, $sorting, $replicas);
     }
 
     /**
@@ -209,8 +201,6 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaSync(): void
     {
-        $primaryIndexName = $this->indexName;
-
         // Make one replica virtual
         $this->mockSortUpdate('created_at', 'desc', ['virtualReplica' => 1]);
 
@@ -218,8 +208,26 @@ class ReplicaIndexingTest extends TestCase
 
         $replicas = $this->assertReplicasCreated($sorting);
 
-        $this->assertEquals(count($sorting), count($replicas));
-        $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
+        $this->assertSortToReplicaConfigParity($this->indexName, $sorting, $replicas);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_credentials/credentials/enable_backend 0
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws \ReflectionException
+     */
+    public function testReplicaSyncDisabled(): void
+    {
+        $primaryIndexName = $this->indexName;
+        $settings = $this->algoliaHelper->getSettings($this->indexName);
+        $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $settings);
+
+        $this->populateReplicas(1);
+
+        $newSettings = $this->algoliaHelper->getSettings($this->indexName);
+        $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $newSettings);
     }
 
     /**
@@ -252,14 +260,17 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * Test the RebuildReplicasPatch with API failures
+     * @magentoConfigFixture current_store algoliasearch_credentials/credentials/enable_backend 1
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      */
     public function testReplicaRebuildPatch(): void
     {
-        $sorting = $this->populateReplicas(1);
-        $replicas = $this->assertReplicasCreated($sorting);
-
+        $currentStoreId = 1;
         $this->assertTrue($this->configHelper->credentialsAreConfigured(), "Credentials not available to apply patch.");
+        $this->assertTrue($this->replicaManager->isReplicaSyncEnabled($currentStoreId), "Replica sync is not enabled for test store $currentStoreId.");
+
+        $sorting = $this->populateReplicas($currentStoreId);
+        $replicas = $this->assertReplicasCreated($sorting);
 
         $patch = new \Algolia\AlgoliaSearch\Setup\Patch\Data\RebuildReplicasPatch(
             $this->objectManager->get(ModuleDataSetupInterface::class),
@@ -275,7 +286,9 @@ class ReplicaIndexingTest extends TestCase
         $patch->apply();
 
         $this->algoliaHelper->waitLastTask();
-        $this->assertEquals(count($sorting), count($replicas));
+
+        $replicas = $this->assertReplicasCreated($sorting);
+
         $this->assertSortToReplicaConfigParity($this->indexName, $sorting, $replicas);
     }
 

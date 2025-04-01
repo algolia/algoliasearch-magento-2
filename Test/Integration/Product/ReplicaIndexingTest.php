@@ -13,11 +13,16 @@ use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Algolia\AlgoliaSearch\Validator\VirtualReplicaValidatorFactory;
+use Magento\Framework\App\State as AppState;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 
 class ReplicaIndexingTest extends TestCase
 {
@@ -27,6 +32,8 @@ class ReplicaIndexingTest extends TestCase
     protected ?IndicesConfigurator $indicesConfigurator = null;
 
     protected ?string $indexName = null;
+
+    protected ?int $patchRetries = 3;
 
     protected function setUp(): void
     {
@@ -245,7 +252,7 @@ class ReplicaIndexingTest extends TestCase
     }
 
     /**
-     * Test
+     * Test failure to clear index replica setting
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      */
     public function testReplicaDeleteUnreliable(): void
@@ -260,13 +267,40 @@ class ReplicaIndexingTest extends TestCase
 
         $this->assertEquals(count($sorting), count($replicas));
 
-        $this->getCrippledReplicaManager()->deleteReplicasFromAlgolia(1);
+        $this->getMustPrevalidateMockReplicaManager()->deleteReplicasFromAlgolia(1);
 
         $newSettings = $this->algoliaHelper->getSettings($primaryIndexName);
         $this->assertArrayNotHasKey('replicas', $newSettings);
         foreach ($replicas as $replica) {
             $this->assertIndexNotExists($this->extractIndexFromReplicaSetting($replica));
         }
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     */
+    public function testReplicaRebuildPatch(): void
+    {
+        $primaryIndexName = $this->indexName;
+        $sorting = $this->populateReplicas(1);
+        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $this->assertArrayHasKey('replicas', $currentSettings);
+        $replicas = $currentSettings['replicas'];
+
+        $this->assertTrue($this->configHelper->credentialsAreConfigured());
+
+        $patch = new \Algolia\AlgoliaSearch\Setup\Patch\Data\RebuildReplicasPatch(
+            $this->objectManager->get(ModuleDataSetupInterface::class),
+            $this->objectManager->get(StoreManagerInterface::class),
+            $this->getTroublesomePatchReplicaManager(),
+            $this->objectManager->get(ProductHelper::class),
+            $this->objectManager->get(AppState::class),
+            $this->objectManager->get(ReplicaState::class),
+            $this->configHelper,
+            $this->objectManager->get(LoggerInterface::class)
+        );
+
+        $patch->apply();
     }
 
     protected function extractIndexFromReplicaSetting(string $setting): string {
@@ -279,14 +313,56 @@ class ReplicaIndexingTest extends TestCase
      * This aims to reproduce this potential scenario by not disassociating the replica
      *
      */
-    protected function getCrippledReplicaManager(): ReplicaManagerInterface
+    protected function getMustPrevalidateMockReplicaManager(): ReplicaManagerInterface
     {
-        $mockedClass = \Algolia\AlgoliaSearch\Service\Product\ReplicaManager::class;
         $mockedMethod = 'clearReplicasSettingInAlgolia';
+
+        $mock = $this->getMockReplicaManager([
+            $mockedMethod => function(...$params) {
+                //DO NOTHING
+                return;
+            }
+        ]);
+        $mock->expects($this->once())->method($mockedMethod);
+        return $mock;
+    }
+
+    /**
+     * This mock is to recreate the scenario where a patch tries to apply up to 3 times but the replicas
+     * are never detached which throws a replica delete error until the last attempt which should succeed
+     */
+    protected function getTroublesomePatchReplicaManager(): ReplicaManager
+    {
+        $mock = $this->getMockReplicaManager([
+            'clearReplicasSettingInAlgolia' => null,
+            'deleteReplicas' => null
+        ]);
+        $mock
+            ->expects($this->exactly($this->patchRetries))
+            ->method('clearReplicasSettingInAlgolia')
+            ->willReturnCallback(function(...$params) use ($mock) {
+                if (--$this->patchRetries) return;
+                $originalMethod = new \ReflectionMethod(ReplicaManager::class, 'clearReplicasSettingInAlgolia');
+                $originalMethod->invoke($mock, ...$params);
+            });
+        $mock
+            ->expects($this->any())
+            ->method('deleteReplicas')
+            ->willReturnCallback(function(array $replicasToDelete, ...$params) use ($mock) {
+                $originalMethod = new \ReflectionMethod(ReplicaManager::class, 'deleteReplicas');
+                $originalMethod->invoke($mock, $replicasToDelete, false, false);
+            });
+
+        return $mock;
+    }
+
+    protected function getMockReplicaManager($mockedMethods = array()): MockObject & ReplicaManager
+    {
+        $mockedClass = ReplicaManager::class;
         $mockedReplicaManager = $this->getMockBuilder($mockedClass)
             ->setConstructorArgs([
-                $this->objectManager->get(ConfigHelper::class),
-                $this->objectManager->get(AlgoliaHelper::class),
+                $this->configHelper,
+                $this->algoliaHelper,
                 $this->objectManager->get(ReplicaState::class),
                 $this->objectManager->get(VirtualReplicaValidatorFactory::class),
                 $this->objectManager->get(IndexNameFetcher::class),
@@ -295,23 +371,16 @@ class ReplicaIndexingTest extends TestCase
                 $this->objectManager->get(StoreManagerInterface::class),
                 $this->objectManager->get(Logger::class)
             ])
-            ->onlyMethods([$mockedMethod])
+            ->onlyMethods(array_keys($mockedMethods))
             ->getMock();
-        $mockedReplicaManager
-            ->expects($this->once())
-            ->method($mockedMethod)
-            ->willReturnCallback(
-                function (...$params)
-                use ($mockedClass, $mockedMethod, $mockedReplicaManager)
-                {
-                    // DO NOTHING
-                    return;
 
-                    // If aiming to test a throttle on retry invoke after a specified number of failures
-                    //$originalMethod = new \ReflectionMethod($mockedClass, $mockedMethod);
-                    //return $originalMethod->invoke($mockedReplicaManager, ...$params);
-                }
-            );
+        foreach ($mockedMethods as $method => $callback) {
+            if (!$callback) continue;
+            $mockedReplicaManager
+                ->method($method)
+                ->willReturnCallback($callback);
+        }
+
         return $mockedReplicaManager;
     }
 

@@ -216,9 +216,7 @@ class ReplicaIndexingTest extends TestCase
 
         $sorting = $this->populateReplicas(1);
 
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayHasKey('replicas', $currentSettings);
-        $replicas = $currentSettings['replicas'];
+        $replicas = $this->assertReplicasCreated($sorting);
 
         $this->assertEquals(count($sorting), count($replicas));
         $this->assertSortToReplicaConfigParity($primaryIndexName, $sorting, $replicas);
@@ -229,26 +227,14 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaDelete(): void
     {
-        $primaryIndexName = $this->indexName;
-
         // Make one replica virtual
         $this->mockSortUpdate('price', 'asc', ['virtualReplica' => 1]);
 
-        $sorting = $this->populateReplicas(1);
-
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayHasKey('replicas', $currentSettings);
-        $replicas = $currentSettings['replicas'];
-
-        $this->assertEquals(count($sorting), count($replicas));
+        $replicas = $this->assertReplicasCreated($this->populateReplicas(1));
 
         $this->replicaManager->deleteReplicasFromAlgolia(1);
 
-        $newSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayNotHasKey('replicas', $newSettings);
-        foreach ($replicas as $replica) {
-            $this->assertIndexNotExists($this->extractIndexFromReplicaSetting($replica));
-        }
+        $this->assertReplicasDeleted($replicas);
     }
 
     /**
@@ -257,42 +243,28 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaDeleteUnreliable(): void
     {
-        $primaryIndexName = $this->indexName;
-
-        $sorting = $this->populateReplicas(1);
-
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayHasKey('replicas', $currentSettings);
-        $replicas = $currentSettings['replicas'];
-
-        $this->assertEquals(count($sorting), count($replicas));
+        $replicas = $this->assertReplicasCreated($this->populateReplicas(1));
 
         $this->getMustPrevalidateMockReplicaManager()->deleteReplicasFromAlgolia(1);
 
-        $newSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayNotHasKey('replicas', $newSettings);
-        foreach ($replicas as $replica) {
-            $this->assertIndexNotExists($this->extractIndexFromReplicaSetting($replica));
-        }
+        $this->assertReplicasDeleted($replicas);
     }
 
     /**
+     * Test the RebuildReplicasPatch with API failures
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      */
     public function testReplicaRebuildPatch(): void
     {
-        $primaryIndexName = $this->indexName;
         $sorting = $this->populateReplicas(1);
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
-        $this->assertArrayHasKey('replicas', $currentSettings);
-        $replicas = $currentSettings['replicas'];
+        $replicas = $this->assertReplicasCreated($sorting);
 
-        $this->assertTrue($this->configHelper->credentialsAreConfigured());
+        $this->assertTrue($this->configHelper->credentialsAreConfigured(), "Credentials not available to apply patch.");
 
         $patch = new \Algolia\AlgoliaSearch\Setup\Patch\Data\RebuildReplicasPatch(
             $this->objectManager->get(ModuleDataSetupInterface::class),
             $this->objectManager->get(StoreManagerInterface::class),
-            $this->getTroublesomePatchReplicaManager(),
+            $this->getTroublesomePatchReplicaManager($replicas),
             $this->objectManager->get(ProductHelper::class),
             $this->objectManager->get(AppState::class),
             $this->objectManager->get(ReplicaState::class),
@@ -301,6 +273,10 @@ class ReplicaIndexingTest extends TestCase
         );
 
         $patch->apply();
+
+        $this->algoliaHelper->waitLastTask();
+        $this->assertEquals(count($sorting), count($replicas));
+        $this->assertSortToReplicaConfigParity($this->indexName, $sorting, $replicas);
     }
 
     protected function extractIndexFromReplicaSetting(string $setting): string {
@@ -330,8 +306,10 @@ class ReplicaIndexingTest extends TestCase
     /**
      * This mock is to recreate the scenario where a patch tries to apply up to 3 times but the replicas
      * are never detached which throws a replica delete error until the last attempt which should succeed
+     *
+     * @param array $replicas - replicas that are to be deleted
      */
-    protected function getTroublesomePatchReplicaManager(): ReplicaManager
+    protected function getTroublesomePatchReplicaManager(array $replicas): ReplicaManager
     {
         $mock = $this->getMockReplicaManager([
             'clearReplicasSettingInAlgolia' => null,
@@ -348,9 +326,17 @@ class ReplicaIndexingTest extends TestCase
         $mock
             ->expects($this->any())
             ->method('deleteReplicas')
-            ->willReturnCallback(function(array $replicasToDelete, ...$params) use ($mock) {
+            ->willReturnCallback(function(array $replicasToDelete, ...$params) use ($mock, $replicas) {
                 $originalMethod = new \ReflectionMethod(ReplicaManager::class, 'deleteReplicas');
                 $originalMethod->invoke($mock, $replicasToDelete, false, false);
+                if ($this->patchRetries) return;
+                $this->runOnce(
+                    function() use ($replicas) {
+                        $this->algoliaHelper->waitLastTask();
+                        $this->assertReplicasDeleted($replicas);
+                    },
+                    'patchDeleteTest'
+                );
             });
 
         return $mock;
@@ -382,6 +368,34 @@ class ReplicaIndexingTest extends TestCase
         }
 
         return $mockedReplicaManager;
+    }
+
+    /**
+     * Setup replicas for testing and assert that they have been synced to Algolia
+     * @param array $sorting - the array of sorts from Magento
+     * @return array - The replica setting from Algolia
+     * @throws AlgoliaException
+     * @throws ExceededRetriesException
+     * @throws \ReflectionException
+     */
+    protected function assertReplicasCreated(array $sorting): array
+    {
+        $currentSettings = $this->algoliaHelper->getSettings($this->indexName);
+        $this->assertArrayHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $currentSettings);
+        $replicas = $currentSettings[ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS];
+
+        $this->assertEquals(count($sorting), count($replicas));
+
+        return $replicas;
+    }
+
+    protected function assertReplicasDeleted($originalReplicas): void
+    {
+        $newSettings = $this->algoliaHelper->getSettings($this->indexName);
+        $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $newSettings);
+        foreach ($originalReplicas as $replica) {
+            $this->assertIndexNotExists($this->extractIndexFromReplicaSetting($replica));
+        }
     }
 
     /**

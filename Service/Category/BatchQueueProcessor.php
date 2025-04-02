@@ -10,14 +10,11 @@ use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
-use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class BatchQueueProcessor implements BatchQueueProcessorInterface
 {
-    public $affectedProductIds = [];
-
     public function __construct(
         protected Data $dataHelper,
         protected ConfigHelper $configHelper,
@@ -44,10 +41,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
             return;
         }
 
-        if (count($this->affectedProductIds) > 0) {
-            $this->rebuildAffectedProducts($storeId);
-        }
-
         $categoriesPerPage = $this->configHelper->getNumberOfElementByPage();
 
         if (is_array($entityIds) && count($entityIds) > 0) {
@@ -57,28 +50,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         }
 
         $this->processFullReindex($storeId, $categoriesPerPage);
-    }
-
-    /**
-     * @param int $storeId
-     */
-    protected function rebuildAffectedProducts(int $storeId): void
-    {
-        if ($this->configHelper->indexProductOnCategoryProductsUpdate($storeId)) {
-            $productsPerPage = $this->configHelper->getNumberOfElementByPage();
-            foreach (array_chunk($this->affectedProductIds, $productsPerPage) as $chunk) {
-                /** @uses ProductIndexBuilder::buildIndexList() */
-                $this->queue->addToQueue(
-                    ProductIndexBuilder::class,
-                    'buildIndexList',
-                    [
-                        'storeId' => $storeId,
-                        'entityIds' => $chunk,
-                    ],
-                    count($chunk)
-                );
-            }
-        }
     }
 
     /**
@@ -137,14 +108,5 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
                 true
             );
         }
-    }
-
-    /**
-     * @param array $affectedProductIds
-     * @return void
-     */
-    public function setAffectedProductIds(array $affectedProductIds): void
-    {
-        $this->affectedProductIds = $affectedProductIds;
     }
 }

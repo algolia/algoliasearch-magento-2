@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
+use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\Indexer\ActionInterface;
@@ -15,11 +16,14 @@ abstract class IndexingTestCase extends TestCase
         $this->setConfig('algoliasearch_queue/queue/active', '0');
     }
 
-    protected function processTest(ActionInterface $indexer, $indexSuffix, $expectedNbHits)
-    {
+    protected function processTest(
+        BatchQueueProcessorInterface $batchQueueProcessor,
+        $indexSuffix,
+        $expectedNbHits
+    ) {
         $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
 
-        $indexer->executeFull();
+        $batchQueueProcessor->processBatch(1);
 
         $this->algoliaHelper->waitLastTask();
 

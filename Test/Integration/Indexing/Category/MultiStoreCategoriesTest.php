@@ -40,16 +40,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->categoryCollectionFactory = $this->objectManager->get(CollectionFactory::class);
 
         $this->categoryBatchQueueProcessor = $this->objectManager->get(CategoryBatchQueueProcessor::class);
-        $this->reindexToAllStores();
-    }
-
-    protected function reindexToAllStores(array $categoryIds = null): void
-    {
-        // @todo factorize with BatchQueueProcessorInterface (see processTest)
-        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
-            $this->categoryBatchQueueProcessor->processBatch($storeId, $categoryIds);
-            $this->algoliaHelper->waitLastTask($storeId);
-        }
+        $this->reindexToAllStores($this->categoryBatchQueueProcessor);
     }
 
     /**
@@ -87,7 +78,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->assertEquals(self::BAGS_CATEGORY_NAME, $bagsCategory->getName());
         $this->assertEquals(self::BAGS_CATEGORY_NAME_ALT, $bagsCategoryAlt->getName());
 
-        $this->reindexToAllStores([self::BAGS_CATEGORY_ID]);
+        $this->reindexToAllStores($this->categoryBatchQueueProcessor, [self::BAGS_CATEGORY_ID]);
 
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_categories',
@@ -110,7 +101,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             ['is_active' => 0]
         );
 
-        $this->reindexToAllStores([self::BAGS_CATEGORY_ID]);
+        $this->reindexToAllStores($this->categoryBatchQueueProcessor, [self::BAGS_CATEGORY_ID]);
 
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),

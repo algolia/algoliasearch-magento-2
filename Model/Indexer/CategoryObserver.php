@@ -2,13 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Model\Indexer\Category as CategoryIndexer;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Magento\Catalog\Model\Category as CategoryModel;
 use Magento\Catalog\Model\ResourceModel\Category as CategoryResourceModel;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Store\Model\StoreManagerInterface;
 
 class CategoryObserver
 {
@@ -17,7 +21,9 @@ class CategoryObserver
 
     public function __construct(
         IndexerRegistry $indexerRegistry,
+        protected StoreManagerInterface $storeManager,
         protected ResourceConnection $resource,
+        protected ProductBatchQueueProcessor $productBatchQueueProcessor,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
     ) {
         $this->indexer = $indexerRegistry->get('algolia_categories');
@@ -52,8 +58,8 @@ class CategoryObserver
             $changedProductIds = ($category->getChangedProductIds() !== null ? (array) $category->getChangedProductIds() : []);
 
             if (!$this->indexer->isScheduled()) {
-                CategoryIndexer::$affectedProductIds = array_unique(array_merge($changedProductIds, $collectionIds));
                 $this->indexer->reindexRow($category->getId());
+                $this->reindexAffectedProducts(array_unique(array_merge($changedProductIds, $collectionIds)));
             } else {
                 // missing logic, if scheduled, when category is saved w/out product, products need to be added to _cl
                 if (count($changedProductIds) === 0 && count($collectionIds) > 0) {
@@ -82,13 +88,27 @@ class CategoryObserver
             if (!$this->indexer->isScheduled()) {
                 /* we are using products position because getProductCollection() doesn't use correct store */
                 $productCollection = $category->getProductsPosition();
-                CategoryIndexer::$affectedProductIds = array_keys($productCollection);
-
                 $this->indexer->reindexRow($category->getId());
+                $this->reindexAffectedProducts(array_keys($productCollection));
             }
         });
 
         return $result;
+    }
+
+    /**
+     * @param array $affectedProductIds
+     * @return void
+     * @throws DiagnosticsException
+     * @throws NoSuchEntityException
+     */
+    protected function reindexAffectedProducts(array $affectedProductIds): void
+    {
+        if (count($affectedProductIds) > 0) {
+            foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+                $this->productBatchQueueProcessor->processBatch($storeId, $affectedProductIds);
+            }
+        }
     }
 
     /**

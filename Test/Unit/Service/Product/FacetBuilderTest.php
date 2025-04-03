@@ -16,11 +16,11 @@ use PHPUnit\Framework\TestCase;
 
 class FacetBuilderTest extends TestCase
 {
-    protected FacetBuilder $facetBuilder;
-    protected ConfigHelper $configHelper;
-    protected StoreManagerInterface $storeManager;
-    protected GroupCollection $groupCollection;
-    protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
+    protected ?FacetBuilder $facetBuilder;
+    protected ?ConfigHelper $configHelper;
+    protected ?StoreManagerInterface $storeManager;
+    protected ?GroupCollection $groupCollection;
+    protected ?GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
 
     protected function setUp(): void
     {

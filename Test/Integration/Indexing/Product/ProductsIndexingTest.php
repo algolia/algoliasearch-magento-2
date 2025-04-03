@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
+use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -84,6 +85,16 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $extraAttributes = implode(', ', array_keys($hit));
         $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
+    }
+
+    public function testIndexingProductsCommand()
+    {
+        $this->setConfig(ConfigHelper::SHOW_OUT_OF_STOCK, 0);
+
+        $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
+
+        $indexProductsCmd = $this->objectManager->get(IndexProductsCommand::class);
+        $this->processCommandTest($indexProductsCmd, 'products', $this->assertValues->productsOnStockCount);
     }
 
     private function getValidTestProduct()

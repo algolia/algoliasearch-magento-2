@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Page;
 
+use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\IndexingTestCase;
@@ -146,5 +147,16 @@ class PagesIndexingTest extends IndexingTestCase
         }
 
         $testPage->delete();
+    }
+
+    public function testIndexingPagesCommand()
+    {
+        $this->setConfig(
+            'algoliasearch_autocomplete/autocomplete/excluded_pages',
+            $this->getSerializer()->serialize([])
+        );
+
+        $indexPagesCmd = $this->objectManager->get(IndexPagesCommand::class);
+        $this->processCommandTest($indexPagesCmd, 'pages', $this->assertValues->expectedPages);
     }
 }

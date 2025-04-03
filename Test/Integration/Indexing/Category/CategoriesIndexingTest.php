@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Category;
 
+use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand;
 use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\IndexingTestCase;
 
@@ -51,5 +52,11 @@ class CategoriesIndexingTest extends IndexingTestCase
 
         $extraAttributes = implode(', ', array_keys($hit));
         $this->assertTrue(empty($hit), 'Extra category attributes (' . $extraAttributes . ') are indexed and should not be.');
+    }
+
+    public function testIndexingCategoriesCommand()
+    {
+        $indexCategoriesCmd = $this->objectManager->get(IndexCategoriesCommand::class);
+        $this->processCommandTest($indexCategoriesCmd,'categories', $this->assertValues->expectedCategory);
     }
 }

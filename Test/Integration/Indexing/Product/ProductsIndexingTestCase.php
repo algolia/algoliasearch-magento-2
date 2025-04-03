@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
-use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\IndexingTestCase;
 use Magento\CatalogInventory\Model\StockRegistry;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -12,13 +12,13 @@ class ProductsIndexingTestCase extends IndexingTestCase
 {
 
     protected ?StockRegistry $stockRegistry = null;
-    protected ?ProductIndexer $productIndexer = null;
+    protected ?ProductBatchQueueProcessor $productBatchQueueProcessor = null;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->productIndexer = $this->objectManager->get(ProductIndexer::class);
+        $this->productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
         $this->stockRegistry = $this->objectManager->get(StockRegistry::class);
 
         $this->objectManager

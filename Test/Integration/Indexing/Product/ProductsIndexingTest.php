@@ -19,8 +19,6 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
     /*** @var IndexerRegistry */
     protected $indexerRegistry;
 
-    protected $productPriceIndexer;
-
     protected $testProductId;
 
     const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
@@ -31,7 +29,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
-        $this->processTest($this->productIndexer, 'products', $this->assertValues->productsOnStockCount);
+        $this->processTest($this->productBatchQueueProcessor, 'products', $this->assertValues->productsOnStockCount);
     }
 
     public function testIncludingOutOfStock()
@@ -40,7 +38,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
-        $this->processTest($this->productIndexer, 'products', $this->assertValues->productsOutOfStockCount);
+        $this->processTest($this->productBatchQueueProcessor, 'products', $this->assertValues->productsOutOfStockCount);
     }
 
     public function testDefaultIndexableAttributes()
@@ -52,7 +50,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->setConfig(ConfigHelper::SORTING_INDICES, $empty);
         $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
-        $this->productIndexer->executeRow($this->getValidTestProduct());
+        $this->productBatchQueueProcessor->processBatch(1, [$this->getValidTestProduct()]);
         $this->algoliaHelper->waitLastTask();
 
         $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);

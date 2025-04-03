@@ -3,12 +3,12 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Queue;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobsCollectionFactory;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
@@ -19,8 +19,6 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
  */
 class QueueTest extends TestCase
 {
-    private const INCOMPLETE_REASON = "Must revisit transaction handling across connections.";
-
     /** @var JobsCollectionFactory */
     private $jobsCollectionFactory;
 
@@ -53,9 +51,8 @@ class QueueTest extends TestCase
         $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(3, count($rows));
@@ -90,9 +87,8 @@ class QueueTest extends TestCase
         $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
 
         /** @var Queue $queue */
         $queue = $this->objectManager->get(Queue::class);
@@ -154,11 +150,10 @@ class QueueTest extends TestCase
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
         // Reindex products multiple times
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->executeFull();
-        $indexer->executeFull();
-        $indexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
+        $productBatchQueueProcessor->processBatch(1);
+        $productBatchQueueProcessor->processBatch(1);
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(9, count($rows));
@@ -188,9 +183,8 @@ class QueueTest extends TestCase
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
-        /** @var Product $productIndexer */
-        $productIndexer = $this->objectManager->get(Product::class);
-        $productIndexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertCount(3, $rows);
@@ -884,9 +878,8 @@ class QueueTest extends TestCase
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->execute(range(1, 512));
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1, range(1, 512));
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertSame(6, count($dbJobs));

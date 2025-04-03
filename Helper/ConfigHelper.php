@@ -1190,15 +1190,30 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return string
      * @throws Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getCurrencyCode($storeId = null)
+    public function getCurrencyCode(int $storeId = null): string
     {
         /** @var Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
         return $store->getCurrentCurrencyCode();
+    }
+
+    /**
+     * Obtain the store scoped currency configuration or fall back to all allowed currencies
+     * @return array
+     */
+    public function getAllowedCurrencies(?int $storeId = null): array
+    {
+        $configured = explode(
+            ',',
+            $this->configInterface->getValue(
+                DirCurrency::XML_PATH_CURRENCY_ALLOW,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            ) ?? ''
+        );
+        return $configured ?: $this->dirCurrency->getConfigAllowCurrencies();
     }
 
     /**
@@ -1483,6 +1498,8 @@ class ConfigHelper
     }
 
     /**
+     * NOTE: This method is currently only used in integration tests and was removed from the general implementation
+     * TODO: Evaluate use cases with product permissions where we may need to restore this functionality
      * @param $groupId
      * @return array
      */

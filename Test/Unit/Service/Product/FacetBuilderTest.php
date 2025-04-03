@@ -9,7 +9,6 @@ use Algolia\AlgoliaSearch\Model\QuerySuggestions\Facet;
 use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
-use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
@@ -20,7 +19,6 @@ class FacetBuilderTest extends TestCase
     protected FacetBuilder $facetBuilder;
     protected ConfigHelper $configHelper;
     protected StoreManagerInterface $storeManager;
-    protected CurrencyHelper $currencyManager;
     protected GroupCollection $groupCollection;
     protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
 
@@ -28,14 +26,12 @@ class FacetBuilderTest extends TestCase
     {
         $this->configHelper = $this->createMock(ConfigHelper::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->currencyManager = $this->createMock(CurrencyHelper::class);
         $this->groupCollection = $this->createMock(GroupCollection::class);
         $this->groupExcludedWebsiteRepository = $this->createMock(GroupExcludedWebsiteRepositoryInterface::class);
 
         $this->facetBuilder = new FacetBuilderTestable(
             $this->configHelper,
             $this->storeManager,
-            $this->currencyManager,
             $this->groupCollection,
             $this->groupExcludedWebsiteRepository
         );
@@ -54,8 +50,8 @@ class FacetBuilderTest extends TestCase
 
     protected function mockStoreConfig($storeId, $websiteId): void
     {
-        $this->currencyManager
-            ->method('getConfigAllowCurrencies')
+        $this->configHelper
+            ->method('getAllowedCurrencies')
             ->willReturn(['EUR', 'USD']);
 
         $storeMock = $this->createMock(\Magento\Store\Api\Data\StoreInterface::class);

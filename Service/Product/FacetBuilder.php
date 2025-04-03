@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Service\Product;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
-use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
@@ -29,7 +28,6 @@ class FacetBuilder
     public function __construct(
         protected ConfigHelper                            $configHelper,
         protected StoreManagerInterface                   $storeManager,
-        protected CurrencyHelper                          $currencyManager,
         protected GroupCollection                         $groupCollection,
         protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
     )
@@ -196,7 +194,7 @@ class FacetBuilder
     protected function getPricingAttributes(int $storeId): array
     {
         $pricingAttributes = [];
-        $currencies = $this->currencyManager->getConfigAllowCurrencies();
+        $currencies = $this->configHelper->getAllowedCurrencies($storeId);
         foreach ($currencies as $currencyCode) {
             $pricingAttributes[] = self::FACET_ATTRIBUTE_PRICE . '.' . $currencyCode . '.default';
             $pricingAttributes = array_merge($pricingAttributes, $this->getGroupPricingAttributes($storeId, $currencyCode));

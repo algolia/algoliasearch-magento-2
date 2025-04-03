@@ -285,10 +285,13 @@ class ProductHelper extends AbstractEntityHelper
             'customRanking'           => $this->getCustomRanking($storeId),
             'unretrievableAttributes' => $this->getUnretrieveableAttributes($storeId),
             'attributesForFaceting'   => $this->facetBuilder->getAttributesForFaceting($storeId),
-            'renderingContent'        => $this->facetBuilder->getRenderingContent($storeId),
             'maxValuesPerFacet'       => $this->configHelper->getMaxValuesPerFacet($storeId),
             'removeWordsIfNoResults'  => $this->configHelper->getRemoveWordsIfNoResult($storeId),
         ];
+
+        if ($this->configHelper->isDynamicFacetsEnabled($storeId)) {
+            $indexSettings['renderingContent'] = $this->facetBuilder->getRenderingContent($storeId);
+        }
 
         // Additional index settings from event observer
         $transport = new DataObject($indexSettings);

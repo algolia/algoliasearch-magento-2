@@ -443,6 +443,14 @@
                             While the rendering of facets is configured based on your Magento admin settings, it is possible to override
                             these settings via merchandising rules in Algolia. Enable "dynamic facets" to allow InstantSearch
                             to render facets based on the rule conditions you define in either the Algolia Dashboard or Merchandising Studio.
+                            <br><br>
+                            This feature utilizes the "Facet display" configuration in the Algolia Dashboard (a.k.a. <code>renderingContent</code>).
+                            If you have customized this setting in the Dashboard for your products index, please note that enabling this option will allow Magento to overwrite your configuration.
+                            <br><br>
+                            <span class="algolia-config-warning">&#9888;</span>
+                            <strong>IMPORTANT!</strong> Do not enable dynamic facets unless you have the "renderingContent" feature enabled on your Algolia application. Otherwise this configuration
+                            can cause your indexing to fail.
+
                         ]]>
                     </comment>
                     <depends>

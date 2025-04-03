@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Page;
 
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
-use Algolia\AlgoliaSearch\Model\Indexer\Page;
+use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\IndexingTestCase;
 use Magento\Cms\Model\PageFactory;
 
@@ -16,10 +16,8 @@ class PagesIndexingTest extends IndexingTestCase
             $this->getSerializer()->serialize([])
         );
 
-        /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create(Page::class);
-
-        $this->processTest($indexer, 'pages', $this->assertValues->expectedPages);
+        $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
+        $this->processTest($pageBatchQueueProcessor, 'pages', $this->assertValues->expectedPages);
     }
 
     public function testExcludedPages()
@@ -33,9 +31,8 @@ class PagesIndexingTest extends IndexingTestCase
             $this->getSerializer()->serialize($excludedPages)
         );
 
-        /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create(Page::class);
-        $this->processTest($indexer, 'pages', $this->assertValues->expectedExcludePages);
+        $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
+        $this->processTest($pageBatchQueueProcessor, 'pages', $this->assertValues->expectedExcludePages);
 
         $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
         $hits = reset($response['results'])['hits'];
@@ -61,10 +58,8 @@ class PagesIndexingTest extends IndexingTestCase
 
     public function testDefaultIndexableAttributes()
     {
-        /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create(Page::class);
-        $indexer->executeFull();
-
+        $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
+        $pageBatchQueueProcessor->processBatch(1);
         $this->algoliaHelper->waitLastTask();
 
         $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', ['hitsPerPage' => 1]);

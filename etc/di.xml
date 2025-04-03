@@ -201,6 +201,57 @@
         </arguments>
     </type>
 
+    <!-- custom indexers -->
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand">
+        <arguments>
+            <argument name="productBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand">
+        <arguments>
+            <argument name="categoryBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand">
+        <arguments>
+            <argument name="pageBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexSuggestionsCommand">
+        <arguments>
+            <argument name="suggestionBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Suggestion\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAdditionalSectionsCommand">
+        <arguments>
+            <argument name="additionalSectionBatchQueueProcessorr" xsi:type="object">Algolia\AlgoliaSearch\Service\AdditionalSection\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\DeleteProductsCommand">
+        <arguments>
+            <argument name="productBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand">
+        <arguments>
+            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
+            <argument name="queue" xsi:type="object">Algolia\AlgoliaSearch\Model\Queue\Proxy</argument>
+            <argument name="algoliaCredentialsManager" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand">
+        <arguments>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <!-- custom indexers END -->
+
     <virtualType name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger" type="Monolog\Logger">
         <arguments>
             <argument name="name" xsi:type="string">algolia</argument>

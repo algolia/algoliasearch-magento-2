@@ -2,9 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
+use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
+use Algolia\AlgoliaSearch\Console\Command\Indexer\AbstractIndexerCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
-use Magento\Framework\Indexer\ActionInterface;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class IndexingTestCase extends TestCase
 {
@@ -15,16 +18,43 @@ abstract class IndexingTestCase extends TestCase
         $this->setConfig('algoliasearch_queue/queue/active', '0');
     }
 
-    protected function processTest(ActionInterface $indexer, $indexSuffix, $expectedNbHits)
-    {
+    protected function processTest(
+        BatchQueueProcessorInterface $batchQueueProcessor,
+        $indexSuffix,
+        $expectedNbHits
+    ) {
         $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
 
-        $indexer->executeFull();
-
+        $batchQueueProcessor->processBatch(1);
         $this->algoliaHelper->waitLastTask();
 
-        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix . 'default_' . $indexSuffix, '', []);
+        $this->assertNumberofHits($indexSuffix, $expectedNbHits);
+    }
 
+    protected function processCommandTest(
+        AbstractIndexerCommand $command,
+        $indexSuffix,
+        $expectedNbHits
+    ) {
+        $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
+
+        $this->mockProperty($command, 'output', OutputInterface::class);
+        $this->invokeMethod(
+            $command,
+            'execute',
+            [
+                $this->createMock(InputInterface::class),
+                $this->createMock(OutputInterface::class)
+            ]
+        );
+        $this->algoliaHelper->waitLastTask();
+
+        $this->assertNumberofHits($indexSuffix, $expectedNbHits);
+    }
+
+    protected function assertNumberofHits($indexSuffix, $expectedNbHits)
+    {
+        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix . 'default_' . $indexSuffix, '', []);
         $this->assertEquals($expectedNbHits, $resultsDefault['results'][0]['nbHits']);
     }
 

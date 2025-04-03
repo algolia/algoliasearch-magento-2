@@ -58,64 +58,7 @@ class ConfigTest extends TestCase
 
     public function testAutomaticalSetOfCategoriesFacet()
     {
-        /** @var IndicesConfigurator $indicesConfigurator */
-        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
-
-        // Remove categories from facets
-        $facets = $this->configHelper->getFacets();
-        foreach ($facets as $key => $facet) {
-            if ($facet['attribute'] === 'categories') {
-                unset($facets[$key]);
-
-                break;
-            }
-        }
-
-        $this->setConfig('algoliasearch_instant/instant_facets/facets', $this->getSerializer()->serialize($facets));
-
-        // Set don't replace category pages with Algolia - categories attribute shouldn't be included in facets
-        $this->setConfig('algoliasearch_instant/instant/replace_categories', '0');
-
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-
-        $this->algoliaHelper->waitLastTask();
-
-        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
-
-        $this->assertEquals($this->assertValues->automaticalSetOfCategoryAttributesForFaceting, count($indexSettings['attributesForFaceting']));
-
-        $categoriesAttributeIsIncluded = false;
-        foreach ($indexSettings['attributesForFaceting'] as $attribute) {
-            if ($attribute === 'categories') {
-                $categoriesAttributeIsIncluded = true;
-
-                break;
-            }
-        }
-
-        $this->assertFalse($categoriesAttributeIsIncluded, 'Categories attribute should not be included in facets, but it is');
-
-        // Set replace category pages with Algolia - categories attribute should be included in facets
-        $this->setConfig('algoliasearch_instant/instant/replace_categories', '1');
-
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-
-        $this->algoliaHelper->waitLastTask();
-
-        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
-
-        $this->assertEquals($this->assertValues->automaticalSetOfCategoryAttributesForFaceting + 1, count($indexSettings['attributesForFaceting']));
-
-        $categoriesAttributeIsIncluded = false;
-        foreach ($indexSettings['attributesForFaceting'] as $attribute) {
-            if ($attribute === 'categories') {
-                $categoriesAttributeIsIncluded = true;
-
-                break;
-            }
-        }
-
-        $this->assertTrue($categoriesAttributeIsIncluded, 'Categories attribute should be included in facets, but it is not');
+        // Removed test, the addition/deletion of the "categories" attribute is now checked by the FacetBuilder unit test
     }
 
     public function testRetrievableAttributes()

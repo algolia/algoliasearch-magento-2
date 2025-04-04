@@ -28,15 +28,16 @@ const config = {
         'algoliaSearchLib'       : 'Algolia_AlgoliaSearch/js/lib/algolia-search.min',
         'algoliaSearchHelperLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-search-helper.min',
         'algoliaInstantSearchLib': 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
-        'algoliaAutocompleteLib' : 'Algolia_AlgoliaSearch/js/lib/algolia-autocomplete.min',
+        'algoliaAutocompleteLib' : 'Algolia_AlgoliaSearch/js/lib/autocomplete/algolia-autocomplete.min',
         'algoliaAnalyticsLib'    : 'Algolia_AlgoliaSearch/js/lib/search-insights.min',
         'algoliaRecommendLib'    : 'Algolia_AlgoliaSearch/js/lib/recommend.min',
         'algoliaRecommendJsLib'  : 'Algolia_AlgoliaSearch/js/lib/recommend-js.min',
 
         // Autocomplete plugins
-        'algoliaQuerySuggestionsPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/query-suggestions-plugin.min',
-        'algoliaInsightsPluginLib'          : 'Algolia_AlgoliaSearch/js/lib/insights-plugin.min',
-        'algoliaRecentSearchesPluginLib'    : 'Algolia_AlgoliaSearch/js/lib/recent-searches-plugin.min',
+        'algoliaQuerySuggestionsPluginLib': 'Algolia_AlgoliaSearch/js/lib/autocomplete/query-suggestions-plugin.min',
+        'algoliaInsightsPluginLib'        : 'Algolia_AlgoliaSearch/js/lib/autocomplete/insights-plugin.min',
+        'algoliaRecentSearchesPluginLib'  : 'Algolia_AlgoliaSearch/js/lib/autocomplete/recent-searches-plugin.min',
+        'algoliaRedirectUrlPluginLib'     : 'Algolia_AlgoliaSearch/js/lib/autocomplete/redirect-url-plugin.min',
 
         // Autocomplete templates
         'algoliaAutocompleteProductsHtml'   : 'Algolia_AlgoliaSearch/js/template/autocomplete/products',

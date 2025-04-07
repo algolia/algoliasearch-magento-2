@@ -205,14 +205,20 @@ define([
                 return;
             }
 
-            let widget = instantsearch.widgets[type];
+            search.addWidgets([this.getConfiguredWidget(instantsearch.widgets[type], config)]);
+        },
 
+        /**
+         * Return a fully configured widget, panelized (as needed) based on the supplied raw config object
+         * @param widget
+         * @param config
+         */
+        getConfiguredWidget(widget, config) {
             if (config.panelOptions) {
                 widget = instantsearch.widgets.panel(config.panelOptions)(widget);
                 delete config.panelOptions; // facet config attribute only NOT IS widget attribute
             }
-
-            search.addWidgets([widget(config)]);
+            return widget(config);
         },
 
         /**
@@ -231,11 +237,13 @@ define([
                         const widget = instantsearch.widgets[type];
                         // The dynamicWidgets container must be derived at run time
                         return container => {
-                            const newConfig = {
-                                ...raw,
-                                container
-                            };
-                            return widget(newConfig);
+                            return this.getConfiguredWidget(
+                                widget,
+                                {
+                                    ...raw,
+                                    container
+                                }
+                            );
                         };
                     })
                 })

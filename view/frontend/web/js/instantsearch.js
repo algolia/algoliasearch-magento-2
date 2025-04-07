@@ -199,6 +199,12 @@ define([
                 return;
             }
 
+            if (algoliaConfig.instant.isDynamicFacetsEnabled && this.isDynamicFacetsEligible(type)) {
+                // we cannot pre-bake the dynamicWidget - defer and package the type with the config
+                this.dynamicWidgets.push({ ...config, type });
+                return;
+            }
+
             let widget = instantsearch.widgets[type];
 
             if (config.panelOptions) {
@@ -206,14 +212,7 @@ define([
                 delete config.panelOptions; // facet config attribute only NOT IS widget attribute
             }
 
-            const configuredWidget = widget(config);
-
-            if (algoliaConfig.instant.isDynamicFacetsEnabled && this.isDynamicFacetsEligible(type)) {
-                this.dynamicWidgets.push(configuredWidget);
-                return;
-            }
-
-            search.addWidgets([configuredWidget]);
+            search.addWidgets([widget(config)]);
         },
 
         /**
@@ -227,7 +226,18 @@ define([
             search.addWidget(
                 dynamicWidgets({
                     container: '#instant-search-facets-container',
-                    widgets: this.dynamicWidgets.map(widget => container => widget)
+                    widgets: this.dynamicWidgets.map(config => {
+                        const { type, ...raw } = config;
+                        const widget = instantsearch.widgets[type];
+                        // The dynamicWidgets container must be derived at run time
+                        return container => {
+                            const newConfig = {
+                                ...raw,
+                                container
+                            };
+                            return widget(newConfig);
+                        };
+                    })
                 })
             );
         },

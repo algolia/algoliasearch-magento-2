@@ -559,15 +559,26 @@ define([
         },
 
         /**
+         * Return DOM container for the facet
+         * If dynamic widgets are enabled no container needs to be created
+         *
+         * @param facet
+         * @returns {*|ActiveX.IXMLDOMNode|null}
+         */
+        getFacetContainer(facet) {
+            return !algoliaConfig.instant.isDynamicFacetsEnabled
+                && facet.wrapper.appendChild(algoliaCommon.createISWidgetContainer(facet.attribute))
+                || null;
+        },
+
+        /**
          * Docs: https://www.algolia.com/doc/api-reference/widgets/range-input/js/
          */
         getRangeInputFacetConfig(facet) {
             return [
                 'rangeInput',
                 {
-                    container   : facet.wrapper.appendChild(
-                        algoliaCommon.createISWidgetContainer(facet.attribute)
-                    ),
+                    container   : this.getFacetContainer(facet),
                     attribute   : facet.attribute,
                     templates   : {
                         separatorText: algoliaConfig.translations.to,
@@ -588,9 +599,7 @@ define([
             return [
                 'rangeSlider',
                 {
-                    container   : facet.wrapper.appendChild(
-                        algoliaCommon.createISWidgetContainer(facet.attribute)
-                    ),
+                    container   : this.getFacetContainer(facet),
                     attribute   : facet.attribute,
                     pips        : false,
                     panelOptions: this.getPricingFacetPanelOptions(facet),
@@ -653,9 +662,7 @@ define([
 
         getRefinementListOptions(facet) {
             return {
-                container   : facet.wrapper.appendChild(
-                    algoliaCommon.createISWidgetContainer(facet.attribute)
-                ),
+                container   : this.getFacetContainer(facet),
                 attribute   : facet.attribute,
                 limit       : algoliaConfig.maxValuesPerFacet,
                 templates   : this.getRefinementsListTemplates(),
@@ -757,9 +764,7 @@ define([
                 }
 
                 const hierarchicalMenuParams = {
-                    container      : facet.wrapper.appendChild(
-                        algoliaCommon.createISWidgetContainer(facet.attribute)
-                    ),
+                    container      : this.getFacetContainer(facet),
                     attributes     : hierarchical_levels,
                     separator      : algoliaConfig.instant.categorySeparator,
                     templates      : [],

@@ -11,7 +11,8 @@ require(
 			// rows
 			const rowIds = [
 				'#row_algoliasearch_instant_instant_facets_facets',
-				'#row_algoliasearch_instant_instant_facets_max_values_per_facet'
+				'#row_algoliasearch_instant_instant_facets_max_values_per_facet',
+				'#row_algoliasearch_instant_instant_facets_enable_dynamic_facets'
 			];
 
 			let rowWarning = '<div class="algolia_dashboard_warning">';

@@ -197,7 +197,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'categorySeparator' => $config->getCategorySeparator(),
                 'categoryPageIdAttribute' => $config->getCategoryPageIdAttributeName(),
                 'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
-                'hidePagination' => $config->hidePaginationInInstantSearchPage()
+                'hidePagination' => $config->hidePaginationInInstantSearchPage(),
+                'isDynamicFacetsEnabled' => $config->isDynamicFacetsEnabled()
             ],
             'autocomplete' => [
                 'enabled' => $config->isAutoCompleteEnabled(),

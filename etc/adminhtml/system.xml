@@ -962,6 +962,7 @@
                     </comment>
                 </field>
                 <field id="cron_expr" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\QueueCron</backend_model>
                     <label>Configure Cronjob</label>
                     <comment>
                         <![CDATA[

@@ -961,6 +961,17 @@
                         <model>Algolia\AlgoliaSearch\Model\Config\EnableQueueComment</model>
                     </comment>
                 </field>
+                <field id="cron_expr" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Configure Cronjob</label>
+                    <comment>
+                        <![CDATA[
+                            Configure cronjob when for the queue.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
                 <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of jobs to run each time the cron is run</label>

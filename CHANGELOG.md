@@ -33,6 +33,7 @@
 - Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
 - Fixed a bug where excluded websites weren't taken into account while indexing customer prices on products. (thanks @kamilszewczyk)
 - Fixed a bug where full page cache (FPC) didn't work on category pages
+- Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
 
 ### Breaking Changes
 - If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/front-end-issues/))

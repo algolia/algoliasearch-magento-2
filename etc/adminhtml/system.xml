@@ -958,15 +958,18 @@
                     <label>Enable Indexing Queue</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
-                        <model>Algolia\AlgoliaSearch\Model\Config\EnableQueueComment</model>
+                        <![CDATA[
+                            If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br><br/>
+                            <span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
+                        ]]>
                     </comment>
                 </field>
-                <field id="cron_expr" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="cron_expr" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <backend_model>Algolia\AlgoliaSearch\Model\Backend\QueueCron</backend_model>
-                    <label>Configure Cronjob</label>
+                    <label>Cron expression</label>
                     <comment>
                         <![CDATA[
-                            Configure cronjob when for the queue.
+                            This configuration will add <code>algolia_queue_process</code> jobs to the Magento <code>cron_schedule</code> table according to the specified cron expression.
                         ]]>
                     </comment>
                     <depends>

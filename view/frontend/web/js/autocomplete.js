@@ -847,15 +847,11 @@ define([
             }
         },
 
+        /**
+         * @deprecated Legacy layout handler - deprecated in favor of CSS Grid
+         */
         handleSuggestionsLayout() {
-            if (state.hasSuggestionSection) {
-                $('.aa-Panel').addClass('productColumn2');
-                $('.aa-Panel').removeClass('productColumn1');
-            } else {
-                $('.aa-Panel').removeClass('productColumn2');
-                $('.aa-Panel').addClass('productColumn1');
-            }
-
+            // Do nothing
         },
 
         addKeyboardNavigation() {

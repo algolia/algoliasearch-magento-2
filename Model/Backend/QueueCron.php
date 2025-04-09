@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Backend;
 
+use Algolia\AlgoliaSearch\Exception\InvalidCronException;
 use Magento\Framework\App\Config\Value;
-use Magento\Setup\Exception;
 
 class QueueCron extends Value
 {
@@ -28,7 +28,7 @@ class QueueCron extends Value
         }
 
         if (!preg_match(self::CRON_REGEX, $value)) {
-            throw new Exception("Cron expression \"$value\" is not valid.");
+            throw new InvalidCronException("Cron expression \"$value\" is not valid.");
         }
 
         return parent::beforeSave();

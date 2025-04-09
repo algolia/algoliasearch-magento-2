@@ -505,7 +505,12 @@ html {
     background-color: #f2f2f2;
     text-decoration: none;
 }
-.footer_algolia{
+
+.footer_algolia {
+    display: none;
+}
+
+.with-grid .footer_algolia {
     position: absolute;
     bottom: 0;
     display: flex;
@@ -560,15 +565,18 @@ html {
 
 @media (min-width: 769px) {
     .aa-Panel .aa-PanelLayout {
+        position: relative;
+
+        min-height: 280px;
+        min-width: 680px;
+    }
+
+    .aa-Panel .aa-PanelLayout.with-grid {
         display: grid;
         grid-template-columns: 3fr 7fr;
         grid-auto-columns: auto;
         grid-column-gap: 0;
         grid-row-gap: 0;
-        position: relative;
-
-        min-height: 280px;
-        min-width: 680px;
     }
 
     /*.aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1){*/

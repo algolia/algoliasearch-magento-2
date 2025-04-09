@@ -152,6 +152,7 @@
                 <item name="replica_delete_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDeleteCommand</item>
                 <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand</item>
                 <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
+                <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
             </argument>
         </arguments>
     </type>
@@ -184,4 +185,25 @@
         </arguments>
     </type>
 
+    <type name="Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand">
+        <arguments>
+            <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
+            <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger" type="Monolog\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">algolia</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler</item>
+                <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Algolia\AlgoliaSearch\Logger\TimedLogger">
+        <arguments>
+            <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
+        </arguments>
+    </type>
 </config>

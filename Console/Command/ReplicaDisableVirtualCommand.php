@@ -42,7 +42,7 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
         parent::__construct($state, $storeNameFetcher, $name);
     }
 
-    protected function getReplicaCommandName(): string
+    protected function getCommandName(): string
     {
         return 'disable-virtual-replicas';
     }

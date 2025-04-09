@@ -1,5 +1,43 @@
 # CHANGE LOG
 
+## 3.15.0
+
+### Features
+- Added support for Multi-Application IDs (see [documentation](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/#support-for-multiple-application-ids))
+- Refactored frontend library to no longer utilize the legacy `algoliaBundle` (see [documentation](https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events/?client=php#frontend-javascript-libraries-and-the-legacy-bundle))
+- Added support for core Algolia UI library overrides via RequireJS
+- Added support for mixins through RequireJS in addition to [front end custom events](https://www.algolia.com/doc/integration/magento-2/customize/custom-front-end-events) 
+- See our `CustomAlgolia` demo extension's [1.4.0 release](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/releases/tag/1.4.0) for examples on how to take advantage of these changes
+- Added granular profiling through the [Magento Profiler](https://experienceleague.adobe.com/en/docs/commerce-operations/configuration-guide/setup/mage-profiler) to aid in troubleshooting indexing performance issues
+- Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
+- Reorganization of the test folders
+- Added unit and integration tests for full page cache (FPC)
+
+### Updates
+- Tests: Added possibility to run tests with multiple applications IDs.
+- Introduced Index Builders which are services responsible for creating and filling indices with data.
+- **IMPORTANT**: As a result `AlgoliaHelper` is now deprecated and will be removed from the codebase in version 3.16.0
+- Added `BackendSearch` Service to move `getSearchResults` method into.
+- Updated Indexing Queue display in the admin by adding the `class` column
+- Updated Indexing Queue `data` column formatting
+- Added documentation link on the queue archive page
+- Debugging information now writes to `algolia.log`
+- Removed dependency on `algoliaBundle` package
+- Removed dependency on JavaScript global `window` objects with the exception of `algoliaConfig`
+- The Hogan.js library is still packaged for injection as needed but be advised that Mustache.js is now used internally instead (see [documentation](https://www.algolia.com/doc/integration/magento-2/customize/instant-search-page/?client=php#mustache-templates))
+- JavaScript bundling is supported but to use the RequireJS Optimizer transpiling will be needed for ES6 constructs
+
+### Bug Fixes
+- Fixed a bug where admin menus didn't display properly on Magento 2.4.7
+- Fixed customer groups prices ranges on configurable products
+- Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
+- Fixed a bug where excluded websites weren't taken into account while indexing customer prices on products. (thanks @kamilszewczyk)
+- Fixed a bug where full page cache (FPC) didn't work on category pages
+
+### Breaking Changes
+- If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/front-end-issues/))
+
+
 ## 3.14.4
 
 ### Features
@@ -93,24 +131,29 @@ If you have customized your Algolia implementation or are running on an older ve
 - Dropped support for Magento 2.3
 - PHP 8.1+ required
 
-## 3.14.0-beta.2
+## 3.13.8
+
+### Bug Fixes
+- Restored compatibility with PHP 7.4
+
+## 3.13.7
+
+### Features
+- Added a feature to enable automatic price indexing on the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products.)
 
 ### Updates
+- Updated `getCookie` method to make it more consistent
+- Removed dependency to `catalog_product_price` indexer
 
-- Introduced new admin groups to InstantSearch for improved UX
-- Updated `ConfigHelper` to use new paths
-- Added data patch to migrate old configurations
-- Bugfix for query rule disable on facets with new admin groupings
-- Added new sorting admin option via source model
-- Added derived virtual replica enablement to `ConfigHelper` based on `ArraySerialized`
-- Intro’d simplified data structures to avoid array diff mismatches
-- Intro’d new `ReplicaManager` abstraction to map Magento sorting to Algolia replica configuration
-- Removed dependencies in backend models to handle replica config updates in Algolia addressing stale data
-- Added `ReplicaState` registry for tracking changes to sorting configuration to minimize number of replica build operations
-- Added logic to preserve replicas created outside of Magento such as Merchandising Studio "sorting strategies"
-- Introduced PHP 8 constructor property promotion on affected classes
-- Added stronger typing to affected classes and methods
-- Added Looking Similar recommendations
+### Bug Fixes
+- Fixed a bug where the Landing Page Builder was crashing on save with customer group pricing was enabled.
+- Fixed issue where Insights information wasn't kept on the url after clicking "add to cart" on PLP powered by InstantSearch
+
+## 3.13.6
+
+### Bug Fixes
+- Improve handling of insights params for URLs that already have a query string
+- Improve query method for alternate root categories - Thank you @igorfigueiredogen
 
 ## 3.13.5
 
@@ -128,20 +171,6 @@ If you have customized your Algolia implementation or are running on an older ve
 - Fixed Algolia merchandising product listing issue
 - Fixed lock timeout issue on indexing queue integration test
 - Community fix added - job queue dropping jobs from sandwiched full reindexes - thank you @pikulsky
-
-## 3.14.0-beta.1
-
-### Updates:
-
-- New PHP API client (v4) under the hood for communicating with Algolia
-- Authenticated user tokens now utilized for backend and frontend events to track entire customer journey
-- Revenue data now sent with all events including application of Magento specific discounts such as catalog price rules and customer group pricing
-- Support for event subtypes allowing the capture of conversion data for both "Add to cart" and "Place order" events
-- Increased protection of PII in the event data
-
-### Bug fixes:
-- Fixed issue with how Algolia extension handles end user consent for allowing cookies
-- Improved handling of user tokens across insights events and corresponding queries
 
 ## 3.13.3
 

@@ -38,7 +38,7 @@ class ReplicaRebuildCommand
         parent::__construct($appState, $storeNameFetcher, $name);
     }
 
-    protected function getReplicaCommandName(): string
+    protected function getCommandName(): string
     {
         return 'rebuild';
     }

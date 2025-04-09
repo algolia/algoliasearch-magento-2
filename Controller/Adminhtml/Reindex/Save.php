@@ -9,9 +9,11 @@ use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Algolia\AlgoliaSearch\Exception\UnknownSkuException;
 use Algolia\AlgoliaSearch\Helper\Data as DataHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -19,37 +21,15 @@ class Save extends \Magento\Backend\App\Action
 {
     public const MAX_SKUS = 10;
 
-    /** @var ProductRepositoryInterface */
-    protected $productRepository;
-
-    /** @var StoreManagerInterface */
-    protected $storeManager;
-
-    /** @var DataHelper */
-    protected $dataHelper;
-
-    /** @var ProductHelper */
-    protected $productHelper;
-
-    /**
-     * @param Context $context
-     * @param ProductRepositoryInterface $productRepository
-     * @param StoreManagerInterface $storeManager
-     * @param DataHelper $dataHelper
-     * @param ProductHelper $productHelper
-     */
     public function __construct(
-        Context $context,
-        ProductRepositoryInterface $productRepository,
-        StoreManagerInterface $storeManager,
-        DataHelper $dataHelper,
-        ProductHelper $productHelper
+        protected Context $context,
+        protected ProductRepositoryInterface $productRepository,
+        protected StoreManagerInterface $storeManager,
+        protected DataHelper $dataHelper,
+        protected ProductHelper $productHelper,
+        protected ProductIndexBuilder $productIndexBuilder
     ) {
         parent::__construct($context);
-        $this->storeManager = $storeManager;
-        $this->dataHelper = $dataHelper;
-        $this->productHelper = $productHelper;
-        $this->productRepository = $productRepository;
     }
 
     /**
@@ -131,6 +111,7 @@ class Save extends \Magento\Backend\App\Action
      * @param $stores
      * @return void
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     protected function checkAndReindex($product, $stores)
     {
@@ -220,7 +201,7 @@ class Save extends \Magento\Backend\App\Action
             $productIds = [$product->getId()];
             $productIds = array_merge($productIds, $this->productHelper->getParentProductIds($productIds));
 
-            $this->dataHelper->rebuildStoreProductIndex($storeId, $productIds);
+            $this->productIndexBuilder->buildIndexList($storeId, $productIds);
             $this->messageManager->addSuccessMessage(
                 __(
                     'The Product "%1" (%2) has been reindexed for store "%3 / %4 / %5".',

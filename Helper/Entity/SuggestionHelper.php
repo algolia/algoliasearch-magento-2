@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\Suggestion\RecordBuilder as SuggestionRecordBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
@@ -24,22 +24,22 @@ class SuggestionHelper extends AbstractEntityHelper
     public const POPULAR_QUERIES_CACHE_TAG = 'algoliasearch_popular_queries_cache_tag';
 
     public function __construct(
-        protected ManagerInterface       $eventManager,
-        protected QueryCollectionFactory $queryCollectionFactory,
-        protected ConfigCache            $cache,
-        protected ConfigHelper           $configHelper,
-        protected SerializerInterface    $serializer,
-        protected IndexNameFetcher       $indexNameFetcher,
-    )
-    {
+        protected ManagerInterface        $eventManager,
+        protected QueryCollectionFactory  $queryCollectionFactory,
+        protected ConfigCache             $cache,
+        protected ConfigHelper            $configHelper,
+        protected SerializerInterface     $serializer,
+        protected SuggestionRecordBuilder $suggestionRecordBuilder,
+        protected IndexNameFetcher        $indexNameFetcher,
+    ) {
         parent::__construct($indexNameFetcher);
     }
 
     /**
-     * @param $storeId
-     * @return array|mixed|null
+     * @param int|null $storeId
+     * @return array
      */
-    public function getIndexSettings($storeId)
+    public function getIndexSettings(?int $storeId = null): array
     {
         $indexSettings = [
             'searchableAttributes' => ['query'],
@@ -58,24 +58,13 @@ class SuggestionHelper extends AbstractEntityHelper
 
     /**
      * @param Query $suggestion
-     * @return array|mixed|null
+     * @return array
+     *
+     * @deprecated (will be removed in v3.16.0)
      */
     public function getObject(Query $suggestion)
     {
-        $suggestionObject = [
-            AlgoliaHelper::ALGOLIA_API_OBJECT_ID => $suggestion->getData('query_id'),
-            'query'                              => $suggestion->getData('query_text'),
-            'number_of_results'                  => (int) $suggestion->getData('num_results'),
-            'popularity'                         => (int) $suggestion->getData('popularity'),
-            'updated_at'                         => (int) strtotime($suggestion->getData('updated_at')),
-        ];
-
-        $transport = new DataObject($suggestionObject);
-        $this->eventManager->dispatch(
-            'algolia_after_create_suggestion_object',
-            ['suggestion' => $transport, 'suggestionObject' => $suggestion]
-        );
-        return $transport->getData();
+        return $this->suggestionRecordBuilder->buildRecord($suggestion);
     }
 
     /**

@@ -21,6 +21,8 @@ class IndexNameFetcher
     public const INDEX_QUERY_SUGGESTIONS_SUFFIX = '_query_suggestions';
 
     /**
+     * Ex: magento2_default_products
+     *
      * @param string $indexSuffix
      * @param int|null $storeId
      * @param bool $tmp
@@ -33,6 +35,8 @@ class IndexNameFetcher
     }
 
     /**
+     * Ex: magento2_default
+     *
      * @param int|null $storeId
      * @return string
      * @throws NoSuchEntityException

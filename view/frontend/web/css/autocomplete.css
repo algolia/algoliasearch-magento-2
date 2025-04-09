@@ -362,14 +362,17 @@ html {
 #autocomplete-products-footer {
     background-color: #F9F9F9;
     text-align: center;
-    display: none;
-    position: absolute;
     padding: 10px 0;
+    display: none;
+
+}
+
+.with-grid #autocomplete-products-footer {
+    position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
 }
-
 
 #algolia-autocomplete-container.reverse #autocomplete-products-footer {
     right: auto;
@@ -489,8 +492,10 @@ html {
     overflow: hidden;
 }
 
-.aa-Panel .aa-PanelLayout {
-    padding-bottom: 45px;
+/* TODO: remove */
+.aa-Panel .aa-PanelLayout.with-grid {
+
+    /*padding-bottom: 45px;*/
 }
 
 .aa-Panel .aa-PanelLayout section{
@@ -517,6 +522,7 @@ html {
     flex-wrap: nowrap;
     flex-direction: row;
     align-items: flex-start;
+    margin: 5px 0 5px 10px
 }
 
 .footer_algolia .algolia-search-by-label {
@@ -558,16 +564,14 @@ html {
 
 
 
-
+/*TODO: REMOVE*/
 .aa-Panel .aa-PanelLayout > * {
-    border: 1px dotted red;
+    /*border: 1px dotted red;*/
 }
 
 @media (min-width: 769px) {
     .aa-Panel .aa-PanelLayout {
         position: relative;
-
-        min-height: 280px;
         min-width: 680px;
     }
 
@@ -577,37 +581,31 @@ html {
         grid-auto-columns: auto;
         grid-column-gap: 0;
         grid-row-gap: 0;
+        min-height: 280px;
     }
-
-    /*.aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1){*/
-    /*    grid-area: 1 / 1 / 2 / 2;*/
-    /*    padding-top: 20px;*/
-    /*    width: 180px;*/
-    /*}*/
 
     .aa-Panel .aa-PanelLayout section {
         grid-column: 1;
+        padding: 10px;
     }
 
-    .aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=products] {
-        grid-column: 2;
-        border-left: 1px solid #BBB;
-        position: absolute;
-        /*margin-bottom: 0;*/
-        /*margin-left: 1.5rem;*/
-        /*min-width: 480px;*/
-        /*grid-area: 1 / 2 / 5 / 3;*/
+    .aa-Panel .aa-PanelLayout.with-grid section:last-of-type:not([data-autocomplete-source-id=products]) {
+        margin-bottom: 45px;
+    }
 
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
+    .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=products] {
+        grid-column: 2;
+        grid-row: 1 / 999;
+        border-left: 1px solid #BBB;
+        position: relative;
+        margin-bottom: 0;
     }
 
     .aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=products] .aa-List {
-        columns: 2;
-        -webkit-columns: 2;
-        -moz-columns: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        overflow-y: auto;
+        max-height: 420px;
     }
 
     .aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=products] .aa-List li {

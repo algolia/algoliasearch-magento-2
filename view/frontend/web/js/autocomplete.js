@@ -118,6 +118,11 @@ define([
                 onStateChange: ({ state }) => {
                     this.handleAutocompleteStateChange(state);
                 },
+
+                render: (params, root) => {
+                    this.renderAutocomplete(params, root);
+                },
+
                 getSources: ({query}) => {
                     return this.filterMinChars(query, debounced(this.transformSources(searchClient, sources)));
                 },
@@ -132,6 +137,28 @@ define([
             options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
 
             return options;
+        },
+
+        /**
+         * Handle render callback
+         * Docs: https://www.algolia.com/doc/ui-libraries/autocomplete/api-reference/autocomplete-js/autocomplete/#param-render
+         *
+         * @param params
+         * @param root
+         */
+        renderAutocomplete({ sections, render, html }, root) {
+            // console.log(`Sections (${sections.length}):`, sections);
+            const classes = [
+                'aa-PanelLayout',
+                'aa-Panel--scrollable'
+            ]
+            if (sections.length > 1) {
+                classes.push('with-grid');
+            }
+            render(
+                html`<div class="${classes.join(' ')}">${sections}</div>`,
+                root
+            );
         },
 
         /**

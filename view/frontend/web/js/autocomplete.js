@@ -79,8 +79,6 @@ define([
 
             this.trackClicks();
 
-            this.addFooter();
-
             this.addKeyboardNavigation();
         },
 
@@ -827,8 +825,7 @@ define([
                     if (mutation.type === 'childList') {
                         mutation.addedNodes.forEach(node => {
                             if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('aa-PanelLayout')) {
-                                this.addFooter();
-                                this.handleSuggestionsLayout();
+                                this.initAutocompletePanel(node);
                                 //We only care about the first occurrence
                                 observer.disconnect();
                             }
@@ -840,10 +837,19 @@ define([
             observer.observe(document.body, { childList: true, subtree: true });
         },
 
-        addFooter() {
+        // Modify the initial panel render DOM as needed
+        initAutocompletePanel(node) {
+            this.addFooter(node);
+            this.handleSuggestionsLayout();
+        },
+
+        addFooter(node) {
             if (!algoliaConfig.removeBranding) {
-                const algoliaFooter = `<div id="algoliaFooter" class="footer_algolia"><span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a></div>`;
-                $('.aa-PanelLayout').append(algoliaFooter);
+                const div = document.createElement('div');
+                div.id = 'algoliaFooter';
+                div.classList.add('footer_algolia');
+                div.innerHTML = `<span class="algolia-search-by-label">${algoliaConfig.translations.searchBy}</span><a href="https://www.algolia.com/?utm_source=magento&utm_medium=link&utm_campaign=magento_autocompletion_menu" title="${algoliaConfig.translations.searchBy} Algolia" target="_blank"><img src="${algoliaConfig.urls.logo}" alt="${algoliaConfig.translations.searchBy} Algolia" /></a>`;
+                node.appendChild(div);
             }
         },
 

@@ -28,40 +28,74 @@ class QueueCronTest extends TestCase
         $this->queueCronModel = new QueueCron($context, $registry, $config, $cacheTypeList);
     }
 
-    public function testInput(): void
+    /**
+     * @dataProvider valuesProvider
+     */
+    public function testInput($value, $isValid): void
     {
-        $valuesToTest = [
-            ''               => false,
-            'foo'            => false,
-            '*/5 * * * *'    => true,
-            '*/10 * * * *'   => true,
-            '0 0 1 1 *'      => true,
-            '0 0 * * 5'      => true,
-            '*/10 * * *'     => false, // One less property
-            '*/10 * * * * *' => false, // One more property
-            '@daily'         => true,  // Working alias
-            '@foo'           => false, // Not working alias
-        ];
+        $this->queueCronModel->setValue($value);
 
-        foreach ($valuesToTest as $valueToTest => $isValid) {
-            $this->queueCronModel->setValue($valueToTest);
+        try {
+            $result = $this->queueCronModel->beforeSave();
+            $this->assertIsObject($result);
+        } catch (InvalidCronException $exception) {
+            $this->assertEquals(
+                false,
+                $isValid,
+                "Cron expression \"$value\" is not valid but it should be."
+            );
 
-            try {
-                $result = $this->queueCronModel->beforeSave();
-                $this->assertIsObject($result);
-            } catch (InvalidCronException $exception) {
-                $this->assertEquals(
-                    false,
-                    $isValid,
-                    "Cron expression \"$valueToTest\" is not valid but it should be."
-                );
-
-                $this->assertEquals(
-                    "Cron expression \"$valueToTest\" is not valid.",
-                    $exception->getMessage()
-                );
-            }
+            $this->assertEquals(
+                "Cron expression \"$value\" is not valid.",
+                $exception->getMessage()
+            );
         }
+    }
+
+    public function valuesProvider(): array
+    {
+        return [
+            [
+                'value' => '',
+                'isValid' => false
+            ],
+            [
+                'value' => 'foo',
+                'isValid' => false
+            ],
+            [
+                'value' => '*/5 * * * *',
+                'isValid' => true
+            ],
+            [
+                'value' => '*/10 * * * *',
+                'isValid' => true
+            ],
+            [
+                'value' => '0 0 1 1 *',
+                'isValid' => true
+            ],
+            [
+                'value' => '0 0 * * 5',
+                'isValid' => true
+            ],
+            [
+                'value' => '*/10 * * *', // One less property
+                'isValid' => false
+            ],
+            [
+                'value' => '*/10 * * * * *', // One more property
+                'isValid' => false
+            ],
+            [
+                'value' => '@daily', // Working alias
+                'isValid' => true
+            ],
+            [
+                'value' => '@foo', // Not working alias
+                'isValid' => false
+            ]
+        ];
     }
 
 }

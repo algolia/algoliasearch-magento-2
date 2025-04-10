@@ -56,6 +56,11 @@
                 <category_separator> /// </category_separator>
             </categories>
         </algoliasearch_categories>
+        <algoliasearch_queue>
+            <queue>
+                <cron_expr>*/5 * * * *</cron_expr>
+            </queue>
+        </algoliasearch_queue>
         <algoliasearch_indexing_manager>
             <full_indexing>
                 <products>0</products>

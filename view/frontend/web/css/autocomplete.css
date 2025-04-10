@@ -61,43 +61,6 @@ html {
     }
 }
 
-.aa-Panel .col-2 {
-    position: relative;
-}
-
-.aa-Panel .col-2 .col-left {
-    width: 67%;
-}
-
-.aa-Panel .col-2 .col-right {
-    width: 33%;
-}
-
-.aa-Panel .aa-no-results-products {
-    padding: 40px 40px;
-    min-height: 250px;
-}
-
-.aa-Panel .aa-no-results-products .title {
-    font-weight: bold;
-    margin-bottom: 30px;
-    font-size: 16px;
-}
-
-.aa-Panel .aa-no-results-products .suggestions {
-    margin-bottom: 30px;
-}
-
-.aa-Panel .aa-no-results-products .see-all a {
-    color: #636363;
-    font-weight: bold;
-}
-
-.aa-Panel .aa-no-results {
-    padding: 10px;
-    font-style: italic;
-}
-
 .aa-Panel .category, .aa-Panel .aa-PanelLayout section .aa-SourceHeader {
     padding: 4px;
     color: rgb(166, 166, 166);
@@ -107,7 +70,7 @@ html {
     font-weight: bold;
 }
 
-.aa-Panel .category-suggestions{
+.aa-Panel .category-suggestions {
     padding: 4px;
     color: #54A5CD;
     text-align: left;
@@ -144,101 +107,16 @@ html {
     stroke: #A6A6A6;
 }
 
-.aa-Panel .col9:hover {
-    background-color: #F9F9F9;
-}
-
-.aa-Panel .aa-dataset-products .aa-suggestion {
-    display: inline-block;
-    width: 100%;
-}
-
-@media (min-width: 769px) {
-    .aa-Panel .aa-dataset-products .aa-suggestion {
-        display: inline-block;
-        width: 50%;
-    }
-}
-
-
-.aa-Panel .aa-dataset-products .algoliasearch-autocomplete-hit {
-    padding: 15px 10px;
-}
-
-.autocomplete-wrapper, .aa-Panel {
+.aa-Panel {
     width: 100%;
     display: flex;
     flex-direction: row-reverse;
     flex-wrap: wrap;
 }
 
-.autocomplete-wrapper:after, .aa-Panel:after {
+.aa-Panel:after {
     clear: both;
     content: '';
-}
-
-.aa-Panel .col9 {
-    float: right;
-    box-sizing: border-box;
-}
-
-.aa-Panel .col3 {
-    float: right;
-    box-sizing: border-box;
-}
-
-@media (min-width: 769px) {
-    .aa-Panel .col9 {
-        border-left: solid 1px #eeeeee;
-        width: 70%;
-        right: 0;
-        height: 100%;
-    }
-
-    .aa-Panel .col3 {
-        float: left;
-        width: 30%;
-    }
-}
-
-.aa-Panel .other-sections {
-    margin: 20px 10px 70px;
-}
-
-.aa-dataset-products .aa-suggestions {
-    margin: 10px auto 10px auto;
-}
-
-.aa-dataset-suggestions {
-    display: none;
-}
-
-@media (min-width: 769px) {
-    .aa-dataset-suggestions {
-        display: block;
-    }
-}
-
-
-@media (min-width: 769px) {
-    .aa-dataset-products .aa-suggestions {
-        margin: 10px auto 50px auto;
-    }
-}
-
-
-.aa-dataset-products .aa-suggestions:after {
-    content: '';
-    display: block;
-    clear: both;
-}
-
-.aa-Panel .other-sections .algoliasearch-autocomplete-hit {
-    padding-left: 10px;
-}
-
-.aa-Panel .other-sections .aa-suggestions {
-    margin-bottom: 20px;
 }
 
 .aa-Panel .aa-cursor .algoliasearch-autocomplete-hit {
@@ -323,18 +201,6 @@ html {
 
 .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-price .tier_price {
     padding-left: 5px;
-}
-
-.autocomplete-wrapper:after {
-    clear: both;
-    content: '';
-}
-
-#algolia_instant_selector .cross-wrapper .clear-refinement {
-    display: block;
-    position: relative;
-    top: 5px;
-    left: 5px;
 }
 
 #algoliaAutocomplete {

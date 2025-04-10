@@ -414,16 +414,6 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             return hit;
         },
 
-        /** @deprecated This function should no longer be used and will be removed in a version 3.17 */
-        fixAutocompleteCssHeight: () => {
-            if ($(document).width() > 768) {
-                $(".other-sections").css('min-height', '0');
-                $(".aa-dataset-products").css('min-height', '0');
-                var height = Math.max($(".other-sections").outerHeight(), $(".aa-dataset-products").outerHeight());
-                $(".aa-dataset-products").css('min-height', height);
-            }
-        },
-
         createISWidgetContainer: (attributeName) => {
             const div = document.createElement('div');
             div.className = 'is-widget-container-' + attributeName.split('.').join('_');

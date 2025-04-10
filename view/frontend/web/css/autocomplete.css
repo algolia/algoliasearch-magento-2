@@ -3,48 +3,44 @@ html {
     --autocomplete-muted-color: #969faf;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .before_special, .aa-Panel .before_special {
-    color: #aaaaaa;
-    text-decoration: line-through;
-    font-size: 12px;
+/********************
+     INPUT FORM
+ ********************/
+
+#algoliaAutocomplete {
+    position: relative;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .tier_price, .aa-Panel .tier_price {
-    color: #666666;
-    font-size: 10px;
+#algoliaAutocomplete .aa-SubmitButton {
+    background: none;
+    border: none;
+    position: absolute;
+    right: 0px;
+    height: 32px;
+    box-shadow: none;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .tier_price .tier_value, .aa-Panel .tier_price .tier_value {
-    color: #54A5CD;
-    font-size: 12px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .info-without-thumb .category-tag, .aa-Panel .info-without-thumb .category-tag {
-    color: #3284b6;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .info-without-thumb .details, .aa-Panel .info-without-thumb .details {
-    font-size: 10px;
-    color: #666;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+#algoliaAutocomplete .aa-ClearButton {
+    position: absolute;
+    right: 1px;
+    top: 1px;
     height: 30px;
-    max-height: 30px;
-    display: -webkit-box;
+    border: none;
+    background: #fff;
+    display: none;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .info-without-thumb .details em, .aa-Panel .info-without-thumb .details em {
-    color: #222222;
+#algoliaAutocomplete .aa-LoadingIndicator {
+    position: absolute;
+    top: 20%;
+    right: 10px;
 }
 
-#algolia-autocomplete-tt.algolia-autocomplete {
-    width: 100%;
-    display: inline-block !important;
-}
+/********************
+    PANEL LAYOUT
+ ********************/
 
-#algolia-autocomplete-container .aa-dropdown-menu, .aa-Panel {
+.aa-Panel {
     position: absolute;
     margin-top: -1px;
     right: 0;
@@ -54,89 +50,41 @@ html {
     border-top: 3px solid #8EB4D0;
     border-radius: 1px;
     background: white;
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
 }
-@media (min-width: 992px) {
-    #algolia-autocomplete-container .aa-dropdown-menu, .aa-Panel {
-        min-width: 800px !important;
-    }
+
+.aa-Panel:after {
+    clear: both;
+    content: '';
 }
 
 @media (min-width: 769px) {
-    #algolia-autocomplete-container .aa-dropdown-menu, .aa-Panel {
-        width: 71.1%;
-        min-width: 680px;
-        padding-left: 8px;
-    }
-    .aa-Panel{
+    .aa-Panel {
         left: auto !important;
     }
-    .aa-Panel.productColumn1 section:nth-child(1) .aa-List {
-        columns: 2;
-        -webkit-columns: 2;
-        -moz-columns: 2;
-    }
-
-    .aa-Panel.productColumn1 section:nth-child(1) .aa-List li {
-        width: 285px;
-    }
-    .aa-Panel.productColumn2 section:nth-child(2) .aa-List {
-        columns: 2;
-        -webkit-columns: 2;
-        -moz-columns: 2;
-    }
-
-    .aa-Panel.productColumn2 section:nth-child(2) .aa-List li {
-        width: 285px;
-    }
-
-    .aa-Panel ul{
-        padding-inline-start: 0px;
-        margin-bottom: 0px !important;
+    .aa-Panel ul {
+        padding-inline-start: 0;
+        margin-bottom: 0 !important;
     }
 }
 
-.aa-Panel.productColumn2 section:nth-child(2) .aa-List li:hover, .aa-Panel.productColumn1 section .aa-List li:hover{
-    background-color: #f2f2f2;
+.aa-Panel li.aa-Item {
+    list-style-type: none;
+    overflow: hidden;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .col-2, .aa-Panel .col-2 {
-    position: relative;
+
+/********************
+      SECTIONS
+ ********************/
+
+.aa-Panel .aa-PanelLayout section {
+    padding-top: 10px;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .col-2 .col-left, .aa-Panel .col-2 .col-left {
-    width: 67%;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .col-2 .col-right, .aa-Panel .col-2 .col-right {
-    width: 33%;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-no-results-products, .aa-Panel .aa-no-results-products {
-    padding: 40px 40px;
-    min-height: 250px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-no-results-products .title, .aa-Panel .aa-no-results-products .title {
-    font-weight: bold;
-    margin-bottom: 30px;
-    font-size: 16px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-no-results-products .suggestions, .aa-Panel .aa-no-results-products .suggestions {
-    margin-bottom: 30px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-no-results-products .see-all a, .aa-Panel .aa-no-results-products .see-all a {
-    color: #636363;
-    font-weight: bold;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-no-results, .aa-Panel .aa-no-results {
-    padding: 10px;
-    font-style: italic;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .category, .aa-Panel .category, .aa-Panel .aa-PanelLayout section .aa-SourceHeader {
+.aa-Panel .aa-PanelLayout section .aa-SourceHeader {
     padding: 4px;
     color: rgb(166, 166, 166);
     text-align: left;
@@ -145,28 +93,83 @@ html {
     font-weight: bold;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .category-suggestions, .aa-Panel .category-suggestions{
-    padding: 4px;
-    color: #54A5CD;
-    text-align: left;
-    font-size: 0.7em;
-    text-transform: uppercase;
+
+/********************
+   PRODUCT SECTION
+ ********************/
+
+#autocomplete-products-footer {
+    background-color: #F9F9F9;
+    text-align: center;
+    padding: 10px 0;
+    display: none;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit, .aa-Panel .algoliasearch-autocomplete-hit {
+#autocomplete-products-footer:empty {
+    display: none;
+}
+
+.with-grid #autocomplete-products-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+@media (min-width: 769px) {
+    #autocomplete-products-footer {
+        display: block;
+    }
+}
+
+#autocomplete-products-footer span {
+    color: #15769c;
+    font-weight: 600;
+}
+
+/********************
+       HITS
+ ********************/
+
+.aa-Panel .algoliasearch-autocomplete-hit {
     display: inline-block;
     position: relative;
     padding: 5px 10px;
     color: #000;
     text-align: left;
     text-decoration: none;
-    width: 96%;
     overflow: hidden;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .other-sections .aa-dataset-suggestions .algoliasearch-autocomplete-hit {
-    padding-left: 30px;
+.aa-Panel .aa-cursor .algoliasearch-autocomplete-hit {
+    background-color: #f2f2f2;
+    /*border: 1px solid #bbb;*/
 }
+
+.aa-Panel .algoliasearch-autocomplete-hit em {
+    font-weight: bold;
+    font-style: normal;
+}
+
+.aa-Panel .algoliasearch-autocomplete-hit .info {
+    margin-left: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.aa-Panel .aa-PanelLayout section .aa-SourceNoResults{
+    padding: 5px;
+}
+
+.aa-Panel mark {
+    background: none;
+    font-weight: 600;
+}
+
+/********************
+    SUGGESTION HITS
+ ********************/
 
 .aa-Panel .aa-ItemLink.algolia-suggestions:has(svg.algolia-glass-suggestion) {
     position: relative;
@@ -187,190 +190,22 @@ html {
     stroke: #A6A6A6;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu.aa-without-products .col9, .aa-Panel .col9:hover {
-    background-color: #F9F9F9;
-}
+/********************
+    PRODUCT HITS
+ ********************/
 
-#algolia-autocomplete-container .aa-dropdown-menu.aa-without-products #autocomplete-products-footer {
-    display: none;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-dataset-products .aa-suggestion, .aa-Panel .aa-dataset-products .aa-suggestion {
-    display: inline-block;
-    width: 100%;
-}
-
-@media (min-width: 769px) {
-    #algolia-autocomplete-container .aa-dropdown-menu .aa-dataset-products .aa-suggestion, .aa-Panel .aa-dataset-products .aa-suggestion {
-        display: inline-block;
-        width: 50%;
-    }
-}
-
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-dataset-products .algoliasearch-autocomplete-hit, .aa-Panel .aa-dataset-products .algoliasearch-autocomplete-hit {
-    padding: 15px 10px;
-}
-
-.autocomplete-wrapper, .aa-Panel {
-    width: 100%;
-    display: flex;
-    flex-direction: row-reverse;
-    flex-wrap: wrap;
-}
-
-.autocomplete-wrapper:after, .aa-Panel:after {
-    clear: both;
-    content: '';
-}
-
-#algolia-autocomplete-container .col9, .aa-Panel .col9 {
-    float: right;
-    box-sizing: border-box;
-}
-
-#algolia-autocomplete-container .col3, .aa-Panel .col3 {
-    float: right;
-    box-sizing: border-box;
-}
-
-#algolia-autocomplete-container.reverse .col3, .aa-Panel.reverse .col3 {
+/* Image thumbnails */
+.aa-Panel .algoliasearch-autocomplete-hit .thumb {
     float: left;
-    min-width: 100%;
+    margin-right: 10px;
 }
 
-#algolia-autocomplete-container.reverse .col9, .aa-Panel.reverse .col9 {
-    float: left;
-    min-width: 100%;
-    display: flex;
-    height: 100%;
-    flex: 1;
-}
-
-@media (min-width: 769px) {
-    #algolia-autocomplete-container .col9, .aa-Panel .col9 {
-        border-left: solid 1px #eeeeee;
-        width: 70%;
-        right: 0;
-        height: 100%;
-    }
-
-    #algolia-autocomplete-container .col3, .aa-Panel .col3 {
-        float: left;
-        width: 30%;
-    }
-
-    #algolia-autocomplete-container.reverse .col3, .aa-Panel.reverse .col3 {
-        float: left;
-        width: 30%;
-    }
-
-    #algolia-autocomplete-container.reverse .col9, .aa-Panel.reverse .col9 {
-        border-right: solid 1px #eeeeee;
-        float: left;
-        width: 70%;
-    }
-}
-
-#algolia-autocomplete-container .other-sections, .aa-Panel .other-sections {
-    margin: 20px 10px 70px;
-}
-
-
-.aa-dataset-products .aa-suggestions {
-    margin: 10px auto 10px auto;
-}
-
-.aa-dataset-suggestions {
-    display: none;
-}
-
-@media (min-width: 769px) {
-    .aa-dataset-suggestions {
-        display: block;
-    }
-}
-
-
-@media (min-width: 769px) {
-    .aa-dataset-products .aa-suggestions {
-        margin: 10px auto 50px auto;
-    }
-}
-
-
-.aa-dataset-products .aa-suggestions:after {
-    content: '';
-    display: block;
-    clear: both;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .other-sections .algoliasearch-autocomplete-hit, .aa-Panel .other-sections .algoliasearch-autocomplete-hit {
-    padding-left: 10px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .other-sections .aa-suggestions, .aa-Panel .other-sections .aa-suggestions {
-    margin-bottom: 20px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .aa-cursor .algoliasearch-autocomplete-hit, .aa-Panel .aa-cursor .algoliasearch-autocomplete-hit {
-    background-color: #f2f2f2;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit em, .aa-Panel .algoliasearch-autocomplete-hit em {
-    font-weight: bold;
-    font-style: normal;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-price, .aa-Panel .algoliasearch-autocomplete-price {
-    font-size: 1.1em;
-    color: #54A5CD;
-    height: 22px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit .thumb, .aa-Panel .algoliasearch-autocomplete-hit .thumb {
-    float: left;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit .thumb img, .aa-Panel .algoliasearch-autocomplete-hit .thumb img {
+.aa-Panel .algoliasearch-autocomplete-hit .thumb img {
     width: 50px;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit .info, .aa-Panel .algoliasearch-autocomplete-hit .info {
-    margin-left: 0;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-#autocomplete-products-footer {
-    background-color: #F9F9F9;
-    text-align: center;
-    display: none;
-    position: absolute;
-    width: 70%;
-    padding: 10px 0;
-    bottom: 0;
-    left: 30%;
-}
-
-#algolia-autocomplete-container.reverse #autocomplete-products-footer {
-    right: auto;
-    left: 0;
-}
-
-@media (min-width: 769px) {
-    #autocomplete-products-footer {
-        display: block;
-    }
-}
-
-#autocomplete-products-footer span {
-    color: #15769c;
-    font-weight: 600;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-category, .aa-Panel .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-category {
+/* Categories */
+.aa-Panel .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-category {
     font-size: 0.8em;
     color: #666;
     white-space: nowrap;
@@ -379,12 +214,36 @@ html {
     text-overflow: ellipsis;
 }
 
-#algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-category em, .aa-Panel .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-category em {
+.aa-Panel .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-category em {
     color: #222;
 }
 
 .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-category span:nth-child(n+2):before {
     content: " | ";
+}
+
+/* Prices */
+
+.aa-Panel .before_special {
+    color: #aaaaaa;
+    text-decoration: line-through;
+    font-size: 12px;
+}
+
+.aa-Panel .tier_price {
+    color: #666666;
+    font-size: 10px;
+}
+
+.aa-Panel .tier_price .tier_value {
+    color: #54A5CD;
+    font-size: 12px;
+}
+
+.aa-Panel .algoliasearch-autocomplete-price {
+    font-size: 1.1em;
+    color: #54A5CD;
+    height: 22px;
 }
 
 .algoliasearch-autocomplete-hit .info .algoliasearch-autocomplete-price .after_special:after {
@@ -395,109 +254,77 @@ html {
     padding-left: 5px;
 }
 
+/********************
+      PAGE HITS
+ ********************/
 
-#algolia-autocomplete-container .aa-dropdown-menu .footer_algolia {
-    position: absolute;
-    width: 100%;
-    padding: 10px;
-    text-align: center;
-    bottom: 0;
-    left: 4px;
-    font-size: 13px;
-}
-
-#algolia-autocomplete-container.reverse .aa-dropdown-menu .footer_algolia {
-    left: auto;
-    right: 4px;
-}
-
-@media (min-width: 769px) {
-    #algolia-autocomplete-container .aa-dropdown-menu .footer_algolia {
-        width: 30%;
-    }
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .footer_algolia span {
-    color: #B8B8B8;
+.aa-Panel .info-without-thumb .details {
     font-size: 10px;
-}
-
-#algolia-autocomplete-container .aa-dropdown-menu .footer_algolia img {
-    display: inline;
-    height: 1.5em;
-    vertical-align: bottom;
-    max-width: 130px;
-}
-
-#algolia-autocomplete-container:after, .autocomplete-wrapper:after {
-    clear: both;
-    content: '';
-}
-
-#algolia_instant_selector .cross-wrapper .clear-refinement {
-    display: block;
-    position: relative;
-    top: 5px;
-    left: 5px;
-}
-#algoliaAutocomplete{
-    position: relative;
-}
-#algoliaAutocomplete .aa-SubmitButton{
-    background: none;
-    border: none;
-    position: absolute;
-    right: 0px;
-    height: 32px;
-    box-shadow: none;
-}
-#algoliaAutocomplete .aa-ClearButton{
-    position: absolute;
-    right: 1px;
-    top: 1px;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     height: 30px;
-    border: none;
-    background: #fff;
+    max-height: 30px;
+    display: -webkit-box;
+}
+
+.aa-Panel .info-without-thumb .details em {
+    color: #222222;
+}
+
+/********************
+     REDIRECT HITS
+ ********************/
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper,
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper .aa-ItemContent {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+}
+
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper {
+    min-height: 30px;
+    padding-top: 10px;
+}
+
+/* Redirect icons */
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper .aa-ItemActions {
+    margin-left: auto; /* Consume remaining space to push to far right */
+}
+
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemIcon {
+    margin-right: 10px;
+}
+
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemIcon,
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemActions
+{
+    width: 20px;
+}
+
+/* Hide products when redirecting */
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
     display: none;
 }
 
-#algoliaAutocomplete .aa-LoadingIndicator {
-    position: absolute;
-    top: 20%;
-    right: 10px;
+/********************
+    ALGOLIA FOOTER
+ ********************/
+
+.footer_algolia {
+    display: none;
 }
 
-.aa-Panel li.aa-Item{
-    list-style-type: none;
-}
-
-.aa-Panel .aa-PanelLayout{
-    display: grid;
-    /*grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);*/
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
-    padding-bottom: 45px;
-}
-.aa-Panel .aa-PanelLayout section{
-    padding-top: 10px;
-}
-.aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1) li a, .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(2) li a, .aa-Panel .aa-PanelLayout section:nth-child(3) li a, .aa-Panel .aa-PanelLayout section:nth-child(4) li a, .aa-Panel .aa-PanelLayout section:nth-child(5) li a{
-    color: inherit;
-    display: block;
-    padding: 5px 10px;
-}
-.aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1) li a:hover, .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(2) li a:hover, .aa-Panel .aa-PanelLayout section:nth-child(3) li a:hover, .aa-Panel .aa-PanelLayout section:nth-child(4) li a:hover, .aa-Panel .aa-PanelLayout section:nth-child(5) li a:hover{
-    background-color: #f2f2f2;
-    text-decoration: none;
-}
-.footer_algolia{
+.with-grid .footer_algolia {
     position: absolute;
     bottom: 0;
     display: flex;
     flex-wrap: nowrap;
     flex-direction: row;
     align-items: flex-start;
+    margin: 5px 0 5px 10px
 }
 
 .footer_algolia .algolia-search-by-label {
@@ -510,66 +337,85 @@ html {
     min-width: 80px;
 }
 
-@media (min-width: 992px) {
-    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(2), .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(1){
-        margin-left: 2.5rem !important;
-        min-width: 570px !important;
-    }
-    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1),
-    .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(2),
-    .aa-Panel .aa-PanelLayout section:nth-child(3),
-    .aa-Panel .aa-PanelLayout section:nth-child(4),
-    .aa-Panel .aa-PanelLayout section:nth-child(5){
-        width: 220px !important;
-    }
-}
 @media (max-width: 768px) {
-    #algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit .info, .aa-Panel .algoliasearch-autocomplete-hit .info{
+    .aa-Panel .algoliasearch-autocomplete-hit .info {
         padding-left: 15px;
     }
 }
-@media (min-width: 769px) {
-    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(1){
-        grid-area: 1 / 1 / 2 / 2;
-        padding-top: 20px;
-        width: 180px;
-    }
-    .aa-Panel.productColumn2 .aa-PanelLayout section:nth-child(2){
-        border-left: 1px solid #BBB;
-        margin-bottom: 0px;
-        margin-left: 1.5rem;
-        min-width: 480px;
-        grid-area: 1 / 2 / 5 / 3;
-    }
 
-    .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(1){
-        border-left: 1px solid #BBB;
-        margin-bottom: 0px;
-        margin-left: 1.5rem;
-        min-width: 48px;
-        grid-area: 1 / 2 / 5 / 3;
-    }
-    .aa-Panel.productColumn1 .aa-PanelLayout section:nth-child(2){
-        grid-area: 1 / 1 / 2 / 2;
-        padding-top: 20px;
-        width: 180px;
-    }
-    .aa-Panel .aa-PanelLayout section:nth-child(3){
-        grid-area: 2 / 1 / 3 / 2;
-        width: 180px;
-    }
-    .aa-Panel .aa-PanelLayout section:nth-child(4){
-        grid-area: 3 / 1 / 4 / 2;
-        width: 180px;
-    }
-    .aa-Panel .aa-PanelLayout section:nth-child(5){
-        grid-area: 4 / 1 / 5 / 2;
-        width: 180px;
-    }
-    #algolia-autocomplete-container .aa-dropdown-menu .algoliasearch-autocomplete-hit .info, .aa-Panel .algoliasearch-autocomplete-hit .info {
-        margin-left: 60px;
+/********************
+    GRID LAYOUT
+ ********************/
+
+@media (min-width: 900px) {
+    .aa-Panel .aa-PanelLayout {
+        width: 800px;
     }
 }
+
+@media (min-width: 769px) {
+    .aa-Panel .aa-PanelLayout {
+        position: relative;
+        min-width: 680px;
+    }
+
+    .aa-Panel .aa-PanelLayout.with-grid {
+        display: grid;
+        grid-template-columns: 3fr 7fr;
+        grid-auto-columns: auto;
+        grid-column-gap: 0;
+        grid-row-gap: 0;
+        min-height: 280px;
+    }
+
+    .aa-Panel .aa-PanelLayout.with-grid section {
+        grid-column: 1;
+        padding: 10px;
+    }
+
+    .aa-Panel .aa-PanelLayout section:last-of-type:not([data-autocomplete-source-id=products]) {
+        margin-bottom: 45px;
+    }
+
+    /* Redirect section */
+    .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=redirectUrlPlugin] {
+        grid-column: 2;
+        grid-row: 1 / 999;
+        border-left: 1px solid #BBB;
+        z-index: 999;
+    }
+
+    /* Products section */
+    .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=products] {
+        grid-column: 2;
+        grid-row: 1 / 999;
+        border-left: 1px solid #BBB;
+        position: relative;
+        margin-bottom: 0;
+    }
+
+    /* Redirect behaviors */
+    .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
+        padding-top: 45px; /* Pad if showing with redirect option - set z-index as needed */
+    }
+
+    /* Products grid */
+    .aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=products] .aa-List {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        overflow-y: auto;
+        max-height: 420px;
+    }
+
+    .aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=products] .aa-List li {
+        width: 100%;
+    }
+}
+
+/********************
+    MOBILE LAYOUT
+ ********************/
+
 
 @media (max-width: 768px) {
     .aa-Panel .aa-PanelLayout {
@@ -613,12 +459,4 @@ html {
     #algoliaAutocomplete .aa-SubmitButton{
         z-index: 2;
     }
-}
-
-.aa-Panel mark{
-    background: none;
-    font-weight: 600;
-}
-.aa-Panel .aa-PanelLayout section .aa-SourceNoResults{
-    padding: 5px;
 }

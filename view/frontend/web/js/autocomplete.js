@@ -347,7 +347,7 @@ define([
                     return productsHtml.getItemHtml({item: _data, components, html});
                 },
                 footer: ({items, html}) => {
-                    const resultDetails = {};
+                    const resultDetails = { nbHits: items.length };
                     if (items.length) {
                         const firstItem = items[0];
                         resultDetails.allDepartmentsUrl =

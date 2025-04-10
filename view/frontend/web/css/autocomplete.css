@@ -340,7 +340,10 @@ html {
     text-align: center;
     padding: 10px 0;
     display: none;
+}
 
+#autocomplete-products-footer:empty {
+    display: none;
 }
 
 .with-grid #autocomplete-products-footer {
@@ -555,7 +558,7 @@ html {
         padding: 10px;
     }
 
-    .aa-Panel .aa-PanelLayout.with-grid section:last-of-type:not([data-autocomplete-source-id=products]) {
+    .aa-Panel .aa-PanelLayout section:last-of-type:not([data-autocomplete-source-id=products]) {
         margin-bottom: 45px;
     }
 

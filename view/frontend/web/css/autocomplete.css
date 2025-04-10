@@ -275,6 +275,41 @@ html {
 }
 
 /********************
+     REDIRECT HITS
+ ********************/
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper,
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper .aa-ItemContent {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+}
+
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper {
+    min-height: 30px;
+    padding-top: 10px;
+}
+
+/* Redirect icons */
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper .aa-ItemActions {
+    margin-left: auto; /* Consume remaining space to push to far right */
+}
+
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemIcon {
+    margin-right: 10px;
+}
+
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemIcon,
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemActions
+{
+    width: 20px;
+}
+
+/* Hide products when redirecting */
+.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
+    display: none;
+}
+
+/********************
     ALGOLIA FOOTER
  ********************/
 
@@ -342,12 +377,26 @@ html {
         margin-bottom: 45px;
     }
 
+    /* Redirect section */
+    .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=redirectUrlPlugin] {
+        grid-column: 2;
+        grid-row: 1 / 999;
+        border-left: 1px solid #BBB;
+        z-index: 999;
+    }
+
+    /* Products section */
     .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=products] {
         grid-column: 2;
         grid-row: 1 / 999;
         border-left: 1px solid #BBB;
         position: relative;
         margin-bottom: 0;
+    }
+
+    /* Redirect behaviors */
+    .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
+        padding-top: 45px; /* Pad if showing with redirect option - set z-index as needed */
     }
 
     /* Products grid */

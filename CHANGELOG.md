@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.16.0-beta.1
+
+### Updates
+- `beforecontent.html` is no longer used and has been deprecated. If you're overriding or referencing this file, please update your layout and customizations accordingly.
+
 ## 3.15.0
 
 ### Features

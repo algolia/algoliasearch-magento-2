@@ -110,7 +110,6 @@ define([
             const template = this.getTemplateContentsFromDOM('#instant_wrapper_template');
             const templateVars = {
                 second_bar      : algoliaConfig.instant.enabled,
-                findAutocomplete: this.findAutocomplete(),
                 config          : algoliaConfig.instant,
                 translations    : algoliaConfig.translations,
             };
@@ -1191,21 +1190,6 @@ define([
          */
         getAlgoliaAgent() {
             return 'Magento2 integration (' + algoliaConfig.extensionVersion + ')';
-        },
-
-        /**
-         * Handle nested Autocomplete (legacy)
-         * @returns {boolean}
-         */
-        findAutocomplete() {
-            if (algoliaConfig.autocomplete.enabled) {
-                const $nestedAC = $(algoliaConfig.instant.selector).find('#algolia-autocomplete-container');
-                if ($nestedAC.length) {
-                    $nestedAC.remove();
-                    return true;
-                }
-            }
-            return false;
         },
 
         /**

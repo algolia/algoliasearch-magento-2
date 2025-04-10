@@ -4,6 +4,9 @@ namespace Algolia\AlgoliaSearch\Ui\Component\Listing\Column;
 
 class Data extends \Magento\Ui\Component\Listing\Columns\Column
 {
+
+    const MAX_DEPTH_DISPLAY = 3;
+
     /**
      * @param array $dataSource
      *
@@ -23,18 +26,37 @@ class Data extends \Magento\Ui\Component\Listing\Columns\Column
 
         foreach ($dataSource['data']['items'] as &$item) {
             $data = json_decode($item[$fieldName], true);
-            $formattedData = '';
-            if (is_array($data)) {
-                foreach ($data as $key => $value) {
-                    if (is_array($value)) {
-                        $value = implode(', ', $value);
-                    }
-                    $formattedData .= $key . ' : ' . $value . '<br>';
-                }
-            }
-            $item[$fieldName] = $formattedData;
+            $item[$fieldName] = is_array($data) ? $this->formatData($data) : '';;
         }
 
         return $dataSource;
+    }
+
+    protected function formatData(array $data, $depth = 0): string
+    {
+        if ($depth > self::MAX_DEPTH_DISPLAY) {
+            return '';
+        }
+
+        $formattedData = '';
+
+        foreach ($data as $key => $value) {
+            $stringKey = '- <strong>' . $key . '</strong>';
+
+            if (is_array($value)) {
+                if ($key === 'entityIds') {
+                    $formattedData .=
+                        str_repeat('&nbsp;&nbsp;&nbsp;', $depth ) . $stringKey . ' : '  . implode(', ', $value) . '<br>';
+                } else {
+                    $formattedData .= $stringKey . ' :<br>'  . $this->formatData($value, ++$depth);
+                }
+
+                continue;
+            }
+
+            $formattedData .= str_repeat('&nbsp;&nbsp;&nbsp;', $depth ) . $stringKey . ' : ' . $value . '<br>';
+        }
+
+        return $formattedData;
     }
 }

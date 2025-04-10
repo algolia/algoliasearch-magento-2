@@ -11,15 +11,9 @@ $landingPage = $block->getLandingPage();
 $landingPageId = $landingPage->getId();
 
 $isConfig = [
-    'appId' => $configHelper->getApplicationID(),
-    'apiKey' => $configHelper->getSearchOnlyAPIKey(),
     'indexDataByStoreIds' => $block->getCoreHelper()->getIndexDataByStoreIds(),
     'routing' => false,
-    'facets' => $configHelper->getFacets(),
-    'currencyCode' => $configHelper->getCurrencyCode(),
-    'maxValuesPerFacet' => (int) $configHelper->getMaxValuesPerFacet(),
     'landingPageConfig' => json_decode($landingPage->getConfiguration()),
-    'categorySeparator' => $configHelper->getCategorySeparator(),
     'searchParameters' => [
         'query' => $landingPage->getQuery(),
         'hitsPerPage' => 10,
@@ -79,9 +73,11 @@ $isConfig = [
     <div class="algolia_merchandising_items_right_container" id="algolia_merchandising_items_right_container">
         <h2>Products shown on landing page</h2>
         <div id="algolia-stats"></div>
-        <label for="algolia_merchandising_autocomplete">
-            <input type="text" id="algolia_merchandising_autocomplete" placeholder="Quickly find an item to promote..." />
-        </label>
+        <span id="algolia_autocomplete_wrapper">
+            <label for="algolia_merchandising_autocomplete">
+                <input type="text" id="algolia_merchandising_autocomplete" placeholder="Quickly find an item to promote..." />
+            </label>
+        </span>
         <div id="algolia_sortby"></div>
         <div id="algolia_hit_per_page"></div>
         <div id="algolia_merchandising_hits"></div>
@@ -301,490 +297,501 @@ $isConfig = [
 </script>
 
 <script>
-  requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
-    algoliaAdminBundle.$(function ($) {
-      var config = <?php echo json_encode($isConfig); ?>;
-      config.indexName = getCurrentIndexName();
-      var search = algoliaAdminBundle.instantsearch(config);
-      var facetWrapper = document.getElementById('algolia_merchandising_facet_wrapper');
+    requirejs([
+        'jquery',
+        'algoliaAdminBundle'
+    ], function($, algoliaAdminBundle) {
 
-      /** Setup attributes for current refinements widget **/
-      var attributes = [];
-      $.each(config.facets, function (i, facet) {
-        var name = facet.attribute;
+        var initInstantSearch = function() {
+            $('#algolia_merchandising_search_box').html('');
+            $('#algolia_merchandising_facet_wrapper').html('');
 
-        if (name === 'categories') {
-          name = 'categories.level0';
-        }
+            algoliaAdminBundle.$(function ($) {
+                var storeId = $('select[name="store_id"]').val();
+                var config = <?php echo json_encode($isConfig); ?>;
 
-        if (name === 'price') {
-          name = facet.attribute + getCurrentPriceKey()
-        }
+                config.appId = config.indexDataByStoreIds[storeId].appId;
+                config.apiKey = config.indexDataByStoreIds[storeId].apiKey;
+                config.indexName = config.indexDataByStoreIds[storeId].indexName + '_products';
+                config.facets = config.indexDataByStoreIds[storeId].facets;
+                config.currencyCode = config.indexDataByStoreIds[storeId].currencyCode;
+                config.maxValuesPerFacet = config.indexDataByStoreIds[storeId].maxValuesPerFacet;
+                config.categorySeparator = config.indexDataByStoreIds[storeId].categorySeparator;
 
-        attributes.push({
-          name: name,
-          label: facet.label ? facet.label : facet.attribute
-        });
-      });
+                var search = algoliaAdminBundle.instantsearch(config);
+                var facetWrapper = document.getElementById('algolia_merchandising_facet_wrapper');
 
-      // initialize SearchBox
-      search.addWidget(
-         algoliaAdminBundle.instantsearch.widgets.searchBox({
-             container: '#algolia_merchandising_search_box',
-             placeholder: 'Enter the focus keyword of your landing page',
-             reset: false,
-             magnifier: false,
-             queryHook : function(inputValue, search) {
-               $('input[name="query"]').val(inputValue).change();
-               $('input[name="algolia_query"]').val(inputValue).change();
-               return search(inputValue);
-             }
-         })
-      );
+                /** Setup attributes for current refinements widget **/
+                var attributes = [];
+                $.each(config.facets, function (i, facet) {
+                    var name = facet.attribute;
 
-      // initialize SortBy selector
-      var sortingIndices = [];
-      for (var storeId in config.indexDataByStoreIds) {
-        var currentIndexName = config.indexDataByStoreIds[storeId].indexName;
-        if (typeof currentIndexName === "undefined" ) {
-          continue;
-        }
-        sortingIndices.push ({
-          'name': currentIndexName + '_products',
-          'label': currentIndexName
-        });
-      }
+                    if (name === 'categories') {
+                        name = 'categories.level0';
+                    }
 
-      search.addWidget(
-        algoliaAdminBundle.instantsearch.widgets.sortBySelector({
-          container: '#algolia_sortby',
-          indices: sortingIndices
-        })
-      );
+                    if (name === 'price') {
+                        name = facet.attribute + config.indexDataByStoreIds[storeId].priceKey;
+                    }
 
-      search.addWidget(
-        algoliaAdminBundle.instantsearch.widgets.pagination({
-          container: '#instant-search-pagination-container',
-          cssClass: 'algolia-pagination',
-          maxPages: 1000,
-          scrollTo: false,
-          showFirstLast: false,
-        })
-      );
+                    attributes.push({
+                        name: name,
+                        label: facet.label ? facet.label : facet.attribute
+                    });
+                });
 
-      search.addWidget(
-        algoliaAdminBundle.instantsearch.widgets.hitsPerPageSelector({
-          container: '#algolia_hit_per_page',
-          items: [
-            {value: 10, label: 'Show 10 per page', default: true},
-            {value: 20, label: 'Show 20 per page'},
-            {value: 50, label: 'Show 50 per page'},
-          ]
-        })
-      );
-
-      search.addWidget(
-        algoliaAdminBundle.instantsearch.widgets.stats({
-          container: '#algolia-stats',
-          templates: {
-            body: $('#instant-stats-template').html()
-          }
-        })
-      );
+                // initialize SearchBox
+                search.addWidget(
+                    algoliaAdminBundle.instantsearch.widgets.searchBox({
+                        container: '#algolia_merchandising_search_box',
+                        placeholder: 'Enter the focus keyword of your landing page',
+                        reset: false,
+                        magnifier: false,
+                        queryHook : function(inputValue, search) {
+                            $('input[name="query"]').val(inputValue).change();
+                            $('input[name="algolia_query"]').val(inputValue).change();
+                            return search(inputValue);
+                        }
+                    })
+                );
 
 
+                search.addWidget(
+                    algoliaAdminBundle.instantsearch.widgets.pagination({
+                        container: '#instant-search-pagination-container',
+                        cssClass: 'algolia-pagination',
+                        maxPages: 1000,
+                        scrollTo: false,
+                        showFirstLast: false,
+                    })
+                );
 
-      // initialize Current refined values
-      search.addWidget(
-        algoliaAdminBundle.instantsearch.widgets.currentRefinedValues({
-          container: '#current-refinements',
-          cssClasses: {
-            root: 'facet'
-          },
-          templates: {
-            header: '<div class="name">Selected filters</div>',
-            clearAll: "Clear all",
-            item: $('#current-refinements-template').html()
-          },
-          attributes: attributes,
-          onlyListedAttributes: true
-        })
-      );
+                search.addWidget(
+                    algoliaAdminBundle.instantsearch.widgets.hitsPerPageSelector({
+                        container: '#algolia_hit_per_page',
+                        items: [
+                            {value: 10, label: 'Show 10 per page', default: true},
+                            {value: 20, label: 'Show 20 per page'},
+                            {value: 50, label: 'Show 50 per page'},
+                        ]
+                    })
+                );
 
-      // initialize hits widget
-      search.addWidget(
-        algoliaAdminBundle.instantsearch.widgets.hits({
-          container: '#algolia_merchandising_hits',
-          transformData: {
-            allItems: function(res) {
-              var positions = {};
-              for (var i = 0; i < res.hits.length; i++) {
-                var hit = res.hits[i],
-                  pinned = false;
+                search.addWidget(
+                    algoliaAdminBundle.instantsearch.widgets.stats({
+                        container: '#algolia-stats',
+                        templates: {
+                            body: $('#instant-stats-template').html()
+                        }
+                    })
+                );
 
-                if (hit._rankingInfo.promoted === true) {
-                  positions[hit.objectID] = i;
-                  pinned = true;
+                // initialize Current refined values
+                search.addWidget(
+                    algoliaAdminBundle.instantsearch.widgets.currentRefinedValues({
+                        container: '#current-refinements',
+                        cssClasses: {
+                            root: 'facet'
+                        },
+                        templates: {
+                            header: '<div class="name">Selected filters</div>',
+                            clearAll: "Clear all",
+                            item: $('#current-refinements-template').html()
+                        },
+                        attributes: attributes,
+                        onlyListedAttributes: true
+                    })
+                );
+
+                // initialize hits widget
+                search.addWidget(
+                    algoliaAdminBundle.instantsearch.widgets.hits({
+                        container: '#algolia_merchandising_hits',
+                        transformData: {
+                            allItems: function(res) {
+                                var positions = {};
+                                for (var i = 0; i < res.hits.length; i++) {
+                                    var hit = res.hits[i],
+                                        pinned = false;
+
+                                    if (hit._rankingInfo.promoted === true) {
+                                        positions[hit.objectID] = i;
+                                        pinned = true;
+                                    }
+
+                                    res.hits[i]['pinned'] = true;
+                                }
+
+                                $('input[name="algolia_merchandising_positions"]').val(JSON.stringify(positions));
+                                updateConfigInput(res._state);
+
+                                return res;
+                            }
+                        },
+                        templates: {
+                            allItems: $('#algolia_merchandising_all_items_template').html(),
+                            empty: $('#algolia_merchandising_no_results').html()
+                        },
+                        escapeHits: true
+                    })
+                );
+
+                function updateConfigInput(state) {
+                    var disjunctiveRefinements = state.disjunctiveFacetsRefinements;
+                    var hierarchicalRefinements = state.hierarchicalFacetsRefinements;
+                    var refinements = state.facetsRefinements;
+                    var numericRefinements = state.numericRefinements;
+                    var rawConfig = Object.assign(disjunctiveRefinements, hierarchicalRefinements, refinements);
+
+                    var formattedConfig = {};
+                    for (var attribute in rawConfig) {
+                        if (rawConfig.hasOwnProperty(attribute) || typeof rawConfig[attribute] != "undefined") {
+                            formattedConfig[attribute] = rawConfig[attribute].join("~");
+                        }
+                    }
+                    var priceFacet = 'price' + getCurrentPriceKey();
+                    if (typeof numericRefinements[priceFacet] !== "undefined") {
+                        formattedConfig[priceFacet] =  numericRefinements[priceFacet];
+                    }
+
+                    $('input[name="configuration"]').val(JSON.stringify(formattedConfig)).change();
+                    $('input[name="algolia_configuration"]').val(JSON.stringify(formattedConfig)).change();
+                    $('input[name="price_key"]').val(getCurrentPriceKey()).change();
                 }
 
-                res.hits[i]['pinned'] = true;
-              }
+                function getCurrentPriceKey() {
+                    return config.indexDataByStoreIds[$('select[name="store_id"]').val()].priceKey;
+                }
 
-              $('input[name="algolia_merchandising_positions"]').val(JSON.stringify(positions));
-              updateConfigInput(res._state);
+                var customAttributeFacet = {
+                    categories: function (facet, templates) {
+                        var hierarchical_levels = [];
+                        for (var l = 0; l < 10; l++)
+                            hierarchical_levels.push('categories.level' + l.toString());
 
-              return res;
+                        var hierarchicalMenuParams = {
+                            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+                            attributes: hierarchical_levels,
+                            separator: config.categorySeparator,
+                            limit: config.maxValuesPerFacet,
+                            templates: templates,
+                            sortBy: ['name:asc'],
+                            cssClasses: {
+                                list: 'hierarchical',
+                                root: 'facet hierarchical'
+                            }
+                        };
+
+                        hierarchicalMenuParams.templates.item = '' +
+                            '<div class="ais-hierearchical-link-wrapper">' +
+                            '<a class="{{cssClasses.link}}" href="{{url}}">{{label}}' +
+                            '{{#isRefined}}<span class="cross-circle"></span>{{/isRefined}}' +
+                            '<span class="{{cssClasses.count}}">{{count}}</span></a>' +
+                            '</div>';
+
+                        return ['hierarchicalMenu', hierarchicalMenuParams];
+                    }
+                };
+
+                window.getFacetWidget = function (facet, templates) {
+                    if (facet.type === 'priceRanges') {
+                        delete templates.item;
+
+                        return ['priceRanges', {
+                            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+                            attributeName: facet.attribute,
+                            labels: {
+                                currency: config.currencyCode,
+                                separator: 'to',
+                                button: 'go'
+                            },
+                            templates: templates,
+                            cssClasses: {
+                                root: 'facet conjunctive'
+                            }
+                        }];
+                    }
+
+                    if (facet.type === 'conjunctive') {
+                        var refinementListOptions = {
+                            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+                            attributeName: facet.attribute,
+                            limit: config.maxValuesPerFacet,
+                            operator: 'and',
+                            templates: templates,
+                            sortBy: ['count:desc', 'name:asc'],
+                            cssClasses: {
+                                root: 'facet conjunctive'
+                            }
+                        };
+
+                        refinementListOptions = addSearchForFacetValues(facet, refinementListOptions);
+
+                        return ['refinementList', refinementListOptions];
+                    }
+
+                    if (facet.type === 'disjunctive') {
+                        var refinementListOptions = {
+                            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+                            attributeName: facet.attribute,
+                            limit: config.maxValuesPerFacet,
+                            operator: 'or',
+                            templates: templates,
+                            sortBy: ['count:desc', 'name:asc'],
+                            cssClasses: {
+                                root: 'facet disjunctive'
+                            }
+                        };
+
+                        refinementListOptions = addSearchForFacetValues(facet, refinementListOptions);
+
+                        return ['refinementList', refinementListOptions];
+                    }
+
+                    if (facet.type === 'slider') {
+                        delete templates.item;
+
+                        return ['rangeSlider', {
+                            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
+                            attributeName: facet.attribute,
+                            templates: templates,
+                            cssClasses: {
+                                root: 'facet slider'
+                            }
+                        }];
+                    }
+                };
+
+                function addSearchForFacetValues(facet, options) {
+                    if (facet.searchable === '1') {
+                        options['searchForFacetValues'] = {
+                            placeholder: '',
+                            templates: {
+                                noResults: '<div class="sffv-no-results">No Result</div>'
+                            }
+                        };
+                    }
+
+                    return options;
+                }
+
+                $.each(config.facets, function (i, facet) {
+                    if (facet.attribute.indexOf("price") !== -1)
+                        facet.attribute = facet.attribute + getCurrentPriceKey();
+
+                    facet.wrapper = facetWrapper;
+
+                    var templates = {
+                        header: '<div class="name">' + (facet.label ? facet.label : facet.attribute) + '</div>',
+                        item: $('#refinements-lists-item-template').html()
+                    };
+
+                    var widgetInfo = customAttributeFacet[facet.attribute] !== undefined ?
+                        customAttributeFacet[facet.attribute](facet, templates) :
+                        getFacetWidget(facet, templates);
+
+                    var widgetType = widgetInfo[0],
+                        widgetConfig = widgetInfo[1];
+
+                    search.addWidget(algoliaAdminBundle.instantsearch.widgets[widgetType](widgetConfig));
+                });
+
+                // Refine according to preselected facets
+                search.addWidget(
+                    {
+                        init: function (data) {
+                            data.helper.addNumericRefinement('visibility_search', '=', 1);
+
+                            for (var attribute in config.landingPageConfig) {
+                                if (config.landingPageConfig.hasOwnProperty(attribute)) {
+                                    if (attribute.match(/price/) !== null) {
+                                        var values = config.landingPageConfig[attribute];
+                                        for (var key in values) {
+                                            data.helper.addNumericRefinement(attribute, key, values[key][0]);
+                                        }
+                                    } else {
+                                        var values = config.landingPageConfig[attribute].split("~");
+                                        for(var i=0; i<values.length; i++) {
+                                            data.helper.toggleRefine(attribute, values[i]);
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    }
+                );
+
+                search.on('render', function() {
+                    initAutocomplete();
+                    initSortableTable();
+                });
+
+                search.start();
+
+                window.algoliaSearch = search;
+                window.algoliaSearchConfig = config;
+
+                $('select[name="store_id"]').on('change', function(e) {
+                    $('.ais-sort-by-selector').val(config.indexDataByStoreIds[$(this).val()].indexName + '_products').change();
+                });
+
+                // AUTOCOMPLETE - START
+
+                var initAutocomplete = function() {
+                    $('#algolia_autocomplete_wrapper').html(`
+                        <label for="algolia_merchandising_autocomplete">
+                        <input type="text" id="algolia_merchandising_autocomplete" placeholder="Quickly find an item to promote..." />
+                        </label>`);
+
+                    const storeId = $('select[name="store_id"]').val();
+                    const client = algoliaAdminBundle.algoliasearch(
+                            window.algoliaSearchConfig.indexDataByStoreIds[storeId].appId,
+                            window.algoliaSearchConfig.indexDataByStoreIds[storeId].apiKey
+                        );
+                    const index = client.initIndex(window.algoliaSearchConfig.indexDataByStoreIds[storeId].indexName + '_products');
+                    const template = algoliaAdminBundle.Hogan.compile($('#algolia_merchandising_autocomplete_hit').html());
+                    const options = {
+                        hitsPerPage: config.searchParameters.hitsPerPage + 5,
+                        facetFilters: config.searchParameters.facetFilters
+                    };
+                    const sources = [{
+                        source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
+                        name: 'products',
+                        templates: {
+                            header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
+                            suggestion: function (hit) {
+                                return template.render(hit);
+                            }
+                        }
+                    }];
+
+                    $('#algolia_merchandising_autocomplete')
+                        .autocomplete({ debug: false, hint: false }, sources)
+                        .on('autocomplete:selected', function (e, suggestion) {
+                            var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
+
+                            if ($existingRow.length > 0) {
+                                var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+                                $existingRow.insertBefore($firstRow);
+                            }
+                            else {
+                                var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+                                    newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+                                    rowHtml = newRowTemplate.render(suggestion);
+
+                                $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+                            }
+
+                            var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+                            pinIt($firstRow);
+                        });
+                };
+
+                // AUTOCOMPLETE - END
+            });
+        }
+
+        initInstantSearch();
+
+        $('select[name="store_id"]').on('change', function(e) {
+            initInstantSearch();
+            e.preventDefault();
+        });
+
+        $(document).on('click', '.algolia_merchandising_items_table a.pinIt', function(e) {
+            var $row = $(this).closest('tr');
+            pinIt($row);
+
+            e.preventDefault();
+            return false;
+        });
+
+        $(document).on('click', '.algolia_merchandising_items_table a.unpinIt', function(e) {
+            $(this).closest('tr').removeClass('pinned');
+
+            regeneratePositionsValue();
+
+            e.preventDefault();
+            return false;
+        });
+
+        $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
+            var $row = $(this).closest('tr'),
+                $previousRow = $row.prev();
+
+            if ($previousRow.length > 0) {
+                $previousRow.insertAfter($row);
+                pinIt($row);
             }
-          },
-          templates: {
-            allItems: $('#algolia_merchandising_all_items_template').html(),
-            empty: $('#algolia_merchandising_no_results').html()
-          },
-          escapeHits: true
-        })
-      );
 
-      function updateConfigInput(state) {
-        var disjunctiveRefinements = state.disjunctiveFacetsRefinements;
-        var hierarchicalRefinements = state.hierarchicalFacetsRefinements;
-        var refinements = state.facetsRefinements;
-        var numericRefinements = state.numericRefinements;
-        var rawConfig = Object.assign(disjunctiveRefinements, hierarchicalRefinements, refinements);
+            e.preventDefault();
+            return false;
+        });
 
-        var formattedConfig = {};
-        for (var attribute in rawConfig) {
-          if (rawConfig.hasOwnProperty(attribute) || typeof rawConfig[attribute] != "undefined") {
-            formattedConfig[attribute] = rawConfig[attribute].join("~");
-          }
-        }
-        var priceFacet = 'price' + getCurrentPriceKey();
-        if (typeof numericRefinements[priceFacet] !== "undefined") {
-          formattedConfig[priceFacet] =  numericRefinements[priceFacet];
-        }
+        $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
+            var $row = $(this).closest('tr'),
+                $nextRow = $row.next();
 
-        $('input[name="configuration"]').val(JSON.stringify(formattedConfig)).change();
-        $('input[name="algolia_configuration"]').val(JSON.stringify(formattedConfig)).change();
-        $('input[name="price_key"]').val(getCurrentPriceKey()).change();
-      }
-
-      function getCurrentIndexName() {
-        return config.indexDataByStoreIds[$('select[name="store_id"]').val()].indexName + '_products';
-      }
-
-      function getCurrentPriceKey() {
-        return config.indexDataByStoreIds[$('select[name="store_id"]').val()].priceKey;
-      }
-
-      var customAttributeFacet = {
-        categories: function (facet, templates) {
-          var hierarchical_levels = [];
-          for (var l = 0; l < 10; l++)
-            hierarchical_levels.push('categories.level' + l.toString());
-
-          var hierarchicalMenuParams = {
-            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
-            attributes: hierarchical_levels,
-            separator: config.categorySeparator,
-            limit: config.maxValuesPerFacet,
-            templates: templates,
-            sortBy: ['name:asc'],
-            cssClasses: {
-              list: 'hierarchical',
-              root: 'facet hierarchical'
+            if ($nextRow.length > 0) {
+                $nextRow.insertBefore($row);
+                pinIt($row);
             }
-          };
 
-          hierarchicalMenuParams.templates.item = '' +
-            '<div class="ais-hierearchical-link-wrapper">' +
-            '<a class="{{cssClasses.link}}" href="{{url}}">{{label}}' +
-            '{{#isRefined}}<span class="cross-circle"></span>{{/isRefined}}' +
-            '<span class="{{cssClasses.count}}">{{count}}</span></a>' +
-            '</div>';
+            e.preventDefault();
+            return false;
+        });
 
-          return ['hierarchicalMenu', hierarchicalMenuParams];
-        }
-      };
+        var initSortableTable = function() {
+            $('.algolia_merchandising_items_table tbody').sortable({
+                containment: 'parent',
+                items: 'tr',
+                tolerance: 'pointer',
+                helper: sortableHelper,
+                start: function (event, ui) {
+                    $(ui.item).css('margin-left', '10px');
+                },
+                stop: function (event, ui) {
+                    var $row = $(ui.item[0]);
+                    pinIt($row);
+                }
+            });
 
-      window.getFacetWidget = function (facet, templates) {
-
-        if (facet.type === 'priceRanges') {
-          delete templates.item;
-
-          return ['priceRanges', {
-            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
-            attributeName: facet.attribute,
-            labels: {
-              currency: config.currencyCode,
-              separator: 'to',
-              button: 'go'
-            },
-            templates: templates,
-            cssClasses: {
-              root: 'facet conjunctive'
-            }
-          }];
-        }
-
-        if (facet.type === 'conjunctive') {
-          var refinementListOptions = {
-            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
-            attributeName: facet.attribute,
-            limit: config.maxValuesPerFacet,
-            operator: 'and',
-            templates: templates,
-            sortBy: ['count:desc', 'name:asc'],
-            cssClasses: {
-              root: 'facet conjunctive'
-            }
-          };
-
-          refinementListOptions = addSearchForFacetValues(facet, refinementListOptions);
-
-          return ['refinementList', refinementListOptions];
-        }
-
-        if (facet.type === 'disjunctive') {
-          var refinementListOptions = {
-            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
-            attributeName: facet.attribute,
-            limit: config.maxValuesPerFacet,
-            operator: 'or',
-            templates: templates,
-            sortBy: ['count:desc', 'name:asc'],
-            cssClasses: {
-              root: 'facet disjunctive'
-            }
-          };
-
-          refinementListOptions = addSearchForFacetValues(facet, refinementListOptions);
-
-          return ['refinementList', refinementListOptions];
-        }
-
-        if (facet.type === 'slider') {
-          delete templates.item;
-
-          return ['rangeSlider', {
-            container: facet.wrapper.appendChild(createISWidgetContainer(facet.attribute)),
-            attributeName: facet.attribute,
-            templates: templates,
-            cssClasses: {
-              root: 'facet slider'
-            }
-          }];
-        }
-      };
-
-      function addSearchForFacetValues(facet, options) {
-        if (facet.searchable === '1') {
-          options['searchForFacetValues'] = {
-            placeholder: '',
-            templates: {
-              noResults: '<div class="sffv-no-results">No Result</div>'
-            }
-          };
-        }
-
-        return options;
-      }
-
-      $.each(config.facets, function (i, facet) {
-
-        if (facet.attribute.indexOf("price") !== -1)
-          facet.attribute = facet.attribute + getCurrentPriceKey();
-
-        facet.wrapper = facetWrapper;
-
-        var templates = {
-          header: '<div class="name">' + (facet.label ? facet.label : facet.attribute) + '</div>',
-          item: $('#refinements-lists-item-template').html()
+            $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
         };
 
-        var widgetInfo = customAttributeFacet[facet.attribute] !== undefined ?
-          customAttributeFacet[facet.attribute](facet, templates) :
-          getFacetWidget(facet, templates);
+        var pinIt = function($row) {
+            if ($row.hasClass('pinned') === false) {
+                $row.addClass('pinned');
+            }
 
+            regeneratePositionsValue();
+        };
 
-        var widgetType = widgetInfo[0],
-          widgetConfig = widgetInfo[1];
+        var regeneratePositionsValue = function() {
+            var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
+                positions = {};
 
-        search.addWidget(algoliaAdminBundle.instantsearch.widgets[widgetType](widgetConfig));
-
-      });
-
-      // Refine according to preselected facets
-      search.addWidget(
-        {
-          init: function (data) {
-            data.helper.addNumericRefinement('visibility_search', '=', 1);
-
-            for (var attribute in config.landingPageConfig) {
-              if (config.landingPageConfig.hasOwnProperty(attribute)) {
-                if (attribute.match(/price/) !== null) {
-                  var values = config.landingPageConfig[attribute];
-                  for (var key in values) {
-                    data.helper.addNumericRefinement(attribute, key, values[key][0]);
-                  }
-                } else {
-                  var values = config.landingPageConfig[attribute].split("~");
-                  for(var i=0; i<values.length; i++) {
-                    data.helper.toggleRefine(attribute, values[i]);
-                  }
+            $('.algolia_merchandising_items_table tbody tr').each(function(position) {
+                if ($(this).hasClass('pinned')) {
+                    var objectId = $(this).data('objectid');
+                    positions[objectId] = position;
                 }
-              }
-            }
-          },
-        }
-      );
+            });
 
-        search.on('render', function() {
-          initAutocomplete();
-          initSortableTable();
+            $positionsInput.val(JSON.stringify(positions));
+        };
+
+        var sortableHelper = function(e, ui) {
+            ui.children().each(function() {
+                $(this).width($(this).width());
+            });
+
+            return ui;
+        };
+
+        $(".close-box").click(function() {
+            $(this).parent().hide();
         });
-
-      search.start();
-
-      $(document).on('click', '.algolia_merchandising_items_table a.pinIt', function(e) {
-        var $row = $(this).closest('tr');
-        pinIt($row);
-
-        e.preventDefault();
-        return false;
-      });
-
-      $(document).on('click', '.algolia_merchandising_items_table a.unpinIt', function(e) {
-        $(this).closest('tr').removeClass('pinned');
-
-        regeneratePositionsValue();
-
-        e.preventDefault();
-        return false;
-      });
-
-      $(document).on('click', '.algolia_merchandising_items_table a.up', function(e) {
-        var $row = $(this).closest('tr'),
-          $previousRow = $row.prev();
-
-        if ($previousRow.length > 0) {
-          $previousRow.insertAfter($row);
-          pinIt($row);
-        }
-
-        e.preventDefault();
-        return false;
-      });
-
-      $(document).on('click', '.algolia_merchandising_items_table a.down', function(e) {
-        var $row = $(this).closest('tr'),
-          $nextRow = $row.next();
-
-        if ($nextRow.length > 0) {
-          $nextRow.insertBefore($row);
-          pinIt($row);
-        }
-
-        e.preventDefault();
-        return false;
-      });
-
-      $('select[name="store_id"]').on('change', function(e) {
-        $('.ais-sort-by-selector').val(config.indexDataByStoreIds[$(this).val()].indexName + '_products').change();
-      });
-
-      var initAutocomplete = function() {
-        var client = algoliaAdminBundle.algoliasearch(config.appId, config.apiKey),
-          index = client.initIndex(getCurrentIndexName()),
-          template = algoliaAdminBundle.Hogan.compile($('#algolia_merchandising_autocomplete_hit').html()),
-          options = {
-            hitsPerPage: config.searchParameters.hitsPerPage + 5,
-            facetFilters: config.searchParameters.facetFilters
-          },
-          sources = [{
-            source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
-            name: 'products',
-            templates: {
-              header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
-              suggestion: function (hit) {
-                return template.render(hit);
-              }
-            }
-          }];
-
-        $('#algolia_merchandising_autocomplete')
-          .autocomplete({ debug: false, hint: false }, sources)
-          .on('autocomplete:selected', function (e, suggestion) {
-            var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
-
-            if ($existingRow.length > 0) {
-              var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
-              $existingRow.insertBefore($firstRow);
-            }
-            else {
-              var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
-                newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
-                rowHtml = newRowTemplate.render(suggestion);
-
-              $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
-            }
-
-            var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
-            pinIt($firstRow);
-          });
-      };
-
-      var initSortableTable = function() {
-        $('.algolia_merchandising_items_table tbody').sortable({
-          containment: 'parent',
-          items: 'tr',
-          tolerance: 'pointer',
-          helper: sortableHelper,
-          start: function (event, ui) {
-            $(ui.item).css('margin-left', '10px');
-          },
-          stop: function (event, ui) {
-            var $row = $(ui.item[0]);
-            pinIt($row);
-          }
-        });
-
-        $('.algolia_merchandising_items_table tbody tr td').css('cursor', 'move');
-      };
-
-      var pinIt = function($row) {
-        if ($row.hasClass('pinned') === false) {
-          $row.addClass('pinned');
-        }
-
-        regeneratePositionsValue();
-      };
-
-      var regeneratePositionsValue = function() {
-        var $positionsInput = $('input[name="algolia_merchandising_positions"]'),
-          positions = {};
-
-        $('.algolia_merchandising_items_table tbody tr').each(function(position) {
-          if ($(this).hasClass('pinned')) {
-            var objectId = $(this).data('objectid');
-            positions[objectId] = position;
-          }
-        });
-
-        $positionsInput.val(JSON.stringify(positions));
-      };
-
-      var sortableHelper = function(e, ui) {
-        ui.children().each(function() {
-          $(this).width($(this).width());
-        });
-
-        return ui;
-      };
-
-      $(".close-box").click(function() {
-        $(this).parent().hide();
-      });
-
-    });
   });
 
   var createISWidgetContainer = function (attributeName) {

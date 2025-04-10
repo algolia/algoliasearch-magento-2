@@ -33,7 +33,7 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
         parent::__construct($state, $storeNameFetcher, $name);
     }
 
-    protected function getReplicaCommandName(): string
+    protected function getCommandName(): string
     {
         return 'delete';
     }

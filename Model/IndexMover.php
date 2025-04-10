@@ -44,7 +44,7 @@ class IndexMover
             return;
         }
 
-        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName);
+        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName, $storeId);
     }
 
     /**

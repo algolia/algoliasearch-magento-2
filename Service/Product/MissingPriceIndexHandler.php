@@ -2,7 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
-use Algolia\AlgoliaSearch\Helper\Logger;
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Framework\App\ResourceConnection;
@@ -23,7 +24,7 @@ class MissingPriceIndexHandler
     public function __construct(
         protected CollectionFactory $productCollectionFactory,
         protected ResourceConnection $resourceConnection,
-        protected Logger $logger,
+        protected DiagnosticsLogger $diagnostics,
         IndexerRegistry $indexerRegistry
     )
     {
@@ -33,19 +34,23 @@ class MissingPriceIndexHandler
     /**
      * @param string[]|ProductCollection $products
      * @return string[] Array of product IDs that were reindexed by this repair operation
+     * @throws DiagnosticsException
      */
     public function refreshPriceIndex(array|ProductCollection $products): array
     {
+        $this->diagnostics->startProfiling(__METHOD__);
         $reindexIds = $this->getProductIdsToReindex($products);
         if (empty($reindexIds)) {
+            $this->diagnostics->stopProfiling(__METHOD__);
             return [];
         }
 
-        $this->logger->log(__("Pricing records missing or invalid for %1 product(s)", count($reindexIds)));
-        $this->logger->log(__("Reindexing product ID(s): %1", implode(', ', $reindexIds)));
+        $this->diagnostics->log(__("Pricing records missing or invalid for %1 product(s)", count($reindexIds)));
+        $this->diagnostics->log(__("Reindexing product ID(s): %1", implode(', ', $reindexIds)));
 
         $this->indexer->reindexList($reindexIds);
 
+        $this->diagnostics->stopProfiling(__METHOD__);
         return $reindexIds;
     }
 
@@ -121,7 +126,7 @@ class MissingPriceIndexHandler
         try {
             $joins = $select->getPart(Select::FROM);
         } catch (\Zend_Db_Select_Exception $e) {
-            $this->logger->error("Unable to build query for missing product prices: " . $e->getMessage());
+            $this->diagnostics->error("Unable to build query for missing product prices: " . $e->getMessage());
             return [];
         }
 

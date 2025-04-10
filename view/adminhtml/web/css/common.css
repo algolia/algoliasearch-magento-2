@@ -585,3 +585,12 @@ form[action*="algoliasearch"] .accordion .config .value {
 .indexing-queue-logs-message p:last-child {
 	margin-bottom: 0;
 }
+
+/* Fix for Magento 2.4.7 admin menu bug */
+.admin__menu .submenu > ul > li.column > ul > li.level-1:only-of-type > .submenu-group-title {
+    display: block !important;
+}
+
+.admin__menu .submenu > ul > li.column:only-of-type > ul > li.level-1:only-of-type > .submenu-group-title {
+    display: none !important;
+}

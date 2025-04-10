@@ -1,21 +1,30 @@
 define([
     'jquery',
-    'algoliaAnalytics',
-    'algoliaBundle',
+    'algoliaAnalyticsLib',
     'algoliaCommon',
     'mage/cookies',
-], function ($, algoliaAnalyticsWrapper, algoliaBundle) {
-    algoliaAnalytics = algoliaAnalyticsWrapper.default;
+], function ($, algoliaAnalyticsWrapper, algoliaCommon) {
+    const USE_GLOBALS = true;
 
-    window.algoliaInsights = {
+    const algoliaAnalytics = algoliaAnalyticsWrapper.default;
+
+    const algoliaInsights = {
         config            : null,
         defaultIndexName  : null,
         isTracking        : false,
         hasAddedParameters: false,
 
+        initialize() {
+            if (!window.algoliaConfig) return;
+
+            this.addSearchParameters();
+            this.bindConsentButtonClick(algoliaConfig);
+            this.track(algoliaConfig);            
+        },
+
         useCookie() {
             return !this.config.cookieConfiguration.cookieRestrictionModeEnabled
-                || !!getCookie(this.config.cookieConfiguration.consentCookieName);
+                || !!algoliaCommon.getCookie(this.config.cookieConfiguration.consentCookieName);
         },
 
         // Although events can accept both auth and anon tokens, queries can only accept a single token
@@ -60,8 +69,8 @@ define([
             algoliaAnalytics.addAlgoliaAgent(userAgent);
 
             // TODO: Reevaluate need for unset cookie
-            const userToken = getCookie(algoliaConfig.cookieConfiguration.customerTokenCookie);
-            const unsetAuthenticationToken = getCookie('unset_authentication_token');
+            const userToken = algoliaCommon.getCookie(algoliaConfig.cookieConfiguration.customerTokenCookie);
+            const unsetAuthenticationToken = algoliaCommon.getCookie('unset_authentication_token');
             if (userToken && userToken !== '') {
                 algoliaAnalytics.setAuthenticatedUserToken(userToken);
             } else if (unsetAuthenticationToken && unsetAuthenticationToken !== '') {
@@ -91,21 +100,21 @@ define([
                 return;
             }
 
-            algolia.registerHook(
+            algoliaCommon.registerHook(
                 'beforeWidgetInitialization',
                 (allWidgetConfiguration) => {
 
                     allWidgetConfiguration.configure =
-                        algoliaInsights.applyInsightsToSearchParams(allWidgetConfiguration.configure);
+                        this.applyInsightsToSearchParams(allWidgetConfiguration.configure);
 
                     return allWidgetConfiguration;
                 }
             );
 
-            algolia.registerHook(
+            algoliaCommon.registerHook(
                 'afterAutocompleteProductSourceOptions',
                 (options) => {
-                    return algoliaInsights.applyInsightsToSearchParams(options);
+                    return this.applyInsightsToSearchParams(options);
                 }
             );
 
@@ -137,7 +146,7 @@ define([
             this.bindClickedEvents();
             this.bindViewedEvents();
 
-            algolia.triggerHooks('afterInsightsBindEvents', this);
+            algoliaCommon.triggerHooks('afterInsightsBindEvents', this);
         },
 
         bindClickedEvents() {
@@ -217,13 +226,13 @@ define([
                     var facets = this.config.facets;
                     var containers = [];
                     for (var i = 0; i < facets.length; i++) {
-                        var elem = createISWidgetContainer(facets[i].attribute);
+                        var elem = algoliaCommon.createISWidgetContainer(facets[i].attribute);
                         containers.push('.' + elem.className);
                     }
 
-                    algolia.registerHook(
+                    algoliaCommon.registerHook(
                         'afterInstantsearchStart',
-                        function (search, algoliaBundle) {
+                        function (search) {
                             var selectors = document.querySelectorAll(containers.join(', '));
                             selectors.forEach(function (e) {
                                 e.addEventListener('click', function (event) {
@@ -344,20 +353,19 @@ define([
                 algoliaConfig.cookieConfiguration.cookieAllowButtonSelector,
                 (event) => {
                     event.preventDefault();
-                    algoliaInsights.initializeAnalytics(algoliaConfig, true);
+                    this.initializeAnalytics(algoliaConfig, true);
                 }
             );
         }
     };
 
-    algoliaInsights.addSearchParameters();
-
     $(function ($) {
-        if (window.algoliaConfig) {
-            algoliaInsights.bindConsentButtonClick(algoliaConfig);
-            algoliaInsights.track(algoliaConfig);
-        }
+        algoliaInsights.initialize()
     });
+
+    if (USE_GLOBALS) {
+        window.algoliaInsights = algoliaInsights;
+    }
 
     return algoliaInsights;
 });

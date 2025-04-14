@@ -38,6 +38,8 @@ class ConfigHelper
     public const NUMBER_OF_PRODUCT_RESULTS = 'algoliasearch_instant/instant/number_product_results';
     public const FACETS = 'algoliasearch_instant/instant_facets/facets';
     public const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant_facets/max_values_per_facet';
+    public const ENABLE_DYNAMIC_FACETS = 'algoliasearch_instant/instant_facets/enable_dynamic_facets';
+
     public const SORTING_INDICES = 'algoliasearch_instant/instant_sorts/sorts';
     public const SEARCHBOX_ENABLE = 'algoliasearch_instant/instant_options/instantsearch_searchbox';
     public const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant_options/show_suggestions_on_no_result_page';
@@ -1341,6 +1343,19 @@ class ConfigHelper
             }
         }
         return [];
+    }
+
+    /**
+     * @param int|null $storeId
+     * @return bool
+     */
+    public function isDynamicFacetsEnabled(?int $storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_DYNAMIC_FACETS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 
     /**

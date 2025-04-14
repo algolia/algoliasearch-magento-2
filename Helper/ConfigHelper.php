@@ -73,6 +73,7 @@ class ConfigHelper
     public const CATEGORY_SEPARATOR = 'algoliasearch_categories/categories/category_separator';
 
     public const IS_ACTIVE = 'algoliasearch_queue/queue/active';
+    public const USE_BUILT_IN_CRON = 'algoliasearch_queue/queue/use_built_in_cron';
     public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
     public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
 
@@ -613,6 +614,15 @@ class ConfigHelper
     public function isQueueActive($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::IS_ACTIVE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function useBuiltInCron($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::USE_BUILT_IN_CRON, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

@@ -45,7 +45,7 @@ class FacetBuilder
             function($facet) {
                 return $this->decorateAttributeForFaceting($facet);
             },
-            $this->getRawFacets($storeId)
+            $this->addMerchandisingFacets($storeId, $this->getRawFacets($storeId))
         );
     }
 
@@ -107,12 +107,24 @@ class FacetBuilder
         return array_map(
             function(string $attribute) {
                 if ($attribute === self::FACET_ATTRIBUTE_CATEGORIES) {
-                    $attribute = self::FACET_ATTRIBUTE_CATEGORIES . '.level0';
+                    $attribute = $this->getRenderingContentFriendlyCategoryFacetAttributeName();
                 }
                 return $attribute;
             },
             $facets
         );
+    }
+
+    /**
+     * `renderingContent` cannot utilize the entire categories object but instead must reference a scalar value
+     * Obtaining the root level of the category data will enable it to become selectable in the Algolia Dashboard
+     * for "Facet Display" and "Order facets" within merchandising rules
+     *
+     * @return string
+     */
+    protected function getRenderingContentFriendlyCategoryFacetAttributeName(): string
+    {
+        return self::FACET_ATTRIBUTE_CATEGORIES . '.level0';
     }
 
     /**
@@ -130,6 +142,7 @@ class FacetBuilder
 
     /**
      * Generates common data to be used for both attributesForFaceting and renderingContent
+     *
      * @return array<array<string, mixed>>
      * @throws NoSuchEntityException
      * @throws LocalizedException
@@ -155,26 +168,55 @@ class FacetBuilder
             }
         }
 
-        $this->facets[$storeId] = $this->addCategoryFacets($storeId, $rawFacets);
+        $this->facets[$storeId] = $this->assertCategoryFacet($storeId, $rawFacets);
+
         return $this->facets[$storeId];
     }
 
     /**
+     * @param array<array<string, mixed>> $facets
+     * @return bool
+     */
+    protected function hasCategoryFacet(array $facets): bool
+    {
+        return !!array_filter($facets, function($facet) {
+            return $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES;
+        });
+    }
+
+    /**
+     * Applies the category facet if not manually configured but necessary for category functionality
+     * (The presence of the category facet drives logic for attributesForFaceting and renderingContent)
+     *
      * @param int $storeId
      * @param array<array<string, mixed>> $facets
      * @return array<array<string, mixed>>
      */
-    protected function addCategoryFacets(int $storeId, array $facets): array
+    protected function assertCategoryFacet(int $storeId, array $facets): array
     {
         if ($this->configHelper->replaceCategories($storeId)
-            && !array_filter($facets, function($facet) {
-                return $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES;
-            })
+            && !$this->hasCategoryFacet($facets)
         ) {
             $facets[] = $this->getRawFacet(self::FACET_ATTRIBUTE_CATEGORIES);
         }
 
-        // Added for legacy merchandising features
+        return $facets;
+    }
+
+    /**
+     * Add merchandising facets as needed for attributesForFaceting
+     *
+     * @param int $storeId
+     * @param array<array<string, mixed>> $facets
+     * @return array|string[]
+     */
+    protected function addMerchandisingFacets(int $storeId, array $facets): array
+    {
+        if ($this->hasCategoryFacet($facets)) {
+            $facets[] = $this->getRawFacet($this->getRenderingContentFriendlyCategoryFacetAttributeName());
+        }
+
+        // Used for legacy merchandising features - always required!
         $facets[] = $this->getRawFacet(self::FACET_ATTRIBUTES_CATEGORY_ID);
 
         if ($this->configHelper->isVisualMerchEnabled($storeId)) {

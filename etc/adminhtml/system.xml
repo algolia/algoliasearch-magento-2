@@ -962,7 +962,7 @@
                     </comment>
                 </field>
                 <field id="use_built_in_cron" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Use Magento built-in Cron</label>
+                    <label>Use Magento built-in cron</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[

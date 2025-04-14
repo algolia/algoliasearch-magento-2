@@ -959,15 +959,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <model>Algolia\AlgoliaSearch\Model\Config\EnableQueueComment</model>
-                        <![CDATA[
-                            If enabled, all indexing operations (add, remove & update operations) will be done asynchronously using the CRON mechanism.<br><br/>
-                            <span class="algolia-config-warning">&#9888;</span> Enabling this option is recommended in production or if your store has a lot of products.
-                        ]]>
                     </comment>
                 </field>
-                <field id="cron_expr" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\QueueCron</backend_model>
-                    <label>Cron expression</label>
+                <field id="use_built_in_cron" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Use Magento built-in Cron</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <![CDATA[
                             This configuration will add <code>algolia_queue_process</code> jobs to the Magento <code>cron_schedule</code> table according to the specified cron expression.
@@ -975,6 +971,19 @@
                     </comment>
                     <depends>
                         <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="cron_expr" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\QueueCron</backend_model>
+                    <label>Cron expression</label>
+                    <comment>
+                        <![CDATA[
+                            Enter a valid Cron expression such as <code>*/5 * * * *</code> to process the queue every 5 minutes. You can also use aliases like <code>@hourly</code>.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                        <field id="use_built_in_cron">1</field>
                     </depends>
                 </field>
                 <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">

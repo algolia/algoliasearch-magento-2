@@ -58,6 +58,7 @@
         </algoliasearch_categories>
         <algoliasearch_queue>
             <queue>
+                <use_built_in_cron>0</use_built_in_cron>
                 <cron_expr>*/5 * * * *</cron_expr>
             </queue>
         </algoliasearch_queue>

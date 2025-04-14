@@ -978,7 +978,7 @@
                     <label>Cron expression</label>
                     <comment>
                         <![CDATA[
-                            Enter a valid Cron expression such as <code>*/5 * * * *</code> to process the queue every 5 minutes. You can also use aliases like <code>@hourly</code>.
+                            Enter a valid cron expression such as <code>*/5 * * * *</code> to process the queue every 5 minutes. You can also use aliases like <code>@hourly</code>.
                         ]]>
                     </comment>
                     <depends>

@@ -10,6 +10,8 @@
 - See our `CustomAlgolia` demo extension's [1.4.0 release](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/releases/tag/1.4.0) for examples on how to take advantage of these changes
 - Added granular profiling through the [Magento Profiler](https://experienceleague.adobe.com/en/docs/commerce-operations/configuration-guide/setup/mage-profiler) to aid in troubleshooting indexing performance issues
 - Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
+- Reorganization of the test folders
+- Added unit and integration tests for full page cache (FPC)
 
 ### Updates
 - Tests: Added possibility to run tests with multiple applications IDs.
@@ -30,6 +32,8 @@
 - Fixed customer groups prices ranges on configurable products
 - Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
 - Fixed a bug where excluded websites weren't taken into account while indexing customer prices on products. (thanks @kamilszewczyk)
+- Fixed a bug where full page cache (FPC) didn't work on category pages
+- Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
 
 ### Breaking Changes
 - If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/front-end-issues/))

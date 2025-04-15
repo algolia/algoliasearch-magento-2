@@ -414,53 +414,6 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             return hit;
         },
 
-        /** @deprecated This function should no longer be used and will be removed in a version 3.17 */
-        fixAutocompleteCssHeight: () => {
-            if ($(document).width() > 768) {
-                $(".other-sections").css('min-height', '0');
-                $(".aa-dataset-products").css('min-height', '0');
-                var height = Math.max($(".other-sections").outerHeight(), $(".aa-dataset-products").outerHeight());
-                $(".aa-dataset-products").css('min-height', height);
-            }
-        },
-
-        /** @deprecated This function should no longer be used and will be removed in version 3.17 */
-        fixAutocompleteCssSticky: (menu) => {
-            var dropdown_menu = $('#algolia-autocomplete-container .aa-dropdown-menu');
-            var autocomplete_container = $('#algolia-autocomplete-container');
-            autocomplete_container.removeClass('reverse');
-
-            /** Reset computation **/
-            dropdown_menu.css('top', '0px');
-
-            /** Stick menu vertically to the input **/
-            var targetOffset = Math.round(menu.offset().top + menu.outerHeight());
-            var currentOffset = Math.round(autocomplete_container.offset().top);
-
-            dropdown_menu.css('top', (targetOffset - currentOffset) + 'px');
-
-            if (menu.offset().left + menu.outerWidth() / 2 > $(document).width() / 2) {
-                /** Stick menu horizontally align on right to the input **/
-                dropdown_menu.css('right', '0px');
-                dropdown_menu.css('left', 'auto');
-
-                var targetOffset = Math.round(menu.offset().left + menu.outerWidth());
-                var currentOffset = Math.round(autocomplete_container.offset().left + autocomplete_container.outerWidth());
-
-                dropdown_menu.css('right', (currentOffset - targetOffset) + 'px');
-            } else {
-                /** Stick menu horizontally align on left to the input **/
-                dropdown_menu.css('left', 'auto');
-                dropdown_menu.css('right', '0px');
-                autocomplete_container.addClass('reverse');
-
-                var targetOffset = Math.round(menu.offset().left);
-                var currentOffset = Math.round(autocomplete_container.offset().left);
-
-                dropdown_menu.css('left', (targetOffset - currentOffset) + 'px');
-            }
-        },
-
         createISWidgetContainer: (attributeName) => {
             const div = document.createElement('div');
             div.className = 'is-widget-container-' + attributeName.split('.').join('_');

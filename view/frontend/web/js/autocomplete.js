@@ -54,7 +54,6 @@ define([
         MIN_SEARCH_LENGTH_CHARS,
 
         initialize(config, element) {
-            // console.log('AC initialized with', config, element);
             this.buildAutocomplete();
         },
 
@@ -147,7 +146,6 @@ define([
          * @param root
          */
         renderAutocomplete({ sections, render, html }, root) {
-            // console.log(`Sections (${sections.length}):`, sections);
             const classes = [
                 'aa-PanelLayout',
                 'aa-Panel--scrollable'
@@ -839,7 +837,6 @@ define([
         },
 
         handleAutocompleteStateChange(autocompleteState) {
-            // console.log('The Autocomplete state has changed:', autocompleteState);
             if (!state.hasRendered && autocompleteState.isOpen) {
                 this.addPanelObserver();
                 state.hasRendered = true;

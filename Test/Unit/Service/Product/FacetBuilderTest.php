@@ -37,47 +37,6 @@ class FacetBuilderTest extends TestCase
         );
     }
 
-    protected function mockFacets(): void
-    {
-        $this->configHelper
-            ->method('getFacets')
-            ->willReturn([
-                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'brand', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_NOT_SEARCHABLE],
-                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_SEARCHABLE],
-                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => FacetBuilder::FACET_ATTRIBUTE_PRICE]
-            ]);
-    }
-
-    protected function mockStoreConfig($storeId, $websiteId): void
-    {
-        $this->configHelper
-            ->method('getAllowedCurrencies')
-            ->willReturn(['EUR', 'USD']);
-
-        $storeMock = $this->createMock(\Magento\Store\Api\Data\StoreInterface::class);
-        $storeMock->method('getWebsiteId')->willReturn($websiteId);
-        $this->storeManager->method('getStore')->with($storeId)->willReturn($storeMock);
-    }
-
-    protected function mockCategoryConfig($storeId): void
-    {
-        $this->configHelper
-            ->method('replaceCategories')
-            ->with($storeId)
-            ->willReturn(true);
-    }
-
-    protected function mockGroups(): void
-    {
-        $groupMock1 = $this->createMock(\Magento\Customer\Model\Group::class);
-        $groupMock1->method('getData')->with('customer_group_id')->willReturn(1);
-
-        $groupMock2 = $this->createMock(\Magento\Customer\Model\Group::class);
-        $groupMock2->method('getData')->with('customer_group_id')->willReturn(2);
-
-        $this->groupCollection->method('getIterator')->willReturn(new \ArrayIterator([$groupMock1, $groupMock2]));
-    }
-
     /**
      * @throws NoSuchEntityException
      * @throws LocalizedException
@@ -159,6 +118,61 @@ class FacetBuilderTest extends TestCase
         $this->assertNotContains('price.USD.group_2', $result);
     }
 
+
+    /**
+     * attributesForFaceting must include level0 to be selectable via renderingContent/merch rule UI
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function testGetAttributesForFacetingIncludesCategoryLevel0(): void
+    {
+        $storeId = 1;
+        $this->mockFacets();
+        $this->mockCategoryConfig($storeId);
+        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
+        $this->assertContains('categories.level0', $result);
+    }
+
+    /**
+     * If category PLPs are supported then attributesForFaceting must contain category merch meta data
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function testGetAttributesForFacetingIncludesMerchMetaData(): void
+    {
+        $storeId = 1;
+        $this->mockFacets();
+        $this->mockCategoryConfig($storeId);
+
+        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
+
+        $this->assertContains('categories', $result);
+        $this->assertContains('categoryIds', $result);
+        $this->assertNotContains('categoryPageId', $result);
+    }
+
+    /*
+     * When visual merchandising is enabled through Merchandising Studio then a searchable
+     * category page ID (default categoryPageId) must be added to attributesForFaceting
+     *
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function testGetAttributesForFacetingIncludesVisualMerchData(): void
+    {
+        $storeId = 1;
+        $this->mockFacets();
+        $this->mockCategoryConfig($storeId);
+        $this->mockVisualMerchEnablement($storeId);
+
+        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
+
+        $this->assertContains('searchable(categoryPageId)', $result);
+    }
+
     /**
      * @throws NoSuchEntityException
      * @throws LocalizedException
@@ -226,72 +240,19 @@ class FacetBuilderTest extends TestCase
         $this->assertArrayNotHasKey('categories', $values);
     }
 
-    /**
-     * attributesForFaceting must include level0 to be selectable via renderingContent/merch rule UI
-     * @return void
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    public function testGetAttributesForFacetingIncludesCategoryLevel0(): void
-    {
-        $storeId = 1;
-        $this->mockFacets();
-        $this->mockCategoryConfig($storeId);
-        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
-        $this->assertContains('categories.level0', $result);
-    }
 
     /**
-     * If category PLPs are supported then attributesForFaceting must contain category merch meta data
+     * Category merch meta data should not be included with renderingContent
      * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function testGetAttributesForFacetingIncludesMerchMetaData(): void
-    {
-        $storeId = 1;
-        $this->mockFacets();
-        $this->mockCategoryConfig($storeId);
-
-        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
-
-        $this->assertContains('categories', $result);
-        $this->assertContains('categoryIds', $result);
-        $this->assertNotContains('categoryPageId', $result);
-    }
-
-    /*
-     * When visual merchandising is enabled through Merchandising Studio then a searchable
-     * category page ID (default categoryPageId) must be added to attributesForFaceting
-     *  
-     * @return void
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    public function testGetAttributesForFacetingIncludesVisualMerchData(): void
-    {
-        $storeId = 1;
-        $this->mockFacets();
-        $this->mockCategoryConfig($storeId);
-        $this->configHelper
-            ->method('isVisualMerchEnabled')
-            ->with($storeId)
-            ->willReturn(true);
-        $this->configHelper
-            ->method('getCategoryPageIdAttributeName')
-            ->with($storeId)
-            ->willReturn('categoryPageId');
-
-        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
-
-        $this->assertContains('searchable(categoryPageId)', $result);
-    }
-
     public function testGetRenderingContentDoesNotIncludeMetaData(): void
     {
         $storeId = 1;
         $this->mockFacets();
         $this->mockCategoryConfig($storeId);
+        $this->mockVisualMerchEnablement($storeId);
 
         $result = $this->facetBuilder->getRenderingContent($storeId);
 
@@ -300,7 +261,6 @@ class FacetBuilderTest extends TestCase
         $this->assertNotContains('categoryIds', $facets);
         $this->assertNotContains('categoryPageId', $facets);
     }
-
 
     /**
      * @throws NoSuchEntityException
@@ -360,5 +320,58 @@ class FacetBuilderTest extends TestCase
         ];
         $result = $this->facetBuilder->decorateAttributeForFaceting($facet);
         $this->assertEquals('filterOnly(size)', $result);
+    }
+
+    protected function mockFacets(): void
+    {
+        $this->configHelper
+            ->method('getFacets')
+            ->willReturn([
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'brand', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_NOT_SEARCHABLE],
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_SEARCHABLE],
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => FacetBuilder::FACET_ATTRIBUTE_PRICE]
+            ]);
+    }
+
+    protected function mockStoreConfig(int $storeId, int $websiteId): void
+    {
+        $this->configHelper
+            ->method('getAllowedCurrencies')
+            ->willReturn(['EUR', 'USD']);
+
+        $storeMock = $this->createMock(\Magento\Store\Api\Data\StoreInterface::class);
+        $storeMock->method('getWebsiteId')->willReturn($websiteId);
+        $this->storeManager->method('getStore')->with($storeId)->willReturn($storeMock);
+    }
+
+    protected function mockCategoryConfig(int $storeId): void
+    {
+        $this->configHelper
+            ->method('replaceCategories')
+            ->with($storeId)
+            ->willReturn(true);
+    }
+
+    protected function mockGroups(): void
+    {
+        $groupMock1 = $this->createMock(\Magento\Customer\Model\Group::class);
+        $groupMock1->method('getData')->with('customer_group_id')->willReturn(1);
+
+        $groupMock2 = $this->createMock(\Magento\Customer\Model\Group::class);
+        $groupMock2->method('getData')->with('customer_group_id')->willReturn(2);
+
+        $this->groupCollection->method('getIterator')->willReturn(new \ArrayIterator([$groupMock1, $groupMock2]));
+    }
+
+    protected function mockVisualMerchEnablement(int $storeId): void
+    {
+        $this->configHelper
+            ->method('isVisualMerchEnabled')
+            ->with($storeId)
+            ->willReturn(true);
+        $this->configHelper
+            ->method('getCategoryPageIdAttributeName')
+            ->with($storeId)
+            ->willReturn('categoryPageId');
     }
 }

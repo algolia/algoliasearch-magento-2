@@ -362,9 +362,6 @@
                             DOM selector of block in which the search results page will be displayed using JavaScript.
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="number_product_results" translate="label comment" type="text" sortOrder="5" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -375,9 +372,6 @@
                             The number of products displayed on the InstantSearch results page. Default value is 9.
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="replace_categories" translate="label comment" type="select" sortOrder="40" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -388,9 +382,6 @@
                             Do you want to replace default Magento category pages (PLPs) with the InstantSearch results page?
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
             </group>
             <group id="instant_facets" translate="label" type="text" sortOrder="10" showInDefault="1"
@@ -453,13 +444,7 @@
 
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
-                <depends>
-                    <field id="algoliasearch_instant/instant/is_instant_enabled">1</field>
-                </depends>
             </group>
             <group id="instant_sorts" translate="label" type="text" sortOrder="10" showInDefault="1"
                    showInWebsite="1" showInStore="1">
@@ -483,9 +468,6 @@
                         ]]>
                     </comment>
                 </field>
-                <depends>
-                    <field id="algoliasearch_instant/instant/is_instant_enabled">1</field>
-                </depends>
             </group>
             <group id="instant_options" translate="label" type="text" sortOrder="10" showInDefault="1"
                    showInWebsite="1" showInStore="1">
@@ -540,9 +522,6 @@
                         ]]>
                     </comment>
                 </field>
-                <depends>
-                    <field id="algoliasearch_instant/instant/is_instant_enabled">1</field>
-                </depends>
             </group>
         </section>
         <section id="algoliasearch_products" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">

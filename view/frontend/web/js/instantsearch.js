@@ -177,12 +177,18 @@ define([
 
             allWidgetConfiguration = this.configureFacets(allWidgetConfiguration);
 
+            // allWidgetConfiguration = this.configureRedirects(allWidgetConfiguration)
+
             if (algoliaConfig.analytics.enabled) {
                 allWidgetConfiguration.analytics = this.getAnalyticsWidget()
             }
 
             return allWidgetConfiguration;
         },
+
+        // configureRedirects(allWidgetConfiguration) {
+        //     return allWidgetConfiguration;
+        // },
 
         /**
          * Process a passed widget config object and add to InstantSearch
@@ -966,6 +972,11 @@ define([
             if (algoliaConfig.showSuggestionsOnNoResultsPage) {
                 customWidgets.push(this.getSuggestionsWidget(this.minQuerySuggestions));
             }
+
+            const allowRedirects = true;
+            if (allowRedirects) {
+                customWidgets.push(this.getRedirectWidget());
+            }
             return customWidgets;
         },
 
@@ -1048,6 +1059,20 @@ define([
                         content += `</div>`;
                     }
                     document.querySelector('#instant-empty-results-container').innerHTML = content;
+                },
+            };
+        },
+
+        getRedirectWidget() {
+            return {
+                render({ results }) {
+                    if (
+                        results &&
+                        results.renderingContent &&
+                        results.renderingContent.redirect
+                    ) {
+                        window.location.href = results.renderingContent.redirect.url;
+                    }
                 },
             };
         },

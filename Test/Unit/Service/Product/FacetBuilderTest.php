@@ -59,6 +59,14 @@ class FacetBuilderTest extends TestCase
         $this->storeManager->method('getStore')->with($storeId)->willReturn($storeMock);
     }
 
+    protected function mockCategoryConfig($storeId): void
+    {
+        $this->configHelper
+            ->method('replaceCategories')
+            ->with($storeId)
+            ->willReturn(true);
+    }
+
     protected function mockGroups(): void
     {
         $groupMock1 = $this->createMock(\Magento\Customer\Model\Group::class);
@@ -188,10 +196,13 @@ class FacetBuilderTest extends TestCase
     }
 
     /**
+     * Categories must be added to renderingContent as level0
+     * `categories` Object attribute should not be added as it is not compatible for facet render
+     *
      * @throws NoSuchEntityException
      * @throws LocalizedException
      */
-    public function testRenderingContentsFormatsCategoriesAttribute(): void
+    public function testGetRenderingContentFormatsCategoriesAttribute(): void
     {
         $storeId = 1;
         $websiteId = 2;
@@ -204,17 +215,92 @@ class FacetBuilderTest extends TestCase
 
         $this->mockGroups();
         $this->mockStoreConfig($storeId, $websiteId);
-
-        $this->configHelper
-            ->method('replaceCategories')
-            ->with($storeId)
-            ->willReturn(true);
+        $this->mockCategoryConfig($storeId);
 
         $result = $this->facetBuilder->getRenderingContent($storeId);
 
         $this->assertContains('categories.level0', $result['facetOrdering']['facets']['order']);
-        $this->assertArrayHasKey('categories.level0', $result['facetOrdering']['values']);
+
+        $values = $result['facetOrdering']['values'];
+        $this->assertArrayHasKey('categories.level0', $values);
+        $this->assertArrayNotHasKey('categories', $values);
     }
+
+    /**
+     * attributesForFaceting must include level0 to be selectable via renderingContent/merch rule UI
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function testGetAttributesForFacetingIncludesCategoryLevel0(): void
+    {
+        $storeId = 1;
+        $this->mockFacets();
+        $this->mockCategoryConfig($storeId);
+        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
+        $this->assertContains('categories.level0', $result);
+    }
+
+    /**
+     * If category PLPs are supported then attributesForFaceting must contain category merch meta data
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function testGetAttributesForFacetingIncludesMerchMetaData(): void
+    {
+        $storeId = 1;
+        $this->mockFacets();
+        $this->mockCategoryConfig($storeId);
+
+        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
+
+        $this->assertContains('categories', $result);
+        $this->assertContains('categoryIds', $result);
+        $this->assertNotContains('categoryPageId', $result);
+    }
+
+    /*
+     * When visual merchandising is enabled through Merchandising Studio then a searchable
+     * category page ID (default categoryPageId) must be added to attributesForFaceting
+     *  
+     * @return void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function testGetAttributesForFacetingIncludesVisualMerchData(): void
+    {
+        $storeId = 1;
+        $this->mockFacets();
+        $this->mockCategoryConfig($storeId);
+        $this->configHelper
+            ->method('isVisualMerchEnabled')
+            ->with($storeId)
+            ->willReturn(true);
+        $this->configHelper
+            ->method('getCategoryPageIdAttributeName')
+            ->with($storeId)
+            ->willReturn('categoryPageId');
+
+        $result = $this->facetBuilder->getAttributesForFaceting($storeId);
+
+        $this->assertContains('searchable(categoryPageId)', $result);
+    }
+
+    public function testGetRenderingContentDoesNotIncludeMetaData(): void
+    {
+        $storeId = 1;
+        $this->mockFacets();
+        $this->mockCategoryConfig($storeId);
+
+        $result = $this->facetBuilder->getRenderingContent($storeId);
+
+        $facets = $result['facetOrdering']['facets']['order'];
+        $this->assertNotContains('categories', $facets);
+        $this->assertNotContains('categoryIds', $facets);
+        $this->assertNotContains('categoryPageId', $facets);
+    }
+
 
     /**
      * @throws NoSuchEntityException

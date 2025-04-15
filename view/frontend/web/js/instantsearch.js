@@ -30,6 +30,8 @@ define([
 
         dynamicWidgets: [],
 
+        hasInteracted: false,
+
         ///////////////////////////
         //  Main build functions //
         ///////////////////////////
@@ -425,6 +427,7 @@ define([
                 placeholder: algoliaConfig.translations.searchFor,
                 showSubmit : false,
                 queryHook  : (inputValue, search) => {
+                    this.hasInteracted = true;
                     if (
                         algoliaConfig.isSearchPage &&
                         !algoliaConfig.request.categoryId &&
@@ -1064,12 +1067,14 @@ define([
         },
 
         getRedirectWidget() {
+            const uiComponnent = this;
             return {
                 render({ results }) {
                     if (
                         results &&
                         results.renderingContent &&
-                        results.renderingContent.redirect
+                        results.renderingContent.redirect &&
+                        !uiComponnent.hasInteracted
                     ) {
                         window.location.href = results.renderingContent.redirect.url;
                     }

@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Console\Command\Indexer\AbstractIndexerCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
+use Magento\Framework\Indexer\ActionInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -26,6 +27,16 @@ abstract class IndexingTestCase extends TestCase
         $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
 
         $batchQueueProcessor->processBatch(1);
+        $this->algoliaHelper->waitLastTask();
+
+        $this->assertNumberofHits($indexSuffix, $expectedNbHits);
+    }
+
+    protected function processOldIndexerTest(ActionInterface $indexer, $indexSuffix, $expectedNbHits)
+    {
+        $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
+
+        $indexer->executeFull();
         $this->algoliaHelper->waitLastTask();
 
         $this->assertNumberofHits($indexSuffix, $expectedNbHits);

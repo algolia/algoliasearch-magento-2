@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
@@ -95,6 +96,28 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $indexProductsCmd = $this->objectManager->get(IndexProductsCommand::class);
         $this->processCommandTest($indexProductsCmd, 'products', $this->assertValues->productsOnStockCount);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/products 0
+     */
+    public function testDisabledOldIndexer()
+    {
+        $productsIndexer = $this->objectManager->create(ProductIndexer::class);
+        $this->processOldIndexerTest($productsIndexer, 'products', 0);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/products 1
+     */
+    public function testEnabledOldIndexer()
+    {
+        $this->setConfig(ConfigHelper::SHOW_OUT_OF_STOCK, 0);
+
+        $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
+
+        $productsIndexer = $this->objectManager->create(ProductIndexer::class);
+        $this->processOldIndexerTest($productsIndexer, 'products', $this->assertValues->productsOnStockCount);
     }
 
     private function getValidTestProduct()

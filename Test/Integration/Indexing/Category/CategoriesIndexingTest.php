@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Category;
 
 use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand;
+use Algolia\AlgoliaSearch\Model\Indexer\Category as CategoryIndexer;
 use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\IndexingTestCase;
 
@@ -58,5 +59,23 @@ class CategoriesIndexingTest extends IndexingTestCase
     {
         $indexCategoriesCmd = $this->objectManager->get(IndexCategoriesCommand::class);
         $this->processCommandTest($indexCategoriesCmd,'categories', $this->assertValues->expectedCategory);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/categories 0
+     */
+    public function testDisabledOldIndexer()
+    {
+        $categoriesIndexer = $this->objectManager->create(CategoryIndexer::class);
+        $this->processOldIndexerTest($categoriesIndexer, 'categories', 0);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/categories 1
+     */
+    public function testEnabledOldIndexer()
+    {
+        $categoriesIndexer = $this->objectManager->create(CategoryIndexer::class);
+        $this->processOldIndexerTest($categoriesIndexer, 'categories', $this->assertValues->expectedCategory);
     }
 }

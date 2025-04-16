@@ -34,7 +34,8 @@ class FacetBuilder
     {}
 
     /**
-     * @param int $storeId
+     * Return the configuration to be used for the store product index `attributesForFaceting`
+     * @param int $storeId - The store ID for the index to be configured
      * @return string[]
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -45,12 +46,13 @@ class FacetBuilder
             function($facet) {
                 return $this->decorateAttributeForFaceting($facet);
             },
-            $this->getRawFacets($storeId)
+            $this->addMerchandisingFacets($storeId, $this->getRawFacets($storeId))
         );
     }
 
     /**
-     * @param int $storeId
+     * Return the configuration to be used for the store product index `renderingContent`
+     * @param int $storeId - The store ID for the index to be configured
      * @return array<string, array>|null
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -73,6 +75,8 @@ class FacetBuilder
     }
 
     /**
+     * For an array of facet data, return an array of attribute names only
+     *
      * @param array<array<string, mixed>> $facets
      * @return string[]
      */
@@ -87,8 +91,9 @@ class FacetBuilder
     }
 
     /**
+     * Format the facet data to be : renderingContent > facetOrdering > values
      * @param string[] $attributes
-     * @return array<string, array>
+     * @return array<string, array> - Array key is the attribute name and the value is an object containing a `sortRemainingBy` value
      */
     protected function getRenderingContentValues(array $attributes): array
     {
@@ -99,6 +104,7 @@ class FacetBuilder
     }
 
     /**
+     * Take raw facet (common) attributes and convert to include attributes specifically needed for `renderingContent`
      * @param string[] $facets
      * @return string[]
      */
@@ -107,7 +113,7 @@ class FacetBuilder
         return array_map(
             function(string $attribute) {
                 if ($attribute === self::FACET_ATTRIBUTE_CATEGORIES) {
-                    $attribute = self::FACET_ATTRIBUTE_CATEGORIES . '.level0';
+                    $attribute = $this->getCategoryAttributeNameForRenderingContent();
                 }
                 return $attribute;
             },
@@ -116,9 +122,23 @@ class FacetBuilder
     }
 
     /**
+     * `renderingContent` cannot utilize the entire categories object but instead must reference a scalar value
+     * Obtaining the root level of the category data will enable it to become selectable in the Algolia Dashboard
+     * for "Facet Display" and "Order facets" within merchandising rules
+     *
+     * @return string
+     */
+    protected function getCategoryAttributeNameForRenderingContent(): string
+    {
+        return self::FACET_ATTRIBUTE_CATEGORIES . '.level0';
+    }
+
+    /**
+     * Return an associative array for an attribute that mimics the minimum structure used by the Magento configuration
+     *
      * @param string $attribute
      * @param bool $searchable
-     * @return array<string, string>
+     * @return array{attribute: string, searchable: string}
      */
     protected function getRawFacet(string $attribute, bool $searchable = false): array
     {
@@ -129,7 +149,8 @@ class FacetBuilder
     }
 
     /**
-     * Generates common data to be used for both attributesForFaceting and renderingContent
+     * Generates common data to be used for both `attributesForFaceting` and `renderingContent`
+     *
      * @return array<array<string, mixed>>
      * @throws NoSuchEntityException
      * @throws LocalizedException
@@ -155,26 +176,57 @@ class FacetBuilder
             }
         }
 
-        $this->facets[$storeId] = $this->addCategoryFacets($storeId, $rawFacets);
+        $this->facets[$storeId] = $this->assertCategoryFacet($storeId, $rawFacets);
+
         return $this->facets[$storeId];
     }
 
     /**
+     * Does a given array of facets include a category facet?
+     *
+     * @param array<array<string, mixed>> $facets
+     * @return bool
+     */
+    protected function hasCategoryFacet(array $facets): bool
+    {
+        return !!array_filter($facets, function($facet) {
+            return $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES;
+        });
+    }
+
+    /**
+     * Applies the category facet if not manually configured but necessary for category functionality
+     * (The presence of the category facet drives logic for `attributesForFaceting` and `renderingContent`)
+     *
      * @param int $storeId
      * @param array<array<string, mixed>> $facets
      * @return array<array<string, mixed>>
      */
-    protected function addCategoryFacets(int $storeId, array $facets): array
+    protected function assertCategoryFacet(int $storeId, array $facets): array
     {
         if ($this->configHelper->replaceCategories($storeId)
-            && !array_filter($facets, function($facet) {
-                return $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES;
-            })
+            && !$this->hasCategoryFacet($facets)
         ) {
             $facets[] = $this->getRawFacet(self::FACET_ATTRIBUTE_CATEGORIES);
         }
 
-        // Added for legacy merchandising features
+        return $facets;
+    }
+
+    /**
+     * Add merchandising facets as needed for `attributesForFaceting`
+     *
+     * @param int $storeId
+     * @param array<array<string, mixed>> $facets
+     * @return array|string[]
+     */
+    protected function addMerchandisingFacets(int $storeId, array $facets): array
+    {
+        if ($this->hasCategoryFacet($facets)) {
+            $facets[] = $this->getRawFacet($this->getCategoryAttributeNameForRenderingContent());
+        }
+
+        // Used for legacy merchandising features - always required!
         $facets[] = $this->getRawFacet(self::FACET_ATTRIBUTES_CATEGORY_ID);
 
         if ($this->configHelper->isVisualMerchEnabled($storeId)) {
@@ -186,6 +238,8 @@ class FacetBuilder
     }
 
     /**
+     * Get an array of pricing attribute names based on currency and customer group configuration
+     *
      * @param int $storeId
      * @return string[]
      * @throws NoSuchEntityException
@@ -204,6 +258,8 @@ class FacetBuilder
     }
 
     /**
+     * Get an array of pricing attribute names based on customer group configuration
+     *
      * @param int $storeId
      * @param string $currencyCode
      * @return string[]
@@ -229,6 +285,8 @@ class FacetBuilder
 
 
     /**
+     * Format the `attributesForFaceting` values based on modifiers defined at:
+     * https://www.algolia.com/doc/api-reference/api-parameters/attributesForFaceting/#modifiers
      * @param array<string, string|int> $facet
      * @return string
      */

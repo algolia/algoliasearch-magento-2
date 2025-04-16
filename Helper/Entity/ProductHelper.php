@@ -33,7 +33,18 @@ use Magento\Store\Model\StoreManagerInterface;
 class ProductHelper extends AbstractEntityHelper
 {
     use EntityHelperTrait;
+
     public const INDEX_NAME_SUFFIX = '_products';
+
+    protected const MANDATORY_ATTRIBTES = [
+        'special_price',
+        'special_from_date',
+        'special_to_date',
+        'visibility',
+        'status',
+        'tax_class_id',
+    ];
+
     /**
      * @var AbstractType[]
      */
@@ -90,8 +101,10 @@ class ProductHelper extends AbstractEntityHelper
         protected ReplicaManagerInterface                 $replicaManager,
         protected ProductInterfaceFactory                 $productFactory,
         protected ProductRecordBuilder                    $productRecordBuilder,
+        protected array                                   $mandatoryAttributes = [],
     )
     {
+        $this->mandatoryAttributes = array_merge(self::MANDATORY_ATTRIBTES, $mandatoryAttributes);
         parent::__construct($indexNameFetcher);
     }
 
@@ -256,12 +269,7 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function addMandatoryAttributes(ProductCollection $products): void
     {
-        $products->addFinalPrice()
-            ->addAttributeToSelect('special_price')
-            ->addAttributeToSelect('special_from_date')
-            ->addAttributeToSelect('special_to_date')
-            ->addAttributeToSelect('visibility')
-            ->addAttributeToSelect('status');
+        $products->addFinalPrice()->addAttributeToSelect($this->mandatoryAttributes);
     }
 
     /**
@@ -286,6 +294,8 @@ class ProductHelper extends AbstractEntityHelper
         $customRanking = $this->getCustomRanking($storeId);
         $unretrievableAttributes = $this->getUnretrieveableAttributes($storeId);
         $attributesForFaceting = $this->getAttributesForFaceting($storeId);
+        $attributesForFaceting[] = 'searchable(categories.level0)';
+        $attributesForFaceting[] = 'searchable(categories)';
 
         $indexSettings = [
             'searchableAttributes'    => $searchableAttributes,

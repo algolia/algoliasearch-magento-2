@@ -36,7 +36,7 @@ class ProductHelper extends AbstractEntityHelper
 
     public const INDEX_NAME_SUFFIX = '_products';
 
-    protected const MANDATORY_ATTRIBTES = [
+    protected const MANDATORY_ATTRIBUTES = [
         'special_price',
         'special_from_date',
         'special_to_date',
@@ -104,7 +104,7 @@ class ProductHelper extends AbstractEntityHelper
         protected array                                   $mandatoryAttributes = [],
     )
     {
-        $this->mandatoryAttributes = array_merge(self::MANDATORY_ATTRIBTES, $mandatoryAttributes);
+        $this->mandatoryAttributes = array_merge(self::MANDATORY_ATTRIBUTES, $mandatoryAttributes);
         parent::__construct($indexNameFetcher);
     }
 

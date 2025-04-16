@@ -294,8 +294,6 @@ class ProductHelper extends AbstractEntityHelper
         $customRanking = $this->getCustomRanking($storeId);
         $unretrievableAttributes = $this->getUnretrieveableAttributes($storeId);
         $attributesForFaceting = $this->getAttributesForFaceting($storeId);
-        $attributesForFaceting[] = 'searchable(categories.level0)';
-        $attributesForFaceting[] = 'searchable(categories)';
 
         $indexSettings = [
             'searchableAttributes'    => $searchableAttributes,

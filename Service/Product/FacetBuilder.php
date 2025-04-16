@@ -107,7 +107,7 @@ class FacetBuilder
         return array_map(
             function(string $attribute) {
                 if ($attribute === self::FACET_ATTRIBUTE_CATEGORIES) {
-                    $attribute = $this->getRenderingContentFriendlyCategoryFacetAttributeName();
+                    $attribute = $this->getCategoryAttributeNameForRenderingContent();
                 }
                 return $attribute;
             },
@@ -122,7 +122,7 @@ class FacetBuilder
      *
      * @return string
      */
-    protected function getRenderingContentFriendlyCategoryFacetAttributeName(): string
+    protected function getCategoryAttributeNameForRenderingContent(): string
     {
         return self::FACET_ATTRIBUTE_CATEGORIES . '.level0';
     }
@@ -213,7 +213,7 @@ class FacetBuilder
     protected function addMerchandisingFacets(int $storeId, array $facets): array
     {
         if ($this->hasCategoryFacet($facets)) {
-            $facets[] = $this->getRawFacet($this->getRenderingContentFriendlyCategoryFacetAttributeName());
+            $facets[] = $this->getRawFacet($this->getCategoryAttributeNameForRenderingContent());
         }
 
         // Used for legacy merchandising features - always required!

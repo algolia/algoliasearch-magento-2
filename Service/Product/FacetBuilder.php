@@ -34,7 +34,8 @@ class FacetBuilder
     {}
 
     /**
-     * @param int $storeId
+     * Return the configuration to be used for the store product index `attributesForFaceting`
+     * @param int $storeId - The store ID for the index to be configured
      * @return string[]
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -50,7 +51,8 @@ class FacetBuilder
     }
 
     /**
-     * @param int $storeId
+     * Return the configuration to be used for the store product index `renderingContent`
+     * @param int $storeId - The store ID for the index to be configured
      * @return array<string, array>|null
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -73,6 +75,8 @@ class FacetBuilder
     }
 
     /**
+     * For an array of facet data, return an array of attribute names only
+     *
      * @param array<array<string, mixed>> $facets
      * @return string[]
      */
@@ -87,8 +91,9 @@ class FacetBuilder
     }
 
     /**
+     * Format the facet data to be : renderingContent > facetOrdering > values
      * @param string[] $attributes
-     * @return array<string, array>
+     * @return array<string, array> - Array key is the attribute name and the value is an object containing a `sortRemainingBy` value
      */
     protected function getRenderingContentValues(array $attributes): array
     {
@@ -99,6 +104,7 @@ class FacetBuilder
     }
 
     /**
+     * Take raw facet (common) attributes and convert to include attributes specifically needed for `renderingContent`
      * @param string[] $facets
      * @return string[]
      */
@@ -128,9 +134,11 @@ class FacetBuilder
     }
 
     /**
+     * Return an associative array for an attribute that mimics the minimum structure used by the Magento configuration
+     *
      * @param string $attribute
      * @param bool $searchable
-     * @return array<string, string>
+     * @return array{attribute: string, searchable: string}
      */
     protected function getRawFacet(string $attribute, bool $searchable = false): array
     {
@@ -141,7 +149,7 @@ class FacetBuilder
     }
 
     /**
-     * Generates common data to be used for both attributesForFaceting and renderingContent
+     * Generates common data to be used for both `attributesForFaceting` and `renderingContent`
      *
      * @return array<array<string, mixed>>
      * @throws NoSuchEntityException
@@ -174,6 +182,8 @@ class FacetBuilder
     }
 
     /**
+     * Does a given array of facets include a category facet?
+     *
      * @param array<array<string, mixed>> $facets
      * @return bool
      */
@@ -186,7 +196,7 @@ class FacetBuilder
 
     /**
      * Applies the category facet if not manually configured but necessary for category functionality
-     * (The presence of the category facet drives logic for attributesForFaceting and renderingContent)
+     * (The presence of the category facet drives logic for `attributesForFaceting` and `renderingContent`)
      *
      * @param int $storeId
      * @param array<array<string, mixed>> $facets
@@ -204,7 +214,7 @@ class FacetBuilder
     }
 
     /**
-     * Add merchandising facets as needed for attributesForFaceting
+     * Add merchandising facets as needed for `attributesForFaceting`
      *
      * @param int $storeId
      * @param array<array<string, mixed>> $facets
@@ -228,6 +238,8 @@ class FacetBuilder
     }
 
     /**
+     * Get an array of pricing attribute names based on currency and customer group configuration
+     *
      * @param int $storeId
      * @return string[]
      * @throws NoSuchEntityException
@@ -246,6 +258,8 @@ class FacetBuilder
     }
 
     /**
+     * Get an array of pricing attribute names based on customer group configuration
+     *
      * @param int $storeId
      * @param string $currencyCode
      * @return string[]
@@ -271,6 +285,8 @@ class FacetBuilder
 
 
     /**
+     * Format the `attributesForFaceting` values based on modifiers defined at:
+     * https://www.algolia.com/doc/api-reference/api-parameters/attributesForFaceting/#modifiers
      * @param array<string, string|int> $facet
      * @return string
      */

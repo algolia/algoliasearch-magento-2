@@ -807,6 +807,6 @@ class RecordBuilder implements RecordBuilderInterface
      */
     public function productIsInStock($product, $storeId): bool
     {
-        return $product->getIsSalable();
+        return (bool)$product->getIsSalable();
     }
 }

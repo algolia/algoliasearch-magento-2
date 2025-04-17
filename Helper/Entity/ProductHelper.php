@@ -19,7 +19,7 @@ use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\CatalogInventory\Helper\Stock;
+use Magento\CatalogInventory\Model\ResourceModel\Stock\Status as StockStatus;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Directory\Model\Currency as CurrencyHelper;
@@ -80,7 +80,6 @@ class ProductHelper extends AbstractEntityHelper
         protected StoreManagerInterface                   $storeManager,
         protected ManagerInterface                        $eventManager,
         protected Visibility                              $visibility,
-        protected Stock                                   $stockHelper,
         protected CurrencyHelper                          $currencyManager,
         protected Type                                    $productType,
         protected CollectionFactory                       $productCollectionFactory,
@@ -90,6 +89,7 @@ class ProductHelper extends AbstractEntityHelper
         protected ReplicaManagerInterface                 $replicaManager,
         protected ProductInterfaceFactory                 $productFactory,
         protected ProductRecordBuilder                    $productRecordBuilder,
+        protected StockStatus                             $stockStatus,
     )
     {
         parent::__construct($indexNameFetcher);
@@ -239,9 +239,10 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function addStockFilter($products, $storeId): void
     {
-        if ($this->configHelper->getShowOutOfStock($storeId) === false) {
-            $this->stockHelper->addInStockFilterToCollection($products);
-        }
+        $this->stockStatus->addStockDataToCollection(
+            $products,
+            $this->configHelper->getShowOutOfStock($storeId) === false
+        );
     }
 
     /**
@@ -286,6 +287,8 @@ class ProductHelper extends AbstractEntityHelper
         $customRanking = $this->getCustomRanking($storeId);
         $unretrievableAttributes = $this->getUnretrieveableAttributes($storeId);
         $attributesForFaceting = $this->getAttributesForFaceting($storeId);
+        $attributesForFaceting[] = 'searchable(categories.level0)';
+        $attributesForFaceting[] = 'searchable(categories)';
 
         $indexSettings = [
             'searchableAttributes'    => $searchableAttributes,

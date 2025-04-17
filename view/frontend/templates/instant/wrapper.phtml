@@ -2,8 +2,6 @@
 
 <!-- Wrapping template -->
 <script type="text/template" id="instant_wrapper_template">
-    
-
     <div id="algolia_instant_selector"
          class="<?php echo $block->escapeHtml($block->hasFacets() ? ' with-facets' : ''); ?>">
         <div class="row">
@@ -41,6 +39,7 @@
                                 <div class="algolia-clearfix"></div>
                             </div>
                             <div id="algolia-banner"></div>
+                            <div id="instant-redirect-container"></div>
                             <div id="instant-empty-results-container"></div>
                             <div id="instant-search-results-container"></div>
                         </div>

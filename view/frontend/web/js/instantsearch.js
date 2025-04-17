@@ -30,6 +30,8 @@ define([
 
         dynamicWidgets: [],
 
+        hasInteracted: false,
+
         ///////////////////////////
         //  Main build functions //
         ///////////////////////////
@@ -183,7 +185,7 @@ define([
 
             return allWidgetConfiguration;
         },
-
+        
         /**
          * Process a passed widget config object and add to InstantSearch
          * Dynamic widgets are deferred as they must be aggregated and processed separately
@@ -419,6 +421,7 @@ define([
                 placeholder: algoliaConfig.translations.searchFor,
                 showSubmit : false,
                 queryHook  : (inputValue, search) => {
+                    this.hasInteracted = true;
                     if (
                         algoliaConfig.isSearchPage &&
                         !algoliaConfig.request.categoryId &&
@@ -966,6 +969,12 @@ define([
             if (algoliaConfig.showSuggestionsOnNoResultsPage) {
                 customWidgets.push(this.getSuggestionsWidget(this.minQuerySuggestions));
             }
+
+            // Placeholder for config
+            const allowRedirects = true;
+            if (allowRedirects) {
+                customWidgets.push(this.getRedirectWidget());
+            }
             return customWidgets;
         },
 
@@ -1048,6 +1057,26 @@ define([
                         content += `</div>`;
                     }
                     document.querySelector('#instant-empty-results-container').innerHTML = content;
+                },
+            };
+        },
+
+        getRedirectWidget() {
+            const uiComponnent = this;
+            return {
+                render({ results }) {
+                    let content = '';
+                    if (results && results.renderingContent) {
+                        if (results.renderingContent.redirect) {
+                            if (!uiComponnent.hasInteracted) {
+                                window.location.href = results.renderingContent.redirect.url;
+                            }
+                            content += `<div class="instant-redirect">`;
+                            content += `<a href="${results.renderingContent.redirect.url}">${algoliaConfig.translations.redirectSearchPrompt} "${results.query}"</a>`;
+                            content += `</div>`;
+                        }
+                    }
+                    document.querySelector('#instant-redirect-container').innerHTML = content;
                 },
             };
         },

@@ -371,6 +371,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'products' => __('Products'),
                 'suggestions' => __('Suggestions'),
                 'searchBy' => __('Search by'),
+                'redirectSearchPrompt' => __("Continue search for"),
                 'searchForFacetValuesPlaceholder' => __('Search for other ...'),
                 'showMore' => __('Show more products'),
                 'searchTitle' => __('Search results for'),

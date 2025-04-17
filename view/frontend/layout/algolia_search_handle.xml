@@ -4,7 +4,7 @@
         <css src="Algolia_AlgoliaSearch::css/autocomplete.css" />
         <css src="Algolia_AlgoliaSearch::css/grid.css" />
         <css src="Algolia_AlgoliaSearch::css/algolia-reset.css" />
-        <css src="Algolia_AlgoliaSearch::css/instantsearch.v3.css" />
+        <css src="Algolia_AlgoliaSearch::css/instantsearch.css" />
         <css src="Algolia_AlgoliaSearch::css/recommend.css" />
     </head>
     <body>

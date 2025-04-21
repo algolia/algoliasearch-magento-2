@@ -53,6 +53,25 @@ define([
         DEBOUNCE_MS,
         MIN_SEARCH_LENGTH_CHARS,
 
+        hasRedirect: false,
+
+        navigator: {
+            navigate({itemUrl}) {
+                console.log("Local navigate:", itemUrl);
+                window.location.assign(itemUrl);
+            },
+            navigateNewTab({itemUrl}) {
+                const windowReference = window.open(itemUrl, '_blank', 'noopener');
+
+                if (windowReference) {
+                    windowReference.focus();
+                }
+            },
+            navigateNewWindow({itemUrl}) {
+                window.open(itemUrl, '_blank', 'noopener');
+            }
+        },
+
         initialize(config, element) {
             this.buildAutocomplete();
         },
@@ -61,7 +80,7 @@ define([
          * Setup the autocomplete search input
          * For autocomplete feature is used Algolia's autocomplete.js library
          * Docs: https://github.com/algolia/autocomplete.js
-        **/
+         **/
         buildAutocomplete() {
             /** We have nothing to do here if autocomplete is disabled **/
             if (typeof algoliaConfig === 'undefined' || !algoliaConfig.autocomplete.enabled) return;
@@ -96,6 +115,16 @@ define([
             return searchClient;
         },
 
+        getSearchResultsUrl(query) {
+            return `${algoliaConfig.resultPageUrl}?q=${encodeURIComponent(query)}`;
+        },
+
+        handleAutocompleteSubmit({ state: { query } }) {
+            if (query && !this.hasRedirect) {
+                window.location.href = this.getSearchResultsUrl(query);
+            }
+        },
+
         buildAutocompleteOptions(searchClient, sources, plugins) {
             const debounced = this.debounce(items => Promise.resolve(items), this.DEBOUNCE_MS);
 
@@ -103,17 +132,21 @@ define([
 
             options = {
                 ...options,
+
                 container         : algoliaConfig.autocomplete.selector,
                 placeholder       : algoliaConfig.translations.placeholder,
                 debug             : algoliaConfig.autocomplete.isDebugEnabled,
                 detachedMediaQuery: 'none',
-                onSubmit: ({ state: { query } }) => {
-                    if (query) {
-                        window.location.href =
-                            algoliaConfig.resultPageUrl +
-                            `?q=${encodeURIComponent(query)}`;
-                    }
+
+                // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
+                debug: algoliaCommon.isMobile(),
+                plugins,
+                navigator: this.navigator,
+
+                onSubmit: (params) => {
+                    this.handleAutocompleteSubmit(params);
                 },
+
                 onStateChange: ({ state }) => {
                     this.handleAutocompleteStateChange(state);
                 },
@@ -125,12 +158,10 @@ define([
                 getSources: ({query}) => {
                     return this.filterMinChars(query, debounced(this.transformSources(searchClient, sources)));
                 },
+
                 shouldPanelOpen: ({state}) => {
                     return state.query.length >= this.MIN_SEARCH_LENGTH_CHARS;
-                },
-                // Set debug to true, to be able to remove keyboard and be able to scroll in autocomplete menu
-                debug: algoliaCommon.isMobile(),
-                plugins
+                }
             };
 
             options = algoliaCommon.triggerHooks('afterAutocompleteOptions', options);
@@ -385,6 +416,9 @@ define([
             };
             source.transformResponse = ({results, hits}) => {
                 const resDetail = results[0];
+                const redirectUrl = resDetail?.renderingContent?.redirect?.url;
+                this.hasRedirect = !!redirectUrl;
+
                 return hits.map((res) => {
                     return res.map((hit, i) => {
                         return {
@@ -745,7 +779,16 @@ define([
         },
 
         buildRedirectPlugin() {
-            return redirectUrlPlugin.createRedirectUrlPlugin();
+            const onRedirect = (redirects, { event, navigator, state }) => {
+                console.log("onRedirect called:", redirects);
+                console.log("Event:", event);
+                console.log("State:", state);
+                //navigator.navigate()
+            };
+
+            return redirectUrlPlugin.createRedirectUrlPlugin({
+                // onRedirect
+            });
         },
 
         buildSuggestionsPlugin(searchClient) {

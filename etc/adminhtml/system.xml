@@ -326,6 +326,39 @@
                     </depends>
                 </field>
             </group>
+            <group id="redirects" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Redirects</label>
+                <attribute type="expanded">1</attribute>
+                <field id="enable" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable redirects</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            When enabled, Algolia-powered search results and listing pages can be redirected to a different URL based on rules configured in either the Dashboard or Merchandising Studio.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="mode" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Redirect display mode</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode</source_model>
+                    <comment>
+                        <![CDATA[
+                            Use this setting to configure how redirects behave with Autocomplete.
+                        ]]>
+                    </comment>
+                    <depends><field id="enable">1</field></depends>
+                </field>
+                <field id="target" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Open redirect URL in a new window</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Applies to clickable links only.
+                        ]]>
+                    </comment>
+                    <depends><field id="enable">1</field></depends>
+                </field>
+            </group>
         </section>
         <section id="algoliasearch_instant" translate="label" type="text" sortOrder="20" showInDefault="1"
                  showInWebsite="1" showInStore="1">

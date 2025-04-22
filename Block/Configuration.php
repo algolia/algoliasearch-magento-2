@@ -214,7 +214,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'minimumCharacters' => $config->getAutocompleteMinimumCharacterLength(),
                 'redirects' => [
                     'enabled' => $config->isAutocompleteRedirectEnabled(),
-                    'hideSelectableItem' => $config->getAutocompleteRedirectMode() === AutocompleteRedirectMode::SUBMIT_ONLY,
+                    'showSelectableRedirect' => $config->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
+                    'showHitsWithRedirect' => $config->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
                     'openInNewWindow' => $config->isAutocompleteRedirectInNewWindowEnabled()
                 ]
             ],

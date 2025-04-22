@@ -184,6 +184,15 @@ define([
             if (sections.length > 1) {
                 classes.push('with-grid');
             }
+
+            if (algoliaConfig.autocomplete.redirects.showHitsWithRedirect) {
+                classes.push('show-hits-with-redirect');
+            }
+
+            if (algoliaConfig.autocomplete.redirects.showSelectableRedirect) {
+                classes.push('show-selectable-redirect');
+            }
+
             render(
                 html`<div class="${classes.join(' ')}">${sections}</div>`,
                 root
@@ -799,7 +808,7 @@ define([
                 onRedirect
             };
 
-            if (algoliaConfig.autocomplete.redirects.hideSelectableItem) {
+            if (!algoliaConfig.autocomplete.redirects.showSelectableRedirect) {
                 params.templates = {
                     item({html, state}) {
                         return html``;

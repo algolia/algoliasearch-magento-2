@@ -781,13 +781,21 @@ define([
         buildRedirectPlugin() {
             const onRedirect = (redirects, { event, navigator, state }) => {
                 console.log("onRedirect called:", redirects);
-                console.log("Event:", event);
-                console.log("State:", state);
-                //navigator.navigate()
+                const item = redirects.find((r) => r.sourceId === 'products');
+                const itemUrl = item?.urls?.[0];
+                if (!itemUrl) return;
+
+                if (event.metaKey || event.ctrlKey) {
+                    navigator.navigateNewTab({ itemUrl, item, state });
+                } else if (event.shiftKey) {
+                    navigator.navigateNewWindow({ itemUrl, item, state });
+                } else {
+                    navigator.navigate({ itemUrl, item, state });
+                }
             };
 
             return redirectUrlPlugin.createRedirectUrlPlugin({
-                // onRedirect
+                onRedirect
             });
         },
 

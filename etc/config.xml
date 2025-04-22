@@ -26,6 +26,11 @@
                 <debounce_millisec>300</debounce_millisec>
                 <minimum_char_length>0</minimum_char_length>
             </autocomplete>
+            <redirects>
+                <enable>1</enable>
+                <mode>0</mode>
+                <target>0</target>
+            </redirects>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>
             <instant_facets>

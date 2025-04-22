@@ -356,7 +356,7 @@
                             Applies to clickable links only.
                         ]]>
                     </comment>
-                    <depends><field id="enable">1</field></depends>
+                    <depends><field id="mode" separator=",">1,2</field></depends>
                 </field>
             </group>
         </section>

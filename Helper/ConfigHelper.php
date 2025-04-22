@@ -60,6 +60,10 @@ class ConfigHelper
     public const AUTOCOMPLETE_DEBOUNCE_MILLISEC = 'algoliasearch_autocomplete/autocomplete/debounce_millisec';
     public const AUTOCOMPLETE_MINIMUM_CHAR_LENGTH = 'algoliasearch_autocomplete/autocomplete/minimum_char_length';
 
+    public const IS_AUTOCOMPLETE_REDIRECT_ENABLED = 'algoliasearch_autocomplete/redirects/enable';
+    public const AUTOCOMPLETE_REDIRECT_MODE = 'algoliasearch_autocomplete/redirects/mode';
+    public const AUTOCOMPLETE_OPEN_REDIRECT_IN_NEW_WINDOW = 'algoliasearch_autocomplete/redirects/target';
+
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
@@ -1058,6 +1062,25 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+    }
+
+    public function isAutocompleteRedirectEnabled($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::IS_AUTOCOMPLETE_REDIRECT_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getAutocompleteRedirectMode($storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(
+            self::AUTOCOMPLETE_REDIRECT_MODE,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function isAutocompleteRedirectInNewWindowEnabled($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_OPEN_REDIRECT_IN_NEW_WINDOW, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

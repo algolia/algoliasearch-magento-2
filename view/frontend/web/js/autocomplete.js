@@ -551,8 +551,9 @@ define([
                 plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
 
-            const redirectPlugin = this.buildRedirectPlugin();
-            if (redirectPlugin) plugins.push(redirectPlugin);
+            if (algoliaConfig.autocomplete.redirects.enabled) {
+                plugins.push(this.buildRedirectPlugin());
+            }
 
             return algoliaCommon.triggerHooks(
                 'afterAutocompletePlugins',
@@ -798,9 +799,7 @@ define([
                 onRedirect
             };
 
-            const hideSelectableItem = false;
-
-            if (hideSelectableItem) {
+            if (algoliaConfig.autocomplete.redirects.hideSelectableItem) {
                 params.templates = {
                     item({html, state}) {
                         return html``;

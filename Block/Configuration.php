@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
+use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
@@ -210,7 +211,12 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'isDebugEnabled' => $config->isAutocompleteDebugEnabled(),
                 'isNavigatorEnabled' => $config->isAutocompleteNavigatorEnabled(),
                 'debounceMilliseconds' => $config->getAutocompleteDebounceMilliseconds(),
-                'minimumCharacters' => $config->getAutocompleteMinimumCharacterLength()
+                'minimumCharacters' => $config->getAutocompleteMinimumCharacterLength(),
+                'redirects' => [
+                    'enabled' => $config->isAutocompleteRedirectEnabled(),
+                    'hideSelectableItem' => $config->getAutocompleteRedirectMode() === AutocompleteRedirectMode::SUBMIT_ONLY,
+                    'openInNewWindow' => $config->isAutocompleteRedirectInNewWindowEnabled()
+                ]
             ],
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),

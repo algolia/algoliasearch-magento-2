@@ -794,9 +794,21 @@ define([
                 }
             };
 
-            return redirectUrlPlugin.createRedirectUrlPlugin({
+            const params = {
                 onRedirect
-            });
+            };
+
+            const hideSelectableItem = false;
+
+            if (hideSelectableItem) {
+                params.templates = {
+                    item({html, state}) {
+                        return html``;
+                    }
+                };
+            }
+
+            return redirectUrlPlugin.createRedirectUrlPlugin(params);
         },
 
         buildSuggestionsPlugin(searchClient) {

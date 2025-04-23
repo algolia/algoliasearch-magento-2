@@ -570,6 +570,7 @@
                 <field id="options" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Redirect options</label>
                     <frontend_model>Algolia\AlgoliaSearch\Block\Adminhtml\System\Config\Form\Field\Checkboxes</frontend_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Checkboxes</backend_model>
                     <source_model>Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions</source_model>
                     <depends><field id="enable">1</field></depends>
                 </field>

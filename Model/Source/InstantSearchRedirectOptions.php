@@ -17,7 +17,7 @@ class InstantSearchRedirectOptions implements OptionSourceInterface
         return [
             [
                 'value' => self::REDIRECT_ON_PAGE_LOAD,
-                'label' => __('Redirect on page load (if InstantSearch loads with a redirect, immediately take the user to that URL.)'),
+                'label' => __('Redirect on page load (if InstantSearch loads with a redirect, immediately take the user to that URL)'),
             ],
             [
                 'value' => self::REDIRECT_ON_SEARCH_AS_YOU_TYPE,

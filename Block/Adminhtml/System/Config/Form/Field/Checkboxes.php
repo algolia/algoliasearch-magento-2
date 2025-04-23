@@ -13,7 +13,7 @@ class Checkboxes extends Field
         $elementId = $element->getHtmlId();
         $name = $element->getName();
         $options = $element->getValues();
-        $values = $element->getValue() ? explode(',', $element->getValue()) : []; // store as CSV in config
+        $values = empty($element->getValue()) ? [] : explode(',', $element->getValue()); // store as CSV in config
 
         foreach ($options as $option) {
             $value = $option['value'];

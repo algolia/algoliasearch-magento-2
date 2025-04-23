@@ -221,10 +221,10 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'debounceMilliseconds' => $config->getAutocompleteDebounceMilliseconds(),
                 'minimumCharacters' => $config->getAutocompleteMinimumCharacterLength(),
                 'redirects' => [
-                    'enabled' => $config->isAutocompleteRedirectEnabled(),
-                    'showSelectableRedirect' => $config->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
-                    'showHitsWithRedirect' => $config->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
-                    'openInNewWindow' => $config->isAutocompleteRedirectInNewWindowEnabled()
+                    'enabled'                => $this->autocompleteConfig->isAutocompleteRedirectEnabled(),
+                    'showSelectableRedirect' => $this->autocompleteConfig->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
+                    'showHitsWithRedirect'   => $this->autocompleteConfig->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
+                    'openInNewWindow'        => $this->autocompleteConfig->isAutocompleteRedirectInNewWindowEnabled()
                 ]
             ],
             'landingPage' => [

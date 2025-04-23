@@ -42,18 +42,16 @@ define([
     const DEBOUNCE_MS = algoliaConfig.autocomplete.debounceMilliseconds;
     const MIN_SEARCH_LENGTH_CHARS = algoliaConfig.autocomplete.minimumCharacters;
 
-    // Global state
-    const state = {
-        hasRendered: false,
-        hasSuggestionSection: false
-    };
-
     return Component.extend({
         DEFAULT_HITS_PER_SECTION,
         DEBOUNCE_MS,
         MIN_SEARCH_LENGTH_CHARS,
 
-        hasRedirect: false,
+        state: {
+            hasRendered: false,
+            hasSuggestionSection: false,
+            hasRedirect: false
+        },
 
         navigator: {
             navigate({itemUrl}) {
@@ -119,7 +117,7 @@ define([
         },
 
         handleAutocompleteSubmit({ state: { query } }) {
-            if (query && !this.hasRedirect) {
+            if (query && !this.state.hasRedirect) {
                 this.navigator.navigate({ itemUrl: this.getSearchResultsUrl(query) });
             }
         },
@@ -425,7 +423,7 @@ define([
             source.transformResponse = ({results, hits}) => {
                 const resDetail = results[0];
                 const redirectUrl = resDetail?.renderingContent?.redirect?.url;
-                this.hasRedirect = !!redirectUrl;
+                this.state.hasRedirect = !!redirectUrl;
 
                 return hits.map((res) => {
                     return res.map((hit, i) => {
@@ -555,7 +553,7 @@ define([
             const plugins = [];
 
             if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
-                state.hasSuggestionSection = true;
+                this.state.hasSuggestionSection = true;
                 plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
 
@@ -917,9 +915,9 @@ define([
         },
 
         handleAutocompleteStateChange(autocompleteState) {
-            if (!state.hasRendered && autocompleteState.isOpen) {
+            if (!this.state.hasRendered && autocompleteState.isOpen) {
                 this.addPanelObserver();
-                state.hasRendered = true;
+                this.state.hasRendered = true;
             }
         },
 

@@ -13,7 +13,7 @@ class AutocompleteRedirectMode implements OptionSourceInterface
     /** @return array */
     public function toOptionArray()
     {
-        $options = [
+        return [
             [
                 'value' => self::SUBMIT_ONLY,
                 'label' => __('Do not display the redirect (handle on form submit only)'),
@@ -27,7 +27,5 @@ class AutocompleteRedirectMode implements OptionSourceInterface
                 'label' => __('Display both search hits and a selectable redirect'),
             ]
         ];
-
-        return $options;
     }
 }

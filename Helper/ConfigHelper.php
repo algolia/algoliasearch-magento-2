@@ -47,6 +47,9 @@ class ConfigHelper
     public const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant_options/infinite_scroll_enable';
     public const HIDE_PAGINATION = 'algoliasearch_instant/instant_options/hide_pagination';
 
+    public const IS_INSTANT_REDIRECT_ENABLED = 'algoliasearch_instant/instant_redirects/enable';
+    public const INSTANT_REDIRECT_OPTIONS = 'algoliasearch_instant/instant_redirects/options';
+
     public const IS_POPUP_ENABLED = 'algoliasearch_autocomplete/autocomplete/is_popup_enabled';
     public const NB_OF_PRODUCTS_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions';
     public const NB_OF_CATEGORIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_categories_suggestions';
@@ -1055,7 +1058,7 @@ class ConfigHelper
         );
     }
 
-    public function getAutocompleteMinimumCharacterLength($storeId = null): int
+    public function getAutocompleteMinimumCharacterLength(?int $storeId = null): int
     {
         return (int) $this->configInterface->getValue(
             self::AUTOCOMPLETE_MINIMUM_CHAR_LENGTH,
@@ -1064,12 +1067,12 @@ class ConfigHelper
         );
     }
 
-    public function isAutocompleteRedirectEnabled($storeId = null): bool
+    public function isAutocompleteRedirectEnabled(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_AUTOCOMPLETE_REDIRECT_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getAutocompleteRedirectMode($storeId = null): int
+    public function getAutocompleteRedirectMode(?int $storeId = null): int
     {
         return (int) $this->configInterface->getValue(
             self::AUTOCOMPLETE_REDIRECT_MODE,
@@ -1081,6 +1084,22 @@ class ConfigHelper
     public function isAutocompleteRedirectInNewWindowEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_OPEN_REDIRECT_IN_NEW_WINDOW, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+
+    public function isInstantRedirectEnabled(?int $storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::IS_INSTANT_REDIRECT_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getInstantRedirectOptions(?int $storeId = null): array
+    {
+        $value = $this->configInterface->getValue(
+            self::INSTANT_REDIRECT_OPTIONS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+        return empty($value) ? [] : explode(',', $value);
     }
 
     /**

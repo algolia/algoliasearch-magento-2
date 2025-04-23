@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Block;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
+use Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
@@ -199,7 +200,14 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'categoryPageIdAttribute' => $config->getCategoryPageIdAttributeName(),
                 'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
                 'hidePagination' => $config->hidePaginationInInstantSearchPage(),
-                'isDynamicFacetsEnabled' => $config->isDynamicFacetsEnabled()
+                'isDynamicFacetsEnabled' => $config->isDynamicFacetsEnabled(),
+                'redirects' => [
+                    'enabled' => $config->isInstantRedirectEnabled(),
+                    'onPageLoad' => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $config->getInstantRedirectOptions()),
+                    'onSearchAsYouType' => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $config->getInstantRedirectOptions()),
+                    'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $config->getInstantRedirectOptions()),
+                    'openInNewWindow' => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $config->getInstantRedirectOptions())
+                ]
             ],
             'autocomplete' => [
                 'enabled' => $config->isAutoCompleteEnabled(),

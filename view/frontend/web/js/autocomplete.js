@@ -57,7 +57,6 @@ define([
 
         navigator: {
             navigate({itemUrl}) {
-                console.log("Local navigate:", itemUrl);
                 window.location.assign(itemUrl);
             },
             navigateNewTab({itemUrl}) {
@@ -121,7 +120,7 @@ define([
 
         handleAutocompleteSubmit({ state: { query } }) {
             if (query && !this.hasRedirect) {
-                window.location.href = this.getSearchResultsUrl(query);
+                this.navigator.navigate({ itemUrl: this.getSearchResultsUrl(query) });
             }
         },
 
@@ -788,16 +787,26 @@ define([
             }
         },
 
+        /**
+         * Only clickable links can open in a new window - else popup blockers may be triggered
+         * @param event
+         * @returns {boolean}
+         */
+        canRedirectToNewWindow(event) {
+            return algoliaConfig.autocomplete.redirects.openInNewWindow
+                && !(event instanceof SubmitEvent)
+                && !(event instanceof KeyboardEvent);
+        },
+
         buildRedirectPlugin() {
             const onRedirect = (redirects, { event, navigator, state }) => {
-                console.log("onRedirect called:", redirects);
                 const item = redirects.find((r) => r.sourceId === 'products');
                 const itemUrl = item?.urls?.[0];
                 if (!itemUrl) return;
 
                 if (event.metaKey || event.ctrlKey) {
                     navigator.navigateNewTab({ itemUrl, item, state });
-                } else if (event.shiftKey) {
+                } else if (event.shiftKey || this.canRedirectToNewWindow(event)) {
                     navigator.navigateNewWindow({ itemUrl, item, state });
                 } else {
                     navigator.navigate({ itemUrl, item, state });

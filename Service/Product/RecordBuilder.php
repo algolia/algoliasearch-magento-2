@@ -801,12 +801,12 @@ class RecordBuilder implements RecordBuilderInterface
      * Returns is product in stock
      *
      * @param Product $product
-     * @param int $storeId
+     * @param int $storeId (deprecated)
      *
      * @return bool
      */
     public function productIsInStock($product, $storeId): bool
     {
-        return (bool)$product->getIsSalable();
+        return (bool)$product->isSalable();
     }
 }

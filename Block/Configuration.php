@@ -202,11 +202,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'hidePagination' => $config->hidePaginationInInstantSearchPage(),
                 'isDynamicFacetsEnabled' => $config->isDynamicFacetsEnabled(),
                 'redirects' => [
-                    'enabled' => $config->isInstantRedirectEnabled(),
-                    'onPageLoad' => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $config->getInstantRedirectOptions()),
-                    'onSearchAsYouType' => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $config->getInstantRedirectOptions()),
-                    'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $config->getInstantRedirectOptions()),
-                    'openInNewWindow' => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $config->getInstantRedirectOptions())
+                    'enabled'                => $this->instantSearchConfig->isInstantRedirectEnabled(),
+                    'onPageLoad'             => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $this->instantSearchConfig->getInstantRedirectOptions()),
+                    'onSearchAsYouType'      => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $this->instantSearchConfig->getInstantRedirectOptions()),
+                    'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $this->instantSearchConfig->getInstantRedirectOptions()),
+                    'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $this->instantSearchConfig->getInstantRedirectOptions())
                 ]
             ],
             'autocomplete' => [

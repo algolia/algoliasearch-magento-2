@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Block;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
@@ -42,6 +43,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function __construct(
         protected ConfigHelper          $config,
         protected AutocompleteHelper    $autocompleteConfig,
+        protected InstantSearchHelper   $instantSearchConfig,
         protected PersonalizationHelper $personalizationHelper,
         protected CatalogSearchHelper   $catalogSearchHelper,
         protected ProductHelper         $productHelper,

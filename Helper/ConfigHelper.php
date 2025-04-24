@@ -6,8 +6,9 @@ use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Magento;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
+use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
+use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Directory\Model\Currency as DirCurrency;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
@@ -16,8 +17,6 @@ use Magento\Framework\Locale\Currency;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
-use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 
 class ConfigHelper
 {
@@ -143,21 +142,21 @@ class ConfigHelper
     public const ENABLE_INDEXER_QUEUE = 'algoliasearch_indexing_manager/full_indexing/queue';
 
     public function __construct(
-        protected Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,
-        protected Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
-        protected StoreManagerInterface                                $storeManager,
-        protected Currency                                             $currency,
-        protected DirCurrency                                          $dirCurrency,
-        protected DirectoryList                                        $directoryList,
-        protected Magento\Framework\Module\ResourceInterface           $moduleResource,
-        protected Magento\Framework\App\ProductMetadataInterface       $productMetadata,
-        protected Magento\Framework\Event\ManagerInterface             $eventManager,
-        protected SerializerInterface                                  $serializer,
-        protected GroupCollection                                      $groupCollection,
-        protected GroupExcludedWebsiteRepositoryInterface              $groupExcludedWebsiteRepository,
-        protected CookieHelper                                         $cookieHelper,
-        protected AutocompleteHelper                                   $autocompleteConfig,
-        protected InstantSearchHelper                                  $instantSearchConfig
+        protected \Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,
+        protected \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
+        protected StoreManagerInterface                                 $storeManager,
+        protected Currency                                              $currency,
+        protected DirCurrency                                           $dirCurrency,
+        protected DirectoryList                                         $directoryList,
+        protected \Magento\Framework\Module\ResourceInterface           $moduleResource,
+        protected \Magento\Framework\App\ProductMetadataInterface       $productMetadata,
+        protected \Magento\Framework\Event\ManagerInterface             $eventManager,
+        protected SerializerInterface                                   $serializer,
+        protected GroupCollection                                       $groupCollection,
+        protected GroupExcludedWebsiteRepositoryInterface               $groupExcludedWebsiteRepository,
+        protected CookieHelper                                          $cookieHelper,
+        protected AutocompleteHelper                                    $autocompleteConfig,
+        protected InstantSearchHelper                                   $instantSearchConfig
     )
     {}
 
@@ -784,11 +783,11 @@ class ConfigHelper
     }
 
     /**
-     * @throws Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCurrencyCode(int $storeId = null): string
     {
-        /** @var Magento\Store\Model\Store $store */
+        /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
         return $store->getCurrentCurrencyCode();
     }
@@ -1022,7 +1021,7 @@ class ConfigHelper
 
     /**
      * @return int
-     * @throws Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getStoreId()
     {
@@ -1045,11 +1044,11 @@ class ConfigHelper
     /**
      * @param $storeId
      * @return string|null
-     * @throws Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCurrency($storeId = null)
     {
-        /** @var Magento\Store\Model\Store $store */
+        /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
         return $this->currency->getCurrency($store->getCurrentCurrencyCode())->getSymbol();
     }
@@ -1573,7 +1572,7 @@ class ConfigHelper
      *   DEPRECATED CONSTANTS & METHODS    *
      **************************************/
 
-    // --- AUTOCOMPLETE --- //
+    // --- Autocomplete --- //
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
@@ -1652,6 +1651,93 @@ class ConfigHelper
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::MINIMUM_CHAR_LENGTH
      */
     public const AUTOCOMPLETE_MINIMUM_CHAR_LENGTH = AutocompleteHelper::MINIMUM_CHAR_LENGTH;
+
+    // --- InstantSearch --- //
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_ENABLED
+     */
+    public const IS_INSTANT_ENABLED = InstantSearchHelper::IS_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::DOM_SELECTOR
+     */
+    public const INSTANT_SELECTOR = InstantSearchHelper::DOM_SELECTOR;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS
+     */
+    public const NUMBER_OF_PRODUCT_RESULTS = InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::REPLACE_CATEGORIES
+     */
+    public const REPLACE_CATEGORIES = InstantSearchHelper::REPLACE_CATEGORIES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::FACETS
+     */
+    public const FACETS = InstantSearchHelper::FACETS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::MAX_VALUES_PER_FACET
+     */
+    public const MAX_VALUES_PER_FACET = InstantSearchHelper::MAX_VALUES_PER_FACET;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED
+     */
+    public const ENABLE_DYNAMIC_FACETS = InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::SORTING_INDICES
+     */
+    public const SORTING_INDICES = InstantSearchHelper::SORTING_INDICES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::SHOW_SUGGESTIONS_NO_RESULTS
+     */
+    public const SHOW_SUGGESTIONS_NO_RESULTS = InstantSearchHelper::SHOW_SUGGESTIONS_NO_RESULTS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_SEARCHBOX_ENABLED
+     */
+    public const SEARCHBOX_ENABLE = InstantSearchHelper::IS_SEARCHBOX_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_ADD_TO_CART_ENABLED
+     */
+    public const XML_ADD_TO_CART_ENABLE = InstantSearchHelper::IS_ADD_TO_CART_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_INFINITE_SCROLL_ENABLED
+     */
+    public const INFINITE_SCROLL_ENABLE = InstantSearchHelper::IS_INFINITE_SCROLL_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::HIDE_PAGINATION
+     */
+    public const HIDE_PAGINATION = InstantSearchHelper::HIDE_PAGINATION;
+
+    /**
+     * @deprecated This constant is retained purely for data patches to migrate from older versions
+     */
+    public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
+
+    // --- Autocomplete --- //
 
     /**
      * @param $storeId
@@ -1813,90 +1899,7 @@ class ConfigHelper
         return $this->autocompleteConfig->getMinimumCharacterLength($storeId);
     }
 
-    // --- InstantSearch ---
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_ENABLED
-     */
-    public const IS_INSTANT_ENABLED = InstantSearchHelper::IS_ENABLED;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::DOM_SELECTOR
-     */
-    public const INSTANT_SELECTOR = InstantSearchHelper::DOM_SELECTOR;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS
-     */
-    public const NUMBER_OF_PRODUCT_RESULTS = InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::REPLACE_CATEGORIES
-     */
-    public const REPLACE_CATEGORIES = InstantSearchHelper::REPLACE_CATEGORIES;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::FACETS
-     */
-    public const FACETS = InstantSearchHelper::FACETS;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::MAX_VALUES_PER_FACET
-     */
-    public const MAX_VALUES_PER_FACET = InstantSearchHelper::MAX_VALUES_PER_FACET;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED
-     */
-    public const ENABLE_DYNAMIC_FACETS = InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::SORTING_INDICES
-     */
-    public const SORTING_INDICES = InstantSearchHelper::SORTING_INDICES;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::SHOW_SUGGESTIONS_NO_RESULTS
-     */
-    public const SHOW_SUGGESTIONS_NO_RESULTS = InstantSearchHelper::SHOW_SUGGESTIONS_NO_RESULTS;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_SEARCHBOX_ENABLED
-     */
-    public const SEARCHBOX_ENABLE = InstantSearchHelper::IS_SEARCHBOX_ENABLED;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_ADD_TO_CART_ENABLED
-     */
-    public const XML_ADD_TO_CART_ENABLE = InstantSearchHelper::IS_ADD_TO_CART_ENABLED;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_INFINITE_SCROLL_ENABLED
-     */
-    public const INFINITE_SCROLL_ENABLE = InstantSearchHelper::IS_INFINITE_SCROLL_ENABLED;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::HIDE_PAGINATION
-     */
-    public const HIDE_PAGINATION = InstantSearchHelper::HIDE_PAGINATION;
-
-    /**
-     * @deprecated This constant is retained purely for data patches to migrate from older versions
-     */
-    public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
+    // --- InstantSearch --- //
 
     /**
      * @param $storeId
@@ -1982,8 +1985,8 @@ class ConfigHelper
      * @param $currentCustomerGroupId
      * @param $attrs
      * @return array
-     * @throws Magento\Framework\Exception\LocalizedException
-     * @throws Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @deprecated This method has been deprecated and should no longer be used
      * @see \Algolia\AlgoliaSearch\Service\Product\SortingTransformer
      */

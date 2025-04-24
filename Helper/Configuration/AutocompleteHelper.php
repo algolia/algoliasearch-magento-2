@@ -31,7 +31,7 @@ class AutocompleteHelper
 
     public function __construct(
         protected ScopeConfigInterface $configInterface,
-        protected Serializer $serializer
+        protected Serializer           $serializer
     ) {}
 
     public function isEnabled(?int $storeId = null): bool
@@ -187,5 +187,4 @@ class AutocompleteHelper
             $storeId
         );
     }
-
 }

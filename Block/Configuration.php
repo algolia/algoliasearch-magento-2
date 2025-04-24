@@ -187,28 +187,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $attributesToFilter = $config->getAttributesToFilter($customerGroupId);
         $algoliaJsConfig = [
-            'instant' => [
-                'enabled' => $config->isInstantEnabled(),
-                'selector' => $config->getInstantSelector(),
-                'isAddToCartEnabled' => $config->isAddToCartEnable(),
-                'addToCartParams' => $addToCartParams,
-                'infiniteScrollEnabled' => $config->isInfiniteScrollEnabled(),
-                'urlTrackedParameters' => $this->getUrlTrackedParameters(),
-                'isSearchBoxEnabled' => $config->isInstantSearchBoxEnabled(),
-                'isVisualMerchEnabled' => $config->isVisualMerchEnabled(),
-                'categorySeparator' => $config->getCategorySeparator(),
-                'categoryPageIdAttribute' => $config->getCategoryPageIdAttributeName(),
-                'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
-                'hidePagination' => $config->hidePaginationInInstantSearchPage(),
-                'isDynamicFacetsEnabled' => $config->isDynamicFacetsEnabled(),
-                'redirects' => [
-                    'enabled'                => $this->instantSearchConfig->isInstantRedirectEnabled(),
-                    'onPageLoad'             => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $this->instantSearchConfig->getInstantRedirectOptions()),
-                    'onSearchAsYouType'      => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $this->instantSearchConfig->getInstantRedirectOptions()),
-                    'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $this->instantSearchConfig->getInstantRedirectOptions()),
-                    'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $this->instantSearchConfig->getInstantRedirectOptions())
-                ]
-            ],
+            'instant' => $this->getInstantSearchConfig($addToCartParams),
             'autocomplete' => $this->getAutocompleteConfiguration(),
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),
@@ -402,6 +381,36 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'showSelectableRedirect' => $config->getRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
                 'showHitsWithRedirect'   => $config->getRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
                 'openInNewWindow'        => $config->isRedirectInNewWindowEnabled()
+            ]
+        ];
+    }
+
+    protected function getInstantSearchConfig(array $addToCartParams): array
+    {
+        $config = $this->instantSearchConfig;
+        $redirectOptions = $config->getInstantRedirectOptions();
+        $mainConfig = $this->config;
+
+        return [
+            'enabled'                     => $config->isEnabled(),
+            'selector'                    => $config->getDomSelector(),
+            'isAddToCartEnabled'          => $config->isAddToCartEnabled(),
+            'addToCartParams'             => $addToCartParams,
+            'infiniteScrollEnabled'       => $config->isInfiniteScrollEnabled(),
+            'urlTrackedParameters'        => $this->getUrlTrackedParameters(),
+            'isSearchBoxEnabled'          => $config->isSearchBoxEnabled(),
+            'isVisualMerchEnabled'        => $mainConfig->isVisualMerchEnabled(),
+            'categorySeparator'           => $mainConfig->getCategorySeparator(),
+            'categoryPageIdAttribute'     => $mainConfig->getCategoryPageIdAttributeName(),
+            'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
+            'hidePagination'              => $config->shouldHidePagination(),
+            'isDynamicFacetsEnabled'      => $config->isDynamicFacetsEnabled(),
+            'redirects' => [
+                'enabled'                => $config->isInstantRedirectEnabled(),
+                'onPageLoad'             => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $redirectOptions),
+                'onSearchAsYouType'      => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $redirectOptions),
+                'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $redirectOptions),
+                'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $redirectOptions)
             ]
         ];
     }

@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Serializer;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
@@ -14,7 +15,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\DataObject;
 use Magento\Framework\Locale\Currency;
-use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -151,7 +151,7 @@ class ConfigHelper
         protected \Magento\Framework\Module\ResourceInterface           $moduleResource,
         protected \Magento\Framework\App\ProductMetadataInterface       $productMetadata,
         protected \Magento\Framework\Event\ManagerInterface             $eventManager,
-        protected SerializerInterface                                   $serializer,
+        protected Serializer                                            $serializer,
         protected GroupCollection                                       $groupCollection,
         protected GroupExcludedWebsiteRepositoryInterface               $groupExcludedWebsiteRepository,
         protected CookieHelper                                          $cookieHelper,
@@ -364,28 +364,6 @@ class ConfigHelper
     public function isPartialUpdateEnabled($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::PARTIAL_UPDATES, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-
-
-    protected function serialize(array $value): string {
-        return $this->serializer->serialize($value) ?: '';
-    }
-
-    /**
-     * @param $value
-     * @return array|bool|float|int|mixed|string|null
-     */
-    protected function unserialize($value)
-    {
-        if (false === $value || null === $value || '' === $value) {
-            return false;
-        }
-        $unserialized = json_decode($value, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $unserialized;
-        }
-        return $this->serializer->unserialize($value);
     }
 
     /**
@@ -918,7 +896,7 @@ class ConfigHelper
      */
     public function getCategoryCustomRanking($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(
+        $attrs = $this->serializer->unserialize($this->configInterface->getValue(
             self::CATEGORY_CUSTOM_RANKING,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -935,7 +913,7 @@ class ConfigHelper
      */
     public function getProductCustomRanking($storeId = null)
     {
-        $attrs = $this->unserialize($this->getRawProductCustomRanking($storeId));
+        $attrs = $this->serializer->unserialize($this->getRawProductCustomRanking($storeId));
         if (is_array($attrs)) {
             return $attrs;
         }
@@ -1137,27 +1115,27 @@ class ConfigHelper
      */
     public function getProductAdditionalAttributes($storeId = null)
     {
-        $attributes = $this->unserialize($this->configInterface->getValue(
+        $attributes = $this->serializer->unserialize($this->configInterface->getValue(
             self::PRODUCT_ATTRIBUTES,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
 
-        $facets = $this->unserialize($this->configInterface->getValue(
+        $facets = $this->serializer->unserialize($this->configInterface->getValue(
             self::FACETS,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
         $attributes = $this->addIndexableAttributes($attributes, $facets, '0');
 
-        $sorts = $this->unserialize($this->configInterface->getValue(
+        $sorts = $this->serializer->unserialize($this->configInterface->getValue(
             self::SORTING_INDICES,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
         $attributes = $this->addIndexableAttributes($attributes, $sorts, '0');
 
-        $customRankings = $this->unserialize($this->configInterface->getValue(
+        $customRankings = $this->serializer->unserialize($this->configInterface->getValue(
             self::PRODUCT_CUSTOM_RANKING,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -1210,12 +1188,12 @@ class ConfigHelper
      */
     public function getCategoryAdditionalAttributes($storeId = null)
     {
-        $attributes = $this->unserialize($this->configInterface->getValue(
+        $attributes = $this->serializer->unserialize($this->configInterface->getValue(
             self::CATEGORY_ATTRIBUTES,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
-        $customRankings = $this->unserialize($this->configInterface->getValue(
+        $customRankings = $this->serializer->unserialize($this->configInterface->getValue(
             self::CATEGORY_CUSTOM_RANKING,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -1374,7 +1352,7 @@ class ConfigHelper
     public function getNonCastableAttributes($storeId = null)
     {
         $nonCastableAttributes = [];
-        $config = $this->unserialize($this->configInterface->getValue(
+        $config = $this->serializer->unserialize($this->configInterface->getValue(
             self::NON_CASTABLE_ATTRIBUTES,
             ScopeInterface::SCOPE_STORE,
             $storeId

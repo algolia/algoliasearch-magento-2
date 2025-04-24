@@ -10,7 +10,6 @@ class Checkboxes extends Field
     protected function _getElementHtml(AbstractElement $element)
     {
         $html = '';
-        $elementId = $element->getHtmlId();
         $name = $element->getName();
         $options = $element->getValues();
         $values = empty($element->getValue()) ? [] : explode(',', $element->getValue()); // store as CSV in config

@@ -3,6 +3,8 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
@@ -31,7 +33,6 @@ class ConfigHelper
     public const ALLOW_COOKIE_BUTTON_SELECTOR = 'algoliasearch_credentials/algolia_cookie_configuration/allow_cookie_button_selector';
     public const ALGOLIA_COOKIE_DURATION = 'algoliasearch_credentials/algolia_cookie_configuration/cookie_duration';
 
-
     public const IS_INSTANT_ENABLED = 'algoliasearch_instant/instant/is_instant_enabled';
     public const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
     public const INSTANT_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
@@ -46,19 +47,6 @@ class ConfigHelper
     public const XML_ADD_TO_CART_ENABLE = 'algoliasearch_instant/instant_options/add_to_cart_enable';
     public const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant_options/infinite_scroll_enable';
     public const HIDE_PAGINATION = 'algoliasearch_instant/instant_options/hide_pagination';
-
-    public const IS_POPUP_ENABLED = 'algoliasearch_autocomplete/autocomplete/is_popup_enabled';
-    public const NB_OF_PRODUCTS_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions';
-    public const NB_OF_CATEGORIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_categories_suggestions';
-    public const NB_OF_QUERIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_queries_suggestions';
-    public const AUTOCOMPLETE_SECTIONS = 'algoliasearch_autocomplete/autocomplete/sections';
-    public const EXCLUDED_PAGES = 'algoliasearch_autocomplete/autocomplete/excluded_pages';
-    public const MIN_POPULARITY = 'algoliasearch_autocomplete/autocomplete/min_popularity';
-    public const MIN_NUMBER_OF_RESULTS = 'algoliasearch_autocomplete/autocomplete/min_number_of_results';
-    public const RENDER_TEMPLATE_DIRECTIVES = 'algoliasearch_autocomplete/autocomplete/render_template_directives';
-    public const AUTOCOMPLETE_MENU_DEBUG = 'algoliasearch_autocomplete/autocomplete/debug';
-    public const AUTOCOMPLETE_DEBOUNCE_MILLISEC = 'algoliasearch_autocomplete/autocomplete/debounce_millisec';
-    public const AUTOCOMPLETE_MINIMUM_CHAR_LENGTH = 'algoliasearch_autocomplete/autocomplete/minimum_char_length';
 
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
@@ -98,7 +86,6 @@ class ConfigHelper
     public const REMOVE_PUB_DIR_IN_URL = 'algoliasearch_advanced/advanced/remove_pub_dir_in_url';
     public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
     public const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
-    public const AUTOCOMPLETE_SELECTOR = 'algoliasearch_autocomplete/autocomplete/autocomplete_selector';
     public const INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX = 'algoliasearch_products/products/include_non_visible_products_in_index';
     public const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
     public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
@@ -151,7 +138,6 @@ class ConfigHelper
     public const IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_cart_page';
     protected const LOOKING_SIMILAR_TITLE = 'algoliasearch_recommend/recommend/looking_similar/title';
     public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
-    protected const AUTOCOMPLETE_KEYBORAD_NAVIAGATION = 'algoliasearch_autocomplete/autocomplete/navigator';
     protected const FREQUENTLY_BOUGHT_TOGETHER_TITLE = 'algoliasearch_recommend/recommend/frequently_bought_together/title';
     protected const RELATED_PRODUCTS_TITLE = 'algoliasearch_recommend/recommend/related_product/title';
     protected const TRENDING_ITEMS_TITLE = 'algoliasearch_recommend/recommend/trends_item/title';
@@ -184,6 +170,8 @@ class ConfigHelper
         protected GroupCollection                                      $groupCollection,
         protected GroupExcludedWebsiteRepositoryInterface              $groupExcludedWebsiteRepository,
         protected CookieHelper                                         $cookieHelper,
+        protected AutocompleteHelper                                   $autocompleteConfig,
+        protected InstantSearchHelper                                  $instantSearchConfig
     )
     {}
 
@@ -235,24 +223,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isDefaultSelector($storeId = null)
-    {
-        return '.algolia-search-input' === $this->getAutocompleteSelector($storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getAutocompleteSelector($storeId = null)
-    {
-        return $this->configInterface->getValue(self::AUTOCOMPLETE_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
      * Returns config flag
      *
      * @param $storeId
@@ -275,45 +245,6 @@ class ConfigHelper
     {
         return $this->configInterface->getValue(
             self::IDX_PRODUCT_ON_CAT_PRODUCTS_UPD,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfQueriesSuggestions($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(
-            self::NB_OF_QUERIES_SUGGESTIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfProductsSuggestions($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(
-            self::NB_OF_PRODUCTS_SUGGESTIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfCategoriesSuggestions($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(
-            self::NB_OF_CATEGORIES_SUGGESTIONS,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
@@ -451,24 +382,7 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::PARTIAL_UPDATES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return array
-     */
-    public function getAutocompleteSections($storeId = null)
-    {
-        $attrs = $this->unserialize($this->configInterface->getValue(
-            self::AUTOCOMPLETE_SECTIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
 
-        if (is_array($attrs)) {
-            return array_values($attrs);
-        }
-
-        return [];
-    }
 
     protected function serialize(array $value): string {
         return $this->serializer->serialize($value) ?: '';
@@ -488,24 +402,6 @@ class ConfigHelper
             return $unserialized;
         }
         return $this->serializer->unserialize($value);
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getMinPopularity($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(self::MIN_POPULARITY, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getMinNumberOfResults($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(self::MIN_NUMBER_OF_RESULTS, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -663,15 +559,6 @@ class ConfigHelper
     public function replaceCategories($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::REPLACE_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isAutoCompleteEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::IS_POPUP_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -1001,63 +888,6 @@ class ConfigHelper
     public function getInstantSelector($storeId = null)
     {
         return $this->configInterface->getValue(self::INSTANT_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return array
-     */
-    public function getExcludedPages($storeId = null)
-    {
-        $attrs = $this->unserialize($this->configInterface->getValue(
-            self::EXCLUDED_PAGES,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
-        if (is_array($attrs)) {
-            return $attrs;
-        }
-        return [];
-    }
-
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getRenderTemplateDirectives($storeId = null)
-    {
-        return $this->configInterface->getValue(
-            self::RENDER_TEMPLATE_DIRECTIVES,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isAutocompleteDebugEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_MENU_DEBUG, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getAutocompleteDebounceMilliseconds($storeId = null): int
-    {
-        return (int) $this->configInterface->getValue(
-            self::AUTOCOMPLETE_DEBOUNCE_MILLISEC,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    public function getAutocompleteMinimumCharacterLength(?int $storeId = null): int
-    {
-        return (int) $this->configInterface->getValue(
-            self::AUTOCOMPLETE_MINIMUM_CHAR_LENGTH,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
     }
 
     /**
@@ -1930,18 +1760,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function isAutocompleteNavigatorEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_KEYBORAD_NAVIAGATION,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
      * @return bool
      */
     public function isCookieRestrictionModeEnabled()
@@ -2033,5 +1851,248 @@ class ConfigHelper
             self::ENABLE_INDEXER_QUEUE,
             ScopeInterface::SCOPE_STORE
         );
+    }
+
+
+    /***************************************
+     *   DEPRECATED CONSTANTS & METHODS    *
+     **************************************/
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::IS_ENABLED
+     */
+    public const IS_POPUP_ENABLED = AutocompleteHelper::IS_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::DOM_SELECTOR
+     */
+    public const AUTOCOMPLETE_SELECTOR = AutocompleteHelper::DOM_SELECTOR;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::ADDITIONAL_SECTIONS
+     */
+    public const AUTOCOMPLETE_SECTIONS = AutocompleteHelper::ADDITIONAL_SECTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::NB_OF_PRODUCTS_SUGGESTIONS
+     */
+    public const NB_OF_PRODUCTS_SUGGESTIONS = AutocompleteHelper::NB_OF_PRODUCTS_SUGGESTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::NB_OF_CATEGORIES_SUGGESTIONS
+     */
+    public const NB_OF_CATEGORIES_SUGGESTIONS = AutocompleteHelper::NB_OF_CATEGORIES_SUGGESTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::NB_OF_QUERIES_SUGGESTIONS
+     */
+    public const NB_OF_QUERIES_SUGGESTIONS = AutocompleteHelper::NB_OF_QUERIES_SUGGESTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::MIN_QUERY_POPULARITY
+     */
+    public const MIN_POPULARITY = AutocompleteHelper::MIN_QUERY_POPULARITY;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::MIN_QUERY_NUMBER_OF_RESULTS
+     */
+    public const MIN_NUMBER_OF_RESULTS = AutocompleteHelper::MIN_QUERY_NUMBER_OF_RESULTS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::EXCLUDED_PAGES
+     */
+    public const EXCLUDED_PAGES = AutocompleteHelper::EXCLUDED_PAGES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::RENDER_TEMPLATE_DIRECTIVES
+     */
+    public const RENDER_TEMPLATE_DIRECTIVES = AutocompleteHelper::RENDER_TEMPLATE_DIRECTIVES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::IS_DEBUG_ENABLED
+     */
+    public const AUTOCOMPLETE_MENU_DEBUG = AutocompleteHelper::IS_DEBUG_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::DEBOUNCE_MILLISEC
+     */
+    public const AUTOCOMPLETE_DEBOUNCE_MILLISEC = AutocompleteHelper::DEBOUNCE_MILLISEC;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::MINIMUM_CHAR_LENGTH
+     */
+    public const AUTOCOMPLETE_MINIMUM_CHAR_LENGTH = AutocompleteHelper::MINIMUM_CHAR_LENGTH;
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isEnabled
+     */
+    public function isAutoCompleteEnabled($storeId = null)
+    {
+        return $this->autocompleteConfig->isEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @internal This is an internal function only and should not be used by customizations
+     */
+    public function isDefaultSelector($storeId = null)
+    {
+        return '.algolia-search-input' === $this->getAutocompleteSelector($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getDomSelector()
+     */
+    public function getAutocompleteSelector($storeId = null)
+    {
+        return $this->autocompleteConfig->getDomSelector($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return array
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getAdditionalSections()
+     */
+    public function getAutocompleteSections($storeId = null)
+    {
+        return $this->autocompleteConfig->getAdditionalSections($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfProductsSuggestions()
+     */
+    public function getNumberOfProductsSuggestions($storeId = null)
+    {
+        return $this->autocompleteConfig->getNumberOfProductsSuggestions($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfCategoriesSuggestions()
+     */
+    public function getNumberOfCategoriesSuggestions($storeId = null)
+    {
+        return $this->autocompleteConfig->getNumberOfCategoriesSuggestions($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfQueriesSuggestions()
+     */
+    public function getNumberOfQueriesSuggestions($storeId = null)
+    {
+        return $this->autocompleteConfig->getNumberOfQueriesSuggestions($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinQueryPopularity()
+     */
+    public function getMinPopularity($storeId = null)
+    {
+        return $this->autocompleteConfig->getMinQueryPopularity($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinQueryNumberOfResults()
+     */
+    public function getMinNumberOfResults($storeId = null)
+    {
+        return $this->autocompleteConfig->getMinQueryNumberOfResults($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return array
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getExcludedPages()
+     */
+    public function getExcludedPages($storeId = null)
+    {
+        return $this->autocompleteConfig->getExcludedPages($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::shouldRenderTemplateDirectives()
+     */
+    public function getRenderTemplateDirectives($storeId = null)
+    {
+        return $this->autocompleteConfig->shouldRenderTemplateDirectives($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isDebugEnabled()
+     */
+    public function isAutocompleteDebugEnabled($storeId = null)
+    {
+        return $this->autocompleteConfig->isDebugEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isKeyboardNavigationEnabled()
+     */
+    public function isAutocompleteNavigatorEnabled($storeId = null)
+    {
+        return $this->autocompleteConfig->isKeyboardNavigationEnabled($storeId);
+    }
+
+    /**
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getDebounceMilliseconds()
+     */
+    public function getAutocompleteDebounceMilliseconds($storeId = null): int
+    {
+        return $this->autocompleteConfig->getDebounceMilliseconds($storeId);
+    }
+
+    /**
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinimumCharacterLength()
+     */
+    public function getAutocompleteMinimumCharacterLength(?int $storeId = null): int
+    {
+        return $this->autocompleteConfig->getMinimumCharacterLength($storeId);
     }
 }

@@ -209,24 +209,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                     'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $this->instantSearchConfig->getInstantRedirectOptions())
                 ]
             ],
-            'autocomplete' => [
-                'enabled' => $config->isAutoCompleteEnabled(),
-                'selector' => $config->getAutocompleteSelector(),
-                'sections' => $config->getAutocompleteSections(),
-                'nbOfProductsSuggestions' => $config->getNumberOfProductsSuggestions(),
-                'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
-                'nbOfQueriesSuggestions' => $config->getNumberOfQueriesSuggestions(),
-                'isDebugEnabled' => $config->isAutocompleteDebugEnabled(),
-                'isNavigatorEnabled' => $config->isAutocompleteNavigatorEnabled(),
-                'debounceMilliseconds' => $config->getAutocompleteDebounceMilliseconds(),
-                'minimumCharacters' => $config->getAutocompleteMinimumCharacterLength(),
-                'redirects' => [
-                    'enabled'                => $this->autocompleteConfig->isAutocompleteRedirectEnabled(),
-                    'showSelectableRedirect' => $this->autocompleteConfig->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
-                    'showHitsWithRedirect'   => $this->autocompleteConfig->getAutocompleteRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
-                    'openInNewWindow'        => $this->autocompleteConfig->isAutocompleteRedirectInNewWindowEnabled()
-                ]
-            ],
+            'autocomplete' => $this->getAutocompleteConfiguration(),
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),
                 'configuration' => $this->getLandingPageConfiguration(),
@@ -398,6 +381,29 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $transport = new DataObject($algoliaJsConfig);
         $this->_eventManager->dispatch('algolia_after_create_configuration', ['configuration' => $transport]);
         return $transport->getData();
+    }
+
+    protected function getAutocompleteConfiguration(): array
+    {
+        $config = $this->autocompleteConfig;
+        return [
+            'enabled'                   => $config->isEnabled(),
+            'selector'                  => $config->getDomSelector(),
+            'sections'                  => $config->getAdditionalSections(),
+            'nbOfProductsSuggestions'   => $config->getNumberOfProductsSuggestions(),
+            'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
+            'nbOfQueriesSuggestions'    => $config->getNumberOfQueriesSuggestions(),
+            'isDebugEnabled'            => $config->isDebugEnabled(),
+            'isNavigatorEnabled'        => $config->isKeyboardNavigationEnabled(),
+            'debounceMilliseconds'      => $config->getDebounceMilliseconds(),
+            'minimumCharacters'         => $config->getMinimumCharacterLength(),
+            'redirects' => [
+                'enabled'                => $config->isRedirectEnabled(),
+                'showSelectableRedirect' => $config->getRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
+                'showHitsWithRedirect'   => $config->getRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
+                'openInNewWindow'        => $config->isRedirectInNewWindowEnabled()
+            ]
+        ];
     }
 
     protected function areCategoriesInFacets($facets)

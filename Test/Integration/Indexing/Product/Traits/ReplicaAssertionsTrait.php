@@ -137,7 +137,6 @@ trait ReplicaAssertionsTrait
             return $item['attribute'] === $sortAttr && $item['sort'] === $sortDir;
         });
 
-
         if ($existing) {
             $idx = array_key_first($existing);
             $sorting[$idx] = array_merge($existing[$idx], $attr);

@@ -371,19 +371,21 @@ class ReplicaManager implements ReplicaManagerInterface
      *
      * @param array $replicasToDelete - which replicas to delete
      * @param bool $waitLastTask - wait until deleting next replica (default: false)
-     * @param bool $prevalidate - verify replica is not attached to a primary index before attempting to delete (default: false)
+     * @param bool $safeMode - ensure replica is not attached to a primary index before attempting to delete (default: false)
+     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
      */
     protected function deleteReplicas(
         array $replicasToDelete,
         bool $waitLastTask = false,
-        bool $prevalidate = false,
+        bool $safeMode = false,
         ?int $storeId = null): void
     {
         foreach ($replicasToDelete as $deletedReplica) {
-            $this->deleteReplica($deletedReplica, $prevalidate);
+            $this->deleteReplica($deletedReplica, $safeMode, $storeId);
             if ($waitLastTask) {
                 $this->algoliaHelper->waitLastTask($storeId, $deletedReplica);
             }
@@ -393,11 +395,12 @@ class ReplicaManager implements ReplicaManagerInterface
     /**
      * @throws AlgoliaException
      * @throws ExceededRetriesException
+     * @throws NoSuchEntityException
      */
-    protected function deleteReplica(string $replicaIndexName, bool $precheck = false, ?int $storeId = null): void
+    protected function deleteReplica(string $replicaIndexName, bool $safeMode = false, ?int $storeId = null): void
     {
-        if ($precheck) {
-            $settings = $this->algoliaHelper->getSettings($replicaIndexName);
+        if ($safeMode) {
+            $settings = $this->algoliaHelper->getSettings($replicaIndexName, $storeId);
             if (isset($settings[self::ALGOLIA_SETTINGS_KEY_PRIMARY])) {
                 $this->detachReplica($settings[self::ALGOLIA_SETTINGS_KEY_PRIMARY], $replicaIndexName, $storeId);
             }
@@ -411,10 +414,11 @@ class ReplicaManager implements ReplicaManagerInterface
      *
      * @throws ExceededRetriesException
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     protected function detachReplica(string $primaryIndexName, string $replicaIndexName, ?int $storeId = null): void
     {
-        $settings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $settings = $this->algoliaHelper->getSettings($primaryIndexName, $storeId);
         if (!isset($settings[self::ALGOLIA_SETTINGS_KEY_REPLICAS])) {
             return;
         }

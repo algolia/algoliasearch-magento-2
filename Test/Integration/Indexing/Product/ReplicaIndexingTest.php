@@ -312,9 +312,9 @@ class ReplicaIndexingTest extends TestCase
         $mock
             ->expects($this->any())
             ->method('deleteReplicas')
-            ->willReturnCallback(function(array $replicasToDelete, ...$params) use ($mock, $replicas) {
+            ->willReturnCallback(function(int $storeId, array $replicasToDelete, ...$params) use ($mock, $replicas) {
                 $originalMethod = new \ReflectionMethod(ReplicaManager::class, 'deleteReplicas');
-                $originalMethod->invoke($mock, $replicasToDelete, false, false);
+                $originalMethod->invoke($mock, $storeId, $replicasToDelete, false, false);
                 if ($this->patchRetries) return;
                 $this->runOnce(
                     function() use ($replicas) {

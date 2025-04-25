@@ -85,8 +85,7 @@ class ReplicaManager implements ReplicaManagerInterface
                 return false;
             case ReplicaState::REPLICA_STATE_UNKNOWN:
             default:
-                $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);
-                $old = $this->getMagentoReplicaConfigurationFromAlgolia($primaryIndexName, $storeId);
+                $old = $this->getMagentoReplicaConfigurationFromAlgolia($storeId);
                 $new = $this->sortingTransformer->transformSortingIndicesToReplicaSetting(
                     $this->sortingTransformer->getSortingIndices($storeId, null, null, true)
                 );
@@ -98,14 +97,19 @@ class ReplicaManager implements ReplicaManagerInterface
 
 
     /**
-     * @param $primaryIndexName
-     * @param int|null $storeId
+     * @param int $storeId
      * @param bool $refreshCache
+     * @param string|null $primaryIndexName
      * @return string[]
      * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
-    protected function getReplicaConfigurationFromAlgolia($primaryIndexName, int $storeId = null, bool $refreshCache = false): array
+    protected function getReplicaConfigurationFromAlgolia(
+        int $storeId,
+        bool $refreshCache = false,
+        ?string $primaryIndexName = null): array
     {
+        $primaryIndexName ??= $this->indexNameFetcher->getProductIndexName($storeId);
         if ($refreshCache || !isset($this->_algoliaReplicaConfig[$primaryIndexName])) {
             try {
                 $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName, $storeId);
@@ -134,20 +138,19 @@ class ReplicaManager implements ReplicaManagerInterface
      * Obtain the replica configuration from Algolia but only those indices that are
      * relevant to the Magento integration
      *
-     * @param string $primaryIndexName
-     * @param int|null $storeId
+     * @param int $storeId
      * @param bool $refreshCache
      * @return string[] Array of replica index names
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
     protected function getMagentoReplicaConfigurationFromAlgolia(
-        string $primaryIndexName,
-        int $storeId = null,
+        int $storeId,
         bool $refreshCache = false
     ): array
     {
-        $algoliaReplicas = $this->getReplicaConfigurationFromAlgolia($primaryIndexName, $storeId, $refreshCache);
+        $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);
+        $algoliaReplicas = $this->getReplicaConfigurationFromAlgolia($storeId, $refreshCache, $primaryIndexName);
         $magentoReplicas = $this->getMagentoReplicaSettings($primaryIndexName, $algoliaReplicas);
         return array_values(array_intersect($magentoReplicas, $algoliaReplicas));
     }
@@ -185,15 +188,15 @@ class ReplicaManager implements ReplicaManagerInterface
     }
 
     /**
-     * @param string $primaryIndexName
-     * @param int|null $storeId
+     * @param int $storeId
      * @return array
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    protected function getNonMagentoReplicaConfigurationFromAlgolia(string $primaryIndexName, int $storeId = null): array
+    protected function getNonMagentoReplicaConfigurationFromAlgolia(int $storeId): array
     {
-        $algoliaReplicas = $this->getReplicaConfigurationFromAlgolia($primaryIndexName, $storeId);
+        $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);
+        $algoliaReplicas = $this->getReplicaConfigurationFromAlgolia($storeId);
         $magentoReplicas = $this->getMagentoReplicaSettings($primaryIndexName, $algoliaReplicas);
         return array_diff($algoliaReplicas, $magentoReplicas);
     }
@@ -252,8 +255,8 @@ class ReplicaManager implements ReplicaManagerInterface
         $indexName = $this->indexNameFetcher->getProductIndexName($storeId);
         $sortingIndices = $this->sortingTransformer->getSortingIndices($storeId);
         $newMagentoReplicasSetting = $this->sortingTransformer->transformSortingIndicesToReplicaSetting($sortingIndices);
-        $oldMagentoReplicasSetting = $this->getMagentoReplicaConfigurationFromAlgolia($indexName, $storeId, true);
-        $nonMagentoReplicasSetting = $this->getNonMagentoReplicaConfigurationFromAlgolia($indexName, $storeId);
+        $oldMagentoReplicasSetting = $this->getMagentoReplicaConfigurationFromAlgolia($storeId, true);
+        $nonMagentoReplicasSetting = $this->getNonMagentoReplicaConfigurationFromAlgolia($storeId);
         $oldMagentoReplicaIndices = $this->getBareIndexNamesFromReplicaSetting($oldMagentoReplicasSetting);
         $newMagentoReplicaIndices = $this->getBareIndexNamesFromReplicaSetting($newMagentoReplicasSetting);
 
@@ -273,7 +276,7 @@ class ReplicaManager implements ReplicaManagerInterface
         $setReplicasTaskId = $this->algoliaHelper->getLastTaskId($storeId);
         $this->algoliaHelper->waitLastTask($storeId, $indexName, $setReplicasTaskId);
         $this->clearAlgoliaReplicaSettingCache($indexName);
-        $this->deleteReplicas($replicasToDelete, false, false, $storeId);
+        $this->deleteReplicas($storeId, $replicasToDelete, false, false);
 
         if (self::_DEBUG) {
             $this->logger->log(
@@ -369,23 +372,23 @@ class ReplicaManager implements ReplicaManagerInterface
     /**
      * Delete replica indices
      *
+     * @param int $storeId
      * @param array $replicasToDelete - which replicas to delete
      * @param bool $waitLastTask - wait until deleting next replica (default: false)
      * @param bool $safeMode - ensure replica is not attached to a primary index before attempting to delete (default: false)
-     * @param int|null $storeId
      * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
      */
     protected function deleteReplicas(
+        int $storeId,
         array $replicasToDelete,
         bool $waitLastTask = false,
-        bool $safeMode = false,
-        ?int $storeId = null): void
+        bool $safeMode = false): void
     {
         foreach ($replicasToDelete as $deletedReplica) {
-            $this->deleteReplica($deletedReplica, $safeMode, $storeId);
+            $this->deleteReplica($storeId, $deletedReplica, $safeMode);
             if ($waitLastTask) {
                 $this->algoliaHelper->waitLastTask($storeId, $deletedReplica);
             }
@@ -397,12 +400,12 @@ class ReplicaManager implements ReplicaManagerInterface
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
      */
-    protected function deleteReplica(string $replicaIndexName, bool $safeMode = false, ?int $storeId = null): void
+    protected function deleteReplica(int $storeId, string $replicaIndexName, bool $safeMode = false): void
     {
         if ($safeMode) {
             $settings = $this->algoliaHelper->getSettings($replicaIndexName, $storeId);
             if (isset($settings[self::ALGOLIA_SETTINGS_KEY_PRIMARY])) {
-                $this->detachReplica($settings[self::ALGOLIA_SETTINGS_KEY_PRIMARY], $replicaIndexName, $storeId);
+                $this->detachReplica($storeId, $replicaIndexName, $settings[self::ALGOLIA_SETTINGS_KEY_PRIMARY]);
             }
         }
 
@@ -416,8 +419,10 @@ class ReplicaManager implements ReplicaManagerInterface
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    protected function detachReplica(string $primaryIndexName, string $replicaIndexName, ?int $storeId = null): void
+    protected function detachReplica(int $storeId, string $replicaIndexName, ?string $primaryIndexName = null): void
     {
+        $primaryIndexName ??= $this->indexNameFetcher->getProductIndexName($storeId);
+
         $settings = $this->algoliaHelper->getSettings($primaryIndexName, $storeId);
         if (!isset($settings[self::ALGOLIA_SETTINGS_KEY_REPLICAS])) {
             return;
@@ -522,8 +527,9 @@ class ReplicaManager implements ReplicaManagerInterface
     /**
      * @throws AlgoliaException
      */
-    protected function clearReplicasSettingInAlgolia(string $primaryIndexName, int $storeId): void
+    protected function clearReplicasSettingInAlgolia(int $storeId): void
     {
+        $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);
         $this->algoliaHelper->setSettings(
             $primaryIndexName,
             [ self::ALGOLIA_SETTINGS_KEY_REPLICAS => []],
@@ -544,12 +550,11 @@ class ReplicaManager implements ReplicaManagerInterface
         if ($unused) {
             $replicasToDelete = $this->getUnusedReplicaIndices($storeId);
         } else {
-            $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);
-            $replicasToDelete = $this->getMagentoReplicaIndicesFromAlgolia($primaryIndexName);
-            $this->clearReplicasSettingInAlgolia($primaryIndexName, $storeId);
+            $replicasToDelete = $this->getMagentoReplicaIndicesFromAlgolia($storeId);
+            $this->clearReplicasSettingInAlgolia($storeId);
         }
 
-        $this->deleteReplicas($replicasToDelete, true, true, $storeId);
+        $this->deleteReplicas($storeId, $replicasToDelete, true, true);
 
         if ($unused) {
             $this->clearUnusedReplicaIndicesCache($storeId);
@@ -559,9 +564,9 @@ class ReplicaManager implements ReplicaManagerInterface
     /**
      * @throws LocalizedException
      */
-    protected function getMagentoReplicaIndicesFromAlgolia(string $primaryIndexName, $storeId = null): array
+    protected function getMagentoReplicaIndicesFromAlgolia(int $storeId): array
     {
-        return $this->getBareIndexNamesFromReplicaSetting($this->getMagentoReplicaConfigurationFromAlgolia($primaryIndexName, $storeId));
+        return $this->getBareIndexNamesFromReplicaSetting($this->getMagentoReplicaConfigurationFromAlgolia($storeId));
     }
 
     /**
@@ -571,7 +576,7 @@ class ReplicaManager implements ReplicaManagerInterface
     {
         $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);
         if (!isset($this->_unusedReplicaIndices[$storeId])) {
-            $currentReplicas = $this->getMagentoReplicaIndicesFromAlgolia($primaryIndexName);
+            $currentReplicas = $this->getMagentoReplicaIndicesFromAlgolia($storeId);
             $unusedReplicas = [];
             $allIndices = $this->algoliaHelper->listIndexes($storeId);
 
@@ -613,10 +618,9 @@ class ReplicaManager implements ReplicaManagerInterface
         $replicaIndices = [];
         $storeIds = array_keys($this->storeManager->getStores());
         foreach ($storeIds as $storeId) {
-            $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);
             $replicaIndices = array_merge(
                 $replicaIndices,
-                $this->getMagentoReplicaIndicesFromAlgolia($primaryIndexName)
+                $this->getMagentoReplicaIndicesFromAlgolia($storeId)
             );
         }
         return array_unique($replicaIndices);

@@ -62,25 +62,14 @@ class RebuildReplicasPatch implements DataPatchInterface
             // Area code is already set - nothing to do
         }
 
-        $storeIds = array_filter(
-            array_keys($this->storeManager->getStores()),
-            function (int $storeId) { return $this->replicaManager->isReplicaSyncEnabled($storeId); }
-        );
+        $storeIds = $this->getStoreIdsEligibleForPatch();
 
         try {
             // Delete all replicas before resyncing in case of incorrect replica assignments
             foreach ($storeIds as $storeId) {
-                if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                    $this->logger->warning("Algolia credentials are not configured for store $storeId. Skipping auto replica rebuild for this store. If you need to rebuild your replicas run `bin/magento algolia:replicas:rebuild`");
-                    continue;
-                }
-
                 $this->retryDeleteReplica($storeId);
             }
             foreach ($storeIds as $storeId) {
-                if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                    continue;
-                }
                 $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_CHANGED, $storeId); // avoids latency
                 $this->replicaManager->syncReplicasToAlgolia($storeId, $this->productHelper->getIndexSettings($storeId));
             }
@@ -92,6 +81,21 @@ class RebuildReplicasPatch implements DataPatchInterface
         $this->moduleDataSetup->getConnection()->endSetup();
 
         return $this;
+    }
+
+    protected function getStoreIdsEligibleForPatch(): array
+    {
+        return array_filter(
+            array_keys($this->storeManager->getStores()),
+            function (int $storeId) {
+                if (!$this->replicaManager->isReplicaSyncEnabled($storeId)) return false;
+                if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
+                    $this->logger->warning("Algolia credentials are not configured for store $storeId. Skipping auto replica rebuild for this store. If you need to rebuild your replicas run `bin/magento algolia:replicas:rebuild`");
+                    return false;
+                }
+                return true;
+            }
+        );
     }
 
     protected function retryDeleteReplica(int $storeId, int $maxRetries = 3, int $interval = 5)

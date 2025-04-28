@@ -2,11 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
@@ -21,7 +22,8 @@ class ReplicaManagerTest extends TestCase
     public function setUp(): void
     {
         $configHelper = $this->createMock(ConfigHelper::class);
-        $algoliaHelper = $this->createMock(AlgoliaHelper::class);
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $indexOptionsBuilder = $this->createMock(IndexOptionsBuilder::class);
         $replicaState = $this->createMock(ReplicaState::class);
         $virtualReplicaValidatorFactory = $this->createMock(VirtualReplicaValidatorFactory::class);
         $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
@@ -32,7 +34,8 @@ class ReplicaManagerTest extends TestCase
 
         $this->replicaManager = new ReplicaManagerTestable(
             $configHelper,
-            $algoliaHelper,
+            $algoliaConnector,
+            $indexOptionsBuilder,
             $replicaState,
             $virtualReplicaValidatorFactory,
             $indexNameFetcher,

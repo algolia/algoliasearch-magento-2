@@ -22,22 +22,22 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigHelperTest extends TestCase
 {
-    protected ConfigHelperTestable $configHelper;
-    protected ScopeConfigInterface $configInterface;
-    protected WriterInterface $configWriter;
-    protected StoreManagerInterface $storeManager;
-    protected Currency $currency;
-    protected DirCurrency $dirCurrency;
-    protected DirectoryList $directoryList;
-    protected ResourceInterface $moduleResource;
-    protected ProductMetadataInterface $productMetadata;
-    protected ManagerInterface $eventManager;
-    protected Serializer $serializer;
-    protected GroupCollection $groupCollection;
-    protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
-    protected CookieHelper $cookieHelper;
-    protected AutocompleteHelper $autocompleteHelper;
-    protected InstantSearchHelper $instantSearchHelper;
+    protected ?ConfigHelperTestable $configHelper;
+    protected ?ScopeConfigInterface $configInterface;
+    protected ?WriterInterface $configWriter;
+    protected ?StoreManagerInterface $storeManager;
+    protected ?Currency $currency;
+    protected ?DirCurrency $dirCurrency;
+    protected ?DirectoryList $directoryList;
+    protected ?ResourceInterface $moduleResource;
+    protected ?ProductMetadataInterface $productMetadata;
+    protected ?ManagerInterface $eventManager;
+    protected ?Serializer $serializer;
+    protected ?GroupCollection $groupCollection;
+    protected ?GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
+    protected ?CookieHelper $cookieHelper;
+    protected ?AutocompleteHelper $autocompleteHelper;
+    protected ?InstantSearchHelper $instantSearchHelper;
 
     protected function setUp(): void
     {

@@ -6,6 +6,9 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246CE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246EE;
@@ -14,6 +17,7 @@ use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247EE;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\InventoryMultiDimensionalIndexerApi\Model\IndexName;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -49,6 +53,9 @@ abstract class TestCase extends \TC
     protected $productMetadata;
 
     protected ?string $indexSuffix = null;
+
+    protected ?AlgoliaConnector $algoliaConnector = null;
+    protected ?IndexNameFetcher $indexNameFetcher = null;
 
     protected function setUp(): void
     {
@@ -228,6 +235,8 @@ abstract class TestCase extends \TC
         $this->setConfig('algoliasearch_credentials/credentials/index_prefix', $this->indexPrefix);
 
         $this->algoliaHelper = $this->getObjectManager()->create(AlgoliaHelper::class);
+        $this->algoliaConnector = $this->objectManager->get(AlgoliaConnector::class);
+        $this->indexNameFetcher = $this->objectManager->get(IndexNameFetcher::class);
 
         $this->boostrapped = true;
     }

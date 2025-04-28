@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
+use Algolia\AlgoliaSearch\Algolia;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -10,8 +11,10 @@ use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\Traits\ReplicaAssertionsTrait;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
@@ -32,6 +35,8 @@ class ReplicaIndexingTest extends TestCase
 
     protected ?IndicesConfigurator $indicesConfigurator = null;
 
+    protected ?IndexOptionsBuilder $indexOptionsBuilder = null;
+
     protected ?string $indexName = null;
 
     protected ?int $patchRetries = 3;
@@ -41,6 +46,7 @@ class ReplicaIndexingTest extends TestCase
         parent::setUp();
         $this->replicaManager = $this->objectManager->get(ReplicaManagerInterface::class);
         $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
+        $this->indexOptionsBuilder = $this->objectManager->get(IndexOptionsBuilder::class);
         $this->indexSuffix = 'products';
         $this->indexName = $this->getIndexName('default');
     }
@@ -60,11 +66,13 @@ class ReplicaIndexingTest extends TestCase
         $this->assertSortingAttribute($sortAttr, $sortDir);
 
         $this->indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         // Assert replica config created
         $primaryIndexName = $this->indexName;
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $currentSettings = $this->algoliaConnector->getSettings(
+            $this->indexOptionsBuilder->buildWithEnforcedIndex($primaryIndexName)
+        );
         $this->assertArrayHasKey('replicas', $currentSettings);
 
         $replicaIndexName = $primaryIndexName . '_' . $sortAttr . '_' . $sortDir;
@@ -114,10 +122,13 @@ class ReplicaIndexingTest extends TestCase
         $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1);
 
         $this->indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         // Assert replica config created
-        $currentSettings = $this->algoliaHelper->getSettings($primaryIndexName);
+        $currentSettings = $this->algoliaConnector->getSettings(
+            $this->indexOptionsBuilder->buildWithEnforcedIndex($primaryIndexName)
+        );
+
         $this->assertArrayHasKey('replicas', $currentSettings);
 
         $replicaIndexName = $primaryIndexName . '_' . $sortAttr . '_' . $sortDir;
@@ -157,7 +168,7 @@ class ReplicaIndexingTest extends TestCase
                 $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class)
             ]
         );
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         $replicas = $this->assertReplicasCreated($sorting);
 
@@ -191,13 +202,14 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaSyncDisabled(): void
     {
-        $primaryIndexName = $this->indexName;
-        $settings = $this->algoliaHelper->getSettings($this->indexName);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName);
+        $settings = $this->algoliaConnector->getSettings($indexOptions);
+
         $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $settings);
 
         $this->populateReplicas(1);
 
-        $newSettings = $this->algoliaHelper->getSettings($this->indexName);
+        $newSettings = $this->algoliaConnector->getSettings($indexOptions);
         $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $newSettings);
     }
 
@@ -258,7 +270,7 @@ class ReplicaIndexingTest extends TestCase
 
         $patch->apply();
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         $replicas = $this->assertReplicasCreated($sorting);
 
@@ -318,7 +330,7 @@ class ReplicaIndexingTest extends TestCase
                 if ($this->patchRetries) return;
                 $this->runOnce(
                     function() use ($replicas) {
-                        $this->algoliaHelper->waitLastTask();
+                        $this->algoliaConnector->waitLastTask();
                         $this->assertReplicasDeleted($replicas);
                     },
                     'patchDeleteTest'
@@ -334,7 +346,8 @@ class ReplicaIndexingTest extends TestCase
         $mockedReplicaManager = $this->getMockBuilder($mockedClass)
             ->setConstructorArgs([
                 $this->configHelper,
-                $this->algoliaHelper,
+                $this->algoliaConnector,
+                $this->objectManager->get(IndexOptionsBuilder::class),
                 $this->objectManager->get(ReplicaState::class),
                 $this->objectManager->get(VirtualReplicaValidatorFactory::class),
                 $this->objectManager->get(IndexNameFetcher::class),
@@ -366,7 +379,9 @@ class ReplicaIndexingTest extends TestCase
      */
     protected function assertReplicasCreated(array $sorting): array
     {
-        $currentSettings = $this->algoliaHelper->getSettings($this->indexName);
+        $currentSettings = $this->algoliaConnector->getSettings(
+            $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName)
+        );
         $this->assertArrayHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $currentSettings);
         $replicas = $currentSettings[ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS];
 
@@ -377,7 +392,9 @@ class ReplicaIndexingTest extends TestCase
 
     protected function assertReplicasDeleted($originalReplicas): void
     {
-        $newSettings = $this->algoliaHelper->getSettings($this->indexName);
+        $newSettings = $this->algoliaConnector->getSettings(
+            $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName)
+        );
         $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $newSettings);
         foreach ($originalReplicas as $replica) {
             $this->assertIndexNotExists($this->extractIndexFromReplicaSetting($replica));
@@ -400,7 +417,7 @@ class ReplicaIndexingTest extends TestCase
         $this->mockProperty($cmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
 
         $cmd->syncReplicas();
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         return $sorting;
     }

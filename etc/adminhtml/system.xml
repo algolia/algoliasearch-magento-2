@@ -328,6 +328,14 @@
             </group>
             <group id="redirects" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Redirects</label>
+                <comment>
+                    <![CDATA[
+                      <p>
+                        Algolia allows you to <a href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/how-to/redirects" target="_blank">redirect users</a>
+                        to a specific page of your website or mobile app based on a query or a set of conditions.
+                      </p>
+                    ]]>
+                </comment>
                 <attribute type="expanded">1</attribute>
                 <field id="enable" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable redirects</label>
@@ -556,6 +564,14 @@
                 </field>
             </group>
             <group id="instant_redirects" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment>
+                    <![CDATA[
+                      <p>
+                        Algolia allows you to <a href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/how-to/redirects" target="_blank">redirect users</a>
+                        to a specific page of your website or mobile app based on a query or a set of conditions.
+                      </p>
+                    ]]>
+                </comment>
                 <label>Redirects</label>
                 <attribute type="expanded">1</attribute>
                 <field id="enable" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">

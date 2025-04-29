@@ -10,7 +10,32 @@ class Checkboxes extends Field
     protected function _getElementHtml(AbstractElement $element)
     {
         $elementId = $element->getHtmlId();
-        $html = <<<CSS
+
+        $html = $this->getCss($elementId);
+
+        $html .= sprintf('<div id="%s">', $elementId);
+        $name = $element->getName();
+        $options = $element->getValues();
+        $values = empty($element->getValue()) ? [] : explode(',', $element->getValue()); // store as CSV in config
+
+        foreach ($options as $key => $option) {
+            $value = $option['value'];
+            $html .= $this->getCheckboxHtml(
+                $elementId . '_' . $key,
+                $name,
+                $value,
+                in_array($value, $values),
+                $option['label'],
+                array_key_exists('description', $option) ? $option['description'] : ''
+            );
+        }
+
+        $html .= '</div>';
+        return $html;
+    }
+
+    protected function getCss($elementId): string {
+        return <<<CSS
             <style>
                 #$elementId .form-group {
                   display: grid;
@@ -37,28 +62,10 @@ class Checkboxes extends Field
                 }
             </style>
         CSS;
-
-        $html .= sprintf('<div id="%s">', $elementId);
-        $name = $element->getName();
-        $options = $element->getValues();
-        $values = empty($element->getValue()) ? [] : explode(',', $element->getValue()); // store as CSV in config
-
-        foreach ($options as $option) {
-            $value = $option['value'];
-            $html .= $this->getCheckboxHtml(
-                $name,
-                $value,
-                in_array($value, $values),
-                $option['label'],
-                array_key_exists('description', $option) ? $option['description'] : ''
-            );
-        }
-
-        $html .= '</div>';
-        return $html;
     }
 
     protected function getCheckboxHtml(
+        string $id,
         string $name,
         string $value,
         bool $checked,
@@ -68,13 +75,14 @@ class Checkboxes extends Field
     {
         $html = '<div class="form-group">';
         $html .= sprintf(
-            '<input type="checkbox" name="%s[]" value="%s" %s />',
+            '<input type="checkbox" id="%s" name="%s[]" value="%s" %s />',
+            $id,
             $name,
             $value,
             $checked ? 'checked' : ''
         );
         $html .= '<div class="form-content">';
-        $html .= sprintf('<label>%s</label>',$label ?? $name);
+        $html .= sprintf('<label for="%s">%s</label>',$id, $label ?? $name);
         if ($description) {
             $html .= sprintf('<span class="description">%s</span>', $description);
         }

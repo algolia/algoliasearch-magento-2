@@ -185,7 +185,7 @@ define([
 
             return allWidgetConfiguration;
         },
-        
+
         /**
          * Process a passed widget config object and add to InstantSearch
          * Dynamic widgets are deferred as they must be aggregated and processed separately
@@ -970,9 +970,7 @@ define([
                 customWidgets.push(this.getSuggestionsWidget(this.minQuerySuggestions));
             }
 
-            // Placeholder for config
-            const allowRedirects = true;
-            if (allowRedirects) {
+            if (algoliaConfig.instant.redirects.enabled) {
                 customWidgets.push(this.getRedirectWidget());
             }
             return customWidgets;
@@ -1061,19 +1059,38 @@ define([
             };
         },
 
+        isAbleToRedirect() {
+            return (
+                !this.hasInteracted && algoliaConfig.instant.redirects.onPageLoad
+                ||
+                this.hasInteracted && algoliaConfig.instant.redirects.onSearchAsYouType
+            );
+        },
+
+        getSelectableRedirect(results) {
+            let content = `<div class="instant-redirect">`;
+            content += `<a href="${results.renderingContent.redirect.url}"`;
+            if (algoliaConfig.instant.redirects.openInNewWindow) {
+                content += ` target="_blank"`;
+            }
+            content += `>${algoliaConfig.translations.redirectSearchPrompt} "${results.query}"</a>`;
+            content += `</div>`;
+            return content;
+        },
+
         getRedirectWidget() {
-            const uiComponnent = this;
             return {
-                render({ results }) {
+                render: ({ results }) => {
                     let content = '';
                     if (results && results.renderingContent) {
                         if (results.renderingContent.redirect) {
-                            if (!uiComponnent.hasInteracted) {
-                                window.location.href = results.renderingContent.redirect.url;
+                            if (this.isAbleToRedirect()) {
+                                window.location.assign(results.renderingContent.redirect.url);
                             }
-                            content += `<div class="instant-redirect">`;
-                            content += `<a href="${results.renderingContent.redirect.url}">${algoliaConfig.translations.redirectSearchPrompt} "${results.query}"</a>`;
-                            content += `</div>`;
+
+                            if (algoliaConfig.instant.redirects.showSelectableRedirect) {
+                                content = this.getSelectableRedirect(results);
+                            }
                         }
                     }
                     document.querySelector('#instant-redirect-container').innerHTML = content;

@@ -1,6 +1,7 @@
 /** Auto-completion menu */
 html {
     --autocomplete-muted-color: #969faf;
+    --redirect-hit-element-height: 45px;
 }
 
 /********************
@@ -277,6 +278,11 @@ html {
 /********************
      REDIRECT HITS
  ********************/
+
+.aa-Panel .aa-PanelLayout:not(.show-selectable-redirect) section[data-autocomplete-source-id=redirectUrlPlugin] {
+    display:none
+}
+
 .aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper,
 .aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] .aa-ItemWrapper .aa-ItemContent {
     display: flex;
@@ -305,7 +311,7 @@ html {
 }
 
 /* Hide products when redirecting */
-.aa-Panel .aa-PanelLayout section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
+.aa-Panel .aa-PanelLayout:not(.show-hits-with-redirect) section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
     display: none;
 }
 
@@ -380,9 +386,16 @@ html {
     /* Redirect section */
     .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=redirectUrlPlugin] {
         grid-column: 2;
-        grid-row: 1 / 999;
+        grid-row: 1 / 999; /* Default mode is to replace the product section */
         border-left: 1px solid #BBB;
         z-index: 999;
+    }
+
+    .aa-Panel .aa-PanelLayout.with-grid.show-hits-with-redirect section[data-autocomplete-source-id=redirectUrlPlugin] {
+        z-index: 1000;
+        /* Contain if showing with selectable redirect option */
+        grid-row: 1;
+        max-height: var(--redirect-hit-element-height);
     }
 
     /* Products section */
@@ -395,8 +408,9 @@ html {
     }
 
     /* Redirect behaviors */
-    .aa-Panel .aa-PanelLayout.with-grid section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
-        padding-top: 45px; /* Pad if showing with redirect option - set z-index as needed */
+    .aa-Panel .aa-PanelLayout.with-grid.show-selectable-redirect section[data-autocomplete-source-id=redirectUrlPlugin] ~ section[data-autocomplete-source-id=products] {
+        padding-top: var(--redirect-hit-element-height); /* Pad if showing with selectable redirect option */
+        z-index: 999;
     }
 
     /* Products grid */

@@ -2,6 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 
+use Algolia\AlgoliaSearch\Service\Serializer;
+use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
@@ -13,26 +16,28 @@ use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Locale\Currency;
 use Magento\Framework\Module\ResourceInterface;
-use Magento\Framework\Serialize\SerializerInterface;
+
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
 
 class ConfigHelperTest extends TestCase
 {
-    protected ConfigHelperTestable $configHelper;
-    protected ScopeConfigInterface $configInterface;
-    protected WriterInterface $configWriter;
-    protected StoreManagerInterface $storeManager;
-    protected Currency $currency;
-    protected DirCurrency $dirCurrency;
-    protected DirectoryList $directoryList;
-    protected ResourceInterface $moduleResource;
-    protected ProductMetadataInterface $productMetadata;
-    protected ManagerInterface $eventManager;
-    protected SerializerInterface $serializer;
-    protected GroupCollection $groupCollection;
-    protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
-    protected CookieHelper $cookieHelper;
+    protected ?ConfigHelperTestable $configHelper;
+    protected ?ScopeConfigInterface $configInterface;
+    protected ?WriterInterface $configWriter;
+    protected ?StoreManagerInterface $storeManager;
+    protected ?Currency $currency;
+    protected ?DirCurrency $dirCurrency;
+    protected ?DirectoryList $directoryList;
+    protected ?ResourceInterface $moduleResource;
+    protected ?ProductMetadataInterface $productMetadata;
+    protected ?ManagerInterface $eventManager;
+    protected ?Serializer $serializer;
+    protected ?GroupCollection $groupCollection;
+    protected ?GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
+    protected ?CookieHelper $cookieHelper;
+    protected ?AutocompleteHelper $autocompleteHelper;
+    protected ?InstantSearchHelper $instantSearchHelper;
 
     protected function setUp(): void
     {
@@ -45,10 +50,12 @@ class ConfigHelperTest extends TestCase
         $this->moduleResource = $this->createMock(ResourceInterface::class);
         $this->productMetadata = $this->createMock(ProductMetadataInterface::class);
         $this->eventManager = $this->createMock(ManagerInterface::class);
-        $this->serializer = $this->createMock(SerializerInterface::class);
+        $this->serializer = $this->createMock(Serializer::class);
         $this->groupCollection = $this->createMock(GroupCollection::class);
         $this->groupExcludedWebsiteRepository = $this->createMock(GroupExcludedWebsiteRepositoryInterface::class);
         $this->cookieHelper = $this->createMock(CookieHelper::class);
+        $this->autocompleteHelper = $this->createMock(AutocompleteHelper::class);
+        $this->instantSearchHelper = $this->createMock(InstantSearchHelper::class);
 
         $this->configHelper = new ConfigHelperTestable(
             $this->configInterface,
@@ -63,7 +70,9 @@ class ConfigHelperTest extends TestCase
             $this->serializer,
             $this->groupCollection,
             $this->groupExcludedWebsiteRepository,
-            $this->cookieHelper
+            $this->cookieHelper,
+            $this->autocompleteHelper,
+            $this->instantSearchHelper
         );
     }
 
@@ -77,23 +86,5 @@ class ConfigHelperTest extends TestCase
     public function testGetIndexPrefixWhenNull() {
         $this->configInterface->method('getValue')->willReturn(null);
         $this->assertEquals('', $this->configHelper->getIndexPrefix());
-    }
-
-    public function testSerializerReturnsString() {
-        $this->serializer->method('serialize')->willReturn('{"foo":"bar"}');
-        $array = [
-            'foo' => 'bar'
-        ];
-        $result = $this->configHelper->serialize($array);
-        $this->assertEquals('{"foo":"bar"}', $result);
-    }
-
-    public function testSerializerFailure() {
-        $this->serializer->method('serialize')->willReturn(false);
-        $array = [
-            'foo' => 'bar'
-        ];
-        $result = $this->configHelper->serialize($array);
-        $this->assertEquals('', $result);
     }
 }

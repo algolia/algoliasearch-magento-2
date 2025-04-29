@@ -54,7 +54,9 @@ class ReplicaManagerTest extends TestCase
 
         $newReplicas = $this->replicaManager->removeReplicaFromReplicaSetting($replicaSetting, $replicaToRemove);
 
-        $this->assertNotContains($replicaToRemove, $newReplicas);
+        $this->assertNotContains("virtual($replicaToRemove)", $newReplicas);
+        $this->assertContains('virtual(replica1)', $newReplicas);
+        $this->assertContains('virtual(replica3)', $newReplicas);
     }
 
     public function testStandardReplicaSettingRemove(): void
@@ -69,5 +71,8 @@ class ReplicaManagerTest extends TestCase
         $newReplicas = $this->replicaManager->removeReplicaFromReplicaSetting($replicaSetting, $replicaToRemove);
 
         $this->assertNotContains($replicaToRemove, $newReplicas);
+        $this->assertContains('replica1', $newReplicas);
+        $this->assertContains('replica3', $newReplicas);
+
     }
 }

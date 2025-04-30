@@ -413,13 +413,16 @@ class ReplicaManager implements ReplicaManagerInterface
      */
     protected function removeReplicaFromReplicaSetting(array $replicaSetting, string $replicaToRemove): array
     {
-        return array_filter(
-            $replicaSetting,
-            function ($replicaIndexSetting) use ($replicaToRemove) {
-                $escaped = preg_quote($replicaToRemove);
-                $regex = '/^' . $escaped . '|virtual\(' . $escaped . '\)$/';
-                return !preg_match($regex, $replicaToRemove);
-            }
+        $escaped = preg_quote($replicaToRemove);
+        $regex = '/^' . $escaped . '|virtual\(' . $escaped . '\)$/';
+
+        return array_values(
+            array_filter(
+                $replicaSetting,
+                function ($replicaIndexSetting) use ($regex) {
+                    return !preg_match($regex, $replicaIndexSetting);
+                }
+            )
         );
     }
 

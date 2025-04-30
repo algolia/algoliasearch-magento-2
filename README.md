@@ -3,6 +3,7 @@ Algolia Search & Discovery extension for Magento 2
 
 ![Latest version](https://img.shields.io/badge/latest-3.15.0-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.6+-orange)
+![Beta version](https://img.shields.io/badge/beta-3.16.0--beta.1-purple)
 
 ![PHP](https://img.shields.io/badge/PHP-8.1%2C8.2%2C8.3-blue)
 

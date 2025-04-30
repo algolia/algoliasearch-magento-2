@@ -2,8 +2,36 @@
 
 ## 3.16.0-beta.1
 
+### Features
+
+- Automatic full indexing has been deprecated in 3.16 - you can now opt out of Algolia initiating full reindexing from `indexer_reindex_all_invalid`.
+- Added an "Indexing Manager" section within the Algolia configuration which disables automatic full reindexing by default and allows users to reactivate if needed.
+- Added an "Indexing Manager" page which shows the created indices for main entities (products, categories and pages) and corresponding stores with a link to directly check them on the Algolia dashboard along with a form to reindex those entities directly from the Magento admin.
+- CLI commands are now provided to run explicit full reindex of all entities and stores.
+- Products and CMS pages can now be reindexed directly from Magento admin grids.
+- The indexing queue cron job can now be configured from the Magento admin.
+- Dynamic faceting through Algolia merchandsiing rules is now supported in Magento via an opt-in feature flag.
+- No code redirects via merchandising rules in Algolia are now supported in Magento for both Autocomplete and InstantSearch. Support is enabled by default for Autocomplete.
+- Integration tests and unit tests added
+
+### Bug Fixes
+- Behavior of conjunctive vs disjunctive facets has been clarified.
+- Replica data patches and delete operations have been enhanced to handle potential latency when detaching from the primary index.
+- Prices are now indexed using store scoped currency codes.
+- Fixed WSOD error on invalid creds when using manual SKU indexer (also included in 3.15.1).
+
 ### Updates
 - `beforecontent.html` is no longer used and has been deprecated. If you're overriding or referencing this file, please update your layout and customizations accordingly.
+- An additional separate crontab is no longer needed to run the indexing queue. Enable via admin config to run the queue using Magento's built-in cron.  
+- `BatchQueueProcessorInterface` has been introduced to decouple Algolia operations for core `Indexer` models.
+- Magento will set a default `renderingContent` based on its configured facets. Be sure that "Facet Display" is supported by your Algolia plan before attempting to use.
+- Auto full indexing is disabled by default in this release. If you require this legacy feature then it can be re-enabled via the Magento admin under Stores > Configuration > Algolia Search > Indexing Manager
+- InstantSearch has been refactored to support customization via JavaScript mixins. 
+- A new front end hook called `beforeFacetInitialization` has been added which allows a user to extend the functionality by adding, removing or modifying "builder" functions which are used to define a facet config that will drive the rendering of facets.
+- Removed InstantSearch enablement dependency in Magento admin to prevent losing facet and sorting config when disabling the feature.
+- InstantSearch has been updated to v4.78.
+- Autocomplete has been updated to v1.18.1.
+- PHP API client has been pinned to 4.18.3 (also included in 3.15.1).
 
 ## 3.15.0
 

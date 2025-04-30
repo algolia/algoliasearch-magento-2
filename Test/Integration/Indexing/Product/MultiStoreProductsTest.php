@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
-use Algolia\AlgoliaSearch\Model\Indexer\Product;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -19,8 +19,8 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
  */
 class MultiStoreProductsTest extends MultiStoreTestCase
 {
-    /** @var Product */
-    protected $productsIndexer;
+    /** @var ProductBatchQueueProcessor */
+    protected $productBatchQueueProcessor;
 
     /** @var ProductRepositoryInterface */
     protected $productRepository;
@@ -53,7 +53,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
     {
         parent::setUp();
 
-        $this->productsIndexer = $this->objectManager->get(Product::class);
+        $this->productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
         $this->productRepository = $this->objectManager->get(ProductRepositoryInterface::class);
         $this->productCollectionFactory = $this->objectManager->get(CollectionFactory::class);
         $this->websiteRepository = $this->objectManager->get(WebsiteRepositoryInterface::class);
@@ -62,8 +62,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->productPriceIndexer = $this->indexerRegistry->get('catalog_product_price');
         $this->productPriceIndexer->reindexAll();
 
-        $this->productsIndexer->executeFull();
-        $this->algoliaHelper->waitLastTask();
+        $this->reindexToAllStores($this->productBatchQueueProcessor);
     }
 
     public function testMultiStoreProductIndices()
@@ -102,11 +101,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->assertEquals(self::VOYAGE_YOGA_BAG_NAME, $voyageYogaBag->getName());
         $this->assertEquals(self::VOYAGE_YOGA_BAG_NAME_ALT, $voyageYogaBagAlt->getName());
 
-        $this->productsIndexer->execute([self::VOYAGE_YOGA_BAG_ID]);
-
-        $this->algoliaHelper->waitLastTask($defaultStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureThirdStore->getId());
+        $this->reindexToAllStores($this->productBatchQueueProcessor, [self::VOYAGE_YOGA_BAG_ID]);
 
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_products',
@@ -131,11 +126,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->productRepository->save($voyageYogaBag);
         $this->productPriceIndexer->reindexRow(self::VOYAGE_YOGA_BAG_ID);
 
-        $this->productsIndexer->execute([self::VOYAGE_YOGA_BAG_ID]);
-
-        $this->algoliaHelper->waitLastTask($defaultStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureThirdStore->getId());
+        $this->reindexToAllStores($this->productBatchQueueProcessor, [self::VOYAGE_YOGA_BAG_ID]);
 
         // default store should have the same number of products
         $this->assertNbOfRecordsPerStore(

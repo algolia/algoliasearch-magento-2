@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="../../../../Magento/Config/etc/system_file.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <tab id="algolia" translate="label" sortOrder="100001">
             <label>
@@ -327,6 +326,47 @@
                     </depends>
                 </field>
             </group>
+            <group id="redirects" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Redirects</label>
+                <comment>
+                    <![CDATA[
+                      <p>
+                        Algolia allows you to <a href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/how-to/redirects" target="_blank">redirect users</a>
+                        to a specific page of your website or mobile app based on a query or a set of conditions.
+                      </p>
+                    ]]>
+                </comment>
+                <attribute type="expanded">1</attribute>
+                <field id="enable" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable redirects</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            When enabled, Autocomplete can redirect searches to a different URL based on rules configured in either the Dashboard or Merchandising Studio.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="mode" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Redirect display mode</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode</source_model>
+                    <comment>
+                        <![CDATA[
+                            Use this setting to configure how redirects behave within Autocomplete.
+                        ]]>
+                    </comment>
+                    <depends><field id="enable">1</field></depends>
+                </field>
+                <field id="target" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Open redirect URL in a new window</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Applies to clickable links only.
+                        ]]>
+                    </comment>
+                    <depends><field id="mode" separator=",">1,2</field></depends>
+                </field>
+            </group>
         </section>
         <section id="algoliasearch_instant" translate="label" type="text" sortOrder="20" showInDefault="1"
                  showInWebsite="1" showInStore="1">
@@ -362,9 +402,6 @@
                             DOM selector of block in which the search results page will be displayed using JavaScript.
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="number_product_results" translate="label comment" type="text" sortOrder="5" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -375,9 +412,6 @@
                             The number of products displayed on the InstantSearch results page. Default value is 9.
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
                 <field id="replace_categories" translate="label comment" type="select" sortOrder="40" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -388,9 +422,6 @@
                             Do you want to replace default Magento category pages (PLPs) with the InstantSearch results page?
                         ]]>
                     </comment>
-                    <depends>
-                        <field id="is_instant_enabled">1</field>
-                    </depends>
                 </field>
             </group>
             <group id="instant_facets" translate="label" type="text" sortOrder="10" showInDefault="1"
@@ -404,9 +435,10 @@
                     <backend_model>Algolia\AlgoliaSearch\Model\Backend\Facets</backend_model>
                     <comment>
                         <![CDATA[
-                            Specify the filtering options you want to offer on a search results page.<br>
-                                &nbsp; - Disjunctive allows a selection of different values per facet (e.g. hotels with 4 OR 5 stars).<br>
-                                &nbsp; - Conjunctive allows a selection of only one value per facet (e.g. only "Size M").
+                            Specify the <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#conjunctive-and-disjunctive-faceting" target="_blank">filtering options</a> you want to offer on a search results page.<br>
+                                &nbsp; - Disjunctive facets filter your results on <em>any</em> match (e.g. hotels with 4 OR 5 stars).<br>
+                                &nbsp; - Conjunctive facets filter your results on <em>all</em> matches (e.g. shirts that come in "Size M" AND "Size L").
+
                             <br><br>
                             Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
                             <br><br>
@@ -433,9 +465,26 @@
                         ]]>
                     </comment>
                 </field>
-                <depends>
-                    <field id="algoliasearch_instant/instant/is_instant_enabled">1</field>
-                </depends>
+                <field id="enable_dynamic_facets" translate="label comment" type="select" sortOrder="10" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Enable dynamic facets</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            While the rendering of facets is configured based on your Magento admin settings, it is possible to override
+                            these settings via merchandising rules in Algolia. Enable "dynamic facets" to allow InstantSearch
+                            to render facets based on the rule conditions you define in either the Algolia Dashboard or Merchandising Studio.
+                            <br><br>
+                            This feature utilizes the "Facet display" configuration in the Algolia Dashboard (a.k.a. <code>renderingContent</code>).
+                            If you have customized this setting in the Dashboard for your products index, please note that enabling this option will allow Magento to overwrite your configuration.
+                            <br><br>
+                            <span class="algolia-config-warning">&#9888;</span>
+                            <strong>IMPORTANT!</strong> Do not enable dynamic facets unless you have the "renderingContent" feature enabled on your Algolia application. Otherwise this configuration
+                            can cause your indexing to fail.
+
+                        ]]>
+                    </comment>
+                </field>
             </group>
             <group id="instant_sorts" translate="label" type="text" sortOrder="10" showInDefault="1"
                    showInWebsite="1" showInStore="1">
@@ -459,9 +508,6 @@
                         ]]>
                     </comment>
                 </field>
-                <depends>
-                    <field id="algoliasearch_instant/instant/is_instant_enabled">1</field>
-                </depends>
             </group>
             <group id="instant_options" translate="label" type="text" sortOrder="10" showInDefault="1"
                    showInWebsite="1" showInStore="1">
@@ -516,9 +562,34 @@
                         ]]>
                     </comment>
                 </field>
-                <depends>
-                    <field id="algoliasearch_instant/instant/is_instant_enabled">1</field>
-                </depends>
+            </group>
+            <group id="instant_redirects" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment>
+                    <![CDATA[
+                      <p>
+                        Algolia allows you to <a href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/how-to/redirects" target="_blank">redirect users</a>
+                        to a specific page of your website or mobile app based on a query or a set of conditions.
+                      </p>
+                    ]]>
+                </comment>
+                <label>Redirects</label>
+                <attribute type="expanded">1</attribute>
+                <field id="enable" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable redirects</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            When enabled, InstantSearch powered pages can be redirected to a different URL based on rules configured in either the Dashboard or Merchandising Studio.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="options" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Redirect options</label>
+                    <frontend_model>Algolia\AlgoliaSearch\Block\Adminhtml\System\Config\Form\Field\Checkboxes</frontend_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Checkboxes</backend_model>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions</source_model>
+                    <depends><field id="enable">1</field></depends>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_products" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -580,13 +651,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="include_non_visible_products_in_index" translate="label comment" type="select" sortOrder="55" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Include non visible products in index</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        Include non visible products in index. Default value is <strong>No</strong>
-                    </comment>
-                </field>
                 <field id="category_page_id_attribute_name" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Category page ID attribute</label>
                     <comment>
@@ -598,6 +662,13 @@
                     <depends>
                         <field id="enable_visual_merchandising">1</field>
                     </depends>
+                </field>
+                <field id="include_non_visible_products_in_index" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Include non visible products in index</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        Include non visible products in index. Default value is <strong>No</strong>
+                    </comment>
                 </field>
             </group>
         </section>
@@ -960,6 +1031,31 @@
                         <model>Algolia\AlgoliaSearch\Model\Config\EnableQueueComment</model>
                     </comment>
                 </field>
+                <field id="use_built_in_cron" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Use Magento built-in cron</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            This configuration will add <code>algolia_queue_process</code> jobs to the Magento <code>cron_schedule</code> table according to the specified cron expression.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="cron_expr" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\QueueCron</backend_model>
+                    <label>Cron expression</label>
+                    <comment>
+                        <![CDATA[
+                            Enter a valid cron expression such as <code>*/5 * * * *</code> to process the queue every 5 minutes. You can also use aliases like <code>@hourly</code>.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                        <field id="use_built_in_cron">1</field>
+                    </depends>
+                </field>
                 <field id="number_of_job_to_run" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of jobs to run each time the cron is run</label>
@@ -981,6 +1077,84 @@
                     <depends>
                         <field id="active">1</field>
                     </depends>
+                </field>
+            </group>
+        </section>
+        <section id="algoliasearch_indexing_manager" translate="label" type="text" sortOrder="66" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Indexing Manager</label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="full_indexing" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Full indexing via Magento indexers</label>
+                <comment>
+                    <![CDATA[
+                         <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers are now disabled by default for <strong>full indexing</strong>.
+                         However the extension continues to rely on them for reindexing specific entities with Magento materialized views or entity save events.</p>
+                         <p>If you want to perform full reindexing, we highly suggest to keep this configuration as it is and run the newly created CLI commands instead.</p>
+                    ]]>
+                </comment>
+                <field id="products" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Products Indexer (algolia_products)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:products</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="categories" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Categories Indexer (algolia_categories)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:categories</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="pages" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Pages Indexer (algolia_pages)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:pages</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="suggestions" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Suggestions Indexer (algolia_suggestions)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:suggestions</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="additional_sections" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Additional Sections Indexer (algolia_additional_sections)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:additional_sections</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="delete_products" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Delete Products Indexer (algolia_delete_products)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:delete_products</code> instead
+                        ]]>
+                    </comment>
+                </field>
+                <field id="queue" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Algolia Queue Runner (algolia_queue_runner)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            We highly recommend to run <code>bin/magento algolia:reindex:process_queue</code> instead
+                        ]]>
+                    </comment>
                 </field>
             </group>
         </section>

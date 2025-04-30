@@ -2,27 +2,21 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
-use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
-use Magento\Store\Model\StoreManagerInterface;
+use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 
+/**
+ * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:pages` command instead
+ * If you want to re-enable it, you can do it in the Magento configuration ("Algolia Search > Indexing Manager" section)
+ */
 class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(
-        protected StoreManagerInterface $storeManager,
         protected PageHelper $pageHelper,
-        protected Data $dataHelper,
-        protected AlgoliaHelper $algoliaHelper,
-        protected Queue $queue,
         protected ConfigHelper $configHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    )
-    {}
+        protected PageBatchQueueProcessor $pageBatchQueueProcessor
+    ) {}
 
     /**
      * @param $ids
@@ -30,33 +24,8 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
      */
     public function execute($ids)
     {
-        $storeIds = $this->pageHelper->getStores();
-
-        foreach ($storeIds as $storeId) {
-            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
-                continue;
-            }
-
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-                return;
-            }
-
-            if ($this->isPagesInAdditionalSections($storeId)) {
-                $data = ['storeId' => $storeId];
-                if (is_array($ids) && count($ids) > 0) {
-                    $data['options'] = ['entityIds' => $ids];
-                }
-
-                /** @uses PageIndexBuilder::buildIndexFull() */
-                $this->queue->addToQueue(
-                    PageIndexBuilder::class,
-                    'buildIndexFull',
-                    $data,
-                    is_array($ids) ? count($ids) : 1
-                );
-            }
+        foreach ($this->pageHelper->getStores() as $storeId) {
+            $this->pageBatchQueueProcessor->processBatch($storeId, $ids);
         }
     }
 
@@ -65,6 +34,10 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
      */
     public function executeFull()
     {
+        if (!$this->configHelper->isPagesIndexerEnabled()) {
+            return;
+        }
+
         $this->execute(null);
     }
 
@@ -84,21 +57,5 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
     public function executeRow($id)
     {
         $this->execute([$id]);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    protected function isPagesInAdditionalSections($storeId)
-    {
-        $sections = $this->configHelper->getAutocompleteSections($storeId);
-        foreach ($sections as $section) {
-            if ($section['name'] === 'pages') {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

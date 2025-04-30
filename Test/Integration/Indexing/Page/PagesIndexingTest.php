@@ -2,8 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Page;
 
+use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
-use Algolia\AlgoliaSearch\Model\Indexer\Page;
+use Algolia\AlgoliaSearch\Model\Indexer\Page as PageIndexer;
+use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\IndexingTestCase;
 use Magento\Cms\Model\PageFactory;
 
@@ -16,10 +18,8 @@ class PagesIndexingTest extends IndexingTestCase
             $this->getSerializer()->serialize([])
         );
 
-        /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create(Page::class);
-
-        $this->processTest($indexer, 'pages', $this->assertValues->expectedPages);
+        $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
+        $this->processTest($pageBatchQueueProcessor, 'pages', $this->assertValues->expectedPages);
     }
 
     public function testExcludedPages()
@@ -33,9 +33,8 @@ class PagesIndexingTest extends IndexingTestCase
             $this->getSerializer()->serialize($excludedPages)
         );
 
-        /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create(Page::class);
-        $this->processTest($indexer, 'pages', $this->assertValues->expectedExcludePages);
+        $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
+        $this->processTest($pageBatchQueueProcessor, 'pages', $this->assertValues->expectedExcludePages);
 
         $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
         $hits = reset($response['results'])['hits'];
@@ -61,10 +60,8 @@ class PagesIndexingTest extends IndexingTestCase
 
     public function testDefaultIndexableAttributes()
     {
-        /** @var Page $indexer */
-        $indexer = $this->getObjectManager()->create(Page::class);
-        $indexer->executeFull();
-
+        $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
+        $pageBatchQueueProcessor->processBatch(1);
         $this->algoliaHelper->waitLastTask();
 
         $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', ['hitsPerPage' => 1]);
@@ -151,5 +148,39 @@ class PagesIndexingTest extends IndexingTestCase
         }
 
         $testPage->delete();
+    }
+
+    public function testIndexingPagesCommand()
+    {
+        $this->setConfig(
+            'algoliasearch_autocomplete/autocomplete/excluded_pages',
+            $this->getSerializer()->serialize([])
+        );
+
+        $indexPagesCmd = $this->objectManager->get(IndexPagesCommand::class);
+        $this->processCommandTest($indexPagesCmd, 'pages', $this->assertValues->expectedPages);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/pages 0
+     */
+    public function testDisabledOldIndexer()
+    {
+        $pagesIndexer = $this->objectManager->create(PageIndexer::class);
+        $this->processOldIndexerTest($pagesIndexer, 'pages', 0);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/pages 1
+     */
+    public function testEnabledOldIndexer()
+    {
+        $this->setConfig(
+            'algoliasearch_autocomplete/autocomplete/excluded_pages',
+            $this->getSerializer()->serialize([])
+        );
+
+        $pagesIndexer = $this->objectManager->create(PageIndexer::class);
+        $this->processOldIndexerTest($pagesIndexer, 'pages', $this->assertValues->expectedPages);
     }
 }

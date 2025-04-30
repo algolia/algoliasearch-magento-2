@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
+use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -38,6 +39,17 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
         foreach ($this->storeManager->getStores() as $store) {
             $this->setupStore($store);
+        }
+    }
+
+    protected function reindexToAllStores(
+        BatchQueueProcessorInterface $batchQueueProcessor,
+        array $categoryIds = null
+    ): void
+    {
+        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+            $batchQueueProcessor->processBatch($storeId, $categoryIds);
+            $this->algoliaHelper->waitLastTask($storeId);
         }
     }
 

@@ -4,7 +4,7 @@
         <css src="Algolia_AlgoliaSearch::css/autocomplete.css" />
         <css src="Algolia_AlgoliaSearch::css/grid.css" />
         <css src="Algolia_AlgoliaSearch::css/algolia-reset.css" />
-        <css src="Algolia_AlgoliaSearch::css/instantsearch.v3.css" />
+        <css src="Algolia_AlgoliaSearch::css/instantsearch.css" />
         <css src="Algolia_AlgoliaSearch::css/recommend.css" />
     </head>
     <body>
@@ -22,9 +22,8 @@
             <block class="Algolia\AlgoliaSearch\Block\Instant\Hit" name="algolia.instant.hit" template="Algolia_AlgoliaSearch::instant/hit.phtml"/>
             <block class="Magento\Framework\View\Element\Template" name="algolia.instant.stats" template="Algolia_AlgoliaSearch::instant/stats.phtml"/>
             <block class="Magento\Framework\View\Element\Template" name="algolia.instant.facet" template="Algolia_AlgoliaSearch::instant/facet.phtml"/>
-            <block class="Magento\Framework\View\Element\Template" name="algolia.instant.refinements" template="Algolia_AlgoliaSearch::instant/refinements.phtml"/>
-
         </referenceContainer>
+        
         <referenceBlock name="top.search">
             <action method="setTemplate" ifconfig="algoliasearch_autocomplete/autocomplete/is_popup_enabled">
                 <argument name="setTemplate" xsi:type="string">Algolia_AlgoliaSearch::autocomplete.phtml</argument>

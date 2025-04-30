@@ -4,6 +4,8 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
+use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
+use Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
@@ -185,32 +187,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $attributesToFilter = $config->getAttributesToFilter($customerGroupId);
         $algoliaJsConfig = [
-            'instant' => [
-                'enabled' => $config->isInstantEnabled(),
-                'selector' => $config->getInstantSelector(),
-                'isAddToCartEnabled' => $config->isAddToCartEnable(),
-                'addToCartParams' => $addToCartParams,
-                'infiniteScrollEnabled' => $config->isInfiniteScrollEnabled(),
-                'urlTrackedParameters' => $this->getUrlTrackedParameters(),
-                'isSearchBoxEnabled' => $config->isInstantSearchBoxEnabled(),
-                'isVisualMerchEnabled' => $config->isVisualMerchEnabled(),
-                'categorySeparator' => $config->getCategorySeparator(),
-                'categoryPageIdAttribute' => $config->getCategoryPageIdAttributeName(),
-                'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
-                'hidePagination' => $config->hidePaginationInInstantSearchPage()
-            ],
-            'autocomplete' => [
-                'enabled' => $config->isAutoCompleteEnabled(),
-                'selector' => $config->getAutocompleteSelector(),
-                'sections' => $config->getAutocompleteSections(),
-                'nbOfProductsSuggestions' => $config->getNumberOfProductsSuggestions(),
-                'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
-                'nbOfQueriesSuggestions' => $config->getNumberOfQueriesSuggestions(),
-                'isDebugEnabled' => $config->isAutocompleteDebugEnabled(),
-                'isNavigatorEnabled' => $config->isAutocompleteNavigatorEnabled(),
-                'debounceMilliseconds' => $config->getAutocompleteDebounceMilliseconds(),
-                'minimumCharacters' => $config->getAutocompleteMinimumCharacterLength()
-            ],
+            'instant' => $this->getInstantSearchConfig($addToCartParams),
+            'autocomplete' => $this->getAutocompleteConfiguration(),
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),
                 'configuration' => $this->getLandingPageConfiguration(),
@@ -244,7 +222,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             ],
             'extensionVersion' => $config->getExtensionVersion(),
             'applicationId' => $config->getApplicationID(),
+            // Legacy misnomer - retained for backward compatibility
             'indexName' => $coreHelper->getBaseIndexName(),
+            'baseIndexName' => $coreHelper->getBaseIndexName(),
             'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
                 $config->getSearchOnlyAPIKey(),
                 $attributesToFilter,
@@ -368,6 +348,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'products' => __('Products'),
                 'suggestions' => __('Suggestions'),
                 'searchBy' => __('Search by'),
+                'redirectSearchPrompt' => __("Continue search for"),
                 'searchForFacetValuesPlaceholder' => __('Search for other ...'),
                 'showMore' => __('Show more products'),
                 'searchTitle' => __('Search results for'),
@@ -379,6 +360,59 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $transport = new DataObject($algoliaJsConfig);
         $this->_eventManager->dispatch('algolia_after_create_configuration', ['configuration' => $transport]);
         return $transport->getData();
+    }
+
+    protected function getAutocompleteConfiguration(): array
+    {
+        $config = $this->autocompleteConfig;
+        return [
+            'enabled'                   => $config->isEnabled(),
+            'selector'                  => $config->getDomSelector(),
+            'sections'                  => $config->getAdditionalSections(),
+            'nbOfProductsSuggestions'   => $config->getNumberOfProductsSuggestions(),
+            'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
+            'nbOfQueriesSuggestions'    => $config->getNumberOfQueriesSuggestions(),
+            'isDebugEnabled'            => $config->isDebugEnabled(),
+            'isNavigatorEnabled'        => $config->isKeyboardNavigationEnabled(),
+            'debounceMilliseconds'      => $config->getDebounceMilliseconds(),
+            'minimumCharacters'         => $config->getMinimumCharacterLength(),
+            'redirects' => [
+                'enabled'                => $config->isRedirectEnabled(),
+                'showSelectableRedirect' => $config->getRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
+                'showHitsWithRedirect'   => $config->getRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
+                'openInNewWindow'        => $config->isRedirectInNewWindowEnabled()
+            ]
+        ];
+    }
+
+    protected function getInstantSearchConfig(array $addToCartParams): array
+    {
+        $config = $this->instantSearchConfig;
+        $redirectOptions = $config->getInstantRedirectOptions();
+        $mainConfig = $this->config;
+
+        return [
+            'enabled'                     => $config->isEnabled(),
+            'selector'                    => $config->getDomSelector(),
+            'isAddToCartEnabled'          => $config->isAddToCartEnabled(),
+            'addToCartParams'             => $addToCartParams,
+            'infiniteScrollEnabled'       => $config->isInfiniteScrollEnabled(),
+            'urlTrackedParameters'        => $this->getUrlTrackedParameters(),
+            'isSearchBoxEnabled'          => $config->isSearchBoxEnabled(),
+            'isVisualMerchEnabled'        => $mainConfig->isVisualMerchEnabled(),
+            'categorySeparator'           => $mainConfig->getCategorySeparator(),
+            'categoryPageIdAttribute'     => $mainConfig->getCategoryPageIdAttributeName(),
+            'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
+            'hidePagination'              => $config->shouldHidePagination(),
+            'isDynamicFacetsEnabled'      => $config->isDynamicFacetsEnabled(),
+            'redirects' => [
+                'enabled'                => $config->isInstantRedirectEnabled(),
+                'onPageLoad'             => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $redirectOptions),
+                'onSearchAsYouType'      => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $redirectOptions),
+                'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $redirectOptions),
+                'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $redirectOptions)
+            ]
+        ];
     }
 
     protected function areCategoriesInFacets($facets)

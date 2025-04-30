@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Model\Product;
@@ -21,7 +22,6 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Helper\Stock;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
-use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
@@ -73,23 +73,21 @@ class ProductHelper extends AbstractEntityHelper
     ];
 
     public function __construct(
-        protected Config                                  $eavConfig,
-        protected ConfigHelper                            $configHelper,
-        protected AlgoliaHelper                           $algoliaHelper,
-        protected DiagnosticsLogger                       $logger,
-        protected StoreManagerInterface                   $storeManager,
-        protected ManagerInterface                        $eventManager,
-        protected Visibility                              $visibility,
-        protected Stock                                   $stockHelper,
-        protected CurrencyHelper                          $currencyManager,
-        protected Type                                    $productType,
-        protected CollectionFactory                       $productCollectionFactory,
-        protected GroupCollection                         $groupCollection,
-        protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
-        protected IndexNameFetcher                        $indexNameFetcher,
-        protected ReplicaManagerInterface                 $replicaManager,
-        protected ProductInterfaceFactory                 $productFactory,
-        protected ProductRecordBuilder                    $productRecordBuilder,
+        protected Config                  $eavConfig,
+        protected ConfigHelper            $configHelper,
+        protected AlgoliaHelper           $algoliaHelper,
+        protected DiagnosticsLogger       $logger,
+        protected StoreManagerInterface   $storeManager,
+        protected ManagerInterface        $eventManager,
+        protected Visibility              $visibility,
+        protected Stock                   $stockHelper,
+        protected Type                    $productType,
+        protected CollectionFactory       $productCollectionFactory,
+        protected IndexNameFetcher        $indexNameFetcher,
+        protected ReplicaManagerInterface $replicaManager,
+        protected ProductInterfaceFactory $productFactory,
+        protected ProductRecordBuilder    $productRecordBuilder,
+        protected FacetBuilder            $facetBuilder,
     )
     {
         parent::__construct($indexNameFetcher);
@@ -282,19 +280,18 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function getIndexSettings(?int $storeId = null): array
     {
-        $searchableAttributes = $this->getSearchableAttributes($storeId);
-        $customRanking = $this->getCustomRanking($storeId);
-        $unretrievableAttributes = $this->getUnretrieveableAttributes($storeId);
-        $attributesForFaceting = $this->getAttributesForFaceting($storeId);
-
         $indexSettings = [
-            'searchableAttributes'    => $searchableAttributes,
-            'customRanking'           => $customRanking,
-            'unretrievableAttributes' => $unretrievableAttributes,
-            'attributesForFaceting'   => $attributesForFaceting,
+            'searchableAttributes'    => $this->getSearchableAttributes($storeId),
+            'customRanking'           => $this->getCustomRanking($storeId),
+            'unretrievableAttributes' => $this->getUnretrieveableAttributes($storeId),
+            'attributesForFaceting'   => $this->facetBuilder->getAttributesForFaceting($storeId),
             'maxValuesPerFacet'       => $this->configHelper->getMaxValuesPerFacet($storeId),
             'removeWordsIfNoResults'  => $this->configHelper->getRemoveWordsIfNoResult($storeId),
         ];
+
+        if ($this->configHelper->isDynamicFacetsEnabled($storeId)) {
+            $indexSettings['renderingContent'] = $this->facetBuilder->getRenderingContent($storeId);
+        }
 
         // Additional index settings from event observer
         $transport = new DataObject($indexSettings);
@@ -512,66 +509,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $storeId
-     * @return array
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    protected function getAttributesForFaceting($storeId)
-    {
-        $attributesForFaceting = [];
-
-        $currencies = $this->currencyManager->getConfigAllowCurrencies();
-
-        $facets = $this->configHelper->getFacets($storeId);
-        $websiteId = (int)$this->storeManager->getStore($storeId)->getWebsiteId();
-        foreach ($facets as $facet) {
-            if ($facet['attribute'] === 'price') {
-                foreach ($currencies as $currency_code) {
-                    $facet['attribute'] = 'price.' . $currency_code . '.default';
-
-                    if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
-                        foreach ($this->groupCollection as $group) {
-                            $groupId = (int)$group->getData('customer_group_id');
-                            $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
-                            if (in_array($websiteId, $excludedWebsites)) {
-                                continue;
-                            }
-                            $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $groupId;
-                        }
-                    }
-
-                    $attributesForFaceting[] = $facet['attribute'];
-                }
-            } else {
-                $attribute = $facet['attribute'];
-                if (array_key_exists('searchable', $facet)) {
-                    if ($facet['searchable'] === '1') {
-                        $attribute = 'searchable(' . $attribute . ')';
-                    } elseif ($facet['searchable'] === '3') {
-                        $attribute = 'filterOnly(' . $attribute . ')';
-                    }
-                }
-
-                $attributesForFaceting[] = $attribute;
-            }
-        }
-
-        if ($this->configHelper->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
-            $attributesForFaceting[] = 'categories';
-        }
-
-        // Used for merchandising
-        $attributesForFaceting[] = 'categoryIds';
-
-        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
-            $attributesForFaceting[] = 'searchable(' . $this->configHelper->getCategoryPageIdAttributeName($storeId) . ')';
-        }
-
-        return $attributesForFaceting;
-    }
-
-    /**
      * @param string $indexName
      * @param int|null $storeId
      * @return void
@@ -719,55 +656,5 @@ class ProductHelper extends AbstractEntityHelper
             },
             $sortingIndices
         );
-    }
-
-    /**
-     * Moving to ReplicaManager class
-     * @param string $indexName
-     * @param int $storeId
-     * @param array|bool $sortingAttribute
-     * @return void
-     * @throws AlgoliaException
-     * @throws ExceededRetriesException
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     * @throws \Exception
-     * @deprecated This function will be removed in a future release
-     * @see Algolia::AlgoliaSearch::Api::Product::ReplicaManagerInterface
-     */
-    public function handlingReplica(string $indexName, int $storeId, array|bool $sortingAttribute = false): void
-    {
-        $sortingIndices = $this->configHelper->getSortingIndices($indexName, $storeId, null, $sortingAttribute);
-        if ($this->configHelper->isInstantEnabled($storeId)) {
-            $newReplicas = $this->decorateReplicasSetting($sortingIndices);
-
-            try {
-                $currentSettings = $this->algoliaHelper->getSettings($indexName, $storeId);
-                if (array_key_exists('replicas', $currentSettings)) {
-                    $oldReplicas = $currentSettings['replicas'];
-                    $replicasToDelete = array_diff($oldReplicas, $newReplicas);
-                    $this->algoliaHelper->setSettings(
-                        $indexName,
-                        ['replicas' => $newReplicas],
-                        false,
-                        false,
-                        '',
-                        $storeId
-                    );
-                    $setReplicasTaskId = $this->algoliaHelper->getLastTaskId($storeId);
-                    $this->algoliaHelper->waitLastTask($storeId, $indexName, $setReplicasTaskId);
-                    if (count($replicasToDelete) > 0) {
-                        foreach ($replicasToDelete as $deletedReplica) {
-                            $this->algoliaHelper->deleteIndex($deletedReplica, $storeId);
-                        }
-                    }
-                }
-            } catch (AlgoliaException $e) {
-                if ($e->getCode() !== 404) {
-                    $this->logger->log($e->getMessage());
-                    throw $e;
-                }
-            }
-        }
     }
 }

@@ -54,7 +54,7 @@ class PricingTest extends ProductsIndexingTestCase
         if (!is_array($productIds)) {
             $productIds = [$productIds];
         }
-        $this->productIndexer->execute($productIds);
+        $this->productBatchQueueProcessor->processBatch(1, $productIds);
         $this->algoliaHelper->waitLastTask();
     }
 
@@ -141,7 +141,7 @@ class PricingTest extends ProductsIndexingTestCase
 
     public function testSpecialPrice(): void
     {
-        $this->productIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
+        $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaHelper->waitLastTask();
 
         $res = $this->algoliaHelper->getObjects(
@@ -175,7 +175,7 @@ class PricingTest extends ProductsIndexingTestCase
         ]);
         $product->save();
 
-        $this->productIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
+        $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaHelper->waitLastTask();
 
         $res = $this->algoliaHelper->getObjects(

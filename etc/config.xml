@@ -26,11 +26,17 @@
                 <debounce_millisec>300</debounce_millisec>
                 <minimum_char_length>0</minimum_char_length>
             </autocomplete>
+            <redirects>
+                <enable>1</enable>
+                <mode>1</mode>
+                <target>0</target>
+            </redirects>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>
             <instant_facets>
                 <facets><![CDATA[{"_1458145454535_587":{"attribute":"price","type":"slider","label":"Price","searchable":"2","create_rule":"2"},"_2541608784525_123":{"attribute":"categories","type":"conjunctive","label":"Categories","searchable":"2","create_rule":"2"},"_3211608784535_456":{"attribute":"color","type":"disjunctive","label":"Colors","searchable":"1","create_rule":"2"}}]]></facets>
                 <max_values_per_facet>10</max_values_per_facet>
+                <enable_dynamic_facets>0</enable_dynamic_facets>
             </instant_facets>
             <instant_sorts>
                 <sorts><![CDATA[{"_4581608784535_789":{"attribute":"price","sort":"asc","sortLabel":"Lowest price"},"_2541555584535_585":{"attribute":"price","sort":"desc","sortLabel":"Highest price"},"_5581608784535_898":{"attribute":"created_at","sort":"desc","sortLabel":"Newest first"}}]]></sorts>
@@ -39,6 +45,10 @@
                 <instantsearch_searchbox>1</instantsearch_searchbox>
                 <hide_pagination>0</hide_pagination>
             </instant_options>
+            <instant_redirects>
+                <enable>0</enable>
+                <options>1,3</options>
+            </instant_redirects>
         </algoliasearch_instant>
         <algoliasearch_products>
             <products>
@@ -56,6 +66,23 @@
                 <category_separator> /// </category_separator>
             </categories>
         </algoliasearch_categories>
+        <algoliasearch_queue>
+            <queue>
+                <use_built_in_cron>0</use_built_in_cron>
+                <cron_expr>*/5 * * * *</cron_expr>
+            </queue>
+        </algoliasearch_queue>
+        <algoliasearch_indexing_manager>
+            <full_indexing>
+                <products>0</products>
+                <categories>0</categories>
+                <pages>0</pages>
+                <suggestions>0</suggestions>
+                <additional_sections>0</additional_sections>
+                <delete_products>0</delete_products>
+                <queue>1</queue>
+            </full_indexing>
+        </algoliasearch_indexing_manager>
         <algoliasearch_personalization>
             <personalization_group>
                 <personalization_click_events_group>

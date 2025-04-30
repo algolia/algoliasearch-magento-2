@@ -3,18 +3,20 @@
 namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Magento;
+use Algolia\AlgoliaSearch\Service\Serializer;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
+use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
+use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Directory\Model\Currency as DirCurrency;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\DataObject;
 use Magento\Framework\Locale\Currency;
-use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
-use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 
 class ConfigHelper
 {
@@ -31,33 +33,6 @@ class ConfigHelper
     public const ALLOW_COOKIE_BUTTON_SELECTOR = 'algoliasearch_credentials/algolia_cookie_configuration/allow_cookie_button_selector';
     public const ALGOLIA_COOKIE_DURATION = 'algoliasearch_credentials/algolia_cookie_configuration/cookie_duration';
 
-
-    public const IS_INSTANT_ENABLED = 'algoliasearch_instant/instant/is_instant_enabled';
-    public const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
-    public const INSTANT_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
-    public const NUMBER_OF_PRODUCT_RESULTS = 'algoliasearch_instant/instant/number_product_results';
-    public const FACETS = 'algoliasearch_instant/instant_facets/facets';
-    public const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant_facets/max_values_per_facet';
-    public const SORTING_INDICES = 'algoliasearch_instant/instant_sorts/sorts';
-    public const SEARCHBOX_ENABLE = 'algoliasearch_instant/instant_options/instantsearch_searchbox';
-    public const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant_options/show_suggestions_on_no_result_page';
-    public const XML_ADD_TO_CART_ENABLE = 'algoliasearch_instant/instant_options/add_to_cart_enable';
-    public const INFINITE_SCROLL_ENABLE = 'algoliasearch_instant/instant_options/infinite_scroll_enable';
-    public const HIDE_PAGINATION = 'algoliasearch_instant/instant_options/hide_pagination';
-
-    public const IS_POPUP_ENABLED = 'algoliasearch_autocomplete/autocomplete/is_popup_enabled';
-    public const NB_OF_PRODUCTS_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_products_suggestions';
-    public const NB_OF_CATEGORIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_categories_suggestions';
-    public const NB_OF_QUERIES_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_queries_suggestions';
-    public const AUTOCOMPLETE_SECTIONS = 'algoliasearch_autocomplete/autocomplete/sections';
-    public const EXCLUDED_PAGES = 'algoliasearch_autocomplete/autocomplete/excluded_pages';
-    public const MIN_POPULARITY = 'algoliasearch_autocomplete/autocomplete/min_popularity';
-    public const MIN_NUMBER_OF_RESULTS = 'algoliasearch_autocomplete/autocomplete/min_number_of_results';
-    public const RENDER_TEMPLATE_DIRECTIVES = 'algoliasearch_autocomplete/autocomplete/render_template_directives';
-    public const AUTOCOMPLETE_MENU_DEBUG = 'algoliasearch_autocomplete/autocomplete/debug';
-    public const AUTOCOMPLETE_DEBOUNCE_MILLISEC = 'algoliasearch_autocomplete/autocomplete/debounce_millisec';
-    public const AUTOCOMPLETE_MINIMUM_CHAR_LENGTH = 'algoliasearch_autocomplete/autocomplete/minimum_char_length';
-
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
@@ -71,6 +46,7 @@ class ConfigHelper
     public const CATEGORY_SEPARATOR = 'algoliasearch_categories/categories/category_separator';
 
     public const IS_ACTIVE = 'algoliasearch_queue/queue/active';
+    public const USE_BUILT_IN_CRON = 'algoliasearch_queue/queue/use_built_in_cron';
     public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
     public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
 
@@ -95,7 +71,6 @@ class ConfigHelper
     public const REMOVE_PUB_DIR_IN_URL = 'algoliasearch_advanced/advanced/remove_pub_dir_in_url';
     public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
     public const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
-    public const AUTOCOMPLETE_SELECTOR = 'algoliasearch_autocomplete/autocomplete/autocomplete_selector';
     public const INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX = 'algoliasearch_products/products/include_non_visible_products_in_index';
     public const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
     public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
@@ -147,8 +122,7 @@ class ConfigHelper
     public const IS_LOOKING_SIMILAR_ENABLED_IN_PDP = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_pdp';
     public const IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_cart_page';
     protected const LOOKING_SIMILAR_TITLE = 'algoliasearch_recommend/recommend/looking_similar/title';
-    public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
-    protected const AUTOCOMPLETE_KEYBORAD_NAVIAGATION = 'algoliasearch_autocomplete/autocomplete/navigator';
+
     protected const FREQUENTLY_BOUGHT_TOGETHER_TITLE = 'algoliasearch_recommend/recommend/frequently_bought_together/title';
     protected const RELATED_PRODUCTS_TITLE = 'algoliasearch_recommend/recommend/related_product/title';
     protected const TRENDING_ITEMS_TITLE = 'algoliasearch_recommend/recommend/trends_item/title';
@@ -158,23 +132,33 @@ class ConfigHelper
     public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/queue/number_of_element_by_page';
     public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
 
+    // Indexing Manager settings
+    public const ENABLE_INDEXER_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/products';
+    public const ENABLE_INDEXER_CATEGORIES = 'algoliasearch_indexing_manager/full_indexing/categories';
+    public const ENABLE_INDEXER_PAGES = 'algoliasearch_indexing_manager/full_indexing/pages';
+    public const ENABLE_INDEXER_SUGGESTIONS = 'algoliasearch_indexing_manager/full_indexing/suggestions';
+    public const ENABLE_INDEXER_ADDITIONAL_SECTIONS = 'algoliasearch_indexing_manager/full_indexing/additional_sections';
+    public const ENABLE_INDEXER_DELETE_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/delete_products';
+    public const ENABLE_INDEXER_QUEUE = 'algoliasearch_indexing_manager/full_indexing/queue';
+
     public function __construct(
-        protected Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,
-        protected Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
-        protected StoreManagerInterface                                $storeManager,
-        protected Currency                                             $currency,
-        protected DirCurrency                                          $dirCurrency,
-        protected DirectoryList                                        $directoryList,
-        protected Magento\Framework\Module\ResourceInterface           $moduleResource,
-        protected Magento\Framework\App\ProductMetadataInterface       $productMetadata,
-        protected Magento\Framework\Event\ManagerInterface             $eventManager,
-        protected SerializerInterface                                  $serializer,
-        protected GroupCollection                                      $groupCollection,
-        protected GroupExcludedWebsiteRepositoryInterface              $groupExcludedWebsiteRepository,
-        protected CookieHelper                                         $cookieHelper,
+        protected \Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,
+        protected \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
+        protected StoreManagerInterface                                 $storeManager,
+        protected Currency                                              $currency,
+        protected DirCurrency                                           $dirCurrency,
+        protected DirectoryList                                         $directoryList,
+        protected \Magento\Framework\Module\ResourceInterface           $moduleResource,
+        protected \Magento\Framework\App\ProductMetadataInterface       $productMetadata,
+        protected \Magento\Framework\Event\ManagerInterface             $eventManager,
+        protected Serializer                                            $serializer,
+        protected GroupCollection                                       $groupCollection,
+        protected GroupExcludedWebsiteRepositoryInterface               $groupExcludedWebsiteRepository,
+        protected CookieHelper                                          $cookieHelper,
+        protected AutocompleteHelper                                    $autocompleteConfig,
+        protected InstantSearchHelper                                   $instantSearchConfig
     )
     {}
-
 
     /**
      * @param $storeId
@@ -223,24 +207,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isDefaultSelector($storeId = null)
-    {
-        return '.algolia-search-input' === $this->getAutocompleteSelector($storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getAutocompleteSelector($storeId = null)
-    {
-        return $this->configInterface->getValue(self::AUTOCOMPLETE_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
      * Returns config flag
      *
      * @param $storeId
@@ -263,45 +229,6 @@ class ConfigHelper
     {
         return $this->configInterface->getValue(
             self::IDX_PRODUCT_ON_CAT_PRODUCTS_UPD,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfQueriesSuggestions($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(
-            self::NB_OF_QUERIES_SUGGESTIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfProductsSuggestions($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(
-            self::NB_OF_PRODUCTS_SUGGESTIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfCategoriesSuggestions($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(
-            self::NB_OF_CATEGORIES_SUGGESTIONS,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
@@ -441,129 +368,11 @@ class ConfigHelper
 
     /**
      * @param $storeId
-     * @return array
-     */
-    public function getAutocompleteSections($storeId = null)
-    {
-        $attrs = $this->unserialize($this->configInterface->getValue(
-            self::AUTOCOMPLETE_SECTIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
-
-        if (is_array($attrs)) {
-            return array_values($attrs);
-        }
-
-        return [];
-    }
-
-    protected function serialize(array $value): string {
-        return $this->serializer->serialize($value) ?: '';
-    }
-
-    /**
-     * @param $value
-     * @return array|bool|float|int|mixed|string|null
-     */
-    protected function unserialize($value)
-    {
-        if (false === $value || null === $value || '' === $value) {
-            return false;
-        }
-        $unserialized = json_decode($value, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $unserialized;
-        }
-        return $this->serializer->unserialize($value);
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getMinPopularity($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(self::MIN_POPULARITY, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getMinNumberOfResults($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(self::MIN_NUMBER_OF_RESULTS, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isAddToCartEnable($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(
-            self::XML_ADD_TO_CART_ENABLE,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isInfiniteScrollEnabled($storeId = null)
-    {
-        return $this->isInstantEnabled($storeId)
-            && $this->configInterface->isSetFlag(self::INFINITE_SCROLL_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function hidePaginationInInstantSearchPage($storeId = null)
-    {
-        return $this->isInstantEnabled($storeId)
-            && $this->configInterface->isSetFlag(self::HIDE_PAGINATION, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isInstantSearchBoxEnabled($storeId = null)
-    {
-        return $this->isInstantEnabled($storeId)
-            && $this->configInterface->isSetFlag(self::SEARCHBOX_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isInstantEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::IS_INSTANT_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
      * @return bool
      */
     public function isRemoveBranding($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::REMOVE_BRANDING, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getMaxValuesPerFacet($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(self::MAX_VALUES_PER_FACET, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -608,6 +417,15 @@ class ConfigHelper
      * @param $storeId
      * @return bool
      */
+    public function useBuiltInCron($storeId = null)
+    {
+        return $this->configInterface->isSetFlag(self::USE_BUILT_IN_CRON, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
     public function isEnhancedQueueArchiveEnabled($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::ENHANCED_QUEUE_ARCHIVE, ScopeInterface::SCOPE_STORE, $storeId);
@@ -620,37 +438,6 @@ class ConfigHelper
     public function getRemoveWordsIfNoResult($storeId = null)
     {
         return $this->configInterface->getValue(self::REMOVE_IF_NO_RESULT, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfProductResults($storeId = null)
-    {
-        return (int)$this->configInterface->getValue(
-            self::NUMBER_OF_PRODUCT_RESULTS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function replaceCategories($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::REPLACE_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isAutoCompleteEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::IS_POPUP_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -974,222 +761,30 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getInstantSelector($storeId = null)
+    public function getCurrencyCode(int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::INSTANT_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return array
-     */
-    public function getExcludedPages($storeId = null)
-    {
-        $attrs = $this->unserialize($this->configInterface->getValue(
-            self::EXCLUDED_PAGES,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
-        if (is_array($attrs)) {
-            return $attrs;
-        }
-        return [];
-    }
-
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getRenderTemplateDirectives($storeId = null)
-    {
-        return $this->configInterface->getValue(
-            self::RENDER_TEMPLATE_DIRECTIVES,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isAutocompleteDebugEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_MENU_DEBUG, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getAutocompleteDebounceMilliseconds($storeId = null): int
-    {
-        return (int) $this->configInterface->getValue(
-            self::AUTOCOMPLETE_DEBOUNCE_MILLISEC,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    public function getAutocompleteMinimumCharacterLength($storeId = null): int
-    {
-        return (int) $this->configInterface->getValue(
-            self::AUTOCOMPLETE_MINIMUM_CHAR_LENGTH,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param $originalIndexName
-     * @param $storeId
-     * @param $currentCustomerGroupId
-     * @param $attrs
-     * @return array
-     * @throws Magento\Framework\Exception\LocalizedException
-     * @throws Magento\Framework\Exception\NoSuchEntityException
-     * @deprecated This method has been deprecated and should no longer be used
-     * @see \Algolia\AlgoliaSearch\Service\Product\SortingTransformer
-     */
-    public function getSortingIndices($originalIndexName, $storeId = null, $currentCustomerGroupId = null, $attrs = null)
-    {
-        if (!$attrs){
-            $attrs = $this->getSorting($storeId);
-        }
-
-        $currency = $this->getCurrencyCode($storeId);
-        $attributesToAdd = [];
-        foreach ($attrs as $key => $attr) {
-            $indexName = false;
-            $sortAttribute = false;
-            if ($this->isCustomerGroupsEnabled($storeId) && $attr['attribute'] === 'price') {
-                $websiteId = (int)$this->storeManager->getStore($storeId)->getWebsiteId();
-                $groupCollection = $this->groupCollection;
-                if (!is_null($currentCustomerGroupId)) {
-                    $groupCollection->addFilter('customer_group_id', $currentCustomerGroupId);
-                }
-                foreach ($groupCollection as $group) {
-                    $customerGroupId = (int)$group->getData('customer_group_id');
-                    $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($customerGroupId);
-                    if (in_array($websiteId, $excludedWebsites)) {
-                        continue;
-                    }
-                    $groupIndexNameSuffix = 'group_' . $customerGroupId;
-                    $groupIndexName =
-                        $originalIndexName . '_' . $attr['attribute'] . '_' . $groupIndexNameSuffix . '_' . $attr['sort'];
-                    $groupSortAttribute = $attr['attribute'] . '.' . $currency . '.' . $groupIndexNameSuffix;
-                    $newAttr = [];
-                    $newAttr['name'] = $groupIndexName;
-                    $newAttr['attribute'] = $attr['attribute'];
-                    $newAttr['sort'] = $attr['sort'];
-                    $newAttr['sortLabel'] = $attr['sortLabel'];
-                    if (!array_key_exists('label', $newAttr) && array_key_exists('sortLabel', $newAttr)) {
-                        $newAttr['label'] = $newAttr['sortLabel'];
-                    }
-                    $newAttr['ranking'] = [
-                        $newAttr['sort'] . '(' . $groupSortAttribute . ')',
-                        'typo',
-                        'geo',
-                        'words',
-                        'filters',
-                        'proximity',
-                        'attribute',
-                        'exact',
-                        'custom',
-                    ];
-                    $attributesToAdd[$newAttr['sort']][] = $newAttr;
-                }
-            } elseif ($attr['attribute'] === 'price') {
-                $indexName = $originalIndexName . '_' . $attr['attribute'] . '_' . 'default' . '_' . $attr['sort'];
-                $sortAttribute = $attr['attribute'] . '.' . $currency . '.' . 'default';
-            } else {
-                $indexName = $originalIndexName . '_' . $attr['attribute'] . '_' . $attr['sort'];
-                $sortAttribute = $attr['attribute'];
-            }
-            if ($indexName && $sortAttribute) {
-                $attrs[$key]['name'] = $indexName;
-                if (!array_key_exists('label', $attrs[$key]) && array_key_exists('sortLabel', $attrs[$key])) {
-                    $attrs[$key]['label'] = $attrs[$key]['sortLabel'];
-                }
-                $attrs[$key]['ranking'] = [
-                    $attr['sort'] . '(' . $sortAttribute . ')',
-                    'typo',
-                    'geo',
-                    'words',
-                    'filters',
-                    'proximity',
-                    'attribute',
-                    'exact',
-                    'custom',
-                ];
-            }
-        }
-        $attrsToReturn = [];
-        if (count($attributesToAdd) > 0) {
-            foreach ($attrs as $key => $attr) {
-                if ($attr['attribute'] == 'price' && isset($attributesToAdd[$attr['sort']])) {
-                    $attrsToReturn = array_merge($attrsToReturn, $attributesToAdd[$attr['sort']]);
-                } else {
-                    $attrsToReturn[] = $attr;
-                }
-            }
-        }
-        if (count($attrsToReturn) > 0) {
-            return $attrsToReturn;
-        }
-        if (is_array($attrs)) {
-            return $attrs;
-        }
-        return [];
-    }
-
-    /***
-     * @param int|null $storeId
-     * @return array<string,<array<string, mixed>>>
-     */
-    public function getSorting(?int $storeId = null): array
-    {
-        return $this->unserialize($this->getRawSortingValue($storeId));
-    }
-
-    /**
-     * @param int|null $storeId
-     * @return string
-     */
-    public function getRawSortingValue(?int $storeId = null): string
-    {
-        return (string) $this->configInterface->getValue(
-            self::SORTING_INDICES,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
-     * @param array $sorting
-     * @param string|null $scope
-     * @param int|null $scopeId
-     * @return void
-     */
-    public function setSorting(array $sorting, string $scope = Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT, ?int $scopeId = null): void
-    {
-        $this->configWriter->save(
-            self::SORTING_INDICES,
-            $this->serialize($sorting),
-            $scope,
-            $scopeId
-        );
-    }
-
-    /**
-     * @param $storeId
-     * @return string
-     * @throws Magento\Framework\Exception\NoSuchEntityException
-     */
-    public function getCurrencyCode($storeId = null)
-    {
-        /** @var Magento\Store\Model\Store $store */
+        /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
         return $store->getCurrentCurrencyCode();
+    }
+
+    /**
+     * Obtain the store scoped currency configuration or fall back to all allowed currencies
+     * @return array
+     */
+    public function getAllowedCurrencies(?int $storeId = null): array
+    {
+        $configured = explode(
+            ',',
+            $this->configInterface->getValue(
+                DirCurrency::XML_PATH_CURRENCY_ALLOW,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            ) ?? ''
+        );
+        return $configured ?: $this->dirCurrency->getConfigAllowCurrencies();
     }
 
     /**
@@ -1297,35 +892,11 @@ class ConfigHelper
 
     /**
      * @param $storeId
-     * @return array|bool|float|int|mixed|string
-     */
-    public function getFacets($storeId = null)
-    {
-        $attrs = $this->unserialize($this->configInterface->getValue(
-            self::FACETS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
-        if ($attrs) {
-            foreach ($attrs as &$attr) {
-                if ($attr['type'] === 'other') {
-                    $attr['type'] = $attr['other_type'];
-                }
-            }
-            if (is_array($attrs)) {
-                return array_values($attrs);
-            }
-        }
-        return [];
-    }
-
-    /**
-     * @param $storeId
      * @return array
      */
     public function getCategoryCustomRanking($storeId = null)
     {
-        $attrs = $this->unserialize($this->configInterface->getValue(
+        $attrs = $this->serializer->unserialize($this->configInterface->getValue(
             self::CATEGORY_CUSTOM_RANKING,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -1342,7 +913,7 @@ class ConfigHelper
      */
     public function getProductCustomRanking($storeId = null)
     {
-        $attrs = $this->unserialize($this->getRawProductCustomRanking($storeId));
+        $attrs = $this->serializer->unserialize($this->getRawProductCustomRanking($storeId));
         if (is_array($attrs)) {
             return $attrs;
         }
@@ -1428,7 +999,7 @@ class ConfigHelper
 
     /**
      * @return int
-     * @throws Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getStoreId()
     {
@@ -1451,11 +1022,11 @@ class ConfigHelper
     /**
      * @param $storeId
      * @return string|null
-     * @throws Magento\Framework\Exception\NoSuchEntityException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getCurrency($storeId = null)
     {
-        /** @var Magento\Store\Model\Store $store */
+        /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
         return $this->currency->getCurrency($store->getCurrentCurrencyCode())->getSymbol();
     }
@@ -1474,6 +1045,8 @@ class ConfigHelper
     }
 
     /**
+     * NOTE: This method is currently only used in integration tests and was removed from the general implementation
+     * TODO: Evaluate use cases with product permissions where we may need to restore this functionality
      * @param $groupId
      * @return array
      */
@@ -1542,27 +1115,27 @@ class ConfigHelper
      */
     public function getProductAdditionalAttributes($storeId = null)
     {
-        $attributes = $this->unserialize($this->configInterface->getValue(
+        $attributes = $this->serializer->unserialize($this->configInterface->getValue(
             self::PRODUCT_ATTRIBUTES,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
 
-        $facets = $this->unserialize($this->configInterface->getValue(
+        $facets = $this->serializer->unserialize($this->configInterface->getValue(
             self::FACETS,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
         $attributes = $this->addIndexableAttributes($attributes, $facets, '0');
 
-        $sorts = $this->unserialize($this->configInterface->getValue(
+        $sorts = $this->serializer->unserialize($this->configInterface->getValue(
             self::SORTING_INDICES,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
         $attributes = $this->addIndexableAttributes($attributes, $sorts, '0');
 
-        $customRankings = $this->unserialize($this->configInterface->getValue(
+        $customRankings = $this->serializer->unserialize($this->configInterface->getValue(
             self::PRODUCT_CUSTOM_RANKING,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -1615,12 +1188,12 @@ class ConfigHelper
      */
     public function getCategoryAdditionalAttributes($storeId = null)
     {
-        $attributes = $this->unserialize($this->configInterface->getValue(
+        $attributes = $this->serializer->unserialize($this->configInterface->getValue(
             self::CATEGORY_ATTRIBUTES,
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
-        $customRankings = $this->unserialize($this->configInterface->getValue(
+        $customRankings = $this->serializer->unserialize($this->configInterface->getValue(
             self::CATEGORY_CUSTOM_RANKING,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -1779,7 +1352,7 @@ class ConfigHelper
     public function getNonCastableAttributes($storeId = null)
     {
         $nonCastableAttributes = [];
-        $config = $this->unserialize($this->configInterface->getValue(
+        $config = $this->serializer->unserialize($this->configInterface->getValue(
             self::NON_CASTABLE_ATTRIBUTES,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -1879,18 +1452,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function isAutocompleteNavigatorEnabled($storeId = null)
-    {
-        return $this->configInterface->isSetFlag(self::AUTOCOMPLETE_KEYBORAD_NAVIAGATION,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
      * @return bool
      */
     public function isCookieRestrictionModeEnabled()
@@ -1905,5 +1466,573 @@ class ConfigHelper
     public function getCookieLifetime($storeId = null)
     {
         return $this->configInterface->getValue(self::COOKIE_LIFETIME, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isProductsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_PRODUCTS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCategoriesIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_CATEGORIES,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPagesIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_PAGES,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSuggestionsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_SUGGESTIONS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAdditionalSectionsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_ADDITIONAL_SECTIONS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDeleteProductsIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_DELETE_PRODUCTS,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    /**
+     * @return bool
+     */
+    public function isQueueIndexerEnabled(): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ENABLE_INDEXER_QUEUE,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
+
+    /***************************************
+     *   DEPRECATED CONSTANTS & METHODS    *
+     **************************************/
+
+    // --- Autocomplete --- //
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::IS_ENABLED
+     */
+    public const IS_POPUP_ENABLED = AutocompleteHelper::IS_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::DOM_SELECTOR
+     */
+    public const AUTOCOMPLETE_SELECTOR = AutocompleteHelper::DOM_SELECTOR;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::ADDITIONAL_SECTIONS
+     */
+    public const AUTOCOMPLETE_SECTIONS = AutocompleteHelper::ADDITIONAL_SECTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::NB_OF_PRODUCTS_SUGGESTIONS
+     */
+    public const NB_OF_PRODUCTS_SUGGESTIONS = AutocompleteHelper::NB_OF_PRODUCTS_SUGGESTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::NB_OF_CATEGORIES_SUGGESTIONS
+     */
+    public const NB_OF_CATEGORIES_SUGGESTIONS = AutocompleteHelper::NB_OF_CATEGORIES_SUGGESTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::NB_OF_QUERIES_SUGGESTIONS
+     */
+    public const NB_OF_QUERIES_SUGGESTIONS = AutocompleteHelper::NB_OF_QUERIES_SUGGESTIONS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::MIN_QUERY_POPULARITY
+     */
+    public const MIN_POPULARITY = AutocompleteHelper::MIN_QUERY_POPULARITY;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::MIN_QUERY_NUMBER_OF_RESULTS
+     */
+    public const MIN_NUMBER_OF_RESULTS = AutocompleteHelper::MIN_QUERY_NUMBER_OF_RESULTS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::EXCLUDED_PAGES
+     */
+    public const EXCLUDED_PAGES = AutocompleteHelper::EXCLUDED_PAGES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::RENDER_TEMPLATE_DIRECTIVES
+     */
+    public const RENDER_TEMPLATE_DIRECTIVES = AutocompleteHelper::RENDER_TEMPLATE_DIRECTIVES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::IS_DEBUG_ENABLED
+     */
+    public const AUTOCOMPLETE_MENU_DEBUG = AutocompleteHelper::IS_DEBUG_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::DEBOUNCE_MILLISEC
+     */
+    public const AUTOCOMPLETE_DEBOUNCE_MILLISEC = AutocompleteHelper::DEBOUNCE_MILLISEC;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::MINIMUM_CHAR_LENGTH
+     */
+    public const AUTOCOMPLETE_MINIMUM_CHAR_LENGTH = AutocompleteHelper::MINIMUM_CHAR_LENGTH;
+
+    // --- InstantSearch --- //
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_ENABLED
+     */
+    public const IS_INSTANT_ENABLED = InstantSearchHelper::IS_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::DOM_SELECTOR
+     */
+    public const INSTANT_SELECTOR = InstantSearchHelper::DOM_SELECTOR;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS
+     */
+    public const NUMBER_OF_PRODUCT_RESULTS = InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::REPLACE_CATEGORIES
+     */
+    public const REPLACE_CATEGORIES = InstantSearchHelper::REPLACE_CATEGORIES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::FACETS
+     */
+    public const FACETS = InstantSearchHelper::FACETS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::MAX_VALUES_PER_FACET
+     */
+    public const MAX_VALUES_PER_FACET = InstantSearchHelper::MAX_VALUES_PER_FACET;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED
+     */
+    public const ENABLE_DYNAMIC_FACETS = InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::SORTING_INDICES
+     */
+    public const SORTING_INDICES = InstantSearchHelper::SORTING_INDICES;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::SHOW_SUGGESTIONS_NO_RESULTS
+     */
+    public const SHOW_SUGGESTIONS_NO_RESULTS = InstantSearchHelper::SHOW_SUGGESTIONS_NO_RESULTS;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_SEARCHBOX_ENABLED
+     */
+    public const SEARCHBOX_ENABLE = InstantSearchHelper::IS_SEARCHBOX_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_ADD_TO_CART_ENABLED
+     */
+    public const XML_ADD_TO_CART_ENABLE = InstantSearchHelper::IS_ADD_TO_CART_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_INFINITE_SCROLL_ENABLED
+     */
+    public const INFINITE_SCROLL_ENABLE = InstantSearchHelper::IS_INFINITE_SCROLL_ENABLED;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::HIDE_PAGINATION
+     */
+    public const HIDE_PAGINATION = InstantSearchHelper::HIDE_PAGINATION;
+
+    /**
+     * @deprecated This constant is retained purely for data patches to migrate from older versions
+     */
+    public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
+
+    // --- Autocomplete --- //
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isEnabled
+     */
+    public function isAutoCompleteEnabled($storeId = null)
+    {
+        return $this->autocompleteConfig->isEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @internal This is an internal function only and should not be used by customizations
+     */
+    public function isDefaultSelector($storeId = null)
+    {
+        return '.algolia-search-input' === $this->getAutocompleteSelector($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getDomSelector()
+     */
+    public function getAutocompleteSelector($storeId = null)
+    {
+        return $this->autocompleteConfig->getDomSelector($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return array
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getAdditionalSections()
+     */
+    public function getAutocompleteSections($storeId = null)
+    {
+        return $this->autocompleteConfig->getAdditionalSections($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfProductsSuggestions()
+     */
+    public function getNumberOfProductsSuggestions($storeId = null)
+    {
+        return $this->autocompleteConfig->getNumberOfProductsSuggestions($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfCategoriesSuggestions()
+     */
+    public function getNumberOfCategoriesSuggestions($storeId = null)
+    {
+        return $this->autocompleteConfig->getNumberOfCategoriesSuggestions($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfQueriesSuggestions()
+     */
+    public function getNumberOfQueriesSuggestions($storeId = null)
+    {
+        return $this->autocompleteConfig->getNumberOfQueriesSuggestions($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinQueryPopularity()
+     */
+    public function getMinPopularity($storeId = null)
+    {
+        return $this->autocompleteConfig->getMinQueryPopularity($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinQueryNumberOfResults()
+     */
+    public function getMinNumberOfResults($storeId = null)
+    {
+        return $this->autocompleteConfig->getMinQueryNumberOfResults($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return array
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getExcludedPages()
+     */
+    public function getExcludedPages($storeId = null)
+    {
+        return $this->autocompleteConfig->getExcludedPages($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::shouldRenderTemplateDirectives()
+     */
+    public function getRenderTemplateDirectives($storeId = null)
+    {
+        return $this->autocompleteConfig->shouldRenderTemplateDirectives($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isDebugEnabled()
+     */
+    public function isAutocompleteDebugEnabled($storeId = null)
+    {
+        return $this->autocompleteConfig->isDebugEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isKeyboardNavigationEnabled()
+     */
+    public function isAutocompleteNavigatorEnabled($storeId = null)
+    {
+        return $this->autocompleteConfig->isKeyboardNavigationEnabled($storeId);
+    }
+
+    /**
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getDebounceMilliseconds()
+     */
+    public function getAutocompleteDebounceMilliseconds($storeId = null): int
+    {
+        return $this->autocompleteConfig->getDebounceMilliseconds($storeId);
+    }
+
+    /**
+     * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinimumCharacterLength()
+     */
+    public function getAutocompleteMinimumCharacterLength(?int $storeId = null): int
+    {
+        return $this->autocompleteConfig->getMinimumCharacterLength($storeId);
+    }
+
+    // --- InstantSearch --- //
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isEnabled()
+     * /
+     */
+    public function isInstantEnabled($storeId = null)
+    {
+        return $this->instantSearchConfig->isEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getDomSelector()
+     */
+    public function getInstantSelector($storeId = null)
+    {
+        return $this->instantSearchConfig->getDomSelector($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getNumberOfProductResults()
+     */
+    public function getNumberOfProductResults($storeId = null)
+    {
+        return $this->instantSearchConfig->getNumberOfProductResults($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::shouldReplaceCategories()
+     */
+    public function replaceCategories($storeId = null)
+    {
+        return $this->instantSearchConfig->shouldReplaceCategories($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return array|bool|float|int|mixed|string
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getFacets()
+     */
+    public function getFacets($storeId = null)
+    {
+        return $this->instantSearchConfig->getFacets($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getMaxValuesPerFacet()
+     */
+    public function getMaxValuesPerFacet($storeId = null)
+    {
+        return $this->instantSearchConfig->getMaxValuesPerFacet($storeId);
+    }
+
+    /**
+     * @param int|null $storeId
+     * @return bool
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isDynamicFacetsEnabled()
+     */
+    public function isDynamicFacetsEnabled(?int $storeId = null): bool
+    {
+        return $this->instantSearchConfig->isDynamicFacetsEnabled($storeId);
+    }
+
+    /***
+     * @param int|null $storeId
+     * @return array<string,<array<string, mixed>>>
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getSorting()
+     */
+    public function getSorting(?int $storeId = null): array
+    {
+        return $this->instantSearchConfig->getSorting($storeId);
+    }
+
+    /**
+     * @param int|null $storeId
+     * @return string
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getRawSortingValue()
+     */
+    public function getRawSortingValue(?int $storeId = null): string
+    {
+        return $this->instantSearchConfig->getRawSortingValue($storeId);
+    }
+
+    /**
+     * @param array $sorting
+     * @param string|null $scope
+     * @param int|null $scopeId
+     * @return void
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::setSorting()
+     */
+    public function setSorting(array $sorting, string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, ?int $scopeId = null): void
+    {
+        $this->instantSearchConfig->setSorting($sorting, $scope, $scopeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isSearchBoxEnabled()
+     */
+    public function isInstantSearchBoxEnabled($storeId = null)
+    {
+        return $this->instantSearchConfig->isSearchBoxEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isAddToCartEnabled()
+     */
+    public function isAddToCartEnable($storeId = null)
+    {
+        return $this->instantSearchConfig->isAddToCartEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isInfiniteScrollEnabled()
+     */
+    public function isInfiniteScrollEnabled($storeId = null)
+    {
+        return $this->instantSearchConfig->isInfiniteScrollEnabled($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::shouldHidePagination()
+     */
+    public function hidePaginationInInstantSearchPage($storeId = null)
+    {
+        return $this->instantSearchConfig->shouldHidePagination($storeId);
     }
 }

@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand;
 use Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits\ConfigAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
@@ -32,11 +33,14 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
 
     protected ?SerializerInterface $serializer = null;
 
+    protected ?IndexOptionsBuilder $indexOptionsBuilder = null;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->replicaManager = $this->objectManager->get(ReplicaManagerInterface::class);
         $this->serializer = $this->objectManager->get(SerializerInterface::class);
+        $this->indexOptionsBuilder = $this->objectManager->get(IndexOptionsBuilder::class);
 
         $stores = $this->storeManager->getStores();
 
@@ -72,7 +76,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         // Enable customer groups for second fixture store and save configuration
         $this->setConfig( ConfigHelper::CUSTOMER_GROUPS_ENABLE, 1, $fixtureSecondStore->getCode());
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->algoliaConnector->waitLastTask($fixtureSecondStore->getId());
 
         // 7 indices for default store and third store:
         // - 1 for categories
@@ -95,8 +99,8 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
 
-        $defaultIndexName = $this->indexPrefix . $defaultStore->getCode() . '_products';
-        $fixtureIndexName = $this->indexPrefix . $fixtureSecondStore->getCode() . '_products';
+        $defaultIndexName = $this->indexNameFetcher->getProductIndexName($defaultStore->getId());
+        $fixtureIndexName = $this->indexNameFetcher->getProductIndexName($fixtureSecondStore->getId());
 
         // Update store config for fixture only
         $this->mockSortUpdate('price', 'desc', ['virtualReplica' => 1], $fixtureSecondStore);
@@ -119,8 +123,8 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $syncCmd = $this->objectManager->get(ReplicaSyncCommand::class);
         $this->mockProperty($syncCmd, 'output', OutputInterface::class);
         $syncCmd->syncReplicas();
-        $this->algoliaHelper->waitLastTask($defaultStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->algoliaConnector->waitLastTask($defaultStore->getId());
+        $this->algoliaConnector->waitLastTask($fixtureSecondStore->getId());
 
         $rebuildCmd = $this->objectManager->get(ReplicaRebuildCommand::class);
         $this->invokeMethod(
@@ -131,12 +135,18 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
                 $this->createMock(OutputInterface::class)
             ]
         );
-        $this->algoliaHelper->waitLastTask($defaultStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->algoliaConnector->waitLastTask($defaultStore->getId());
+        $this->algoliaConnector->waitLastTask($fixtureSecondStore->getId());
         // Executing commands - End
 
         $currentDefaultSettings = $this->algoliaHelper->getSettings($defaultIndexName, $defaultStore->getId());
+        $currentDefaultSettings = $this->algoliaConnector->getSettings(
+            $this->indexOptionsBuilder->buildEntityIndexOptions($defaultStore->getId())
+        );
         $currentFixtureSettings = $this->algoliaHelper->getSettings($fixtureIndexName, $fixtureSecondStore->getId());
+        $currentFixtureSettings = $this->algoliaConnector->getSettings(
+            $this->indexOptionsBuilder->buildEntityIndexOptions($fixtureSecondStore->getId())
+        );
 
         $this->assertArrayHasKey('replicas', $currentDefaultSettings);
         $this->assertArrayHasKey('replicas', $currentFixtureSettings);
@@ -176,7 +186,9 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
     {
         $indexName = $this->indexPrefix . $store->getCode() . '_products';
 
-        $settings = $this->algoliaHelper->getSettings($indexName, $store->getId());
+        $settings = $this->algoliaConnector->getSettings(
+            $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $store->getId())
+        );
 
         $this->assertArrayHasKey('replicas', $settings);
 
@@ -216,7 +228,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
 
         $this->assertSortingAttribute($attr, $dir);
         $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
-        $this->algoliaHelper->waitLastTask($store->getId());
+        $this->algoliaConnector->waitLastTask($store->getId());
     }
 
     protected function resetAllSortings()

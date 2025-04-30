@@ -2,9 +2,11 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
+use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
@@ -19,8 +21,6 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
     /*** @var IndexerRegistry */
     protected $indexerRegistry;
 
-    protected $productPriceIndexer;
-
     protected $testProductId;
 
     const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
@@ -31,7 +31,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
-        $this->processTest($this->productIndexer, 'products', $this->assertValues->productsOnStockCount);
+        $this->processTest($this->productBatchQueueProcessor, 'products', $this->assertValues->productsOnStockCount);
     }
 
     public function testIncludingOutOfStock()
@@ -40,7 +40,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
 
-        $this->processTest($this->productIndexer, 'products', $this->assertValues->productsOutOfStockCount);
+        $this->processTest($this->productBatchQueueProcessor, 'products', $this->assertValues->productsOutOfStockCount);
     }
 
     public function testDefaultIndexableAttributes()
@@ -52,7 +52,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->setConfig(ConfigHelper::SORTING_INDICES, $empty);
         $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
-        $this->productIndexer->executeRow($this->getValidTestProduct());
+        $this->productBatchQueueProcessor->processBatch(1, [$this->getValidTestProduct()]);
         $this->algoliaHelper->waitLastTask();
 
         $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
@@ -86,6 +86,38 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
         $extraAttributes = implode(', ', array_keys($hit));
         $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');
+    }
+
+    public function testIndexingProductsCommand()
+    {
+        $this->setConfig(ConfigHelper::SHOW_OUT_OF_STOCK, 0);
+
+        $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
+
+        $indexProductsCmd = $this->objectManager->get(IndexProductsCommand::class);
+        $this->processCommandTest($indexProductsCmd, 'products', $this->assertValues->productsOnStockCount);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/products 0
+     */
+    public function testDisabledOldIndexer()
+    {
+        $productsIndexer = $this->objectManager->create(ProductIndexer::class);
+        $this->processOldIndexerTest($productsIndexer, 'products', 0);
+    }
+
+    /**
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/full_indexing/products 1
+     */
+    public function testEnabledOldIndexer()
+    {
+        $this->setConfig(ConfigHelper::SHOW_OUT_OF_STOCK, 0);
+
+        $this->updateStockItem(self::OUT_OF_STOCK_PRODUCT_SKU, false);
+
+        $productsIndexer = $this->objectManager->create(ProductIndexer::class);
+        $this->processOldIndexerTest($productsIndexer, 'products', $this->assertValues->productsOnStockCount);
     }
 
     private function getValidTestProduct()

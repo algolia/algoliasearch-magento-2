@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Page;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\Indexer\Page;
+use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Cms\Api\Data\PageInterface;
 use Magento\Cms\Api\PageRepositoryInterface;
@@ -21,14 +21,14 @@ use Magento\Store\Api\Data\StoreInterface;
  */
 class MultiStorePagesTest extends MultiStoreTestCase
 {
-    /** @var Page */
-    protected $pagesIndexer;
-
     /** @var PageRepositoryInterface */
     protected $pageRepository;
 
     /**  @var CollectionFactory */
     private $pageCollectionFactory;
+
+    /** @var PageBatchQueueProcessor */
+    protected $pageBatchQueueProcessor;
 
     const HOME_PAGE_ID = 2;
 
@@ -36,12 +36,11 @@ class MultiStorePagesTest extends MultiStoreTestCase
     {
         parent::setUp();
 
-        $this->pagesIndexer = $this->objectManager->get(Page::class);
         $this->pageRepository = $this->objectManager->get(PageRepositoryInterface::class);
         $this->pageCollectionFactory = $this->objectManager->get(CollectionFactory::class);
 
-        $this->pagesIndexer->executeFull();
-        $this->algoliaHelper->waitLastTask();
+        $this->pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
+        $this->reindexToAllStores($this->pageBatchQueueProcessor);
     }
 
     /***
@@ -77,10 +76,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
         $homePage->setStores([$defaultStore->getId()]);
         $this->pageRepository->save($homePage);
 
-        $this->pagesIndexer->execute([self::HOME_PAGE_ID]);
-
-        $this->algoliaHelper->waitLastTask($defaultStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->reindexToAllStores($this->pageBatchQueueProcessor, [self::HOME_PAGE_ID]);
 
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),

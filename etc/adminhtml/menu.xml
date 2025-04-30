@@ -61,6 +61,16 @@
             resource="Algolia_AlgoliaSearch::manage"
         />
         <add
+            id="Algolia_AlgoliaSearch::manager"
+            title="Indexing Manager"
+            translate="title"
+            module="Algolia_AlgoliaSearch"
+            sortOrder="93"
+            parent="Algolia_AlgoliaSearch::manage"
+            action="algolia_algoliasearch/indexingmanager/index"
+            resource="Algolia_AlgoliaSearch::manage"
+        />
+        <add
             id="Algolia_AlgoliaSearch::merchandising"
             title="Merchandising"
             translate="title"

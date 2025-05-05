@@ -154,10 +154,19 @@ class RecommendSettings implements ObserverInterface
             throw new LocalizedException(__(
                 "Unable to save %1 Recommend configuration due to the following error: %2",
                     $modelName,
-                    $e->getMessage()
+                    $this->getUserFriendlyRecommendApiErrorMessage($e)
                 )
             );
         }
+    }
+
+    protected function getUserFriendlyRecommendApiErrorMessage(\Exception $e): string
+    {
+        $msg = $e->getMessage();
+        if ($e->getCode() === 404 && !!preg_match('/index.*does not exist/i', $msg)) {
+            $msg = (string) __("A trained model could not be found.");
+        }
+        return $msg;
     }
 
     /**

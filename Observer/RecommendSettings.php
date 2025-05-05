@@ -178,11 +178,23 @@ class RecommendSettings implements ObserverInterface
             !array_key_exists('hits', $recommendationResponse);
     }
 
+    /**
+     * If there is no model on the index then a 404 error should be returned
+     * (which will cause the exception on the API call) because there is no model for that index
+     * However errors which say "Index does not exist" are cryptic
+     * This function serves to make this clearer to the user while also filtering out the possible
+     * "ObjectID does not exist" error which can occur if the model does not contain the test product
+     */
     protected function getUserFriendlyRecommendApiErrorMessage(\Exception $e): string
     {
         $msg = $e->getMessage();
-        if ($e->getCode() === 404 && !!preg_match('/index.*does not exist/i', $msg)) {
-            $msg = (string) __("A trained model could not be found.");
+        if ($e->getCode() === 404) {
+            if (!!preg_match('/index.*does not exist/i', $msg)) {
+                $msg = (string) __("A trained model could not be found.");
+            }
+            if (!!preg_match('/objectid does not exist/i', $msg)) {
+                $msg = (string) __("Could not find test product in trained model.");
+            }
         }
         return $msg;
     }

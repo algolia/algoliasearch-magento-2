@@ -9,9 +9,11 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Config\Storage\WriterInterface;
+use Magento\Framework\App\State;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 
 class RecommendSettings implements ObserverInterface
 {
@@ -36,7 +38,9 @@ class RecommendSettings implements ObserverInterface
         protected readonly WriterInterface              $configWriter,
         protected readonly ProductRepositoryInterface   $productRepository,
         protected readonly RecommendManagementInterface $recommendManagement,
-        protected readonly SearchCriteriaBuilder        $searchCriteriaBuilder
+        protected readonly SearchCriteriaBuilder        $searchCriteriaBuilder,
+        protected readonly State                        $appState,
+        protected readonly MessageManagerInterface      $messageManager
     ){}
 
     /**
@@ -143,9 +147,10 @@ class RecommendSettings implements ObserverInterface
     {
         try {
             $recommendations = $this->recommendManagement->$recommendationMethod($this->getProductId());
-            if (empty($recommendations['renderingContent'])) {
-                throw new LocalizedException(__(
-                    "It appears that there is no trained model available for Algolia application ID %1.",
+            if ($this->shouldDisplayWarning($recommendations)) {
+                $this->messageManager->addWarningMessage(__(
+                    "It appears that there is no trained model available for Algolia application ID %1. "
+                        . "Please verify your configuration in the Algolia Dashboard before continuing.",
                     $this->configHelper->getApplicationID()
                 ));
             }
@@ -158,6 +163,19 @@ class RecommendSettings implements ObserverInterface
                 )
             );
         }
+    }
+
+    /**
+     * If API does not return a hits response the model may not be configured correctly.
+     * Do not hard fail but alert the end user.
+     * @throws LocalizedException
+     */
+    protected function shouldDisplayWarning(array $recommendationResponse): bool
+    {
+        return
+            $this->appState->getAreaCode() === \Magento\Framework\App\Area::AREA_ADMINHTML
+            &&
+            !array_key_exists('hits', $recommendationResponse);
     }
 
     protected function getUserFriendlyRecommendApiErrorMessage(\Exception $e): string

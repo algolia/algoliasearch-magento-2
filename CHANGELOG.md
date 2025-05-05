@@ -1,5 +1,17 @@
 # CHANGE LOG
 
+## 3.15.1
+
+### Features
+- Algolia's [Query Categorization feature](https://www.algolia.com/doc/integration/magento-2/how-it-works/query-categorization) is now compatible with the extension.
+
+### Updates
+- Updated integration tests to use `AlgoliaConnector`
+- Updated `ReplicaManager` service to handle multi stores properly with a `$storeId` parameter.
+
+### Bug Fixes
+- Fixed `RebuildReplicasPatch` bug where replica detach logic wasn't properly applied in some cases.
+
 ## 3.15.0
 
 ### Features

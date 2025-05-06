@@ -14,12 +14,15 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Psr\Log\LoggerInterface;
 
 class RecommendSettings implements ObserverInterface
 {
     const QUANTITY_AND_STOCK_STATUS = 'quantity_and_stock_status';
     const STATUS = 'status';
     const VISIBILITY = 'visibility';
+
+    const ENFORCE_VALIDATION = 0;
 
     /**
      * @var string
@@ -40,7 +43,8 @@ class RecommendSettings implements ObserverInterface
         protected readonly RecommendManagementInterface $recommendManagement,
         protected readonly SearchCriteriaBuilder        $searchCriteriaBuilder,
         protected readonly State                        $appState,
-        protected readonly MessageManagerInterface      $messageManager
+        protected readonly MessageManagerInterface      $messageManager,
+        protected readonly LoggerInterface              $logger
     ){}
 
     /**
@@ -147,35 +151,94 @@ class RecommendSettings implements ObserverInterface
     {
         try {
             $recommendations = $this->recommendManagement->$recommendationMethod($this->getProductId());
-            if ($this->shouldDisplayWarning($recommendations)) {
-                $this->messageManager->addWarningMessage(__(
-                    "It appears that there is no trained model available for Algolia application ID %1. "
-                        . "Please verify your configuration in the Algolia Dashboard before continuing.",
-                    $this->configHelper->getApplicationID()
-                ));
-            }
+
+            $this->validateRecommendApiResponse($recommendations, $modelName);
         } catch (\Exception $e) {
-            $this->configWriter->save($changedPath, 0);
-            throw new LocalizedException(__(
-                "Unable to save %1 Recommend configuration due to the following error: %2",
-                    $modelName,
-                    $this->getUserFriendlyRecommendApiErrorMessage($e)
-                )
-            );
+            $this->handleRecommendApiException($e, $modelName, $changedPath);
         }
     }
 
     /**
      * If API does not return a hits response the model may not be configured correctly.
      * Do not hard fail but alert the end user.
+     *
      * @throws LocalizedException
      */
-    protected function shouldDisplayWarning(array $recommendationResponse): bool
+    protected function validateRecommendApiResponse(array $recommendResponse, string $modelName): void
     {
-        return
-            $this->appState->getAreaCode() === \Magento\Framework\App\Area::AREA_ADMINHTML
-            &&
-            !array_key_exists('hits', $recommendationResponse);
+        if (!array_key_exists('hits', $recommendResponse)) {
+            $msg = __(
+                "It appears that there is no trained %1 model available for Algolia application ID %2. "
+                . "Please verify your configuration in the Algolia Dashboard before continuing.",
+                $modelName,
+                $this->configHelper->getApplicationID()
+            );
+
+            if ($this->shouldDisplayWarning()) {
+                $this->messageManager->addWarningMessage($msg);
+            }
+            else {
+                $this->logger->warning($msg);
+            }
+        }
+    }
+
+    /**
+     * Handles exceptions on the test request against the Recommend API
+     *
+     * The goal is to warn the user of potential issues so they do not enable a model on the front end that has not been
+     * properly configured in Algolia
+     *
+     * TODO: Implement store scoped validation
+     *
+     * @throws LocalizedException
+     */
+    protected function handleRecommendApiException(\Exception $e, string $modelName, string $changedPath): void
+    {
+        $msg = $this->getUserFriendlyRecommendApiErrorMessage($e);
+
+        if (self::ENFORCE_VALIDATION) {
+            $this->rollBack($changedPath, __(
+                    "Unable to save %1 Recommend configuration due to the following error: %2",
+                    $modelName,
+                    $msg
+                )
+            );
+        }
+
+        $msg = __(
+            "The following error was encountered while enabling %1 recommendations: %2",
+            $modelName,
+            $msg
+        );
+
+        if ($this->shouldDisplayWarning()) {
+            $this->messageManager->addWarningMessage(
+                $msg
+                . ' Please verify your configuration in the Algolia Dashboard before continuing.');
+        }
+        else {
+            $this->logger->warning($msg);
+        }
+    }
+
+    /*
+     * For hard fail only
+     */
+    protected function rollBack(string $changedPath, \Magento\Framework\Phrase $message): void
+    {
+        $this->configWriter->save($changedPath, 0);
+        throw new LocalizedException($message);
+    }
+
+    /**
+     * Warnings should only be displayed within the admin panel
+     * @throws LocalizedException
+     */
+    protected function shouldDisplayWarning(): bool
+    {
+        return $this->appState->getAreaCode() === \Magento\Framework\App\Area::AREA_ADMINHTML;
+
     }
 
     /**
@@ -200,6 +263,10 @@ class RecommendSettings implements ObserverInterface
     }
 
     /**
+     * Retrieve a test product for requests against the Recommend API
+     *
+     * TODO: Implement store scoping and independently address 404 where objectID is not found
+     *
      * @return string - Product ID string for use in API calls
      * @throws LocalizedException
      */

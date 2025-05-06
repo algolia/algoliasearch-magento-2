@@ -207,7 +207,7 @@ class RecommendSettings implements ObserverInterface
         }
 
         $msg = __(
-            "The following error was encountered while enabling %1 recommendations: %2",
+            "Error encountered while enabling %1 recommendations: %2",
             $modelName,
             $msg
         );
@@ -237,8 +237,8 @@ class RecommendSettings implements ObserverInterface
      */
     protected function shouldDisplayWarning(): bool
     {
-        return $this->appState->getAreaCode() === \Magento\Framework\App\Area::AREA_ADMINHTML;
-
+        return $this->appState->getAreaCode() === \Magento\Framework\App\Area::AREA_ADMINHTML
+            && php_sapi_name() !== 'cli';
     }
 
     /**

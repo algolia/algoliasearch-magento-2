@@ -1,5 +1,22 @@
 # CHANGE LOG
 
+## 3.15.1
+
+### Features
+- Algolia's [Query Categorization feature](https://www.algolia.com/doc/integration/magento-2/how-it-works/query-categorization) is now compatible with the extension.
+- Added new CLI command for synonyms deduplication
+
+### Updates
+- Updated integration tests to use `AlgoliaConnector`
+- Updated `ReplicaManager` service to handle multi stores properly with a `$storeId` parameter.
+- Pinned PHP Client version to 4.18.3
+
+### Bug Fixes
+- Fixed `RebuildReplicasPatch` bug where replica detach logic wasn't properly applied in some cases.
+- Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
+- Fixed a bug where the `q` parameter wasn't properly handled in case it was missing on the catalogsearch page. (thanks @PromInc)
+- Fixed Recommend model validation when configuration is saved in the Magento admin.
+
 ## 3.15.0
 
 ### Features
@@ -33,7 +50,6 @@
 - Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
 - Fixed a bug where excluded websites weren't taken into account while indexing customer prices on products. (thanks @kamilszewczyk)
 - Fixed a bug where full page cache (FPC) didn't work on category pages
-- Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
 
 ### Breaking Changes
 - If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/front-end-issues/))

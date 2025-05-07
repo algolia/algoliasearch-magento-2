@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit;
+namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 
 use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;

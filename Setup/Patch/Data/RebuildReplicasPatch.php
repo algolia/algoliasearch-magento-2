@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Setup\Patch\Data;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
@@ -9,6 +11,7 @@ use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchInterface;
@@ -64,19 +67,43 @@ class RebuildReplicasPatch implements DataPatchInterface
             // Area code is already set - nothing to do
         }
 
-        $storeIds = array_keys($this->storeManager->getStores());
-        // Delete all replicas before resyncing in case of incorrect replica assignments
-        foreach ($storeIds as $storeId) {
-            $this->replicaManager->deleteReplicasFromAlgolia($storeId);
-        }
+        $storeIds = array_filter(
+            array_keys($this->storeManager->getStores()),
+            function (int $storeId) { return $this->replicaManager->isReplicaSyncEnabled($storeId); }
+        );
 
-        foreach ($storeIds as $storeId) {
-            $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_CHANGED, $storeId); // avoids latency
-            $this->replicaManager->syncReplicasToAlgolia($storeId, $this->productHelper->getIndexSettings($storeId));
+        try {
+            // Delete all replicas before resyncing in case of incorrect replica assignments
+            foreach ($storeIds as $storeId) {
+                $this->retryDeleteReplica($storeId);
+            }
+
+            foreach ($storeIds as $storeId) {
+                $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_CHANGED, $storeId); // avoids latency
+                $this->replicaManager->syncReplicasToAlgolia($storeId, $this->productHelper->getIndexSettings($storeId));
+            }
+        }
+        catch (AlgoliaException $e) {
+            // Log the error but do not prevent setup:update
+            $this->logger->error("Could not rebuild replicas - a full reindex may be required.");
         }
 
         $this->moduleDataSetup->getConnection()->endSetup();
 
         return $this;
+    }
+
+    protected function retryDeleteReplica(int $storeId, int $maxRetries = 3, int $interval = 5)
+    {
+        for ($tries = $maxRetries - 1; $tries >= 0; $tries--) {
+            try {
+                $this->replicaManager->deleteReplicasFromAlgolia($storeId);
+                return;
+            } catch (AlgoliaException $e) {
+                $this->logger->warning(__("Unable to delete replicas, %1 tries remaining: %2", $tries, $e->getMessage()));
+                sleep($interval);
+            }
+        }
+        throw new ExceededRetriesException('Unable to delete old replica indices after $maxRetries retries.');
     }
 }

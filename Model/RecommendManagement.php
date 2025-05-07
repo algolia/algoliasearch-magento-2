@@ -75,7 +75,7 @@ class RecommendManagement implements RecommendManagementInterface
      */
     public function getLookingSimilarRecommendation(string $productId): array
     {
-        return $this->getRecommendations($productId, 'bought-together');
+        return $this->getRecommendations($productId, 'looking-similar');
     }
 
     /**

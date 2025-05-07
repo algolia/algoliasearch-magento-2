@@ -4,7 +4,6 @@
 
 ### Features
 - Algolia's [Query Categorization feature](https://www.algolia.com/doc/integration/magento-2/how-it-works/query-categorization) is now compatible with the extension.
-- Added new CLI command for synonyms deduplication
 
 ### Updates
 - Updated integration tests to use `AlgoliaConnector`
@@ -29,6 +28,7 @@
 - Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
 - Reorganization of the test folders
 - Added unit and integration tests for full page cache (FPC)
+- Added new CLI command for synonyms deduplication
 
 ### Updates
 - Tests: Added possibility to run tests with multiple applications IDs.

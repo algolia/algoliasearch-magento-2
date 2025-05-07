@@ -206,4 +206,10 @@
             <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
         </arguments>
     </type>
+
+    <type name="\Algolia\AlgoliaSearch\Observer\RecommendSettings">
+        <arguments>
+            <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
+        </arguments>
+    </type>
 </config>

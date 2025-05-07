@@ -1,5 +1,21 @@
 # CHANGE LOG
 
+## 3.15.1
+
+### Features
+- Algolia's [Query Categorization feature](https://www.algolia.com/doc/integration/magento-2/how-it-works/query-categorization) is now compatible with the extension.
+
+### Updates
+- Updated integration tests to use `AlgoliaConnector`
+- Updated `ReplicaManager` service to handle multi stores properly with a `$storeId` parameter.
+- Pinned PHP Client version to 4.18.3
+
+### Bug Fixes
+- Fixed `RebuildReplicasPatch` bug where replica detach logic wasn't properly applied in some cases.
+- Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
+- Fixed a bug where the `q` parameter wasn't properly handled in case it was missing on the catalogsearch page. (thanks @PromInc)
+- Fixed Recommend model validation when configuration is saved in the Magento admin.
+
 ## 3.15.0
 
 ### Features
@@ -12,6 +28,7 @@
 - Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
 - Reorganization of the test folders
 - Added unit and integration tests for full page cache (FPC)
+- Added new CLI command for synonyms deduplication
 
 ### Updates
 - Tests: Added possibility to run tests with multiple applications IDs.

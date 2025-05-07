@@ -100,6 +100,15 @@ class Save extends \Magento\Backend\App\Action
                         [$e->getProduct()->getName(), $e->getProduct()->getSku()]
                     )
                 );
+            } catch (\Exception $e) {
+                $this->messageManager->addExceptionMessage(
+                    $e,
+                    __(
+                        'Unable to index product(s) due to the following error: %1',
+                        $e->getMessage()
+                    )
+                );
+                break;
             }
         }
 

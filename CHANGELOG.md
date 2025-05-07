@@ -2,6 +2,9 @@
 
 ## 3.14.5
 
+### Features
+- Added new CLI command for synonyms deduplication
+
 ### Updates
 - Updated integration tests to use `AlgoliaConnector`
 - Updated `ReplicaManager` service to handle multi stores properly with a `$storeId` parameter.
@@ -13,6 +16,7 @@
 - Fixed `RebuildReplicasPatch` bug where replica detach logic wasn't properly applied in some cases.
 - Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
 - Fixed a bug where the `q` parameter wasn't properly handled in case it was missing on the catalogsearch page. (thanks @PromInc)
+- Fixed Recommend model validation when configuration is saved in the Magento admin.
 
 ## 3.14.4
 

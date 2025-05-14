@@ -10,9 +10,9 @@ use Psr\Log\LoggerInterface;
 
 class AlgoliaLoggerTest extends TestCase
 {
-    protected LoggerInterface $algoliaLogger;
-    protected SystemLoggerHandler $systemLoggerHandler;
-    protected AlgoliaLoggerHandler $algoliaLoggerHandler;
+    protected ?LoggerInterface $algoliaLogger;
+    protected ?SystemLoggerHandler $systemLoggerHandler;
+    protected ?AlgoliaLoggerHandler $algoliaLoggerHandler;
 
     protected function setUp(): void
     {

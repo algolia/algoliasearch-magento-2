@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Logger;
 
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Monolog\Logger;
-use Psr\Log\LoggerInterface;
 
 class TimedLogger
 {

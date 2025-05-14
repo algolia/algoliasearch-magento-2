@@ -2,24 +2,24 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Logger;
 
+use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler;
 use Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler;
-use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 class AlgoliaLoggerTest extends TestCase
 {
-    protected LoggerInterface $algoliaLogger;
-    protected SystemLoggerHandler $systemLoggerHandler;
-    protected AlgoliaLoggerHandler $algoliaLoggerHandler;
+    protected ?LoggerInterface $algoliaLogger;
+    protected ?SystemLoggerHandler $systemLoggerHandler;
+    protected ?AlgoliaLoggerHandler $algoliaLoggerHandler;
 
     protected function setUp(): void
     {
         $this->systemLoggerHandler = $this->createMock(SystemLoggerHandler::class);
         $this->algoliaLoggerHandler = $this->createMock(AlgoliaLoggerHandler::class);
 
-        $this->algoliaLogger = new Logger(
+        $this->algoliaLogger = new AlgoliaLogger(
             'algolia',
             [ $this->systemLoggerHandler, $this->algoliaLoggerHandler ]
         );

@@ -252,7 +252,7 @@
     </type>
     <!-- custom indexers END -->
 
-    <virtualType name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger" type="Monolog\Logger">
+    <type name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger">
         <arguments>
             <argument name="name" xsi:type="string">algolia</argument>
             <argument name="handlers" xsi:type="array">
@@ -260,16 +260,6 @@
                 <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler</item>
             </argument>
         </arguments>
-    </virtualType>
-    <type name="Algolia\AlgoliaSearch\Logger\TimedLogger">
-        <arguments>
-            <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
-        </arguments>
     </type>
-
-    <type name="\Algolia\AlgoliaSearch\Observer\RecommendSettings">
-        <arguments>
-            <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
-        </arguments>
-    </type>
+    <preference for="Algolia\AlgoliaSearch\Api\LoggerInterface" type="Algolia\AlgoliaSearch\Logger\AlgoliaLogger"/>
 </config>

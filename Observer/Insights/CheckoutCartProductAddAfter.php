@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Observer\Insights;
 
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
@@ -13,7 +14,6 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote\Item;
-use Psr\Log\LoggerInterface;
 
 class CheckoutCartProductAddAfter implements ObserverInterface
 {

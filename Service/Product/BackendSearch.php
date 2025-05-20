@@ -3,10 +3,10 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class BackendSearch
@@ -14,7 +14,8 @@ class BackendSearch
     public function __construct(
         protected ConfigHelper  $configHelper,
         protected ProductHelper $productHelper,
-        protected AlgoliaHelper $algoliaHelper,
+        protected AlgoliaConnector $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder,
     ){}
 
     /**
@@ -59,7 +60,8 @@ class BackendSearch
             $params = array_merge($params, $searchParams);
         }
 
-        $response = $this->algoliaHelper->query($indexName, $query, $params, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $response = $this->algoliaConnector->query($indexOptions, $query, $params);
         $answer = reset($response['results']);
 
         $data = [];

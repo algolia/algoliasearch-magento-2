@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
@@ -12,15 +11,18 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndicesConfigurator
 {
     public function __construct(
         protected Data                      $baseHelper,
-        protected AlgoliaHelper             $algoliaHelper,
+        protected IndexOptionsBuilder       $indexOptionsBuilder,
+        protected AlgoliaConnector          $algoliaConnector,
         protected ConfigHelper              $configHelper,
         protected ProductHelper             $productHelper,
         protected CategoryHelper            $categoryHelper,
@@ -58,12 +60,12 @@ class IndicesConfigurator
         }
 
         $this->setCategoriesSettings($storeId);
-        $this->algoliaHelper->waitLastTask($storeId);
+        $this->algoliaConnector->waitLastTask($storeId);
 
         /* Check if we want to index CMS pages */
         if ($this->configHelper->isPagesIndexEnabled($storeId)) {
             $this->setPagesSettings($storeId);
-            $this->algoliaHelper->waitLastTask($storeId);
+            $this->algoliaConnector->waitLastTask($storeId);
         } else {
             $this->logger->log('CMS Page Indexing is not enabled for the store.');
         }
@@ -71,13 +73,13 @@ class IndicesConfigurator
         //Check if we want to index Query Suggestions
         if ($this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             $this->setQuerySuggestionsSettings($storeId);
-            $this->algoliaHelper->waitLastTask($storeId);
+            $this->algoliaConnector->waitLastTask($storeId);
         } else {
             $this->logger->log('Query Suggestions Indexing is not enabled for the store.');
         }
 
         $this->setAdditionalSectionsSettings($storeId);
-        $this->algoliaHelper->waitLastTask($storeId);
+        $this->algoliaConnector->waitLastTask($storeId);
 
         $this->setProductsSettings($storeId, $useTmpIndex);
 
@@ -99,13 +101,13 @@ class IndicesConfigurator
         $indexName = $this->categoryHelper->getIndexName($storeId);
         $settings = $this->categoryHelper->getIndexSettings($storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->setSettings(
+            $indexOptions,
             $settings,
             false,
-            true,
-            '',
-            $storeId
+            true
         );
 
         $this->logger->log('Index name: ' . $indexName);
@@ -126,13 +128,13 @@ class IndicesConfigurator
         $settings = $this->pageHelper->getIndexSettings($storeId);
         $indexName = $this->pageHelper->getIndexName($storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->setSettings(
+            $indexOptions,
             $settings,
             false,
-            true,
-            '',
-            $storeId
+            true
         );
 
         $this->logger->log('Index name: ' . $indexName);
@@ -152,14 +154,13 @@ class IndicesConfigurator
 
         $indexName = $this->suggestionHelper->getIndexName($storeId);
         $settings = $this->suggestionHelper->getIndexSettings($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
+        $this->algoliaConnector->setSettings(
+            $indexOptions,
             $settings,
             false,
-            true,
-            '',
-            $storeId
+            true
         );
 
         $this->logger->log('Index name: ' . $indexName);
@@ -187,15 +188,9 @@ class IndicesConfigurator
             $indexName = $indexName . '_' . $section['name'];
 
             $settings = $this->additionalSectionHelper->getIndexSettings($storeId);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
-            $this->algoliaHelper->setSettings(
-                $indexName,
-                $settings,
-                false,
-                false,
-                '',
-                $storeId
-            );
+            $this->algoliaConnector->setSettings($indexOptions, $settings);
 
             $this->logger->log('Index name: ' . $indexName);
             $this->logger->log('Settings: ' . json_encode($settings));
@@ -259,28 +254,28 @@ class IndicesConfigurator
 
                     $this->logger->log('Index name: ' . $indexName);
                     $this->logger->log('Extra settings: ' . json_encode($extraSettings));
-                    $this->algoliaHelper->setSettings(
-                        $indexName,
+
+                    $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+                    $this->algoliaConnector->setSettings(
+                        $indexOptions,
                         $extraSettings,
                         true,
-                        false,
-                        '',
-                        $storeId
+                        false
                     );
-                    $this->algoliaHelper->waitLastTask($storeId);
+                    $this->algoliaConnector->waitLastTask($storeId);
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {
                         $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
                         $this->logger->log('Index name: ' . $tempIndexName);
                         $this->logger->log('Extra settings: ' . json_encode($extraSettings));
 
-                        $this->algoliaHelper->setSettings(
-                            $tempIndexName,
+                        $indexTempOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tempIndexName, $storeId);
+
+                        $this->algoliaConnector->setSettings(
+                            $indexTempOptions,
                             $extraSettings,
-                            true,
-                            false,
-                            '',
-                            $storeId
+                            true
                         );
                     }
                 }

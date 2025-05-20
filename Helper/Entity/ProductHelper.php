@@ -4,11 +4,11 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
@@ -72,7 +72,8 @@ class ProductHelper extends AbstractEntityHelper
     public function __construct(
         protected Config                  $eavConfig,
         protected ConfigHelper            $configHelper,
-        protected AlgoliaHelper           $algoliaHelper,
+        protected AlgoliaConnector        $algoliaConnector,
+        protected IndexOptionsBuilder     $indexOptionsBuilder,
         protected DiagnosticsLogger       $logger,
         protected StoreManagerInterface   $storeManager,
         protected ManagerInterface        $eventManager,
@@ -311,42 +312,46 @@ class ProductHelper extends AbstractEntityHelper
     public function setSettings(string $indexName, string $indexNameTmp, int $storeId, bool $saveToTmpIndicesToo = false): void
     {
         $indexSettings = $this->getIndexSettings($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
+        $this->algoliaConnector->setSettings(
+            $indexOptions,
             $indexSettings,
             false,
-            true,
-            '',
-            $storeId
+            true
         );
+
         $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo) {
-            $this->algoliaHelper->setSettings(
-                $indexNameTmp,
+            $indexTmpOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
+
+            $this->algoliaConnector->setSettings(
+                $indexTmpOptions,
                 $indexSettings,
                 false,
-                true,
-                $indexName,
-                $storeId
+                true
             );
+
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
         $this->setFacetsQueryRules($indexName, $storeId);
-        $this->algoliaHelper->waitLastTask($storeId);
+        $this->algoliaConnector->waitLastTask($storeId);
 
         if ($saveToTmpIndicesToo) {
             $this->setFacetsQueryRules($indexNameTmp, $storeId);
-            $this->algoliaHelper->waitLastTask($storeId);
+            $this->algoliaConnector->waitLastTask($storeId);
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
 
         if ($saveToTmpIndicesToo) {
             try {
-                $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp, $storeId);
-                $this->algoliaHelper->waitLastTask($storeId);
+                $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+                $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
+
+                $this->algoliaConnector->copySynonyms($fromIndexOptions, $toIndexOptions);
+                $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
                         Copying synonyms from production index to "' . $indexNameTmp . '" to not erase them with the index move.
                     ');
@@ -355,8 +360,11 @@ class ProductHelper extends AbstractEntityHelper
             }
 
             try {
-                $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp, $storeId);
-                $this->algoliaHelper->waitLastTask($storeId);
+                $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+                $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
+
+                $this->algoliaConnector->copyQueryRules($fromIndexOptions, $toIndexOptions);
+                $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
                         Copying query rules from production index to "' . $indexNameTmp . '" to not erase them with the index move.
                     ');
@@ -523,7 +531,9 @@ class ProductHelper extends AbstractEntityHelper
 
         if ($rules) {
             $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $this->algoliaHelper->saveRules($indexName, $rules, true, $storeId);
+
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+            $this->algoliaConnector->saveRules($indexOptions, $rules, true);
         }
     }
 
@@ -535,18 +545,19 @@ class ProductHelper extends AbstractEntityHelper
      */
     protected function clearFacetsQueryRules($indexName, int $storeId = null): void
     {
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
         try {
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $this->algoliaHelper->searchRules(
-                    $indexName,
+                $fetchedQueryRules = $this->algoliaConnector->searchRules(
+                    $indexOptions,
                     [
                         'context' => 'magento_filters',
                         'page' => $page,
                         'hitsPerPage' => $hitsPerPage,
-                    ],
-                    $storeId
+                    ]
                 );
 
                 if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
@@ -554,11 +565,10 @@ class ProductHelper extends AbstractEntityHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $this->algoliaHelper->deleteRule(
-                        $indexName,
+                    $this->algoliaConnector->deleteRule(
+                        $indexOptions,
                         $hit[AlgoliaConnector::ALGOLIA_API_OBJECT_ID],
-                        true,
-                        $storeId
+                        true
                     );
                 }
 

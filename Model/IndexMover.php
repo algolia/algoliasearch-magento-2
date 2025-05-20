@@ -3,40 +3,25 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndexMover
 {
-    /** @var Data */
-    private $baseHelper;
-
-    /** @var AlgoliaHelper */
-    private $algoliaHelper;
-
-    /** @var IndicesConfigurator */
-    private $indicesConfigurator;
-
-    /**
-     * @param Data $baseHelper
-     * @param AlgoliaHelper $algoliaHelper
-     * @param IndicesConfigurator $indicesConfigurator
-     */
     public function __construct(
-        Data $baseHelper,
-        AlgoliaHelper $algoliaHelper,
-        IndicesConfigurator $indicesConfigurator
-    ) {
-        $this->baseHelper = $baseHelper;
-        $this->algoliaHelper = $algoliaHelper;
-        $this->indicesConfigurator = $indicesConfigurator;
-    }
+        protected Data $baseHelper,
+        protected AlgoliaConnector $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder,
+        protected IndicesConfigurator $indicesConfigurator
+    ){}
 
     /**
      * @param string $tmpIndexName
      * @param string $indexName
      * @param int $storeId
-     * @throws AlgoliaException
+     * @throws AlgoliaException|NoSuchEntityException
      */
     public function moveIndex(string $tmpIndexName, string $indexName, int $storeId): void
     {
@@ -44,7 +29,10 @@ class IndexMover
             return;
         }
 
-        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName, $storeId);
+        $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tmpIndexName, $storeId);
+        $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->moveIndex($fromIndexOptions, $toIndexOptions);
     }
 
     /**

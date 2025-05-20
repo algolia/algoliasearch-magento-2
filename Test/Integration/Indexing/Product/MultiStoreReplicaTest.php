@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand;
 use Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits\ConfigAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
@@ -33,14 +33,14 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
 
     protected ?SerializerInterface $serializer = null;
 
-    protected ?IndexOptionsBuilder $indexOptionsBuilder = null;
+    protected ?ProductIndexOptionsBuilder $productIndexOptionsBuilder = null;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->replicaManager = $this->objectManager->get(ReplicaManagerInterface::class);
         $this->serializer = $this->objectManager->get(SerializerInterface::class);
-        $this->indexOptionsBuilder = $this->objectManager->get(IndexOptionsBuilder::class);
+        $this->productIndexOptionsBuilder = $this->objectManager->get(ProductIndexOptionsBuilder::class);
 
         $stores = $this->storeManager->getStores();
 
@@ -140,10 +140,10 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         // Executing commands - End
 
         $currentDefaultSettings = $this->algoliaConnector->getSettings(
-            $this->indexOptionsBuilder->buildEntityIndexOptions($defaultStore->getId())
+            $this->productIndexOptionsBuilder->buildEntityIndexOptions($defaultStore->getId())
         );
         $currentFixtureSettings = $this->algoliaConnector->getSettings(
-            $this->indexOptionsBuilder->buildEntityIndexOptions($fixtureSecondStore->getId())
+            $this->productIndexOptionsBuilder->buildEntityIndexOptions($fixtureSecondStore->getId())
         );
 
         $this->assertArrayHasKey('replicas', $currentDefaultSettings);

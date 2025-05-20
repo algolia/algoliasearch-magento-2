@@ -89,12 +89,14 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
 
         $defaultCategoryIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'default_categories'
+            $this->indexPrefix . 'default_categories',
+            $defaultStore->getId()
         );
         $defaultCategoryIndexSettings = $this->algoliaConnector->getSettings($defaultCategoryIndexOptions);
 
         $fixtureCategoryIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'fixture_second_store_categories'
+            $this->indexPrefix . 'fixture_second_store_categories',
+            $fixtureSecondStore->getId()
         );
         $fixtureCategoryIndexSettings = $this->algoliaConnector->getSettings($fixtureCategoryIndexOptions);
 

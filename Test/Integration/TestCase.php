@@ -178,7 +178,8 @@ abstract class TestCase extends \TC
 
             if (mb_strpos($name, $this->indexPrefix) === 0) {
                 try {
-                    $this->algoliaConnector->deleteIndex($name);
+                    $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name);
+                    $this->algoliaConnector->deleteIndex($indexOptions);
                 } catch (AlgoliaException $e) {
                     // Might be a replica
                 }

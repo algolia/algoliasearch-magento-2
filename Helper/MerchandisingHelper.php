@@ -5,27 +5,16 @@ namespace Algolia\AlgoliaSearch\Helper;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 
 class MerchandisingHelper
 {
-    /** @var Data */
-    private $coreHelper;
-
-    /** @var ProductHelper */
-    private $productHelper;
-
-    /** @var AlgoliaHelper */
-    private $algoliaHelper;
-
     public function __construct(
-        Data $coreHelper,
-        ProductHelper $productHelper,
-        AlgoliaHelper $algoliaHelper
-    ) {
-        $this->coreHelper = $coreHelper;
-        $this->productHelper = $productHelper;
-        $this->algoliaHelper = $algoliaHelper;
-    }
+        protected Data $coreHelper,
+        protected ProductHelper $productHelper,
+        protected AlgoliaConnector $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder
+    ) {}
 
     /**
      * @param int $storeId
@@ -86,7 +75,8 @@ class MerchandisingHelper
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $this->algoliaHelper->saveRule($rule, $productsIndexName, false, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($productsIndexName, $storeId);
+        $this->algoliaConnector->saveRule($rule, $indexOptions);
     }
 
     /**
@@ -107,7 +97,8 @@ class MerchandisingHelper
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $this->algoliaHelper->deleteRule($productsIndexName, $ruleId, false, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($productsIndexName, $storeId);
+        $this->algoliaConnector->deleteRule($indexOptions, $ruleId);
     }
 
     /**
@@ -139,7 +130,7 @@ class MerchandisingHelper
     public function copyQueryRules(int $storeId, int $entityIdFrom, int $entityIdTo, string $entityType): void
     {
         $productsIndexName = $this->productHelper->getIndexName($storeId);
-        $client = $this->algoliaHelper->getClient($storeId);
+        $client = $this->algoliaConnector->getClient($storeId);
         $context = $this->getQueryRuleId($entityIdFrom, $entityType);
         $queryRulesToSet = [];
 

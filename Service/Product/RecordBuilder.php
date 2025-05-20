@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
 use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
@@ -51,7 +50,7 @@ class RecordBuilder implements RecordBuilderInterface
         protected ConfigHelper           $configHelper,
         protected CategoryHelper         $categoryHelper,
         protected CategoryRecordBuilder  $categoryRecordBuilder,
-        protected AlgoliaHelper          $algoliaHelper,
+        protected AlgoliaConnector       $algoliaConnector,
         protected ImageHelper            $imageHelper,
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
@@ -136,7 +135,7 @@ class RecordBuilder implements RecordBuilderInterface
         );
         $customData = $transport->getData();
         $customData = array_merge($customData, $defaultData);
-        $this->algoliaHelper->castProductObject($customData);
+        $this->algoliaConnector->castProductObject($customData);
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_after_create_product_object',

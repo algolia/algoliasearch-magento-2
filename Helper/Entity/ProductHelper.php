@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -21,8 +20,6 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Helper\Stock;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
-use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
@@ -148,18 +145,6 @@ class ProductHelper extends AbstractEntityHelper
         });
 
         return $attributes;
-    }
-
-    /**
-     * @param $additionalAttributes
-     * @param $attributeName
-     * @return bool
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function isAttributeEnabled($additionalAttributes, $attributeName): bool
-    {
-        return $this->productRecordBuilder->isAttributeEnabled($additionalAttributes, $attributeName);
     }
 
     /**
@@ -384,18 +369,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param Product $product
-     * @return array|mixed|null
-     * @throws \Exception
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function getObject(Product $product)
-    {
-        return $this->productRecordBuilder->buildRecord($product);
-    }
-
-    /**
      * Returns all parent product IDs, e.g. when simple product is part of configurable or bundle
      *
      * @param array $productIds
@@ -440,7 +413,7 @@ class ProductHelper extends AbstractEntityHelper
      * @param Product $product
      * @return mixed
      *
-     * @deprecated (will be removed in v3.16.0)
+     * @deprecated (will be removed in once MSI compatibility module will be added to this module)
      */
     protected function addInStock($defaultData, $customData, Product $product)
     {
@@ -596,22 +569,6 @@ class ProductHelper extends AbstractEntityHelper
                 throw $e;
             }
         }
-    }
-
-    /**
-     * Check if product can be index on Algolia
-     *
-     * @param Product $product
-     * @param int $storeId
-     * @param bool $isChildProduct
-     *
-     * @return bool
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
-    {
-        return $this->productRecordBuilder->canProductBeReindexed($product, $storeId, $isChildProduct);
     }
 
     /**

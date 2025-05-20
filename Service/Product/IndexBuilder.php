@@ -12,6 +12,7 @@ use Algolia\AlgoliaSearch\Helper\ProductDataArray;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
@@ -33,6 +34,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         protected ScopeCodeResolver        $scopeCodeResolver,
         protected AlgoliaHelper            $algoliaHelper,
         protected ProductHelper            $productHelper,
+        protected ProductRecordBuilder     $productRecordBuilder,
         protected ResourceConnection       $resource,
         protected ManagerInterface         $eventManager,
         protected MissingPriceIndexHandler $missingPriceIndexHandler,
@@ -217,7 +219,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->addCategoryIds();
         $collection->addUrlRewrite();
 
-        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'rating_summary')) {
+        if ($this->productRecordBuilder->isAttributeEnabled($additionalAttributes, 'rating_summary')) {
             $reviewTableName = $this->resource->getTableName('review_entity_summary');
             $collection
                 ->getSelect()
@@ -323,7 +325,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
             try {
                 $this->logger->startProfiling("canProductBeReindexed");
-                $this->productHelper->canProductBeReindexed($product, $storeId);
+                $this->productRecordBuilder->canProductBeReindexed($product, $storeId);
             } catch (ProductReindexingException $e) {
                 $productsToRemove[$productId] = $productId;
                 continue;
@@ -342,7 +344,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                 }
             }
 
-            $productsToIndex[$productId] = $this->productHelper->getObject($product);
+            $productsToIndex[$productId] = $this->productRecordBuilder->buildRecord($product);
         }
 
         if (is_array($potentiallyDeletedProductsIds)) {
@@ -365,8 +367,8 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     {
         $this->logger->startProfiling(__METHOD__);
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
-        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
-            && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
+        if ($this->productRecordBuilder->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
+            && $this->productRecordBuilder->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
             return [];
         }
 

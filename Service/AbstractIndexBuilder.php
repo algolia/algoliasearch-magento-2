@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Framework\App\Area;
@@ -16,11 +15,12 @@ abstract class AbstractIndexBuilder
     protected bool $emulationRuns = false;
 
     public function __construct(
-        protected ConfigHelper      $configHelper,
-        protected DiagnosticsLogger $logger,
-        protected Emulation         $emulation,
-        protected ScopeCodeResolver $scopeCodeResolver,
-        protected AlgoliaHelper     $algoliaHelper
+        protected ConfigHelper        $configHelper,
+        protected DiagnosticsLogger   $logger,
+        protected Emulation           $emulation,
+        protected ScopeCodeResolver   $scopeCodeResolver,
+        protected AlgoliaConnector    $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder
     ){}
 
     /**
@@ -76,7 +76,9 @@ abstract class AbstractIndexBuilder
      */
     protected function saveObjects(array $objects, string $indexName, int $storeId = null): void
     {
-        $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled(), $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->saveObjects($indexOptions, $objects, $this->configHelper->isPartialUpdateEnabled());
     }
 
     /**
@@ -92,10 +94,12 @@ abstract class AbstractIndexBuilder
             return $idsToRemove;
         }
 
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
         $toRealRemove = [];
         $idsToRemove = array_map('strval', $idsToRemove);
         foreach (array_chunk($idsToRemove, 1000) as $chunk) {
-            $objects = $this->algoliaHelper->getObjects($indexName, $chunk, $storeId);
+            $objects = $this->algoliaConnector->getObjects($indexOptions, $chunk);
             foreach ($objects['results'] as $object) {
                 if (isset($object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID])) {
                     $toRealRemove[] = $object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];

@@ -5,11 +5,12 @@ namespace Algolia\AlgoliaSearch\Service\Suggestion;
 use Algolia\AlgoliaSearch\Api\Builder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\RecordBuilder as SuggestionRecordBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -24,11 +25,19 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         protected DiagnosticsLogger       $logger,
         protected Emulation               $emulation,
         protected ScopeCodeResolver       $scopeCodeResolver,
-        protected AlgoliaHelper           $algoliaHelper,
+        protected AlgoliaConnector        $algoliaConnector,
+        protected IndexOptionsBuilder     $indexOptionsBuilder,
         protected SuggestionHelper        $suggestionHelper,
         protected SuggestionRecordBuilder $suggestionRecordBuilder
     ){
-        parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
+        parent::__construct(
+            $configHelper,
+            $logger,
+            $emulation,
+            $scopeCodeResolver,
+            $algoliaConnector,
+            $indexOptionsBuilder
+        );
     }
 
     /**
@@ -139,7 +148,10 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         }
         $tmpIndexName = $this->suggestionHelper->getTempIndexName($storeId);
         $indexName = $this->suggestionHelper->getIndexName($storeId);
-        $this->algoliaHelper->copyQueryRules($indexName, $tmpIndexName, $storeId);
-        $this->algoliaHelper->moveIndex($tmpIndexName, $indexName, $storeId);
+        $tmpIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tmpIndexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $this->algoliaConnector->copyQueryRules($indexOptions, $tmpIndexOptions);
+        $this->algoliaConnector->moveIndex($tmpIndexOptions, $indexOptions);
     }
 }

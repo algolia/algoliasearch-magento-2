@@ -5,12 +5,13 @@ namespace Algolia\AlgoliaSearch\Service\Page;
 use Algolia\AlgoliaSearch\Api\Builder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
@@ -18,14 +19,22 @@ use Magento\Store\Model\App\Emulation;
 class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 {
     public function __construct(
-        protected ConfigHelper      $configHelper,
-        protected DiagnosticsLogger $logger,
-        protected Emulation         $emulation,
-        protected ScopeCodeResolver $scopeCodeResolver,
-        protected AlgoliaHelper     $algoliaHelper,
-        protected PageHelper        $pageHelper
+        protected ConfigHelper        $configHelper,
+        protected DiagnosticsLogger   $logger,
+        protected Emulation           $emulation,
+        protected ScopeCodeResolver   $scopeCodeResolver,
+        protected AlgoliaConnector    $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder,
+        protected PageHelper          $pageHelper
     ){
-        parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
+        parent::__construct(
+            $configHelper,
+            $logger,
+            $emulation,
+            $scopeCodeResolver,
+            $algoliaConnector,
+            $indexOptionsBuilder
+        );
     }
 
     /**
@@ -62,6 +71,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         }
 
         $indexName = $this->pageHelper->getIndexName($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
         $this->startEmulation($storeId);
 
@@ -90,7 +100,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $pagesToRemove = $pages['toRemove'];
             foreach (array_chunk($pagesToRemove, 100) as $chunk) {
                 try {
-                    $this->algoliaHelper->deleteObjects($chunk, $indexName, $storeId);
+                    $this->algoliaConnector->deleteObjects($chunk, $indexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;
@@ -100,16 +110,14 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if ($isFullReindex) {
             $tempIndexName = $this->pageHelper->getTempIndexName($storeId);
-            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName, $storeId);
-            $this->algoliaHelper->moveIndex($tempIndexName, $indexName, $storeId);
+            $tempIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tempIndexName, $storeId);
+
+            $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
+            $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
         }
-        $this->algoliaHelper->setSettings(
-            $indexName,
-            $this->pageHelper->getIndexSettings($storeId),
-            false,
-            false,
-            '',
-            $storeId
+        $this->algoliaConnector->setSettings(
+            $indexOptions,
+            $this->pageHelper->getIndexSettings($storeId)
         );
     }
 }

@@ -9,7 +9,6 @@ use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Serialize\SerializerInterface;
-use Magento\Search\Model\Query;
 use Magento\Search\Model\ResourceModel\Query\Collection as QueryCollection;
 use Magento\Search\Model\ResourceModel\Query\CollectionFactory as QueryCollectionFactory;
 
@@ -54,17 +53,6 @@ class SuggestionHelper extends AbstractEntityHelper
             ['store_id' => $storeId, 'index_settings' => $transport]
         );
         return $transport->getData();
-    }
-
-    /**
-     * @param Query $suggestion
-     * @return array
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function getObject(Query $suggestion)
-    {
-        return $this->suggestionRecordBuilder->buildRecord($suggestion);
     }
 
     /**

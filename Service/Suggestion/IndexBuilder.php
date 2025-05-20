@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Suggestion\RecordBuilder as SuggestionRecordBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Search\Model\Query;
@@ -19,12 +20,13 @@ use Magento\Store\Model\App\Emulation;
 class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 {
     public function __construct(
-        protected ConfigHelper      $configHelper,
-        protected DiagnosticsLogger $logger,
-        protected Emulation         $emulation,
-        protected ScopeCodeResolver $scopeCodeResolver,
-        protected AlgoliaHelper     $algoliaHelper,
-        protected SuggestionHelper  $suggestionHelper
+        protected ConfigHelper            $configHelper,
+        protected DiagnosticsLogger       $logger,
+        protected Emulation               $emulation,
+        protected ScopeCodeResolver       $scopeCodeResolver,
+        protected AlgoliaHelper           $algoliaHelper,
+        protected SuggestionHelper        $suggestionHelper,
+        protected SuggestionRecordBuilder $suggestionRecordBuilder
     ){
         parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
     }
@@ -108,7 +110,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         /** @var Query $suggestion */
         foreach ($collection as $suggestion) {
             $suggestion->setStoreId($storeId);
-            $suggestionObject = $this->suggestionHelper->getObject($suggestion);
+            $suggestionObject = $this->suggestionRecordBuilder->buildRecord($suggestion);
             if (mb_strlen($suggestionObject['query']) >= 3) {
                 array_push($indexData, $suggestionObject);
             }

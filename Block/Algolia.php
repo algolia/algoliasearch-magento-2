@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Block;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
@@ -15,6 +14,7 @@ use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
 use Algolia\AlgoliaSearch\Model\LandingPage as LandingPageModel;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -50,7 +50,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         protected Currency              $currency,
         protected Format                $format,
         protected CurrentProduct        $currentProduct,
-        protected AlgoliaHelper         $algoliaHelper,
+        protected AlgoliaConnector      $algoliaConnector,
         protected UrlHelper             $urlHelper,
         protected FormKey               $formKey,
         protected HttpContext           $httpContext,
@@ -107,9 +107,9 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->catalogSearchHelper;
     }
 
-    public function getAlgoliaHelper(): AlgoliaHelper
+    public function getAlgoliaConnector(): AlgoliaConnector
     {
-        return $this->algoliaHelper;
+        return $this->algoliaConnector;
     }
 
     public function getPersonalizationHelper(): PersonalizationHelper
@@ -212,7 +212,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $urlParamName = ActionInterface::PARAM_NAME_URL_ENCODED;
         $routeParams = [
             $urlParamName => $continueUrl,
-            '_secure' => $this->algoliaHelper->getRequest()->isSecure(),
+            '_secure' => $this->getRequest()->isSecure(),
         ];
         if ($additional !== []) {
             $routeParams = array_merge($routeParams, $additional);

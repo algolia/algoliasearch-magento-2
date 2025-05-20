@@ -82,7 +82,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $suggestionHelper = $this->getSuggestionHelper();
 
-        $algoliaHelper = $this->getAlgoliaHelper();
+        $algoliaConnector = $this->getAlgoliaConnector();
 
         $persoHelper = $this->getPersonalizationHelper();
 
@@ -225,7 +225,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             // Legacy misnomer - retained for backward compatibility
             'indexName' => $coreHelper->getBaseIndexName(),
             'baseIndexName' => $coreHelper->getBaseIndexName(),
-            'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
+            'apiKey' => $algoliaConnector->generateSearchSecuredApiKey(
                 $config->getSearchOnlyAPIKey(),
                 $attributesToFilter,
                 $this->getStoreId()

@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\LocalizedException;
@@ -19,12 +20,13 @@ use Magento\Store\Model\App\Emulation;
 class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilderInterface
 {
     public function __construct(
-        protected ConfigHelper      $configHelper,
-        protected DiagnosticsLogger $logger,
-        protected Emulation         $emulation,
-        protected ScopeCodeResolver $scopeCodeResolver,
-        protected AlgoliaHelper     $algoliaHelper,
-        protected CategoryHelper    $categoryHelper
+        protected ConfigHelper          $configHelper,
+        protected DiagnosticsLogger     $logger,
+        protected Emulation             $emulation,
+        protected ScopeCodeResolver     $scopeCodeResolver,
+        protected AlgoliaHelper         $algoliaHelper,
+        protected CategoryRecordBuilder $categoryRecordBuilder,
+        protected CategoryHelper        $categoryHelper
     ){
         parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
     }
@@ -207,7 +209,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                 continue;
             }
 
-            $categoriesToIndex[$categoryId] = $this->categoryHelper->getObject($category);
+            $categoriesToIndex[$categoryId] = $this->categoryRecordBuilder->buildRecord($category);
         }
 
         if (is_array($potentiallyDeletedCategoriesIds)) {

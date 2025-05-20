@@ -96,9 +96,9 @@ class QueueTest extends TestCase
         // Run the first two jobs - saveSettings, batch
         $queue->runCron(2, true);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indices = $this->algoliaHelper->listIndexes();
+        $indices = $this->algoliaConnector->listIndexes();
 
         $existsDefaultTmpIndex = false;
         foreach ($indices['items'] as $index) {
@@ -112,9 +112,9 @@ class QueueTest extends TestCase
         // Run the last move - move
         $queue->runCron(2, true);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indices = $this->algoliaHelper->listIndexes();
+        $indices = $this->algoliaConnector->listIndexes();
 
         $existsDefaultProdIndex = false;
         $existsDefaultTmpIndex = false;
@@ -168,9 +168,10 @@ class QueueTest extends TestCase
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(0, count($rows));
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $settings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $settings = $this->algoliaConnector->getSettings($indexOptions);
         $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
@@ -191,25 +192,27 @@ class QueueTest extends TestCase
 
         $productionIndexName = $this->indexPrefix . 'default_products';
 
-        $res = $this->algoliaHelper->setSettings($productionIndexName, ['disableTypoToleranceOnAttributes' => ['sku']]);
-        $this->algoliaHelper->waitLastTask();
+        $productionIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($productionIndexName);
+        $this->algoliaConnector->setSettings($productionIndexOptions, ['disableTypoToleranceOnAttributes' => ['sku']]);
+        $this->algoliaConnector->waitLastTask();
 
-        $settings = $this->algoliaHelper->getSettings($productionIndexName);
+        $settings = $this->algoliaConnector->getSettings($productionIndexOptions);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         /** @var QueueRunner $queueRunner */
         $queueRunner = $this->objectManager->get(QueueRunner::class);
         $queueRunner->executeFull();
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $settings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products_tmp');
+        $tmpIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products_tmp');
+        $settings = $this->algoliaConnector->getSettings($tmpIndexOptions);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         $queueRunner->executeFull();
         $queueRunner->executeFull();
 
-        $settings = $this->algoliaHelper->getSettings($productionIndexName);
+        $settings = $this->algoliaConnector->getSettings($productionIndexOptions);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
     }
 

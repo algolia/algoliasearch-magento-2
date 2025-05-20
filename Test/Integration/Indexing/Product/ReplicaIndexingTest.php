@@ -35,8 +35,6 @@ class ReplicaIndexingTest extends TestCase
 
     protected ?IndicesConfigurator $indicesConfigurator = null;
 
-    protected ?IndexOptionsBuilder $indexOptionsBuilder = null;
-
     protected ?string $indexName = null;
 
     protected ?int $patchRetries = 3;

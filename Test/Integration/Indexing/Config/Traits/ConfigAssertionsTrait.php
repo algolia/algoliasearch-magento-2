@@ -14,7 +14,7 @@ trait ConfigAssertionsTrait
      */
     protected function countStoreIndices(StoreInterface $store = null): int
     {
-        $indices = $this->algoliaHelper->listIndexes($store->getId());
+        $indices = $this->algoliaConnector->listIndexes($store->getId());
 
         $indicesCreatedByTest = 0;
 

@@ -4,11 +4,10 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
-use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246CE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246EE;
@@ -17,7 +16,6 @@ use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247EE;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\ObjectManagerInterface;
-use Magento\InventoryMultiDimensionalIndexerApi\Model\IndexName;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -40,9 +38,6 @@ abstract class TestCase extends \TC
     /** @var string */
     protected $indexPrefix;
 
-    /** @var AlgoliaHelper */
-    protected $algoliaHelper;
-
     /** @var ConfigHelper */
     protected $configHelper;
 
@@ -54,6 +49,7 @@ abstract class TestCase extends \TC
 
     protected ?string $indexSuffix = null;
 
+    protected ?IndexOptionsBuilder $indexOptionsBuilder = null;
     protected ?AlgoliaConnector $algoliaConnector = null;
     protected ?IndexNameFetcher $indexNameFetcher = null;
 
@@ -69,7 +65,7 @@ abstract class TestCase extends \TC
     protected function tearDown(): void
     {
         $this->clearIndices();
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
         $this->clearIndices(); // Remaining replicas
     }
 
@@ -175,14 +171,14 @@ abstract class TestCase extends \TC
 
     protected function clearIndices()
     {
-        $indices = $this->algoliaHelper->listIndexes();
+        $indices = $this->algoliaConnector->listIndexes();
 
         foreach ($indices['items'] as $index) {
             $name = $index['name'];
 
             if (mb_strpos($name, $this->indexPrefix) === 0) {
                 try {
-                    $this->algoliaHelper->deleteIndex($name);
+                    $this->algoliaConnector->deleteIndex($name);
                 } catch (AlgoliaException $e) {
                     // Might be a replica
                 }
@@ -234,7 +230,7 @@ abstract class TestCase extends \TC
         $this->setConfig('algoliasearch_credentials/credentials/api_key', getenv('ALGOLIA_API_KEY'));
         $this->setConfig('algoliasearch_credentials/credentials/index_prefix', $this->indexPrefix);
 
-        $this->algoliaHelper = $this->getObjectManager()->create(AlgoliaHelper::class);
+        $this->indexOptionsBuilder = $this->objectManager->get(IndexOptionsBuilder::class);
         $this->algoliaConnector = $this->objectManager->get(AlgoliaConnector::class);
         $this->indexNameFetcher = $this->objectManager->get(IndexNameFetcher::class);
 

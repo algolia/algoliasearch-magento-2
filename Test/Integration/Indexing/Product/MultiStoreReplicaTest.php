@@ -139,11 +139,9 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $this->algoliaConnector->waitLastTask($fixtureSecondStore->getId());
         // Executing commands - End
 
-        $currentDefaultSettings = $this->algoliaHelper->getSettings($defaultIndexName, $defaultStore->getId());
         $currentDefaultSettings = $this->algoliaConnector->getSettings(
             $this->indexOptionsBuilder->buildEntityIndexOptions($defaultStore->getId())
         );
-        $currentFixtureSettings = $this->algoliaHelper->getSettings($fixtureIndexName, $fixtureSecondStore->getId());
         $currentFixtureSettings = $this->algoliaConnector->getSettings(
             $this->indexOptionsBuilder->buildEntityIndexOptions($fixtureSecondStore->getId())
         );

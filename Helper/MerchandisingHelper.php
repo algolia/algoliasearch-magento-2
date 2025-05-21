@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 
 class MerchandisingHelper
 {
@@ -36,8 +36,6 @@ class MerchandisingHelper
         if ($this->coreHelper->isIndexingEnabled($storeId) === false) {
             return;
         }
-
-        $productsIndexName = $this->productHelper->getIndexName($storeId);
 
         $positions = $this->transformPositions($rawPositions);
         $condition = [
@@ -75,7 +73,7 @@ class MerchandisingHelper
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($productsIndexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $this->algoliaConnector->saveRule($rule, $indexOptions);
     }
 
@@ -92,12 +90,11 @@ class MerchandisingHelper
             return;
         }
 
-        $productsIndexName = $this->productHelper->getIndexName($storeId);
         $ruleId = $this->getQueryRuleId($entityId, $entityType);
 
         // Not catching AlgoliaSearchException for disabled query rules on purpose
         // It displays correct error message and navigates user to pricing page
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($productsIndexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $this->algoliaConnector->deleteRule($indexOptions, $ruleId);
     }
 

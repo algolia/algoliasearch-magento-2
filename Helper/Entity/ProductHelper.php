@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -313,6 +314,7 @@ class ProductHelper extends AbstractEntityHelper
     {
         $indexSettings = $this->getIndexSettings($storeId);
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexTmpOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -323,7 +325,6 @@ class ProductHelper extends AbstractEntityHelper
 
         $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo) {
-            $indexTmpOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
 
             $this->algoliaConnector->setSettings(
                 $indexTmpOptions,
@@ -336,11 +337,11 @@ class ProductHelper extends AbstractEntityHelper
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
-        $this->setFacetsQueryRules($indexName, $storeId);
+        $this->setFacetsQueryRules($indexOptions);
         $this->algoliaConnector->waitLastTask($storeId);
 
         if ($saveToTmpIndicesToo) {
-            $this->setFacetsQueryRules($indexNameTmp, $storeId);
+            $this->setFacetsQueryRules($indexTmpOptions);
             $this->algoliaConnector->waitLastTask($storeId);
         }
 
@@ -348,10 +349,7 @@ class ProductHelper extends AbstractEntityHelper
 
         if ($saveToTmpIndicesToo) {
             try {
-                $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
-                $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
-
-                $this->algoliaConnector->copySynonyms($fromIndexOptions, $toIndexOptions);
+                $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
                 $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
                         Copying synonyms from production index to "' . $indexNameTmp . '" to not erase them with the index move.
@@ -361,10 +359,7 @@ class ProductHelper extends AbstractEntityHelper
             }
 
             try {
-                $fromIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
-                $toIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
-
-                $this->algoliaConnector->copyQueryRules($fromIndexOptions, $toIndexOptions);
+                $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
                 $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
                         Copying query rules from production index to "' . $indexNameTmp . '" to not erase them with the index move.
@@ -491,17 +486,17 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(string $indexName, int $storeId = null)
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions)
     {
-        $this->clearFacetsQueryRules($indexName, $storeId);
+        $this->clearFacetsQueryRules($indexOptions);
 
         $rules = [];
-        $facets = $this->configHelper->getFacets($storeId);
+        $facets = $this->configHelper->getFacets($indexOptions->getStoreId());
         foreach ($facets as $facet) {
             if (!array_key_exists('create_rule', $facet) || $facet['create_rule'] !== '1') {
                 continue;
@@ -531,23 +526,20 @@ class ProductHelper extends AbstractEntityHelper
         }
 
         if ($rules) {
-            $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
+            $this->logger->log('Setting facets query rules to "' . $indexOptions->getIndexName() . '" index: ' . json_encode($rules));
 
-            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
             $this->algoliaConnector->saveRules($indexOptions, $rules, true);
         }
     }
 
     /**
-     * @param $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function clearFacetsQueryRules($indexName, int $storeId = null): void
+    protected function clearFacetsQueryRules(IndexOptionsInterface $indexOptions): void
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
-
         try {
             $hitsPerPage = 100;
             $page = 0;

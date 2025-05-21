@@ -75,21 +75,19 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
             $indexName = $this->additionalSectionHelper->getIndexName($storeId);
             $indexName = $indexName . '_' . $section['name'];
-
-            $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
-
             $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
 
-            foreach (array_chunk($attributeValues, 100) as $chunk) {
-                $this->saveObjects($chunk, $tempIndexName, $storeId);
-            }
+            $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
 
             $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
             $tempIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tempIndexName, $storeId);
 
+            foreach (array_chunk($attributeValues, 100) as $chunk) {
+                $this->saveObjects($chunk, $tempIndexOptions);
+            }
+
             $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
             $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
-
 
             $this->algoliaConnector->setSettings(
                 $indexOptions,

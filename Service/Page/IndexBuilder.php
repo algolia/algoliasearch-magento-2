@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -70,8 +69,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             return;
         }
 
-        $indexName = $this->pageHelper->getIndexName($storeId);
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(PageHelper::INDEX_NAME_SUFFIX, $storeId);
 
         $this->startEmulation($storeId);
 
@@ -84,11 +82,15 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if (isset($pages['toIndex']) && count($pages['toIndex'])) {
             $pagesToIndex = $pages['toIndex'];
-            $toIndexName = $indexName . ($isFullReindex ? IndexNameFetcher::INDEX_TEMP_SUFFIX : '');
+            $toIndexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
+                PageHelper::INDEX_NAME_SUFFIX,
+                $storeId,
+                $isFullReindex
+            );
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
-                    $this->saveObjects($chunk, $toIndexName, $storeId);
+                    $this->saveObjects($chunk, $toIndexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
                     continue;

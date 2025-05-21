@@ -113,7 +113,10 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexName = $this->suggestionHelper->getTempIndexName($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
+          SuggestionHelper::INDEX_NAME_SUFFIX,
+          $storeId
+        );
         $indexData = [];
 
         /** @var Query $suggestion */
@@ -125,7 +128,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             }
         }
         if (count($indexData) > 0) {
-            $this->saveObjects($indexData, $indexName, $storeId);
+            $this->saveObjects($indexData, $indexOptions, $storeId);
         }
 
         unset($indexData);
@@ -146,10 +149,16 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
-        $tmpIndexName = $this->suggestionHelper->getTempIndexName($storeId);
-        $indexName = $this->suggestionHelper->getIndexName($storeId);
-        $tmpIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tmpIndexName, $storeId);
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $tmpIndexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
+            SuggestionHelper::INDEX_NAME_SUFFIX,
+            $storeId,
+            true
+        );
+        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
+            SuggestionHelper::INDEX_NAME_SUFFIX,
+            $storeId,
+        );
 
         $this->algoliaConnector->copyQueryRules($indexOptions, $tmpIndexOptions);
         $this->algoliaConnector->moveIndex($tmpIndexOptions, $indexOptions);

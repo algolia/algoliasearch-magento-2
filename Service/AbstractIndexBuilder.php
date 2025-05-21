@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -69,32 +70,29 @@ abstract class AbstractIndexBuilder
 
     /**
      * @param array $objects
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param int|null $storeId
      * @return void
-     * @throws \Exception
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function saveObjects(array $objects, string $indexName, int $storeId = null): void
+    protected function saveObjects(array $objects, IndexOptionsInterface $indexOptions): void
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
-
         $this->algoliaConnector->saveObjects($indexOptions, $objects, $this->configHelper->isPartialUpdateEnabled());
     }
 
     /**
-     * @param $indexName
-     * @param $idsToRemove
-     * @param null $storeId
-     * @return array|mixed
+     * @param IndexOptionsInterface $indexOptions
+     * @param array $idsToRemove
+     * @param int|null $storeId
+     * @return array
      * @throws AlgoliaException
      */
-    protected function getIdsToRealRemove($indexName, $idsToRemove, $storeId = null)
+    protected function getIdsToRealRemove(IndexOptionsInterface $indexOptions, array $idsToRemove, ?int $storeId = null)
     {
         if (count($idsToRemove) === 1) {
             return $idsToRemove;
         }
-
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
         $toRealRemove = [];
         $idsToRemove = array_map('strval', $idsToRemove);

@@ -13,7 +13,6 @@ use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -98,10 +97,12 @@ class IndicesConfigurator
         $logEventName = 'Pushing settings for categories indices.';
         $this->logger->start($logEventName, true);
 
-        $indexName = $this->categoryHelper->getIndexName($storeId);
         $settings = $this->categoryHelper->getIndexSettings($storeId);
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
+            CategoryHelper::INDEX_NAME_SUFFIX,
+            $storeId
+        );
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -110,7 +111,7 @@ class IndicesConfigurator
             true
         );
 
-        $this->logger->log('Index name: ' . $indexName);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
         $this->logger->stop($logEventName, true);
     }
@@ -126,9 +127,8 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $settings = $this->pageHelper->getIndexSettings($storeId);
-        $indexName = $this->pageHelper->getIndexName($storeId);
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(PageHelper::INDEX_NAME_SUFFIX, $storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -137,7 +137,7 @@ class IndicesConfigurator
             true
         );
 
-        $this->logger->log('Index name: ' . $indexName);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
         $this->logger->stop($logEventName, true);
     }
@@ -152,9 +152,8 @@ class IndicesConfigurator
         $logEventName = 'Pushing settings for query suggestions indices.';
         $this->logger->start($logEventName, true);
 
-        $indexName = $this->suggestionHelper->getIndexName($storeId);
         $settings = $this->suggestionHelper->getIndexSettings($storeId);
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(SuggestionHelper::INDEX_NAME_SUFFIX, $storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -163,7 +162,7 @@ class IndicesConfigurator
             true
         );
 
-        $this->logger->log('Index name: ' . $indexName);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
         $this->logger->stop($logEventName, true);
     }
@@ -243,19 +242,26 @@ class IndicesConfigurator
             'suggestions' => $this->suggestionHelper->getIndexName($storeId),
             'additional_sections' => $this->additionalSectionHelper->getIndexName($storeId)
         ];
+        $sections = [
+            'products',
+            'categories',
+            'pages',
+            'suggestions',
+            'additional_sections'
+        ];
 
         $error = [];
-        foreach ($sections as $section => $indexName) {
+        foreach ($sections as $section) {
             try {
                 $extraSettings = $this->configHelper->getExtraSettings($section, $storeId);
 
                 if ($extraSettings) {
                     $extraSettings = json_decode($extraSettings, true);
 
-                    $this->logger->log('Index name: ' . $indexName);
-                    $this->logger->log('Extra settings: ' . json_encode($extraSettings));
+                    $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex('_' . $section, $storeId);
 
-                    $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+                    $this->logger->log('Index name: ' . $indexOptions->getIndexName());
+                    $this->logger->log('Extra settings: ' . json_encode($extraSettings));
 
                     $this->algoliaConnector->setSettings(
                         $indexOptions,
@@ -266,11 +272,14 @@ class IndicesConfigurator
                     $this->algoliaConnector->waitLastTask($storeId);
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {
-                        $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
-                        $this->logger->log('Index name: ' . $tempIndexName);
-                        $this->logger->log('Extra settings: ' . json_encode($extraSettings));
+                        $indexTempOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
+                            ProductHelper::INDEX_NAME_SUFFIX,
+                            $storeId,
+                            true
+                        );
 
-                        $indexTempOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tempIndexName, $storeId);
+                        $this->logger->log('Index name: ' . $indexTempOptions->getIndexName());
+                        $this->logger->log('Extra settings: ' . json_encode($extraSettings));
 
                         $this->algoliaConnector->setSettings(
                             $indexTempOptions,

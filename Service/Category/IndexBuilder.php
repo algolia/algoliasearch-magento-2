@@ -151,18 +151,17 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         }
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexName = $this->categoryHelper->getIndexName($storeId);
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(CategoryHelper::INDEX_NAME_SUFFIX, $storeId);
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->saveObjects($indexData['toIndex'], $indexName, $storeId);
+            $this->saveObjects($indexData['toIndex'], $indexOptions);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
 
         if (!empty($indexData['toRemove'])) {
-            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove'], $storeId);
+            $toRealRemove = $this->getIdsToRealRemove($indexOptions, $indexData['toRemove']);
             if (!empty($toRealRemove)) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
                 $this->algoliaConnector->deleteObjects($toRealRemove, $indexOptions);

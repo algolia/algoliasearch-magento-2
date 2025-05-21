@@ -329,7 +329,8 @@ class ProductHelper extends AbstractEntityHelper
                 $indexTmpOptions,
                 $indexSettings,
                 false,
-                true
+                true,
+                $indexName
             );
 
             $this->logger->log('Pushing the same settings to TMP index as well');

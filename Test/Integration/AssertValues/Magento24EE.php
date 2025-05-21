@@ -9,7 +9,7 @@ abstract class Magento24EE
     public $productsCountWithoutGiftcards = 181;
     public $lastJobDataSize = 13;
     public $expectedCategory = 17;
-    public $attributesForFaceting = 5;
+    public $attributesForFaceting = 6;
     public $automaticalSetOfCategoryAttributesForFaceting = 4;
     public $expectedPages = 9;
     public $expectedExcludePages = 7;

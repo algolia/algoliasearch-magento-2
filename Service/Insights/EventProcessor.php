@@ -268,7 +268,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemSalePrice(OrderItem $item): float
     {
-        return floatval($item->getPrice()) - $this->getOrderItemCartDiscount($item);
+        return floatval($item->getPriceInclTax()) - $this->getOrderItemCartDiscount($item);
     }
 
     /**
@@ -286,7 +286,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemDiscount(OrderItem $item): float
     {
-        $itemDiscount = floatval($item->getOriginalPrice()) - floatval($item->getPrice());
+        $itemDiscount = floatval($item->getOriginalPrice()) - floatval($item->getPriceInclTax());
         return $itemDiscount + $this->getOrderItemCartDiscount($item);
     }
 

@@ -82,7 +82,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $suggestionHelper = $this->getSuggestionHelper();
 
-        $algoliaConnector = $this->getAlgoliaConnector();
+        $algoliaConnector = $this->algoliaConnector;
 
         $persoHelper = $this->getPersonalizationHelper();
 

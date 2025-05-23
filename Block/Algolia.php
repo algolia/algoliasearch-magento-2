@@ -107,11 +107,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
         return $this->catalogSearchHelper;
     }
 
-    public function getAlgoliaConnector(): AlgoliaConnector
-    {
-        return $this->algoliaConnector;
-    }
-
     public function getPersonalizationHelper(): PersonalizationHelper
     {
         return $this->personalizationHelper;

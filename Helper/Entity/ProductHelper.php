@@ -301,8 +301,8 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param string $indexName
-     * @param string $indexNameTmp
+     * @param IndexOptionsInterface $indexOptions
+     * @param IndexOptionsInterface $indexTmpOptions
      * @param int $storeId
      * @param bool $saveToTmpIndicesToo
      * @return void
@@ -310,11 +310,13 @@ class ProductHelper extends AbstractEntityHelper
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function setSettings(string $indexName, string $indexNameTmp, int $storeId, bool $saveToTmpIndicesToo = false): void
-    {
+    public function setSettings(
+        IndexOptionsInterface $indexOptions,
+        IndexOptionsInterface $indexTmpOptions,
+        int $storeId,
+        bool $saveToTmpIndicesToo = false
+    ): void {
         $indexSettings = $this->getIndexSettings($storeId);
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
-        $indexTmpOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexNameTmp, $storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -331,7 +333,7 @@ class ProductHelper extends AbstractEntityHelper
                 $indexSettings,
                 false,
                 true,
-                $indexName
+                $indexOptions->getIndexName()
             );
 
             $this->logger->log('Pushing the same settings to TMP index as well');

@@ -14,22 +14,30 @@ use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Category\IndexOptionsBuilder as CategoryIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Page\IndexOptionsBuilder as PageIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Suggestion\IndexOptionsBuilder as SuggestionIndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndicesConfigurator
 {
     public function __construct(
-        protected Data                      $baseHelper,
-        protected IndexOptionsBuilder       $indexOptionsBuilder,
-        protected AlgoliaConnector          $algoliaConnector,
-        protected ConfigHelper              $configHelper,
-        protected ProductHelper             $productHelper,
-        protected CategoryHelper            $categoryHelper,
-        protected PageHelper                $pageHelper,
-        protected SuggestionHelper          $suggestionHelper,
-        protected AdditionalSectionHelper   $additionalSectionHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected DiagnosticsLogger         $logger
+        protected Data                          $baseHelper,
+        protected IndexOptionsBuilder           $indexOptionsBuilder,
+        protected CategoryIndexOptionsBuilder   $categoryIndexOptionsBuilder,
+        protected PageIndexOptionsBuilder       $pageIndexOptionsBuilder,
+        protected ProductIndexOptionsBuilder    $productIndexOptionsBuilder,
+        protected SuggestionIndexOptionsBuilder $suggestionIndexOptionsBuilder,
+        protected AlgoliaConnector              $algoliaConnector,
+        protected ConfigHelper                  $configHelper,
+        protected ProductHelper                 $productHelper,
+        protected CategoryHelper                $categoryHelper,
+        protected PageHelper                    $pageHelper,
+        protected SuggestionHelper              $suggestionHelper,
+        protected AdditionalSectionHelper       $additionalSectionHelper,
+        protected AlgoliaCredentialsManager     $algoliaCredentialsManager,
+        protected DiagnosticsLogger             $logger
     ) {}
 
     /**
@@ -98,11 +106,7 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $settings = $this->categoryHelper->getIndexSettings($storeId);
-
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
-            CategoryHelper::INDEX_NAME_SUFFIX,
-            $storeId
-        );
+        $indexOptions = $this->categoryIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -127,8 +131,7 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $settings = $this->pageHelper->getIndexSettings($storeId);
-
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(PageHelper::INDEX_NAME_SUFFIX, $storeId);
+        $indexOptions = $this->pageIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -153,7 +156,7 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $settings = $this->suggestionHelper->getIndexSettings($storeId);
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(SuggestionHelper::INDEX_NAME_SUFFIX, $storeId);
+        $indexOptions = $this->suggestionIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         $this->algoliaConnector->setSettings(
             $indexOptions,
@@ -212,13 +215,13 @@ class IndicesConfigurator
         $logEventName = 'Pushing settings for products indices.';
         $this->logger->start($logEventName, true);
 
-        $indexName = $this->productHelper->getIndexName($storeId);
-        $indexNameTmp = $this->productHelper->getTempIndexName($storeId);
+        $indexOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $indexTmpOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId, true);
 
-        $this->logger->log('Index name: ' . $indexName);
-        $this->logger->log('TMP Index name: ' . $indexNameTmp);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
+        $this->logger->log('TMP Index name: ' . $indexTmpOptions->getIndexName());
 
-        $this->productHelper->setSettings($indexName, $indexNameTmp, $storeId, $useTmpIndex);
+        $this->productHelper->setSettings($indexOptions, $indexTmpOptions, $storeId, $useTmpIndex);
 
         $this->logger->stop($logEventName, true);
     }

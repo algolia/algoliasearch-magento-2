@@ -354,7 +354,7 @@ class ProductHelper extends AbstractEntityHelper
                 $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
                 $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
-                        Copying synonyms from production index to "' . $indexNameTmp . '" to not erase them with the index move.
+                        Copying synonyms from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
                     ');
             } catch (AlgoliaException $e) {
                 $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
@@ -364,7 +364,7 @@ class ProductHelper extends AbstractEntityHelper
                 $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
                 $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
-                        Copying query rules from production index to "' . $indexNameTmp . '" to not erase them with the index move.
+                        Copying query rules from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
                     ');
             } catch (AlgoliaException $e) {
                 if ($e->getCode() !== 404) {

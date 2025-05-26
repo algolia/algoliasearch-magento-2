@@ -21,7 +21,6 @@ abstract class AbstractIndexBuilder
         protected Emulation           $emulation,
         protected ScopeCodeResolver   $scopeCodeResolver,
         protected AlgoliaConnector    $algoliaConnector,
-        protected IndexOptionsBuilder $indexOptionsBuilder
     ){}
 
     /**

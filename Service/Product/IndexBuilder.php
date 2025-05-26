@@ -11,7 +11,6 @@ use Algolia\AlgoliaSearch\Helper\ProductDataArray;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
@@ -46,8 +45,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $logger,
             $emulation,
             $scopeCodeResolver,
-            $algoliaConnector,
-            $indexOptionsBuilder
+            $algoliaConnector
         );
 
         $this->priceIndexer = $indexerRegistry->get('catalog_product_price');
@@ -164,10 +162,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      */
     public function deleteInactiveProducts($storeId): void
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
-            ProductHelper::INDEX_NAME_SUFFIX,
-            $storeId
-        );
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $client = $this->algoliaConnector->getClient($storeId);
         $objectIds = [];
         $counter = 0;
@@ -256,10 +251,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->load();
         $this->logger->log('Loaded ' . count($collection) . ' products');
         $this->logger->stop($logMessage);
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
-            ProductHelper::INDEX_NAME_SUFFIX,
-            $storeId
-        );
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');

@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\RecordBuilder as SuggestionRecordBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -35,8 +34,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $logger,
             $emulation,
             $scopeCodeResolver,
-            $algoliaConnector,
-            $indexOptionsBuilder
+            $algoliaConnector
         );
     }
 
@@ -113,10 +111,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
-          SuggestionHelper::INDEX_NAME_SUFFIX,
-          $storeId
-        );
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexData = [];
 
         /** @var Query $suggestion */
@@ -150,15 +145,8 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             return;
         }
 
-        $tmpIndexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
-            SuggestionHelper::INDEX_NAME_SUFFIX,
-            $storeId,
-            true
-        );
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
-            SuggestionHelper::INDEX_NAME_SUFFIX,
-            $storeId,
-        );
+        $tmpIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         $this->algoliaConnector->copyQueryRules($indexOptions, $tmpIndexOptions);
         $this->algoliaConnector->moveIndex($tmpIndexOptions, $indexOptions);

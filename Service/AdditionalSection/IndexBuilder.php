@@ -32,8 +32,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $logger,
             $emulation,
             $scopeCodeResolver,
-            $algoliaConnector,
-            $indexOptionsBuilder
+            $algoliaConnector
         );
     }
 

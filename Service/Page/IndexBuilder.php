@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
@@ -31,8 +30,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $logger,
             $emulation,
             $scopeCodeResolver,
-            $algoliaConnector,
-            $indexOptionsBuilder
+            $algoliaConnector
         );
     }
 
@@ -69,7 +67,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             return;
         }
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(PageHelper::INDEX_NAME_SUFFIX, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         $this->startEmulation($storeId);
 
@@ -82,11 +80,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if (isset($pages['toIndex']) && count($pages['toIndex'])) {
             $pagesToIndex = $pages['toIndex'];
-            $toIndexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
-                PageHelper::INDEX_NAME_SUFFIX,
-                $storeId,
-                $isFullReindex
-            );
+            $toIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $isFullReindex);
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
@@ -111,8 +105,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         }
 
         if ($isFullReindex) {
-            $tempIndexName = $this->pageHelper->getTempIndexName($storeId);
-            $tempIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tempIndexName, $storeId);
+            $tempIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
 
             $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
             $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);

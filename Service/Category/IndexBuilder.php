@@ -11,7 +11,6 @@ use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\LocalizedException;
@@ -35,8 +34,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $logger,
             $emulation,
             $scopeCodeResolver,
-            $algoliaConnector,
-            $indexOptionsBuilder
+            $algoliaConnector
         );
     }
 
@@ -151,7 +149,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         }
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex(CategoryHelper::INDEX_NAME_SUFFIX, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');

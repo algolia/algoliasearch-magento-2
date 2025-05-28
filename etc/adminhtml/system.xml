@@ -15,6 +15,7 @@
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="credentials" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Credentials and Setup</label>
+                <attribute type="expanded">1</attribute>
                 <comment>
                     <![CDATA[
                         <div class="algolia-admin-content"></div>

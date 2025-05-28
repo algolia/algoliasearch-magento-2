@@ -3,6 +3,7 @@
 ## 3.16.0-beta.2
 
 ### Updates
+- Credentials form expanded by default in admin
 - Removed deprecated methods from Entity Helpers
 - Removed every calls to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be deleted in a future v3.17.0)
 - Updated integration tests

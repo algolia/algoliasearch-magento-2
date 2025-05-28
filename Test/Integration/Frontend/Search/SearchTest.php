@@ -25,7 +25,7 @@ class SearchTest extends TestCase
         $this->backendSearch = $this->objectManager->create(BackendSearch::class);
 
         $this->productIndexer->executeFull();
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
     }
 
     public function testSearch()

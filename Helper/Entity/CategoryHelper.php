@@ -8,7 +8,6 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Catalog\Model\Category;
-use Magento\Catalog\Model\Category as MagentoCategory;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
@@ -198,18 +197,6 @@ class CategoryHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param MagentoCategory $category
-     * @return array|mixed|null
-     * @throws LocalizedException
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function getObject(Category $category)
-    {
-        return $this->categoryRecordBuilder->buildRecord($category);
-    }
-
-    /**
      * @return int|mixed
      * @throws LocalizedException
      */
@@ -259,23 +246,9 @@ class CategoryHelper extends AbstractEntityHelper
      *
      * @return string|null
      *
-     * @deprecated (will be removed in v3.16.0)
      */
     public function getCategoryName($categoryId, $storeId = null)
     {
         return $this->categoryRecordBuilder->getCategoryName($categoryId, $storeId);
-    }
-
-    /**
-     * @param $filterNotIncludedCategories
-     * @param $storeId
-     * @return array
-     * @throws LocalizedException
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function getCoreCategories($filterNotIncludedCategories = true, $storeId = null)
-    {
-        return $this->categoryRecordBuilder->getCoreCategories($filterNotIncludedCategories, $storeId);
     }
 }

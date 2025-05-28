@@ -5,13 +5,13 @@ namespace Algolia\AlgoliaSearch\Service\Product;
 use Algolia\AlgoliaSearch\Api\Builder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\ProductDataArray;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\App\ResourceConnection;
@@ -31,14 +31,22 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         protected DiagnosticsLogger        $logger,
         protected Emulation                $emulation,
         protected ScopeCodeResolver        $scopeCodeResolver,
-        protected AlgoliaHelper            $algoliaHelper,
+        protected AlgoliaConnector         $algoliaConnector,
+        protected IndexOptionsBuilder      $indexOptionsBuilder,
         protected ProductHelper            $productHelper,
+        protected ProductRecordBuilder     $productRecordBuilder,
         protected ResourceConnection       $resource,
         protected ManagerInterface         $eventManager,
         protected MissingPriceIndexHandler $missingPriceIndexHandler,
         IndexerRegistry                    $indexerRegistry
     ){
-        parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
+        parent::__construct(
+            $configHelper,
+            $logger,
+            $emulation,
+            $scopeCodeResolver,
+            $algoliaConnector
+        );
 
         $this->priceIndexer = $indexerRegistry->get('catalog_product_price');
     }
@@ -154,26 +162,26 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      */
     public function deleteInactiveProducts($storeId): void
     {
-        $indexName = $this->productHelper->getIndexName($storeId);
-        $client = $this->algoliaHelper->getClient($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $client = $this->algoliaConnector->getClient($storeId);
         $objectIds = [];
         $counter = 0;
         $browseOptions = [
             'query'                => '',
             'attributesToRetrieve' => [AlgoliaConnector::ALGOLIA_API_OBJECT_ID],
         ];
-        $hits = $client->browseObjects($indexName, $browseOptions);
+        $hits = $client->browseObjects($indexOptions->getIndexName(), $browseOptions);
         foreach ($hits as $hit) {
             $objectIds[] = $hit[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];
             $counter++;
             if ($counter === 1000) {
-                $this->deleteInactiveIds($storeId, $objectIds, $indexName);
+                $this->deleteInactiveIds($storeId, $objectIds, $indexOptions);
                 $objectIds = [];
                 $counter = 0;
             }
         }
         if (!empty($objectIds)) {
-            $this->deleteInactiveIds($storeId, $objectIds, $indexName);
+            $this->deleteInactiveIds($storeId, $objectIds, $indexOptions);
         }
     }
 
@@ -217,7 +225,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->addCategoryIds();
         $collection->addUrlRewrite();
 
-        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'rating_summary')) {
+        if ($this->productRecordBuilder->isAttributeEnabled($additionalAttributes, 'rating_summary')) {
             $reviewTableName = $this->resource->getTableName('review_entity_summary');
             $collection
                 ->getSelect()
@@ -243,20 +251,20 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->load();
         $this->logger->log('Loaded ' . count($collection) . ' products');
         $this->logger->stop($logMessage);
-        $indexName = $this->productHelper->getIndexName($storeId, $useTmpIndex);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->saveObjects($indexData['toIndex'], $indexName, $storeId);
+            $this->saveObjects($indexData['toIndex'], $indexOptions);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
 
         if (!empty($indexData['toRemove'])) {
-            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove'], $storeId);
+            $toRealRemove = $this->getIdsToRealRemove($indexOptions, $indexData['toRemove']);
             if (!empty($toRealRemove)) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
-                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName, $storeId);
+                $this->algoliaConnector->deleteObjects($toRealRemove, $indexOptions);
                 $this->logger->log('Product IDs: ' . implode(', ', $toRealRemove));
                 $this->logger->stop('REMOVE FROM ALGOLIA');
             }
@@ -323,7 +331,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
             try {
                 $this->logger->startProfiling("canProductBeReindexed");
-                $this->productHelper->canProductBeReindexed($product, $storeId);
+                $this->productRecordBuilder->canProductBeReindexed($product, $storeId);
             } catch (ProductReindexingException $e) {
                 $productsToRemove[$productId] = $productId;
                 continue;
@@ -342,7 +350,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                 }
             }
 
-            $productsToIndex[$productId] = $this->productHelper->getObject($product);
+            $productsToIndex[$productId] = $this->productRecordBuilder->buildRecord($product);
         }
 
         if (is_array($potentiallyDeletedProductsIds)) {
@@ -365,8 +373,8 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     {
         $this->logger->startProfiling(__METHOD__);
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
-        if ($this->productHelper->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
-            && $this->productHelper->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
+        if ($this->productRecordBuilder->isAttributeEnabled($additionalAttributes, 'ordered_qty') === false
+            && $this->productRecordBuilder->isAttributeEnabled($additionalAttributes, 'total_ordered') === false) {
             return [];
         }
 
@@ -395,18 +403,18 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     /**
      * @param $storeId
      * @param $objectIds
-     * @param $indexName
+     * @param $indexOptions
      * @return void
      * @throws AlgoliaException
      */
-    protected function deleteInactiveIds($storeId, $objectIds, $indexName): void
+    protected function deleteInactiveIds($storeId, $objectIds, $indexOptions): void
     {
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
         $collection = $this->productHelper->getProductCollectionQuery($storeId, $objectIds, $onlyVisible);
         $dbIds = $collection->getAllIds();
         $collection = null;
         $idsToDeleteFromAlgolia = array_diff($objectIds, $dbIds);
-        $this->algoliaHelper->deleteObjects($idsToDeleteFromAlgolia, $indexName, $storeId);
+        $this->algoliaConnector->deleteObjects($idsToDeleteFromAlgolia, $indexOptions);
     }
 
     /**

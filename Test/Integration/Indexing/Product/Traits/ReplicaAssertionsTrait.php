@@ -38,7 +38,8 @@ trait ReplicaAssertionsTrait
         ?int $storeId = null
     ): array
     {
-        $replicaSettings = $this->algoliaHelper->getSettings($replicaIndexName, $storeId);
+        $replicaIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($replicaIndexName, $storeId);
+        $replicaSettings = $this->algoliaConnector->getSettings($replicaIndexOptions);
         $this->assertArrayHasKey('primary', $replicaSettings);
         $this->assertEquals($primaryIndexName, $replicaSettings['primary']);
         return $replicaSettings;
@@ -46,7 +47,8 @@ trait ReplicaAssertionsTrait
 
     protected function assertIndexNotExists(string $indexName, ?int $storeId = null): void
     {
-        $indexSettings = $this->algoliaHelper->getSettings($indexName, $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
         $this->assertCount(0, $indexSettings, "Settings found for index that should not exist");
     }
 

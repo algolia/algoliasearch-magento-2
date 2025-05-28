@@ -10,13 +10,13 @@ use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
 use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
@@ -49,7 +49,8 @@ class RecordBuilder implements RecordBuilderInterface
         protected StoreManagerInterface  $storeManager,
         protected ConfigHelper           $configHelper,
         protected CategoryHelper         $categoryHelper,
-        protected AlgoliaHelper          $algoliaHelper,
+        protected CategoryRecordBuilder  $categoryRecordBuilder,
+        protected AlgoliaConnector       $algoliaConnector,
         protected ImageHelper            $imageHelper,
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
@@ -134,7 +135,7 @@ class RecordBuilder implements RecordBuilderInterface
         );
         $customData = $transport->getData();
         $customData = array_merge($customData, $defaultData);
-        $this->algoliaHelper->castProductObject($customData);
+        $this->algoliaConnector->castProductObject($customData);
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_after_create_product_object',
@@ -415,7 +416,7 @@ class RecordBuilder implements RecordBuilderInterface
     public function getAllCategories($categoryIds, $storeId): array
     {
         $filterNotIncludedCategories = !$this->configHelper->showCatsNotIncludedInNavigation($storeId);
-        $categories = $this->categoryHelper->getCoreCategories($filterNotIncludedCategories, $storeId);
+        $categories = $this->categoryRecordBuilder->getCoreCategories($filterNotIncludedCategories, $storeId);
 
         $selectedCategories = [];
         foreach ($categoryIds as $id) {

@@ -311,13 +311,13 @@ class AlgoliaConnector
     /**
      * Warning: This method can't be performed across two different applications
      *
-     * @param IndexOptions $fromIndexOptions
-     * @param IndexOptions $toIndexOptions
+     * @param IndexOptionsInterface $fromIndexOptions
+     * @param IndexOptionsInterface $toIndexOptions
      * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function moveIndex(IndexOptions $fromIndexOptions, IndexOptions $toIndexOptions): void
+    public function moveIndex(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
     {
         $fromIndexName = $fromIndexOptions->getIndexName();
         $toIndexName = $toIndexOptions->getIndexName();

@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
 use Algolia\AlgoliaSearch\Algolia;
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -25,7 +26,6 @@ use Magento\Framework\App\State as AppState;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\Log\LoggerInterface;
 
 class ReplicaIndexingTest extends TestCase
 {
@@ -34,8 +34,6 @@ class ReplicaIndexingTest extends TestCase
     protected ?ReplicaManagerInterface $replicaManager = null;
 
     protected ?IndicesConfigurator $indicesConfigurator = null;
-
-    protected ?IndexOptionsBuilder $indexOptionsBuilder = null;
 
     protected ?string $indexName = null;
 

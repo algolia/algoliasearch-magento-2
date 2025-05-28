@@ -5,12 +5,13 @@ namespace Algolia\AlgoliaSearch\Service\AdditionalSection;
 use Algolia\AlgoliaSearch\Api\Builder\IndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
@@ -22,10 +23,17 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         protected DiagnosticsLogger       $logger,
         protected Emulation               $emulation,
         protected ScopeCodeResolver       $scopeCodeResolver,
-        protected AlgoliaHelper           $algoliaHelper,
+        protected AlgoliaConnector        $algoliaConnector,
+        protected IndexOptionsBuilder     $indexOptionsBuilder,
         protected AdditionalSectionHelper $additionalSectionHelper,
     ){
-        parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
+        parent::__construct(
+            $configHelper,
+            $logger,
+            $emulation,
+            $scopeCodeResolver,
+            $algoliaConnector
+        );
     }
 
     /**
@@ -66,25 +74,23 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
             $indexName = $this->additionalSectionHelper->getIndexName($storeId);
             $indexName = $indexName . '_' . $section['name'];
+            $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
 
             $attributeValues = $this->additionalSectionHelper->getAttributeValues($storeId, $section);
 
-            $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+            $tempIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($tempIndexName, $storeId);
 
             foreach (array_chunk($attributeValues, 100) as $chunk) {
-                $this->saveObjects($chunk, $tempIndexName, $storeId);
+                $this->saveObjects($chunk, $tempIndexOptions);
             }
 
-            $this->algoliaHelper->copyQueryRules($indexName, $tempIndexName, $storeId);
-            $this->algoliaHelper->moveIndex($tempIndexName, $indexName, $storeId);
+            $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
+            $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
 
-            $this->algoliaHelper->setSettings(
-                $indexName,
-                $this->additionalSectionHelper->getIndexSettings($storeId),
-                false,
-                false,
-                '',
-                $storeId
+            $this->algoliaConnector->setSettings(
+                $indexOptions,
+                $this->additionalSectionHelper->getIndexSettings($storeId)
             );
         }
     }

@@ -53,9 +53,10 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
         $this->productBatchQueueProcessor->processBatch(1, [$this->getValidTestProduct()]);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $results = $this->algoliaConnector->getObjects($indexOptions, [$this->getValidTestProduct()]);
         $hit = reset($results['results']);
 
         $defaultAttributes = [

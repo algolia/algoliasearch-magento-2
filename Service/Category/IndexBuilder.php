@@ -5,11 +5,12 @@ namespace Algolia\AlgoliaSearch\Service\Category;
 use Algolia\AlgoliaSearch\Api\Builder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Exception\CategoryReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\LocalizedException;
@@ -19,14 +20,22 @@ use Magento\Store\Model\App\Emulation;
 class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilderInterface
 {
     public function __construct(
-        protected ConfigHelper      $configHelper,
-        protected DiagnosticsLogger $logger,
-        protected Emulation         $emulation,
-        protected ScopeCodeResolver $scopeCodeResolver,
-        protected AlgoliaHelper     $algoliaHelper,
-        protected CategoryHelper    $categoryHelper
+        protected ConfigHelper          $configHelper,
+        protected DiagnosticsLogger     $logger,
+        protected Emulation             $emulation,
+        protected ScopeCodeResolver     $scopeCodeResolver,
+        protected AlgoliaConnector      $algoliaConnector,
+        protected IndexOptionsBuilder   $indexOptionsBuilder,
+        protected CategoryRecordBuilder $categoryRecordBuilder,
+        protected CategoryHelper        $categoryHelper
     ){
-        parent::__construct($configHelper, $logger, $emulation, $scopeCodeResolver, $algoliaHelper);
+        parent::__construct(
+            $configHelper,
+            $logger,
+            $emulation,
+            $scopeCodeResolver,
+            $algoliaConnector
+        );
     }
 
     /**
@@ -140,20 +149,20 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         }
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexName = $this->categoryHelper->getIndexName($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexData = $this->getCategoryRecords($storeId, $collection, $categoryIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');
-            $this->saveObjects($indexData['toIndex'], $indexName, $storeId);
+            $this->saveObjects($indexData['toIndex'], $indexOptions);
             $this->logger->log('Product IDs: ' . implode(', ', array_keys($indexData['toIndex'])));
             $this->logger->stop('ADD/UPDATE TO ALGOLIA');
         }
 
         if (!empty($indexData['toRemove'])) {
-            $toRealRemove = $this->getIdsToRealRemove($indexName, $indexData['toRemove'], $storeId);
+            $toRealRemove = $this->getIdsToRealRemove($indexOptions, $indexData['toRemove']);
             if (!empty($toRealRemove)) {
                 $this->logger->start('REMOVE FROM ALGOLIA');
-                $this->algoliaHelper->deleteObjects($toRealRemove, $indexName, $storeId);
+                $this->algoliaConnector->deleteObjects($toRealRemove, $indexOptions);
                 $this->logger->log('Category IDs: ' . implode(', ', $toRealRemove));
                 $this->logger->stop('REMOVE FROM ALGOLIA');
             }
@@ -207,7 +216,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                 continue;
             }
 
-            $categoriesToIndex[$categoryId] = $this->categoryHelper->getObject($category);
+            $categoriesToIndex[$categoryId] = $this->categoryRecordBuilder->buildRecord($category);
         }
 
         if (is_array($potentiallyDeletedCategoriesIds)) {

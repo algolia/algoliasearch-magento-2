@@ -1,5 +1,15 @@
 # CHANGE LOG
 
+## 3.16.0-beta.2
+
+### Updates
+- Removed deprecated methods from Entity Helpers
+- Removed every calls to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be deleted in a future v3.17.0)
+- Updated integration tests
+
+### Breaking Changes
+- `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).
+
 ## 3.16.0-beta.1
 
 ### Features

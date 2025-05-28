@@ -1,5 +1,11 @@
 # CHANGE LOG
 
+## 3.16.0-beta.2
+
+### Updates
+
+- Credentials form expanded by default in admin
+
 ## 3.16.0-beta.1
 
 ### Features

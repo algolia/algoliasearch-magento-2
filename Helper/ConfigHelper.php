@@ -132,7 +132,7 @@ class ConfigHelper
     // Indexing Manager settings
     public const ENABLE_INDEXING = 'algoliasearch_indexing_manager/algolia_indexing/enable_indexing';
     public const ENABLE_QUERY_SUGGESTIONS_INDEX = 'algoliasearch_indexing_manager/algolia_indexing/enable_query_suggestions_index';
-    public const ENABLE_PAGES_INDEX = 'algoliasearch_indexing_manager/algolia_indexing/credentials/enable_pages_index';
+    public const ENABLE_PAGES_INDEX = 'algoliasearch_indexing_manager/algolia_indexing/enable_pages_index';
     public const ENABLE_INDEXER_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/products';
     public const ENABLE_INDEXER_CATEGORIES = 'algoliasearch_indexing_manager/full_indexing/categories';
     public const ENABLE_INDEXER_PAGES = 'algoliasearch_indexing_manager/full_indexing/pages';

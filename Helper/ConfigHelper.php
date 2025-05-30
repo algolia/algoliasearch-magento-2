@@ -21,9 +21,6 @@ use Magento\Store\Model\StoreManagerInterface;
 class ConfigHelper
 {
     public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
-    public const ENABLE_BACKEND = 'algoliasearch_credentials/credentials/enable_backend';
-    public const ENABLE_QUERY_SUGGESTIONS_INDEX = 'algoliasearch_credentials/credentials/enable_query_suggestions_index';
-    public const ENABLE_PAGES_INDEX = 'algoliasearch_credentials/credentials/enable_pages_index';
     public const LOGGING_ENABLED = 'algoliasearch_credentials/credentials/debug';
     public const APPLICATION_ID = 'algoliasearch_credentials/credentials/application_id';
     public const API_KEY = 'algoliasearch_credentials/credentials/api_key';
@@ -133,6 +130,9 @@ class ConfigHelper
     public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
 
     // Indexing Manager settings
+    public const ENABLE_INDEXING = 'algoliasearch_indexing_manager/algolia_indexing/enable_indexing';
+    public const ENABLE_QUERY_SUGGESTIONS_INDEX = 'algoliasearch_indexing_manager/algolia_indexing/enable_query_suggestions_index';
+    public const ENABLE_PAGES_INDEX = 'algoliasearch_indexing_manager/algolia_indexing/credentials/enable_pages_index';
     public const ENABLE_INDEXER_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/products';
     public const ENABLE_INDEXER_CATEGORIES = 'algoliasearch_indexing_manager/full_indexing/categories';
     public const ENABLE_INDEXER_PAGES = 'algoliasearch_indexing_manager/full_indexing/pages';
@@ -247,9 +247,9 @@ class ConfigHelper
      * @param $storeId
      * @return bool
      */
-    public function isEnabledBackend($storeId = null)
+    public function isIndexingEnabled($storeId = null)
     {
-        return $this->configInterface->isSetFlag(self::ENABLE_BACKEND, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::ENABLE_INDEXING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

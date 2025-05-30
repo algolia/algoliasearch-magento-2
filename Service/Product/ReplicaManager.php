@@ -494,7 +494,7 @@ class ReplicaManager implements ReplicaManagerInterface
      */
     public function isReplicaSyncEnabled(int $storeId): bool
     {
-        return $this->configHelper->isInstantEnabled($storeId) && $this->configHelper->isEnabledBackend($storeId);
+        return $this->configHelper->isInstantEnabled($storeId) && $this->configHelper->isIndexingEnabled($storeId);
     }
 
     /**

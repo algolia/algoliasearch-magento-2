@@ -105,7 +105,7 @@ class PageHelper extends AbstractEntityHelper
         if ($storeId === null) {
             /** @var \Magento\Store\Model\Store $store */
             foreach ($this->storeManager->getStores() as $store) {
-                if ($this->configHelper->isEnabledBackEnd($store->getId()) === false) {
+                if ($this->configHelper->isIndexingEnabled($store->getId()) === false) {
                     continue;
                 }
 

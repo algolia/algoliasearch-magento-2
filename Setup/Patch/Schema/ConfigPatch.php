@@ -30,7 +30,7 @@ class ConfigPatch implements SchemaPatchInterface
      * @var string[]
      */
     protected $defaultConfigData = [
-        'algoliasearch_credentials/credentials/enable_backend' => '1',
+        'algoliasearch_indexing_manager/algolia_indexing/enable_indexing' => '1',
         'algoliasearch_credentials/credentials/enable_frontend' => '1',
         'algoliasearch_credentials/credentials/application_id' => '',
         'algoliasearch_credentials/credentials/search_only_api_key' => '',

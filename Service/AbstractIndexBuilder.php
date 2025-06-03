@@ -30,7 +30,7 @@ abstract class AbstractIndexBuilder
      */
     protected function isIndexingEnabled($storeId = null): bool
     {
-        if ($this->configHelper->isEnabledBackend($storeId) === false) {
+        if ($this->configHelper->isIndexingEnabled($storeId) === false) {
             $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
             return false;
         }

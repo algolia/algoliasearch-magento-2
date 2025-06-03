@@ -192,7 +192,7 @@ class ReplicaIndexingTest extends TestCase
     }
 
     /**
-     * @magentoConfigFixture current_store algoliasearch_credentials/credentials/enable_backend 0
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/algolia_indexing/enable_indexing 0
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      * @throws AlgoliaException
      * @throws ExceededRetriesException
@@ -241,7 +241,7 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * Test the RebuildReplicasPatch with API failures
-     * @magentoConfigFixture current_store algoliasearch_credentials/credentials/enable_backend 1
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/algolia_indexing/enable_indexing 1
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      */
     public function testReplicaRebuildPatch(): void

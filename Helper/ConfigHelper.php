@@ -1715,6 +1715,15 @@ class ConfigHelper
      */
     public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
 
+    // --- Indexing Manager --- //
+
+    /**
+     * @deprecated This constant has been renamed to be more meaningful and to avoid confusion with "backend rendering" statements
+     * @see \Algolia\AlgoliaSearch\Helper\ConfigHelper::ENABLE_INDEXING
+     */
+    public const ENABLE_BACKEND = self::ENABLE_INDEXING;
+
+
     // --- Autocomplete --- //
 
     /**
@@ -2034,5 +2043,18 @@ class ConfigHelper
     public function hidePaginationInInstantSearchPage($storeId = null)
     {
         return $this->instantSearchConfig->shouldHidePagination($storeId);
+    }
+
+    // --- Indexing Manager --- //
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been renamed to be more meaningful and to avoid confusion with "backend rendering" statements
+     * @see \Algolia\AlgoliaSearch\Helper\ConfigHelper::isIndexingEnabled()
+     */
+    public function isEnabledBackend($storeId = null)
+    {
+        return $this->isIndexingEnabled($storeId);
     }
 }

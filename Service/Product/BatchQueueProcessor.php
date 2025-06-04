@@ -14,6 +14,7 @@ use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
+use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class BatchQueueProcessor implements BatchQueueProcessorInterface
@@ -39,53 +40,89 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
      */
     public function processBatch(int $storeId, ?array $entityIds = null): void
     {
-        if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
+        if (!$this->dataHelper->isIndexingEnabled($storeId)) {
             return;
         }
 
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
             return;
-        }
-
-        if ($entityIds && !$this->areParentsLoaded) {
-            $entityIds = array_unique(array_merge($entityIds, $this->productHelper->getParentProductIds($entityIds)));
-            $this->areParentsLoaded = true;
         }
 
         $productsPerPage = $this->configHelper->getNumberOfElementByPage();
 
-        if (is_array($entityIds) && count($entityIds) > 0) {
-            foreach (array_chunk($entityIds, $productsPerPage) as $chunk) {
-                /** @uses ProductIndexBuilder::buildIndexList() */
-                $this->queue->addToQueue(
-                    ProductIndexBuilder::class,
-                    'buildIndexList',
-                    ['storeId' => $storeId, 'entityIds' => $chunk],
-                    count($chunk)
-                );
-            }
-
+        if (!empty($entityIds)) {
+            $this->handleEntityIds($entityIds, $storeId, $productsPerPage);
             return;
         }
 
         $useTmpIndex = $this->configHelper->isQueueActive($storeId);
-        $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
-        $collection = $this->productHelper->getProductCollectionQuery($storeId, $entityIds, $onlyVisible);
+        $this->syncAlgoliaSettings($storeId, $useTmpIndex);
 
-        $timerName = __METHOD__ . ' (Get product collection size)';
-        $this->diag->startProfiling($timerName);
+        $this->handleFullIndex($storeId, $productsPerPage, $useTmpIndex);
+
+        if ($useTmpIndex) {
+            $this->moveTempIndex($storeId);
+        }
+    }
+
+    /**
+     * @throws DiagnosticsException
+     */
+    protected function getCollectionSize(Collection $collection): int
+    {
+        $this->diag->startProfiling(__METHOD__);
         $size = $collection->getSize();
-        $this->diag->stopProfiling($timerName);
+        $this->diag->stopProfiling(__METHOD__);
+        return $size;
+    }
 
-        $pages = ceil($size / $productsPerPage);
-
+    protected function syncAlgoliaSettings(int $storeId, bool $useTmpIndex): void
+    {
         /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
         $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', [
             'storeId' => $storeId,
             'useTmpIndex' => $useTmpIndex,
         ], 1, true);
+    }
+
+    protected function moveTempIndex(int $storeId): void {
+        /** @uses IndexMover::moveIndexWithSetSettings() */
+        $this->queue->addToQueue(IndexMover::class, 'moveIndexWithSetSettings', [
+            'tmpIndexName' => $this->productHelper->getTempIndexName($storeId),
+            'indexName' => $this->productHelper->getIndexName($storeId),
+            'storeId' => $storeId,
+        ], 1, true);
+    }
+
+    protected function handleEntityIds(array $entityIds, int $storeId, int $productsPerPage): void
+    {
+        // TODO: Reassess this member bool
+        if (!$this->areParentsLoaded) {
+            $entityIds = array_unique(array_merge($entityIds, $this->productHelper->getParentProductIds($entityIds)));
+            $this->areParentsLoaded = true;
+        }
+
+        foreach (array_chunk($entityIds, $productsPerPage) as $chunk) {
+            /** @uses ProductIndexBuilder::buildIndexList() */
+            $this->queue->addToQueue(
+                ProductIndexBuilder::class,
+                'buildIndexList',
+                ['storeId' => $storeId, 'entityIds' => $chunk],
+                count($chunk)
+            );
+        }
+    }
+
+    /**
+     * @throws DiagnosticsException
+     */
+    protected function handleFullIndex(int $storeId, int $productsPerPage, bool $useTmpIndex): void
+    {
+        $entityIds = []; // unused in full reindex
+        $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
+        $collection = $this->productHelper->getProductCollectionQuery($storeId, $entityIds, $onlyVisible);
+        $pages = ceil($this->getCollectionSize($collection) / $productsPerPage);
         for ($i = 1; $i <= $pages; $i++) {
             $data = [
                 'storeId' => $storeId,
@@ -105,15 +142,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
                 $productsPerPage,
                 true
             );
-        }
-
-        if ($useTmpIndex) {
-            /** @uses IndexMover::moveIndexWithSetSettings() */
-            $this->queue->addToQueue(IndexMover::class, 'moveIndexWithSetSettings', [
-                'tmpIndexName' => $this->productHelper->getTempIndexName($storeId),
-                'indexName' => $this->productHelper->getIndexName($storeId),
-                'storeId' => $storeId,
-            ], 1, true);
         }
     }
 

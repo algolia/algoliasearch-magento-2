@@ -22,21 +22,23 @@
         <plugin name="algoliaSearchHelperData" type="Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin"/>
     </type>
 
-    <!-- Dependency Injection for new Model -->
+    <!-- Algolia models -->
     <preference for="Algolia\AlgoliaSearch\Api\Data\JobInterface" type="Algolia\AlgoliaSearch\Model\Job" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" type="Algolia\AlgoliaSearch\Model\LandingPage" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueryInterface" type="Algolia\AlgoliaSearch\Model\Query" />
     <preference for="Algolia\AlgoliaSearch\Api\RecommendManagementInterface" type="Algolia\AlgoliaSearch\Model\RecommendManagement" />
-
-    <!-- Declare preference for QueueArchiveRepositoryInterface -->
     <preference for="Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface" type="Algolia\AlgoliaSearch\Model\QueueArchiveRepository" />
-
-    <!-- Declare implementation for QueueArchiveInterface -->
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface" type="Algolia\AlgoliaSearch\Model\QueueArchive" />
 
+    <!-- Algolia services -->
     <preference for="Algolia\AlgoliaSearch\Api\Insights\EventProcessorInterface" type="Algolia\AlgoliaSearch\Service\Insights\EventProcessor"/>
-
     <preference for="Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface" type="Algolia\AlgoliaSearch\Service\Product\ReplicaManager"/>
+
+    <type name="Algolia\AlgoliaSearch\Model\Indexer\Product">
+        <arguments>
+            <argument name="productBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor</argument>
+        </arguments>
+    </type>
 
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>

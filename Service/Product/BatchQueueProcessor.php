@@ -19,8 +19,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 class BatchQueueProcessor implements BatchQueueProcessorInterface
 {
-    protected bool $areParentsLoaded = false;
-
     public function __construct(
         protected Data $dataHelper,
         protected ConfigHelper $configHelper,
@@ -97,11 +95,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
 
     protected function handleDeltaIndex(array $entityIds, int $storeId, int $productsPerPage): void
     {
-        // TODO: Reassess this member bool
-        if (!$this->areParentsLoaded) {
-            $entityIds = array_unique(array_merge($entityIds, $this->productHelper->getParentProductIds($entityIds)));
-            $this->areParentsLoaded = true;
-        }
+        $entityIds = array_unique(array_merge($entityIds, $this->productHelper->getParentProductIds($entityIds)));
 
         foreach (array_chunk($entityIds, $productsPerPage) as $chunk) {
             /** @uses ProductIndexBuilder::buildIndexList() */

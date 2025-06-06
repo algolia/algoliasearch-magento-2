@@ -52,7 +52,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         $productsPerPage = $this->configHelper->getNumberOfElementByPage();
 
         if (!empty($entityIds)) {
-            $this->handleEntityIds($entityIds, $storeId, $productsPerPage);
+            $this->handleDeltaIndex($entityIds, $storeId, $productsPerPage);
             return;
         }
 
@@ -95,7 +95,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         ], 1, true);
     }
 
-    protected function handleEntityIds(array $entityIds, int $storeId, int $productsPerPage): void
+    protected function handleDeltaIndex(array $entityIds, int $storeId, int $productsPerPage): void
     {
         // TODO: Reassess this member bool
         if (!$this->areParentsLoaded) {

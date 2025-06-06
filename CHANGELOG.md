@@ -16,7 +16,7 @@
 ### Features
 
 - Automatic full indexing has been deprecated in 3.16 - you can now opt out of Algolia initiating full reindexing from `indexer_reindex_all_invalid`.
-- Added an "Indexing Manager" section within the Algolia configuration which disables automatic full reindexing by default and allows users to reactivate if needed.
+- Added an "Indexing Manager" section within the Algolia configuration which allows disabling automatic full reindexing with Magento indexers. **IMPORTANT: If you want to perform full reindexing, we highly suggest to turn this configuration off and run the newly created CLI commands instead.**
 - Added an "Indexing Manager" page which shows the created indices for main entities (products, categories and pages) and corresponding stores with a link to directly check them on the Algolia dashboard along with a form to reindex those entities directly from the Magento admin.
 - CLI commands are now provided to run explicit full reindex of all entities and stores.
 - Products and CMS pages can now be reindexed directly from Magento admin grids.

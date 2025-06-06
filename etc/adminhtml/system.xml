@@ -1093,9 +1093,9 @@
                 <label>Full indexing via Magento indexers</label>
                 <comment>
                     <![CDATA[
-                         <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers are now disabled by default for <strong>full indexing</strong>.
-                         However the extension continues to rely on them for reindexing specific entities with Magento materialized views or entity save events.</p>
-                         <p>If you want to perform full reindexing, we highly suggest to keep this configuration as it is and run the newly created CLI commands instead.</p>
+                         <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers can be disabled for <strong>full indexing</strong>.
+                         The extension will continue to rely on them for reindexing specific entities with Magento materialized views or entity save events if you do so.</p>
+                         <p>If you want to perform full reindexing, we highly suggest to turn this configuration off and run the newly created CLI commands instead (this will become the default behavior in a future version).</p>
                     ]]>
                 </comment>
                 <field id="products" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">

@@ -97,12 +97,19 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     {
         $entityIds = array_unique(array_merge($entityIds, $this->productHelper->getParentProductIds($entityIds)));
 
-        foreach (array_chunk($entityIds, $productsPerPage) as $chunk) {
+        foreach (array_chunk($entityIds, $productsPerPage) as $i => $chunk) {
             /** @uses ProductIndexBuilder::buildIndexList() */
             $this->queue->addToQueue(
                 ProductIndexBuilder::class,
                 'buildIndexList',
-                ['storeId' => $storeId, 'entityIds' => $chunk],
+                [
+                    'storeId'   => $storeId,
+                    'entityIds' => $chunk,
+                    'options'   => [
+                        'page'        => $i + 1,
+                        'pageSize'    => $productsPerPage,
+                    ]
+                ],
                 count($chunk)
             );
         }
@@ -113,17 +120,15 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
      */
     protected function handleFullIndex(int $storeId, int $productsPerPage, bool $useTmpIndex): void
     {
-        $entityIds = []; // unused in full reindex
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
-        $collection = $this->productHelper->getProductCollectionQuery($storeId, $entityIds, $onlyVisible);
+        $collection = $this->productHelper->getProductCollectionQuery($storeId, [], $onlyVisible);
         $pages = ceil($this->getCollectionSize($collection) / $productsPerPage);
         for ($i = 1; $i <= $pages; $i++) {
             $data = [
                 'storeId' => $storeId,
                 'options' => [
-                    'entityIds' => $entityIds,
-                    'page' => $i,
-                    'pageSize' => $productsPerPage,
+                    'page'        => $i,
+                    'pageSize'    => $productsPerPage,
                     'useTmpIndex' => $useTmpIndex,
                 ]
             ];

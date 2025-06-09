@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\Cache\IndexCollectionSize;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
@@ -26,7 +27,8 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         protected Queue $queue,
         protected DiagnosticsLogger $diag,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected ProductIndexBuilder $productIndexBuilder
+        protected ProductIndexBuilder $productIndexBuilder,
+        protected IndexCollectionSize $indexCollectionSizeCache
     ){}
 
     /**
@@ -67,10 +69,14 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     /**
      * @throws DiagnosticsException
      */
-    protected function getCollectionSize(Collection $collection): int
+    protected function getCollectionSize(int $storeId, Collection $collection): int
     {
         $this->diag->startProfiling(__METHOD__);
-        $size = $collection->getSize();
+        $size = $this->indexCollectionSizeCache->get($storeId);
+        if ($size === IndexCollectionSize::NOT_FOUND) {
+            $size = $collection->getSize();
+            $this->indexCollectionSizeCache->set($storeId, $size);
+        }
         $this->diag->stopProfiling(__METHOD__);
         return $size;
     }
@@ -122,7 +128,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     {
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
         $collection = $this->productHelper->getProductCollectionQuery($storeId, [], $onlyVisible);
-        $pages = ceil($this->getCollectionSize($collection) / $productsPerPage);
+        $pages = ceil($this->getCollectionSize($storeId, $collection) / $productsPerPage);
         for ($i = 1; $i <= $pages; $i++) {
             $data = [
                 'storeId' => $storeId,

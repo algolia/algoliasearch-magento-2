@@ -180,7 +180,7 @@ define([
                         var eventData = self.buildEventData(
                             'Clicked',
                             $this.data('objectid'),
-                            $this.data('indexname'),
+                            $this.data('index'),
                             $this.data('position'),
                             $this.data('queryid')
                         );

@@ -48,6 +48,7 @@
                 <item name="algolia_algoliasearch_log_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Run\Grid\Collection</item>
                 <item name="algolia_algoliasearch_landingpage_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage\Grid\Collection</item>
                 <item name="algolia_algoliasearch_query_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Query\Grid\Collection</item>
+                <item name="algolia_algoliasearch_queuearchive_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection</item>
             </argument>
         </arguments>
     </type>
@@ -135,13 +136,6 @@
         <plugin name="algoliasearch_query_quote_item_conversion" type="Algolia\AlgoliaSearch\Plugin\QuoteItem"/>
     </type>
 
-    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
-        <arguments>
-            <argument name="collections" xsi:type="array">
-                <item name="algolia_algoliasearch_queuearchive_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection</item>
-            </argument>
-        </arguments>
-    </type>
     <virtualType name="Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
         <arguments>
             <argument name="mainTable" xsi:type="string">algoliasearch_queue_archive</argument>

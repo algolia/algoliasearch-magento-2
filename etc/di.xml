@@ -2,6 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\Catalog\Model\ResourceModel\Product">
         <plugin name="algoliaProducts" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>
+        <plugin name="algoliaProductCacheClean" type="Algolia\AlgoliaSearch\Plugin\Cache\CacheCleanProductPlugin"/>
     </type>
     <type name="Magento\Catalog\Model\Product\Action">
         <plugin name="algoliaProductsMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>

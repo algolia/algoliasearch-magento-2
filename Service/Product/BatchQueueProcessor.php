@@ -90,6 +90,9 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         ], 1, true);
     }
 
+    /**
+     * @throws NoSuchEntityException
+     */
     protected function moveTempIndex(int $storeId): void {
         /** @uses IndexMover::moveIndexWithSetSettings() */
         $this->queue->addToQueue(IndexMover::class, 'moveIndexWithSetSettings', [

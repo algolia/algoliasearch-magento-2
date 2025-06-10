@@ -19,17 +19,24 @@ class IndexCollectionSize
 
     public function get(int $storeId): int
     {
+        if (!$this->isCacheAvailable()) {
+            return self::NOT_FOUND;
+        }
+
         /** @var string|false $data */
         $data = $this->cache->load($this->getCacheKey($storeId));
         if ($data === false) {
             return self::NOT_FOUND;
         }
+
         return (int) $data;
     }
 
     public function set(int $storeId, int $value, ?int $ttl = null): void
     {
-        $this->cache->save($value, $this->getCacheKey($storeId), [Indexer::CACHE_TAG], $ttl);
+        if ($this->isCacheAvailable()) {
+            $this->cache->save($value, $this->getCacheKey($storeId), [Indexer::CACHE_TAG], $ttl);
+        }
     }
 
     protected function remove(int $storeId): void

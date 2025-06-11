@@ -52,7 +52,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
             /** @var Product $subProduct */
             foreach ($subProducts as $subProduct) {
                 $specialPrice = $this->getSpecialPrice($subProduct, $currencyCode, $withTax, $subProducts);
-                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
+                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax, $subProducts);
                 if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
                     $minPrice = $tierPrice[0];
                 } else {
@@ -231,7 +231,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                 $subProduct->setData('customer_group_id', $groupId);
                 $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
                 $specialPrice = $this->getSpecialPrice($subProduct, $currencyCode, $withTax, []);
-                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
+                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax, []);
                 $price     = $this->getTaxPrice($product, $subProduct->getPriceModel()->getFinalPrice(1, $subProduct), $withTax);
 
                 if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {

@@ -2,10 +2,13 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\Catalog\Model\ResourceModel\Product">
         <plugin name="algoliaProducts" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>
+        <plugin name="algoliaProductCacheClean" type="Algolia\AlgoliaSearch\Plugin\Cache\CacheCleanProductPlugin"/>
     </type>
     <type name="Magento\Catalog\Model\Product\Action">
         <plugin name="algoliaProductsMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>
+        <plugin name="algoliaProductCacheCleanMassAction" type="Algolia\AlgoliaSearch\Plugin\Cache\CacheCleanProductPlugin"/>
     </type>
+
     <type name="Magento\CatalogInventory\Model\ResourceModel\Stock\Item">
         <plugin name="algoliaStockItems" type="Algolia\AlgoliaSearch\Plugin\StockItemObserver" disabled="true"/>
     </type>
@@ -22,21 +25,23 @@
         <plugin name="algoliaSearchHelperData" type="Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin"/>
     </type>
 
-    <!-- Dependency Injection for new Model -->
+    <!-- Algolia models -->
     <preference for="Algolia\AlgoliaSearch\Api\Data\JobInterface" type="Algolia\AlgoliaSearch\Model\Job" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\LandingPageInterface" type="Algolia\AlgoliaSearch\Model\LandingPage" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueryInterface" type="Algolia\AlgoliaSearch\Model\Query" />
     <preference for="Algolia\AlgoliaSearch\Api\RecommendManagementInterface" type="Algolia\AlgoliaSearch\Model\RecommendManagement" />
-
-    <!-- Declare preference for QueueArchiveRepositoryInterface -->
     <preference for="Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface" type="Algolia\AlgoliaSearch\Model\QueueArchiveRepository" />
-
-    <!-- Declare implementation for QueueArchiveInterface -->
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface" type="Algolia\AlgoliaSearch\Model\QueueArchive" />
 
+    <!-- Algolia services -->
     <preference for="Algolia\AlgoliaSearch\Api\Insights\EventProcessorInterface" type="Algolia\AlgoliaSearch\Service\Insights\EventProcessor"/>
-
     <preference for="Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface" type="Algolia\AlgoliaSearch\Service\Product\ReplicaManager"/>
+
+    <type name="Algolia\AlgoliaSearch\Model\Indexer\Product">
+        <arguments>
+            <argument name="productBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor</argument>
+        </arguments>
+    </type>
 
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
@@ -45,6 +50,7 @@
                 <item name="algolia_algoliasearch_log_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Run\Grid\Collection</item>
                 <item name="algolia_algoliasearch_landingpage_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage\Grid\Collection</item>
                 <item name="algolia_algoliasearch_query_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\Query\Grid\Collection</item>
+                <item name="algolia_algoliasearch_queuearchive_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection</item>
             </argument>
         </arguments>
     </type>
@@ -132,13 +138,6 @@
         <plugin name="algoliasearch_query_quote_item_conversion" type="Algolia\AlgoliaSearch\Plugin\QuoteItem"/>
     </type>
 
-    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
-        <arguments>
-            <argument name="collections" xsi:type="array">
-                <item name="algolia_algoliasearch_queuearchive_listing_data_source" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection</item>
-            </argument>
-        </arguments>
-    </type>
     <virtualType name="Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
         <arguments>
             <argument name="mainTable" xsi:type="string">algoliasearch_queue_archive</argument>

@@ -1,0 +1,6 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Cache/etc/cache.xsd">
+    <type name="algolia_indexer" translate="label,description" instance="Algolia\AlgoliaSearch\Model\Cache\Type\Indexer">
+        <label>Algolia Indexer</label>
+        <description>Algolia product indexing cache</description>
+    </type>
+</config>

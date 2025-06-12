@@ -13,4 +13,10 @@
             <argument name="frontendUrlBuilder" xsi:type="object">Magento\Framework\Url</argument>
         </arguments>
     </type>
+    <type name="Magento\Catalog\Controller\Adminhtml\Product\Action\Attribute\Save">
+        <plugin name="algolia_cache_clean_attribute_mass_action"
+                type="\Algolia\AlgoliaSearch\Plugin\Cache\CacheCleanBulkAttributePlugin"
+                sortOrder="1"
+        />
+    </type>
 </config>

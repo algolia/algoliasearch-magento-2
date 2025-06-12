@@ -3,8 +3,10 @@
 namespace Algolia\AlgoliaSearch\Plugin\Cache;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\Product\CacheHelper;
 use Algolia\AlgoliaSearch\Model\Cache\Product\IndexCollectionSize as Cache;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Action;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
@@ -15,7 +17,8 @@ class CacheCleanProductPlugin
 
     public function __construct(
         protected Cache $cache,
-        protected ConfigHelper $configHelper
+        protected ConfigHelper $configHelper,
+        protected CacheHelper $cacheHelper
     ) { }
 
     public function beforeSave(ProductResource $subject, Product $product): void
@@ -44,6 +47,16 @@ class CacheCleanProductPlugin
     public function afterDelete(ProductResource $subject, ProductResource $result): ProductResource
     {
         $this->cache->clear();
+        return $result;
+    }
+
+    /**
+     *  Called on mass action "Change Status"
+     *  Called on "Update attributes" if `product_action_attribute.update` consumer is running
+     */
+    public function afterUpdateAttributes(Action $subject, Action $result, array $productIds, array $attributes, int $storeId): Action
+    {
+        $this->cacheHelper->handleBulkAttributeChange($productIds, $attributes, $storeId);
         return $result;
     }
 

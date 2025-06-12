@@ -6,7 +6,9 @@
     </type>
     <type name="Magento\Catalog\Model\Product\Action">
         <plugin name="algoliaProductsMassAction" type="Algolia\AlgoliaSearch\Model\Indexer\ProductObserver"/>
+        <plugin name="algoliaProductCacheCleanMassAction" type="Algolia\AlgoliaSearch\Plugin\Cache\CacheCleanProductPlugin"/>
     </type>
+
     <type name="Magento\CatalogInventory\Model\ResourceModel\Stock\Item">
         <plugin name="algoliaStockItems" type="Algolia\AlgoliaSearch\Plugin\StockItemObserver" disabled="true"/>
     </type>

@@ -3,11 +3,11 @@
 namespace Algolia\AlgoliaSearch\Plugin\Cache;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\Cache\IndexCollectionSize as Cache;
+use Algolia\AlgoliaSearch\Model\Cache\Product\IndexCollectionSize as Cache;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
-use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 
 class CacheCleanProductPlugin
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Model\Cache;
+namespace Algolia\AlgoliaSearch\Model\Cache\Product;
 
 use Algolia\AlgoliaSearch\Model\Cache\Type\Indexer;
 use Magento\Framework\App\Cache\StateInterface;

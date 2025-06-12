@@ -100,7 +100,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $storeId,
             $collection,
             $options['page'] ?? 1,
-            $options['pageSize'] ?? $this->configHelper->getNumberOfElementByPage(),
+            $options['pageSize'] ?? $this->configHelper->getNumberOfElementByPage($storeId),
             $entityIds
         );
 

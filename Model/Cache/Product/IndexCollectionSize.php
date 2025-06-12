@@ -52,7 +52,7 @@ class IndexCollectionSize
 
     protected function getCacheKey(int $storeId): string
     {
-        return sprintf('%s_%d', Indexer::TYPE_IDENTIFIER, $storeId);
+        return sprintf('%s_%s_%d', Indexer::TYPE_IDENTIFIER, 'product', $storeId);
     }
 
     public function clear(?int $storeId = null): void

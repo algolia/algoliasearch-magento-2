@@ -4,9 +4,4 @@
         <observer name="algoliasearch_reindex_product_on_last_item_purchase_if_msi_disable"
                   instance="Algolia\AlgoliaSearch\Observer\ReindexProductOnLastItemPurchaseIfMsiDisable"/>
     </event>
-
-    <event name="catalog_product_attribute_update_before">
-        <observer name="clean_cache_on_mass_product_before" instance="Algolia\AlgoliaSearch\Model\Observer\Product\CacheCleanAttributeUpdate" />
-    </event>
-
 </config>

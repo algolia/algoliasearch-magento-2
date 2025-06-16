@@ -59,7 +59,7 @@ class Data
      * @deprecated
      * Use Algolia\AlgoliaSearch\Service\Page\IndexBuilder::buildIndexFull() instead
      */
-    public function rebuildStorePageIndex($storeId, array $pageIds = null): void
+    public function rebuildStorePageIndex($storeId, ?array $pageIds = null): void
     {
         $this->pageIndexBuilder->buildIndexFull($storeId, ['entityIds' => $pageIds]);
     }
@@ -203,7 +203,7 @@ class Data
      * @return string
      * @throws NoSuchEntityException
      */
-    public function getIndexName(string $indexSuffix, int $storeId = null, bool $tmp = false): string
+    public function getIndexName(string $indexSuffix, ?int $storeId = null, bool $tmp = false): string
     {
         return $this->indexNameFetcher->getIndexName($indexSuffix, $storeId, $tmp);
     }
@@ -213,7 +213,7 @@ class Data
      * @return string
      * @throws NoSuchEntityException
      */
-    public function getBaseIndexName(int $storeId = null): string
+    public function getBaseIndexName(?int $storeId = null): string
     {
         return $this->indexNameFetcher->getBaseIndexName($storeId);
     }
@@ -237,7 +237,7 @@ class Data
      * @return array
      * @throws NoSuchEntityException
      */
-    protected function buildIndexData(StoreInterface $store = null): array
+    protected function buildIndexData(?StoreInterface $store = null): array
     {
         $storeId = !is_null($store) ? $store->getStoreId() : null;
         $currencyCode = !is_null($store) ?

@@ -37,7 +37,7 @@ class Collection extends LandingPageCollection implements SearchResultInterface
         $resourceModel,
         $model = 'Magento\Framework\View\Element\UiComponent\DataProvider\Document',
         $connection = null,
-        \Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource = null
+        ?\Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource = null
     ) {
         parent::__construct(
             $entityFactory,
@@ -112,7 +112,7 @@ class Collection extends LandingPageCollection implements SearchResultInterface
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function setItems(array $items = null)
+    public function setItems(?array $items = null)
     {
         return $this;
     }

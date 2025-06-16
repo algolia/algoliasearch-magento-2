@@ -40,7 +40,7 @@ abstract class IndexingTestCase extends TestCase
         string $indexName,
         string $recordId,
         array $expectedValues,
-        int $storeId = null
+        ?int $storeId = null
     ) : void {
         $res = $this->algoliaHelper->getObjects($indexName, [$recordId], $storeId);
         $record = reset($res['results']);

@@ -74,7 +74,7 @@ abstract class AbstractIndexBuilder
      * @return void
      * @throws \Exception
      */
-    protected function saveObjects(array $objects, string $indexName, int $storeId = null): void
+    protected function saveObjects(array $objects, string $indexName, ?int $storeId = null): void
     {
         $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled(), $storeId);
     }

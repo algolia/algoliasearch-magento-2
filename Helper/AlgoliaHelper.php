@@ -297,7 +297,7 @@ class AlgoliaHelper extends AbstractHelper
      *
      * @throws AlgoliaException|NoSuchEntityException
      */
-    public function searchRules(string $indexName, array $searchRulesParams = null, ?int $storeId = null)
+    public function searchRules(string $indexName, ?array $searchRulesParams = null, ?int $storeId = null)
     {
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 

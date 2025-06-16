@@ -53,7 +53,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         string $storeCode,
         string $entity,
         int $expectedNumber,
-        int $storeId = null
+        ?int $storeId = null
     ): void
     {
         $resultsDefault = $this->algoliaHelper->query(

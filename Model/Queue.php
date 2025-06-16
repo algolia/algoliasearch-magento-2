@@ -571,7 +571,7 @@ class Queue
      *
      * @return array
      */
-    protected function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, Job $job = null)
+    protected function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, ?Job $job = null)
     {
         if ($tempSortableJobs && $tempSortableJobs !== []) {
             $tempSortableJobs = $this->jobSort(

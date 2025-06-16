@@ -69,7 +69,7 @@ class ProductObserver
      *
      * @return Action
      */
-    public function afterUpdateAttributes(Action $subject, Action $result = null, $productIds)
+    public function afterUpdateAttributes(Action $subject, ?Action $result = null, $productIds)
     {
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));
@@ -85,7 +85,7 @@ class ProductObserver
      *
      * @return mixed
      */
-    public function afterUpdateWebsites(Action $subject, Action $result = null, array $productIds)
+    public function afterUpdateWebsites(Action $subject, ?Action $result = null, array $productIds)
     {
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));

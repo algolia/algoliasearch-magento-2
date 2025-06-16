@@ -48,7 +48,7 @@ class PageHelper extends AbstractEntityHelper
         return $indexSettings;
     }
 
-    public function getPages($storeId, array $pageIds = null)
+    public function getPages($storeId, ?array $pageIds = null)
     {
         $magentoPages = $this->pageCollectionFactory->create()
             ->addStoreFilter($storeId)

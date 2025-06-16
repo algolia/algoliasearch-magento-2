@@ -128,7 +128,7 @@ class EventProcessor implements EventProcessorInterface
     /**
      * @inheritDoc
      */
-    public function convertAddToCart(string $eventName, string $indexName, Item $item, string $queryID = null): array
+    public function convertAddToCart(string $eventName, string $indexName, Item $item, ?string $queryID = null): array
     {
         $this->checkDependencies();
 
@@ -157,7 +157,7 @@ class EventProcessor implements EventProcessorInterface
     /**
      * @inheritDoc
      */
-    public function convertPurchaseForItems(string $eventName, string $indexName, array $items, string $queryID = null): array
+    public function convertPurchaseForItems(string $eventName, string $indexName, array $items, ?string $queryID = null): array
     {
         $this->checkDependencies();
 

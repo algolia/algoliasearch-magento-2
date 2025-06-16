@@ -577,7 +577,7 @@ class ProductHelper extends AbstractEntityHelper
      * @return void
      * @throws AlgoliaException
      */
-    protected function setFacetsQueryRules(string $indexName, int $storeId = null)
+    protected function setFacetsQueryRules(string $indexName, ?int $storeId = null)
     {
         $this->clearFacetsQueryRules($indexName, $storeId);
 
@@ -623,7 +623,7 @@ class ProductHelper extends AbstractEntityHelper
      * @return void
      * @throws AlgoliaException
      */
-    protected function clearFacetsQueryRules($indexName, int $storeId = null): void
+    protected function clearFacetsQueryRules($indexName, ?int $storeId = null): void
     {
         try {
             $hitsPerPage = 100;

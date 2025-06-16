@@ -12,7 +12,7 @@ trait ConfigAssertionsTrait
      * @return int
      * @throws AlgoliaException
      */
-    protected function countStoreIndices(StoreInterface $store = null): int
+    protected function countStoreIndices(?StoreInterface $store = null): int
     {
         $indices = $this->algoliaHelper->listIndexes($store->getId());
 

@@ -236,7 +236,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         switch ($personalizationStatus) {
             // Activated
             case 2: $warningContent = 'Personalization is based on actions a user has performed in the past. We help you collect some of the data automatically.</br>
-        After you\'ve collected a reasonable amount of data, Personlization can be applied.';
+        After you\'ve collected a reasonable amount of data, Personalization can be applied.';
                 $icon = 'icon-warning';
 
                 break;
@@ -262,7 +262,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         ];
 
         // Adding footer
-        $footerContent = '<div class="algolia-perso-footer"><br/><h2>Personlization preferences</h2>
+        $footerContent = '<div class="algolia-perso-footer"><br/><h2>Personalization preferences</h2>
         <p>Manage your Personalization further on the <a href="https://www.algolia.com/dashboard" target="_blank`">Algolia Dashboard</a></p></div>';
 
         $this->notices[] = [

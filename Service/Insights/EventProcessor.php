@@ -11,6 +11,7 @@ use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Tax\Model\Config as TaxConfig;
 
 class EventProcessor implements EventProcessorInterface
 {
@@ -18,6 +19,7 @@ class EventProcessor implements EventProcessorInterface
     protected const NO_QUERY_ID_KEY = '__NO_QUERY_ID__';
 
     public function __construct(
+        protected TaxConfig              $taxConfig,
         protected ?InsightsClient        $client = null,
         protected ?string                $userToken = null,
         protected ?string                $authenticatedUserToken = null,
@@ -268,7 +270,9 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemSalePrice(OrderItem $item): float
     {
-        return floatval($item->getPrice()) - $this->getOrderItemCartDiscount($item);
+        return $this->taxConfig->priceIncludesTax($this->storeManager->getStore()->getId()) ?
+            floatval($item->getPriceInclTax()) - $this->getOrderItemCartDiscount($item):
+            floatval($item->getPrice()) - $this->getOrderItemCartDiscount($item);
     }
 
     /**
@@ -286,7 +290,9 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemDiscount(OrderItem $item): float
     {
-        $itemDiscount = floatval($item->getOriginalPrice()) - floatval($item->getPrice());
+        $itemDiscount = $this->taxConfig->priceIncludesTax($this->storeManager->getStore()->getId()) ?
+            floatval($item->getOriginalPrice()) - floatval($item->getPriceInclTax()) :
+            floatval($item->getOriginalPrice()) - floatval($item->getPrice());
         return $itemDiscount + $this->getOrderItemCartDiscount($item);
     }
 
@@ -303,7 +309,7 @@ class EventProcessor implements EventProcessorInterface
         return array_map(function($item) {
             return [
                 'price'    => $this->getOrderItemSalePrice($item),
-                'discount' => $this->getOrderItemDiscount($item),
+                'discount' => max(0, $this->getOrderItemDiscount($item)),
                 'quantity' => intval($item->getQtyOrdered())
             ];
         }, $items);

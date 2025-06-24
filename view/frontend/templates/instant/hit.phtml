@@ -24,7 +24,7 @@ $origFormatedVar = $block->escapeHtml('price' . $priceKey . '_original_formated'
                 {{^__queryID}} href="{{url}}" {{/__queryID}}
                 {{#__queryID}} href="{{urlForInsights}}" {{/__queryID}}
                 data-objectid="{{objectID}}"
-                data-indexname="{{__indexName}}"
+                data-index="{{__indexName}}"
                 data-position="{{__position}}"
                 data-queryid="{{__queryID}}">
                 <div class="result-content">
@@ -92,7 +92,7 @@ $origFormatedVar = $block->escapeHtml('price' . $priceKey . '_original_formated'
                             <input name="form_key" type="hidden" value="{{ addToCart.formKey }}">
                             <button type="submit" title="<?php echo __('Add to Cart') ?>" class="action tocart primary"
                             data-objectid="{{objectID}}"
-                            data-indexname="{{__indexName}}"
+                            data-index="{{__indexName}}"
                             data-position="{{__position}}"
                             data-queryid="{{__queryID}}"
                             >

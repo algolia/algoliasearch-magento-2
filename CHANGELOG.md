@@ -1,17 +1,6 @@
 # CHANGE LOG
 
-## 3.16.0-beta.2
-
-### Updates
-- Credentials form expanded by default in admin
-- Removed deprecated methods from Entity Helpers
-- Removed every calls to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be deleted in a future v3.17.0)
-- Updated integration tests
-
-### Breaking Changes
-- `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).
-
-## 3.16.0-beta.1
+## 3.16.0
 
 ### Features
 
@@ -21,7 +10,7 @@
 - CLI commands are now provided to run explicit full reindex of all entities and stores.
 - Products and CMS pages can now be reindexed directly from Magento admin grids.
 - The indexing queue cron job can now be configured from the Magento admin.
-- Dynamic faceting through Algolia merchandsiing rules is now supported in Magento via an opt-in feature flag.
+- Dynamic faceting through Algolia merchandising rules is now supported in Magento via an opt-in feature flag.
 - No code redirects via merchandising rules in Algolia are now supported in Magento for both Autocomplete and InstantSearch. Support is enabled by default for Autocomplete.
 - Integration tests and unit tests added
 
@@ -43,6 +32,13 @@
 - InstantSearch has been updated to v4.78.
 - Autocomplete has been updated to v1.18.1.
 - PHP API client has been pinned to 4.18.3 (also included in 3.15.1).
+- Credentials form expanded by default in admin
+- Removed deprecated methods from Entity Helpers
+- Removed every call to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be removed in a future v3.17.0)
+- Updated integration tests
+
+### Breaking Changes
+- `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).
 
 ## 3.15.0
 

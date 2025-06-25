@@ -1,9 +1,8 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.15.0-green)
+![Latest version](https://img.shields.io/badge/latest-3.16.0-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.6+-orange)
-![Beta version](https://img.shields.io/badge/beta-3.16.0--beta.1-purple)
 
 ![PHP](https://img.shields.io/badge/PHP-8.1%2C8.2%2C8.3-blue)
 
@@ -47,6 +46,7 @@ Version 3.x of our extension is compatible with Magento 2.4. Review the [Customi
 | v3.13.x           | N/A         | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
 | v3.14.x           | N/A         | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
 | v3.15.x           | N/A         | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
+| v3.16.x           | N/A         | `~2.4.6\|\|~2.4.7\|\|~2.4.8` | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
 
 ## Documentation
 

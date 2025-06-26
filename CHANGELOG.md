@@ -19,6 +19,8 @@
 - Replica data patches and delete operations have been enhanced to handle potential latency when detaching from the primary index.
 - Prices are now indexed using store scoped currency codes.
 - Fixed WSOD error on invalid creds when using manual SKU indexer (also included in 3.15.1).
+- Fixed Recommend model validation when configuring through the Magento admin 
+- Fixed edge case with null queries - thank you @PromInc 
 
 ### Updates
 - `beforecontent.html` is no longer used and has been deprecated. If you're overriding or referencing this file, please update your layout and customizations accordingly.

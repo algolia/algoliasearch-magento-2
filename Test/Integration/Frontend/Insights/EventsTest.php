@@ -10,10 +10,13 @@ use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Quote\Api\GuestCartManagementInterface;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\QuoteIdMask;
 use Magento\Quote\Model\QuoteIdMaskFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderRepository;
 use Magento\Store\Model\StoreManager;
 use Magento\TestFramework\Helper\Bootstrap;
 
@@ -85,11 +88,12 @@ class EventsTest extends TestCase
     }
 
     /**
-     * @param Order  $order
+     * @param Order $order
+     * @param bool $withQueryID
      * @param string $eventName
      * @return array[]
      */
-    protected function generateConversionEvent(Order $order, string $eventName = self::PLACED_ORDER_EVENT): array
+    protected function generateConversionEvent(Order $order, bool $withQueryID = true, string $eventName = self::PLACED_ORDER_EVENT): array
     {
         $event = [
             EventProcessorInterface::EVENT_KEY_SUBTYPE => self::EVENT_SUBTYPE_PURCHASE,
@@ -101,8 +105,11 @@ class EventsTest extends TestCase
             'eventName' => $eventName,
             'index' => self::INDEX,
             'userToken' => self::TOKEN,
-            EventProcessorInterface::EVENT_KEY_QUERY_ID => '',
         ];
+
+        if ($withQueryID) {
+            $event[EventProcessorInterface::EVENT_KEY_QUERY_ID] = '';
+        }
 
         foreach ($order->getItems() as $item) {
             $event[EventProcessorInterface::EVENT_KEY_OBJECT_IDS][] = $item->getProductId();
@@ -119,11 +126,12 @@ class EventsTest extends TestCase
 
     /**
      * @param Order $order
+     * @param bool $withQueryID
      * @return void
      */
-    protected function assertOrderPurchaseEvent(Order $order): void
+    protected function assertOrderPurchaseEvent(Order $order, bool $withQueryID = true): void
     {
-        $args = [$this->generateConversionEvent($order), []];
+        $args = [$this->generateConversionEvent($order, $withQueryID), []];
 
         $this->insightsClient
             ->expects(self::once())
@@ -157,6 +165,32 @@ class EventsTest extends TestCase
             ->getItems();
 
         return array_pop($items);
+    }
+
+    /**
+     * @magentoDataFixture Magento/Sales/_files/guest_quote_with_addresses.php
+     */
+    public function testQuoteToOrder()
+    {
+        /** @var Quote $quote */
+        $quote = $this->objectManager->create(Quote::class);
+        $quote->load('guest_quote', 'reserved_order_id');
+
+        $this->checkoutSession->setQuoteId($quote->getId());
+
+        /** @var QuoteIdMask $quoteIdMask */
+        $quoteIdMask = $this->quoteIdMaskFactory->create();
+        $quoteIdMask->load($quote->getId(), 'quote_id');
+        $cartId = $quoteIdMask->getMaskedId();
+
+        /** @var GuestCartManagementInterface $cartManagement */
+        $orderId = $this->cartManagement->placeOrder($cartId);
+        /** @var Order $order */
+        $order = $this->objectManager->get(OrderRepository::class)->get($orderId);
+
+        // GrandTotal takes shipping into account
+        $this->assertEquals(15, $order->getGrandTotal());
+        $this->assertOrderPurchaseEvent($order, false);
     }
 
     /**

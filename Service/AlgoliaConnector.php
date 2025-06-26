@@ -628,7 +628,7 @@ class AlgoliaConnector
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function searchRules(IndexOptionsInterface $indexOptions, array$searchRulesParams = null)
+    public function searchRules(IndexOptionsInterface $indexOptions, ?array $searchRulesParams = null)
     {
         $indexName = $indexOptions->getIndexName();
 

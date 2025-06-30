@@ -201,7 +201,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $collection->load(); // eliminate extra query to obtain count
         $this->logger->log('Loaded ' . count($collection) . ' products');
         $this->logger->stop($logMessage);
-        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $useTmpIndex);
         $indexData = $this->getProductsRecords($storeId, $collection, $productIds);
         if (!empty($indexData['toIndex'])) {
             $this->logger->start('ADD/UPDATE TO ALGOLIA');

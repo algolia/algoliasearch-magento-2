@@ -101,7 +101,8 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $collection,
             $options['page'] ?? 1,
             $options['pageSize'] ?? $this->configHelper->getNumberOfElementByPage($storeId),
-            $entityIds
+            $entityIds,
+            $options['useTmpIndex']
         );
 
         $this->stopEmulation();
@@ -144,6 +145,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @param int $page
      * @param int $pageSize
      * @param array|null $productIds - pre-batched product ids - if specified no paging will be applied
+     * @param bool|null $useTmpIndex
      * @return void
      * @throws AlgoliaException
      * @throws DiagnosticsException
@@ -154,7 +156,8 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         Collection $collection,
         int $page,
         int $pageSize,
-        ?array $productIds = null
+        ?array $productIds = null,
+        ?bool $useTmpIndex = false
     ): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {

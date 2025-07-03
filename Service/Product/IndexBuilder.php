@@ -102,7 +102,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $options['page'] ?? 1,
             $options['pageSize'] ?? $this->configHelper->getNumberOfElementByPage($storeId),
             $entityIds,
-            $options['useTmpIndex']
+            $options['useTmpIndex'] ?? false
         );
 
         $this->stopEmulation();

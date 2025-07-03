@@ -66,6 +66,7 @@
             <queue>
                 <use_built_in_cron>0</use_built_in_cron>
                 <cron_expr>*/5 * * * *</cron_expr>
+                <use_tmp_index>1</use_tmp_index>
             </queue>
         </algoliasearch_queue>
         <algoliasearch_indexing_manager>

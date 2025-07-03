@@ -1038,6 +1038,23 @@
                     <validate>validate-digits</validate>
                     <label>Number of times to retry processing of queued jobs</label>
                     <source_model>Algolia\AlgoliaSearch\Model\Source\RetryValues</source_model>
+                    <comment>
+                        <![CDATA[
+                           Defines the number of times that the queue tries to process a job.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="use_tmp_index" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Use a temporary index for full products reindex</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            This configuration defines if a temporary index suffixed by <code>_tmp</code> will be used for products full reindex. If you set it to "No", product updates will be sent directly to your production index.
+                        ]]>
+                    </comment>
                     <depends>
                         <field id="active">1</field>
                     </depends>

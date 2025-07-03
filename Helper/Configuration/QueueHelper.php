@@ -11,6 +11,7 @@ class QueueHelper
     public const USE_BUILT_IN_CRON = 'algoliasearch_queue/queue/use_built_in_cron';
     public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
     public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
+    public const USE_TMP_INDEX = 'algoliasearch_queue/queue/use_tmp_index';
 
     public function __construct(
         protected ScopeConfigInterface $configInterface,
@@ -52,5 +53,15 @@ class QueueHelper
     public function getRetryLimit($storeId = null)
     {
         return (int)$this->configInterface->getValue(self::RETRY_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function useTmpIndex($storeId = null)
+    {
+        return $this->isQueueActive($storeId) &&
+            $this->configInterface->isSetFlag(self::USE_TMP_INDEX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

@@ -53,7 +53,9 @@ class Data extends \Magento\Ui\Component\Listing\Columns\Column
 
                 continue;
             }
-
+            if (is_bool($value)) {
+               $value = $value ? 'Yes' : 'No';
+            }
             $formattedData .= str_repeat('&nbsp;&nbsp;&nbsp;', $depth ) . $stringKey . ' : ' . $value . '<br>';
         }
 

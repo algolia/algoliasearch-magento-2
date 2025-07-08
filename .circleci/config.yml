@@ -44,7 +44,6 @@ jobs:
           command: |
             echo "Setting up Magento $MAGENTO_VERSION"
       # Tests will go here
-      - save_cache
       - persist_to_workspace:
           root: .
           paths:

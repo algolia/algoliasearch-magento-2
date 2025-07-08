@@ -1,0 +1,67 @@
+version: 2.1
+
+executors:
+  magento-executor:
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
+    docker:
+      - image: markoshust/magento-php:<<parameters.php-version>>-fpm
+    environment:
+      MAGENTO_VERSION: <<parameters.magento-version>>
+      PHP_VERSION: <<parameters.php-version>>
+
+commands:
+  restore_cache:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-deps-{{ checksum "composer.lock" }}-<<parameters.php-version>>-<<parameters.magento-version>>
+            - v1-deps-
+  save_cache:
+    steps:
+      - save_cache:
+          key: v1-deps-{{ checksum "composer.lock" }}-<<parameters.php-version>>-<<parameters.magento-version>>
+          paths:
+            - ~/.composer/cache
+            - vendor
+
+jobs:
+  build-and-test:
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
+    executor:
+      name: magento-executor
+      php-version: <<parameters.php-version>>
+      magento-version: <<parameters.magento-version>>
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies via composer
+          command: |
+            bin/composer require algolia/algoliasearch-client-php "^4.0"
+      - restore_cache
+      - run:
+          name: Setup Magento
+          command: |
+            echo "Setting up Magento $MAGENTO_VERSION"
+      # Tests will go here
+      - save_cache
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+workflows:
+  test_matrix:
+    jobs:
+      - build-and-test:
+          matrix:
+            parameters:
+              php-version: ["8.2"]
+              magento-version: ["2.4.6", "2.4.7"]

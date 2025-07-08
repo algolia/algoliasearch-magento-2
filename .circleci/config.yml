@@ -65,3 +65,6 @@ workflows:
             parameters:
               php-version: ["8.2"]
               magento-version: ["2.4.6", "2.4.7"]
+          filters:
+            branches:
+              only: MAGE-991

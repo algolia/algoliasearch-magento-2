@@ -45,7 +45,10 @@ jobs:
           name: Install dependencies via composer
           command: |
             bin/composer require algolia/algoliasearch-client-php "^4.0"
-      - restore_cache
+      - restore_cache:
+          keys:
+            - v1-deps-{{ checksum "composer.lock" }}
+            - v1-deps-
       - run:
           name: Setup Magento
           command: |

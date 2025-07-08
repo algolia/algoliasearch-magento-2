@@ -18,12 +18,12 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v1-deps-{{ checksum "composer.lock" }}-<<parameters.php-version>>-<<parameters.magento-version>>
+            - v1-deps-{{ checksum "composer.lock" }}
             - v1-deps-
   save_cache:
     steps:
       - save_cache:
-          key: v1-deps-{{ checksum "composer.lock" }}-<<parameters.php-version>>-<<parameters.magento-version>>
+          key: v1-deps-{{ checksum "composer.lock" }}
           paths:
             - ~/.composer/cache
             - vendor

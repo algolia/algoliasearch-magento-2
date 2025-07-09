@@ -1,32 +1,24 @@
 version: 2.1
 
+parameters:
+  php-version:
+    type: string
+    default: "8.2"
+  magento-version:
+    type: string
+    default: "2.4.6"
+
 executors:
   magento-executor:
-    parameters:
-      php-version:
-        type: string
-      magento-version:
-        type: string
-    docker:
-      - image: markoshust/magento-php:<<parameters.php-version>>-fpm
-    environment:
-      MAGENTO_VERSION: <<parameters.magento-version>>
-      PHP_VERSION: <<parameters.php-version>>
+    machine:
+      image: ubuntu-2404:2024.11.1
 
 jobs:
   magento-build:
-    parameters:
-      php-version:
-        type: string
-      magento-version:
-        type: string
     executor:
       name: magento-executor
-      php-version: <<parameters.php-version>>
-      magento-version: <<parameters.magento-version>>
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: Setup magento enterprise
           command: |

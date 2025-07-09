@@ -68,6 +68,7 @@ class ConfigPatch implements SchemaPatchInterface
         'algoliasearch_queue/queue/active' => '0',
         'algoliasearch_queue/queue/number_of_job_to_run' => '5',
         'algoliasearch_queue/queue/number_of_retries' => '3',
+        'algoliasearch_queue/queue/use_tmp_index' => '1',
 
         'algoliasearch_cc_analytics/cc_analytics_group/enable' => '0',
         'algoliasearch_cc_analytics/cc_analytics_group/is_selector' => '.ais-Hits-item a.result, .ais-InfiniteHits-item a.result',

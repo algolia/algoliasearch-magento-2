@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -24,6 +25,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         protected Data $dataHelper,
         protected ConfigHelper $configHelper,
         protected ProductHelper $productHelper,
+        protected QueueHelper $queueHelper,
         protected Queue $queue,
         protected DiagnosticsLogger $diag,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
@@ -56,7 +58,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
             return;
         }
 
-        $useTmpIndex = $this->configHelper->isQueueActive($storeId);
+        $useTmpIndex = $this->queueHelper->useTmpIndex($storeId);
         $this->syncAlgoliaSettings($storeId, $useTmpIndex);
 
         $this->handleFullIndex($storeId, $productsPerPage, $useTmpIndex);

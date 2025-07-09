@@ -27,13 +27,10 @@ jobs:
           command: |
             composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
       - run:
-          name: Setup folder structure
+          name: Setup folder structure and override file
           command: |
             mkdir ~/Sites
-      - run:
-          name: Configure Docker compose override file
-          working_directory: ~/Sites
-          command: |
+            cd ~/Sites
             cat \<<EOF > docker-compose.override.yml
             version: "3.7"
 

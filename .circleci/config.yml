@@ -61,6 +61,7 @@ jobs:
             bin/fixperms
       - run:
           name: Enable AlgoliaSearch extension
+          working_directory: ~/Sites
           command: |
             bin/magento module:enable Algolia_AlgoliaSearch
 

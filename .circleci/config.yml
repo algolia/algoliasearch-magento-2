@@ -56,7 +56,7 @@ jobs:
       - run:
           name: Configure AlgoliaSearch extension
           command: |
-            mv ~/project AlgoliaSearch
+            cp -r ~/project AlgoliaSearch
             bin/copytocontainer ~/AlgoliaSearch
             bin/cli mkdir src/app/code/Algolia
             bin/cli mv AlgoliaSearch src/app/code/Algolia

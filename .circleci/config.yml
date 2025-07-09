@@ -64,4 +64,5 @@ workflows:
               magento-version: ["2.4.6", "2.4.7"]
           filters:
             branches:
-              only: MAGE-991
+              only:
+                - MAGE-991

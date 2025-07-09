@@ -25,9 +25,9 @@ jobs:
       php-version: <<parameters.php-version>>
       magento-version: <<parameters.magento-version>>
     steps:
+      - checkout
       - attach_workspace:
           at: ~
-      - checkout
       - run:
           name: Setup magento enterprise
           command: |

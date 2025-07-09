@@ -17,7 +17,6 @@ jobs:
         type: string
       magento-version:
         type: string
-    working_directory: ~/Sites
     steps:
       - checkout
       - php/install_php:
@@ -28,7 +27,12 @@ jobs:
           command: |
             composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
       - run:
+          name: Setup folder structure
+          command: |
+            mkdir ~/Sites
+      - run:
           name: Configure Docker compose override file
+          working_directory: ~/Sites
           command: |
             cat \<<EOF > docker-compose.override.yml
             version: "3.7"
@@ -39,6 +43,7 @@ jobs:
             EOF
       - run:
           name: Setup magento enterprise
+          working_directory: ~/Sites
           command: |
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
             bin/start --no-dev
@@ -59,7 +64,6 @@ jobs:
           name: Enable AlgoliaSearch extension
           command: |
             bin/magento module:enable Algolia_AlgoliaSearch
-
 
 workflows:
   magento-build-and-test:

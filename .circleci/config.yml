@@ -26,33 +26,11 @@ jobs:
       magento-version: <<parameters.magento-version>>
     steps:
       - checkout
-      - attach_workspace:
-          at: ~
       - run:
           name: Setup magento enterprise
           command: |
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento-enterprise.test <<parameters.magento-version>>
-      - restore_cache:
-          keys:
-            - v1-deps-{{ checksum "composer.lock" }}
-            - v1-deps-
-      - run:
-          name: Install dependencies via composer
-          command: |
-            composer require algolia/algoliasearch-client-php "^4.0"
-      - save_cache:
-          key: v1-deps-{{ checksum "composer.lock" }}
-          paths:
-            - ~/.composer/cache
-            - vendor
-      - run:
-          name: Setup Magento
-          command: |
-            echo "Setting up Magento $MAGENTO_VERSION"
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
+
 
 workflows:
   magento-build-and-test:

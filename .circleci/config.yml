@@ -26,6 +26,7 @@ jobs:
       magento-version: <<parameters.magento-version>>
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: Setup magento enterprise
           command: |

@@ -17,6 +17,7 @@ jobs:
         type: string
       magento-version:
         type: string
+    working_directory: ~/Sites
     steps:
       - checkout
       - php/install_php:
@@ -27,13 +28,7 @@ jobs:
           command: |
             composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
       - run:
-          name: Configure folders
-          command: |
-            mkdir -p ~/Sites
-            cd ~/Sites
-      - run:
           name: Configure Docker compose override file
-          working_directory: ~/Sites
           command: |
             cat \<<EOF > docker-compose.override.yml
             version: "3.7"
@@ -44,7 +39,6 @@ jobs:
             EOF
       - run:
           name: Setup magento enterprise
-          working_directory: ~/Sites
           command: |
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
             bin/start --no-dev
@@ -54,6 +48,18 @@ jobs:
             bin/cli git checkout tags/<< parameters.magento-version >>>-develop
             bin/composer install
             bin/composer require algolia/algoliasearch-client-php "^4.0"
+      - run:
+          name: Configure AlgoliaSearch extension
+          command: |
+            mv ~/project AlgoliaSearch
+            bin/copytocontainer ~/AlgoliaSearch
+            bin/cli mkdir src/app/code/Algolia
+            bin/cli mv AlgoliaSearch src/app/code/Algolia
+      - run:
+          name: Enable AlgoliaSearch extension
+          command: |
+            bin/magento module:enable Algolia_AlgoliaSearch
+
 
 workflows:
   magento-build-and-test:

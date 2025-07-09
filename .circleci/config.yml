@@ -19,6 +19,8 @@ jobs:
         type: string
     steps:
       - checkout
+      - php/install_php:
+          version: << parameters.php-version >>
       - php/install_composer
       - run:
           name: Configure composer authentication

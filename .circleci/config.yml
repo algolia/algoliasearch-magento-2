@@ -35,12 +35,12 @@ jobs:
           name: Configure Docker compose override file
           working_directory: ~/Sites
           command: |
-            cat <<EOF > docker-compose.override.yml
+            cat \<<EOF > docker-compose.override.yml
             version: "3.7"
 
             services:
               phpfpm:
-                image: markoshust/magento-php:\<< parameters.php-version >>-fpm
+                image: markoshust/magento-php:<< parameters.php-version >>-fpm
             EOF
       - run:
           name: Setup magento enterprise

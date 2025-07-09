@@ -31,6 +31,8 @@ jobs:
           name: Setup magento enterprise
           command: |
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
+            bin/download enterprise <<parameters.magento-version>>
+            bin/setup magento-enterprise.test
 
 
 workflows:

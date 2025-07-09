@@ -40,7 +40,7 @@ jobs:
 
             services:
               phpfpm:
-                image: markoshust/magento-php:<< parameters.php-version >>-fpm
+                image: markoshust/magento-php:\<< parameters.php-version >>-fpm
             EOF
       - run:
           name: Setup magento enterprise

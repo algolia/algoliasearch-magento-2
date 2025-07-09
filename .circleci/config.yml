@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  php: circleci/php@2.0.0
+
 executors:
   magento-executor:
     machine:
@@ -16,13 +19,23 @@ jobs:
         type: string
     steps:
       - checkout
+      - php/install_composer
+      - run:
+          name: Configure composer authentication
+          command: |
+            composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
       - run:
           name: Setup magento enterprise
           command: |
+            mkdir ~/Sites
+            cd ~/Sites
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
-            bin/download enterprise <<parameters.magento-version>>
-            bin/setup magento-enterprise.test
-
+            bin/start --no-dev
+            bin/setup-composer-auth
+            bin/cli git clone git@github.com:magento/magento2.git .
+            bin/cli git checkout << parameters.magento-version >>>-develop
+            bin/composer install
+            bin/composer require algolia/algoliasearch-client-php "^4.0"
 
 workflows:
   magento-build-and-test:

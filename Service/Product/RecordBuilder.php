@@ -190,13 +190,7 @@ class RecordBuilder implements RecordBuilderInterface
      */
     public function isAttributeEnabled($additionalAttributes, $attributeName): bool
     {
-        foreach ($additionalAttributes as $attr) {
-            if ($attr['attribute'] === $attributeName) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->configHelper->isAttributeInList($additionalAttributes, $attributeName);
     }
 
     /**
@@ -205,7 +199,7 @@ class RecordBuilder implements RecordBuilderInterface
      */
     protected function isPriceIndexingEnabled(array $additionalAttributes): bool
     {
-        return $this->isAttributeEnabled($additionalAttributes, 'price');
+        return $this->configHelper->isAttributeInList($additionalAttributes, 'price');
     }
 
     /**

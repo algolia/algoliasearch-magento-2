@@ -1,13 +1,5 @@
 version: 2.1
 
-parameters:
-  php-version:
-    type: string
-    default: "8.2"
-  magento-version:
-    type: string
-    default: "2.4.6"
-
 executors:
   magento-executor:
     machine:
@@ -17,6 +9,11 @@ jobs:
   magento-build:
     executor:
       name: magento-executor
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
     steps:
       - checkout
       - run:

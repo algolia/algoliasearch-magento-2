@@ -49,14 +49,16 @@ jobs:
             bin/cli git clone git@github.com:magento/magento2.git .
             bin/cli git checkout tags/<< parameters.magento-version >>>-develop
             bin/composer install
-            bin/composer require algolia/algoliasearch-client-php "^4.0"
+            # bin/composer require algolia/algoliasearch-client-php "^4.0" -W
       - run:
           name: Configure AlgoliaSearch extension
+          working_directory: ~/Sites
           command: |
-            cp -r ~/project AlgoliaSearch
-            bin/copytocontainer ~/AlgoliaSearch
-            bin/cli mkdir src/app/code/Algolia
-            bin/cli mv AlgoliaSearch src/app/code/Algolia
+            cp -r ~/project/ AlgoliaSearch
+            bin/cli mkdir -p app/code/Algolia
+            docker cp AlgoliaSearch/ "$(bin/docker-compose ps -q phpfpm|awk '{print $1}')":/var/www/html/app/code/Algolia
+            bin/fixowns
+            bin/fixperms
       - run:
           name: Enable AlgoliaSearch extension
           command: |

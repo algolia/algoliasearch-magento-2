@@ -52,7 +52,7 @@ class QueueCronTest extends TestCase
         }
     }
 
-    public function valuesProvider(): array
+    public static function valuesProvider(): array
     {
         return [
             [

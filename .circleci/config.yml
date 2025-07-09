@@ -14,7 +14,7 @@ executors:
       PHP_VERSION: <<parameters.php-version>>
 
 jobs:
-  build-and-test:
+  magento-build:
     parameters:
       php-version:
         type: string
@@ -25,7 +25,13 @@ jobs:
       php-version: <<parameters.php-version>>
       magento-version: <<parameters.magento-version>>
     steps:
+      - attach_workspace:
+          at: ~
       - checkout
+      - run:
+          name: Setup magento enterprise
+          command: |
+            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/onelinesetup | bash -s -- magento-enterprise.test <<parameters.magento-version>>
       - restore_cache:
           keys:
             - v1-deps-{{ checksum "composer.lock" }}
@@ -33,7 +39,7 @@ jobs:
       - run:
           name: Install dependencies via composer
           command: |
-            bin/composer require algolia/algoliasearch-client-php "^4.0"
+            composer require algolia/algoliasearch-client-php "^4.0"
       - save_cache:
           key: v1-deps-{{ checksum "composer.lock" }}
           paths:
@@ -43,16 +49,15 @@ jobs:
           name: Setup Magento
           command: |
             echo "Setting up Magento $MAGENTO_VERSION"
-      # Tests will go here
       - persist_to_workspace:
           root: .
           paths:
             - .
 
 workflows:
-  test_matrix:
+  magento-build-and-test:
     jobs:
-      - build-and-test:
+      - magento-build:
           matrix:
             parameters:
               php-version: ["8.2"]

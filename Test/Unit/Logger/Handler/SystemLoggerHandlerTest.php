@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler;
 use Magento\Framework\Filesystem\DriverInterface;
 use Magento\Framework\Logger\Handler\Exception as ExceptionHandler;
 
-class SystemLoggerHandlerTest extends AbstractHandlerTest
+class SystemLoggerHandlerTest extends AbstractHandlerTestCase
 {
     /**
      * @throws \Exception

@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Logger\Handler;
 use Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler;
 use Magento\Framework\Filesystem\DriverInterface;
 
-class AlgoliaLoggerHandlerTest extends AbstractHandlerTest
+class AlgoliaLoggerHandlerTest extends AbstractHandlerTestCase
 {
     protected function setUp(): void
     {

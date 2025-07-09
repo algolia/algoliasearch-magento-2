@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Logger\Handler;
 use Magento\Framework\Logger\Handler\Base;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractHandlerTest extends TestCase
+abstract class AbstractHandlerTestCase extends TestCase
 {
     protected ?Base $handler = null;
 

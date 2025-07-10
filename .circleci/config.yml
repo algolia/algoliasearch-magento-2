@@ -19,6 +19,8 @@ jobs:
       magento-version:
         type: string
     steps:
+      - attach_workspace:
+          at: ~/Sites
       - checkout
       - php/install_php:
           version: << parameters.php-version >>
@@ -69,19 +71,26 @@ jobs:
             bin/composer require algolia/algoliasearch-client-php "^4.0" -W
             bin/magento setup:di:compile
             bin/magento module:status Algolia_AlgoliaSearch
+      - persist_to_workspace:
+          root: ~/Sites
+          paths:
+            - ~/Sites
 
   magento-test:
-    docker:
-      - image: cimg/php:8.2
+    executor:
+      name: magento-executor
+      php-version: 8.2
+    working_directory: ~/Sites
     steps:
       - checkout
       - run:
           name: Run PHP Unit Tests
           command: |
+            composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
             composer require --dev phpunit/phpunit
             vendor/bin/phpunit --testsuite Unit
       - store_test_results:
-          path: ~/project/vendor/bin/phpunit
+          path: ~/Sites/vendor/bin/phpunit
 
 workflows:
   magento-build-and-test:
@@ -95,4 +104,6 @@ workflows:
             branches:
               only:
                 - MAGE-991
-      - magento-test
+      - magento-test:
+          requires:
+            - magento-build

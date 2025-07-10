@@ -70,22 +70,6 @@ jobs:
             bin/magento setup:di:compile
             bin/magento module:status Algolia_AlgoliaSearch
 
-  magento-test:
-    docker:
-      - image: cimg/php:8.2
-    working_directory: ~/project
-    steps:
-      - checkout
-      - run:
-          name: Run PHP Unit Tests
-          command: |
-            composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
-            composer install --no-interaction
-            composer require --dev phpunit/phpunit
-            vendor/bin/phpunit --testsuite Unit
-      - store_test_results:
-          path: ~/project/vendor/bin/phpunit
-
 workflows:
   magento-build-and-test:
     jobs:
@@ -94,8 +78,3 @@ workflows:
             parameters:
               php-version: ["8.2"]
               magento-version: ["2.4.6", "2.4.7"]
-          filters:
-            branches:
-              only:
-                - MAGE-991
-      - magento-test

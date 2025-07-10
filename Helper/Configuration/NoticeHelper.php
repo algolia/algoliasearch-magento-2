@@ -23,6 +23,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         'getRecommendNotice',
         'getCookieConfigurationNotice',
         'getMultiApplicationIDsNotice',
+        'getPriceIndexingNotice',
     ];
 
     /** @var array[] */
@@ -189,8 +190,8 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         ];
     }
 
-   protected function getCookieConfigurationNotice()
-   {
+    protected function getCookieConfigurationNotice()
+    {
         $noticeContent = '';
         $selector = '';
         $method = 'after';
@@ -356,6 +357,35 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $noticeTitle = 'Multi Application IDs';
         $noticeContent = '<p>You are currently using multiple Algolia application IDs with your Magento installation.</p>
         <p>When verifying data in Algolia, please make sure you are referencing the correct application.</p>';
+
+        $this->notices[] = [
+            'selector' => '.entry-edit',
+            'method' => 'before',
+            'message' => $this->formatNotice($noticeTitle, $noticeContent),
+        ];
+    }
+
+
+    /**
+     * This notice serves as a warning when user removes the price attribute from the attributes list but it's still present either in the sortings or in the facets
+     * @return void
+     */
+    protected function getPriceIndexingNotice(): void
+    {
+        $attributesToIndex = $this->configHelper->getProductAdditionalAttributes();
+        $attributesList = $this->configHelper->getProductAttributesList();
+
+        // we want to display the warning only if price is not present in the attribute list but is present somewhere else
+        if (!($this->configHelper->isAttributeInList($attributesToIndex, 'price')
+            && !$this->configHelper->isAttributeInList($attributesList, 'price'))
+        ) {
+            return;
+        }
+
+        $noticeTitle = 'Price attribute indexing';
+        $noticeContent = '<p>Price attribute has been removed from the product attributes list but is still present in the facets, sortings or custom rankings lists.</p>
+        <p>If you want to remove prices from the product records, you need to remove them from those lists as well.</p>
+        <p>If you want the prices to be included in the product records, you need to add the price attribute in the product attributes list in the "Products" section of the configuration.</p>';
 
         $this->notices[] = [
             'selector' => '.entry-edit',

@@ -384,7 +384,8 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
         $noticeTitle = 'Price attribute indexing';
         $noticeContent = '<p>Price attribute has been removed from the product attributes list but is still present in the facets, sortings or custom rankings lists.</p>
-        <p>If you want to remove prices from the product records, you need to remove them from those lists as well.</p>';
+        <p>If you want to remove prices from the product records, you need to remove them from those lists as well.</p>
+        <p>If you want the prices to be included in the product records, you need to add it in the product attributes list in the "Products" section of the configuration.</p>';
 
         $this->notices[] = [
             'selector' => '.entry-edit',

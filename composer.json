@@ -24,7 +24,8 @@
     }
   ],
   "require-dev": {
-    "phpcompatibility/php-compatibility": "^9.2"
+    "phpcompatibility/php-compatibility": "^9.2",
+    "phpunit/phpunit": "^9.5|^10.5"
   },
   "autoload": {
     "files": [ "registration.php" ],

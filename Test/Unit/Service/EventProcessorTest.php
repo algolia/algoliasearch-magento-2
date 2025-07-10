@@ -68,7 +68,7 @@ class EventProcessorTest extends TestCase
         $this->assertEquals($expectedTotalRevenue, $totalRevenue);
     }
 
-    public function orderItemsProvider(): array
+    public static function orderItemsProvider(): array
     {
         return [
             [ // One item

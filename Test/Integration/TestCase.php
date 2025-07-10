@@ -19,13 +19,7 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
-if (class_exists('PHPUnit\Framework\TestCase')) {
-    class_alias('PHPUnit\Framework\TestCase', '\TC');
-} else {
-    class_alias('\PHPUnit_Framework_TestCase', '\TC');
-}
-
-abstract class TestCase extends \TC
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var ObjectManagerInterface

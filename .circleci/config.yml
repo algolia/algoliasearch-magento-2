@@ -46,7 +46,7 @@ jobs:
             bin/fixowns
             bin/setup-composer-auth
             bin/cli git clone git@github.com:magento/magento2.git .
-            bin/cli git checkout tags/<< parameters.magento-version >>-p6
+            bin/cli git checkout tags/<< parameters.magento-version >>
             bin/composer install
       - run:
           name: Configure AlgoliaSearch extension
@@ -66,7 +66,6 @@ jobs:
           name: Compile AlgoliaSearch extension
           working_directory: ~/Sites
           command: |
-            bin/composer require algolia/algoliasearch-client-php "^4.0" -W
             bin/magento setup:di:compile
             bin/magento module:status Algolia_AlgoliaSearch
 
@@ -77,4 +76,4 @@ workflows:
           matrix:
             parameters:
               php-version: ["8.2"]
-              magento-version: ["2.4.6", "2.4.7"]
+              magento-version: ["2.4.6-p11", "2.4.7-p6"]

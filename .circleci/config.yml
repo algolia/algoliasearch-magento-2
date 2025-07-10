@@ -42,7 +42,7 @@ jobs:
           working_directory: ~/Sites
           command: |
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
-            bin/start --no-dev
+            docker compose -f compose.yaml -f compose.override.yml up -d --remove-orphans 
             bin/fixowns
             bin/setup-composer-auth
             bin/cli git clone git@github.com:magento/magento2.git .

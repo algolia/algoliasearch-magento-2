@@ -79,7 +79,6 @@ jobs:
   magento-test:
     executor:
       name: magento-executor
-      php-version: 8.2
     working_directory: ~/Sites
     steps:
       - checkout

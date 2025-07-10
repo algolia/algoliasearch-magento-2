@@ -7,6 +7,7 @@ executors:
   magento-executor:
     machine:
       image: ubuntu-2404:2024.11.1
+      docker_layer_caching: true
 
 jobs:
   magento-build:
@@ -31,12 +32,10 @@ jobs:
           command: |
             mkdir ~/Sites
             cd ~/Sites
-            cat \<<EOF > docker-compose.override.yml
-            version: "3.7"
-
+            cat \<<EOF > compose.override.yml
             services:
               phpfpm:
-                image: markoshust/magento-php:<< parameters.php-version >>-fpm
+                image: markoshust/magento-php:<< parameters.php-version >>-fpm !override
             EOF
       - run:
           name: Setup magento enterprise
@@ -64,6 +63,12 @@ jobs:
           working_directory: ~/Sites
           command: |
             bin/magento module:enable Algolia_AlgoliaSearch
+      - run:
+          name: Compile AlgoliaSearch extension
+          working_directory: ~/Sites
+          command: |
+            bin/magento setup:di:compile
+            bin/magento module:status Algolia_AlgoliaSearch
 
 workflows:
   magento-build-and-test:

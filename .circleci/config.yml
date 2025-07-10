@@ -27,7 +27,7 @@ jobs:
           name: Configure composer authentication
           command: |
             composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
-            composer config repositories.algolia vcs https://github.com/algolia/algoliasearch-magento-2
+            composer config --global repositories.algolia vcs https://github.com/algolia/algoliasearch-magento-2
       - run:
           name: Setup folder structure and override file
           command: |
@@ -43,22 +43,13 @@ jobs:
           working_directory: ~/Sites
           command: |
             curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
-            docker compose -f compose.yaml -f compose.override.yml up -d --remove-orphans 
+            docker compose -f compose.yaml -f compose.override.yml up -d --remove-orphans
+            bin/cli rm -rf composer.lock vendor composer.json
             bin/fixowns
             bin/setup-composer-auth
             bin/cli git clone git@github.com:magento/magento2.git .
             bin/cli git checkout tags/<< parameters.magento-version >>
-            bin/composer require "algolia/algoliasearch-magento-2:${CIRCLE_BRANCH}"
-            bin/composer install
-      # - run:
-      #     name: Configure AlgoliaSearch extension
-      #     working_directory: ~/Sites
-      #     command: |
-      #       cp -r ~/project/ AlgoliaSearch
-      #       bin/cli mkdir -p app/code/Algolia
-      #       docker cp AlgoliaSearch/ "$(bin/docker-compose ps -q phpfpm|awk '{print $1}')":/var/www/html/app/code/Algolia
-      #       bin/fixowns
-      #       bin/fixperms
+            bin/composer require "algolia/algoliasearch-magento-2:dev-${CIRCLE_BRANCH}"
       - run:
           name: Enable AlgoliaSearch extension
           working_directory: ~/Sites

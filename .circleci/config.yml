@@ -79,7 +79,7 @@ jobs:
             bin/test/unit-coverage vendor/algolia/algoliasearch-magento-2/Test/Unit
             docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ~/Sites/unit-coverage/
       - store_artifacts:
-          path: ~/Sites/unit-tests
+          path: ~/Sites/unit-coverage
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
 
 workflows:

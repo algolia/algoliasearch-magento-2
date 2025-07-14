@@ -10,7 +10,7 @@ executors:
       docker_layer_caching: true
 
 jobs:
-  magento-build:
+  magento-build-and-test:
     executor:
       name: magento-executor
     parameters:
@@ -50,6 +50,7 @@ jobs:
             bin/cli git clone git@github.com:magento/magento2.git .
             bin/cli git checkout tags/<< parameters.magento-version >>
             bin/composer require "algolia/algoliasearch-magento-2:dev-${CIRCLE_BRANCH}"
+            bin/composer global require --dev phpunit/phpunit
       - run:
           name: Enable AlgoliaSearch extension
           working_directory: ~/Sites
@@ -61,11 +62,28 @@ jobs:
           command: |
             bin/magento setup:di:compile
             bin/magento module:status Algolia_AlgoliaSearch
+      - run:
+          name: Run Unit Tests and Unit Coverage
+          working_directory: ~/Sites
+          command: |
+            bin/test/unit vendor/algolia/algoliasearch-magento-2/Test/Unit
+            bin/test/unit-coverage vendor/algolia/algoliasearch-magento-2/Test/Unit
+      - run:
+          name: Copy test results to CircleCI
+          working_directory: ~/Sites
+          command: |
+            bin/copyfromcontainer dev/tests/unit/report
+      - store_artifacts:
+          path: ~/Sites/dev/tests/unit/report
+          destination: test-results
+      - store_test_results:
+          path: ~/Sites/dev/tests/unit/report
+
 
 workflows:
-  magento-build-and-test:
+  magento-build-and-test-workflow:
     jobs:
-      - magento-build:
+      - magento-build-and-test:
           matrix:
             parameters:
               php-version: ["8.2"]

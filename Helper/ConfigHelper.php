@@ -763,7 +763,7 @@ class ConfigHelper
     /**
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getCurrencyCode(int $storeId = null): string
+    public function getCurrencyCode(?int $storeId = null): string
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);

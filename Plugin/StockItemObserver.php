@@ -38,9 +38,9 @@ class StockItemObserver
 
     /**
      * @param \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $stockItemResource
-     * @param \Magento\CatalogInventory\Model\ResourceModel\Stock\Item|null $result
+     * @param \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $result
      * @param \Magento\CatalogInventory\Api\Data\StockItemInterface $stockItem
-     * @return \Magento\CatalogInventory\Model\ResourceModel\Stock\Item|null
+     * @return \Magento\CatalogInventory\Model\ResourceModel\Stock\Item
      */
     public function afterDelete(
         \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $stockItemResource,

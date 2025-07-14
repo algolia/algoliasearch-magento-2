@@ -10,7 +10,7 @@ executors:
       docker_layer_caching: true
 
 jobs:
-  magento-build-and-test-job:
+  magento-build-and-test:
     executor:
       name: magento-executor
     parameters:
@@ -83,9 +83,9 @@ jobs:
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
 
 workflows:
-  magento-build-and-test:
+  magento-build-and-test-workflow:
     jobs:
-      - magento-build-and-test-job:
+      - magento-build-and-test:
           matrix:
             parameters:
               php-version: ["8.2"]

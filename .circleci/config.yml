@@ -73,13 +73,13 @@ jobs:
       - store_test_results:
           path: ~/Sites/unit-tests
       - run:
-          name: Run Unit Coverage
+          name: Run Unit Test Coverage and copy results to CircleCI
           working_directory: ~/Sites
           command: |
-            bin/test/unit-coverage vendor/algolia/algoliasearch-magento-2/Test/Unit
-            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ~/Sites/unit-coverage/
+            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-filter /var/www/html/vendor/algolia/algoliasearch-magento-2/ /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
+            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
       - store_artifacts:
-          path: ~/Sites/unit-coverage
+          path: ~/Sites/unit-coverage/report
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
 
 workflows:

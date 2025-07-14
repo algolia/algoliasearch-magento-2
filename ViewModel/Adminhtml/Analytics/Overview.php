@@ -107,7 +107,7 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
      * @return \DateTime
      * @throws NoSuchEntityException
      */
-    protected function parseFormSubmittedDate(string $dateString = null, string $timezone = null): \DateTime
+    protected function parseFormSubmittedDate(?string $dateString = null, ?string $timezone = null): \DateTime
     {
         if (empty($timezone)) {
             $timezone = $this->getTimeZone();

@@ -30,8 +30,8 @@ class MerchandisingHelper
                                   int    $entityId,
                                   array  $rawPositions,
                                   string $entityType,
-                                  string $query = null,
-                                  string $banner = null): void
+                                  ?string $query = null,
+                                  ?string $banner = null): void
     {
         if ($this->coreHelper->isIndexingEnabled($storeId) === false) {
             return;

@@ -44,7 +44,7 @@ class StockItemObserver
      */
     public function afterDelete(
         \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $stockItemResource,
-        \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $result = null,
+        \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $result,
         \Magento\CatalogInventory\Api\Data\StockItemInterface $stockItem
     ) {
         $stockItemResource->addCommitCallback(function () use ($stockItem) {

@@ -849,7 +849,7 @@ class ConfigHelper
      * @param int|null $storeId
      * @return string
      */
-    public function getIndexPrefix(int $storeId = null): string
+    public function getIndexPrefix(?int $storeId = null): string
     {
         return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }

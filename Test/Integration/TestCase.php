@@ -282,7 +282,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string|null $key - a unique key for this operation - if null a unique key will be derived
      * @return mixed
      */
-    function runOnce(callable $callback, string $key = null): mixed
+    function runOnce(callable $callback, ?string $key = null): mixed
     {
         static $executed = [];
         $key ??= is_string($callback) ? $callback : spl_object_hash((object) $callback);

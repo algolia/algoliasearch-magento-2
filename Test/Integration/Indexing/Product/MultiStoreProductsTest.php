@@ -161,7 +161,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
      * @return ProductInterface
      * @throws NoSuchEntityException
      */
-    private function loadProduct(int $productId, int $storeId = null): ProductInterface
+    private function loadProduct(int $productId, ?int $storeId = null): ProductInterface
     {
         return $this->productRepository->getById($productId, true, $storeId);
     }

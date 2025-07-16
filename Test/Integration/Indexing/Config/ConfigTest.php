@@ -140,9 +140,7 @@ class ConfigTest extends TestCase
         $this->algoliaConnector->waitLastTask();
 
         $indices = $this->algoliaConnector->listIndexes();
-        $indicesNames = array_map(function ($indexData) {
-            return $indexData['name'];
-        }, $indices['items']);
+        $indicesNames = array_map(fn($indexData) => $indexData['name'], $indices['items']);
 
         foreach ($sortingIndicesWithRankingWhichShouldBeCreated as $indexName => $firstRanking) {
             $this->assertContains($indexName, $indicesNames);

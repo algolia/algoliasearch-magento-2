@@ -229,7 +229,7 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
                 $search['conversion'] = $this->getDateValue($conversion, $search['date'], 'rate');
             }
 
-            $search['formatted'] = date('M, d', strtotime($search['date']));
+            $search['formatted'] = date('M, d', strtotime((string) $search['date']));
         }
 
         return $searches;
@@ -262,7 +262,7 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
             $this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS])
         );
 
-        return isset($topSearches['searches']) ? $topSearches['searches'] : [];
+        return $topSearches['searches'] ?? [];
     }
 
     /**
@@ -273,12 +273,10 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     public function getPopularResults()
     {
         $popular = $this->analyticsHelper->getTopHits($this->getAnalyticsParams(['limit' => self::LIMIT_RESULTS]));
-        $hits = isset($popular['hits']) ? $popular['hits'] : [];
+        $hits = $popular['hits'] ?? [];
 
         if (!empty($hits)) {
-            $objectIds = array_map(function ($arr) {
-                return $arr['hit'];
-            }, $hits);
+            $objectIds = array_map(fn($arr) => $arr['hit'], $hits);
 
             $storeId = $this->getStore()->getId();
 

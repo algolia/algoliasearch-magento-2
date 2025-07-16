@@ -45,7 +45,7 @@ class Save extends \Magento\Backend\App\Action
         /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
         $resultRedirect->setPath('*/*/index');
-        $skus = preg_split("/(,|\r\n|\n|\r)/", $this->getRequest()->getParam('skus'));
+        $skus = preg_split("/(,|\r\n|\n|\r)/", (string) $this->getRequest()->getParam('skus'));
 
         $stores = $this->storeManager->getStores();
 

@@ -170,6 +170,6 @@ class InstantSearchHelper
     public function getInstantRedirectOptions(?int $storeId = null): array
     {
         $value = $this->configInterface->getValue(self::REDIRECT_OPTIONS, ScopeInterface::SCOPE_STORE, $storeId);
-        return empty($value) ? [] : explode(',', $value);
+        return empty($value) ? [] : explode(',', (string) $value);
     }
 }

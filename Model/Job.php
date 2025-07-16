@@ -90,7 +90,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         }
 
         if ($this->getDecodedData() === null) {
-            $decodedData = json_decode($this->getData('data'), true);
+            $decodedData = json_decode((string) $this->getData('data'), true);
 
             $this->setDecodedData($decodedData);
 

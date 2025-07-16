@@ -238,9 +238,10 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getTotalRevenueForEvent(array $objectData): float
     {
-        return array_reduce($objectData, function($carry, $item) {
-           return floatval($carry) + floatval($item['quantity']) * floatval($item['price']);
-        });
+        return array_reduce(
+            $objectData,
+            fn($carry, $item) => floatval($carry) + floatval($item['quantity']) * floatval($item['price'])
+        );
     }
 
     /**
@@ -306,13 +307,11 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getObjectDataForPurchase(array $items): array
     {
-        return array_map(function($item) {
-            return [
-                'price'    => $this->getOrderItemSalePrice($item),
-                'discount' => max(0, $this->getOrderItemDiscount($item)),
-                'quantity' => intval($item->getQtyOrdered())
-            ];
-        }, $items);
+        return array_map(fn($item) => [
+            'price'    => $this->getOrderItemSalePrice($item),
+            'discount' => max(0, $this->getOrderItemDiscount($item)),
+            'quantity' => intval($item->getQtyOrdered())
+        ], $items);
     }
 
     /**
@@ -321,9 +320,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getObjectIdsForPurchase(array $items): array
     {
-        return array_map(function($item) {
-            return $item->getProduct()->getId();
-        }, $items);
+        return array_map(fn($item) => $item->getProduct()->getId(), $items);
     }
 
 

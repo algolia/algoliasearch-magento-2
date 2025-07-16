@@ -20,7 +20,7 @@ class QueueCron extends Value
 
     public function beforeSave()
     {
-        $value = trim($this->getData('value'));
+        $value = trim((string) $this->getData('value'));
 
         if (isset($this->mappings[$value])) {
             $value = $this->mappings[$value];

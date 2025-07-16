@@ -17,7 +17,7 @@ class CustomRankingCategory extends AbstractTable
                     $attributes = $categoryHelper->getAllAttributes();
 
                     foreach ($attributes as $key => $label) {
-                        $options[$key] = $key ? $key : $label;
+                        $options[$key] = $key ?: $label;
                     }
 
                     return $options;

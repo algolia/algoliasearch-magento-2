@@ -143,9 +143,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         return array_combine(
             $bootstrap,
             array_map(
-                function($setting) use ($config) {
-                    return $config->getValue($setting, ScopeInterface::SCOPE_STORE);
-                },
+                fn($setting) => $config->getValue($setting, ScopeInterface::SCOPE_STORE),
                 $bootstrap
             )
         );
@@ -170,11 +168,11 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         foreach ($indices['items'] as $index) {
             $name = $index['name'];
 
-            if (mb_strpos($name, $this->indexPrefix) === 0) {
+            if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                 try {
                     $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name);
                     $this->algoliaConnector->deleteIndex($indexOptions);
-                } catch (AlgoliaException $e) {
+                } catch (AlgoliaException) {
                     // Might be a replica
                 }
             }
@@ -257,7 +255,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected function invokeMethod(object $object, string $methodName, array $parameters = [])
     {
-        $reflection = new \ReflectionClass(get_class($object));
+        $reflection = new \ReflectionClass($object::class);
         return $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 

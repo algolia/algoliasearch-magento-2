@@ -21,7 +21,7 @@ trait ConfigAssertionsTrait
         foreach ($indices['items'] as $index) {
             $name = $index['name'];
 
-            if (mb_strpos($name, $this->indexPrefix . $store->getCode()) === 0) {
+            if (mb_strpos((string) $name, $this->indexPrefix . $store->getCode()) === 0) {
                 $indicesCreatedByTest++;
             }
         }

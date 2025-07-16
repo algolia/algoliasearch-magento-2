@@ -22,7 +22,7 @@ class QueueArchiveData extends \Magento\Ui\Component\Listing\Columns\Column
         $fieldName = $this->getData('name');
 
         foreach ($dataSource['data']['items'] as &$item) {
-            $data = json_decode($item[$fieldName], true);
+            $data = json_decode((string) $item[$fieldName], true);
             $formattedData = '';
             if (is_array($data)) {
                 foreach ($data as $key => $value) {

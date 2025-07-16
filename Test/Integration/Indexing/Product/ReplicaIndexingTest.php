@@ -338,7 +338,7 @@ class ReplicaIndexingTest extends TestCase
         return $mock;
     }
 
-    protected function getMockReplicaManager($mockedMethods = array()): MockObject & ReplicaManager
+    protected function getMockReplicaManager($mockedMethods = []): MockObject & ReplicaManager
     {
         $mockedClass = ReplicaManager::class;
         $mockedReplicaManager = $this->getMockBuilder($mockedClass)

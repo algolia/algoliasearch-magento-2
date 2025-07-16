@@ -143,12 +143,12 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             foreach ($indices['items'] as $index) {
                 $name = $index['name'];
 
-                if (mb_strpos($name, $this->indexPrefix) === 0) {
+                if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                     try {
                         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name, $store->getId());
                         $this->algoliaConnector->deleteIndex($indexOptions);
                         $deletedStoreIndices++;
-                    } catch (AlgoliaException $e) {
+                    } catch (AlgoliaException) {
                         // Might be a replica
                     }
                 }

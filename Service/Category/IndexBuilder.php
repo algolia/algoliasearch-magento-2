@@ -211,7 +211,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
             try {
                 $this->categoryHelper->canCategoryBeReindexed($category, $storeId);
-            } catch (CategoryReindexingException $e) {
+            } catch (CategoryReindexingException) {
                 $categoriesToRemove[$categoryId] = $categoryId;
                 continue;
             }

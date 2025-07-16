@@ -40,7 +40,7 @@ class MigrateConversionAnalyticsModePatch implements DataPatchInterface
     {
         $this->moduleDataSetup->getConnection()->startSetup();
 
-        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::CC_CONVERSION_ANALYTICS_MODE, [$this, 'migrateSetting']);
+        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::CC_CONVERSION_ANALYTICS_MODE, $this->migrateSetting(...));
 
         $this->moduleDataSetup->getConnection()->endSetup();
 

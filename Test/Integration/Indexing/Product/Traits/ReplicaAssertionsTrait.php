@@ -89,9 +89,7 @@ trait ReplicaAssertionsTrait
     {
         return (bool) array_filter(
             $replicaSetting,
-            function ($replica) use ($replicaIndexName) {
-                return str_contains($replica, "virtual($replicaIndexName)");
-            }
+            fn($replica) => str_contains((string) $replica, "virtual($replicaIndexName)")
         );
     }
 
@@ -111,10 +109,8 @@ trait ReplicaAssertionsTrait
         $sorting = $this->configHelper->getSorting();
         return (bool) array_filter(
             $sorting,
-            function($sort) use ($sortAttr, $sortDir) {
-                return $sort['attribute'] == $sortAttr
-                    && $sort['sort'] == $sortDir;
-            }
+            fn($sort) => $sort['attribute'] == $sortAttr
+                && $sort['sort'] == $sortDir
         );
     }
 
@@ -135,9 +131,7 @@ trait ReplicaAssertionsTrait
     protected function mockSortUpdate(string $sortAttr, string $sortDir, array $attr, ?StoreInterface $store = null): void
     {
         $sorting = $this->configHelper->getSorting(!is_null($store) ? $store->getId() : null);
-        $existing = array_filter($sorting, function ($item) use ($sortAttr, $sortDir) {
-            return $item['attribute'] === $sortAttr && $item['sort'] === $sortDir;
-        });
+        $existing = array_filter($sorting, fn($item) => $item['attribute'] === $sortAttr && $item['sort'] === $sortDir);
 
         if ($existing) {
             $idx = array_key_first($existing);

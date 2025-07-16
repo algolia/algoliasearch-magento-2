@@ -117,7 +117,7 @@ class Queue
     public function addToQueue($className, $method, array $data, $dataSize = 1, $isFullReindex = false)
     {
         if (is_object($className)) {
-            $className = get_class($className);
+            $className = $className::class;
         }
 
         if ($this->configHelper->isQueueActive()) {
@@ -252,7 +252,7 @@ class Queue
                     Parameters: ' . json_encode($job->getDecodedData());
         $this->logger->log($logMessage);
 
-        $logMessage = date('c') . ' ERROR: ' . get_class($e) . ':
+        $logMessage = date('c') . ' ERROR: ' . $e::class . ':
                     ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() .
             "\nStack trace:\n" . $e->getTraceAsString();
         $this->logger->log($logMessage);

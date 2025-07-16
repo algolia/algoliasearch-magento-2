@@ -35,7 +35,7 @@ class Collection extends LandingPageCollection implements SearchResultInterface
         $eventPrefix,
         $eventObject,
         $resourceModel,
-        $model = 'Magento\Framework\View\Element\UiComponent\DataProvider\Document',
+        $model = \Magento\Framework\View\Element\UiComponent\DataProvider\Document::class,
         $connection = null,
         ?\Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource = null
     ) {

@@ -44,7 +44,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
     protected function reindexToAllStores(
         BatchQueueProcessorInterface $batchQueueProcessor,
-        array $categoryIds = null
+        ?array $categoryIds = null
     ): void
     {
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {

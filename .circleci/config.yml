@@ -32,6 +32,8 @@ jobs:
           name: Setup folder structure and override file
           command: |
             mkdir ~/Sites
+            mkdir ~/Sites/unit-tests
+            mkdir ~/Sites/unit-coverage
             cd ~/Sites
             cat \<<EOF > compose.override.yml
             services:
@@ -50,6 +52,7 @@ jobs:
             bin/cli git clone git@github.com:magento/magento2.git .
             bin/cli git checkout tags/<< parameters.magento-version >>
             bin/composer require "algolia/algoliasearch-magento-2:dev-${CIRCLE_BRANCH}"
+            bin/composer global require --dev phpunit/phpunit
       - run:
           name: Enable AlgoliaSearch extension
           working_directory: ~/Sites
@@ -61,9 +64,26 @@ jobs:
           command: |
             bin/magento setup:di:compile
             bin/magento module:status Algolia_AlgoliaSearch
+      - run:
+          name: Run Unit Tests and copy results to CircleCI
+          working_directory: ~/Sites
+          command: |
+            bin/cli vendor/bin/phpunit --log-junit /var/www/html/dev/tests/unit/report/junit.xml /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
+            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report/junit.xml ./unit-tests/
+      - store_test_results:
+          path: ~/Sites/unit-tests
+      - run:
+          name: Run Unit Test Coverage and copy results to CircleCI
+          working_directory: ~/Sites
+          command: |
+            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-filter /var/www/html/vendor/algolia/algoliasearch-magento-2/ /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
+            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
+      - store_artifacts:
+          path: ~/Sites/unit-coverage/report
+          destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
 
 workflows:
-  magento-build-and-test:
+  magento-build-and-test-workflow:
     jobs:
       - magento-build:
           matrix:

@@ -20,6 +20,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class ConfigHelper
 {
+    // --- Credentials & Basic Setup --- //
     public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
     public const LOGGING_ENABLED = 'algoliasearch_credentials/credentials/debug';
     public const APPLICATION_ID = 'algoliasearch_credentials/credentials/application_id';
@@ -30,72 +31,23 @@ class ConfigHelper
     public const ALLOW_COOKIE_BUTTON_SELECTOR = 'algoliasearch_credentials/algolia_cookie_configuration/allow_cookie_button_selector';
     public const ALGOLIA_COOKIE_DURATION = 'algoliasearch_credentials/algolia_cookie_configuration/cookie_duration';
 
+    // --- Products --- //
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
     public const ENABLE_VISUAL_MERCHANDISING = 'algoliasearch_products/products/enable_visual_merchandising';
     public const CATEGORY_PAGE_ID_ATTRIBUTE_NAME = 'algoliasearch_products/products/category_page_id_attribute_name';
+    public const INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX = 'algoliasearch_products/products/include_non_visible_products_in_index';
 
+    // --- Categories --- //
     public const CATEGORY_ATTRIBUTES = 'algoliasearch_categories/categories/category_additional_attributes';
     public const CATEGORY_CUSTOM_RANKING = 'algoliasearch_categories/categories/custom_ranking_category_attributes';
     public const SHOW_CATS_NOT_INCLUDED_IN_NAV = 'algoliasearch_categories/categories/show_cats_not_included_in_navigation';
     public const INDEX_EMPTY_CATEGORIES = 'algoliasearch_categories/categories/index_empty_categories';
     public const CATEGORY_SEPARATOR = 'algoliasearch_categories/categories/category_separator';
 
-    public const IS_ACTIVE = 'algoliasearch_queue/queue/active';
-    public const USE_BUILT_IN_CRON = 'algoliasearch_queue/queue/use_built_in_cron';
-    public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
-    public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
 
-    public const XML_PATH_IMAGE_WIDTH = 'algoliasearch_images/image/width';
-    public const XML_PATH_IMAGE_HEIGHT = 'algoliasearch_images/image/height';
-    public const XML_PATH_IMAGE_TYPE = 'algoliasearch_images/image/type';
-
-    public const CC_ANALYTICS_ENABLE = 'algoliasearch_cc_analytics/cc_analytics_group/enable';
-    public const CC_ANALYTICS_IS_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/is_selector';
-    public const CC_CONVERSION_ANALYTICS_MODE = 'algoliasearch_cc_analytics/cc_analytics_group/conversion_analytics_mode';
-    public const CC_ADD_TO_CART_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/add_to_cart_selector';
-    public const COOKIE_LIFETIME = 'web/cookie/cookie_lifetime';
-
-    public const GA_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
-    public const GA_DELAY = 'algoliasearch_analytics/analytics_group/delay';
-    public const GA_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
-    public const GA_PUSH_INITIAL_SEARCH = 'algoliasearch_analytics/analytics_group/push_initial_search';
-
-    public const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
-    public const PARTIAL_UPDATES = 'algoliasearch_advanced/advanced/partial_update';
-    public const CUSTOMER_GROUPS_ENABLE = 'algoliasearch_advanced/advanced/customer_groups_enable';
-    public const REMOVE_PUB_DIR_IN_URL = 'algoliasearch_advanced/advanced/remove_pub_dir_in_url';
-    public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
-    public const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
-    public const INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX = 'algoliasearch_products/products/include_non_visible_products_in_index';
-    public const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
-    public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
-    public const PREVENT_BACKEND_RENDERING_DISPLAY_MODE =
-        'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode';
-    public const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
-        'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
-    public const NON_CASTABLE_ATTRIBUTES = 'algoliasearch_advanced/advanced/non_castable_attributes';
-    public const MAX_RECORD_SIZE_LIMIT = 'algoliasearch_advanced/advanced/max_record_size_limit';
-    public const ANALYTICS_REGION = 'algoliasearch_advanced/advanced/analytics_region';
-    public const CONNECTION_TIMEOUT = 'algoliasearch_advanced/advanced/connection_timeout';
-    public const READ_TIMEOUT = 'algoliasearch_advanced/advanced/read_timeout';
-    public const WRITE_TIMEOUT = 'algoliasearch_advanced/advanced/write_timeout';
-    public const AUTO_PRICE_INDEXING_ENABLED = 'algoliasearch_advanced/advanced/auto_price_indexing';
-
-    public const PROFILER_ENABLED = 'algoliasearch_advanced/advanced/enable_profiler';
-
-    public const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
-
-    public const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
-
-    public const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
-    public const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
-    public const EXTRA_SETTINGS_PAGES = 'algoliasearch_extra_settings/extra_settings/pages_extra_settings';
-    public const EXTRA_SETTINGS_SUGGESTIONS = 'algoliasearch_extra_settings/extra_settings/suggestions_extra_settings';
-    public const EXTRA_SETTINGS_ADDITIONAL_SECTIONS =
-        'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
-    public const MAGENTO_DEFAULT_CACHE_TIME = 'system/full_page_cache/ttl';
+    // --- Recommend Products Settings --- //
     public const IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED = 'algoliasearch_recommend/recommend/frequently_bought_together/is_frequently_bought_together_enabled';
     public const IS_RECOMMEND_RELATED_PRODUCTS_ENABLED = 'algoliasearch_recommend/recommend/related_product/is_related_products_enabled';
     public const IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED_ON_CART_PAGE = 'algoliasearch_recommend/recommend/frequently_bought_together/is_frequently_bought_together_enabled_in_cart_page';
@@ -119,17 +71,22 @@ class ConfigHelper
     public const IS_LOOKING_SIMILAR_ENABLED_IN_PDP = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_pdp';
     public const IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART = 'algoliasearch_recommend/recommend/looking_similar/is_looking_similar_enabled_on_cart_page';
     protected const LOOKING_SIMILAR_TITLE = 'algoliasearch_recommend/recommend/looking_similar/title';
-
     protected const FREQUENTLY_BOUGHT_TOGETHER_TITLE = 'algoliasearch_recommend/recommend/frequently_bought_together/title';
     protected const RELATED_PRODUCTS_TITLE = 'algoliasearch_recommend/recommend/related_product/title';
     protected const TRENDING_ITEMS_TITLE = 'algoliasearch_recommend/recommend/trends_item/title';
 
-    // Indexing Queue Advanced settings
-    public const ENHANCED_QUEUE_ARCHIVE = 'algoliasearch_advanced/queue/enhanced_archive';
-    public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/queue/number_of_element_by_page';
-    public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
+    // --- Images --- //
+    public const XML_PATH_IMAGE_WIDTH = 'algoliasearch_images/image/width';
+    public const XML_PATH_IMAGE_HEIGHT = 'algoliasearch_images/image/height';
+    public const XML_PATH_IMAGE_TYPE = 'algoliasearch_images/image/type';
 
-    // Indexing Manager settings
+    // --- Indexing Queue / Cron --- //
+    public const IS_ACTIVE = 'algoliasearch_queue/queue/active';
+    public const USE_BUILT_IN_CRON = 'algoliasearch_queue/queue/use_built_in_cron';
+    public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
+    public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
+
+    // --- Indexing Manager --- //
     public const ENABLE_INDEXING = 'algoliasearch_indexing_manager/algolia_indexing/enable_indexing';
     public const ENABLE_QUERY_SUGGESTIONS_INDEX = 'algoliasearch_indexing_manager/algolia_indexing/enable_query_suggestions_index';
     public const ENABLE_PAGES_INDEX = 'algoliasearch_indexing_manager/algolia_indexing/enable_pages_index';
@@ -140,6 +97,60 @@ class ConfigHelper
     public const ENABLE_INDEXER_ADDITIONAL_SECTIONS = 'algoliasearch_indexing_manager/full_indexing/additional_sections';
     public const ENABLE_INDEXER_DELETE_PRODUCTS = 'algoliasearch_indexing_manager/full_indexing/delete_products';
     public const ENABLE_INDEXER_QUEUE = 'algoliasearch_indexing_manager/full_indexing/queue';
+
+    // --- Click & Conversion Analytics --- //
+    public const CC_ANALYTICS_ENABLE = 'algoliasearch_cc_analytics/cc_analytics_group/enable';
+    public const CC_ANALYTICS_IS_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/is_selector';
+    public const CC_CONVERSION_ANALYTICS_MODE = 'algoliasearch_cc_analytics/cc_analytics_group/conversion_analytics_mode';
+    public const CC_ADD_TO_CART_SELECTOR = 'algoliasearch_cc_analytics/cc_analytics_group/add_to_cart_selector';
+
+    // --- Google Analytics --- //
+    public const GA_ENABLE = 'algoliasearch_analytics/analytics_group/enable';
+    public const GA_DELAY = 'algoliasearch_analytics/analytics_group/delay';
+    public const GA_TRIGGER_ON_UI_INTERACTION = 'algoliasearch_analytics/analytics_group/trigger_on_ui_interaction';
+    public const GA_PUSH_INITIAL_SEARCH = 'algoliasearch_analytics/analytics_group/push_initial_search';
+
+    // --- Advanced --- //
+    public const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
+    public const PARTIAL_UPDATES = 'algoliasearch_advanced/advanced/partial_update';
+    public const CUSTOMER_GROUPS_ENABLE = 'algoliasearch_advanced/advanced/customer_groups_enable';
+    public const REMOVE_PUB_DIR_IN_URL = 'algoliasearch_advanced/advanced/remove_pub_dir_in_url';
+    public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
+    public const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
+    public const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
+    public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
+    public const PREVENT_BACKEND_RENDERING_DISPLAY_MODE =
+        'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode';
+    public const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
+        'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
+    public const NON_CASTABLE_ATTRIBUTES = 'algoliasearch_advanced/advanced/non_castable_attributes';
+    public const MAX_RECORD_SIZE_LIMIT = 'algoliasearch_advanced/advanced/max_record_size_limit';
+    public const ANALYTICS_REGION = 'algoliasearch_advanced/advanced/analytics_region';
+    public const CONNECTION_TIMEOUT = 'algoliasearch_advanced/advanced/connection_timeout';
+    public const READ_TIMEOUT = 'algoliasearch_advanced/advanced/read_timeout';
+    public const WRITE_TIMEOUT = 'algoliasearch_advanced/advanced/write_timeout';
+    public const AUTO_PRICE_INDEXING_ENABLED = 'algoliasearch_advanced/advanced/auto_price_indexing';
+
+    public const PROFILER_ENABLED = 'algoliasearch_advanced/advanced/enable_profiler';
+
+    // Indexing Queue Advanced settings
+    public const ENHANCED_QUEUE_ARCHIVE = 'algoliasearch_advanced/queue/enhanced_archive';
+    public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/queue/number_of_element_by_page';
+    public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
+
+    // --- Extra index settings --- //
+    public const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
+    public const EXTRA_SETTINGS_CATEGORIES = 'algoliasearch_extra_settings/extra_settings/categories_extra_settings';
+    public const EXTRA_SETTINGS_PAGES = 'algoliasearch_extra_settings/extra_settings/pages_extra_settings';
+    public const EXTRA_SETTINGS_SUGGESTIONS = 'algoliasearch_extra_settings/extra_settings/suggestions_extra_settings';
+    public const EXTRA_SETTINGS_ADDITIONAL_SECTIONS =
+        'algoliasearch_extra_settings/extra_settings/additional_sections_extra_settings';
+
+    // --- Magento Core --- //
+    public const SHOW_OUT_OF_STOCK = 'cataloginventory/options/show_out_of_stock';
+    public const USE_SECURE_IN_FRONTEND = 'web/secure/use_in_frontend';
+    public const MAGENTO_DEFAULT_CACHE_TIME = 'system/full_page_cache/ttl';
+    public const COOKIE_LIFETIME = 'web/cookie/cookie_lifetime';
 
     public function __construct(
         protected \Magento\Framework\App\Config\ScopeConfigInterface    $configInterface,

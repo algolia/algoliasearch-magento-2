@@ -1072,7 +1072,7 @@
                         ]]>
                     </comment>
                     <depends>
-                        <field id="algolia_indexing">1</field>
+                        <field id="enable_indexing">1</field>
                     </depends>
                 </field>
                 <field id="enable_pages_index" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -1085,12 +1085,16 @@
                         ]]>
                     </comment>
                     <depends>
-                        <field id="algolia_indexing">1</field>
+                        <field id="enable_indexing">1</field>
                     </depends>
                 </field>
             </group>
             <group id="full_indexing" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Full indexing via Magento indexers</label>
+                <depends>
+                    <field id="algoliasearch_indexing_manager/algolia_indexing/enable_indexing">1</field>
+                </depends>
+                <attribute type="expanded">1</attribute>
                 <comment>
                     <![CDATA[
                          <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers can be disabled for <strong>full indexing</strong>.
@@ -1524,9 +1528,6 @@
                     <comment>
                         <model>Algolia\AlgoliaSearch\Model\Config\AutomaticPriceIndexingComment</model>
                     </comment>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
                 </field>
                 <field id="enable_profiler" translate="label comment" type="select" sortOrder="130" showInDefault="1">
                     <label>Enable Profiler</label>

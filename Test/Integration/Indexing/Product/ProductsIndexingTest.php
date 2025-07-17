@@ -80,7 +80,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
             $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
         }
 
-        foreach ($defaultAttributes as $key => $attribute) {
+        foreach ($defaultAttributes as $attribute) {
             $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }

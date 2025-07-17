@@ -162,7 +162,7 @@ class InsightsHelper
      * @param int|null $storeId
      * @return bool
      */
-    public function isInsightsEnabled(int $storeId = null): bool
+    public function isInsightsEnabled(?int $storeId = null): bool
     {
         return $this->configHelper->isClickConversionAnalyticsEnabled($storeId)
             || $this->personalizationHelper->isPersoEnabled($storeId);
@@ -174,7 +174,7 @@ class InsightsHelper
      *
      * @return bool
      */
-    public function isOrderPlacedTracked(int $storeId = null): bool
+    public function isOrderPlacedTracked(?int $storeId = null): bool
     {
         return $this->personalizationHelper->isPersoEnabled($storeId)
             && $this->personalizationHelper->isOrderPlacedTracked($storeId)
@@ -188,7 +188,7 @@ class InsightsHelper
      * @param int|null $storeId
      * @return bool
      */
-    public function isConversionTrackedPlaceOrder(int $storeId = null): bool
+    public function isConversionTrackedPlaceOrder(?int $storeId = null): bool
     {
         return $this->configHelper->isClickConversionAnalyticsEnabled($storeId)
             && in_array($this->configHelper->getConversionAnalyticsMode($storeId),
@@ -206,7 +206,7 @@ class InsightsHelper
      *
      * @return bool
      */
-    public function isAddedToCartTracked(int $storeId = null): bool
+    public function isAddedToCartTracked(?int $storeId = null): bool
     {
         return $this->personalizationHelper->isPersoEnabled($storeId)
             && $this->personalizationHelper->isCartAddTracked($storeId)
@@ -220,7 +220,7 @@ class InsightsHelper
      * @param int|null $storeId
      * @return bool
      */
-    public function isConversionTrackedAddToCart(int $storeId = null): bool
+    public function isConversionTrackedAddToCart(?int $storeId = null): bool
     {
         return $this->configHelper->isClickConversionAnalyticsEnabled($storeId)
             && in_array($this->configHelper->getConversionAnalyticsMode($storeId),

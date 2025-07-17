@@ -52,7 +52,7 @@ abstract class AbstractButton
             $query->getResource()->load($query, $modelId);
 
             return $query;
-        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+        } catch (\Magento\Framework\Exception\NoSuchEntityException) {
         }
 
         return null;

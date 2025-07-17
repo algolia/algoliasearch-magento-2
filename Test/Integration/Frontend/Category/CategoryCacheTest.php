@@ -12,8 +12,8 @@ use Magento\TestFramework\TestCase\AbstractController;
 
 class CategoryCacheTest extends AbstractController
 {
-    protected ?CacheManager $cacheManager;
-    protected ?ScopeConfigInterface $config;
+    protected ?CacheManager $cacheManager = null;
+    protected ?ScopeConfigInterface $config = null;
 
     protected static $cacheResets = [];
 
@@ -102,7 +102,7 @@ class CategoryCacheTest extends AbstractController
         );
         $this->assertContains(
             'FPC',
-            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            explode(',', (string) $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
 
@@ -153,7 +153,7 @@ class CategoryCacheTest extends AbstractController
         );
         $this->assertContains(
             'FPC',
-            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            explode(',', (string) $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
 
@@ -208,7 +208,7 @@ class CategoryCacheTest extends AbstractController
         );
         $this->assertContains(
             'FPC',
-            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            explode(',', (string) $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
 

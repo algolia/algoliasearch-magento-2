@@ -17,7 +17,7 @@ class CustomRankingProduct extends AbstractTable
                     $attributes = $productHelper->getAllAttributes();
 
                     foreach ($attributes as $key => $label) {
-                        $options[$key] = $key ? $key : $label;
+                        $options[$key] = $key ?: $label;
                     }
 
                     return $options;

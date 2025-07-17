@@ -763,7 +763,7 @@ class ConfigHelper
     /**
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function getCurrencyCode(int $storeId = null): string
+    public function getCurrencyCode(?int $storeId = null): string
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
@@ -849,7 +849,7 @@ class ConfigHelper
      * @param int|null $storeId
      * @return string
      */
-    public function getIndexPrefix(int $storeId = null): string
+    public function getIndexPrefix(?int $storeId = null): string
     {
         return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
@@ -940,7 +940,7 @@ class ConfigHelper
      */
     public function getExtraSettings($section, $storeId = null)
     {
-        $constant = 'EXTRA_SETTINGS_' . mb_strtoupper($section);
+        $constant = 'EXTRA_SETTINGS_' . mb_strtoupper((string) $section);
         $value = $this->configInterface->getValue(constant('self::' . $constant), ScopeInterface::SCOPE_STORE, $storeId);
         return trim((string)$value);
     }
@@ -963,13 +963,13 @@ class ConfigHelper
         if (!isset($_SERVER['HTTP_USER_AGENT'])) {
             return false;
         }
-        $userAgent = mb_strtolower($_SERVER['HTTP_USER_AGENT'], 'utf-8');
+        $userAgent = mb_strtolower((string) $_SERVER['HTTP_USER_AGENT'], 'utf-8');
         $allowedUserAgents = $this->configInterface->getValue(
             self::BACKEND_RENDERING_ALLOWED_USER_AGENTS,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
-        $allowedUserAgents = trim($allowedUserAgents);
+        $allowedUserAgents = trim((string) $allowedUserAgents);
         if ($allowedUserAgents === '') {
             return true;
         }
@@ -1141,9 +1141,7 @@ class ConfigHelper
             $storeId
         ));
         $customRankings = $customRankings ?: [];
-        $customRankings = array_filter($customRankings, function ($customRanking) {
-            return $customRanking['attribute'] !== 'custom_attribute';
-        });
+        $customRankings = array_filter($customRankings, fn($customRanking) => $customRanking['attribute'] !== 'custom_attribute');
         $attributes = $this->addIndexableAttributes($attributes, $customRankings, '0', '0');
         if (is_array($attributes)) {
             return $attributes;
@@ -1199,9 +1197,7 @@ class ConfigHelper
             $storeId
         ));
         $customRankings = $customRankings ?: [];
-        $customRankings = array_filter($customRankings, function ($customRanking) {
-            return $customRanking['attribute'] !== 'custom_attribute';
-        });
+        $customRankings = array_filter($customRankings, fn($customRanking) => $customRanking['attribute'] !== 'custom_attribute');
         $attributes = $this->addIndexableAttributes($attributes, $customRankings, '0', '0');
         if (is_array($attributes)) {
             return $attributes;
@@ -1445,9 +1441,7 @@ class ConfigHelper
     {
         return (bool) count(array_filter(
             $this->getSorting($storeId),
-            function ($sort) {
-                return $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA];
-            }
+            fn($sort) => $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA]
         ));
     }
 

@@ -38,6 +38,9 @@
 - Removed deprecated methods from Entity Helpers
 - Removed every call to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be removed in a future v3.17.0)
 - Updated integration tests
+- Added support for PHPUnit 10
+- Added support for Magento 2.4.8 on PHP 8.4 - Special shout out to @jajajaime for his help here
+- Refactored code to PHP 8.2 baseline standard
 
 ### Breaking Changes
 - `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).

@@ -13,17 +13,9 @@ class ProductObserver
     /** @var Product */
     private $indexer;
 
-    /** @var ConfigHelper */
-    private $configHelper;
-
-    /**
-     * @param IndexerRegistry $indexerRegistry
-     * @param ConfigHelper $configHelper
-     */
-    public function __construct(IndexerRegistry $indexerRegistry, ConfigHelper $configHelper)
+    public function __construct(IndexerRegistry $indexerRegistry)
     {
         $this->indexer = $indexerRegistry->get('algolia_products');
-        $this->configHelper = $configHelper;
     }
 
     /**
@@ -31,9 +23,9 @@ class ProductObserver
      * @param ProductResource $result
      * @param ProductModel $product
      *
-     * @return ProductModel[]
+     * @return ProductResource
      */
-    public function afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product)
+    public function afterSave(ProductResource $productResource, ProductResource $result, ProductModel $product): ProductResource
     {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
@@ -49,9 +41,9 @@ class ProductObserver
      * @param ProductResource $result
      * @param ProductModel $product
      *
-     * @return ProductModel[]
+     * @return ProductResource
      */
-    public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product)
+    public function afterDelete(ProductResource $productResource, ProductResource $result, ProductModel $product): ProductResource
     {
         $productResource->addCommitCallback(function () use ($product) {
             if (!$this->indexer->isScheduled()) {
@@ -64,12 +56,12 @@ class ProductObserver
 
     /**
      * @param Action $subject
-     * @param Action|null $result
+     * @param Action $result
      * @param array $productIds
      *
      * @return Action
      */
-    public function afterUpdateAttributes(Action $subject, Action $result = null, $productIds)
+    public function afterUpdateAttributes(Action $subject, Action $result, array $productIds): Action
     {
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));
@@ -80,17 +72,15 @@ class ProductObserver
 
     /**
      * @param Action $subject
-     * @param Action|null $result
+     * @param null $result
      * @param array $productIds
      *
-     * @return mixed
+     * @return void
      */
-    public function afterUpdateWebsites(Action $subject, Action $result = null, array $productIds)
+    public function afterUpdateWebsites(Action $subject, null $result, array $productIds): void
     {
         if (!$this->indexer->isScheduled()) {
             $this->indexer->reindexList(array_unique($productIds));
         }
-
-        return $result;
     }
 }

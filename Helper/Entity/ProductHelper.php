@@ -142,9 +142,7 @@ class ProductHelper extends AbstractEntityHelper
             $attributes[''] = '';
         }
 
-        uksort($attributes, function ($a, $b) {
-            return strcmp($a, $b);
-        });
+        uksort($attributes, fn($a, $b) => strcmp((string) $a, (string) $b));
 
         return $attributes;
     }

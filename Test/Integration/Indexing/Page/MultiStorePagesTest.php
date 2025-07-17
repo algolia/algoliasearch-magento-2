@@ -68,7 +68,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
 
         try {
             $homePage = $this->loadPage(self::HOME_PAGE_ID);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->markTestIncomplete('Page could not be found.');
         }
 

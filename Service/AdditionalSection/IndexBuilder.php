@@ -44,7 +44,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
      */
-    public function buildIndexFull(int $storeId, array $options = null): void
+    public function buildIndexFull(int $storeId, ?array $options = null): void
     {
         $this->buildIndex($storeId, null, null);
     }

@@ -97,7 +97,7 @@ abstract class IndexingTestCase extends TestCase
         string $indexName,
         string $recordId,
         array $expectedValues,
-        int $storeId = null
+        ?int $storeId = null
     ) : void {
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 

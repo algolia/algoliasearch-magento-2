@@ -16,6 +16,7 @@ use Magento\Framework\Controller\ResultFactory;
 use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -131,8 +132,9 @@ class Reindex extends Action
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
-    protected function reindexEntities(array $entities, array $storeIds = null, array $entityIds = null): void
+    protected function reindexEntities(array $entities, ?array $storeIds = null, ?array $entityIds = null): void
     {
         foreach ($entities as $entity) {
             $processor = match ($entity) {

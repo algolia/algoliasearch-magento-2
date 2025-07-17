@@ -44,7 +44,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
     protected function reindexToAllStores(
         BatchQueueProcessorInterface $batchQueueProcessor,
-        array $categoryIds = null
+        ?array $categoryIds = null
     ): void
     {
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
@@ -65,7 +65,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         string $storeCode,
         string $entity,
         int $expectedNumber,
-        int $storeId = null
+        ?int $storeId = null
     ): void
     {
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
@@ -143,12 +143,12 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             foreach ($indices['items'] as $index) {
                 $name = $index['name'];
 
-                if (mb_strpos($name, $this->indexPrefix) === 0) {
+                if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                     try {
                         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name, $store->getId());
                         $this->algoliaConnector->deleteIndex($indexOptions);
                         $deletedStoreIndices++;
-                    } catch (AlgoliaException $e) {
+                    } catch (AlgoliaException) {
                         // Might be a replica
                     }
                 }

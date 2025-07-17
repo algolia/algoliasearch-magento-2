@@ -308,7 +308,7 @@ class ConfigHelper
     }
 
     // --- Products --- //
-    
+
     /**
      * @param $storeId
      * @return array
@@ -2038,15 +2038,12 @@ class ConfigHelper
     /**
      * @param $storeId
      * @return bool
-     * @deprecated This method will be moved to the InstantSearch config helper
+     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::shouldShowSuggestionsOnNoResultsPage()
      */
     public function showSuggestionsOnNoResultsPage($storeId = null)
     {
-        return $this->configInterface->isSetFlag(
-            self::SHOW_SUGGESTIONS_NO_RESULTS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
+        return $this->instantSearchConfig->shouldShowSuggestionsOnNoResultsPage($storeId);
     }
 
     /**

@@ -132,6 +132,15 @@ class InstantSearchHelper
         );
     }
 
+    public function shouldShowSuggestionsOnNoResultsPage(?int $storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::SHOW_SUGGESTIONS_NO_RESULTS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
     public function isSearchBoxEnabled(?int $storeId = null): bool
     {
         return $this->isEnabled($storeId)

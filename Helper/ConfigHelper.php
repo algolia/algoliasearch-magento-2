@@ -1362,6 +1362,15 @@ class ConfigHelper
         return $this->configInterface->getValue(self::WRITE_TIMEOUT, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
+    public function shouldForwardPrimaryIndexSettingsToReplicas(?int $storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::FORWARD_TO_REPLICAS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
     public function isAutoPriceIndexingEnabled(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(

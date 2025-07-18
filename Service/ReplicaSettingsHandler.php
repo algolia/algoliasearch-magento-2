@@ -36,29 +36,30 @@ class ReplicaSettingsHandler
         string $mergeSettingsFrom = ''
     ): void
     {
-        if ($this->config->shouldForwardPrimaryIndexSettingsToReplicas($indexOptions->getStoreId())) {
-            [$forward, $noForward] = $this->splitSettings($indexSettings);
-            if ($forward) {
-                $this->connector->setSettings(
-                    $indexOptions,
-                    $forward,
-                    true,
-                    false
-                );
-            }
-            if ($noForward) {
-                $this->connector->setSettings(
-                    $indexOptions,
-                    $noForward,
-                    false,
-                    true,
-                    $mergeSettingsFrom
-                );
-            }
-        } else {
+        if (!$this->config->shouldForwardPrimaryIndexSettingsToReplicas($indexOptions->getStoreId())) {
             $this->connector->setSettings(
                 $indexOptions,
                 $indexSettings,
+                false,
+                true,
+                $mergeSettingsFrom
+            );
+            return;
+        }
+
+        [$forward, $noForward] = $this->splitSettings($indexSettings);
+        if ($forward) {
+            $this->connector->setSettings(
+                $indexOptions,
+                $forward,
+                true,
+                false
+            );
+        }
+        if ($noForward) {
+            $this->connector->setSettings(
+                $indexOptions,
+                $noForward,
                 false,
                 true,
                 $mergeSettingsFrom

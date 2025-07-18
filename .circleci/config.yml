@@ -74,17 +74,11 @@ jobs:
       - store_test_results:
           path: ~/Sites/unit-tests
       - run:
-          name: Modify PHPUnit config to only include Algolia coverage
+          name: Create Algolia-specific PHPUnit config for code coverage
           working_directory: ~/Sites
           command: |
-            bin/cli cp /var/www/html/dev/tests/unit/phpunit.xml.dist /var/www/html/algolia-phpunit.xml
-            bin/cli sed -i '/<directory suffix=".php">.*app\/code/d' /var/www/html/algolia-phpunit.xml
-            bin/cli sed -i '/<directory suffix=".php">.*lib\/internal/d' /var/www/html/algolia-phpunit.xml
-            bin/cli sed -i '/<directory suffix=".php">.*setup\/src/d' /var/www/html/algolia-phpunit.xml
-            bin/cli sed -i '/<directory suffix=".php">.*vendor\/magento/d' /var/www/html/algolia-phpunit.xml
-            bin/cli sed -i '/<directory suffix=".php">.*vendor\/.*\/framework/d' /var/www/html/algolia-phpunit.xml
-            bin/cli sed -i 's|<directory suffix=".php">.*vendor\/.*\/module-.*</directory>|<directory suffix=".php">/var/www/html/vendor/algolia/algoliasearch-magento-2</directory>|g' /var/www/html/algolia-phpunit.xml
-            bin/cli sed -i 's|bootstrap="./framework/bootstrap.php"|bootstrap="/var/www/html/dev/tests/unit/framework/bootstrap.php"|g' /var/www/html/algolia-phpunit.xml
+            echo '${ALGOLIA_PHPUNIT_CONFIG}' > algolia-phpunit.xml
+            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
       - run:
           name: Run Unit Test Coverage and copy results to CircleCI
           working_directory: ~/Sites

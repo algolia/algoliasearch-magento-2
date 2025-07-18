@@ -77,7 +77,7 @@ jobs:
           name: Create Algolia-specific PHPUnit config for code coverage
           working_directory: ~/Sites
           command: |
-            echo '${ALGOLIA_PHPUNIT_CONFIG}' > algolia-phpunit.xml
+            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
             docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
       - run:
           name: Run Unit Test Coverage and copy results to CircleCI

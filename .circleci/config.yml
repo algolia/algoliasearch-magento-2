@@ -77,7 +77,7 @@ jobs:
           name: Run Unit Test Coverage and copy results to CircleCI
           working_directory: ~/Sites
           command: |
-            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-filter /var/www/html/vendor/algolia/algoliasearch-magento-2/ /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
+            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/dev/tests/unit/phpunit.xml.dist --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-filter /var/www/html/vendor/algolia/algoliasearch-magento-2/ /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
             docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
       - store_artifacts:
           path: ~/Sites/unit-coverage/report

@@ -84,6 +84,7 @@ jobs:
             bin/cli sed -i '/<directory suffix=".php">.*vendor\/magento/d' /var/www/html/algolia-phpunit.xml
             bin/cli sed -i '/<directory suffix=".php">.*vendor\/.*\/framework/d' /var/www/html/algolia-phpunit.xml
             bin/cli sed -i 's|<directory suffix=".php">.*vendor\/.*\/module-.*</directory>|<directory suffix=".php">/var/www/html/vendor/algolia/algoliasearch-magento-2</directory>|g' /var/www/html/algolia-phpunit.xml
+            bin/cli sed -i 's|bootstrap="./framework/bootstrap.php"|bootstrap="/var/www/html/dev/tests/unit/framework/bootstrap.php"|g' /var/www/html/algolia-phpunit.xml
       - run:
           name: Run Unit Test Coverage and copy results to CircleCI
           working_directory: ~/Sites

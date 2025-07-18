@@ -5,10 +5,10 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\ReplicaSettingsHandler;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use PHPUnit\Framework\TestCase;
 
-class ReplicaSettingsHandlerTest extends TestCase
+class IndexSettingsHandlerTest extends TestCase
 {
     protected ?AlgoliaConnector $connector = null;
 
@@ -16,7 +16,7 @@ class ReplicaSettingsHandlerTest extends TestCase
 
     protected ?IndexOptionsInterface $indexOptions = null;
 
-    private ?ReplicaSettingsHandler $handler = null;
+    private ?IndexSettingsHandler $handler = null;
 
     protected function setUp(): void
     {
@@ -24,7 +24,7 @@ class ReplicaSettingsHandlerTest extends TestCase
         $this->config = $this->createMock(ConfigHelper::class);
         $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        $this->handler = new ReplicaSettingsHandlerTestable($this->connector, $this->config);
+        $this->handler = new IndexSettingsHandlerTestable($this->connector, $this->config);
     }
 
     public function testSetSettingsWithForwardingEnabledAndMixedSettings(): void

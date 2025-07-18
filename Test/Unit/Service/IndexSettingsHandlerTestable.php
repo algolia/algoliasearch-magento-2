@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
-use Algolia\AlgoliaSearch\Service\ReplicaSettingsHandler;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 
-class ReplicaSettingsHandlerTestable extends ReplicaSettingsHandler
+class IndexSettingsHandlerTestable extends IndexSettingsHandler
 {
     public function splitSettings(...$params): array
     {

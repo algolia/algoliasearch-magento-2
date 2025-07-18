@@ -11,7 +11,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
  *  This class will proxy the settings save operations and forward to replicas based on user configuration
  *  excluding attributes which should never be forwarded
  */
-class ReplicaSettingsHandler
+class IndexSettingsHandler
 {
     /**
      * As replicas are used for sorting we do not want to override these replicas specific configurations

@@ -23,7 +23,7 @@ class ReplicaSettingsHandler
 
     public function __construct(
         protected AlgoliaConnector $connector,
-        protected ConfigHelper $config,
+        protected ConfigHelper     $config,
     ) {}
 
     /**
@@ -38,19 +38,23 @@ class ReplicaSettingsHandler
     {
         if ($this->config->shouldForwardPrimaryIndexSettingsToReplicas($indexOptions->getStoreId())) {
             [$forward, $noForward] = $this->splitSettings($indexSettings);
-            $this->connector->setSettings(
-                $indexOptions,
-                $forward,
-                true,
-                false
-            );
-            $this->connector->setSettings(
-                $indexOptions,
-                $noForward,
-                false,
-                true,
-                $mergeSettingsFrom
-            );
+            if ($forward) {
+                $this->connector->setSettings(
+                    $indexOptions,
+                    $forward,
+                    true,
+                    false
+                );
+            }
+            if ($noForward) {
+                $this->connector->setSettings(
+                    $indexOptions,
+                    $noForward,
+                    false,
+                    true,
+                    $mergeSettingsFrom
+                );
+            }
         } else {
             $this->connector->setSettings(
                 $indexOptions,

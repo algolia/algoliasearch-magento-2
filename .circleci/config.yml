@@ -68,7 +68,8 @@ jobs:
           name: Run Unit Tests and copy results to CircleCI
           working_directory: ~/Sites
           command: |
-            bin/cli vendor/bin/phpunit --log-junit /var/www/html/dev/tests/unit/report/junit.xml /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
+            bin/cli sed -i '/<extensions>/,/<\/extensions>/d' /var/www/html/dev/tests/unit/phpunit.xml.dist
+            bin/cli vendor/bin/phpunit -c /var/www/html/dev/tests/unit/phpunit.xml.dist --log-junit /var/www/html/dev/tests/unit/report/junit.xml /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
             docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report/junit.xml ./unit-tests/
       - store_test_results:
           path: ~/Sites/unit-tests

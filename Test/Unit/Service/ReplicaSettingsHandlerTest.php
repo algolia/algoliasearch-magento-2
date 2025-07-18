@@ -40,12 +40,14 @@ class ReplicaSettingsHandlerTest extends TestCase
             ->with($storeId)
             ->willReturn(true);
 
-        $invocations = $this->exactly(2);
-        $this->connector->expects($invocations)
+        $invocationCount = 0;
+        $this->connector->expects($this->exactly(2))
             ->method('setSettings')
             ->willReturnCallback(
-                function($indexOptions, $indexSettings, $forwardToReplicas, $mergeSettings, $mergeFrom) use ($invocations) {
-                    switch ($invocations->numberOfInvocations()) {
+                function($indexOptions, $indexSettings, $forwardToReplicas, $mergeSettings, $mergeFrom) use (&$invocationCount) {
+                    $invocationCount++;
+
+                    switch ($invocationCount) {
                         case 1:
                             $this->assertEquals(['attributesToRetrieve' => ['name', 'price']], $indexSettings);
                             $this->assertTrue($forwardToReplicas);

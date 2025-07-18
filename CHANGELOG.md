@@ -12,6 +12,7 @@
 - The indexing queue cron job can now be configured from the Magento admin.
 - Dynamic faceting through Algolia merchandising rules is now supported in Magento via an opt-in feature flag.
 - No code redirects via merchandising rules in Algolia are now supported in Magento for both Autocomplete and InstantSearch. Support is enabled by default for Autocomplete.
+- Settings updates are now automatically forwarded to replicas (if this behavior is not desirable it can be disabled in the admin)
 - Integration tests and unit tests added
 
 ### Bug Fixes

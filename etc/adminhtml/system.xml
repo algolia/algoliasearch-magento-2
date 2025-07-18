@@ -1072,7 +1072,7 @@
                         ]]>
                     </comment>
                     <depends>
-                        <field id="algolia_indexing">1</field>
+                        <field id="enable_indexing">1</field>
                     </depends>
                 </field>
                 <field id="enable_pages_index" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -1085,12 +1085,16 @@
                         ]]>
                     </comment>
                     <depends>
-                        <field id="algolia_indexing">1</field>
+                        <field id="enable_indexing">1</field>
                     </depends>
                 </field>
             </group>
             <group id="full_indexing" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Full indexing via Magento indexers</label>
+                <depends>
+                    <field id="algoliasearch_indexing_manager/algolia_indexing/enable_indexing">1</field>
+                </depends>
+                <attribute type="expanded">1</attribute>
                 <comment>
                     <![CDATA[
                          <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers can be disabled for <strong>full indexing</strong>.
@@ -1518,15 +1522,23 @@
                 <field id="write_timeout" translate="label comment" type="text" sortOrder="110" showInDefault="1">
                     <label>Write Timeout (In Seconds)</label>
                 </field>
+                <field id="forward_to_replicas" translate="label comment" type="select" sortOrder="115" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Forward index settings to replicas</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            When this configuration is enabled, settings that are changed in Algolia on the primary index will also be forwarded to its replica indices. It is enabled by default.
+                            <br><br>
+                            The ability to disable this behavior is retained for legacy implementations, but it is highly recommended that you leave this setting enabled especially if you are using dynamic facets.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="auto_price_indexing" translate="label comment" type="select" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable automatic price indexing</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <model>Algolia\AlgoliaSearch\Model\Config\AutomaticPriceIndexingComment</model>
                     </comment>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
                 </field>
                 <field id="enable_profiler" translate="label comment" type="select" sortOrder="130" showInDefault="1">
                     <label>Enable Profiler</label>

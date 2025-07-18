@@ -85,7 +85,6 @@ class ConfigPatch implements SchemaPatchInterface
         'algoliasearch_advanced/advanced/remove_words_if_no_result' => 'allOptional',
         'algoliasearch_advanced/advanced/partial_update' => '0',
         'algoliasearch_advanced/advanced/customer_groups_enable' => '0',
-        'algoliasearch_advanced/advanced/make_seo_request' => '1',
         'algoliasearch_advanced/advanced/remove_branding' => '0',
         'algoliasearch_autocomplete/autocomplete/autocomplete_selector' => '.algolia-search-input',
         'algoliasearch_advanced/advanced/index_product_on_category_products_update' => '1',

@@ -12,6 +12,7 @@ use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -87,6 +88,7 @@ class ProductHelper extends AbstractEntityHelper
         protected ProductInterfaceFactory $productFactory,
         protected ProductRecordBuilder    $productRecordBuilder,
         protected FacetBuilder            $facetBuilder,
+        protected IndexSettingsHandler    $indexSettingsHandler,
     )
     {
         parent::__construct($indexNameFetcher);
@@ -316,21 +318,13 @@ class ProductHelper extends AbstractEntityHelper
     ): void {
         $indexSettings = $this->getIndexSettings($storeId);
 
-        $this->algoliaConnector->setSettings(
-            $indexOptions,
-            $indexSettings,
-            false,
-            true
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $indexSettings);
 
         $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo) {
-
-            $this->algoliaConnector->setSettings(
+            $this->indexSettingsHandler->setSettings(
                 $indexTmpOptions,
                 $indexSettings,
-                false,
-                true,
                 $indexOptions->getIndexName()
             );
 

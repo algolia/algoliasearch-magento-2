@@ -155,7 +155,7 @@ jobs:
           name: Run Integration Tests
           working_directory: ~/Sites
           command: |
-            bin/cli bash -c "../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
+            bin/cli bash -c "cd ./dev/tests/integration && ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
 
 workflows:
   magento-build-and-test-workflow:

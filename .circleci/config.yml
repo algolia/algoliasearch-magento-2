@@ -122,15 +122,10 @@ jobs:
           php-version: << parameters.php-version >>
           magento-version: << parameters.magento-version >>
       - run:
-          name: Start Docker containers
-          working_directory: ~/Sites
-          command: |
-            docker compose -f compose.yaml -f compose.override.yml up -d --remove-orphans
-      - run:
           name: Configure integration tests
           working_directory: ~/Sites
           command: |
-            bin/cli dev/tests/integration/phpunit.xml.dist dev/tests/integration/phpunit.xml
+            bin/cli cp dev/tests/integration/phpunit.xml.dist dev/tests/integration/phpunit.xml
       - run:
           name: Create integration test environment file
           working_directory: ~/Sites
@@ -176,8 +171,6 @@ workflows:
             parameters:
               php-version: ["8.2"]
               magento-version: ["2.4.7-p6"]
-          requires:
-            - magento-build
           filters:
             branches:
               only: chore/MAGE-1368-add-integration-tests-circleci

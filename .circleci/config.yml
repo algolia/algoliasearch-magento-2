@@ -108,6 +108,10 @@ jobs:
       - store_artifacts:
           path: ~/Sites/unit-coverage/report
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
+      - persist_to_workspace:
+          root: ~/Sites
+          paths:
+            - .
 
   magento-integration-test:
     executor:
@@ -118,9 +122,13 @@ jobs:
       magento-version:
         type: string
     steps:
-      - setup-magento-environment:
-          php-version: << parameters.php-version >>
-          magento-version: << parameters.magento-version >>
+      - attach_workspace:
+          at: ~/Sites
+      - run:
+          name: Start Docker containers
+          working_directory: ~/Sites
+          command: |
+            docker compose -f compose.yaml -f compose.override.yml up -d --remove-orphans
       - run:
           name: Configure integration tests
           working_directory: ~/Sites

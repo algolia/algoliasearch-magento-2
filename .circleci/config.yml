@@ -36,6 +36,8 @@ commands:
             services:
               phpfpm:
                 image: markoshust/magento-php:<< parameters.php-version >>-fpm
+              db:
+                image: mariadb:10.11
             EOF
       - run:
           name: Setup magento enterprise
@@ -155,13 +157,14 @@ jobs:
           name: Prepare integration test environment
           working_directory: ~/Sites
           command: |
-            docker cp ../project/dev/tests/install-config-mysql.php $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/etc/install-config-mysql.php
+            docker cp ../project/.circleci/install-config-mysql.php $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/etc/install-config-mysql.php
+            bin/magento module:enable --all
             bin/setup-integration-tests
       - run:
           name: Run Integration Tests
           working_directory: ~/Sites
           command: |
-            bin/dev-test-run integration
+            bin/cli bash -c "cd ./dev/tests/integration && ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
 
 workflows:
   magento-build-and-test-workflow:

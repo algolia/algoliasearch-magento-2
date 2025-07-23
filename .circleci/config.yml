@@ -108,10 +108,6 @@ jobs:
       - store_artifacts:
           path: ~/Sites/unit-coverage/report
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
-      - persist_to_workspace:
-          root: ~/Sites
-          paths:
-            - .
 
   magento-integration-test:
     executor:
@@ -122,8 +118,9 @@ jobs:
       magento-version:
         type: string
     steps:
-      - attach_workspace:
-          at: ~/Sites
+      - setup-magento-environment:
+          php-version: << parameters.php-version >>
+          magento-version: << parameters.magento-version >>
       - run:
           name: Start Docker containers
           working_directory: ~/Sites
@@ -148,10 +145,10 @@ jobs:
             MAGENTO_LOCALE=en_US
             MAGENTO_CURRENCY=USD
             MAGENTO_TIMEZONE=America/New_York
-            ALGOLIA_APPLICATION_ID=TEST123
-            ALGOLIA_SEARCH_KEY_1=TEST123
-            ALGOLIA_API_KEY=TEST123
-            INDEX_PREFIX=TEST123
+            ALGOLIA_APPLICATION_ID=${ALGOLIA_APPLICATION_ID}
+            ALGOLIA_SEARCH_KEY_1=${ALGOLIA_SEARCH_API_KEY}
+            ALGOLIA_API_KEY=${ALGOLIA_API_KEY}
+            INDEX_PREFIX=integration_test_
             EOF
             docker cp dev/tests/integration/.env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
       - run:

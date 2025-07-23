@@ -65,7 +65,6 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->reindexToAllStores($this->productBatchQueueProcessor);
     }
 
-
     public function testMultiStoreProductIndices()
     {
         // Check that every store has the right number of products

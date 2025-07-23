@@ -16,8 +16,6 @@ use Magento\Store\Api\WebsiteRepositoryInterface;
  * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/second_website_with_two_stores_and_products.php
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
- * @group problematic
- * @group integration
  */
 class MultiStoreProductsTest extends MultiStoreTestCase
 {
@@ -67,17 +65,9 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->reindexToAllStores($this->productBatchQueueProcessor);
     }
 
-    /**
-     * @group problematic
-     * @skip Fixture application failing in CI environment
-     */
+
     public function testMultiStoreProductIndices()
     {
-        // Skip test in CI environment
-        if (getenv('CIRCLECI')) {
-            $this->markTestSkipped('Skipping test in CI environment due to fixture issues');
-        }
-        
         // Check that every store has the right number of products
         foreach ($this->storeManager->getStores() as $store) {
             $this->assertNbOfRecordsPerStore(

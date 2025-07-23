@@ -130,7 +130,7 @@ jobs:
           name: Create integration test environment file
           working_directory: ~/Sites
           command: |
-            cat > dev/tests/integration/.env \<< 'EOF'
+            cat > .env \<< 'EOF'
             MAGENTO_ADMIN_EMAIL=john.smith@gmail.com
             MAGENTO_ADMIN_FIRST_NAME=john
             MAGENTO_ADMIN_LAST_NAME=smith

@@ -132,7 +132,22 @@ jobs:
           name: Create integration test environment file
           working_directory: ~/Sites
           command: |
-            docker cp ../project/.circleci/.env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
+            cat > .env << 'EOF'
+            MAGENTO_ADMIN_EMAIL=john.smith@gmail.com
+            MAGENTO_ADMIN_FIRST_NAME=john
+            MAGENTO_ADMIN_LAST_NAME=smith
+            MAGENTO_ADMIN_USER=john.smith
+            MAGENTO_ADMIN_PASSWORD=password123
+            MAGENTO_ADMIN_FRONTNAME=admin
+            MAGENTO_LOCALE=en_US
+            MAGENTO_CURRENCY=USD
+            MAGENTO_TIMEZONE=America/New_York
+            ALGOLIA_APPLICATION_ID=${ALGOLIA_APPLICATION_ID}
+            ALGOLIA_SEARCH_KEY=${ALGOLIA_SEARCH_API_KEY}
+            ALGOLIA_API_KEY=${ALGOLIA_API_KEY}
+            INDEX_PREFIX=integration_test_
+            EOF
+            docker cp .env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
       - run:
           name: Apply environment variables
           working_directory: ~/Sites

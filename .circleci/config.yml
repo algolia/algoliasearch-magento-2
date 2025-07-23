@@ -150,6 +150,7 @@ jobs:
           name: Apply environment variables
           working_directory: ~/Sites
           command: |
+            bin/bash
             bin/cli cd ./dev/tests/integration
             bin/cli export $(cat .env | xargs)
       - run:

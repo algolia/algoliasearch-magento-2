@@ -174,4 +174,4 @@ workflows:
               magento-version: ["2.4.7-p6"]
           filters:
             branches:
-              only: chore/MAGE-1368-add-integration-tests-circleci
+              only: main

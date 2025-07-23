@@ -152,6 +152,11 @@ jobs:
           command: |
             bin/cli bash -c "cd ./dev/tests/integration && export \$(cat .env | xargs) && echo 'Environment variables applied successfully'"
       - run:
+          name: Prepare integration test environment
+          working_directory: ~/Sites
+          command: |
+            bin/setup-integration-tests
+      - run:
           name: Run Integration Tests
           working_directory: ~/Sites
           command: |

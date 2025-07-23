@@ -171,6 +171,8 @@ workflows:
             parameters:
               php-version: ["8.2"]
               magento-version: ["2.4.6-p11", "2.4.7-p6"]
+          requires:
+            - magento-build
           filters:
             branches:
               only: chore/MAGE-1368-add-integration-tests-circleci

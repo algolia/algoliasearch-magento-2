@@ -155,12 +155,13 @@ jobs:
           name: Prepare integration test environment
           working_directory: ~/Sites
           command: |
+            docker cp ../project/dev/tests/install-config-mysql.php $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/etc/install-config-mysql.php
             bin/setup-integration-tests
       - run:
           name: Run Integration Tests
           working_directory: ~/Sites
           command: |
-            bin/cli bash -c "cd ./dev/tests/integration && ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
+            bin/dev-test-run integration
 
 workflows:
   magento-build-and-test-workflow:

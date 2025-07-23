@@ -168,7 +168,12 @@ workflows:
               php-version: ["8.2"]
               magento-version: ["2.4.6-p11", "2.4.7-p6"]
   magento-integration-test-workflow:
-    when: pipeline.git.branch == "main" or (pipeline.event.name == "pull_request" and pipeline.event.action == "labeled")
+    when:
+      or:
+        - equal: [ main, << pipeline.git.branch >> ]
+        - matches:
+            pattern: ".*release.*"
+            value: << pipeline.git.branch >>
     jobs:
       - magento-integration-test:
           matrix:

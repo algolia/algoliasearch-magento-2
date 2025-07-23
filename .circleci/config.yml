@@ -146,7 +146,6 @@ jobs:
             echo "ALGOLIA_API_KEY=$ALGOLIA_API_KEY" >> .env
             echo "INDEX_PREFIX=integration_test_" >> .env
             docker cp .env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
-            bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs)"
       - run:
           name: Prepare integration test environment
           working_directory: ~/Sites
@@ -158,7 +157,7 @@ jobs:
           name: Run Integration Tests
           working_directory: ~/Sites
           command: |
-            bin/cli bash -c "cd ./dev/tests/integration && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
+            bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
 
 workflows:
   magento-build-and-test-workflow:

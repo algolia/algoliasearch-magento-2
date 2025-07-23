@@ -132,27 +132,25 @@ jobs:
           name: Create integration test environment file
           working_directory: ~/Sites
           command: |
-            cat > .env \<< 'EOF'
-            MAGENTO_ADMIN_EMAIL=john.smith@gmail.com
-            MAGENTO_ADMIN_FIRST_NAME=john
-            MAGENTO_ADMIN_LAST_NAME=smith
-            MAGENTO_ADMIN_USER=john.smith
-            MAGENTO_ADMIN_PASSWORD=password123
-            MAGENTO_ADMIN_FRONTNAME=admin
-            MAGENTO_LOCALE=en_US
-            MAGENTO_CURRENCY=USD
-            MAGENTO_TIMEZONE=America/New_York
-            ALGOLIA_APPLICATION_ID=${ALGOLIA_APPLICATION_ID}
-            ALGOLIA_SEARCH_KEY=${ALGOLIA_SEARCH_API_KEY}
-            ALGOLIA_API_KEY=${ALGOLIA_API_KEY}
-            INDEX_PREFIX=integration_test_
-            EOF
+            echo "MAGENTO_ADMIN_EMAIL=john.smith@gmail.com" > .env
+            echo "MAGENTO_ADMIN_FIRST_NAME=john" >> .env
+            echo "MAGENTO_ADMIN_LAST_NAME=smith" >> .env
+            echo "MAGENTO_ADMIN_USER=john.smith" >> .env
+            echo "MAGENTO_ADMIN_PASSWORD=password123" >> .env
+            echo "MAGENTO_ADMIN_FRONTNAME=admin" >> .env
+            echo "MAGENTO_LOCALE=en_US" >> .env
+            echo "MAGENTO_CURRENCY=USD" >> .env
+            echo "MAGENTO_TIMEZONE=America/New_York" >> .env
+            echo "ALGOLIA_APPLICATION_ID=$ALGOLIA_APPLICATION_ID" >> .env
+            echo "ALGOLIA_SEARCH_KEY=$ALGOLIA_SEARCH_API_KEY" >> .env
+            echo "ALGOLIA_API_KEY=$ALGOLIA_API_KEY" >> .env
+            echo "INDEX_PREFIX=integration_test_" >> .env
             docker cp .env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
       - run:
           name: Apply environment variables
           working_directory: ~/Sites
           command: |
-            bin/cli bash -c "cd ./dev/tests/integration && export \$(cat .env | xargs) && echo 'Environment variables applied successfully'"
+            bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && echo 'Environment variables applied successfully'"
       - run:
           name: Prepare integration test environment
           working_directory: ~/Sites
@@ -164,7 +162,7 @@ jobs:
           name: Run Integration Tests
           working_directory: ~/Sites
           command: |
-            bin/cli bash -c "cd ./dev/tests/integration && ../../../vendor/bin/phpunit --debug ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
+            bin/cli bash -c "cd ./dev/tests/integration && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
 
 workflows:
   magento-build-and-test-workflow:

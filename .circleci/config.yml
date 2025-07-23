@@ -146,11 +146,7 @@ jobs:
             echo "ALGOLIA_API_KEY=$ALGOLIA_API_KEY" >> .env
             echo "INDEX_PREFIX=integration_test_" >> .env
             docker cp .env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
-      - run:
-          name: Apply environment variables
-          working_directory: ~/Sites
-          command: |
-            bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && echo 'Environment variables applied successfully'"
+            bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs)"
       - run:
           name: Prepare integration test environment
           working_directory: ~/Sites

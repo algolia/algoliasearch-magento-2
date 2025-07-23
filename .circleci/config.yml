@@ -145,7 +145,7 @@ jobs:
             ALGOLIA_API_KEY=${ALGOLIA_API_KEY}
             INDEX_PREFIX=integration_test_
             EOF
-            docker cp dev/tests/integration/.env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
+            docker cp .env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
       - run:
           name: Apply environment variables
           working_directory: ~/Sites

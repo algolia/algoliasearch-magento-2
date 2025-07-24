@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   php: circleci/php@2.0.0
+  slack: circleci/slack@4.9.3
 
 executors:
   magento-executor:
@@ -158,6 +159,17 @@ jobs:
           working_directory: ~/Sites
           command: |
             bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
+  
+  notify:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
 
 workflows:
   magento-build-and-test-workflow:
@@ -167,6 +179,8 @@ workflows:
             parameters:
               php-version: ["8.2"]
               magento-version: ["2.4.6-p11", "2.4.7-p6"]
+      - notify:
+          context: mage-slack
   magento-integration-test-workflow:
     when:
       or:
@@ -180,3 +194,5 @@ workflows:
             parameters:
               php-version: ["8.2"]
               magento-version: ["2.4.7-p6"]
+      - notify:
+          context: mage-slack

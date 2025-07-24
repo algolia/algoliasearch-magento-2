@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   php: circleci/php@2.0.0
+  slack: circleci/slack@4.9.3
 
 executors:
   magento-executor:
@@ -9,10 +10,9 @@ executors:
       image: ubuntu-2404:2024.11.1
       docker_layer_caching: true
 
-jobs:
-  magento-build:
-    executor:
-      name: magento-executor
+commands:
+  setup-magento-environment:
+    description: "Setup Magento environment with common configuration"
     parameters:
       php-version:
         type: string
@@ -32,13 +32,13 @@ jobs:
           name: Setup folder structure and override file
           command: |
             mkdir ~/Sites
-            mkdir ~/Sites/unit-tests
-            mkdir ~/Sites/unit-coverage
             cd ~/Sites
             cat \<<EOF > compose.override.yml
             services:
               phpfpm:
                 image: markoshust/magento-php:<< parameters.php-version >>-fpm
+              db:
+                image: mariadb:10.11
             EOF
       - run:
           name: Setup magento enterprise
@@ -64,6 +64,29 @@ jobs:
           command: |
             bin/magento setup:di:compile
             bin/magento module:status Algolia_AlgoliaSearch
+
+jobs:
+  magento-build:
+    executor:
+      name: magento-executor
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
+    steps:
+      - setup-magento-environment:
+          php-version: << parameters.php-version >>
+          magento-version: << parameters.magento-version >>
+      - run:
+          name: Create test directories
+          command: |
+            mkdir ~/Sites/unit-tests
+            mkdir ~/Sites/unit-coverage
+      - persist_to_workspace:
+          root: ~/Sites
+          paths:
+            - .
       - run:
           name: Run Unit Tests and copy results to CircleCI
           working_directory: ~/Sites
@@ -89,6 +112,65 @@ jobs:
           path: ~/Sites/unit-coverage/report
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
 
+  magento-integration-test:
+    executor:
+      name: magento-executor
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
+    steps:
+      - setup-magento-environment:
+          php-version: << parameters.php-version >>
+          magento-version: << parameters.magento-version >>
+      - run:
+          name: Configure integration tests
+          working_directory: ~/Sites
+          command: |
+            bin/cli cp dev/tests/integration/phpunit.xml.dist dev/tests/integration/phpunit.xml
+      - run:
+          name: Create integration test environment file
+          working_directory: ~/Sites
+          command: |
+            echo "MAGENTO_ADMIN_EMAIL=john.smith@gmail.com" > .env
+            echo "MAGENTO_ADMIN_FIRST_NAME=john" >> .env
+            echo "MAGENTO_ADMIN_LAST_NAME=smith" >> .env
+            echo "MAGENTO_ADMIN_USER=john.smith" >> .env
+            echo "MAGENTO_ADMIN_PASSWORD=password123" >> .env
+            echo "MAGENTO_ADMIN_FRONTNAME=admin" >> .env
+            echo "MAGENTO_LOCALE=en_US" >> .env
+            echo "MAGENTO_CURRENCY=USD" >> .env
+            echo "MAGENTO_TIMEZONE=America/New_York" >> .env
+            echo "ALGOLIA_APPLICATION_ID=$ALGOLIA_APPLICATION_ID" >> .env
+            echo "ALGOLIA_SEARCH_KEY=$ALGOLIA_SEARCH_API_KEY" >> .env
+            echo "ALGOLIA_API_KEY=$ALGOLIA_API_KEY" >> .env
+            echo "INDEX_PREFIX=integration_test_" >> .env
+            docker cp .env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
+      - run:
+          name: Prepare integration test environment
+          working_directory: ~/Sites
+          command: |
+            docker cp ../project/.circleci/install-config-mysql.php $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/etc/install-config-mysql.php
+            bin/magento module:enable --all
+            bin/setup-integration-tests
+      - run:
+          name: Run Integration Tests
+          working_directory: ~/Sites
+          command: |
+            bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
+  
+  notify:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
+
 workflows:
   magento-build-and-test-workflow:
     jobs:
@@ -97,3 +179,20 @@ workflows:
             parameters:
               php-version: ["8.2"]
               magento-version: ["2.4.6-p11", "2.4.7-p6"]
+      - notify:
+          context: mage-slack
+  magento-integration-test-workflow:
+    when:
+      or:
+        - equal: [ main, << pipeline.git.branch >> ]
+        - matches:
+            pattern: ".*release.*"
+            value: << pipeline.git.branch >>
+    jobs:
+      - magento-integration-test:
+          matrix:
+            parameters:
+              php-version: ["8.2"]
+              magento-version: ["2.4.7-p6"]
+      - notify:
+          context: mage-slack

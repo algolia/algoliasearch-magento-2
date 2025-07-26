@@ -268,8 +268,7 @@ class RecordBuilder implements RecordBuilderInterface
     public function addInStock($defaultData, $customData, Product $product)
     {
         if (isset($defaultData['in_stock']) === false) {
-            $stockItem = $this->stockRegistry->getStockItem($product->getId());
-            $customData['in_stock'] = $product->isSaleable() && $stockItem->getIsInStock();
+            $customData['in_stock'] = $this->productIsInStock($product, $product->getStoreId());
         }
 
         return $customData;
@@ -288,10 +287,8 @@ class RecordBuilder implements RecordBuilderInterface
             && $this->isAttributeEnabled($additionalAttributes, 'stock_qty')) {
             $customData['stock_qty'] = 0;
 
-            $stockItem = $this->stockRegistry->getStockItem($product->getId());
-            if ($stockItem) {
-                $customData['stock_qty'] = (int)$stockItem->getQty();
-            }
+            $stockStatus = $this->stockRegistry->getStockStatus($product->getId(), $product->getStore()->getWebsiteId());
+            $customData['stock_qty'] = (int)$stockStatus->getQty();
         }
 
         return $customData;
@@ -804,14 +801,12 @@ class RecordBuilder implements RecordBuilderInterface
      * Returns is product in stock
      *
      * @param Product $product
-     * @param int $storeId
+     * @param int $storeId (deprecated)
      *
      * @return bool
      */
     public function productIsInStock($product, $storeId): bool
     {
-        $stockItem = $this->stockRegistry->getStockItem($product->getId());
-
-        return $product->isSaleable() && $stockItem->getIsInStock();
+        return (bool)$product->isSalable();
     }
 }

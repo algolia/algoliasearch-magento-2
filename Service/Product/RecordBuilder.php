@@ -445,7 +445,7 @@ class RecordBuilder implements RecordBuilderInterface
      */
     protected function getValidCategoryName($category, $rootCat, $storeId): ?string
     {
-        $pathParts = explode('/', $category->getPath());
+        $pathParts = explode('/', (string) $category->getPath());
         if (isset($pathParts[1]) && $pathParts[1] !== $rootCat) {
             return null;
         }
@@ -531,7 +531,7 @@ class RecordBuilder implements RecordBuilderInterface
     protected function flattenCategoryPaths(array $paths, int $storeId): array
     {
         return array_map(
-            function ($path) use ($storeId) { return implode($this->configHelper->getCategorySeparator($storeId), $path); },
+            fn($path) => implode($this->configHelper->getCategorySeparator($storeId), $path),
             $paths
         );
     }
@@ -766,7 +766,7 @@ class RecordBuilder implements RecordBuilderInterface
      */
     protected function addSubProductImage($subProductImages, $attribute, $subProduct, $valueText)
     {
-        if (mb_strtolower($attribute['attribute'], 'utf-8') !== 'color') {
+        if (mb_strtolower((string) $attribute['attribute'], 'utf-8') !== 'color') {
             return $subProductImages;
         }
 
@@ -783,7 +783,7 @@ class RecordBuilder implements RecordBuilderInterface
         }
 
         try {
-            $textValueInLower = mb_strtolower($valueText, 'utf-8');
+            $textValueInLower = mb_strtolower((string) $valueText, 'utf-8');
             $subProductImages[$textValueInLower] = $image->getUrl();
         } catch (\Exception $e) {
             $this->logger->log($e->getMessage());

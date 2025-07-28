@@ -19,13 +19,7 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
-if (class_exists('PHPUnit\Framework\TestCase')) {
-    class_alias('PHPUnit\Framework\TestCase', '\TC');
-} else {
-    class_alias('\PHPUnit_Framework_TestCase', '\TC');
-}
-
-abstract class TestCase extends \TC
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var ObjectManagerInterface
@@ -149,9 +143,7 @@ abstract class TestCase extends \TC
         return array_combine(
             $bootstrap,
             array_map(
-                function($setting) use ($config) {
-                    return $config->getValue($setting, ScopeInterface::SCOPE_STORE);
-                },
+                fn($setting) => $config->getValue($setting, ScopeInterface::SCOPE_STORE),
                 $bootstrap
             )
         );
@@ -176,11 +168,11 @@ abstract class TestCase extends \TC
         foreach ($indices['items'] as $index) {
             $name = $index['name'];
 
-            if (mb_strpos($name, $this->indexPrefix) === 0) {
+            if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                 try {
                     $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name);
                     $this->algoliaConnector->deleteIndex($indexOptions);
-                } catch (AlgoliaException $e) {
+                } catch (AlgoliaException) {
                     // Might be a replica
                 }
             }
@@ -263,7 +255,7 @@ abstract class TestCase extends \TC
      */
     protected function invokeMethod(object $object, string $methodName, array $parameters = [])
     {
-        $reflection = new \ReflectionClass(get_class($object));
+        $reflection = new \ReflectionClass($object::class);
         return $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 
@@ -288,7 +280,7 @@ abstract class TestCase extends \TC
      * @param string|null $key - a unique key for this operation - if null a unique key will be derived
      * @return mixed
      */
-    function runOnce(callable $callback, string $key = null): mixed
+    function runOnce(callable $callback, ?string $key = null): mixed
     {
         static $executed = [];
         $key ??= is_string($callback) ? $callback : spl_object_hash((object) $callback);

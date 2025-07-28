@@ -41,7 +41,7 @@ class SearchTest extends TestCase
         // Result exists in DB
         $this->assertNotEmpty($product->getName(), "Query result item couldn't find in the DB");
         // Query word exists title
-        $this->assertStringContainsString($query, strtolower($product->getName()), "Query word doesn't exist in product name");
+        $this->assertStringContainsString($query, strtolower((string) $product->getName()), "Query word doesn't exist in product name");
     }
 
     public function testSearchBySku()
@@ -63,7 +63,7 @@ class SearchTest extends TestCase
     public function testCategorySearch()
     {
         // Get products by categoryId
-        list($results, $totalHits, $facetsFromAlgolia) = $this->search('', 1, [
+        [$results, $totalHits, $facetsFromAlgolia] = $this->search('', 1, [
             'facetFilters' => ['categoryIds:' . self::BAGS_CATEGORY_ID]
         ]);
         // Category filter returns result
@@ -86,7 +86,7 @@ class SearchTest extends TestCase
      */
     protected function getFirstResult(array $results): array
     {
-        list($results, $totalHits, $facetsFromAlgolia) = $results;
+        [$results, $totalHits, $facetsFromAlgolia] = $results;
         return array_shift($results);
     }
 
@@ -100,7 +100,7 @@ class SearchTest extends TestCase
     {
         try {
             return $this->backendSearch->getSearchResult($query, $storeId, $params);
-        } catch (NoSuchEntityException $e) {
+        } catch (NoSuchEntityException) {
             return [];
         }
     }

@@ -46,7 +46,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      */
-    public function buildIndexFull(int $storeId, array $options = null): void
+    public function buildIndexFull(int $storeId, ?array $options = null): void
     {
         $this->buildIndex($storeId, null, $options);
     }
@@ -60,7 +60,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function buildIndexList(int $storeId, array $entityIds = null, array $options = null): void
+    public function buildIndexList(int $storeId, ?array $entityIds = null, ?array $options = null): void
     {
         $this->buildIndex($storeId, $entityIds, $options);
     }
@@ -211,7 +211,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
             try {
                 $this->categoryHelper->canCategoryBeReindexed($category, $storeId);
-            } catch (CategoryReindexingException $e) {
+            } catch (CategoryReindexingException) {
                 $categoriesToRemove[$categoryId] = $categoryId;
                 continue;
             }

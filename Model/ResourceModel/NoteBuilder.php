@@ -107,9 +107,7 @@ class NoteBuilder
             $headers = array_keys($firstRow);
             $noteText[] = implode(' || ', $headers);
 
-            $archiveRows = array_map(function ($row) {
-                return implode(' || ', $row);
-            }, $archiveRows);
+            $archiveRows = array_map(fn($row) => implode(' || ', $row), $archiveRows);
 
             $queueArchiveInfo = array_merge($queueArchiveInfo, $archiveRows);
         }
@@ -252,9 +250,7 @@ class NoteBuilder
             $headers = array_keys($firstRow);
             $modulesText[] = implode(' || ', $headers);
 
-            $modules = array_map(function ($row) {
-                return implode(' || ', $row);
-            }, $modules);
+            $modules = array_map(fn($row) => implode(' || ', $row), $modules);
 
             $modulesText = array_merge($modulesText, $modules);
         }

@@ -1,112 +1,198 @@
-version: 2
+version: 2.1
 
-shared: &shared
-  working_directory: ~/build_directory/algoliasearch-magento-2
-  steps:
-    - checkout
+orbs:
+  php: circleci/php@2.0.0
+  slack: circleci/slack@4.9.3
 
-    - run:
-        name: Override the Algolia extension with the cloned one
-        command: |
-          cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
-          cd ~/magento_directory
-          sudo composer require algolia/algoliasearch-magento-2
-          composer dump-autoload
+executors:
+  magento-executor:
+    machine:
+      image: ubuntu-2404:2024.11.1
+      docker_layer_caching: true
 
-    - run:
-        name: Start database server
-        command: |
-          sudo service mysql start
-          sleep 2
-          ps aux | grep mysql
-
-    - run:
-        name: Install the extension
-        command: |
-          cd ~/magento_directory
-          sudo service elasticsearch start # for some reasons has to be launched with the step
-          sleep 10
-          php -dmemory_limit=-1 bin/magento module:disable Magento_WebapiAsync Magento_Amqp Magento_MysqlMq Magento_MessageQueue
-          php -dmemory_limit=-1 bin/magento module:enable Algolia_AlgoliaSearch
-          sudo chmod -R 777 var/ pub/ generated/
-          php -dmemory_limit=-1 bin/magento setup:upgrade
-          php -dmemory_limit=-1 bin/magento setup:d:c
-          php -dmemory_limit=-1 bin/magento setup:s:d -f
-
-    - run:
-        name: Get the right tests config for DB and administration
-        command: |
-          rm -rf ~/magento_directory/vendor/dotmailer/dotmailer-magento2-extension/Test ~/magento_directory/vendor/dotmailer/dotmailer-magento2-extension-chat/Test
-          mv ~/build_directory/algoliasearch-magento-2/dev/tests/install-config-mysql.php ~/magento_directory/dev/tests/integration/etc/install-config-mysql.php
-
-    - run:
-        name: Before setup
-        command: |
-          echo 'memory_limit = 256M' | sudo tee /usr/local/etc/php/php.ini
-
-    - run:
-        name: Get keys from dealer
-        command: |
-          if [ "$CIRCLE_PR_REPONAME" ]; then
-            curl -s https://algoliasearch-client-keygen.herokuapp.com | sh >> $BASH_ENV
-          fi
-
-    - run:
-        name: Run tests
-        command: |
-          cd ~/magento_directory/dev/tests/integration
-          sudo service elasticsearch start # for some reasons has to be launched with the step
-          sleep 10
-
-jobs:
-  "magento-2.3":
-    <<: *shared
-    docker:
-      - image: algolia/magento2-circleci:2.4.4-php7.4-v1
-
-  "magento-2.4":
-    <<: *shared
-    docker:
-      - image: algolia/magento2-circleci:2.4.4-php7.4-v1
-
-  "quality-tools":
-    docker:
-      - image: algolia/magento2-circleci:2.4.4-php7.4-v1
-    working_directory: ~/build_directory/algoliasearch-magento-2
+commands:
+  setup-magento-environment:
+    description: "Setup Magento environment with common configuration"
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
     steps:
       - checkout
+      - php/install_php:
+          version: << parameters.php-version >>
+      - php/install_composer
       - run:
-          name: Setting permissions
+          name: Configure composer authentication
           command: |
-            sudo chown circleci:circleci ~/.composer/
-      - restore_cache:
-          keys:
-            - composer-v4-{{ checksum "composer.json" }}
-            - composer-v4-
-
+            composer config --global http-basic.repo.magento.com ${MAGENTO_AUTH_USERNAME} ${MAGENTO_AUTH_PASSWORD}
+            composer config --global repositories.algolia vcs https://github.com/algolia/algoliasearch-magento-2
       - run:
-          name: Prepare environment
+          name: Setup folder structure and override file
           command: |
-            sudo chown circleci:circleci ~/.composer/
-            composer global config prefer-stable true
-            composer global config minimum-stability dev
-            composer global require algolia/magento2-tools
+            mkdir ~/Sites
+            cd ~/Sites
+            cat \<<EOF > compose.override.yml
+            services:
+              phpfpm:
+                image: markoshust/magento-php:<< parameters.php-version >>-fpm
+              db:
+                image: mariadb:10.11
+            EOF
+      - run:
+          name: Setup magento enterprise
+          working_directory: ~/Sites
+          command: |
+            curl -s https://raw.githubusercontent.com/markshust/docker-magento/master/lib/template | bash
+            docker compose -f compose.yaml -f compose.override.yml up -d --remove-orphans
+            bin/cli rm -rf composer.lock vendor composer.json
+            bin/fixowns
+            bin/setup-composer-auth
+            bin/cli git clone git@github.com:magento/magento2.git .
+            bin/cli git checkout tags/<< parameters.magento-version >>
+            bin/composer require "algolia/algoliasearch-magento-2:dev-${CIRCLE_BRANCH}"
+            bin/composer global require --dev phpunit/phpunit
+      - run:
+          name: Enable AlgoliaSearch extension
+          working_directory: ~/Sites
+          command: |
+            bin/magento module:enable Algolia_AlgoliaSearch
+      - run:
+          name: Compile AlgoliaSearch extension
+          working_directory: ~/Sites
+          command: |
+            bin/magento setup:di:compile
+            bin/magento module:status Algolia_AlgoliaSearch
 
-            # We have to do this again because we restore the cache above, overwriting the vendor with the original.
-            mkdir ~/magento_directory/vendor/algolia
-            # rm -rf algoliasearch-magento-2
-            cp -R ~/build_directory/algoliasearch-magento-2 ~/magento_directory/vendor/algolia
-            cd ~/magento_directory
-            composer dump-autoload
-      - save_cache:
-          key: composer-v4-{{ checksum "composer.json" }}
+jobs:
+  magento-build:
+    executor:
+      name: magento-executor
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
+    steps:
+      - setup-magento-environment:
+          php-version: << parameters.php-version >>
+          magento-version: << parameters.magento-version >>
+      - run:
+          name: Create test directories
+          command: |
+            mkdir ~/Sites/unit-tests
+            mkdir ~/Sites/unit-coverage
+      - persist_to_workspace:
+          root: ~/Sites
           paths:
-            - vendor
+            - .
+      - run:
+          name: Run Unit Tests and copy results to CircleCI
+          working_directory: ~/Sites
+          command: |
+            bin/cli sed -i '/<extensions>/,/<\/extensions>/d' /var/www/html/dev/tests/unit/phpunit.xml.dist
+            bin/cli vendor/bin/phpunit -c /var/www/html/dev/tests/unit/phpunit.xml.dist --log-junit /var/www/html/dev/tests/unit/report/junit.xml /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
+            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report/junit.xml ./unit-tests/
+      - store_test_results:
+          path: ~/Sites/unit-tests
+      - run:
+          name: Create Algolia-specific PHPUnit config for code coverage
+          working_directory: ~/Sites
+          command: |
+            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
+            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
+      - run:
+          name: Run Unit Test Coverage and copy results to CircleCI
+          working_directory: ~/Sites
+          command: |
+            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/algolia-phpunit.xml --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-text
+            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
+      - store_artifacts:
+          path: ~/Sites/unit-coverage/report
+          destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
+
+  magento-integration-test:
+    executor:
+      name: magento-executor
+    parameters:
+      php-version:
+        type: string
+      magento-version:
+        type: string
+    steps:
+      - setup-magento-environment:
+          php-version: << parameters.php-version >>
+          magento-version: << parameters.magento-version >>
+      - run:
+          name: Configure integration tests
+          working_directory: ~/Sites
+          command: |
+            bin/cli cp dev/tests/integration/phpunit.xml.dist dev/tests/integration/phpunit.xml
+      - run:
+          name: Create integration test environment file
+          working_directory: ~/Sites
+          command: |
+            echo "MAGENTO_ADMIN_EMAIL=john.smith@gmail.com" > .env
+            echo "MAGENTO_ADMIN_FIRST_NAME=john" >> .env
+            echo "MAGENTO_ADMIN_LAST_NAME=smith" >> .env
+            echo "MAGENTO_ADMIN_USER=john.smith" >> .env
+            echo "MAGENTO_ADMIN_PASSWORD=password123" >> .env
+            echo "MAGENTO_ADMIN_FRONTNAME=admin" >> .env
+            echo "MAGENTO_LOCALE=en_US" >> .env
+            echo "MAGENTO_CURRENCY=USD" >> .env
+            echo "MAGENTO_TIMEZONE=America/New_York" >> .env
+            echo "ALGOLIA_APPLICATION_ID=$ALGOLIA_APPLICATION_ID" >> .env
+            echo "ALGOLIA_SEARCH_KEY=$ALGOLIA_SEARCH_API_KEY" >> .env
+            echo "ALGOLIA_API_KEY=$ALGOLIA_API_KEY" >> .env
+            echo "INDEX_PREFIX=integration_test_" >> .env
+            docker cp .env $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/.env
+      - run:
+          name: Prepare integration test environment
+          working_directory: ~/Sites
+          command: |
+            docker cp ../project/.circleci/install-config-mysql.php $(docker compose ps -q phpfpm):/var/www/html/dev/tests/integration/etc/install-config-mysql.php
+            bin/magento module:enable --all
+            bin/setup-integration-tests
+      - run:
+          name: Run Integration Tests
+          working_directory: ~/Sites
+          command: |
+            bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
+  
+  notify:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
 
 workflows:
-  version: 2
-  build:
+  magento-build-and-test-workflow:
     jobs:
-      - "magento-2.4"
-      - "magento-2.3"
-      - "quality-tools"
+      - magento-build:
+          matrix:
+            parameters:
+              php-version: ["8.2"]
+              magento-version: ["2.4.6-p11", "2.4.7-p6"]
+      - notify:
+          context: mage-slack
+  magento-integration-test-workflow:
+    when:
+      or:
+        - equal: [ main, << pipeline.git.branch >> ]
+        - matches:
+            pattern: ".*release.*"
+            value: << pipeline.git.branch >>
+    jobs:
+      - magento-integration-test:
+          matrix:
+            parameters:
+              php-version: ["8.2"]
+              magento-version: ["2.4.7-p6"]
+      - notify:
+          context: mage-slack

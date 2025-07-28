@@ -80,7 +80,7 @@ class RecordBuilder implements RecordBuilderInterface
 
         try {
             $imageUrl = $category->getImageUrl();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             /* no image, no default: not fatal */
         }
 

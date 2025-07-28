@@ -54,7 +54,7 @@ class Conversion extends Template
         /** @var Item $item */
         foreach ($orderItems as $item) {
             if ($item->hasData(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)) {
-                $orderItemsData[$item->getProductId()] = json_decode($item->getData(InsightsHelper::QUOTE_ITEM_QUERY_PARAM));
+                $orderItemsData[$item->getProductId()] = json_decode((string) $item->getData(InsightsHelper::QUOTE_ITEM_QUERY_PARAM));
             }
         }
 

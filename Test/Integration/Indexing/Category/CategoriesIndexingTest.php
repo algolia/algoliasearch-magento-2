@@ -47,8 +47,8 @@ class CategoriesIndexingTest extends IndexingTestCase
             'product_count',
         ];
 
-        foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertTrue(key_exists($attribute, $hit), 'Category attribute "' . $attribute . '" should be indexed but it is not"');
+        foreach ($defaultAttributes as $attribute) {
+            $this->assertTrue(array_key_exists($attribute, $hit), 'Category attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }
 

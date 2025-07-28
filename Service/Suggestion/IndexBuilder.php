@@ -46,7 +46,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
      */
-    public function buildIndexFull(int $storeId, array $options = null): void
+    public function buildIndexFull(int $storeId, ?array $options = null): void
     {
         $this->buildIndex($storeId, null, null);
     }
@@ -118,12 +118,12 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         foreach ($collection as $suggestion) {
             $suggestion->setStoreId($storeId);
             $suggestionObject = $this->suggestionRecordBuilder->buildRecord($suggestion);
-            if (mb_strlen($suggestionObject['query']) >= 3) {
+            if (mb_strlen((string) $suggestionObject['query']) >= 3) {
                 array_push($indexData, $suggestionObject);
             }
         }
         if (count($indexData) > 0) {
-            $this->saveObjects($indexData, $indexOptions, $storeId);
+            $this->saveObjects($indexData, $indexOptions);
         }
 
         unset($indexData);

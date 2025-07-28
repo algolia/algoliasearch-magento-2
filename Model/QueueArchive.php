@@ -11,7 +11,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      */
     protected function _construct()
     {
-        $this->_init('Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive');
+        $this->_init(\Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive::class);
     }
 
     /**

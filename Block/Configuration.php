@@ -57,7 +57,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
      * @param array $arr
      * @return array
      */
-    protected function getChildCategoryUrls(\Magento\Catalog\Model\Category $cat, string $parent = '', array $arr = array()): array {
+    protected function getChildCategoryUrls(\Magento\Catalog\Model\Category $cat, string $parent = '', array $arr = []): array {
         if (!$parent) {
             $parent = $this->initCategoryParentPath($cat);
         }

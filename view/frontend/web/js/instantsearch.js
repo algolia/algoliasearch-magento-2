@@ -1135,12 +1135,19 @@ define([
             return algoliaCommon.triggerHooks(
                 'beforeInstantsearchInit',
                 {
-                    searchClient: algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey),
+                    searchClient: this.getSearchClient(),
                     indexName   : this.getProductIndexName(),
                     routing     : algoliaCommon.routing,
                 },
                 mockAlgoliaBundle
             );
+        },
+
+        /**
+         * Initialize search client
+         */
+        getSearchClient() {
+            return algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
         },
 
         /**

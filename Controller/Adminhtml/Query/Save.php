@@ -157,7 +157,7 @@ class Save extends AbstractAction
      */
     private function manageQueryRules(int $queryId, array $data): void
     {
-        $positions = json_decode($data['algolia_merchandising_positions'], true);
+        $positions = json_decode((string) $data['algolia_merchandising_positions'], true);
         $stores = [];
         if ($data['store_id'] == 0) {
             $stores = $this->getActiveStores();

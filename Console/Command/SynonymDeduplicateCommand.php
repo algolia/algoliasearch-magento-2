@@ -151,17 +151,13 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
             array_combine(
                 $settingNames,
                 array_map(
-                    function($settingName) use ($settings) {
-                        return isset($settings[$settingName])
-                            ? $this->dedupeArrayOfArrays($settings[$settingName])
-                            : null;
-                    },
+                    fn($settingName) => isset($settings[$settingName])
+                        ? $this->dedupeArrayOfArrays($settings[$settingName])
+                        : null,
                     $settingNames
                 )
             ),
-            function($val) {
-                return $val !== null;
-            }
+            fn($val) => $val !== null
         );
     }
 
@@ -174,8 +170,8 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
     protected function dedupeArrayOfArrays(array $data): array {
         $encoded = array_map('json_encode', $data);
         $unique = array_values(array_unique($encoded));
-        $decoded = array_map(function($item) {
-            return json_decode($item, true); },
+        $decoded = array_map(
+            fn($item) => json_decode((string) $item, true),
             $unique
         );
         return $decoded;

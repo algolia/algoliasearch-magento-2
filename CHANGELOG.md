@@ -1,17 +1,6 @@
 # CHANGE LOG
 
-## 3.16.0-beta.2
-
-### Updates
-- Credentials form expanded by default in admin
-- Removed deprecated methods from Entity Helpers
-- Removed every calls to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be deleted in a future v3.17.0)
-- Updated integration tests
-
-### Breaking Changes
-- `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).
-
-## 3.16.0-beta.1
+## 3.16.0
 
 ### Features
 
@@ -21,8 +10,9 @@
 - CLI commands are now provided to run explicit full reindex of all entities and stores.
 - Products and CMS pages can now be reindexed directly from Magento admin grids.
 - The indexing queue cron job can now be configured from the Magento admin.
-- Dynamic faceting through Algolia merchandsiing rules is now supported in Magento via an opt-in feature flag.
+- Dynamic faceting through Algolia merchandising rules is now supported in Magento via an opt-in feature flag.
 - No code redirects via merchandising rules in Algolia are now supported in Magento for both Autocomplete and InstantSearch. Support is enabled by default for Autocomplete.
+- Settings updates are now automatically forwarded to replicas (if this behavior is not desirable it can be disabled in the admin)
 - Integration tests and unit tests added
 
 ### Bug Fixes
@@ -30,6 +20,8 @@
 - Replica data patches and delete operations have been enhanced to handle potential latency when detaching from the primary index.
 - Prices are now indexed using store scoped currency codes.
 - Fixed WSOD error on invalid creds when using manual SKU indexer (also included in 3.15.1).
+- Fixed Recommend model validation when configuring through the Magento admin 
+- Fixed edge case with null queries - thank you @PromInc 
 
 ### Updates
 - `beforecontent.html` is no longer used and has been deprecated. If you're overriding or referencing this file, please update your layout and customizations accordingly.
@@ -43,6 +35,32 @@
 - InstantSearch has been updated to v4.78.
 - Autocomplete has been updated to v1.18.1.
 - PHP API client has been pinned to 4.18.3 (also included in 3.15.1).
+- Credentials form expanded by default in admin
+- Removed deprecated methods from Entity Helpers
+- Removed every call to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be removed in a future v3.17.0)
+- Updated integration tests
+- Added support for PHPUnit 10
+- Added support for Magento 2.4.8 on PHP 8.4 - Special shout out to @jajajaime for his help here
+- Refactored code to PHP 8.2 baseline standard
+
+### Breaking Changes
+- `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).
+
+## 3.15.1
+
+### Features
+- Algolia's [Query Categorization feature](https://www.algolia.com/doc/integration/magento-2/how-it-works/query-categorization) is now compatible with the extension.
+
+### Updates
+- Updated integration tests to use `AlgoliaConnector`
+- Updated `ReplicaManager` service to handle multi stores properly with a `$storeId` parameter.
+- Pinned PHP Client version to 4.18.3
+
+### Bug Fixes
+- Fixed `RebuildReplicasPatch` bug where replica detach logic wasn't properly applied in some cases.
+- Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
+- Fixed a bug where the `q` parameter wasn't properly handled in case it was missing on the catalogsearch page. (thanks @PromInc)
+- Fixed Recommend model validation when configuration is saved in the Magento admin.
 
 ## 3.15.0
 
@@ -56,6 +74,7 @@
 - Added a feature to enable automatic price indexing within the Advanced section of the configuration (This feature should help alleviate issues where missing pricing records prevent Algolia from being able to index products. See [documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/data-indexes-queues/#price-index-dependencies) for further details.)
 - Reorganization of the test folders
 - Added unit and integration tests for full page cache (FPC)
+- Added new CLI command for synonyms deduplication
 
 ### Updates
 - Tests: Added possibility to run tests with multiple applications IDs.

@@ -57,7 +57,7 @@ class UpdateMviewPatch implements DataPatchInterface
                 ]
             );
             $subscriptionInstance->remove();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // Skip
         }
         $this->moduleDataSetup->getConnection()->endSetup();

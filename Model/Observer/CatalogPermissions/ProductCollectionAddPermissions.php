@@ -61,13 +61,13 @@ class ProductCollectionAddPermissions implements ObserverInterface
         $permissionsCollection = array_intersect_key($productPermissionsCollection, $productIds);
         $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         foreach ($permissionsCollection as $productId => $permissions) {
-            $permissions = explode(',', $permissions);
+            $permissions = explode(',', (string) $permissions);
             foreach ($permissions as $permission) {
                 $permission = explode('_', $permission);
                 if (count($permission) < 3) { // prevent undefined
                     continue;
                 }
-                list($permissionStoreId, $customerGroupId, $level) = $permission;
+                [$permissionStoreId, $customerGroupId, $level] = $permission;
                 if ($permissionStoreId == $storeId) {
                     $additionalData->addProductData($productId, [
                         'customer_group_permission_' . $customerGroupId => ($level == -2 ? 0 : 1),
@@ -90,13 +90,13 @@ class ProductCollectionAddPermissions implements ObserverInterface
 
         $sharedCollection = array_intersect_key($sharedCatalogCollection, $productIds);
         foreach ($sharedCollection as $productId => $permissions) {
-            $permissions = explode(',', $permissions);
+            $permissions = explode(',', (string) $permissions);
             foreach ($permissions as $permission) {
                 $permission = explode('_', $permission);
                 if (count($permission) < 2) { // prevent undefined
                     continue;
                 }
-                list($customerGroupId, $level) = $permission;
+                [$customerGroupId, $level] = $permission;
                 $additionalData->addProductData($productId, [
                     'shared_catalog_permission_' . $customerGroupId => $level,
                 ]);

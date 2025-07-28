@@ -310,11 +310,7 @@ class ConfigHelper
      */
     public function getProductAdditionalAttributes($storeId = null)
     {
-        $attributes = $this->serializer->unserialize($this->configInterface->getValue(
-            self::PRODUCT_ATTRIBUTES,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
+        $attributes = $this->getProductAttributesList($storeId);
 
         $facets = $this->serializer->unserialize($this->configInterface->getValue(
             self::FACETS,
@@ -517,6 +513,35 @@ class ConfigHelper
         return (bool) count(array_filter(
             $this->getSorting($storeId),
             fn($sort) => $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA]
+        ));
+    }
+
+    /**
+     * @param $attributes
+     * @param $attributeName
+     * @return bool
+     */
+    public function isAttributeInList($attributes, $attributeName): bool
+    {
+        foreach ($attributes as $attr) {
+            if ($attr['attribute'] === $attributeName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $storeId
+     * @return mixed
+     */
+    public function getProductAttributesList($storeId = null)
+    {
+        return $this->serializer->unserialize($this->configInterface->getValue(
+            self::PRODUCT_ATTRIBUTES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
         ));
     }
 

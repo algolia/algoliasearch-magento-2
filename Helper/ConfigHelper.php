@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Serializer;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
@@ -83,13 +84,6 @@ class ConfigHelper
     public const XML_PATH_IMAGE_WIDTH = 'algoliasearch_images/image/width';
     public const XML_PATH_IMAGE_HEIGHT = 'algoliasearch_images/image/height';
     public const XML_PATH_IMAGE_TYPE = 'algoliasearch_images/image/type';
-
-    // --- Indexing Queue / Cron --- //
-
-    public const IS_ACTIVE = 'algoliasearch_queue/queue/active';
-    public const USE_BUILT_IN_CRON = 'algoliasearch_queue/queue/use_built_in_cron';
-    public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
-    public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
 
     // --- Indexing Manager --- //
 
@@ -177,7 +171,8 @@ class ConfigHelper
         protected GroupExcludedWebsiteRepositoryInterface               $groupExcludedWebsiteRepository,
         protected CookieHelper                                          $cookieHelper,
         protected AutocompleteHelper                                    $autocompleteConfig,
-        protected InstantSearchHelper                                   $instantSearchConfig
+        protected InstantSearchHelper                                   $instantSearchConfig,
+        protected QueueHelper                                           $queueHelper
     )
     {}
 
@@ -943,46 +938,6 @@ class ConfigHelper
         return $this->configInterface->getValue(self::XML_PATH_IMAGE_TYPE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    // --- Indexing Queue / Cron --- //
-
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getNumberOfJobToRun($storeId = null): int
-    {
-        $nbJobs = (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
-
-        return (int) max($nbJobs, 1);
-    }
-
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getRetryLimit($storeId = null): int
-    {
-        return (int) $this->configInterface->getValue(self::RETRY_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isQueueActive($storeId = null): bool
-    {
-        return $this->configInterface->isSetFlag(self::IS_ACTIVE, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function useBuiltInCron($storeId = null): bool
-    {
-        return $this->configInterface->isSetFlag(self::USE_BUILT_IN_CRON, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
     // --- Indexing Manager --- //
 
     /**
@@ -1740,6 +1695,32 @@ class ConfigHelper
      */
     public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
 
+    // --- Indexing Queue / Cron --- //
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::IS_ACTIVE
+     */
+    public const IS_ACTIVE = QueueHelper::IS_ACTIVE;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::USE_BUILT_IN_CRON
+     */
+    public const USE_BUILT_IN_CRON =  QueueHelper::USE_BUILT_IN_CRON;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::NUMBER_OF_JOB_TO_RUN
+     */
+    public const NUMBER_OF_JOB_TO_RUN =  QueueHelper::NUMBER_OF_JOB_TO_RUN;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::RETRY_LIMIT
+     */
+    public const RETRY_LIMIT =  QueueHelper::RETRY_LIMIT;
+
     // --- Indexing Manager --- //
 
     /**
@@ -2086,6 +2067,52 @@ class ConfigHelper
     public function hidePaginationInInstantSearchPage($storeId = null)
     {
         return $this->instantSearchConfig->shouldHidePagination($storeId);
+    }
+
+    // --- Indexing Queue / Cron --- //
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::isQueueActive()
+     */
+    public function isQueueActive($storeId = null)
+    {
+        return $this->queueHelper->isQueueActive($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::useBuiltInCron()
+     */
+    public function useBuiltInCron($storeId = null)
+    {
+        return $this->queueHelper->useBuiltInCron($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getNumberOfJobToRun()
+     */
+    public function getNumberOfJobToRun($storeId = null)
+    {
+        return $this->queueHelper->getNumberOfJobToRun($storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getRetryLimit()
+     */
+    public function getRetryLimit($storeId = null)
+    {
+        return $this->queueHelper->getRetryLimit($storeId);
     }
 
     // --- Indexing Manager --- //

@@ -1,6 +1,6 @@
 # CHANGE LOG
 
-## 3.16.0
+## 3.16.0-beta.2
 
 ### Features
 

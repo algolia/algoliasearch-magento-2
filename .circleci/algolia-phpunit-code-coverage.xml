@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         colors="true"
+         columns="max"
+         beStrictAboutTestsThatDoNotTestAnything="false"
+         bootstrap="/var/www/html/dev/tests/unit/framework/bootstrap.php">
+    <coverage>
+        <include>
+            <directory suffix=".php">/var/www/html/vendor/algolia/algoliasearch-magento-2</directory>
+        </include>
+        <exclude>
+            <directory>/var/www/html/vendor/algolia/algoliasearch-magento-2/Test</directory>
+        </exclude>
+    </coverage>
+    <testsuites>
+        <testsuite name="Algolia_Unit_Tests">
+            <directory>/var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <includePath>.</includePath>
+        <ini name="memory_limit" value="-1"/>
+        <ini name="date.timezone" value="America/Los_Angeles"/>
+        <ini name="xdebug.max_nesting_level" value="200"/>
+    </php>
+    <listeners>
+        <listener class="Magento\Framework\TestFramework\Unit\Listener\ReplaceObjectManager"/>
+    </listeners>
+</phpunit>

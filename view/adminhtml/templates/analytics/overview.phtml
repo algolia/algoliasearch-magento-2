@@ -1,5 +1,5 @@
 <?php
-
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Magento\Backend\Block\Template $block */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Overview $view */
 $view = $block->getViewModel();
@@ -9,7 +9,7 @@ $view = $block->getViewModel();
 
     <div class="algoliasearch-analytics-overview">
         <div class="row section">
-            <strong><?php echo $block->escapeHtml(__('Viewing index:')); ?></strong> <?php echo $view->getIndexName() ?>
+            <strong><?php echo $block->escapeHtml(__('Viewing index:')); ?></strong> <?= $escaper->escapeHtml($view->getIndexName())?>
         </div>
         <div class="row section">
             <div class="row thirds top-thirds">
@@ -19,19 +19,19 @@ $view = $block->getViewModel();
                             <?php echo $view->getTooltipHtml(__('How many searches were performed. As-you-type searches are aggregated (the queries i, ip, ipa, ipad count as one search).')) ?>
                         </h4>
                     </div>
-                    <div class="stat"><?php echo $view->getTotalCountOfSearches() ?></div>
+                    <div class="stat"><?= $escaper->escapeHtml($view->getTotalCountOfSearches()) ?></div>
                 </div>
                 <div class="one-third col-2">
                     <h4><?php echo $block->escapeHtml(__('Users')) ?>
                         <?php echo $view->getTooltipHtml(__('How many unique users performed a search.')); ?>
                     </h4>
-                    <div class="stat"><?php echo $view->getTotalUsersCount() ?></div>
+                    <div class="stat"><?= $escaper->escapeHtml($view->getTotalUsersCount()) ?></div>
                 </div>
                 <div class="one-third col-3">
                     <h4><?php echo $block->escapeHtml(__('No results rate')) ?>
                         <?php echo $view->getTooltipHtml(__('Percentage of searches that retrieved 0 results. A lower percentage is better.')); ?>
                     </h4>
-                    <div class="stat"><?php echo $view->getTotalResultRates() ?></div>
+                    <div class="stat"><?= $escaper->escapeHtml($view->getTotalResultRates()) ?></div>
                 </div>
             </div>
             <?php if ($view->isClickAnalyticsEnabled()) : ?>
@@ -43,7 +43,7 @@ $view = $block->getViewModel();
                             </h4>
                         </div>
                         <?php $conversion = $view->getConversionRate() ?>
-                        <div class="stat"><?php echo ($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'; ?></div>
+                        <div class="stat"><?= $escaper->escapeHtml(($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'); ?></div>
                         <div class="sub"><?php echo $block->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
                     </div>
                     <div class="one-third col-2">
@@ -54,7 +54,7 @@ $view = $block->getViewModel();
                             </h4>
                         </div>
                         <?php $conversion = $view->getConversionRateAddToCart() ?>
-                        <div class="stat"><?php echo ($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'; ?></div>
+                        <div class="stat"><?= $escaper->escapeHtml(($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'); ?></div>
                         <div class="sub"><?php echo $block->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
                     </div>
                     <div class="one-third col-3">
@@ -65,7 +65,7 @@ $view = $block->getViewModel();
                             </h4>
                         </div>
                         <?php $conversion = $view->getConversionRatePlaceOrder() ?>
-                        <div class="stat"><?php echo ($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'; ?></div>
+                        <div class="stat"><?= $escaper->escapeHtml(($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'); ?></div>
                         <div class="sub"><?php echo $block->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
                     </div>
                 </div>
@@ -77,7 +77,7 @@ $view = $block->getViewModel();
                             </h4>
                         </div>
                         <?php $ctr = $view->getClickThroughRate() ?>
-                        <div class="stat"><?php echo ($ctr['rate'] ? round($ctr['rate'] * 100, 2) : 0) . '%'; ?></div>
+                        <div class="stat"><?= $escaper->escapeHtml(($ctr['rate'] ? round($ctr['rate'] * 100, 2) : 0) . '%'); ?></div>
                         <div class="sub"><?php echo $block->escapeHtml(__('from %1 tracked searches', $ctr['trackedSearchCount'])) ?></div>
                     </div>
                     <div class="one-third col-2">
@@ -87,7 +87,7 @@ $view = $block->getViewModel();
                             </h4>
                         </div>
                         <?php $click = $view->getClickPosition() ?>
-                        <div class="stat"><?php echo $click['average'] ? round($click['average'], 2) : 0; ?></div>
+                        <div class="stat"><?= $escaper->escapeHtml($click['average'] ? round($click['average'], 2) : 0); ?></div>
                         <div class="sub"><?php echo $block->escapeHtml(__('from %1 tracked clicks', $click['clickCount'])) ?></div>
                     </div>
                     <div class="one-third col-3"></div>
@@ -97,7 +97,7 @@ $view = $block->getViewModel();
         <div class="row section daily-search-section">
             <div class="title">
                 <h3><?php echo $block->escapeHtml(__('Daily searches')) ?></h3>
-                <div class="total-search"><?php echo $block->escapeHtml(__('Total searches')) ?> <span class="count"><?php echo $view->getTotalCountOfSearches() ?></span></div>
+                <div class="total-search"><?php echo $block->escapeHtml(__('Total searches')) ?> <span class="count"><?= $escaper->escapeHtml($view->getTotalCountOfSearches()) ?></span></div>
             </div>
             <?php echo $view->getDailyChartHtml(); ?>
         </div>
@@ -121,7 +121,7 @@ $view = $block->getViewModel();
                             <?php foreach ($view->getTopSearches() as $search) : ?>
                                 <tr>
                                     <td><?php echo $search['search'] ?: '<i class="empty_search">' . $block->escapeHtml(__('empty search')) . '</i>'; ?></td>
-                                    <td><?php echo $search['count'] ?></td>
+                                    <td><?= $escaper->escapeHtml($search['count']) ?></td>
                                 </tr>
                             <?php endforeach ?>
                             </tbody>
@@ -155,13 +155,13 @@ $view = $block->getViewModel();
                                     <td>
                                         <?php $link = $view->getTypeEditUrl($search); ?>
                                         <?php foreach ($link as $type => $url) : ?>
-                                            <a href="<?php echo $url ?>"<?php echo $type == 'view' ? ' target="_blank"' : '' ?>>
-                                                <?php echo ucfirst($type); ?>
+                                            <a href="<?= $escaper->escapeUrl($url) ?>"<?php echo ($type == 'view' ? ' target="_blank"' : '') ?>>
+                                                <?= $escaper->escapeHtml(ucfirst($type)); ?>
                                             </a> |
                                         <?php endforeach ?>
-                                        <?php echo isset($search['name']) ? $search['name'] : $search['hit']; ?>
+                                        <?= $escaper->escapeHtml(isset($search['name']) ? $search['name'] : $search['hit']) ?>
                                     </td>
-                                    <td class="a-right"><?php echo $search['count'] ?></td>
+                                    <td class="a-right"><?= $escaper->escapeHtml($search['count']) ?></td>
                                 </tr>
                             <?php endforeach ?>
                             </tbody>
@@ -193,7 +193,7 @@ $view = $block->getViewModel();
                             <?php foreach ($view->getNoResultSearches() as $search) : ?>
                                 <tr>
                                     <td><?php echo $search['search'] ?: '<i class="empty_search">' . $block->escapeHtml(__('empty search')) . '</i>'; ?></td>
-                                    <td class="a-right"><?php echo $search['count'] ?></td>
+                                    <td class="a-right"><?= $escaper->escapeHtml($search['count']) ?></td>
                                 </tr>
                             <?php endforeach ?>
                             </tbody>

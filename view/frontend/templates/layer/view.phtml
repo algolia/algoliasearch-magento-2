@@ -1,8 +1,11 @@
-<?php if ($block->canShowBlock()) : ?>
+<?php
+/** @var \Magento\Framework\Escaper $escaper */
+
+if ($block->canShowBlock()) : ?>
     <div class="block filter algolia-filter-list" id="layered-filter-block" data-mage-init='{"collapsible":{"openedState": "active", "collapsible": true, "active": false, "collateral": { "openedState": "filter-active", "element": "body" } }}'>
         <?php $filtered = count($block->getLayer()->getState()->getFilters()) ?>
-        <div class="block-title filter-title" data-count="<?php echo /* @escapeNotVerified */ $filtered ?>">
-            <strong data-role="title"><?php /* @escapeNotVerified */ echo __('Shop By') ?></strong>
+        <div class="block-title filter-title" data-count="<?= $escaper->escapeHtmlAttr($filtered) ?>">
+            <strong data-role="title"><?= $escaper->escapeHtml(__('Shop By')) ?></strong>
         </div>
 
         <div class="block-content filter-content">
@@ -18,12 +21,12 @@
             <?php foreach ($block->getFilters() as $filter) : ?>
                 <?php if ($filter->getItemsCount()) : ?>
                     <?php if (!$wrapOptions) : ?>
-                        <div class="filter-options" id="narrow-by-list" data-role="content" data-mage-init='{"accordion":{"openedState": "active","active" : "<?php echo $range; ?>", "collapsible": "true", "multipleCollapsible": "false"}}'>
+                        <div class="filter-options" id="narrow-by-list" data-role="content" data-mage-init='{"accordion":{"openedState": "active","active" : "<?= $escaper->escapeHtmlAttr($range); ?>", "collapsible": "true", "multipleCollapsible": "false"}}'>
                             <?php $wrapOptions = true; ?>
                     <?php endif; ?>
                     <div data-role="collapsible" class="filter-options-item">
-                        <div data-role="title" class="filter-options-title"><?php echo /* @escapeNotVerified */ __($filter->getName()) ?></div>
-                        <div data-role="content" class="filter-options-content"><?php echo /* @escapeNotVerified */ $block->getChildBlock('renderer')->render($filter) ?></div>
+                        <div data-role="title" class="filter-options-title"><?= $escaper->escapeHtml(__($filter->getName())) ?></div>
+                        <div data-role="content" class="filter-options-content"><?= $escaper->escapeHtml($block->getChildBlock('renderer')->render($filter)) ?></div>
                     </div>
                 <?php endif; ?>
             <?php endforeach; ?>

@@ -1,7 +1,7 @@
 <?php
 
 /** @var \Magento\Backend\Block\Template $block */
-
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
 $viewModel = $block->getViewModel();
 
@@ -22,10 +22,10 @@ if (preg_match('/algoliasearch_/', $section)) {
 ?>
 
 <script>
-var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
-var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
-var personalizationStatus = <?php echo json_encode($personalizationStatus); ?>;
-var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
+var isClickAnalyticsEnabled = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($isClickAnalyticsEnabled); ?>;
+var linksAndVideoTemplate = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($linksAndVideoTemplate); ?>;
+var personalizationStatus = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($personalizationStatus); ?>;
+var extensionNotices = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($extensionNotices); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
 	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {

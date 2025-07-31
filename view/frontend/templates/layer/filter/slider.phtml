@@ -1,3 +1,7 @@
+<?php
+/** @var \Magento\Framework\Escaper $escaper */
+/** TODO:Reevaluate PHPCS ignores and enables/disables */
+?>
 <div class="algolia-range-slider" data-role="<?php /* @noEscape */ echo $block->getDataRole(); ?>">
     <div data-role="from-label"></div>
     <div data-role="to-label"></div>
@@ -10,7 +14,8 @@
         </div>
     </div>
 </div>
-
+<!-- phpcs:disable Magento2.Security.EscapeOutput.OutputNotEscaped -->
 <script type="text/x-magento-init">
-    { "[data-role=<?php /* @noEscape */ echo $block->getDataRole(); ?>]" : { "rangeSlider" : <?php echo  /* @noEscape */ $block->getJsonConfig(); ?> } }
+    { "[data-role=<?php /* @noEscape */ echo $block->getDataRole(); ?>]" : { "rangeSlider" : <?=  /* @noEscape */ $block->getJsonConfig(); ?> } }
 </script>
+<!-- phpcs:enable Magento2.Security.EscapeOutput.OutputNotEscaped -->

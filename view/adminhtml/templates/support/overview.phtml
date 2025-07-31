@@ -1,7 +1,8 @@
 <?php
 
 /** @var \Magento\Backend\Block\Template $block */
-
+/** @var \Magento\Framework\Escaper $escaper */
+/** TODO:Reevaluate PHPCS ignores and enables/disables */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Support\Overview $view */
 $view = $block->getViewModel();
 
@@ -31,10 +32,11 @@ $videoFeatures = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/video-fea
 <div id="algolia_support_tab_content">
 
     <div class="algolia_support_panel" id="algolia-documentation-panel">
-
+        <!-- phpcs:disable Magento2.Security.EscapeOutput.OutputNotEscaped -->
         <script>
             const noResultsIllustration = "<?php echo $noResultsIllustration; ?>"
         </script>
+        <!-- phpcs:enable Magento2.Security.EscapeOutput.OutputNotEscaped -->
 
         <div class="search-box-wrapper">
             <input type="text" name="q" id="search_box" />

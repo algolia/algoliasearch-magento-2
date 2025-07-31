@@ -8,10 +8,6 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <algoliasearch_credentials>
-            <credentials>
-                <enable_query_suggestions_index>1</enable_query_suggestions_index>
-                <enable_pages_index>1</enable_pages_index>
-            </credentials>
             <algolia_cookie_configuration>
                 <default_consent_cookie_name>user_allowed_save_cookie</default_consent_cookie_name>
                 <allow_cookie_button_selector>#btn-cookie-allow</allow_cookie_button_selector>
@@ -33,6 +29,9 @@
             </redirects>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>
+            <instant>
+                <replace_categories>0</replace_categories>
+            </instant>
             <instant_facets>
                 <facets><![CDATA[{"_1458145454535_587":{"attribute":"price","type":"slider","label":"Price","searchable":"2","create_rule":"2"},"_2541608784525_123":{"attribute":"categories","type":"conjunctive","label":"Categories","searchable":"2","create_rule":"2"},"_3211608784535_456":{"attribute":"color","type":"disjunctive","label":"Colors","searchable":"1","create_rule":"2"}}]]></facets>
                 <max_values_per_facet>10</max_values_per_facet>
@@ -73,13 +72,18 @@
             </queue>
         </algoliasearch_queue>
         <algoliasearch_indexing_manager>
+            <algolia_indexing>
+                <enable_indexing>1</enable_indexing>
+                <enable_query_suggestions_index>1</enable_query_suggestions_index>
+                <enable_pages_index>1</enable_pages_index>
+            </algolia_indexing>
             <full_indexing>
-                <products>0</products>
-                <categories>0</categories>
-                <pages>0</pages>
-                <suggestions>0</suggestions>
-                <additional_sections>0</additional_sections>
-                <delete_products>0</delete_products>
+                <products>1</products>
+                <categories>1</categories>
+                <pages>1</pages>
+                <suggestions>1</suggestions>
+                <additional_sections>1</additional_sections>
+                <delete_products>1</delete_products>
                 <queue>1</queue>
             </full_indexing>
         </algoliasearch_indexing_manager>
@@ -121,6 +125,7 @@
                 <connection_timeout>2</connection_timeout>
                 <read_timeout>30</read_timeout>
                 <write_timeout>30</write_timeout>
+                <forward_to_replicas>1</forward_to_replicas>
                 <auto_price_indexing>0</auto_price_indexing>
                 <enable_profiler>0</enable_profiler>
             </advanced>

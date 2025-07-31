@@ -126,7 +126,7 @@ abstract class ProductWithoutChildren
         if (!$this->areCustomersGroupsEnabled) {
             $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
         } else {
-            $excludedGroups = array();
+            $excludedGroups = [];
             foreach ($this->groups as $group) {
                 $groupId = (int)$group->getData('customer_group_id');
                 $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
@@ -158,9 +158,9 @@ abstract class ProductWithoutChildren
                     $this->addCustomerGroupsPrices($product, $currencyCode, $withTax, $field);
                 }
                 $this->customData[$field][$currencyCode]['special_from_date'] =
-                    (!empty($product->getSpecialFromDate())) ? strtotime($product->getSpecialFromDate()) : '';
+                    (!empty($product->getSpecialFromDate())) ? strtotime((string) $product->getSpecialFromDate()) : '';
                 $this->customData[$field][$currencyCode]['special_to_date'] =
-                    (!empty($product->getSpecialToDate())) ? strtotime($product->getSpecialToDate()) : '';
+                    (!empty($product->getSpecialToDate())) ? strtotime((string) $product->getSpecialToDate()) : '';
                 $this->addSpecialPrices($specialPrice, $field, $currencyCode);
                 $this->addTierPrices($tierPrice, $field, $currencyCode);
                 $this->addAdditionalData($product, $withTax, $subProducts, $currencyCode, $field);
@@ -258,9 +258,7 @@ abstract class ProductWithoutChildren
             $specialPrices[$groupId][] = $this->getRulePrice($groupId, $product, $subProducts);
             // The price with applied catalog rules
             $specialPrices[$groupId][] = $product->getFinalPrice(); // The product's special price
-            $specialPrices[$groupId] = array_filter($specialPrices[$groupId], function ($price) {
-                return $price > 0;
-            });
+            $specialPrices[$groupId] = array_filter($specialPrices[$groupId], fn($price) => $price > 0);
             $specialPrice[$groupId] = false;
             if ($specialPrices[$groupId] && $specialPrices[$groupId] !== []) {
                 $specialPrice[$groupId] = min($specialPrices[$groupId]);

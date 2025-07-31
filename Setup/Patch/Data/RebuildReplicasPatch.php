@@ -2,9 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Setup\Patch\Data;
 
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
@@ -16,7 +16,6 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Psr\Log\LoggerInterface;
 
 class RebuildReplicasPatch implements DataPatchInterface
 {
@@ -73,7 +72,7 @@ class RebuildReplicasPatch implements DataPatchInterface
                 $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_CHANGED, $storeId); // avoids latency
                 $this->replicaManager->syncReplicasToAlgolia($storeId, $this->productHelper->getIndexSettings($storeId));
             }
-        } catch (AlgoliaException $e) {
+        } catch (AlgoliaException) {
             // Log the error but do not prevent setup:update
             $this->logger->error("Could not rebuild replicas - a full reindex may be required.");
         }

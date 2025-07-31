@@ -106,7 +106,7 @@ class Save extends AbstractAction
             if (isset($data['algolia_configuration']) && $data['algolia_configuration'] != $data['configuration']) {
                 $data['configuration'] = $data['algolia_configuration'];
                 if ($this->configHelper->isCustomerGroupsEnabled($data['store_id'])) {
-                    $configuration = json_decode($data['algolia_configuration'], true);
+                    $configuration = json_decode((string) $data['algolia_configuration'], true);
                     if (isset($configuration['price'.$data['price_key']])) {
                         $priceConfig = $configuration['price'.$data['price_key']];
                         $customerGroups = $this->customerGroupCollectionFactory->create();
@@ -163,7 +163,7 @@ class Save extends AbstractAction
      */
     protected function manageQueryRules(int $landingPageId, array $data): void
     {
-        $positions = json_decode($data['algolia_merchandising_positions'], true);
+        $positions = json_decode((string) $data['algolia_merchandising_positions'], true);
         $stores = [];
         if ($data['store_id'] == 0) {
             foreach ($this->storeManager->getStores() as $store) {

@@ -57,7 +57,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
      * @param array $arr
      * @return array
      */
-    protected function getChildCategoryUrls(\Magento\Catalog\Model\Category $cat, string $parent = '', array $arr = array()): array {
+    protected function getChildCategoryUrls(\Magento\Catalog\Model\Category $cat, string $parent = '', array $arr = []): array {
         if (!$parent) {
             $parent = $this->initCategoryParentPath($cat);
         }
@@ -82,7 +82,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $suggestionHelper = $this->getSuggestionHelper();
 
-        $algoliaHelper = $this->getAlgoliaHelper();
+        $algoliaConnector = $this->algoliaConnector;
 
         $persoHelper = $this->getPersonalizationHelper();
 
@@ -225,7 +225,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             // Legacy misnomer - retained for backward compatibility
             'indexName' => $coreHelper->getBaseIndexName(),
             'baseIndexName' => $coreHelper->getBaseIndexName(),
-            'apiKey' => $algoliaHelper->generateSearchSecuredApiKey(
+            'apiKey' => $algoliaConnector->generateSearchSecuredApiKey(
                 $config->getSearchOnlyAPIKey(),
                 $attributesToFilter,
                 $this->getStoreId()
@@ -254,7 +254,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'autofocus' => true,
             'resultPageUrl' => $this->getCatalogSearchHelper()->getResultUrl(),
             'request' => [
-                'query' =>  htmlspecialchars(html_entity_decode($query)),
+                'query' =>  htmlspecialchars(html_entity_decode((string)$query)),
                 'refinementKey' => $refinementKey,
                 'refinementValue' => $refinementValue,
                 'categoryId' => $categoryId,

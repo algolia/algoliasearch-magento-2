@@ -22,8 +22,8 @@ class EnableCustomerGroups extends Value
         TypeListInterface       $cacheTypeList,
         protected ReplicaState  $replicaState,
         protected ConfigChecker $configChecker,
-        AbstractResource        $resource = null,
-        AbstractDb              $resourceCollection = null,
+        ?AbstractResource       $resource = null,
+        ?AbstractDb             $resourceCollection = null,
         array                   $data = []
     )
     {

@@ -41,7 +41,7 @@ class AutocompleteConfigPatch implements SchemaPatchInterface
         foreach ($movedConfigDirectives as $from => $to) {
             try {
                 $connection->query('UPDATE ' . $table . ' SET path = "' . $to . '" WHERE path = "' . $from . '"');
-            } catch (\Magento\Framework\DB\Adapter\DuplicateException $e) {
+            } catch (\Magento\Framework\DB\Adapter\DuplicateException) {
                 //
             }
         }

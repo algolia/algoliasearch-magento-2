@@ -91,7 +91,7 @@ interface EventProcessorInterface
         string $eventName,
         string $indexName,
         Item   $item,
-        string $queryID = null
+        ?string $queryID = null
     ): array;
 
     /**
@@ -123,7 +123,7 @@ interface EventProcessorInterface
         string $eventName,
         string $indexName,
         array  $items,
-        string $queryID = null
+        ?string $queryID = null
     ): array;
 
 }

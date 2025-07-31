@@ -10,13 +10,13 @@ use Algolia\AlgoliaSearch\Exception\ProductNotVisibleException;
 use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
@@ -49,7 +49,8 @@ class RecordBuilder implements RecordBuilderInterface
         protected StoreManagerInterface  $storeManager,
         protected ConfigHelper           $configHelper,
         protected CategoryHelper         $categoryHelper,
-        protected AlgoliaHelper          $algoliaHelper,
+        protected CategoryRecordBuilder  $categoryRecordBuilder,
+        protected AlgoliaConnector       $algoliaConnector,
         protected ImageHelper            $imageHelper,
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
@@ -134,7 +135,7 @@ class RecordBuilder implements RecordBuilderInterface
         );
         $customData = $transport->getData();
         $customData = array_merge($customData, $defaultData);
-        $this->algoliaHelper->castProductObject($customData);
+        $this->algoliaConnector->castProductObject($customData);
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_after_create_product_object',
@@ -415,7 +416,7 @@ class RecordBuilder implements RecordBuilderInterface
     public function getAllCategories($categoryIds, $storeId): array
     {
         $filterNotIncludedCategories = !$this->configHelper->showCatsNotIncludedInNavigation($storeId);
-        $categories = $this->categoryHelper->getCoreCategories($filterNotIncludedCategories, $storeId);
+        $categories = $this->categoryRecordBuilder->getCoreCategories($filterNotIncludedCategories, $storeId);
 
         $selectedCategories = [];
         foreach ($categoryIds as $id) {
@@ -437,7 +438,7 @@ class RecordBuilder implements RecordBuilderInterface
      */
     protected function getValidCategoryName($category, $rootCat, $storeId): ?string
     {
-        $pathParts = explode('/', $category->getPath());
+        $pathParts = explode('/', (string) $category->getPath());
         if (isset($pathParts[1]) && $pathParts[1] !== $rootCat) {
             return null;
         }
@@ -523,7 +524,7 @@ class RecordBuilder implements RecordBuilderInterface
     protected function flattenCategoryPaths(array $paths, int $storeId): array
     {
         return array_map(
-            function ($path) use ($storeId) { return implode($this->configHelper->getCategorySeparator($storeId), $path); },
+            fn($path) => implode($this->configHelper->getCategorySeparator($storeId), $path),
             $paths
         );
     }
@@ -758,7 +759,7 @@ class RecordBuilder implements RecordBuilderInterface
      */
     protected function addSubProductImage($subProductImages, $attribute, $subProduct, $valueText)
     {
-        if (mb_strtolower($attribute['attribute'], 'utf-8') !== 'color') {
+        if (mb_strtolower((string) $attribute['attribute'], 'utf-8') !== 'color') {
             return $subProductImages;
         }
 
@@ -775,7 +776,7 @@ class RecordBuilder implements RecordBuilderInterface
         }
 
         try {
-            $textValueInLower = mb_strtolower($valueText, 'utf-8');
+            $textValueInLower = mb_strtolower((string) $valueText, 'utf-8');
             $subProductImages[$textValueInLower] = $image->getUrl();
         } catch (\Exception $e) {
             $this->logger->log($e->getMessage());

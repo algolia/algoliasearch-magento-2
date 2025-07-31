@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
@@ -14,7 +13,8 @@ class BackendSearch
     public function __construct(
         protected ConfigHelper  $configHelper,
         protected ProductHelper $productHelper,
-        protected AlgoliaHelper $algoliaHelper,
+        protected AlgoliaConnector $algoliaConnector,
+        protected IndexOptionsBuilder $indexOptionsBuilder,
     ){}
 
     /**
@@ -29,9 +29,9 @@ class BackendSearch
      */
     public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
     {
-        $indexName = $targetedIndex !== null ?
-            $targetedIndex :
-            $this->productHelper->getIndexName($storeId);
+        $indexOptions = $targetedIndex !== null ?
+            $this->indexOptionsBuilder->buildWithEnforcedIndex($targetedIndex, $storeId) :
+            $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         $numberOfResults = 1000;
         if ($this->configHelper->isInstantEnabled()) {
@@ -59,7 +59,7 @@ class BackendSearch
             $params = array_merge($params, $searchParams);
         }
 
-        $response = $this->algoliaHelper->query($indexName, $query, $params, $storeId);
+        $response = $this->algoliaConnector->query($indexOptions, $query, $params);
         $answer = reset($response['results']);
 
         $data = [];

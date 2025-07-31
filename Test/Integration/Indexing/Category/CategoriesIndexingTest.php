@@ -28,9 +28,10 @@ class CategoriesIndexingTest extends IndexingTestCase
 
         $categoryBatchQueueProcessor = $this->objectManager->get(CategoryBatchQueueProcessor::class);
         $categoryBatchQueueProcessor->processBatch(1, [3]);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_categories', ['3']);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_categories');
+        $results = $this->algoliaConnector->getObjects($indexOptions, ['3']);
         $hit = reset($results['results']);
 
         $defaultAttributes = [
@@ -46,8 +47,8 @@ class CategoriesIndexingTest extends IndexingTestCase
             'product_count',
         ];
 
-        foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertTrue(key_exists($attribute, $hit), 'Category attribute "' . $attribute . '" should be indexed but it is not"');
+        foreach ($defaultAttributes as $attribute) {
+            $this->assertTrue(array_key_exists($attribute, $hit), 'Category attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }
 

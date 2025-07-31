@@ -15,6 +15,7 @@
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
             <group id="credentials" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Credentials and Setup</label>
+                <attribute type="expanded">1</attribute>
                 <comment>
                     <![CDATA[
                         <div class="algolia-admin-content"></div>
@@ -51,43 +52,6 @@
                             Specify different index prefixes for each environment (eg. local, staging, production). It will prevent your data from being overridden.
                         ]]>
                     </comment>
-                </field>
-                <field id="enable_backend" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Indexing</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            Do you want the Algolia extension to push your data to Algolia?<br>
-                            The benefit here is that Algolia will manage to keep your data up to date.
-                            If you choose "No", you will need to push and manage your data in a different way.
-                        ]]>
-                    </comment>
-                </field>
-                <field id="enable_query_suggestions_index" translate="label comment" type="select" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Query Suggestions Index</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            Do you want the Algolia extension to push your search terms/suggestions to Algolia?<br>
-                            If you choose "No", _suggestion indexes will not be created.
-                        ]]>
-                    </comment>
-                    <depends>
-                        <field id="enable_backend">1</field>
-                    </depends>
-                </field>
-                <field id="enable_pages_index" translate="label comment" type="select" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Pages Index</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            Do you want the Algolia extension to push your CMS Pages to Algolia?<br>
-                            If you choose "No", _pages indexes will not be created.
-                        ]]>
-                    </comment>
-                    <depends>
-                        <field id="enable_backend">1</field>
-                    </depends>
                 </field>
                 <field id="enable_frontend" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Search</label>
@@ -1084,13 +1048,58 @@
             <label>Indexing Manager</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="algolia_indexing" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Enable Algolia indexing</label>
+                <attribute type="expanded">1</attribute>
+                <field id="enable_indexing" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Indexing</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Do you want the Algolia extension to push your data to Algolia?<br>
+                            The benefit here is that Algolia will manage to keep your data up to date.
+                            If you choose "No", you will need to push and manage your data in a different way.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="enable_query_suggestions_index" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Query Suggestions Index</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Do you want the Algolia extension to push your search terms/suggestions to Algolia?<br>
+                            If you choose "No", _suggestion indexes will not be created.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable_indexing">1</field>
+                    </depends>
+                </field>
+                <field id="enable_pages_index" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Pages Index</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Do you want the Algolia extension to push your CMS Pages to Algolia?<br>
+                            If you choose "No", _pages indexes will not be created.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="enable_indexing">1</field>
+                    </depends>
+                </field>
+            </group>
             <group id="full_indexing" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Full indexing via Magento indexers</label>
+                <depends>
+                    <field id="algoliasearch_indexing_manager/algolia_indexing/enable_indexing">1</field>
+                </depends>
+                <attribute type="expanded">1</attribute>
                 <comment>
                     <![CDATA[
-                         <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers are now disabled by default for <strong>full indexing</strong>.
-                         However the extension continues to rely on them for reindexing specific entities with Magento materialized views or entity save events.</p>
-                         <p>If you want to perform full reindexing, we highly suggest to keep this configuration as it is and run the newly created CLI commands instead.</p>
+                         <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers can be disabled for <strong>full indexing</strong>.
+                         The extension will continue to rely on them for reindexing specific entities with Magento materialized views or entity save events if you do so.</p>
+                         <p>If you want to perform full reindexing, we highly suggest to turn this configuration off and run the newly created CLI commands instead (this will become the default behavior in a future version).</p>
                     ]]>
                 </comment>
                 <field id="products" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -1513,15 +1522,23 @@
                 <field id="write_timeout" translate="label comment" type="text" sortOrder="110" showInDefault="1">
                     <label>Write Timeout (In Seconds)</label>
                 </field>
+                <field id="forward_to_replicas" translate="label comment" type="select" sortOrder="115" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Forward index settings to replicas</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            When this configuration is enabled, settings that are changed in Algolia on the primary index will also be forwarded to its replica indices. It is enabled by default.
+                            <br><br>
+                            The ability to disable this behavior is retained for legacy implementations, but it is highly recommended that you leave this setting enabled especially if you are using dynamic facets.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="auto_price_indexing" translate="label comment" type="select" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable automatic price indexing</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
                         <model>Algolia\AlgoliaSearch\Model\Config\AutomaticPriceIndexingComment</model>
                     </comment>
-                    <depends>
-                        <field id="active">1</field>
-                    </depends>
                 </field>
                 <field id="enable_profiler" translate="label comment" type="select" sortOrder="130" showInDefault="1">
                     <label>Enable Profiler</label>

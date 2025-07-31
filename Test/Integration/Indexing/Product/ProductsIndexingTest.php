@@ -53,9 +53,10 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
         $this->productBatchQueueProcessor->processBatch(1, [$this->getValidTestProduct()]);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $results = $this->algoliaHelper->getObjects($this->indexPrefix . 'default_products', [$this->getValidTestProduct()]);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $results = $this->algoliaConnector->getObjects($indexOptions, [$this->getValidTestProduct()]);
         $hit = reset($results['results']);
 
         $defaultAttributes = [
@@ -79,7 +80,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
             $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions on.');
         }
 
-        foreach ($defaultAttributes as $key => $attribute) {
+        foreach ($defaultAttributes as $attribute) {
             $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }

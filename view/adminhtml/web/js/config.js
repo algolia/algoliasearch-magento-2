@@ -39,6 +39,7 @@ require(
 			pageWarning += '</div>';
 
 			let pageWarningSynonyms = '<div class="algolia_dashboard_warning algolia_dashboard_warning_page">';
+			pageWarningSynonyms += '<p>Configurations related to indexing have been moved to the "Indexing Manager" section.</p>';
 			pageWarningSynonyms += '<p>Configurations related to Synonyms have been removed from the Magento dashboard. We advise you to configure synonyms from the Algolia dashboard.</p>';
 			pageWarningSynonyms += '</div>';
 
@@ -69,7 +70,7 @@ require(
 				const searchableSelect = $('select[name="groups[instant_facets][fields][facets][value][' + rowId + '][searchable]"]');
 
 				searchableSelect.on('change', function(){
-					configQrFromSearchableSelect($(this));	
+					configQrFromSearchableSelect($(this));
 				});
 
 				configQrFromSearchableSelect(searchableSelect);
@@ -93,4 +94,4 @@ require(
 		}
 
 	}
-);	
+);

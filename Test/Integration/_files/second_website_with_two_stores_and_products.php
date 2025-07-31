@@ -67,10 +67,10 @@ foreach ($websites as $website) {
 
 $configManager = $objectManager->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class);
 // Temporarily disable indexing during product assignment to stores
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'admin');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'default');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'fixture_second_store');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 0, 'store', 'fixture_third_store');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 0, 'store', 'admin');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 0, 'store', 'default');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 0, 'store', 'fixture_second_store');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 0, 'store', 'fixture_third_store');
 
 $productSkus = MultiStoreProductsTest::SKUS;
 $productRepository = Bootstrap::getObjectManager()
@@ -82,10 +82,10 @@ foreach ($productSkus as $sku) {
     $productRepository->save($product);
 }
 
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'admin');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'default');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'fixture_second_store');
-$configManager->setValue('algoliasearch_credentials/credentials/enable_backend', 1, 'store', 'fixture_third_store');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 1, 'store', 'admin');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 1, 'store', 'default');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 1, 'store', 'fixture_second_store');
+$configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 1, 'store', 'fixture_third_store');
 
 /* Refresh CatalogSearch index */
 /** @var IndexerRegistry $indexerRegistry */

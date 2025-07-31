@@ -36,7 +36,8 @@ class PagesIndexingTest extends IndexingTestCase
         $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
         $this->processTest($pageBatchQueueProcessor, 'pages', $this->assertValues->expectedExcludePages);
 
-        $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', []);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_pages');
+        $response = $this->algoliaConnector->query($indexOptions, '', []);
         $hits = reset($response['results'])['hits'];
 
         $noRoutePageExists = false;
@@ -62,9 +63,10 @@ class PagesIndexingTest extends IndexingTestCase
     {
         $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
         $pageBatchQueueProcessor->processBatch(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $response = $this->algoliaHelper->query($this->indexPrefix . 'default_pages', '', ['hitsPerPage' => 1]);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_pages');
+        $response = $this->algoliaConnector->query($indexOptions, '', ['hitsPerPage' => 1]);
         $hits = reset($response['results']);
         $hit = reset($hits['hits']);
 
@@ -79,8 +81,8 @@ class PagesIndexingTest extends IndexingTestCase
             '_snippetResult',
         ];
 
-        foreach ($defaultAttributes as $key => $attribute) {
-            $this->assertTrue(key_exists($attribute, $hit), 'Pages attribute "' . $attribute . '" should be indexed but it is not"');
+        foreach ($defaultAttributes as $attribute) {
+            $this->assertTrue(array_key_exists($attribute, $hit), 'Pages attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }
 

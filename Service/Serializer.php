@@ -43,7 +43,7 @@ class Serializer
             return false;
         }
 
-        $unserialized = json_decode($value, true);
+        $unserialized = json_decode((string) $value, true);
         if (json_last_error() === JSON_ERROR_NONE) {
             return $unserialized;
         }

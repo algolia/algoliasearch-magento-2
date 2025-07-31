@@ -158,6 +158,6 @@ class SliderRenderer extends Template implements FilterRendererInterface
         $regexp = "/({$filter->getRequestVar()})=(-?[0-9A-Z\-\%]+)/";
         $replacement = '${1}=<%- from %>-<%- to %>';
 
-        return preg_replace($regexp, $replacement, $item->getUrl());
+        return preg_replace($regexp, $replacement, (string) $item->getUrl());
     }
 }

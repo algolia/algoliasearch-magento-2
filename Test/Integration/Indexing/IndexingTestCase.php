@@ -24,20 +24,28 @@ abstract class IndexingTestCase extends TestCase
         $indexSuffix,
         $expectedNbHits
     ) {
-        $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
+            $this->indexPrefix . 'default_' . $indexSuffix
+        );
+
+        $this->algoliaConnector->clearIndex($indexOptions);
 
         $batchQueueProcessor->processBatch(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         $this->assertNumberofHits($indexSuffix, $expectedNbHits);
     }
 
     protected function processOldIndexerTest(ActionInterface $indexer, $indexSuffix, $expectedNbHits)
     {
-        $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
+            $this->indexPrefix . 'default_' . $indexSuffix
+        );
+
+        $this->algoliaConnector->clearIndex($indexOptions);
 
         $indexer->executeFull();
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         $this->assertNumberofHits($indexSuffix, $expectedNbHits);
     }
@@ -47,7 +55,11 @@ abstract class IndexingTestCase extends TestCase
         $indexSuffix,
         $expectedNbHits
     ) {
-        $this->algoliaHelper->clearIndex($this->indexPrefix . 'default_' . $indexSuffix);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
+            $this->indexPrefix . 'default_' . $indexSuffix
+        );
+
+        $this->algoliaConnector->clearIndex($indexOptions);
 
         $this->mockProperty($command, 'output', OutputInterface::class);
         $this->invokeMethod(
@@ -58,14 +70,18 @@ abstract class IndexingTestCase extends TestCase
                 $this->createMock(OutputInterface::class)
             ]
         );
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         $this->assertNumberofHits($indexSuffix, $expectedNbHits);
     }
 
     protected function assertNumberofHits($indexSuffix, $expectedNbHits)
     {
-        $resultsDefault = $this->algoliaHelper->query($this->indexPrefix . 'default_' . $indexSuffix, '', []);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
+            $this->indexPrefix . 'default_' . $indexSuffix
+        );
+
+        $resultsDefault = $this->algoliaConnector->query($indexOptions, '', []);
         $this->assertEquals($expectedNbHits, $resultsDefault['results'][0]['nbHits']);
     }
 
@@ -81,9 +97,11 @@ abstract class IndexingTestCase extends TestCase
         string $indexName,
         string $recordId,
         array $expectedValues,
-        int $storeId = null
+        ?int $storeId = null
     ) : void {
-        $res = $this->algoliaHelper->getObjects($indexName, [$recordId], $storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+
+        $res = $this->algoliaConnector->getObjects($indexOptions, [$recordId]);
         $record = reset($res['results']);
         foreach ($expectedValues as $attribute => $expectedValue) {
             $this->assertEquals($expectedValue, $record[$attribute]);

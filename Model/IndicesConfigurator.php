@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
@@ -12,23 +11,35 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Category\IndexOptionsBuilder as CategoryIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Page\IndexOptionsBuilder as PageIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
+use Algolia\AlgoliaSearch\Service\Suggestion\IndexOptionsBuilder as SuggestionIndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndicesConfigurator
 {
     public function __construct(
-        protected Data                      $baseHelper,
-        protected AlgoliaHelper             $algoliaHelper,
-        protected ConfigHelper              $configHelper,
-        protected ProductHelper             $productHelper,
-        protected CategoryHelper            $categoryHelper,
-        protected PageHelper                $pageHelper,
-        protected SuggestionHelper          $suggestionHelper,
-        protected AdditionalSectionHelper   $additionalSectionHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected DiagnosticsLogger         $logger
+        protected Data                          $baseHelper,
+        protected IndexOptionsBuilder           $indexOptionsBuilder,
+        protected CategoryIndexOptionsBuilder   $categoryIndexOptionsBuilder,
+        protected PageIndexOptionsBuilder       $pageIndexOptionsBuilder,
+        protected ProductIndexOptionsBuilder    $productIndexOptionsBuilder,
+        protected SuggestionIndexOptionsBuilder $suggestionIndexOptionsBuilder,
+        protected AlgoliaConnector              $algoliaConnector,
+        protected ConfigHelper                  $configHelper,
+        protected ProductHelper                 $productHelper,
+        protected CategoryHelper                $categoryHelper,
+        protected PageHelper                    $pageHelper,
+        protected SuggestionHelper              $suggestionHelper,
+        protected AdditionalSectionHelper       $additionalSectionHelper,
+        protected AlgoliaCredentialsManager     $algoliaCredentialsManager,
+        protected IndexSettingsHandler          $indexSettingsHandler,
+        protected DiagnosticsLogger             $logger
     ) {}
 
     /**
@@ -58,12 +69,12 @@ class IndicesConfigurator
         }
 
         $this->setCategoriesSettings($storeId);
-        $this->algoliaHelper->waitLastTask($storeId);
+        $this->algoliaConnector->waitLastTask($storeId);
 
         /* Check if we want to index CMS pages */
         if ($this->configHelper->isPagesIndexEnabled($storeId)) {
             $this->setPagesSettings($storeId);
-            $this->algoliaHelper->waitLastTask($storeId);
+            $this->algoliaConnector->waitLastTask($storeId);
         } else {
             $this->logger->log('CMS Page Indexing is not enabled for the store.');
         }
@@ -71,13 +82,13 @@ class IndicesConfigurator
         //Check if we want to index Query Suggestions
         if ($this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             $this->setQuerySuggestionsSettings($storeId);
-            $this->algoliaHelper->waitLastTask($storeId);
+            $this->algoliaConnector->waitLastTask($storeId);
         } else {
             $this->logger->log('Query Suggestions Indexing is not enabled for the store.');
         }
 
         $this->setAdditionalSectionsSettings($storeId);
-        $this->algoliaHelper->waitLastTask($storeId);
+        $this->algoliaConnector->waitLastTask($storeId);
 
         $this->setProductsSettings($storeId, $useTmpIndex);
 
@@ -96,19 +107,12 @@ class IndicesConfigurator
         $logEventName = 'Pushing settings for categories indices.';
         $this->logger->start($logEventName, true);
 
-        $indexName = $this->categoryHelper->getIndexName($storeId);
         $settings = $this->categoryHelper->getIndexSettings($storeId);
+        $indexOptions = $this->categoryIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
-            $settings,
-            false,
-            true,
-            '',
-            $storeId
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
-        $this->logger->log('Index name: ' . $indexName);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
         $this->logger->stop($logEventName, true);
     }
@@ -124,18 +128,11 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $settings = $this->pageHelper->getIndexSettings($storeId);
-        $indexName = $this->pageHelper->getIndexName($storeId);
+        $indexOptions = $this->pageIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
-            $settings,
-            false,
-            true,
-            '',
-            $storeId
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
-        $this->logger->log('Index name: ' . $indexName);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
         $this->logger->stop($logEventName, true);
     }
@@ -150,19 +147,12 @@ class IndicesConfigurator
         $logEventName = 'Pushing settings for query suggestions indices.';
         $this->logger->start($logEventName, true);
 
-        $indexName = $this->suggestionHelper->getIndexName($storeId);
         $settings = $this->suggestionHelper->getIndexSettings($storeId);
+        $indexOptions = $this->suggestionIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
-            $settings,
-            false,
-            true,
-            '',
-            $storeId
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
-        $this->logger->log('Index name: ' . $indexName);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
         $this->logger->stop($logEventName, true);
     }
@@ -187,15 +177,9 @@ class IndicesConfigurator
             $indexName = $indexName . '_' . $section['name'];
 
             $settings = $this->additionalSectionHelper->getIndexSettings($storeId);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
-            $this->algoliaHelper->setSettings(
-                $indexName,
-                $settings,
-                false,
-                false,
-                '',
-                $storeId
-            );
+            $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
             $this->logger->log('Index name: ' . $indexName);
             $this->logger->log('Settings: ' . json_encode($settings));
@@ -218,13 +202,13 @@ class IndicesConfigurator
         $logEventName = 'Pushing settings for products indices.';
         $this->logger->start($logEventName, true);
 
-        $indexName = $this->productHelper->getIndexName($storeId);
-        $indexNameTmp = $this->productHelper->getTempIndexName($storeId);
+        $indexOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $indexTmpOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId, true);
 
-        $this->logger->log('Index name: ' . $indexName);
-        $this->logger->log('TMP Index name: ' . $indexNameTmp);
+        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
+        $this->logger->log('TMP Index name: ' . $indexTmpOptions->getIndexName());
 
-        $this->productHelper->setSettings($indexName, $indexNameTmp, $storeId, $useTmpIndex);
+        $this->productHelper->setSettings($indexOptions, $indexTmpOptions, $storeId, $useTmpIndex);
 
         $this->logger->stop($logEventName, true);
     }
@@ -248,39 +232,49 @@ class IndicesConfigurator
             'suggestions' => $this->suggestionHelper->getIndexName($storeId),
             'additional_sections' => $this->additionalSectionHelper->getIndexName($storeId)
         ];
+        $sections = [
+            'products',
+            'categories',
+            'pages',
+            'suggestions',
+            'additional_sections'
+        ];
 
         $error = [];
-        foreach ($sections as $section => $indexName) {
+        foreach ($sections as $section) {
             try {
                 $extraSettings = $this->configHelper->getExtraSettings($section, $storeId);
 
                 if ($extraSettings) {
                     $extraSettings = json_decode($extraSettings, true);
 
-                    $this->logger->log('Index name: ' . $indexName);
+                    $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex('_' . $section, $storeId);
+
+                    $this->logger->log('Index name: ' . $indexOptions->getIndexName());
                     $this->logger->log('Extra settings: ' . json_encode($extraSettings));
-                    $this->algoliaHelper->setSettings(
-                        $indexName,
+
+                    $this->algoliaConnector->setSettings(
+                        $indexOptions,
                         $extraSettings,
                         true,
-                        false,
-                        '',
-                        $storeId
+                        false
                     );
-                    $this->algoliaHelper->waitLastTask($storeId);
+                    $this->algoliaConnector->waitLastTask($storeId);
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {
-                        $tempIndexName = $indexName . IndexNameFetcher::INDEX_TEMP_SUFFIX;
-                        $this->logger->log('Index name: ' . $tempIndexName);
+                        $indexTempOptions = $this->indexOptionsBuilder->buildWithComputedIndex(
+                            ProductHelper::INDEX_NAME_SUFFIX,
+                            $storeId,
+                            true
+                        );
+
+                        $this->logger->log('Index name: ' . $indexTempOptions->getIndexName());
                         $this->logger->log('Extra settings: ' . json_encode($extraSettings));
 
-                        $this->algoliaHelper->setSettings(
-                            $tempIndexName,
+                        $this->algoliaConnector->setSettings(
+                            $indexTempOptions,
                             $extraSettings,
-                            true,
-                            false,
-                            '',
-                            $storeId
+                            true
                         );
                     }
                 }

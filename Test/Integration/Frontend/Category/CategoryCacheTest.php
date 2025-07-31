@@ -12,8 +12,8 @@ use Magento\TestFramework\TestCase\AbstractController;
 
 class CategoryCacheTest extends AbstractController
 {
-    protected ?CacheManager $cacheManager;
-    protected ?ScopeConfigInterface $config;
+    protected ?CacheManager $cacheManager = null;
+    protected ?ScopeConfigInterface $config = null;
 
     protected static $cacheResets = [];
 
@@ -23,12 +23,12 @@ class CategoryCacheTest extends AbstractController
     public static function getCategoryProvider(): array
     {
         return [
-            ['categoryId' => 20, 'name' => 'Women', 'hasProducts' => false],
-            ['categoryId' => 21, 'name' => 'Women > Tops', 'hasProducts' => true],
-            ['categoryId' => 22, 'name' => 'Women > Bottoms', 'hasProducts' => true],
-            ['categoryId' => 11, 'name' => 'Men', 'hasProducts' => false],
-            ['categoryId' => 12, 'name' => 'Men > Tops', 'hasProducts' => true],
-            ['categoryId' => 13, 'name' => 'Men > Bottoms', 'hasProducts' => true],
+            [20, 'Women', false],
+            [21, 'Women > Tops', true],
+            [22, 'Women > Bottoms', true],
+            [11, 'Men', false],
+            [12, 'Men > Tops', true],
+            [13, 'Men > Bottoms', true],
         ];
     }
 
@@ -102,7 +102,7 @@ class CategoryCacheTest extends AbstractController
         );
         $this->assertContains(
             'FPC',
-            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            explode(',', (string) $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
 
@@ -153,7 +153,7 @@ class CategoryCacheTest extends AbstractController
         );
         $this->assertContains(
             'FPC',
-            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            explode(',', (string) $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
 
@@ -208,7 +208,7 @@ class CategoryCacheTest extends AbstractController
         );
         $this->assertContains(
             'FPC',
-            explode(',', $response->getHeader('X-Magento-Tags')->getFieldValue()),
+            explode(',', (string) $response->getHeader('X-Magento-Tags')->getFieldValue()),
             "expected FPC tag on category {$name} id {$categoryId}"
         );
 

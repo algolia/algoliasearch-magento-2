@@ -14,9 +14,10 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
         $indicesConfigurator->saveConfigurationToAlgolia(1);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
 
         $this->assertEquals($this->assertValues->attributesForFaceting, count($indexSettings['attributesForFaceting']));
     }
@@ -27,9 +28,9 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
         $indicesConfigurator->saveConfigurationToAlgolia(1);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $client = $this->algoliaHelper->getClient();
+        $client = $this->algoliaConnector->getClient();
 
         $matchedRules = [];
 
@@ -136,17 +137,16 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
         $indicesConfigurator->saveConfigurationToAlgolia(1);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indices = $this->algoliaHelper->listIndexes();
-        $indicesNames = array_map(function ($indexData) {
-            return $indexData['name'];
-        }, $indices['items']);
+        $indices = $this->algoliaConnector->listIndexes();
+        $indicesNames = array_map(fn($indexData) => $indexData['name'], $indices['items']);
 
         foreach ($sortingIndicesWithRankingWhichShouldBeCreated as $indexName => $firstRanking) {
             $this->assertContains($indexName, $indicesNames);
 
-            $settings = $this->algoliaHelper->getSettings($indexName);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $settings = $this->algoliaConnector->getSettings($indexOptions);
             $this->assertEquals($firstRanking, reset($settings['ranking']));
         }
     }
@@ -157,20 +157,22 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
 
         $indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
 
-            $this->algoliaHelper->setSettings($indexName, ['exactOnSingleWordQuery' => 'attribute']);
-            $this->algoliaHelper->waitLastTask();
+            $this->algoliaConnector->setSettings($indexOptions, ['exactOnSingleWordQuery' => 'attribute']);
+            $this->algoliaConnector->waitLastTask();
         }
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
-            $currentSettings = $this->algoliaHelper->getSettings($indexName);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);
             $this->assertEquals('attribute', $currentSettings['exactOnSingleWordQuery']);
@@ -181,12 +183,13 @@ class ConfigTest extends TestCase
         }
 
         $indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
 
-            $currentSettings = $this->algoliaHelper->getSettings($indexName);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);
             $this->assertEquals('word', $currentSettings['exactOnSingleWordQuery']);

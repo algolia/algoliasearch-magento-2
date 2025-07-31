@@ -1,13 +1,10 @@
 <?php
 
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Query\Merchandising $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** TODO:Reevaluate PHPCS ignores and enables/disables */
 
 $configHelper = $block->getConfigHelper();
-
-?>
-
-<?php
-
 $indexName = $block->getCoreHelper()->getBaseIndexName();
 $currencyCode = $configHelper->getCurrencyCode();
 
@@ -86,7 +83,9 @@ $isConfig = [
                             {{/_highlightResult.sku.0}}
                         </td>
                         <td>{{{ _highlightResult.name.value }}}</td>
+                        <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
                         <td>{{ price.<?php echo $currencyCode ?>.default_formated }}</td>
+                        <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
                         <td class="actions">
                             <div class="pin_block">
                                 <a class="arrow up" href="#">
@@ -136,7 +135,9 @@ $isConfig = [
             {{/sku.0}}
         </td>
         <td>{{{ name }}}</td>
+        <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
         <td>{{ price.<?php echo $currencyCode ?>.default_formated }}</td>
+        <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
         <td class="actions">
             <div class="pin_block">
                 <a class="arrow up" href="#">
@@ -163,7 +164,9 @@ $isConfig = [
         <div class="info">
             {{{ _highlightResult.name.value }}}
             <div class="price">
+                <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
 				{{ price.<?php echo $currencyCode ?>.default_formated }}
+                <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
 			</div>
         </div>
 
@@ -194,7 +197,7 @@ $isConfig = [
         var initInstantSearch = function() {
             algoliaAdminBundle.$(function ($) {
                 var storeId = $('select[name="store_id"]').val();
-                var config = <?php echo json_encode($isConfig); ?>;
+                var config = <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped */json_encode($isConfig); ?>;
 
                 config.appId = config.indexDataByStoreIds[storeId].appId;
                 config.apiKey = config.indexDataByStoreIds[storeId].apiKey;

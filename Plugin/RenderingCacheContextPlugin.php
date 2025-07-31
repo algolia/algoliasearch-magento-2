@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Plugin;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -25,7 +26,8 @@ class RenderingCacheContextPlugin
     public const CATEGORY_ROUTE = 'catalog/category/view';
 
     public function __construct(
-        protected ConfigHelper $configHelper,
+        protected ConfigHelper $baseConfig,
+        protected InstantSearchHelper $isConfig,
         protected StoreManagerInterface $storeManager,
         protected Http $request,
         protected UrlFinderInterface $urlFinder
@@ -50,7 +52,7 @@ class RenderingCacheContextPlugin
             return $data;
         }
 
-        $context = $this->configHelper->preventBackendRendering() ?
+        $context = $this->baseConfig->preventBackendRendering() ?
             self::RENDERING_WITHOUT_BACKEND :
             self::RENDERING_WITH_BACKEND;
 
@@ -89,6 +91,7 @@ class RenderingCacheContextPlugin
      *
      * @param int $storeId
      * @return bool
+     * @deprecated This method will be removed in a future version
      */
     protected function isCategoryPage(int $storeId): bool
     {
@@ -104,6 +107,6 @@ class RenderingCacheContextPlugin
     protected function shouldApplyCacheContext(): bool
     {
         $storeId = $this->storeManager->getStore()->getId();
-        return $this->isCategoryPage($storeId) && $this->configHelper->replaceCategories($storeId);
+        return $this->isConfig->shouldReplaceCategories($storeId);
     }
 }

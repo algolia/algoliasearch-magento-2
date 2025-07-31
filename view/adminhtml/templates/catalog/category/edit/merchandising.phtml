@@ -1,6 +1,8 @@
 <?php
 
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** TODO:Reevaluate PHPCS ignores and enables/disables */
 
 $configHelper = $block->getConfigHelper();
 
@@ -193,7 +195,7 @@ $isConfig = [
 <script>
     requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
-            var config = <?php echo json_encode($isConfig); ?>;
+            var config = <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped */json_encode($isConfig); ?>;
 
             var search = algoliaAdminBundle.instantsearch(config);
 

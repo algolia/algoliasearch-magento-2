@@ -1,5 +1,5 @@
 <?php
-
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\IndexingManager\Section $block */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\IndexingManager\Section $view */
 $view = $block->getViewModel();
@@ -11,7 +11,7 @@ $relatedIndices = $view->getRelatedIndices();
     <h2><?php echo $block->escapeHtml($view->getSectionTitle()) ?></h2>
     <?php if (count($relatedIndices) > 0) : ?>
         <?php foreach ($relatedIndices as $storeId => $relatedIndex) : ?>
-            <p><?php echo $relatedIndex['name'] ?> : <a href="<?php echo $view->getIndexUrl($relatedIndex['index'], $storeId) ?>" target="_blank" ><?php echo $relatedIndex['index'] ?></a></p>
+            <p><?= $escaper->escapeHtml($relatedIndex['name']) ?> : <a href="<?= $escaper->escapeUrl($view->getIndexUrl($relatedIndex['index'], $storeId)) ?>" target="_blank" ><?= $escaper->escapeHtml($relatedIndex['index']) ?></a></p>
         <?php endforeach; ?>
     <?php endif ?>
 </div>

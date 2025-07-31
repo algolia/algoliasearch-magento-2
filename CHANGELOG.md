@@ -21,7 +21,8 @@
 - Prices are now indexed using store scoped currency codes.
 - Fixed WSOD error on invalid creds when using manual SKU indexer (also included in 3.15.1).
 - Fixed Recommend model validation when configuring through the Magento admin 
-- Fixed edge case with null queries - thank you @PromInc 
+- Fixed edge case with null queries - thank you @PromInc
+- Removed conditional behavior on setting the vary string from the plugin on `\Magento\Framework\App\Http\Context` so that a consistent `X-Magento-Vary` cookie is sent across all requests
 
 ### Updates
 - `beforecontent.html` is no longer used and has been deprecated. If you're overriding or referencing this file, please update your layout and customizations accordingly.
@@ -42,6 +43,7 @@
 - Added support for PHPUnit 10
 - Added support for Magento 2.4.8 on PHP 8.4 - Special shout out to @jajajaime for his help here
 - Refactored code to PHP 8.2 baseline standard
+- The InstantSearch "replace categories" feature must now be explicitly enabled on new instances aligning with our documentation: https://www.algolia.com/doc/integration/magento-2/guides/category-pages/#enable-category-pages
 
 ### Breaking Changes
 - `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).

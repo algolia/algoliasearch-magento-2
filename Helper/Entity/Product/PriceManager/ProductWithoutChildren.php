@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use DateTime;
@@ -153,7 +154,7 @@ abstract class ProductWithoutChildren
                 $this->customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($price);
                 $this->customData[$field][$currencyCode]['default_formated'] = $this->formatPrice($price, $currencyCode);
                 $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax, $subProducts);
-                $tierPrice = $this->getTierPrice($product, $currencyCode, $withTax);
+                $tierPrice = $this->getTierPrice($product, $currencyCode, $withTax, $subProducts);
                 if ($this->areCustomersGroupsEnabled) {
                     $this->addCustomerGroupsPrices($product, $currencyCode, $withTax, $field);
                 }
@@ -266,7 +267,7 @@ abstract class ProductWithoutChildren
                 $specialPrice[$groupId] = min($specialPrices[$groupId]);
             }
             if ($specialPrice[$groupId]) {
-                if ($currencyCode !== $this->baseCurrencyCode) {
+                if ($currencyCode !== $this->baseCurrencyCode && (!$subProducts || count($subProducts) === 0)) {
                     $specialPrice[$groupId] =
                         $this->priceCurrency->round($this->convertPrice($specialPrice[$groupId], $currencyCode));
                 }
@@ -279,10 +280,12 @@ abstract class ProductWithoutChildren
     /**
      * @param Product $product
      * @param $currencyCode
-     * @param $withTax
+     * @param $withTaxm
+     * @param int|array $subProducts
      * @return array
+     * @throws DiagnosticsException
      */
-    protected function getTierPrice(Product $product, $currencyCode, $withTax)
+    protected function getTierPrice(Product $product, $currencyCode, $withTax, $subProducts = [])
     {
         $this->logger->startProfiling(__METHOD__);
         $tierPrice = [];
@@ -326,11 +329,11 @@ abstract class ProductWithoutChildren
                     min($currentTierPrice, $tierPrices[$groupId]);
             }
 
-            if ($currencyCode !== $this->baseCurrencyCode) {
+            if ($currencyCode !== $this->baseCurrencyCode && (!$subProducts || count($subProducts) === 0)) {
                 $currentTierPrice =
                     $this->priceCurrency->round($this->convertPrice($currentTierPrice, $currencyCode));
             }
-            $tierPrice[$groupId] = $this->getTaxPrice($product, $currentTierPrice, $withTax);
+            $tierPrice[$groupId] = $this->getTaxPrice($product, $currentTierPrice, $withTax, $subProducts);
         }
 
         $this->logger->stopProfiling(__METHOD__);

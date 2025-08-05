@@ -2,7 +2,6 @@
 /** @var \Magento\Backend\Block\Template $block */
 /** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form $form */
-/** TODO:revisit phpcs ignore in this code  */
 $form = $block->getViewModel();
 ?>
 
@@ -22,16 +21,16 @@ $form = $block->getViewModel();
         <div class="inline-field">
             <input type="text" id="analytics_from" name="from" <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>
                    class="admin__control-text input-text date-range-analytics-from"
-                   placeholder="<?php echo $block->escapeHtmlAttr(__('Start Date')) ?>" value="<?= $escaper->escapeHtmlAttr($form->getFormValue('from')) ?>"/>
+                   placeholder="<?php echo $escaper->escapeHtmlAttr(__('Start Date')) ?>" value="<?= $escaper->escapeHtmlAttr($form->getFormValue('from')) ?>"/>
         </div>
         <span class="divide">-</span>
         <div class="inline-field">
             <input type="text" id="analytics_to" name="to" <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>
                    class="admin__control-text input-text validate-date-range date-range-analytics-to"
-                   placeholder="<?php echo $block->escapeHtmlAttr(__('End Date')) ?>" value="<?= $escaper->escapeHtmlAttr($form->getFormValue('to'))  ?>"/>
+                   placeholder="<?php echo $escaper->escapeHtmlAttr(__('End Date')) ?>" value="<?= $escaper->escapeHtmlAttr($form->getFormValue('to'))  ?>"/>
         </div>
         <button type="submit" class="action submit primary algolia-daterange-submit" <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>>
-            <?php echo $block->escapeHtml(__('Update')) ?>
+            <?php echo $escaper->escapeHtml(__('Update')) ?>
         </button>
     </form>
 </div>

@@ -42,7 +42,7 @@ $form = $block->getViewModel();
         indexingSubmit.on('click', function(e) {
             e.preventDefault();
             /** todo: enhance this prompt */
-            if(confirm('<?php echo $block->escapeJsQuote(__($form->getConfirmMessage())) ?>')) {
+            if(confirm('<?php echo $escaper->escapeJs(__($form->getConfirmMessage())) ?>')) {
                 indexingForm.submit();
             }
         });

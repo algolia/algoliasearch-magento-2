@@ -5,10 +5,10 @@
 $priceKey     = $block->getPriceKey();
 $currencyCode = $block->getCurrencyCode();
 
-$baseVar         = $block->escapeHtml('price' . $priceKey);
-$maxVar          = $block->escapeHtml('price' . $priceKey . '_max');
-$baseFormatedVar = $block->escapeHtml('price' . $priceKey . '_formated');
-$origFormatedVar = $block->escapeHtml('price' . $priceKey . '_original_formated');
+$baseVar         = $escaper->escapeHtml('price' . $priceKey);
+$maxVar          = $escaper->escapeHtml('price' . $priceKey . '_max');
+$baseFormatedVar = $escaper->escapeHtml('price' . $priceKey . '_formated');
+$origFormatedVar = $escaper->escapeHtml('price' . $priceKey . '_original_formated');
 
 ?>
 

@@ -3,7 +3,6 @@
 /** @var \Magento\Backend\Block\Template $block */
 /** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
-/** TODO:Reevaluate PHPCS ignores and enables/disables */
 
 $viewModel = $block->getViewModel();
 
@@ -24,6 +23,7 @@ if (preg_match('/algoliasearch_/', $section)) {
 ?>
 
 <script>
+<?php // The following is internally generated trusted content and can be ignored by PHPCS ?>
 var isClickAnalyticsEnabled = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($isClickAnalyticsEnabled); ?>;
 var linksAndVideoTemplate = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($linksAndVideoTemplate); ?>;
 var personalizationStatus = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($personalizationStatus); ?>;

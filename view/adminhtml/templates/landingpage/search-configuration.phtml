@@ -1,7 +1,7 @@
 <?php
 /** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\SearchConfiguration $block */
-/** TODO:Reevaluate PHPCS ignores and enables/disables */
+
 $configHelper = $block->getConfigHelper();
 $merchIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/illu-merchtool.svg');
 $starsIllustration = $block->getViewFileUrl('Algolia_AlgoliaSearch::images/icon-stars.svg');
@@ -117,9 +117,7 @@ $isConfig = [
                 {{/_highlightResult.sku.0}}
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
-            <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-            <td>{{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}</td>
-            <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
+            <td>{{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}</td>
             <td class="actions">
                 <div class="pin_block">
                     <a class="arrow up" href="#">
@@ -184,9 +182,7 @@ $isConfig = [
                 {{/_highlightResult.sku.0}}
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
-            <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-            <td>{{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}</td>
-            <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
+            <td>{{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}</td>
                 <td class="actions">
                     <div class="pin_block">
                         <a class="arrow up" href="#">
@@ -227,9 +223,7 @@ $isConfig = [
             {{/sku.0}}
         </td>
         <td>{{{ name }}}</td>
-        <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-        <td>{{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}</td>
-        <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
+        <td>{{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}</td>
             <td class="actions">
                 <div class="pin_block">
                     <a class="arrow up" href="#">
@@ -256,9 +250,7 @@ $isConfig = [
         <div class="info">
             {{{ _highlightResult.name.value }}}
             <div class="price">
-                <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-                {{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}
-                <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
+                {{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}
             </div>
         </div>
 
@@ -316,7 +308,7 @@ $isConfig = [
 
             algoliaAdminBundle.$(function ($) {
                 var storeId = $('select[name="store_id"]').val();
-                var config = <?=/** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */ json_encode($isConfig); ?>;
+                var config = JSON.parse('<?= $escaper->escapeJs(json_encode($isConfig)) ?>');
 
                 config.appId = config.indexDataByStoreIds[storeId].appId;
                 config.apiKey = config.indexDataByStoreIds[storeId].apiKey;

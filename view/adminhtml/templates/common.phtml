@@ -2,7 +2,6 @@
 /** @var \Magento\Backend\Block\Template $block */
 /** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
-/** TODO:Reevaluate PHPCS ignores and enables/disables */
 
 $viewModel = $block->getViewModel();
 
@@ -12,9 +11,9 @@ $ajaxCheckQuery = $block->getUrl('algolia_algoliasearch/query/checkQuery');
 $applicationId = $viewModel->getApplicationId();
 ?>
 <script>
-var applicationId = <?=/** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped */ json_encode($applicationId); ?>;
-var ajaxCheckUrl = <?=/** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped */ json_encode($ajaxCheckUrl); ?>;
-var ajaxCheckQuery = <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped */json_encode($ajaxCheckQuery); ?>;
+var applicationId = "<?= $escaper->escapeJs($applicationId) ?>";
+var ajaxCheckUrl = "<?= $escaper->escapeJs($ajaxCheckUrl) ?>";
+var ajaxCheckQuery = "<?= $escaper->escapeJs($ajaxCheckQuery) ?>";
 document.addEventListener("DOMContentLoaded", function(event) {
   requirejs([
     'jquery',

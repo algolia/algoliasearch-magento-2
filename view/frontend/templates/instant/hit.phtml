@@ -52,14 +52,14 @@ $origFormatedVar = $escaper->escapeHtml('price' . $priceKey . '_original_formate
 
                                 {{^<?= $escaper->escapeHtml($maxVar) ?>}}
                                 <div itemprop="offers" itemscope itemtype="http://schema.org/Offer" class="price">
-                                    <meta itemprop="price" content="{{<?= $escaper->escapeHtml($baseVar); ?>}}" />
+                                    <meta itemprop="price" content="{{<?= $escaper->escapeHtmlAttr($baseVar); ?>}}" />
                                 {{/<?= $escaper->escapeHtml($maxVar); ?>}}
                                 {{#<?= $escaper->escapeHtml($maxVar); ?>}}
                                 <div itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer" class="price">
-                                    <meta itemprop="lowPrice" content="{{<?= $escaper->escapeHtml($baseVar); ?>}}" />
-                                    <meta itemprop="highPrice" content="{{<?= $escaper->escapeHtml($maxVar); ?>}}" />
+                                    <meta itemprop="lowPrice" content="{{<?= $escaper->escapeHtmlAttr($baseVar); ?>}}" />
+                                    <meta itemprop="highPrice" content="{{<?= $escaper->escapeHtmlAttr($maxVar); ?>}}" />
                                 {{/<?= $escaper->escapeHtml($maxVar); ?>}}
-                                    <meta itemprop="priceCurrency" content="<?= $escaper->escapeHtml($currencyCode); ?>" />
+                                    <meta itemprop="priceCurrency" content="<?= $escaper->escapeHtmlAttr($currencyCode); ?>" />
                                     <div class="price-wrapper">
                                         <div>
 

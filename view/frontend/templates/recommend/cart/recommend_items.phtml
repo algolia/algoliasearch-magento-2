@@ -1,7 +1,6 @@
 <?php
 /** @var \Algolia\AlgoliaSearch\ViewModel\Recommend\Cart $block */
 /** @var \Magento\Framework\Escaper $escaper */
-/** TODO:Reevaluate PHPCS ignores and enables/disables */
 $viewModel = $block->getViewModel();
 $recommendConfig = $viewModel->getAlgoliaRecommendConfiguration();
 if (!empty($recommendConfig['enabledRelatedInCart']) || !empty($recommendConfig['enabledFBTInCart']) || !empty($recommendConfig['isTrendItemsEnabledInCartPage'])):
@@ -13,17 +12,15 @@ if (!empty($recommendConfig['enabledRelatedInCart']) || !empty($recommendConfig[
         <div id="trendItems" class="trendsItem recommend-component"></div>
         <div id="lookingSimilar" class="lookingSimilar recommend-component"></div>
     </div>
-    <!-- phpcs:disable Magento2.Security.EscapeOutput.OutputNotEscaped -->
     <script type="text/x-magento-init">
         {
             "*": {
                 "Algolia_AlgoliaSearch/js/recommend" : {
-                    "objectIDs" : <?= json_encode($cartItems) ?>
+                    "objectIDs" : JSON.parse('<?= $escaper->escapeJs(json_encode($cartItems)) ?>')
                 }
             }
         }
     </script>
-    <!-- phpcs:enable Magento2.Security.EscapeOutput.OutputNotEscaped -->
     <script type="text/x-magento-init">
         {
             "[data-role=tocart-form]": {

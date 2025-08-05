@@ -12,7 +12,7 @@ if ($isEnabled):
                 "Algolia_AlgoliaSearch/js/recommend" : {
                     "recommendLSContainer" : "<?= $escaper->escapeJs($lsContainer) ?>",
                     "numOfLookingSimilarItem" : "<?= $escaper->escapeJs($block->getData('numOfLookingSimilarItem')) ?>",
-                    "objectIDs" : <?= $escaper->escapeJs($block->getProductIds()) ?>
+                    "objectIDs" : JSON.parse('<?= $escaper->escapeJs($block->getProductIds()) ?>')
                 }
             }
         }

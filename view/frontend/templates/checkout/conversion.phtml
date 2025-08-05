@@ -1,11 +1,8 @@
 <?php
 /** @var \Magento\Framework\Escaper $escaper */
-/** TODO:Reevaluate PHPCS ignores and enables/disables */
 /** @var \Algolia\AlgoliaSearch\Block\Checkout\Conversion $block */
 $orderItemsJson = $block->getOrderItemsConversionJson();
 ?>
-<!-- phpcs:disable Magento2.Security.EscapeOutput.OutputNotEscaped -->
 <script type="text/javascript">
-    var algoliaOrderConversionJson = <?= $orderItemsJson ?>;
+    var algoliaOrderConversionJson = JSON.parse('<?= $escaper->escapeJs($orderItemsJson) ?>');
 </script>
-<!-- phpcs:enable Magento2.Security.EscapeOutput.OutputNotEscaped -->

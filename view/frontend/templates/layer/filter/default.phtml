@@ -5,7 +5,7 @@
             <?php if ($filterItem->getCount() > 0): ?>
                 <a href="<?= $escaper->escapeUrl($filterItem->getUrl()) ?>">
                     <?= $escaper->escapeHtml($filterItem->getLabel()) ?>
-                    <?php if ($this->helper('\Magento\Catalog\Helper\Data')->shouldDisplayProductCountOnLayer()): ?>
+                    <?php if ($block->helper('\Magento\Catalog\Helper\Data')->shouldDisplayProductCountOnLayer()): ?>
                         <span class="count"><?= $escaper->escapeHtml($filterItem->getCount()) ?><span class="filter-count-label">
                             <?php if ($filterItem->getCount() == 1):?> <?= $escaper->escapeHtml(__('item')) ?>
                             <?php else:?> <?= $escaper->escapeHtml(__('items')) ?><?php endif; ?></span></span>
@@ -13,7 +13,7 @@
                 </a>
             <?php else:?>
                 <?= $escaper->escapeHtml($filterItem->getLabel()) ?>
-                <?php if ($this->helper('\Magento\Catalog\Helper\Data')->shouldDisplayProductCountOnLayer()): ?>
+                <?php if ($block->helper('\Magento\Catalog\Helper\Data')->shouldDisplayProductCountOnLayer()): ?>
                     <span class="count"><?= $escaper->escapeHtml($filterItem->getCount()) ?><span class="filter-count-label">
                         <?php if ($filterItem->getCount() == 1):?><?= $escaper->escapeHtml(__('item')) ?>
                         <?php else:?><?= $escaper->escapeHtml(__('items')) ?><?php endif; ?></span></span>

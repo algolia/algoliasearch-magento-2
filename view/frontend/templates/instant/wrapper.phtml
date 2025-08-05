@@ -3,11 +3,11 @@
 <!-- Wrapping template -->
 <script type="text/template" id="instant_wrapper_template">
     <div id="algolia_instant_selector"
-         class="<?= $block->escapeHtml($block->hasFacets() ? ' with-facets' : ''); ?>">
+         class="<?= $escaper->escapeHtml($block->hasFacets() ? ' with-facets' : ''); ?>">
         <div class="row">
             <div class="col-md-3" id="algolia-left-container">
                 <div id="refine-toggle" class="visible-xs visible-sm">
-                    + <?= $block->escapeHtml(__('Refine')); ?>
+                    + <?= $escaper->escapeHtml(__('Refine')); ?>
                 </div>
                 <div class="hidden-xs hidden-sm" id="instant-search-facets-container">
                     <div id="clear-refinements"></div>
@@ -32,7 +32,7 @@
                                 <div class="pull-left" id="algolia-stats"></div>
                                 <div class="pull-right">
                                     <div class="sort-by-label pull-left">
-                                        <?= $block->escapeHtml(__('SORT BY')); ?> &nbsp;
+                                        <?= $escaper->escapeHtml(__('SORT BY')); ?> &nbsp;
                                     </div>
                                     <div class="pull-left" id="algolia-sorts"></div>
                                 </div>

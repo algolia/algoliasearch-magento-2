@@ -1,15 +1,15 @@
 <?php
 /** @var \Magento\Framework\Escaper $escaper */
 /** TODO:Reevaluate PHPCS ignores and enables/disables */
-$datascope = $this->getFilter()->getRequestVar() . 'Filter';
+$datascope = $block->getFilter()->getRequestVar() . 'Filter';
 ?>
-<?php if (!empty($filterItems)) : ?>
+<?php if (!empty($filterItems)): ?>
     <div data-bind="scope: '<?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped */$datascope; ?>'">
         <!-- ko template: getTemplate() --> <!-- /ko -->
     </div>
     <!-- phpcs:disable Magento2.Security.EscapeOutput.OutputNotEscaped -->
     <script type="text/x-magento-init">
-    {"*" : {"Magento_Ui/js/core/app": {"components": {"<?= $datascope; ?>": <?= $this->getJsLayout(); ?>}}}}
+    {"*" : {"Magento_Ui/js/core/app": {"components": {"<?= $datascope; ?>": <?= $block->getJsLayout(); ?>}}}}
     </script>
     <!-- phpcs:enable Magento2.Security.EscapeOutput.OutputNotEscaped -->
 

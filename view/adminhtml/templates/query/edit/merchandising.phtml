@@ -165,9 +165,9 @@ $isConfig = [
             {{{ _highlightResult.name.value }}}
             <div class="price">
                 <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-				{{ price.<?= $currencyCode ?>.default_formated }}
+                {{ price.<?= $currencyCode ?>.default_formated }}
                 <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
-			</div>
+            </div>
         </div>
 
         <a href="#" class="pinIt">
@@ -300,7 +300,7 @@ $isConfig = [
                             source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
                             name: 'products',
                             templates: {
-                            	header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
+                                header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
                                 suggestion: function (hit) {
                                     return template.render(hit);
                                 }
@@ -310,19 +310,19 @@ $isConfig = [
                     $('#algolia_merchandising_autocomplete')
                         .autocomplete({ debug: false, hint: false }, sources)
                         .on('autocomplete:selected', function (e, suggestion) {
-                        	var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
+                            var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
 
-                        	if ($existingRow.length > 0) {
-                        		var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
-                        		$existingRow.insertBefore($firstRow);
+                            if ($existingRow.length > 0) {
+                                var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+                                $existingRow.insertBefore($firstRow);
                             }
                             else {
-                	            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
-                		            newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
-                		            rowHtml = newRowTemplate.render(suggestion);
+                                var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+                                    newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+                                    rowHtml = newRowTemplate.render(suggestion);
 
-                	            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
-                	            $('.algolia_merchandising_items_table tbody tr').last().remove();
+                                $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+                                $('.algolia_merchandising_items_table tbody tr').last().remove();
                             }
 
                             var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();

@@ -34,7 +34,7 @@ $view = $block->getViewModel();
                     <div class="stat"><?= $escaper->escapeHtml($view->getTotalResultRates()) ?></div>
                 </div>
             </div>
-            <?php if ($view->isClickAnalyticsEnabled()) : ?>
+            <?php if ($view->isClickAnalyticsEnabled()): ?>
                 <div class="row thirds top-thirds">
                     <div class="one-third col-1">
                         <div class="title">
@@ -109,7 +109,7 @@ $view = $block->getViewModel();
                     </h3>
                 </div>
                 <div class="analytics-content">
-                    <?php if (count($view->getTopSearches())) : ?>
+                    <?php if (count($view->getTopSearches())): ?>
                         <table class="data-table admin__table-primary">
                             <thead>
                             <tr class="headings">
@@ -118,7 +118,7 @@ $view = $block->getViewModel();
                             </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($view->getTopSearches() as $search) : ?>
+                            <?php foreach ($view->getTopSearches() as $search): ?>
                                 <tr>
                                     <td><?= $search['search'] ?: '<i class="empty_search">' . $escaper->escapeHtml(__('empty search')) . '</i>'; ?></td>
                                     <td><?= $escaper->escapeHtml($search['count']) ?></td>
@@ -126,7 +126,7 @@ $view = $block->getViewModel();
                             <?php endforeach ?>
                             </tbody>
                         </table>
-                    <?php else : ?>
+                    <?php else: ?>
                         <p class="no-data"><?= $escaper->escapeHtml(__('No searches yet!')); ?></p>
                     <?php endif ?>
                 </div>
@@ -141,7 +141,7 @@ $view = $block->getViewModel();
                     </h3>
                 </div>
                 <div class="analytics-content">
-                    <?php if (count($view->getPopularResults())) : ?>
+                    <?php if (count($view->getPopularResults())): ?>
                         <table class="data-table admin__table-primary">
                             <thead>
                             <tr class="headings">
@@ -150,11 +150,11 @@ $view = $block->getViewModel();
                             </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($view->getPopularResults() as $search) : ?>
+                            <?php foreach ($view->getPopularResults() as $search): ?>
                                 <tr>
                                     <td>
                                         <?php $link = $view->getTypeEditUrl($search); ?>
-                                        <?php foreach ($link as $type => $url) : ?>
+                                        <?php foreach ($link as $type => $url): ?>
                                             <a href="<?= $escaper->escapeUrl($url) ?>"<?= ($type == 'view' ? ' target="_blank"' : '') ?>>
                                                 <?= $escaper->escapeHtml(ucfirst($type)); ?>
                                             </a> |
@@ -166,7 +166,7 @@ $view = $block->getViewModel();
                             <?php endforeach ?>
                             </tbody>
                         </table>
-                    <?php else : ?>
+                    <?php else: ?>
                         <p class="no-data"><?= $escaper->escapeHtml(__('No results yet!')); ?></p>
                     <?php endif ?>
                 </div>
@@ -181,7 +181,7 @@ $view = $block->getViewModel();
                     </h3>
                 </div>
                 <div class="analytics-content">
-                    <?php if (count($view->getNoResultSearches())) : ?>
+                    <?php if (count($view->getNoResultSearches())): ?>
                         <table class="data-table admin__table-primary">
                             <thead>
                             <tr class="headings">
@@ -190,7 +190,7 @@ $view = $block->getViewModel();
                             </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($view->getNoResultSearches() as $search) : ?>
+                            <?php foreach ($view->getNoResultSearches() as $search): ?>
                                 <tr>
                                     <td><?= $search['search'] ?: '<i class="empty_search">' . $escaper->escapeHtml(__('empty search')) . '</i>'; ?></td>
                                     <td class="a-right"><?= $escaper->escapeHtml($search['count']) ?></td>
@@ -198,7 +198,7 @@ $view = $block->getViewModel();
                             <?php endforeach ?>
                             </tbody>
                         </table>
-                    <?php else : ?>
+                    <?php else: ?>
                         <p class="no-data"><?= $escaper->escapeHtml(__('No results yet!')); ?></p>
                     <?php endif ?>
                 </div>
@@ -209,7 +209,7 @@ $view = $block->getViewModel();
         </div>
     </div>
 
-<?php if (!$view->isClickAnalyticsEnabled()) : ?>
+<?php if (!$view->isClickAnalyticsEnabled()): ?>
     <div class="algolia_block blue icon-stars">
         Enhance your Analytics with <b>Algolia Click Analytics</b> that provide you even more insights
         like Click-through Rate, Conversion Rate from searches and average click position.

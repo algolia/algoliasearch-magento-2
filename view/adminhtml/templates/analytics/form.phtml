@@ -11,7 +11,7 @@ $form = $block->getViewModel();
         <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>" />
         <div class="inline-field">
             <select name="type" class="select admin__control-select"<?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>>
-                <?php foreach ($form->getSections() as $key => $section) : ?>
+                <?php foreach ($form->getSections() as $key => $section): ?>
                     <option value="<?= $escaper->escapeHtmlAttr($key) ?>"<?= ($key == $form->getFormValue('type')) ? ' selected' : '' ?>>
                         <?= $escaper->escapeHtml(ucwords($key)) ?>
                     </option>

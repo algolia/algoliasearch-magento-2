@@ -13,7 +13,7 @@ $form = $block->getViewModel();
         </div>
         <div class="inline-field">
             Store(s): <select name="store_id" class="select admin__control-select">
-                <?php foreach ($form->getStores() as $key => $section) : ?>
+                <?php foreach ($form->getStores() as $key => $section): ?>
                     <option value="<?= $escaper->escapeHtmlAttr($key) ?>"<?= $escaper->escapeHtmlAttr(($key == $form->getFormValue('store_id')) ? ' selected' : '') ?>>
                         <?= $escaper->escapeHtml(ucwords($section)) ?>
                     </option>
@@ -22,7 +22,7 @@ $form = $block->getViewModel();
         </div>
         <div class="inline-field">
             Entities: <select name="entity" class="select admin__control-select">
-                <?php foreach ($form->getEntities() as $key => $section) : ?>
+                <?php foreach ($form->getEntities() as $key => $section): ?>
                     <option value="<?= $escaper->escapeHtmlAttr($key) ?>"<?=$escaper->escapeHtmlAttr(($key == $form->getFormValue('entity')) ? ' selected' : '') ?>>
                         <?= $escaper->escapeHtml(ucwords($section)) ?>
                     </option>

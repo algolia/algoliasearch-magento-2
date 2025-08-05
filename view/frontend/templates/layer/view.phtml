@@ -14,7 +14,7 @@ if ($block->canShowBlock()) : ?>
                     <a href="<?php /* @escapeNotVerified */ echo $block->getClearUrl() ?>" class="action clear filter-clear"><span><?php /* @escapeNotVerified */ echo __('Clear All') ?></span></a>
                 </div>
             <?php endif; ?>
-            <?php echo $block->getChildHtml('state') ?>
+            <?= $block->getChildHtml('state') ?>
 
             <?php $wrapOptions = false; ?>
             <?php $range = implode(' ', range(0, count($block->getFilters()))); ?>

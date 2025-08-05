@@ -7,96 +7,96 @@ $job = $block->getCurrentJob();
 <div class="admin__fieldset-wrapper opened algolia-setup-fieldset">
     <div class="admin__fieldset-wrapper-title">
         <strong class="title">
-            <span><?php echo $block->escapeHtml(__('Job Informations')); ?></span>
+            <span><?= $block->escapeHtml(__('Job Informations')); ?></span>
         </strong>
     </div>
     <div class="admin__fieldset-wrapper-content">
         <fieldset class="admin__fieldset">
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Job Id')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Job Id')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getId()); ?>
+                        <?= $block->escapeHtml($job->getId()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('PID')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('PID')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getPid()); ?>
+                        <?= $block->escapeHtml($job->getPid()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Created')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Created')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getCreated()); ?>
+                        <?= $block->escapeHtml($job->getCreated()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Status')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Status')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getStatus()); ?>
+                        <?= $block->escapeHtml($job->getStatus()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Class')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Class')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getClass()); ?>
+                        <?= $block->escapeHtml($job->getClass()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Method')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Method')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getMethod()); ?>
+                        <?= $block->escapeHtml($job->getMethod()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Data')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Data')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getData('data')); ?>
+                        <?= $block->escapeHtml($job->getData('data')); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Max retries')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Max retries')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getMaxRetries()); ?>
+                        <?= $block->escapeHtml($job->getMaxRetries()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Retries')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Retries')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getRetries()); ?>
+                        <?= $block->escapeHtml($job->getRetries()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Data Size')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Data Size')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getDataSize()); ?>
+                        <?= $block->escapeHtml($job->getDataSize()); ?>
                     </div>
                 </div>
             </div>
             <div class="admin__field">
-                <label class="admin__field-label"><span><?php echo $block->escapeHtml(__('Error Log')); ?></span></label>
+                <label class="admin__field-label"><span><?= $block->escapeHtml(__('Error Log')); ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?php echo $block->escapeHtml($job->getErrorLog()); ?>
+                        <?= $block->escapeHtml($job->getErrorLog()); ?>
                     </div>
                 </div>
             </div>

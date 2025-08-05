@@ -33,7 +33,7 @@ $configHelper = $block->getConfigHelper();
     <div class="algolia_block icon-stars">
         To merchandise products using Algolia
         you need to enable <strong>Instant search</strong> with <strong>Replace category pages</strong> feature.
-        You can do it in Algolia's <a href="<?php echo $block->escapeUrl($instantSearchLink) ?>" target="_blank">Instant Search configuration</a>.
+        You can do it in Algolia's <a href="<?= $block->escapeUrl($instantSearchLink) ?>" target="_blank">Instant Search configuration</a>.
         <br><br>
         <strong>Instant search</strong> with enabled <strong>Replace category pages</strong> feature gives your customers a great experience
         while browsing your catalog. It enables your customers to search and filter for products at real time resulting
@@ -43,7 +43,7 @@ $configHelper = $block->getConfigHelper();
 
     <?php return; endif; ?>
 
-<div class="algolia_block display-product-msg icon-warning" <?php echo !$block->canDisplayProducts() ?: 'style="display:none;"' ?>>
+<div class="algolia_block display-product-msg icon-warning" <?= !$block->canDisplayProducts() ?: 'style="display:none;"' ?>>
     <p><strong>Products are not displayed for this category</strong></p>
     <p>Please note that you've selected "Static block only" in Display Settings. Since no products are shown on the page, changes you make with Algolia Merchandising won't be visible to your customers.</p>
 </div>

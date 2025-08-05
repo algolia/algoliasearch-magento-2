@@ -5,31 +5,31 @@
 $view = $block->getViewModel();
 ?>
 
-<?php echo $view->getMessagesHtml(); ?>
+<?= $view->getMessagesHtml(); ?>
 
     <div class="algoliasearch-analytics-overview">
         <div class="row section">
-            <strong><?php echo $escaper->escapeHtml(__('Viewing index:')); ?></strong> <?= $escaper->escapeHtml($view->getIndexName())?>
+            <strong><?= $escaper->escapeHtml(__('Viewing index:')); ?></strong> <?= $escaper->escapeHtml($view->getIndexName())?>
         </div>
         <div class="row section">
             <div class="row thirds top-thirds">
                 <div class="one-third col-1">
                     <div class="title">
-                        <h4><?php echo $escaper->escapeHtml(__('Total searches')) ?>
-                            <?php echo $view->getTooltipHtml(__('How many searches were performed. As-you-type searches are aggregated (the queries i, ip, ipa, ipad count as one search).')) ?>
+                        <h4><?= $escaper->escapeHtml(__('Total searches')) ?>
+                            <?= $view->getTooltipHtml(__('How many searches were performed. As-you-type searches are aggregated (the queries i, ip, ipa, ipad count as one search).')) ?>
                         </h4>
                     </div>
                     <div class="stat"><?= $escaper->escapeHtml($view->getTotalCountOfSearches()) ?></div>
                 </div>
                 <div class="one-third col-2">
-                    <h4><?php echo $escaper->escapeHtml(__('Users')) ?>
-                        <?php echo $view->getTooltipHtml(__('How many unique users performed a search.')); ?>
+                    <h4><?= $escaper->escapeHtml(__('Users')) ?>
+                        <?= $view->getTooltipHtml(__('How many unique users performed a search.')); ?>
                     </h4>
                     <div class="stat"><?= $escaper->escapeHtml($view->getTotalUsersCount()) ?></div>
                 </div>
                 <div class="one-third col-3">
-                    <h4><?php echo $escaper->escapeHtml(__('No results rate')) ?>
-                        <?php echo $view->getTooltipHtml(__('Percentage of searches that retrieved 0 results. A lower percentage is better.')); ?>
+                    <h4><?= $escaper->escapeHtml(__('No results rate')) ?>
+                        <?= $view->getTooltipHtml(__('Percentage of searches that retrieved 0 results. A lower percentage is better.')); ?>
                     </h4>
                     <div class="stat"><?= $escaper->escapeHtml($view->getTotalResultRates()) ?></div>
                 </div>
@@ -38,57 +38,57 @@ $view = $block->getViewModel();
                 <div class="row thirds top-thirds">
                     <div class="one-third col-1">
                         <div class="title">
-                            <h4><?php echo $escaper->escapeHtml(__('Conversion rate')) ?>
-                                <?php echo $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.', $view->getAnalyticsConfigurationUrl())) ?>
+                            <h4><?= $escaper->escapeHtml(__('Conversion rate')) ?>
+                                <?= $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful conversion. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.', $view->getAnalyticsConfigurationUrl())) ?>
                             </h4>
                         </div>
                         <?php $conversion = $view->getConversionRate() ?>
                         <div class="stat"><?= $escaper->escapeHtml(($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'); ?></div>
-                        <div class="sub"><?php echo $escaper->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
+                        <div class="sub"><?= $escaper->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
                     </div>
                     <div class="one-third col-2">
                         <div class="title">
                             <h4>
-                                <?php echo $escaper->escapeHtml(__('Conversion - Add To Cart')) ?>
-                                <?php echo $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful add to cart. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.', $view->getAnalyticsConfigurationUrl())) ?>
+                                <?= $escaper->escapeHtml(__('Conversion - Add To Cart')) ?>
+                                <?= $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful add to cart. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.', $view->getAnalyticsConfigurationUrl())) ?>
                             </h4>
                         </div>
                         <?php $conversion = $view->getConversionRateAddToCart() ?>
                         <div class="stat"><?= $escaper->escapeHtml(($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'); ?></div>
-                        <div class="sub"><?php echo $escaper->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
+                        <div class="sub"><?= $escaper->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
                     </div>
                     <div class="one-third col-3">
                         <div class="title">
                             <h4>
-                                <?php echo $escaper->escapeHtml(__('Conversion - Place Order')) ?>
-                                <?php echo $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful purchase. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.', $view->getAnalyticsConfigurationUrl())) ?>
+                                <?= $escaper->escapeHtml(__('Conversion - Place Order')) ?>
+                                <?= $view->getTooltipHtml(__('Percentage of tracked searches (searches with clickAnalytics=true) where you signaled to us that it led to a successful purchase. Settings to determine conversion can be found in your <a href="%1">Magento Algolia Configuration</a> for Click Analytics.', $view->getAnalyticsConfigurationUrl())) ?>
                             </h4>
                         </div>
                         <?php $conversion = $view->getConversionRatePlaceOrder() ?>
                         <div class="stat"><?= $escaper->escapeHtml(($conversion['rate'] ? round($conversion['rate'] * 100, 2) : 0) . '%'); ?></div>
-                        <div class="sub"><?php echo $escaper->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
+                        <div class="sub"><?= $escaper->escapeHtml(__('from %1 tracked searches', $conversion['trackedSearchCount'])) ?></div>
                     </div>
                 </div>
                 <div class="row thirds top-thirds">
                     <div class="one-third col-1">
                         <div class="title">
-                            <h4><?php echo $escaper->escapeHtml(__('CTR')) ?>
-                                <?php echo $view->getTooltipHtml(__('Click-Through Rate: percentage of tracked searches (searches with clickAnalytics=true) where at least one results was clicked on by the user.')) ?>
+                            <h4><?= $escaper->escapeHtml(__('CTR')) ?>
+                                <?= $view->getTooltipHtml(__('Click-Through Rate: percentage of tracked searches (searches with clickAnalytics=true) where at least one results was clicked on by the user.')) ?>
                             </h4>
                         </div>
                         <?php $ctr = $view->getClickThroughRate() ?>
                         <div class="stat"><?= $escaper->escapeHtml(($ctr['rate'] ? round($ctr['rate'] * 100, 2) : 0) . '%'); ?></div>
-                        <div class="sub"><?php echo $escaper->escapeHtml(__('from %1 tracked searches', $ctr['trackedSearchCount'])) ?></div>
+                        <div class="sub"><?= $escaper->escapeHtml(__('from %1 tracked searches', $ctr['trackedSearchCount'])) ?></div>
                     </div>
                     <div class="one-third col-2">
                         <div class="title">
-                            <h4><?php echo $escaper->escapeHtml(__('Click position')) ?>
-                                <?php echo $view->getTooltipHtml(__('Average position of the clicks performed on the search results. A value of one would mean all users clicked on the first results. Smaller values are better.')) ?>
+                            <h4><?= $escaper->escapeHtml(__('Click position')) ?>
+                                <?= $view->getTooltipHtml(__('Average position of the clicks performed on the search results. A value of one would mean all users clicked on the first results. Smaller values are better.')) ?>
                             </h4>
                         </div>
                         <?php $click = $view->getClickPosition() ?>
                         <div class="stat"><?= $escaper->escapeHtml($click['average'] ? round($click['average'], 2) : 0); ?></div>
-                        <div class="sub"><?php echo $escaper->escapeHtml(__('from %1 tracked clicks', $click['clickCount'])) ?></div>
+                        <div class="sub"><?= $escaper->escapeHtml(__('from %1 tracked clicks', $click['clickCount'])) ?></div>
                     </div>
                     <div class="one-third col-3"></div>
                 </div>
@@ -96,16 +96,16 @@ $view = $block->getViewModel();
         </div>
         <div class="row section daily-search-section">
             <div class="title">
-                <h3><?php echo $escaper->escapeHtml(__('Daily searches')) ?></h3>
-                <div class="total-search"><?php echo $escaper->escapeHtml(__('Total searches')) ?> <span class="count"><?= $escaper->escapeHtml($view->getTotalCountOfSearches()) ?></span></div>
+                <h3><?= $escaper->escapeHtml(__('Daily searches')) ?></h3>
+                <div class="total-search"><?= $escaper->escapeHtml(__('Total searches')) ?> <span class="count"><?= $escaper->escapeHtml($view->getTotalCountOfSearches()) ?></span></div>
             </div>
-            <?php echo $view->getDailyChartHtml(); ?>
+            <?= $view->getDailyChartHtml(); ?>
         </div>
         <div class="row thirds analytics-searches">
             <div class="one-third section popular-searches">
                 <div class="title">
-                    <h3><?php echo $escaper->escapeHtml(__('Popular searches')) ?>
-                        <?php echo $view->getTooltipHtml(__('Searches performed the more often by your users.')) ?>
+                    <h3><?= $escaper->escapeHtml(__('Popular searches')) ?>
+                        <?= $view->getTooltipHtml(__('Searches performed the more often by your users.')) ?>
                     </h3>
                 </div>
                 <div class="analytics-content">
@@ -113,31 +113,31 @@ $view = $block->getViewModel();
                         <table class="data-table admin__table-primary">
                             <thead>
                             <tr class="headings">
-                                <th><?php echo $escaper->escapeHtml(__('Query')) ?></th>
-                                <th><?php echo $escaper->escapeHtml(__('Count')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Query')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Count')) ?></th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php foreach ($view->getTopSearches() as $search) : ?>
                                 <tr>
-                                    <td><?php echo $search['search'] ?: '<i class="empty_search">' . $escaper->escapeHtml(__('empty search')) . '</i>'; ?></td>
+                                    <td><?= $search['search'] ?: '<i class="empty_search">' . $escaper->escapeHtml(__('empty search')) . '</i>'; ?></td>
                                     <td><?= $escaper->escapeHtml($search['count']) ?></td>
                                 </tr>
                             <?php endforeach ?>
                             </tbody>
                         </table>
                     <?php else : ?>
-                        <p class="no-data"><?php echo $escaper->escapeHtml(__('No searches yet!')); ?></p>
+                        <p class="no-data"><?= $escaper->escapeHtml(__('No searches yet!')); ?></p>
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/popular/" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?php echo $escaper->escapeHtml(__('See more searches')) ?></a>
+                    <a href="https://www.algolia.com/analytics/popular/" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?= $escaper->escapeHtml(__('See more searches')) ?></a>
                 </div>
             </div>
             <div class="one-third section popular-results">
                 <div class="title">
-                    <h3><?php echo $escaper->escapeHtml(__('Popular results')) ?>
-                        <?php echo $view->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
+                    <h3><?= $escaper->escapeHtml(__('Popular results')) ?>
+                        <?= $view->getTooltipHtml(__('Results the most often displayed on the results list after a search.')) ?>
                     </h3>
                 </div>
                 <div class="analytics-content">
@@ -145,8 +145,8 @@ $view = $block->getViewModel();
                         <table class="data-table admin__table-primary">
                             <thead>
                             <tr class="headings">
-                                <th><?php echo $escaper->escapeHtml(__('Results')) ?></th>
-                                <th class="a-right"><?php echo $escaper->escapeHtml(__('Impressions')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Results')) ?></th>
+                                <th class="a-right"><?= $escaper->escapeHtml(__('Impressions')) ?></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -155,7 +155,7 @@ $view = $block->getViewModel();
                                     <td>
                                         <?php $link = $view->getTypeEditUrl($search); ?>
                                         <?php foreach ($link as $type => $url) : ?>
-                                            <a href="<?= $escaper->escapeUrl($url) ?>"<?php echo ($type == 'view' ? ' target="_blank"' : '') ?>>
+                                            <a href="<?= $escaper->escapeUrl($url) ?>"<?= ($type == 'view' ? ' target="_blank"' : '') ?>>
                                                 <?= $escaper->escapeHtml(ucfirst($type)); ?>
                                             </a> |
                                         <?php endforeach ?>
@@ -167,17 +167,17 @@ $view = $block->getViewModel();
                             </tbody>
                         </table>
                     <?php else : ?>
-                        <p class="no-data"><?php echo $escaper->escapeHtml(__('No results yet!')); ?></p>
+                        <p class="no-data"><?= $escaper->escapeHtml(__('No results yet!')); ?></p>
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/popular/" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?php echo $escaper->escapeHtml(__('See more results')) ?></a>
+                    <a href="https://www.algolia.com/analytics/popular/" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?= $escaper->escapeHtml(__('See more results')) ?></a>
                 </div>
             </div>
             <div class="one-third section no-result-searches">
                 <div class="title">
-                    <h3><?php echo $escaper->escapeHtml(__('No result searches')) ?>
-                        <?php echo $view->getTooltipHtml(__("Searches that retrieved 0 results, either because a word didn't match, or because some filters excluded all of the matching results. <br/> <br/>A search with no results can often be optimized by improving keywords used in the dataset, or by adding synonyms.")); ?>
+                    <h3><?= $escaper->escapeHtml(__('No result searches')) ?>
+                        <?= $view->getTooltipHtml(__("Searches that retrieved 0 results, either because a word didn't match, or because some filters excluded all of the matching results. <br/> <br/>A search with no results can often be optimized by improving keywords used in the dataset, or by adding synonyms.")); ?>
                     </h3>
                 </div>
                 <div class="analytics-content">
@@ -185,25 +185,25 @@ $view = $block->getViewModel();
                         <table class="data-table admin__table-primary">
                             <thead>
                             <tr class="headings">
-                                <th><<?php echo $escaper->escapeHtml(__('Query')) ?></th>
-                                <th class="a-right"><?php echo $escaper->escapeHtml(__('Count')) ?></th>
+                                <th><<?= $escaper->escapeHtml(__('Query')) ?></th>
+                                <th class="a-right"><?= $escaper->escapeHtml(__('Count')) ?></th>
                             </tr>
                             </thead>
                             <tbody>
                             <?php foreach ($view->getNoResultSearches() as $search) : ?>
                                 <tr>
-                                    <td><?php echo $search['search'] ?: '<i class="empty_search">' . $escaper->escapeHtml(__('empty search')) . '</i>'; ?></td>
+                                    <td><?= $search['search'] ?: '<i class="empty_search">' . $escaper->escapeHtml(__('empty search')) . '</i>'; ?></td>
                                     <td class="a-right"><?= $escaper->escapeHtml($search['count']) ?></td>
                                 </tr>
                             <?php endforeach ?>
                             </tbody>
                         </table>
                     <?php else : ?>
-                        <p class="no-data"><?php echo $escaper->escapeHtml(__('No results yet!')); ?></p>
+                        <p class="no-data"><?= $escaper->escapeHtml(__('No results yet!')); ?></p>
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/no-results/" class="algoliasearch-admin-icon as-icon-new-window" target="_blank"><?php echo $escaper->escapeHtml(__('See more no results searches')) ?></a>
+                    <a href="https://www.algolia.com/analytics/no-results/" class="algoliasearch-admin-icon as-icon-new-window" target="_blank"><?= $escaper->escapeHtml(__('See more no results searches')) ?></a>
                 </div>
             </div>
         </div>

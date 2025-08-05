@@ -41,7 +41,7 @@ $isConfig = [
             <p>2. Pre-select applicable filters, for example a price range that is interesting to your customers.</p>
         </div>
         <div class="col-middle">
-            <img src="<?php echo $escaper->escapeUrl($merchIllustration); ?>"/>
+            <img src="<?= $escaper->escapeUrl($merchIllustration); ?>"/>
         </div>
         <div class="col-right">
             <p>3. You can see which products (and in what order) will be shown on the final landing page. If you're on Algolia's higher plans, you may manually set specific order of products, promote or demote as desired.</p>
@@ -118,7 +118,7 @@ $isConfig = [
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
             <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-            <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+            <td>{{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}</td>
             <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
             <td class="actions">
                 <div class="pin_block">
@@ -185,7 +185,7 @@ $isConfig = [
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
             <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-            <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+            <td>{{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}</td>
             <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
                 <td class="actions">
                     <div class="pin_block">
@@ -228,7 +228,7 @@ $isConfig = [
         </td>
         <td>{{{ name }}}</td>
         <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-        <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+        <td>{{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}</td>
         <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
             <td class="actions">
                 <div class="pin_block">
@@ -257,7 +257,7 @@ $isConfig = [
             {{{ _highlightResult.name.value }}}
             <div class="price">
                 <!-- phpcs:disable Magento2.Security.XssTemplate.FoundUnescaped -->
-                {{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}
+                {{ price.<?= $configHelper->getCurrencyCode() ?>.default_formated }}
                 <!-- phpcs:enable Magento2.Security.XssTemplate.FoundUnescaped -->
             </div>
         </div>

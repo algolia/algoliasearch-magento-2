@@ -7,7 +7,8 @@ use Magento\Framework\App\Config\Value;
 
 class QueueCron extends Value
 {
-    const CRON_REGEX = '/^(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)$/';
+    const CRON_FORMAT_REGEX = '/^(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)$/';
+    const CRON_DISALLOW_REGEX = '/[^@a-z0-9\*\-,\/ ]/';
 
     protected array $mappings = [
         '@yearly' => '0 0 1 1 *',
@@ -27,8 +28,19 @@ class QueueCron extends Value
             $this->setValue($value);
         }
 
-        if (!preg_match(self::CRON_REGEX, $value)) {
-            throw new InvalidCronException("Cron expression \"$value\" is not valid.");
+        if (!preg_match(self::CRON_FORMAT_REGEX, $value)) {
+            // This use of preg_replace is safe — static regex without /e modifier.
+            // phpcs:ignore
+            $safeValue = preg_replace(self::CRON_DISALLOW_REGEX, '', (string) $value);
+            $msg = ($safeValue !== $value)
+                ? 'Cron expression is invalid.'
+                : sprintf(
+                    'Cron expression "%s" is not valid.',
+                    htmlspecialchars($safeValue, ENT_QUOTES, 'UTF-8')
+                );
+            // Content is already escaped at this point
+            // phpcs:ignore
+            throw new InvalidCronException($msg);
         }
 
         return parent::beforeSave();

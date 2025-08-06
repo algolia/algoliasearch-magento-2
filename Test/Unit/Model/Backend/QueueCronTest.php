@@ -31,7 +31,7 @@ class QueueCronTest extends TestCase
     /**
      * @dataProvider valuesProvider
      */
-    public function testInput($value, $isValid): void
+    public function testInput($value, $isValid, $canReplay = true): void
     {
         $this->queueCronModel->setValue($value);
 
@@ -45,8 +45,11 @@ class QueueCronTest extends TestCase
                 "Cron expression \"$value\" is not valid but it should be."
             );
 
+            $msg = $canReplay
+                ? "Cron expression \"$value\" is not valid."
+                : "Cron expression is invalid.";
             $this->assertEquals(
-                "Cron expression \"$value\" is not valid.",
+                $msg,
                 $exception->getMessage()
             );
         }
@@ -94,6 +97,11 @@ class QueueCronTest extends TestCase
             [
                 'value' => '@foo', // Not working alias
                 'isValid' => false
+            ],
+            [
+                'value' => '"><script>alert(\'XSS\')</script>',
+                'isValid' => false,
+                'canReplay' => false
             ]
         ];
     }

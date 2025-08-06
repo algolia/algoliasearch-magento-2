@@ -1,13 +1,14 @@
 <?php
-$datascope = $this->getFilter()->getRequestVar() . 'Filter';
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$datascope = $block->getFilter()->getRequestVar() . 'Filter';
 ?>
-<?php if (!empty($filterItems)) : ?>
-    <div data-bind="scope: '<?php echo /* @escapeNotVerified */ $datascope; ?>'">
+<?php if (!empty($filterItems)): ?>
+    <div data-bind="scope: '<?= $escaper->escapeHtmlAttr($datascope) ?>'">
         <!-- ko template: getTemplate() --> <!-- /ko -->
     </div>
-
     <script type="text/x-magento-init">
-    {"*" : {"Magento_Ui/js/core/app": {"components": {"<?php echo /* @escapeNotVerified */ $datascope; ?>": <?php echo /* @escapeNotVerified */ $this->getJsLayout(); ?>}}}}
+    {"*" : {"Magento_Ui/js/core/app": {"components": {"<?= $escaper->escapeJs($datascope) ?>": JSON.parse('<?= $escaper->escapeJs($block->getJsLayout()) ?>')}}}}
     </script>
-
 <?php endif; ?>

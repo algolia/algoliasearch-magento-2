@@ -1,7 +1,8 @@
 <?php
 /** @var \Magento\Backend\Block\Template $block */
-
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Common $viewModel */
+
 $viewModel = $block->getViewModel();
 
 $ajaxCheckUrl = $block->getUrl('algolia_algoliasearch/landingpage/checkUrl');
@@ -10,9 +11,9 @@ $ajaxCheckQuery = $block->getUrl('algolia_algoliasearch/query/checkQuery');
 $applicationId = $viewModel->getApplicationId();
 ?>
 <script>
-var applicationId = <?php echo json_encode($applicationId); ?>;
-var ajaxCheckUrl = <?php echo json_encode($ajaxCheckUrl); ?>;
-var ajaxCheckQuery = <?php echo json_encode($ajaxCheckQuery); ?>;
+var applicationId = "<?= $escaper->escapeJs($applicationId) ?>";
+var ajaxCheckUrl = "<?= $escaper->escapeJs($ajaxCheckUrl) ?>";
+var ajaxCheckQuery = "<?= $escaper->escapeJs($ajaxCheckQuery) ?>";
 document.addEventListener("DOMContentLoaded", function(event) {
   requirejs([
     'jquery',

@@ -1,6 +1,7 @@
 <?php
 
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Category\Merchandising $block */
+/** @var \Magento\Framework\Escaper $escaper */
 
 $configHelper = $block->getConfigHelper();
 
@@ -14,7 +15,7 @@ $configHelper = $block->getConfigHelper();
     Find out more about Algolia Merchandising, please refer to <a href="https://www.algolia.com/doc/integration/magento-2/merchandising/category-merchandising/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.
 </div>
 
-<?php if ($block->isRootCategory()) : ?>
+<?php if ($block->isRootCategory()): ?>
 
     <br>
     <div class="algolia_block icon-bulb">
@@ -22,16 +23,17 @@ $configHelper = $block->getConfigHelper();
         To merchandise products, please select any sub-category.
     </div>
 
-    <?php return; endif; ?>
+    <?php return;
+endif; ?>
 
-<?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()) :
+<?php if (!$configHelper->isInstantEnabled() || !$configHelper->replaceCategories()):
     $instantSearchLink = $block->getUrl('adminhtml/system_config/edit/section/algoliasearch_instant');
     ?>
 
     <div class="algolia_block icon-stars">
         To merchandise products using Algolia
         you need to enable <strong>Instant search</strong> with <strong>Replace category pages</strong> feature.
-        You can do it in Algolia's <a href="<?php echo $block->escapeUrl($instantSearchLink) ?>" target="_blank">Instant Search configuration</a>.
+        You can do it in Algolia's <a href="<?= $escaper->escapeUrl($instantSearchLink) ?>" target="_blank">Instant Search configuration</a>.
         <br><br>
         <strong>Instant search</strong> with enabled <strong>Replace category pages</strong> feature gives your customers a great experience
         while browsing your catalog. It enables your customers to search and filter for products at real time resulting
@@ -39,9 +41,10 @@ $configHelper = $block->getConfigHelper();
         and enjoy the shopping on your store(s).
     </div>
 
-    <?php return; endif; ?>
+    <?php return;
+endif; ?>
 
-<div class="algolia_block display-product-msg icon-warning" <?php echo !$block->canDisplayProducts() ?: 'style="display:none;"' ?>>
+<div class="algolia_block display-product-msg icon-warning" <?= !$block->canDisplayProducts() ?: 'style="display:none;"' ?>>
     <p><strong>Products are not displayed for this category</strong></p>
     <p>Please note that you've selected "Static block only" in Display Settings. Since no products are shown on the page, changes you make with Algolia Merchandising won't be visible to your customers.</p>
 </div>
@@ -193,7 +196,7 @@ $isConfig = [
 <script>
     requirejs(['algoliaAdminBundle'], function (algoliaAdminBundle) {
         algoliaAdminBundle.$(function ($) {
-            var config = <?php echo json_encode($isConfig); ?>;
+            var config = JSON.parse('<?= $escaper->escapeJs(json_encode($isConfig)) ?>');
 
             var search = algoliaAdminBundle.instantsearch(config);
 

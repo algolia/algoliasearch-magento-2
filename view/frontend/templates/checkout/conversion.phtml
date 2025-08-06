@@ -1,8 +1,8 @@
 <?php
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\Block\Checkout\Conversion $block */
 $orderItemsJson = $block->getOrderItemsConversionJson();
 ?>
-
 <script type="text/javascript">
-    var algoliaOrderConversionJson = <?php echo $orderItemsJson ?>;
+    var algoliaOrderConversionJson = JSON.parse('<?= $escaper->escapeJs($orderItemsJson) ?>');
 </script>

@@ -1,5 +1,15 @@
 # CHANGE LOG
 
+## 3.17.0 
+
+### Features
+
+(This is a WIP until release)
+
+- Added an Algolia indexing cache for storing metadata to prevent extra queries. Large collections that run periodic full indexes can benefit from this cache. 
+- Price indexing is now optional. If the price attribute is not present in the product attributes, sorts, facets or custom ranking then that information will not be indexed in the product record.
+- Creating a temporary index while performing a full index is now optional and can be enabled or disabled in the Magento admin. 
+
 ## 3.16.0
 
 ### Features

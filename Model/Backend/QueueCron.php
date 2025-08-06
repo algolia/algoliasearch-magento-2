@@ -10,7 +10,6 @@ class QueueCron extends Value
     const CRON_FORMAT_REGEX = '/^(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)$/';
     const CRON_DISALLOW_REGEX = '/[^@a-z0-9\*\-,\/ ]/';
 
-
     protected array $mappings = [
         '@yearly' => '0 0 1 1 *',
         '@annually' => '0 0 1 1 *',

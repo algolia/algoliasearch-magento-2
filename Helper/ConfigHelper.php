@@ -1253,7 +1253,7 @@ class ConfigHelper
         if (!isset($_SERVER['HTTP_USER_AGENT'])) {
             return false;
         }
-        $userAgent = mb_strtolower((string) filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_UNSAFE_RAW), 'utf-8');
+        $userAgent = mb_strtolower((string) filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_SANITIZE_SPECIAL_CHARS), 'utf-8');
 
         $allowedUserAgents = $this->configInterface->getValue(
             self::BACKEND_RENDERING_ALLOWED_USER_AGENTS,

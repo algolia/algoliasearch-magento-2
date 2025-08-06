@@ -51,7 +51,6 @@ class ConfigPatch implements SchemaPatchInterface
         'algoliasearch_instant/instant/instant_selector' => '.columns',
         'algoliasearch_instant/instant/number_product_results' => '9',
         'algoliasearch_instant/instant/max_values_per_facet' => '10',
-        'algoliasearch_instant/instant/replace_categories' => '1',
         'algoliasearch_instant/instant/show_suggestions_on_no_result_page' => '1',
         'algoliasearch_instant/instant/add_to_cart_enable' => '1',
         'algoliasearch_instant/instant/infinite_scroll_enable' => '0',

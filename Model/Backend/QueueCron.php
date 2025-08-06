@@ -30,12 +30,14 @@ class QueueCron extends Value
         }
 
         if (!preg_match(self::CRON_FORMAT_REGEX, $value)) {
+            // This use of preg_replace is safe — static regex without /e modifier.
+            // phpcs:ignore
             $safeValue = preg_replace(self::CRON_DISALLOW_REGEX, '', (string) $value);
             $msg = ($safeValue !== $value)
                 ? 'Cron expression is invalid.'
                 : sprintf(
                     'Cron expression "%s" is not valid.',
-                    $safeValue
+                    htmlspecialchars($safeValue, ENT_QUOTES, 'UTF-8')
                 );
             throw new InvalidCronException($msg);
         }

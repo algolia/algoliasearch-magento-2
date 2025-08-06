@@ -29,7 +29,7 @@
 - An additional separate crontab is no longer needed to run the indexing queue. Enable via admin config to run the queue using Magento's built-in cron.  
 - `BatchQueueProcessorInterface` has been introduced to decouple Algolia operations for core `Indexer` models.
 - Magento will set a default `renderingContent` based on its configured facets. Be sure that "Facet Display" is supported by your Algolia plan before attempting to use.
-- Auto full indexing is disabled by default in this release. If you require this legacy feature then it can be re-enabled via the Magento admin under Stores > Configuration > Algolia Search > Indexing Manager
+- Auto full indexing can be disabled in this release under Stores > Configuration > Algolia Search > Indexing Manager. We are moving towards more intentional indexing so please note that this will become the default in a future release.
 - InstantSearch has been refactored to support customization via JavaScript mixins. 
 - A new front end hook called `beforeFacetInitialization` has been added which allows a user to extend the functionality by adding, removing or modifying "builder" functions which are used to define a facet config that will drive the rendering of facets.
 - Removed InstantSearch enablement dependency in Magento admin to prevent losing facet and sorting config when disabling the feature.

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Service\Serializer;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
@@ -38,6 +39,7 @@ class ConfigHelperTest extends TestCase
     protected ?CookieHelper $cookieHelper;
     protected ?AutocompleteHelper $autocompleteHelper;
     protected ?InstantSearchHelper $instantSearchHelper;
+    protected ?QueueHelper $queueHelper;
 
     protected function setUp(): void
     {
@@ -56,6 +58,7 @@ class ConfigHelperTest extends TestCase
         $this->cookieHelper = $this->createMock(CookieHelper::class);
         $this->autocompleteHelper = $this->createMock(AutocompleteHelper::class);
         $this->instantSearchHelper = $this->createMock(InstantSearchHelper::class);
+        $this->queueHelper = $this->createMock(QueueHelper::class);
 
         $this->configHelper = new ConfigHelperTestable(
             $this->configInterface,
@@ -72,7 +75,8 @@ class ConfigHelperTest extends TestCase
             $this->groupExcludedWebsiteRepository,
             $this->cookieHelper,
             $this->autocompleteHelper,
-            $this->instantSearchHelper
+            $this->instantSearchHelper,
+            $this->queueHelper
         );
     }
 

@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service\Product;
 
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -23,6 +24,7 @@ class BatchQueueProcessorTest extends TestCase
     protected ?Data $dataHelper;
     protected ?ConfigHelper $configHelper;
     protected ?ProductHelper $productHelper;
+    protected ?QueueHelper $queueHelper;
     protected ?Queue $queue;
     protected ?DiagnosticsLogger $diag;
     protected ?AlgoliaCredentialsManager $algoliaCredentialsManager;
@@ -40,11 +42,13 @@ class BatchQueueProcessorTest extends TestCase
         $this->algoliaCredentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
         $this->indexBuilder = $this->createMock(IndexBuilder::class);
         $this->indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
+        $this->queueHelper = $this->createMock(QueueHelper::class);
 
         $this->processor = new BatchQueueProcessor(
             $this->dataHelper,
             $this->configHelper,
             $this->productHelper,
+            $this->queueHelper,
             $this->queue,
             $this->diag,
             $this->algoliaCredentialsManager,
@@ -136,6 +140,7 @@ class BatchQueueProcessorTest extends TestCase
         $this->configHelper->method('isQueueActive')->willReturn(false);
         $this->indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(10);
         $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
+        $this->queueHelper->method('useTmpIndex')->willReturn(false);
 
         $invocations = $this->exactly(2);
         $this->queue->expects($invocations)
@@ -176,6 +181,7 @@ class BatchQueueProcessorTest extends TestCase
         $this->configHelper->method('isQueueActive')->willReturn(false);
         $this->indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(IndexCollectionSize::NOT_FOUND);
         $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection(10, 1));
+        $this->queueHelper->method('useTmpIndex')->willReturn(false);
 
         $this->queue->expects($this->exactly(2))
             ->method('addToQueue');
@@ -194,6 +200,7 @@ class BatchQueueProcessorTest extends TestCase
         $this->configHelper->method('isQueueActive')->willReturn(false);
         $this->indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(50);
         $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
+        $this->queueHelper->method('useTmpIndex')->willReturn(false);
 
         $invocations = $this->exactly(6);
         $this->queue->expects($invocations)
@@ -239,6 +246,8 @@ class BatchQueueProcessorTest extends TestCase
         $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
         $this->productHelper->method('getTempIndexName')->willReturn('tmp_index');
         $this->productHelper->method('getIndexName')->willReturn('main_index');
+
+        $this->queueHelper->method('useTmpIndex')->willReturn(true);
 
         $invocations = $this->exactly(3);
         $this->queue->expects($invocations)

@@ -39,6 +39,8 @@ class QueueCron extends Value
                     'Cron expression "%s" is not valid.',
                     htmlspecialchars($safeValue, ENT_QUOTES, 'UTF-8')
                 );
+            // Content is already escaped at this point
+            // phpcs:ignore
             throw new InvalidCronException($msg);
         }
 

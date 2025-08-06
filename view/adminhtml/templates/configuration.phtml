@@ -1,8 +1,9 @@
 <?php
 
 /** @var \Magento\Backend\Block\Template $block */
-
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Configuration $viewModel */
+
 $viewModel = $block->getViewModel();
 
 $isClickAnalyticsEnabled = true;
@@ -22,114 +23,115 @@ if (preg_match('/algoliasearch_/', $section)) {
 ?>
 
 <script>
-var isClickAnalyticsEnabled = <?php echo json_encode($isClickAnalyticsEnabled); ?>;
-var linksAndVideoTemplate = <?php echo json_encode($linksAndVideoTemplate); ?>;
-var personalizationStatus = <?php echo json_encode($personalizationStatus); ?>;
-var extensionNotices = <?php echo json_encode($extensionNotices); ?>;
+<?php // The following is internally generated trusted content and can be ignored by PHPCS ?>
+var isClickAnalyticsEnabled = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($isClickAnalyticsEnabled); ?>;
+var linksAndVideoTemplate = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($linksAndVideoTemplate); ?>;
+var personalizationStatus = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($personalizationStatus); ?>;
+var extensionNotices = <?= /** phpcs:ignore Magento2.Security.EscapeOutput.OutputNotEscaped */json_encode($extensionNotices); ?>;
 
 document.addEventListener("DOMContentLoaded", function(event) {
-	requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
-		algoliaAdminBundle.$(function ($) {
+    requirejs(['algoliaAdminBundle'], function(algoliaAdminBundle) {
+        algoliaAdminBundle.$(function ($) {
 
-			var fixHelper = function(e, ui) {
-				ui.children().each(function() {
-					$(this).width($(this).width());
-				});
+            var fixHelper = function(e, ui) {
+                ui.children().each(function() {
+                    $(this).width($(this).width());
+                });
 
-				return ui;
-			};
+                return ui;
+            };
 
-			setTimeout(function () {
-				$('form[action*="algoliasearch"] .admin__control-table tbody').sortable({
-					containment: "parent",
-					items: 'tr',
-					tolerance: 'pointer',
-					helper: fixHelper,
-					start: function (event, ui) {
-						$(ui.item).css('margin-left', '10px');
-					}
-				});
+            setTimeout(function () {
+                $('form[action*="algoliasearch"] .admin__control-table tbody').sortable({
+                    containment: "parent",
+                    items: 'tr',
+                    tolerance: 'pointer',
+                    helper: fixHelper,
+                    start: function (event, ui) {
+                        $(ui.item).css('margin-left', '10px');
+                    }
+                });
 
-				$('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
-			}, 1000);
+                $('form[action*="algoliasearch"] .admin__control-table tbody tr td').css('cursor', 'move');
+            }, 1000);
 
 
-			var url = window.location.href;
-			if (url.indexOf('section/algoliasearch_') !== -1) {
+            var url = window.location.href;
+            if (url.indexOf('section/algoliasearch_') !== -1) {
 
-				// Hide click analytics config if not available
-				if (isClickAnalyticsEnabled === false) {
-					$('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
-				}
+                // Hide click analytics config if not available
+                if (isClickAnalyticsEnabled === false) {
+                    $('#algoliasearch_cc_analytics_cc_analytics_group table').hide();
+                }
 
-				// Hide personalization config if not available
-				if (personalizationStatus < 2) {
-					$('#algoliasearch_personalization_personalization_group table').parent().parent().hide();
-				}
+                // Hide personalization config if not available
+                if (personalizationStatus < 2) {
+                    $('#algoliasearch_personalization_personalization_group table').parent().parent().hide();
+                }
 
-				// Adding links and videos to the config panel
+                // Adding links and videos to the config panel
                 $('.algolia-admin-content').html(linksAndVideoTemplate);
 
-            	// New notice management
-            	extensionNotices.each(function(notice){
-            		if (notice.method === 'before') {
-        				$(notice.selector).before(notice.message);
-        			} else if (notice.method === 'append') {
-						$(notice.selector).append(notice.message);
-        			} else if (notice.method === 'after') {
-						$(notice.selector).after(notice.message);
-        			}
-            	});
-			}
+                // New notice management
+                extensionNotices.each(function(notice){
+                    if (notice.method === 'before') {
+                        $(notice.selector).before(notice.message);
+                    } else if (notice.method === 'append') {
+                        $(notice.selector).append(notice.message);
+                    } else if (notice.method === 'after') {
+                        $(notice.selector).after(notice.message);
+                    }
+                });
+            }
 
-			// SYNONYMS
+            // SYNONYMS
 
-			handleSynonyms($('#algoliasearch_synonyms_synonyms_group_enable_synonyms').val());
+            handleSynonyms($('#algoliasearch_synonyms_synonyms_group_enable_synonyms').val());
 
-			$(document).on('change', '#algoliasearch_synonyms_synonyms_group_enable_synonyms', function() {
-				handleSynonyms($(this).val());
-			});
+            $(document).on('change', '#algoliasearch_synonyms_synonyms_group_enable_synonyms', function() {
+                handleSynonyms($(this).val());
+            });
 
-			function handleSynonyms(enabled) {
-				var $rows = $('#row_algoliasearch_synonyms_synonyms_group_synonyms, #row_algoliasearch_synonyms_synonyms_group_oneway_synonyms, #row_algoliasearch_synonyms_synonyms_group_synonyms_file');
+            function handleSynonyms(enabled) {
+                var $rows = $('#row_algoliasearch_synonyms_synonyms_group_synonyms, #row_algoliasearch_synonyms_synonyms_group_oneway_synonyms, #row_algoliasearch_synonyms_synonyms_group_synonyms_file');
 
-				if (enabled === '1') {
-					$rows.show();
-				} else {
-					$rows.hide();
-				}
-			}
+                if (enabled === '1') {
+                    $rows.show();
+                } else {
+                    $rows.hide();
+                }
+            }
 
-			// ORDERED / UNORDERED
-			var $attributesRows = $('#algoliasearch_products_products_product_additional_attributes, #algoliasearch_categories_categories_category_additional_attributes');
-			initAttributes($attributesRows);
+            // ORDERED / UNORDERED
+            var $attributesRows = $('#algoliasearch_products_products_product_additional_attributes, #algoliasearch_categories_categories_category_additional_attributes');
+            initAttributes($attributesRows);
 
-			$attributesRows.on('click', 'button[id^="addToEndBtn"]', function (e) {
-				initAttributes($attributesRows);
-			});
+            $attributesRows.on('click', 'button[id^="addToEndBtn"]', function (e) {
+                initAttributes($attributesRows);
+            });
 
-			$attributesRows.on('change', 'select[name$="[searchable]"]', function (e) {
-				handleAttributes($(this));
-			});
+            $attributesRows.on('change', 'select[name$="[searchable]"]', function (e) {
+                handleAttributes($(this));
+            });
 
-			function initAttributes($attributesRows) {
-				$attributesRows.find('select[name$="[searchable]"]').each(function(e) {
-					handleAttributes($(this));
-				});
-			}
+            function initAttributes($attributesRows) {
+                $attributesRows.find('select[name$="[searchable]"]').each(function(e) {
+                    handleAttributes($(this));
+                });
+            }
 
-			function handleAttributes($selectBox) {
-				var selectValue = $selectBox.val(),
-					$input = $selectBox.parent('td').next().find('select[name$="[order]"]');
+            function handleAttributes($selectBox) {
+                var selectValue = $selectBox.val(),
+                    $input = $selectBox.parent('td').next().find('select[name$="[order]"]');
 
-				if(selectValue !== '1') {
-					$input.hide();
-				}
-				else {
-					$input.show();
-				}
-			}
-		});
-	});
+                if(selectValue !== '1') {
+                    $input.hide();
+                }
+                else {
+                    $input.show();
+                }
+            }
+        });
+    });
 });
 </script>

@@ -22,13 +22,14 @@
 - Fixed WSOD error on invalid creds when using manual SKU indexer (also included in 3.15.1).
 - Fixed Recommend model validation when configuring through the Magento admin 
 - Fixed edge case with null queries - thank you @PromInc 
+- Removed conditional behavior on setting the vary string from the plugin on `\Magento\Framework\App\Http\Context` so that a consistent `X-Magento-Vary` cookie is sent across all requests 
 
 ### Updates
 - `beforecontent.html` is no longer used and has been deprecated. If you're overriding or referencing this file, please update your layout and customizations accordingly.
 - An additional separate crontab is no longer needed to run the indexing queue. Enable via admin config to run the queue using Magento's built-in cron.  
 - `BatchQueueProcessorInterface` has been introduced to decouple Algolia operations for core `Indexer` models.
 - Magento will set a default `renderingContent` based on its configured facets. Be sure that "Facet Display" is supported by your Algolia plan before attempting to use.
-- Auto full indexing is disabled by default in this release. If you require this legacy feature then it can be re-enabled via the Magento admin under Stores > Configuration > Algolia Search > Indexing Manager
+- Auto full indexing can be disabled in this release under Stores > Configuration > Algolia Search > Indexing Manager. We are moving towards more intentional indexing so please note that this will become the default in a future release.
 - InstantSearch has been refactored to support customization via JavaScript mixins. 
 - A new front end hook called `beforeFacetInitialization` has been added which allows a user to extend the functionality by adding, removing or modifying "builder" functions which are used to define a facet config that will drive the rendering of facets.
 - Removed InstantSearch enablement dependency in Magento admin to prevent losing facet and sorting config when disabling the feature.
@@ -42,6 +43,8 @@
 - Added support for PHPUnit 10
 - Added support for Magento 2.4.8 on PHP 8.4 - Special shout out to @jajajaime for his help here
 - Refactored code to PHP 8.2 baseline standard
+- Added string escaping to untrusted inputs
+- The InstantSearch "replace categories" feature must now be explicitly enabled on new instances aligning with our documentation: https://www.algolia.com/doc/integration/magento-2/guides/category-pages/#enable-category-pages
 
 ### Breaking Changes
 - `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).

@@ -1,16 +1,21 @@
-<div class="algolia-range-slider" data-role="<?php /* @noEscape */ echo $block->getDataRole(); ?>">
+<?php
+/** @var \Magento\Framework\Escaper $escaper */
+/** TODO:Reevaluate PHPCS ignores and enables/disables */
+?>
+<div class="algolia-range-slider" data-role="<?= /* @noEscape */ $block->getDataRole(); ?>">
     <div data-role="from-label"></div>
     <div data-role="to-label"></div>
     <div data-role="slider-bar"></div>
     <div class="actions-toolbar">
         <div class="actions-primary">
             <a class="action primary small" data-role="apply-range">
-                <span><?php /* @noEscape */ echo __('OK'); ?></span>
+                <span><?= /* @noEscape */ __('OK'); ?></span>
             </a>
         </div>
     </div>
 </div>
-
+<!-- phpcs:disable Magento2.Security.EscapeOutput.OutputNotEscaped -->
 <script type="text/x-magento-init">
-    { "[data-role=<?php /* @noEscape */ echo $block->getDataRole(); ?>]" : { "rangeSlider" : <?php echo  /* @noEscape */ $block->getJsonConfig(); ?> } }
+    { "[data-role=<?= /* @noEscape */ $block->getDataRole(); ?>]" : { "rangeSlider" : <?=  /* @noEscape */ $block->getJsonConfig(); ?> } }
 </script>
+<!-- phpcs:enable Magento2.Security.EscapeOutput.OutputNotEscaped -->

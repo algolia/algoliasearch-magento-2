@@ -1,35 +1,36 @@
 <?php
 /** @var \Magento\Backend\Block\Template $block */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\IndexingManager\Form $form */
+/** @var \Magento\Framework\Escaper $escaper */
 $form = $block->getViewModel();
 ?>
 
 <div class="algolia-indexing-manager-form">
-    <form id="algolia-indexing-entity-form" data-mage-init='{"validation":{}}' action="<?php echo $form->getFormAction() ?>" method="post">
-        <input type="hidden" name="form_key" value="<?php echo $block->getFormKey() ?>" />
+    <form id="algolia-indexing-entity-form" data-mage-init='{"validation":{}}' action="<?= $escaper->escapeUrl($form->getFormAction()) ?>" method="post">
+        <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>" />
         <div class="inline-field">
             <p>Reindex your entities in one click: </p>
         </div>
         <div class="inline-field">
             Store(s): <select name="store_id" class="select admin__control-select">
-                <?php foreach ($form->getStores() as $key => $section) : ?>
-                    <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('store_id')) ? ' selected' : '' ?>>
-                        <?php echo ucwords($section) ?>
+                <?php foreach ($form->getStores() as $key => $section): ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($key) ?>"<?= $escaper->escapeHtmlAttr(($key == $form->getFormValue('store_id')) ? ' selected' : '') ?>>
+                        <?= $escaper->escapeHtml(ucwords($section)) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
         <div class="inline-field">
             Entities: <select name="entity" class="select admin__control-select">
-                <?php foreach ($form->getEntities() as $key => $section) : ?>
-                    <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('entity')) ? ' selected' : '' ?>>
-                        <?php echo ucwords($section) ?>
+                <?php foreach ($form->getEntities() as $key => $section): ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($key) ?>"<?=$escaper->escapeHtmlAttr(($key == $form->getFormValue('entity')) ? ' selected' : '') ?>>
+                        <?= $escaper->escapeHtml(ucwords($section)) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
         <button id="algolia-indexing-entity-submit" type="button" class="action submit primary ">
-            <?php echo $block->escapeHtml(__('Reindex')) ?>
+            <?= $escaper->escapeHtml(__('Reindex')) ?>
         </button>
     </form>
 </div>
@@ -41,7 +42,7 @@ $form = $block->getViewModel();
         indexingSubmit.on('click', function(e) {
             e.preventDefault();
             /** todo: enhance this prompt */
-            if(confirm('<?php echo $block->escapeJsQuote(__($form->getConfirmMessage())) ?>')) {
+            if(confirm('<?= $escaper->escapeJs(__($form->getConfirmMessage())) ?>')) {
                 indexingForm.submit();
             }
         });

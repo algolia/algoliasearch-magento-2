@@ -1,5 +1,6 @@
 <?php
 /** @var \Algolia\AlgoliaSearch\ViewModel\Recommend\Cart $block */
+/** @var \Magento\Framework\Escaper $escaper */
 $viewModel = $block->getViewModel();
 $recommendConfig = $viewModel->getAlgoliaRecommendConfiguration();
 if (!empty($recommendConfig['enabledRelatedInCart']) || !empty($recommendConfig['enabledFBTInCart']) || !empty($recommendConfig['isTrendItemsEnabledInCartPage'])):
@@ -15,7 +16,7 @@ if (!empty($recommendConfig['enabledRelatedInCart']) || !empty($recommendConfig[
         {
             "*": {
                 "Algolia_AlgoliaSearch/js/recommend" : {
-                    "objectIDs" : <?= json_encode($cartItems) ?>
+                    "objectIDs" : JSON.parse('<?= $escaper->escapeJs(json_encode($cartItems)) ?>')
                 }
             }
         }

@@ -42,6 +42,7 @@
 - Added support for PHPUnit 10
 - Added support for Magento 2.4.8 on PHP 8.4 - Special shout out to @jajajaime for his help here
 - Refactored code to PHP 8.2 baseline standard
+- Added string escaping to untrusted inputs
 
 ### Breaking Changes
 - `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).

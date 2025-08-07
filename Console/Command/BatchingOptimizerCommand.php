@@ -200,7 +200,7 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
      */
     protected function getIndexData(IndexOptions $indexOptions): array
     {
-        if (is_null($this->indices)) {
+        if ($this->indices === null) {
             $this->indices = $this->algoliaConnector->listIndexes();
         }
 

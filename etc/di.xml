@@ -152,6 +152,7 @@
                 <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand</item>
                 <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
                 <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
+                <item name="batching_optimizer_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\BatchingOptimizerCommand</item>
                 <!-- custom indexers -->
                 <item name="reindex_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand</item>
                 <item name="reindex_categories_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand</item>
@@ -194,6 +195,13 @@
     </type>
 
     <type name="Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand">
+        <arguments>
+            <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
+            <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Algolia\AlgoliaSearch\Console\Command\BatchingOptimizerCommand">
         <arguments>
             <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
             <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>

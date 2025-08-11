@@ -9,7 +9,6 @@ use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -18,14 +17,13 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class BatchingOptimizerCommand extends AbstractStoreCommand
 {
     /**
      * @var array|null
      */
-    protected ?array $indices = null;
+    protected ?array $indices = [];
 
     /**
      * @var array|null
@@ -36,28 +34,28 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
      * Recommended Max batch size
      * https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/
      */
-    const int MAX_BATCH_SIZE = 10000000; //10MB
+    const MAX_BATCH_SIZE = 10000000; //10MB
 
     /**
      * Arbitrary default margin to ensure not to exceed recommended batch size
      */
-    const int DEFAULT_MARGIN = 25;
+    const DEFAULT_MARGIN = 25;
 
     /**
      * Arbitrary increased margin to ensure not to exceed recommended batch size when catalog is a mix between configurables and other product types
      * (i.e. with a lot of record sizes variations)
      */
-    const int INCREASED_MARGIN = 50;
+    const INCREASED_MARGIN = 50;
 
     /**
      * Arbitrary lower boundary where percentile of configurable products is considered "low enough"
      */
-    const int CONFIGURABLE_PERCENTILE_LOWER_BOUNDARY = 10;
+    const CONFIGURABLE_PERCENTILE_LOWER_BOUNDARY = 10;
 
     /**
      * Arbitrary upper boundary where percentile of configurable products is considered "high enough"
      */
-    const int CONFIGURABLE_PERCENTILE_UPPER_BOUNDARY = 90;
+    const CONFIGURABLE_PERCENTILE_UPPER_BOUNDARY = 90;
 
     public function __construct(
         protected AlgoliaConnector      $algoliaConnector,
@@ -154,7 +152,7 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
     protected function optimizeBatchingForStore(int $storeId): void
     {
         $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
-        $indexData = $this->getIndexData($indexOptions);
+        $indexData = $this->getIndexData($indexOptions, $storeId);
         $configurablePercentile = $this->getConfigurablePercentile($indexData['entries'], $storeId);
 
         $this->output->writeln('<info> ====== ' . $this->storeNameFetcher->getStoreName($storeId) . ' ====== </info>');
@@ -177,7 +175,7 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
             $this->configWriter->save(
                 ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
                 $recommendedBatchCount,
-                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                'stores',
                 $storeId
             );
         }
@@ -210,13 +208,13 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
      * @return array
      * @throws AlgoliaException
      */
-    protected function getIndexData(IndexOptionsInterface $indexOptions): array
+    protected function getIndexData(IndexOptionsInterface $indexOptions, int $storeId): array
     {
-        if ($this->indices === null) {
-            $this->indices = $this->algoliaConnector->listIndexes();
+        if (!isset($this->indices[$storeId])) {
+            $this->indices[$storeId] = $this->algoliaConnector->listIndexes($storeId);
         }
 
-        foreach ($this->indices['items'] as $index) {
+        foreach ($this->indices[$storeId]['items'] as $index) {
             if ($index['name'] === $indexOptions->getIndexName()) {
                 return $index;
             }

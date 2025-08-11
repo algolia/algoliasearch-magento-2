@@ -3,11 +3,14 @@
 namespace Algolia\AlgoliaSearch\Console\Command;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Model\IndexOptions;
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
@@ -15,6 +18,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class BatchingOptimizerCommand extends AbstractStoreCommand
 {
@@ -32,7 +36,7 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
      * Recommended Max batch size
      * https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/
      */
-    const int MAX_BATCH_SIZE = 10_000_000;
+    const int MAX_BATCH_SIZE = 10000000; //10MB
 
     /**
      * Arbitrary default margin to ensure not to exceed recommended batch size
@@ -62,6 +66,7 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
         protected StoreManagerInterface $storeManager,
         protected IndexOptionsBuilder   $indexOptionsBuilder,
         protected CollectionFactory     $productCollectionFactory,
+        protected WriterInterface       $configWriter,
         ?string                         $name = null
     ) {
         parent::__construct($state, $storeNameFetcher, $name);
@@ -168,7 +173,14 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
         $recommendedBatchCount = $this->getRecommendedBatchCount($maxBatchCount, $configurablePercentile);
         $this->output->writeln('<comment>Recommended max batch count</comment>:  ' . $recommendedBatchCount . ' objects');
 
-        // @todo : add a prompt to change the value in the Magento configuration (Maximum number of records processed per indexing job)
+        if ($this->confirmOperation()) {
+            $this->configWriter->save(
+                ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
+                $recommendedBatchCount,
+                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                $storeId
+            );
+        }
     }
 
     /**
@@ -194,11 +206,11 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
     /**
      * Fetches index data from the Algolia Dashboard
      *
-     * @param IndexOptions $indexOptions
+     * @param IndexOptionsInterface $indexOptions
      * @return array
      * @throws AlgoliaException
      */
-    protected function getIndexData(IndexOptions $indexOptions): array
+    protected function getIndexData(IndexOptionsInterface $indexOptions): array
     {
         if ($this->indices === null) {
             $this->indices = $this->algoliaConnector->listIndexes();

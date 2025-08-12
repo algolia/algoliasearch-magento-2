@@ -2,11 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command;
 
+use Algolia\AlgoliaSearch\Helper\ArrayDeduplicator;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,6 +22,7 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
         protected StoreNameFetcher      $storeNameFetcher,
         protected StoreManagerInterface $storeManager,
         protected IndexOptionsBuilder   $indexOptionsBuilder,
+        protected ArrayDeduplicator     $arrayDeduplicator,
         ?string                         $name = null
     ) {
         parent::__construct($state, $storeNameFetcher, $name);
@@ -52,6 +55,7 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
 
     /**
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -114,7 +118,7 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
 
         $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $settings = $this->algoliaConnector->getSettings($indexOptions);
-        $deduped = $this->dedupeSpecificSettings(['synonyms', 'altCorrections'], $settings);
+        $deduped = $this->arrayDeduplicator->dedupeSpecificSettings(['synonyms', 'altCorrections'], $settings);
 
         //bring over as is (no de-dupe necessary)
         if (array_key_exists('placeholders', $settings)) {
@@ -138,42 +142,5 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
         foreach ($storeIds as $storeId) {
             $this->dedupeSynonymsForStore($storeId);
         }
-    }
-
-    /**
-     * @param string[] $settingNames
-     * @param array<string, array> $settings
-     * @return array
-     */
-    protected function dedupeSpecificSettings(array $settingNames, array $settings): array
-    {
-        return array_filter(
-            array_combine(
-                $settingNames,
-                array_map(
-                    fn($settingName) => isset($settings[$settingName])
-                        ? $this->dedupeArrayOfArrays($settings[$settingName])
-                        : null,
-                    $settingNames
-                )
-            ),
-            fn($val) => $val !== null
-        );
-    }
-
-    /**
-     * Find and remove the duplicates in an array of indexed arrays
-     * Does not work with associative arrays
-     * @param array $data
-     * @return array
-     */
-    protected function dedupeArrayOfArrays(array $data): array {
-        $encoded = array_map('json_encode', $data);
-        $unique = array_values(array_unique($encoded));
-        $decoded = array_map(
-            fn($item) => json_decode((string) $item, true),
-            $unique
-        );
-        return $decoded;
     }
 }

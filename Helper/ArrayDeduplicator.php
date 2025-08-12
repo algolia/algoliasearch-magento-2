@@ -18,10 +18,14 @@ class ArrayDeduplicator
                 : null;
         }
 
-        return array_filter(
-            $processedSettings,
-            fn($val) => $val !== null
-        );
+        $filteredSettings = [];
+        foreach ($processedSettings as $key => $value) {
+            if ($value !== null) {
+                $filteredSettings[$key] = $value;
+            }
+        }
+
+        return $filteredSettings;
     }
 
     /**

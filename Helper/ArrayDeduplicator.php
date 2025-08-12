@@ -40,11 +40,18 @@ class ArrayDeduplicator
         //     $unique
         // );
         // Experiment 1
-        $decoded = array_map(
-            'json_decode',
-            $unique,
-            array_fill(0, count($unique), true) // force decoding as associative array
-        );
+        // $decoded = array_map(
+        //     'json_decode',
+        //     $unique,
+        //     array_fill(0, count($unique), true) // force decoding as associative array
+        // );
+
+        // Experiment 2
+        $decoded = [];
+        array_walk($unique, function($item) use (&$decoded) {
+            $decoded[] = json_decode((string) $item, true);
+        });
+
         return $decoded;
     }
 }

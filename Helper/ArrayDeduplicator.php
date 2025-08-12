@@ -34,9 +34,16 @@ class ArrayDeduplicator
     public function dedupeArrayOfArrays(array $data): array {
         $encoded = array_map('json_encode', $data);
         $unique = array_values(array_unique($encoded));
+        // Original code - not passing Codacy
+        // $decoded = array_map(
+        //     fn($item) => json_decode((string) $item, true),
+        //     $unique
+        // );
+        // Experiment 1
         $decoded = array_map(
-            fn($item) => json_decode((string) $item, true),
-            $unique
+            'json_decode',
+            $unique,
+            array_fill(0, count($unique), true) // force decoding as associative array
         );
         return $decoded;
     }

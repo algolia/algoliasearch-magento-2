@@ -1,35 +1,36 @@
 <?php
 /** @var \Magento\Backend\Block\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\ViewModel\Adminhtml\Analytics\Form $form */
 $form = $block->getViewModel();
 ?>
 
 <?php $isFormDisabled = !$form->isAnalyticsApiEnabled() ? ' disabled' : '' ?>
 <div class="algolia-analytics-form" id="algolia-analytics-daterange">
-    <form id="algolia-analytics-form" data-mage-init='{"validation":{}}' action="<?php echo $form->getFormAction() ?>" method="post">
-        <input type="hidden" name="form_key" value="<?php echo $block->getFormKey() ?>" />
+    <form id="algolia-analytics-form" data-mage-init='{"validation":{}}' action="<?= $escaper->escapeUrl($form->getFormAction()) ?>" method="post">
+        <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>" />
         <div class="inline-field">
-            <select name="type" class="select admin__control-select"<?php echo $isFormDisabled ?>>
-                <?php foreach ($form->getSections() as $key => $section) : ?>
-                    <option value="<?php echo $key ?>"<?php echo ($key == $form->getFormValue('type')) ? ' selected' : '' ?>>
-                        <?php echo ucwords($key) ?>
+            <select name="type" class="select admin__control-select"<?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>>
+                <?php foreach ($form->getSections() as $key => $section): ?>
+                    <option value="<?= $escaper->escapeHtmlAttr($key) ?>"<?= ($key == $form->getFormValue('type')) ? ' selected' : '' ?>>
+                        <?= $escaper->escapeHtml(ucwords($key)) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
         <div class="inline-field">
-            <input type="text" id="analytics_from" name="from" <?php echo $isFormDisabled ?>
+            <input type="text" id="analytics_from" name="from" <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>
                    class="admin__control-text input-text date-range-analytics-from"
-                   placeholder="<?php echo $block->escapeHtmlAttr(__('Start Date')) ?>" value="<?php echo $form->getFormValue('from') ?>"/>
+                   placeholder="<?= $escaper->escapeHtmlAttr(__('Start Date')) ?>" value="<?= $escaper->escapeHtmlAttr($form->getFormValue('from')) ?>"/>
         </div>
         <span class="divide">-</span>
         <div class="inline-field">
-            <input type="text" id="analytics_to" name="to" <?php echo $isFormDisabled ?>
+            <input type="text" id="analytics_to" name="to" <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>
                    class="admin__control-text input-text validate-date-range date-range-analytics-to"
-                   placeholder="<?php echo $block->escapeHtmlAttr(__('End Date')) ?>" value="<?php echo $form->getFormValue('to') ?>"/>
+                   placeholder="<?= $escaper->escapeHtmlAttr(__('End Date')) ?>" value="<?= $escaper->escapeHtmlAttr($form->getFormValue('to'))  ?>"/>
         </div>
-        <button type="submit" class="action submit primary algolia-daterange-submit" <?php echo $isFormDisabled ?>>
-            <?php echo $block->escapeHtml(__('Update')) ?>
+        <button type="submit" class="action submit primary algolia-daterange-submit" <?= /** phpcs:ignore Magento2.Security.XssTemplate.FoundUnescaped **/ $isFormDisabled ?>>
+            <?= $escaper->escapeHtml(__('Update')) ?>
         </button>
     </form>
 </div>

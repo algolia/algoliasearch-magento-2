@@ -308,7 +308,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         // Module installation is only needed if there's more than one source
-        $sourceCollection = $this->objectManager->create('\Magento\Inventory\Model\ResourceModel\Source\Collection');
+        $sourceCollection = $this->objectManager->create(\Magento\Inventory\Model\ResourceModel\Source\Collection::class);
         if ($sourceCollection->getSize() <= 1) {
             return false;
         }

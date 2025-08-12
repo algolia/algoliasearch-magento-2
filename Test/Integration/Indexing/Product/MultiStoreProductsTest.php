@@ -85,7 +85,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
 
         try {
             $voyageYogaBag = $this->loadProduct(self::VOYAGE_YOGA_BAG_ID, $defaultStore->getId());
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->markTestIncomplete('Product could not be found.');
         }
 
@@ -161,7 +161,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
      * @return ProductInterface
      * @throws NoSuchEntityException
      */
-    private function loadProduct(int $productId, int $storeId = null): ProductInterface
+    private function loadProduct(int $productId, ?int $storeId = null): ProductInterface
     {
         return $this->productRepository->getById($productId, true, $storeId);
     }

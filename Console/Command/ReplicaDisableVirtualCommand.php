@@ -139,9 +139,9 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
 
     protected function disableVirtualReplicasForAllStores(): void
     {
-        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED, [$this, 'removeLegacyVirtualReplicaConfig']);
+        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED, $this->removeLegacyVirtualReplicaConfig(...));
 
-        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::SORTING_INDICES, [$this, 'disableVirtualReplicaSortConfig']);
+        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::SORTING_INDICES, $this->disableVirtualReplicaSortConfig(...));
 
         $this->scopeConfig->reinit();
 

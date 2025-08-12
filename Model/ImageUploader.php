@@ -172,7 +172,7 @@ class ImageUploader
                 $baseTmpImagePath,
                 $baseImagePath
             );
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new \Magento\Framework\Exception\LocalizedException(
                 __('Something went wrong while saving the file(s).')
             );

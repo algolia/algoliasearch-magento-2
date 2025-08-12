@@ -51,7 +51,6 @@ class ConfigPatch implements SchemaPatchInterface
         'algoliasearch_instant/instant/instant_selector' => '.columns',
         'algoliasearch_instant/instant/number_product_results' => '9',
         'algoliasearch_instant/instant/max_values_per_facet' => '10',
-        'algoliasearch_instant/instant/replace_categories' => '1',
         'algoliasearch_instant/instant/show_suggestions_on_no_result_page' => '1',
         'algoliasearch_instant/instant/add_to_cart_enable' => '1',
         'algoliasearch_instant/instant/infinite_scroll_enable' => '0',
@@ -86,7 +85,6 @@ class ConfigPatch implements SchemaPatchInterface
         'algoliasearch_advanced/advanced/remove_words_if_no_result' => 'allOptional',
         'algoliasearch_advanced/advanced/partial_update' => '0',
         'algoliasearch_advanced/advanced/customer_groups_enable' => '0',
-        'algoliasearch_advanced/advanced/make_seo_request' => '1',
         'algoliasearch_advanced/advanced/remove_branding' => '0',
         'algoliasearch_autocomplete/autocomplete/autocomplete_selector' => '.algolia-search-input',
         'algoliasearch_advanced/advanced/index_product_on_category_products_update' => '1',
@@ -312,7 +310,7 @@ class ConfigPatch implements SchemaPatchInterface
         foreach ($movedConfigDirectives as $from => $to) {
             try {
                 $connection->query('UPDATE ' . $table . ' SET path = "' . $to . '" WHERE path = "' . $from . '"');
-            } catch (\Magento\Framework\DB\Adapter\DuplicateException $e) {
+            } catch (\Magento\Framework\DB\Adapter\DuplicateException) {
                 // Skip
             }
         }

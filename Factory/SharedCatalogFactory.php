@@ -115,7 +115,7 @@ class SharedCatalogFactory
             $groups = $this->getSharedCatalogGroups();
 
             foreach ($productItems as $productId => $permissions) {
-                $permissions = explode(',', $permissions);
+                $permissions = explode(',', (string) $permissions);
                 $finalPermissions = [];
                 foreach ($groups as $groupId) {
                     $finalPermissions[] = $groupId . '_' . (in_array($groupId, $permissions) ? '1' : '0');

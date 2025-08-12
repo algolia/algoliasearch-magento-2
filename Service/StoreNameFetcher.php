@@ -34,9 +34,7 @@ class StoreNameFetcher
     public function getStoreNames(array $storeIds): array
     {
         return array_map(
-            function($storeId) {
-                return $this->getStoreName($storeId);
-            },
+            fn($storeId) => $this->getStoreName($storeId),
             $storeIds
         );
     }

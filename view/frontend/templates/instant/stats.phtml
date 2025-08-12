@@ -1,15 +1,15 @@
 <script type="text/template" id="instant-stats-template">
-    {{#hasOneResult}}<strong>1</strong> <?php echo $block->escapeHtml(__('result')); ?> found{{/hasOneResult}}
+    {{#hasOneResult}}<strong>1</strong> <?= $escaper->escapeHtml(__('result')); ?> found{{/hasOneResult}}
 
     {{#hasManyResults}}
-        {{^hasNoResults}}{{first}}-{{last}} <?php echo $block->escapeHtml(__('out of')); ?>{{/hasNoResults}}
+        {{^hasNoResults}}{{first}}-{{last}} <?= $escaper->escapeHtml(__('out of')); ?>{{/hasNoResults}}
         <strong>
             <span itemprop="numberOfItems">{{nbHits}}</span>
-            <?php echo $block->escapeHtml(__('results found')); ?>
+            <?= $escaper->escapeHtml(__('results found')); ?>
         </strong>
     {{/hasManyResults}}
 
     {{^hasNoResults}}
-    <?php echo $block->escapeHtml(__('in')); ?> {{seconds}} <?php echo $block->escapeHtml(__('seconds')); ?>
+    <?= $escaper->escapeHtml(__('in')); ?> {{seconds}} <?= $escaper->escapeHtml(__('seconds')); ?>
     {{/hasNoResults}}
 </script>

@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Unit\Plugin;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Plugin\RenderingCacheContextPlugin;
 use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\App\Request\Http;
@@ -10,24 +11,26 @@ use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\UrlRewrite\Model\UrlFinderInterface;
 use PHPUnit\Framework\TestCase;
-
 class RenderingCacheContextPluginTest extends TestCase
 {
     protected ?RenderingCacheContextPlugin $plugin;
     protected ?ConfigHelper $configHelper;
+
+    protected ?InstantSearchHelper $instantSearchHelper;
     protected ?StoreManagerInterface $storeManager;
     protected ?Http $request;
     protected ?UrlFinderInterface $urlFinder;
-
     protected function setUp(): void
     {
         $this->configHelper = $this->createMock(ConfigHelper::class);
+        $this->instantSearchHelper = $this->createMock(InstantSearchHelper::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
         $this->request = $this->createMock(Http::class);
         $this->urlFinder = $this->createMock(UrlFinderInterface::class);
 
         $this->plugin = new RenderingCacheContextPluginTestable(
             $this->configHelper,
+            $this->instantSearchHelper,
             $this->storeManager,
             $this->request,
             $this->urlFinder
@@ -47,7 +50,7 @@ class RenderingCacheContextPluginTest extends TestCase
         $this->storeManager->method('getStore')->willReturn($this->getStoreMock());
 
         $this->request->method('getControllerName')->willReturn('category');
-        $this->configHelper->method('replaceCategories')->willReturn(true);
+        $this->instantSearchHelper->method('shouldReplaceCategories')->willReturn(true);
 
         $result = $this->plugin->afterGetData(
             $this->createMock(HttpContext::class),
@@ -66,7 +69,7 @@ class RenderingCacheContextPluginTest extends TestCase
         $this->storeManager->method('getStore')->willReturn($this->getStoreMock());
 
         $this->request->method('getControllerName')->willReturn('category');
-        $this->configHelper->method('replaceCategories')->willReturn(true);
+        $this->instantSearchHelper->method('shouldReplaceCategories')->willReturn(true);
 
         $result = $this->plugin->afterGetData(
             $this->createMock(HttpContext::class),
@@ -86,7 +89,7 @@ class RenderingCacheContextPluginTest extends TestCase
 
         $this->request->method('getControllerName')->willReturn('product');
         $this->request->method('getRequestUri')->willReturn('some-product.html');
-        $this->configHelper->method('replaceCategories')->willReturn(false);
+        $this->instantSearchHelper->method('shouldReplaceCategories')->willReturn(false);
 
         $data = ['existing_key' => 'existing_value'];
         $result = $this->plugin->afterGetData($subject, $data);
@@ -121,7 +124,7 @@ class RenderingCacheContextPluginTest extends TestCase
         $this->storeManager->method('getStore')->willReturn($this->getStoreMock());
 
         $this->request->method('getControllerName')->willReturn('category');
-        $this->configHelper->method('replaceCategories')->willReturn(true);
+        $this->instantSearchHelper->method('shouldReplaceCategories')->willReturn(true);
 
         $this->assertTrue($this->plugin->shouldApplyCacheContext());
     }

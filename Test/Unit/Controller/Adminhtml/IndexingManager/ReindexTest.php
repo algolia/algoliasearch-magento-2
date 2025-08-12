@@ -185,7 +185,7 @@ class ReindexTest extends TestCase
         $this->assertEquals($result, $this->reindexController->defineEntitiesToIndex($params));
     }
 
-    public function entityParamsProvider()
+    public static function entityParamsProvider(): array
     {
         return [
             [
@@ -219,7 +219,7 @@ class ReindexTest extends TestCase
         $this->assertEquals($result, $this->reindexController->defineRedirectPath($params));
     }
 
-    public function redirectParamsProvider()
+    public static function redirectParamsProvider(): array
     {
         return [
             [

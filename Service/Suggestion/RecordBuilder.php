@@ -26,7 +26,7 @@ class RecordBuilder implements RecordBuilderInterface
             'query'                                 => $entity->getData('query_text'),
             'number_of_results'                     => (int) $entity->getData('num_results'),
             'popularity'                            => (int) $entity->getData('popularity'),
-            'updated_at'                            => (int) strtotime($entity->getData('updated_at')),
+            'updated_at'                            => (int) strtotime((string) $entity->getData('updated_at')),
         ];
 
         $transport = new DataObject($suggestionObject);

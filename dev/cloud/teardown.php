@@ -7,8 +7,8 @@ require '/app/app/bootstrap.php';
 $bootstrap = Bootstrap::create(BP, $_SERVER);
 $objectManager = $bootstrap->getObjectManager();
 
-$algoliaConnector = $objectManager->get('\Algolia\AlgoliaSearch\Service\AlgoliaConnector');
-$indexOptionsBuilder = $objectManager->get('\Algolia\AlgoliaSearch\Service\IndexOptionsBuilder');
+$algoliaConnector = $objectManager->get(\Algolia\AlgoliaSearch\Service\AlgoliaConnector::class);
+$indexOptionsBuilder = $objectManager->get(\Algolia\AlgoliaSearch\Service\IndexOptionsBuilder::class);
 $indexNamePrefix = getenv('MAGENTO_CLOUD_ENVIRONMENT');
 
 /**
@@ -22,13 +22,13 @@ function deleteIndexes($algoliaConnector, $indexOptionsBuilder, array $indices, 
     foreach ($indices['items'] as $index) {
         $name = $index['name'];
 
-        if (mb_strpos($name, $indexNamePrefix) === 0) {
+        if (mb_strpos((string) $name, (string) $indexNamePrefix) === 0) {
             try {
                 $indexOptions = $indexOptionsBuilder->buildWithEnforcedIndex($name);
                 $algoliaConnector->deleteIndex($name);
                 echo 'Index "' . $name . '" has been deleted.';
                 echo "\n";
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // Might be a replica
             }
         }

@@ -24,7 +24,7 @@ class AlgoliaCredentialsManager
      * @param int|null $storeId
      * @return bool
      */
-    public function checkCredentials(int $storeId = null): bool
+    public function checkCredentials(?int $storeId = null): bool
     {
         return $this->configHelper->getApplicationID($storeId) && $this->configHelper->getAPIKey($storeId);
     }
@@ -35,7 +35,7 @@ class AlgoliaCredentialsManager
      * @param int|null $storeId
      * @return bool
      */
-    public function checkCredentialsWithSearchOnlyAPIKey(int $storeId = null): bool
+    public function checkCredentialsWithSearchOnlyAPIKey(?int $storeId = null): bool
     {
         return $this->checkCredentials($storeId) && $this->configHelper->getSearchOnlyAPIKey($storeId);
     }

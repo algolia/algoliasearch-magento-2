@@ -112,18 +112,19 @@ class BatchQueueProcessorTest extends TestCase
         $this->setupBasicIndexingConfig($pageSize);
         $this->productHelper->method('getParentProductIds')->willReturn([]);
 
-        $invocations = $this->exactly(5);
-        $this->queue->expects($invocations)
+        $invocationCount = 0;
+        $this->queue->expects($this->exactly(5))
             ->method('addToQueue')
             ->with(
                 IndexBuilder::class,
                 'buildIndexList',
-                $this->callback(function(array $arg) use ($invocations, $pageSize) {
+                $this->callback(function(array $arg) use (&$invocationCount, $pageSize) {
+                    $invocationCount++;
                     return array_key_exists('storeId', $arg)
                         && array_key_exists('entityIds', $arg)
                         && array_key_exists('options', $arg)
                         && $arg['options']['pageSize'] === $pageSize
-                        && $arg['options']['page'] === $invocations->getInvocationCount();
+                        && $arg['options']['page'] === $invocationCount;
                 })
             );
 
@@ -142,8 +143,8 @@ class BatchQueueProcessorTest extends TestCase
         $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
         $this->queueHelper->method('useTmpIndex')->willReturn(false);
 
-        $invocations = $this->exactly(2);
-        $this->queue->expects($invocations)
+        $invocationCount = 0;
+        $this->queue->expects($this->exactly(2))
             ->method('addToQueue')
             ->willReturnCallback(
                 function(
@@ -152,8 +153,9 @@ class BatchQueueProcessorTest extends TestCase
                     array $data,
                     int $dataSize,
                     bool $isFullReindex)
-                use ($invocations) {
-                    switch ($invocations->getInvocationCount()) {
+                use (&$invocationCount) {
+                    $invocationCount++;
+                    switch ($invocationCount) {
                         case 1:
                             $this->assertEquals(IndicesConfigurator::class, $className);
                             $this->assertEquals('saveConfigurationToAlgolia', $method);
@@ -202,8 +204,8 @@ class BatchQueueProcessorTest extends TestCase
         $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
         $this->queueHelper->method('useTmpIndex')->willReturn(false);
 
-        $invocations = $this->exactly(6);
-        $this->queue->expects($invocations)
+        $invocationCount = 0;
+        $this->queue->expects($this->exactly(6))
             ->method('addToQueue')
             ->willReturnCallback(
                 function(
@@ -212,9 +214,9 @@ class BatchQueueProcessorTest extends TestCase
                     array $data,
                     int $dataSize,
                     bool $isFullReindex)
-                use ($invocations, $pageSize) {
-                    $invocation = $invocations->getInvocationCount();
-                    switch ($invocation) {
+                use (&$invocationCount, $pageSize) {
+                    $invocationCount++;
+                    switch ($invocationCount) {
                         case 1:
                             $this->assertEquals(IndicesConfigurator::class, $className);
                             $this->assertEquals('saveConfigurationToAlgolia', $method);
@@ -224,7 +226,7 @@ class BatchQueueProcessorTest extends TestCase
                             $this->assertEquals('buildIndexFull', $method);
                             $this->assertArrayHasKey('options', $data);
                             $this->assertEquals($pageSize, $data['options']['pageSize']);
-                            $this->assertEquals($invocation - 1, $data['options']['page']);
+                            $this->assertEquals($invocationCount - 1, $data['options']['page']);
                             break;
                     }
                 }
@@ -249,8 +251,8 @@ class BatchQueueProcessorTest extends TestCase
 
         $this->queueHelper->method('useTmpIndex')->willReturn(true);
 
-        $invocations = $this->exactly(3);
-        $this->queue->expects($invocations)
+        $invocationCount = 0;
+        $this->queue->expects($this->exactly(3))
             ->method('addToQueue')
             ->willReturnCallback(
                 function(
@@ -259,8 +261,9 @@ class BatchQueueProcessorTest extends TestCase
                     array $data,
                     int $dataSize,
                     bool $isFullReindex)
-                use ($invocations) {
-                    if ($invocations->getInvocationCount() === 3) {
+                use (&$invocationCount) {
+                    $invocationCount++;
+                    if ($invocationCount === 3) {
                         $this->assertEquals(IndexMover::class, $className);
                         $this->assertEquals('moveIndexWithSetSettings', $method);
                         $this->assertArrayHasKey('tmpIndexName', $data);

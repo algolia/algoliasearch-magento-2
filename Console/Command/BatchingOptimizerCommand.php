@@ -5,10 +5,10 @@ namespace Algolia\AlgoliaSearch\Console\Command;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -20,6 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class BatchingOptimizerCommand extends AbstractStoreCommand
 {
+    use BatchingCommandTrait;
     /**
      * @var array|null
      */
@@ -28,34 +29,17 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
     /**
      * @var array|null
      */
-    protected ?array $configurablePercentile = [];
+    protected ?array $complexPercentile = [];
 
     /**
-     * Recommended Max batch size
-     * https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/
+     * Arbitrary lower boundary where percentile of complex products is considered "low enough"
      */
-    const MAX_BATCH_SIZE = 10000000; //10MB
+    const COMPLEX_PERCENTILE_LOWER_BOUNDARY = 10;
 
     /**
-     * Arbitrary default margin to ensure not to exceed recommended batch size
+     * Arbitrary upper boundary where percentile of complex products is considered "high enough"
      */
-    const DEFAULT_MARGIN = 25;
-
-    /**
-     * Arbitrary increased margin to ensure not to exceed recommended batch size when catalog is a mix between configurables and other product types
-     * (i.e. with a lot of record sizes variations)
-     */
-    const INCREASED_MARGIN = 50;
-
-    /**
-     * Arbitrary lower boundary where percentile of configurable products is considered "low enough"
-     */
-    const CONFIGURABLE_PERCENTILE_LOWER_BOUNDARY = 10;
-
-    /**
-     * Arbitrary upper boundary where percentile of configurable products is considered "high enough"
-     */
-    const CONFIGURABLE_PERCENTILE_UPPER_BOUNDARY = 90;
+    const COMPLEX_PERCENTILE_UPPER_BOUNDARY = 90;
 
     public function __construct(
         protected AlgoliaConnector      $algoliaConnector,
@@ -63,7 +47,8 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
         protected StoreNameFetcher      $storeNameFetcher,
         protected StoreManagerInterface $storeManager,
         protected IndexOptionsBuilder   $indexOptionsBuilder,
-        protected CollectionFactory     $productCollectionFactory,
+        protected ProductHelper         $productHelper,
+        protected ConfigHelper          $configHelper,
         protected WriterInterface       $configWriter,
         ?string                         $name = null
     ) {
@@ -153,12 +138,12 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
     {
         $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexData = $this->getIndexData($indexOptions, $storeId);
-        $configurablePercentile = $this->getConfigurablePercentile($indexData['entries'], $storeId);
+        $complexPercentile = $this->getComplexPercentile($indexData['entries'], $storeId);
 
         $this->output->writeln('<info> ====== ' . $this->storeNameFetcher->getStoreName($storeId) . ' ====== </info>');
         $this->output->writeln('<comment>Index</comment>:               ' . $indexOptions->getIndexName());
         $this->output->writeln('<comment>Number of records</comment>:   ' . $indexData['entries']
-            . ' (' . round($configurablePercentile) . '% of configurable products)');
+            . ' (' . round($complexPercentile) . '% of complex products)');
         $this->output->writeln('<comment>Index data size</comment>:     ' . $indexData['dataSize'] . 'B');
 
         $averageRecordSize = (int)($indexData['dataSize']/$indexData['entries']);
@@ -168,7 +153,7 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
         $this->output->writeln('<info> ============ </info>');
         $this->output->writeln('<comment>Estimated max batch count</comment>:    ' . $maxBatchCount . ' objects');
 
-        $recommendedBatchCount = $this->getRecommendedBatchCount($maxBatchCount, $configurablePercentile);
+        $recommendedBatchCount = $this->getRecommendedBatchCount($maxBatchCount, $complexPercentile);
         $this->output->writeln('<comment>Recommended max batch count</comment>:  ' . $recommendedBatchCount . ' objects');
 
         if ($this->confirmOperation()) {
@@ -182,23 +167,23 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
     }
 
     /**
-     * Returns percentile of configurable products contained in the index
+     * Returns percentile of complex products (configurable, bundle, grouped) contained in the index
      *
      * @param int $nbProducts
      * @param int $storeId
      * @return float
      */
-    protected function getConfigurablePercentile(int $nbProducts, int $storeId): float
+    protected function getComplexPercentile(int $nbProducts, int $storeId): float
     {
-        if (! isset($this->configurablePercentile[$storeId])) {
-            $collection = $this->productCollectionFactory->create();
-            $collection->addStoreFilter($storeId);
-            $collection->addAttributeToFilter('type_id', ['eq' => 'configurable']);
-
-            $this->configurablePercentile[$storeId] = $collection->count() * 100 / $nbProducts;
+        if (! isset($this->complexPercentile[$storeId])) {
+            $this->complexPercentile[$storeId] =
+                $this->getProductsCollectionForStore(
+                    $storeId,
+                    self::PRODUCTS_COMPLEX_TYPES)
+                    ->count() * 100 / $nbProducts;
         }
 
-        return $this->configurablePercentile[$storeId];
+        return $this->complexPercentile[$storeId];
     }
 
     /**
@@ -227,16 +212,16 @@ class BatchingOptimizerCommand extends AbstractStoreCommand
      * Calculates the recommended batch count according to:
      *  - the average record size
      *  - the max batch count
-     *  - the percentile of configurable products (<10% and >90% are considered as "steady" so the margin is lower)
+     *  - the percentile of complex products (<10% and >90% are considered as "steady" so the margin is lower)
      *
      * @param int $maxBatchCount
-     * @param float $configurablePercentile
+     * @param float $complexPercentile
      * @return int
      */
-    protected function getRecommendedBatchCount(int $maxBatchCount, float $configurablePercentile): int
+    protected function getRecommendedBatchCount(int $maxBatchCount, float $complexPercentile): int
     {
-        $margin = $configurablePercentile > self::CONFIGURABLE_PERCENTILE_UPPER_BOUNDARY
-            || $configurablePercentile < self::CONFIGURABLE_PERCENTILE_LOWER_BOUNDARY ?
+        $margin = $complexPercentile > self::COMPLEX_PERCENTILE_UPPER_BOUNDARY
+            || $complexPercentile < self::COMPLEX_PERCENTILE_LOWER_BOUNDARY ?
             self::DEFAULT_MARGIN :
             self::INCREASED_MARGIN;
 

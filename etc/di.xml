@@ -153,6 +153,7 @@
                 <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
                 <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
                 <item name="batching_optimizer_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\BatchingOptimizerCommand</item>
+                <item name="batching_scan_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\BatchingScanCommand</item>
                 <!-- custom indexers -->
                 <item name="reindex_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand</item>
                 <item name="reindex_categories_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand</item>
@@ -204,7 +205,21 @@
     <type name="Algolia\AlgoliaSearch\Console\Command\BatchingOptimizerCommand">
         <arguments>
             <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
             <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
+            <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
+            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Algolia\AlgoliaSearch\Console\Command\BatchingScanCommand">
+        <arguments>
+            <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+            <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
+            <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
+            <argument name="recordBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\RecordBuilder\Proxy</argument>
+            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
         </arguments>
     </type>
 

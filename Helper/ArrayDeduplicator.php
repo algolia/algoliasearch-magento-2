@@ -11,16 +11,15 @@ class ArrayDeduplicator
      */
     public function dedupeSpecificSettings(array $settingNames, array $settings): array
     {
+        $processedSettings = [];
+        foreach ($settingNames as $settingName) {
+            $processedSettings[$settingName] = isset($settings[$settingName])
+                ? $this->dedupeArrayOfArrays($settings[$settingName])
+                : null;
+        }
+
         return array_filter(
-            array_combine(
-                $settingNames,
-                array_map(
-                    fn($settingName) => isset($settings[$settingName])
-                        ? $this->dedupeArrayOfArrays($settings[$settingName])
-                        : null,
-                    $settingNames
-                )
-            ),
+            $processedSettings,
             fn($val) => $val !== null
         );
     }
@@ -32,27 +31,12 @@ class ArrayDeduplicator
      * @return array
      */
     public function dedupeArrayOfArrays(array $data): array {
-        $encoded = array_map('json_encode', $data);
+        $encoded = [];
+        foreach ($data as $item) {
+            $encoded[] = json_encode($item);
+        }
         $unique = array_values(array_unique($encoded));
-        // Original code - not passing Codacy
-        // $decoded = array_map(
-        //     fn($item) => json_decode((string) $item, true),
-        //     $unique
-        // );
-        // Experiment 1
-        // $decoded = array_map(
-        //     'json_decode',
-        //     $unique,
-        //     array_fill(0, count($unique), true) // force decoding as associative array
-        // );
-
-        // Experiment 2
-        // $decoded = [];
-        // array_walk($unique, function($item) use (&$decoded) {
-        //     $decoded[] = json_decode((string) $item, true);
-        // });
-
-        // Experiment 3
+        
         $decoded = [];
         foreach ($unique as $item) {
             $decoded[] = json_decode((string) $item, true);

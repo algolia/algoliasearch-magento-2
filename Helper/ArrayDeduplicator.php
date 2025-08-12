@@ -47,10 +47,16 @@ class ArrayDeduplicator
         // );
 
         // Experiment 2
+        // $decoded = [];
+        // array_walk($unique, function($item) use (&$decoded) {
+        //     $decoded[] = json_decode((string) $item, true);
+        // });
+
+        // Experiment 3
         $decoded = [];
-        array_walk($unique, function($item) use (&$decoded) {
+        foreach ($unique as $item) {
             $decoded[] = json_decode((string) $item, true);
-        });
+        }
 
         return $decoded;
     }

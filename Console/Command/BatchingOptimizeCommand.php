@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command;
 
-use Algolia\AlgoliaSearch\Console\Traits\BatchingCommandTrait;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -18,14 +17,28 @@ use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class BatchingOptimizeCommand extends AbstractStoreCommand
 {
-    use BatchingCommandTrait;
+    /**
+     * Recommended Max batch size
+     * https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/
+     */
+    const MAX_BATCH_SIZE = 10000000; //10MB
+
+    /**
+     * Arbitrary default margin to ensure not to exceed recommended batch size
+     */
+    const DEFAULT_MARGIN = 25;
+
+    /**
+     * Arbitrary increased margin to ensure not to exceed recommended batch size when catalog is a mix between complex and other product types
+     * (i.e. with a lot of record sizes variations)
+     */
+    const INCREASED_MARGIN = 50;
 
     const DEFAULT_SAMPLE_SIZE = 20;
     const LARGE_SAMPLE_SIZE = 100;
@@ -33,6 +46,19 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     protected const LARGE_SAMPLE_OPTION = 'l-sample';
 
     protected const LARGE_SAMPLE_OPTION_SHORTCUT = 'l';
+
+    const PRODUCTS_SIMPLE_TYPES = [
+        'simple',
+        'downloadable',
+        'virtual',
+        'giftcard'
+    ];
+
+    const PRODUCTS_COMPLEX_TYPES = [
+        'configurable',
+        'grouped',
+        'bundle'
+    ];
 
     /**
      * @var array|null
@@ -239,6 +265,25 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             $this->getProductsSizes($simpleProducts, $simpleSampleSize),
             $this->getProductsSizes($complexProducts, $complexSampleSize)
         );
+    }
+
+    /**
+     * @param int $storeId
+     * @param array $productTypes
+     * @return Collection
+     */
+    protected function getProductsCollectionForStore(int $storeId, array $productTypes = []): Collection
+    {
+        $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex();
+        $collection = $this->productHelper->getProductCollectionQuery($storeId, null, $onlyVisible);
+        if (count($productTypes) > 0) {
+            $collection->addAttributeToFilter('type_id', ['in' => $productTypes]);
+        }
+
+        // Randomize the results to get a more "diverse" sample
+        $collection->getSelect()->orderRand();
+
+        return $collection;
     }
 
     /**

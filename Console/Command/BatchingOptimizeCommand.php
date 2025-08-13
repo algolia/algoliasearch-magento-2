@@ -23,7 +23,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class BatchingScanCommand extends AbstractStoreCommand
+class BatchingOptimizeCommand extends AbstractStoreCommand
 {
     use BatchingCommandTrait;
 
@@ -61,7 +61,7 @@ class BatchingScanCommand extends AbstractStoreCommand
 
     protected function getCommandName(): string
     {
-        return 'scan';
+        return 'optimize';
     }
 
     protected function getCommandDescription(): string

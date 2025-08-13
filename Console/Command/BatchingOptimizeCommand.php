@@ -226,8 +226,11 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $this->output->writeln('<info>Recommended batch count (low)</info>  : ' . $recommendedBatchCountLow . ' records');
         $this->output->writeln('<info>Recommended batch count (high)</info> : ' . $recommendedBatchCountHigh . ' records');
         $this->output->writeln(' ');
+        $this->output->writeln('<fg=red>Important:</fg=red> Those numbers are estimates only. Indexing activity should be monitored after making changes to ensure batches are not exceeding the recommended size of 10 MB.');
+        $this->output->writeln('<info> ============ </info>');
         $this->output->writeln(
             'This will override your "Maximum number of records processed per indexing job" configuration to <info>' . $recommendedBatchCountLow . '</info> for store "' . $storeName . '".');
+        $this->output->writeln(' ');
 
         if ($this->confirmOperation()) {
             $this->configWriter->save(

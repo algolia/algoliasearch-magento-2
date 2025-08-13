@@ -71,7 +71,7 @@ class RecordBuilder implements RecordBuilderInterface
         if ($completeRemoveTags && $completeRemoveTags !== [] && $s) {
             $dom = new \DOMDocument();
             libxml_use_internal_errors(true);
-            $encodedStr = mb_encode_numericentity($s, [0x80, 0x10fffff, 0, ~0]);
+            $encodedStr = mb_encode_numericentity((string) $s, [0x80, 0x10fffff, 0, ~0]);
             $dom->loadHTML($encodedStr);
             libxml_use_internal_errors(false);
 
@@ -91,13 +91,13 @@ class RecordBuilder implements RecordBuilderInterface
             $s = $dom->saveHTML();
         }
 
-        $s = html_entity_decode($s, 0, 'UTF-8');
+        $s = html_entity_decode((string) $s, 0, 'UTF-8');
 
-        $s = trim(preg_replace('/\s+/', ' ', $s));
+        $s = trim((string) preg_replace('/\s+/', ' ', $s));
         $s = preg_replace('/&nbsp;/', ' ', $s);
-        $s = preg_replace('!\s+!', ' ', $s);
-        $s = preg_replace('/\{\{[^}]+\}\}/', ' ', $s);
-        $s = strip_tags($s);
+        $s = preg_replace('!\s+!', ' ', (string) $s);
+        $s = preg_replace('/\{\{[^}]+\}\}/', ' ', (string) $s);
+        $s = strip_tags((string) $s);
         $s = trim($s);
 
         return $s;

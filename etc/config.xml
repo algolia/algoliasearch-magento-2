@@ -29,6 +29,9 @@
             </redirects>
         </algoliasearch_autocomplete>
         <algoliasearch_instant>
+            <instant>
+                <replace_categories>0</replace_categories>
+            </instant>
             <instant_facets>
                 <facets><![CDATA[{"_1458145454535_587":{"attribute":"price","type":"slider","label":"Price","searchable":"2","create_rule":"2"},"_2541608784525_123":{"attribute":"categories","type":"conjunctive","label":"Categories","searchable":"2","create_rule":"2"},"_3211608784535_456":{"attribute":"color","type":"disjunctive","label":"Colors","searchable":"1","create_rule":"2"}}]]></facets>
                 <max_values_per_facet>10</max_values_per_facet>
@@ -123,6 +126,7 @@
                 <connection_timeout>2</connection_timeout>
                 <read_timeout>30</read_timeout>
                 <write_timeout>30</write_timeout>
+                <forward_to_replicas>1</forward_to_replicas>
                 <auto_price_indexing>0</auto_price_indexing>
                 <enable_profiler>0</enable_profiler>
             </advanced>

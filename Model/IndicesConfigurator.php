@@ -17,6 +17,7 @@ use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Category\IndexOptionsBuilder as CategoryIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Page\IndexOptionsBuilder as PageIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexOptionsBuilder as SuggestionIndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -37,6 +38,7 @@ class IndicesConfigurator
         protected SuggestionHelper              $suggestionHelper,
         protected AdditionalSectionHelper       $additionalSectionHelper,
         protected AlgoliaCredentialsManager     $algoliaCredentialsManager,
+        protected IndexSettingsHandler          $indexSettingsHandler,
         protected DiagnosticsLogger             $logger
     ) {}
 
@@ -108,12 +110,7 @@ class IndicesConfigurator
         $settings = $this->categoryHelper->getIndexSettings($storeId);
         $indexOptions = $this->categoryIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
-        $this->algoliaConnector->setSettings(
-            $indexOptions,
-            $settings,
-            false,
-            true
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
         $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
@@ -133,12 +130,7 @@ class IndicesConfigurator
         $settings = $this->pageHelper->getIndexSettings($storeId);
         $indexOptions = $this->pageIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
-        $this->algoliaConnector->setSettings(
-            $indexOptions,
-            $settings,
-            false,
-            true
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
         $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
@@ -158,12 +150,7 @@ class IndicesConfigurator
         $settings = $this->suggestionHelper->getIndexSettings($storeId);
         $indexOptions = $this->suggestionIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
-        $this->algoliaConnector->setSettings(
-            $indexOptions,
-            $settings,
-            false,
-            true
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
         $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
@@ -192,7 +179,7 @@ class IndicesConfigurator
             $settings = $this->additionalSectionHelper->getIndexSettings($storeId);
             $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
-            $this->algoliaConnector->setSettings($indexOptions, $settings);
+            $this->indexSettingsHandler->setSettings($indexOptions, $settings);
 
             $this->logger->log('Index name: ' . $indexName);
             $this->logger->log('Settings: ' . json_encode($settings));

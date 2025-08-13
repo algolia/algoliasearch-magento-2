@@ -77,7 +77,7 @@ class CacheCleanProductPlugin
         return $orig[$key] !== $new[$key];
     }
 
-    protected function hasVisibilityChanged(array $orig, array $new, int $storeId = null): bool
+    protected function hasVisibilityChanged(array $orig, array $new, ?int $storeId = null): bool
     {
         if ($this->configHelper->includeNonVisibleProductsInIndex($storeId)) {
             return false;

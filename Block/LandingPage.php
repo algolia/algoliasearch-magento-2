@@ -90,7 +90,7 @@ class LandingPage extends Result
         $page = $this->getPage();
         $this->pageConfig->addBodyClass('algolia-landingpage-' . $page->getUrlKey());
         $metaTitle = $page->getMetaTitle();
-        $this->pageConfig->getTitle()->set($page->getTitle() ? $page->getTitle() : $metaTitle);
+        $this->pageConfig->getTitle()->set($page->getTitle() ?: $metaTitle);
         $this->pageConfig->setKeywords($page->getMetaKeywords());
         $this->pageConfig->setDescription($page->getMetaDescription());
 

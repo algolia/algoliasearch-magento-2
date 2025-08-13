@@ -43,9 +43,7 @@ class FacetBuilder
     public function getAttributesForFaceting(int $storeId): array
     {
         return array_map(
-            function($facet) {
-                return $this->decorateAttributeForFaceting($facet);
-            },
+            fn($facet) => $this->decorateAttributeForFaceting($facet),
             $this->addMerchandisingFacets($storeId, $this->getRawFacets($storeId))
         );
     }
@@ -83,9 +81,7 @@ class FacetBuilder
     protected function extractFacetAttributeNames(array $facets): array
     {
         return array_map(
-            function($facet) {
-                return $facet[self::FACET_KEY_ATTRIBUTE_NAME];
-            },
+            fn($facet) => $facet[self::FACET_KEY_ATTRIBUTE_NAME],
             $facets
         );
     }
@@ -166,9 +162,7 @@ class FacetBuilder
         foreach ($configFacets as $configFacet) {
             if ($configFacet[self::FACET_KEY_ATTRIBUTE_NAME] === self::FACET_ATTRIBUTE_PRICE) {
                 $rawFacets = array_merge($rawFacets, array_map(
-                    function(string $attribute) {
-                        return $this->getRawFacet($attribute);
-                    },
+                    fn(string $attribute) => $this->getRawFacet($attribute),
                     $this->getPricingAttributes($storeId)
                 ));
             } else {
@@ -189,9 +183,7 @@ class FacetBuilder
      */
     protected function hasCategoryFacet(array $facets): bool
     {
-        return !!array_filter($facets, function($facet) {
-            return $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES;
-        });
+        return !!array_filter($facets, fn($facet) => $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES);
     }
 
     /**

@@ -52,13 +52,13 @@ class CategoryCollectionAddPermissions implements ObserverInterface
 
         $catalogPermissionsHelper = $this->permissionsFactory->getCatalogPermissionsHelper();
         foreach ($permissionsCollection as $categoryId => $permissions) {
-            $permissions = explode(',', $permissions);
+            $permissions = explode(',', (string) $permissions);
             foreach ($permissions as $permission) {
                 $permission = explode('_', $permission);
                 if (count($permission) < 2) { // prevent undefined
                     continue;
                 }
-                list($customerGroupId, $level) = $permission;
+                [$customerGroupId, $level] = $permission;
                 if ($category = $collection->getItemById($categoryId)) {
                     $category->setData(
                         'customer_group_permission_' . $customerGroupId,
@@ -83,13 +83,13 @@ class CategoryCollectionAddPermissions implements ObserverInterface
         }
 
         foreach ($sharedCollection as $categoryId => $permissions) {
-            $permissions = explode(',', $permissions);
+            $permissions = explode(',', (string) $permissions);
             foreach ($permissions as $permission) {
                 $permission = explode('_', $permission);
                 if (count($permission) < 2) { // prevent undefined
                     continue;
                 }
-                list($customerGroupId, $level) = $permission;
+                [$customerGroupId, $level] = $permission;
                 if ($category = $collection->getItemById($categoryId)) {
                     $category->setData('shared_catalog_permission_' . $customerGroupId, $level == -1 ? 1 : 0);
                 }

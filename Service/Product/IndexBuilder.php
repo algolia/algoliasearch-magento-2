@@ -59,7 +59,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function buildIndexFull(int $storeId, array $options = null): void
+    public function buildIndexFull(int $storeId, ?array $options = null): void
     {
         $this->buildIndex($storeId, null, $options);
     }
@@ -72,7 +72,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function buildIndexList(int $storeId, array $entityIds = null, array $options = null): void
+    public function buildIndexList(int $storeId, ?array $entityIds = null, ?array $options = null): void
     {
         $this->buildIndex($storeId, $entityIds, $options);
     }
@@ -277,7 +277,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             try {
                 $this->logger->startProfiling("canProductBeReindexed");
                 $this->productRecordBuilder->canProductBeReindexed($product, $storeId);
-            } catch (ProductReindexingException $e) {
+            } catch (ProductReindexingException) {
                 $productsToRemove[$productId] = $productId;
                 continue;
             } finally {
@@ -329,7 +329,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $ordersTableName = $this->resource->getTableName('sales_order_item');
             try {
                 $salesConnection = $this->resource->getConnectionByName('sales');
-            } catch (\DomainException $e) {
+            } catch (\DomainException) {
                 $salesConnection = $this->resource->getConnection();
             }
             $select = $salesConnection->select()

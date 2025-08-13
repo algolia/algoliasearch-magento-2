@@ -1,13 +1,9 @@
 <?php
 
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\Query\Merchandising $block */
+/** @var \Magento\Framework\Escaper $escaper */
 
 $configHelper = $block->getConfigHelper();
-
-?>
-
-<?php
-
 $indexName = $block->getCoreHelper()->getBaseIndexName();
 $currencyCode = $configHelper->getCurrencyCode();
 
@@ -86,7 +82,7 @@ $isConfig = [
                             {{/_highlightResult.sku.0}}
                         </td>
                         <td>{{{ _highlightResult.name.value }}}</td>
-                        <td>{{ price.<?php echo $currencyCode ?>.default_formated }}</td>
+                        <td>{{ price.<?= $escaper->escapeHtml($currencyCode) ?>.default_formated }}</td>
                         <td class="actions">
                             <div class="pin_block">
                                 <a class="arrow up" href="#">
@@ -136,7 +132,7 @@ $isConfig = [
             {{/sku.0}}
         </td>
         <td>{{{ name }}}</td>
-        <td>{{ price.<?php echo $currencyCode ?>.default_formated }}</td>
+        <td>{{ price.<?= $escaper->escapeHtml($currencyCode) ?>.default_formated }}</td>
         <td class="actions">
             <div class="pin_block">
                 <a class="arrow up" href="#">
@@ -163,8 +159,8 @@ $isConfig = [
         <div class="info">
             {{{ _highlightResult.name.value }}}
             <div class="price">
-				{{ price.<?php echo $currencyCode ?>.default_formated }}
-			</div>
+                {{ price.<?= $escaper->escapeHtml($currencyCode) ?>.default_formated }}
+            </div>
         </div>
 
         <a href="#" class="pinIt">
@@ -194,7 +190,7 @@ $isConfig = [
         var initInstantSearch = function() {
             algoliaAdminBundle.$(function ($) {
                 var storeId = $('select[name="store_id"]').val();
-                var config = <?php echo json_encode($isConfig); ?>;
+                var config = JSON.parse('<?= $escaper->escapeJs(json_encode($isConfig)) ?>');
 
                 config.appId = config.indexDataByStoreIds[storeId].appId;
                 config.apiKey = config.indexDataByStoreIds[storeId].apiKey;
@@ -297,7 +293,7 @@ $isConfig = [
                             source: algoliaAdminBundle.autocomplete.sources.hits(index, options),
                             name: 'products',
                             templates: {
-                            	header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
+                                header: '<div class="header">Press <b>enter</b> to select, <b>↑</b> or <b>↓</b> to navigate, <b>esc</b> to dismiss</div>',
                                 suggestion: function (hit) {
                                     return template.render(hit);
                                 }
@@ -307,19 +303,19 @@ $isConfig = [
                     $('#algolia_merchandising_autocomplete')
                         .autocomplete({ debug: false, hint: false }, sources)
                         .on('autocomplete:selected', function (e, suggestion) {
-                        	var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
+                            var $existingRow = $('.algolia_merchandising_items_table tbody tr[data-objectid="' + suggestion.objectID + '"]');
 
-                        	if ($existingRow.length > 0) {
-                        		var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
-                        		$existingRow.insertBefore($firstRow);
+                            if ($existingRow.length > 0) {
+                                var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();
+                                $existingRow.insertBefore($firstRow);
                             }
                             else {
-                	            var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
-                		            newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
-                		            rowHtml = newRowTemplate.render(suggestion);
+                                var newRowTemplateHtml = $('#algolia_merchandisign_table_row').html(),
+                                    newRowTemplate = algoliaAdminBundle.Hogan.compile(newRowTemplateHtml),
+                                    rowHtml = newRowTemplate.render(suggestion);
 
-                	            $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
-                	            $('.algolia_merchandising_items_table tbody tr').last().remove();
+                                $('.algolia_merchandising_items_table tbody').prepend(rowHtml);
+                                $('.algolia_merchandising_items_table tbody tr').last().remove();
                             }
 
                             var $firstRow = $('.algolia_merchandising_items_table tbody tr').first();

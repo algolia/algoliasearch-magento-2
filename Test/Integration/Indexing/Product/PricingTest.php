@@ -122,7 +122,7 @@ class PricingTest extends ProductsIndexingTestCase
         /**
          * @var Product $product
          */
-        $product = $this->objectManager->get('Magento\Catalog\Model\ProductRepository')->getById($productId);
+        $product = $this->objectManager->get(\Magento\Catalog\Model\ProductRepository::class)->getById($productId);
         $this->assertTrue($product->isInStock(), "Product is not in stock");
         $this->assertTrue($product->getIsSalable(), "Product is not salable");
         $actualPrice = $product->getFinalPrice();
@@ -132,9 +132,7 @@ class PricingTest extends ProductsIndexingTestCase
     public static function productProvider(): array
     {
         return array_map(
-            function ($key, $value) {
-                return [$key, $value];
-            },
+            fn($key, $value) => [$key, $value],
             array_keys(self::ASSERT_PRODUCT_PRICES),
             self::ASSERT_PRODUCT_PRICES
         );

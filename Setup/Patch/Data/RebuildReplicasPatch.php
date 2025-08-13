@@ -72,7 +72,7 @@ class RebuildReplicasPatch implements DataPatchInterface
                 $this->replicaState->setChangeState(ReplicaState::REPLICA_STATE_CHANGED, $storeId); // avoids latency
                 $this->replicaManager->syncReplicasToAlgolia($storeId, $this->productHelper->getIndexSettings($storeId));
             }
-        } catch (AlgoliaException $e) {
+        } catch (AlgoliaException) {
             // Log the error but do not prevent setup:update
             $this->logger->error("Could not rebuild replicas - a full reindex may be required.");
         }

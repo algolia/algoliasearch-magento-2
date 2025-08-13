@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Console\Command;
+namespace Algolia\AlgoliaSearch\Console\Traits;
 
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 

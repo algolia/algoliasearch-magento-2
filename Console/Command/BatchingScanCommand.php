@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command;
 
+use Algolia\AlgoliaSearch\Console\Traits\BatchingCommandTrait;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;

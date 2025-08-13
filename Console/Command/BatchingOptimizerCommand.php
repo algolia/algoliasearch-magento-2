@@ -2,8 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command;
 
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Console\Traits\BatchingCommandTrait;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;

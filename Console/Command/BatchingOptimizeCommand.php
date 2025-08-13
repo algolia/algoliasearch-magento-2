@@ -41,11 +41,9 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     const INCREASED_MARGIN = 50;
 
     const DEFAULT_SAMPLE_SIZE = 20;
-    const LARGE_SAMPLE_SIZE = 100;
 
-    protected const LARGE_SAMPLE_OPTION = 'l-sample';
-
-    protected const LARGE_SAMPLE_OPTION_SHORTCUT = 'l';
+    protected const OPTION_SAMPLE_SIZE = 'sample-size';
+    protected const OPTION_SAMPLE_SIZE_SHORTCUT = 's';
 
     const PRODUCTS_SIMPLE_TYPES = [
         'simple',
@@ -104,10 +102,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     {
         return [
             new InputOption(
-                self::LARGE_SAMPLE_OPTION,
-                '-' . self::LARGE_SAMPLE_OPTION_SHORTCUT,
-                InputOption::VALUE_NONE,
-                'Use a large sample of products (100)'
+                self::OPTION_SAMPLE_SIZE,
+                '-' . self::OPTION_SAMPLE_SIZE_SHORTCUT,
+                InputOption::VALUE_REQUIRED,
+                'Sample size (number of products) - DEFAULT: ' . static::DEFAULT_SAMPLE_SIZE,
             )
         ];
     }
@@ -271,9 +269,8 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             ($this->storeCounts[$storeId]['complex'] * 100) / $this->storeCounts[$storeId]['total']:
             0;
 
-        $sampleSize = $this->input->getOption(self::LARGE_SAMPLE_OPTION) ?
-            self::LARGE_SAMPLE_SIZE :
-            self::DEFAULT_SAMPLE_SIZE;
+
+        $sampleSize = $this->input->getOption(self::OPTION_SAMPLE_SIZE) ?? self::DEFAULT_SAMPLE_SIZE;
         $simpleSampleSize = (int)round($sampleSize * ($this->storeCounts[$storeId]['simple_percentage'] / 100));
         $complexSampleSize = (int)round($sampleSize * ($this->storeCounts[$storeId]['complex_percentage'] / 100));
 

@@ -27,7 +27,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      * Recommended Max batch size
      * https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/
      */
-    const MAX_BATCH_SIZE = 10000000; //10MB
+    const MAX_BATCH_SIZE_IN_BYTES = 10_000_000; //10MB
 
     /**
      * Arbitrary default margin to ensure not to exceed recommended batch size
@@ -136,6 +136,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     /**
      * @param array $storeIds
      * @return void
+     * @throws AlgoliaException
+     * @throws DiagnosticsException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     protected function scanProductRecords(array $storeIds = []): void
     {
@@ -150,6 +154,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
 
     /**
      * @return void
+     * @throws AlgoliaException
+     * @throws DiagnosticsException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     protected function scanProductRecordsForAllStores(): void
     {
@@ -163,6 +171,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     /**
      * @param int $storeId
      * @return void
+     * @throws AlgoliaException
+     * @throws DiagnosticsException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
      */
     protected function scanProductRecordsForStore(int $storeId): void
     {
@@ -198,6 +210,8 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
 
         $this->output->writeln('<info> ============ </info>');
         $sizeAverage = $this->getSizeAverage($sample);
+        $this->output->writeln('<comment>Min record size</comment>             : ' . $this->storeCounts[$storeId]['sample_min'] . 'B');
+        $this->output->writeln('<comment>Max record size</comment>             : ' . $this->storeCounts[$storeId]['sample_max'] . 'B');
         $this->output->writeln('<comment>Average record size</comment>         : ' . $sizeAverage . 'B');
 
         $estimatedBatchCount = $this->getEstimatedMaxBatchCount($sizeAverage);
@@ -246,11 +260,13 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $this->storeCounts[$storeId]['total'] =
             (int) $this->storeCounts[$storeId]['simple'] + (int) $this->storeCounts[$storeId]['complex'];
 
-        $this->storeCounts[$storeId]['simple_percentage'] =
-            ($this->storeCounts[$storeId]['simple'] * 100) / $this->storeCounts[$storeId]['total'];
+        $this->storeCounts[$storeId]['simple_percentage'] = $this->storeCounts[$storeId]['total'] > 0 ?
+            ($this->storeCounts[$storeId]['simple'] * 100) / $this->storeCounts[$storeId]['total'] :
+            0;
 
-        $this->storeCounts[$storeId]['complex_percentage'] =
-            ($this->storeCounts[$storeId]['complex'] * 100) / $this->storeCounts[$storeId]['total'];
+        $this->storeCounts[$storeId]['complex_percentage'] = $this->storeCounts[$storeId]['total'] > 0 ?
+            ($this->storeCounts[$storeId]['complex'] * 100) / $this->storeCounts[$storeId]['total']:
+            0;
 
         $sampleSize = $this->input->getOption(self::LARGE_SAMPLE_OPTION) ?
             self::LARGE_SAMPLE_SIZE :
@@ -265,6 +281,9 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             $this->getProductsSizes($simpleProducts, $simpleSampleSize),
             $this->getProductsSizes($complexProducts, $complexSampleSize)
         );
+
+        $this->storeCounts[$storeId]['sample_min'] = min($this->storeCounts[$storeId]['sample']);
+        $this->storeCounts[$storeId]['sample_max'] = max($this->storeCounts[$storeId]['sample']);
     }
 
     /**
@@ -326,6 +345,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getSizeAverage(array $sizes): int
     {
+        if (count($sizes) <= 1) {
+            return 0.0;
+        }
+
         return (int) round(array_sum(array_values($sizes)) / count($sizes));
     }
 
@@ -335,7 +358,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getEstimatedMaxBatchCount(int $averageSize): int
     {
-        return (int) round(self::MAX_BATCH_SIZE / $averageSize);
+        return (int) round(self::MAX_BATCH_SIZE_IN_BYTES / $averageSize);
     }
 
     /**
@@ -345,12 +368,16 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getStandardDeviation(array $sizes, int $averageSize): float
     {
-        $sum = 0;
-        foreach ($sizes as $size) {
-            $sum += ($size - abs($averageSize)) * ($size - abs($averageSize));
+        if (count($sizes) <= 1) {
+            return 0.0;
         }
 
-        return round(sqrt($sum / count($sizes)), 2);
+        $sum = 0;
+        foreach ($sizes as $size) {
+            $sum += pow($size - $averageSize, 2);
+        }
+
+        return round(sqrt($sum / (count($sizes) - 1)), 2);
     }
 
     /**
@@ -361,6 +388,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getRecommendedBatchCount(int $averageSize, float $standardDeviation, int $margin = self::DEFAULT_MARGIN): int
     {
-        return (int) (self::MAX_BATCH_SIZE / ($averageSize + ($margin/100) * $standardDeviation));
+        return (int) (self::MAX_BATCH_SIZE_IN_BYTES / ($averageSize + ($margin/100) * $standardDeviation));
     }
 }

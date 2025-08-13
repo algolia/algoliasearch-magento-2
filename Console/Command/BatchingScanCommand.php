@@ -18,14 +18,21 @@ use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class BatchingScanCommand extends AbstractStoreCommand
 {
     use BatchingCommandTrait;
 
-    const DEFAULT_SAMPLE_SIZE = 10;
+    const DEFAULT_SAMPLE_SIZE = 20;
+    const LARGE_SAMPLE_SIZE = 100;
+
+    protected const LARGE_SAMPLE_OPTION = 'l-sample';
+
+    protected const LARGE_SAMPLE_OPTION_SHORTCUT = 'l';
 
     /**
      * @var array|null
@@ -69,7 +76,14 @@ class BatchingScanCommand extends AbstractStoreCommand
 
     protected function getAdditionalDefinition(): array
     {
-        return [];
+        return [
+            new InputOption(
+                self::LARGE_SAMPLE_OPTION,
+                '-' . self::LARGE_SAMPLE_OPTION_SHORTCUT,
+                InputOption::VALUE_NONE,
+                'Use a large sample of products (100)'
+            )
+        ];
     }
 
     /**
@@ -126,12 +140,18 @@ class BatchingScanCommand extends AbstractStoreCommand
      */
     protected function scanProductRecordsForStore(int $storeId): void
     {
+        $storeName = $this->storeNameFetcher->getStoreName($storeId);
+
+        if (!$this->configHelper->isIndexingEnabled($storeId)) {
+            $this->output->writeln('<info>Indexing is disabled for store ' . $storeName . '</info>');
+            return;
+        }
+
         if (!isset($this->storeCounts[$storeId])) {
             $this->setStoreCounts($storeId);
         }
 
         $this->output->writeln(' ');
-        $storeName = $this->storeNameFetcher->getStoreName($storeId);
         $this->output->writeln('<info> ====== Products for store ' . $storeName . ' ====== </info>');
         $this->output->writeln('<comment>Simple Products</comment>:  ' . $this->storeCounts[$storeId]['simple'] . ' (' . round($this->storeCounts[$storeId]['simple_percentage'], 2)  . '% of total)');
         $this->output->writeln('<comment>Complex Products</comment>: ' . $this->storeCounts[$storeId]['complex'] . ' (' . round($this->storeCounts[$storeId]['complex_percentage'], 2) . '% of total)');
@@ -206,8 +226,11 @@ class BatchingScanCommand extends AbstractStoreCommand
         $this->storeCounts[$storeId]['complex_percentage'] =
             ($this->storeCounts[$storeId]['complex'] * 100) / $this->storeCounts[$storeId]['total'];
 
-        $simpleSampleSize = (int)round(self::DEFAULT_SAMPLE_SIZE * ($this->storeCounts[$storeId]['simple_percentage'] / 100));
-        $complexSampleSize = (int)round(self::DEFAULT_SAMPLE_SIZE * ($this->storeCounts[$storeId]['complex_percentage'] / 100));
+        $sampleSize = $this->input->getOption(self::LARGE_SAMPLE_OPTION) ?
+            self::LARGE_SAMPLE_SIZE :
+            self::DEFAULT_SAMPLE_SIZE;
+        $simpleSampleSize = (int)round($sampleSize * ($this->storeCounts[$storeId]['simple_percentage'] / 100));
+        $complexSampleSize = (int)round($sampleSize * ($this->storeCounts[$storeId]['complex_percentage'] / 100));
 
         $this->storeCounts[$storeId]['simple_sample_size'] = $simpleSampleSize;
         $this->storeCounts[$storeId]['complex_sample_size'] = $complexSampleSize;

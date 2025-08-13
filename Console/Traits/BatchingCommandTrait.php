@@ -49,6 +49,9 @@ trait BatchingCommandTrait
             $collection->addAttributeToFilter('type_id', ['in' => $productTypes]);
         }
 
+        // Randomize the results to get a more "diverse" sample
+        $collection->getSelect()->orderRand();
+
         return $collection;
     }
 }

@@ -32,17 +32,22 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
 
     /**
      * Margin to ensure not to exceed maximum batch size when catalog is a mix between various product types
-     * (i.e. with a lot of record sizes variations) - can be updated by the --margin option (from 0 to 10)
-     * 0 => The recommended batch size will be almost equal to the strictly calculated maximum batch size
-     * [1 to 9] => The more this value is, the more the recommended batch size will differ from the calculated maximum batch size
-     * 10 => Highest possible value, the recommended batch size will be greatly lower than the calculated maximum batch size
+     * (i.e. with a lot of record sizes variations) - can be updated by the --margin option (from 0.25 to 3.00)
+     * 0.00 => Lowest possible value (0.00 * standard deviation = 0), the recommended batch size will be almost equal to the strictly calculated maximum batch size
+     * 0.25 => Default value (0.25 * standard deviation), the recommended batch size will be close to the strictly calculated maximum batch size
+     * 3.00 => Highest possible value (3 * standard deviation), the recommended batch size will be greatly lower than the calculated maximum batch size
      */
-    protected const DEFAULT_MARGIN = 1;
+    protected const DEFAULT_MARGIN = 0.25;
+
+    /**
+     * Min value for safety margin
+     */
+    protected const MIN_MARGIN = 0;
 
     /**
      * Max value for safety margin
      */
-    protected const MAX_MARGIN = 10;
+    protected const MAX_MARGIN = 3;
 
     /**
      * The sample size if the amount of products fetched to determine the recommended batch size
@@ -133,7 +138,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
                 self::OPTION_MARGIN,
                 '-' . self::OPTION_MARGIN_SHORTCUT,
                 InputOption::VALUE_REQUIRED,
-                'Safety margin - DEFAULT: ' . self::DEFAULT_MARGIN . ' - FROM 0 TO ' . self::MAX_MARGIN,
+                'Safety margin - DEFAULT: ' . self::DEFAULT_MARGIN . ' - FROM ' . self::MIN_MARGIN . ' TO ' . self::MAX_MARGIN,
             )
         ];
     }
@@ -181,11 +186,12 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         if (
             $this->input->getOption(self::OPTION_MARGIN)
             && (
-                !ctype_digit((string) $this->input->getOption(self::OPTION_MARGIN))
-                || (int) $this->input->getOption(self::OPTION_MARGIN) > self::MAX_MARGIN
+                !is_numeric($this->input->getOption(self::OPTION_MARGIN))
+                || (float) $this->input->getOption(self::OPTION_MARGIN) > self::MAX_MARGIN
+                || (float) $this->input->getOption(self::OPTION_MARGIN) < self::MIN_MARGIN
             )
         ) {
-            throw new AlgoliaException("Margin option should be an integer (maximum 10)" );
+            throw new AlgoliaException("Margin option should be a  decimal value (between 0 and 3)" );
         }
     }
 
@@ -420,10 +426,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      *
      * @param int $averageSize
      * @param float $standardDeviation
-     * @param int $margin
+     * @param float $margin
      * @return int
      */
-    protected function getRecommendedBatchCount(int $averageSize, float $standardDeviation, int $margin = self::DEFAULT_MARGIN): int
+    protected function getRecommendedBatchCount(int $averageSize, float $standardDeviation, float $margin = self::DEFAULT_MARGIN): int
     {
         return (int) (self::MAX_BATCH_SIZE_IN_BYTES / ($averageSize + $margin * $standardDeviation));
     }

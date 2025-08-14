@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
+use Algolia\AlgoliaSearch\Helper\MathHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder;
@@ -30,14 +31,28 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     protected const MAX_BATCH_SIZE_IN_BYTES = 10_000_000; //10MB
 
     /**
-     * Margin to ensure not to exceed recommended batch size when catalog is a mix between various product types
-     * (i.e. with a lot of record sizes variations)
+     * Margin to ensure not to exceed maximum batch size when catalog is a mix between various product types
+     * (i.e. with a lot of record sizes variations) - can be updated by the --margin option (from 0 to 10)
+     * 0 => The recommended batch size will be almost equal to the strictly calculated maximum batch size
+     * [1 to 9] => The more this value is, the more the recommended batch size will differ from the calculated maximum batch size
+     * 10 => Highest possible value, the recommended batch size will be greatly lower than the calculated maximum batch size
      */
     protected const DEFAULT_MARGIN = 1;
+
+    /**
+     * Max value for safety margin
+     */
     protected const MAX_MARGIN = 10;
 
+    /**
+     * The sample size if the amount of products fetched to determine the recommended batch size
+     * Can be updated by the --sample-size option
+     */
     protected const DEFAULT_SAMPLE_SIZE = 20;
 
+    /**
+     * Max Sample size
+     */
     protected const MAX_SAMPLE_SIZE = 1000;
 
     protected const OPTION_SAMPLE_SIZE = 'sample-size';
@@ -46,6 +61,9 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     protected const OPTION_MARGIN = 'margin';
     protected const OPTION_MARGIN_SHORTCUT = 'm';
 
+    /**
+     * Simple product types (should generate smaller product records)
+     */
     protected const PRODUCTS_SIMPLE_TYPES = [
         'simple',
         'downloadable',
@@ -53,6 +71,9 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         'giftcard'
     ];
 
+    /**
+     * Complex product types (should generate bigger product records)
+     */
     protected const PRODUCTS_COMPLEX_TYPES = [
         'configurable',
         'grouped',
@@ -91,7 +112,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return "Scans some products to determine the average product record size.";
+        return "Performs catalog analysis and provides recommendation regarding optimal batching size for product indexing.";
     }
 
     protected function getStoreArgumentDescription(): string
@@ -140,6 +161,8 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
+     * Ensures sample size and margin options are valid
+     *
      * @return void
      * @throws AlgoliaException
      */
@@ -242,7 +265,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         }
 
         $this->output->writeln('<info> ============ </info>');
-        $sizeAverage = $this->getSizeAverage($sample);
+        $sizeAverage = MathHelper::getRoundedAverage($sample);
         $this->output->writeln('<comment>Min record size</comment>             : ' . $this->storeCounts[$storeId]['sample_min'] . 'B');
         $this->output->writeln('<comment>Max record size</comment>             : ' . $this->storeCounts[$storeId]['sample_max'] . 'B');
         $this->output->writeln('<comment>Average record size</comment>         : ' . $sizeAverage . 'B');
@@ -250,7 +273,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $estimatedBatchCount = $this->getEstimatedMaxBatchCount($sizeAverage);
         $this->output->writeln('<comment>Estimated Max batch count</comment>   : ' . $estimatedBatchCount . ' records');
 
-        $standardDeviation = $this->getStandardDeviation($sample, $sizeAverage);
+        $standardDeviation = MathHelper::getSampleStandardDeviation($sample, $sizeAverage);
         $this->output->writeln('<comment>Standard Deviation</comment>          : ' . $standardDeviation);
 
         $margin = $this->input->getOption(self::OPTION_MARGIN) ?? self::DEFAULT_MARGIN;
@@ -323,6 +346,8 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
+     * Generates a product collection with the same helper as the product indexer to get the exact amount of expected products in the Algolia index
+     *
      * @param int $storeId
      * @param array $productTypes
      * @return Collection
@@ -376,19 +401,8 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
-     * @param array $sizes
-     * @return int
-     */
-    protected function getSizeAverage(array $sizes): int
-    {
-        if (empty($sizes)) {
-            return 0.0;
-        }
-
-        return (int) round(array_sum(array_values($sizes)) / count($sizes));
-    }
-
-    /**
+     * Determines the maximum estimated batch count which will be considered as the upper boundary
+     *
      * @param int $averageSize
      * @return int
      */
@@ -398,25 +412,12 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
-     * @param array $sizes
-     * @param int $averageSize
-     * @return float
-     */
-    protected function getStandardDeviation(array $sizes, int $averageSize): float
-    {
-        if (count($sizes) <= 1) {
-            return 0.0;
-        }
-
-        $sum = 0;
-        foreach ($sizes as $size) {
-            $sum += pow($size - $averageSize, 2);
-        }
-
-        return round(sqrt($sum / (count($sizes) - 1)), 2);
-    }
-
-    /**
+     * Provides a recommended batch count according to:
+     *  - the average record size provided by the product sample
+     *  - the standard deviation of the product sample
+     *  - an arbitrary safety margin (1 to 10) to allow the user to alter the strictness of the recommendation
+     *    (the lower the margin is, the closer it will be from the maximum batch count)
+     *
      * @param int $averageSize
      * @param float $standardDeviation
      * @param int $margin

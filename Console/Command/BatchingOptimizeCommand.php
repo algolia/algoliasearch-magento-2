@@ -27,32 +27,33 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      * Recommended Max batch size
      * https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/
      */
-    const MAX_BATCH_SIZE_IN_BYTES = 10_000_000; //10MB
+    protected const MAX_BATCH_SIZE_IN_BYTES = 10_000_000; //10MB
 
     /**
-     * Arbitrary default margin to ensure not to exceed recommended batch size
-     */
-    const DEFAULT_MARGIN = 25;
-
-    /**
-     * Arbitrary increased margin to ensure not to exceed recommended batch size when catalog is a mix between complex and other product types
+     * Margin to ensure not to exceed recommended batch size when catalog is a mix between various product types
      * (i.e. with a lot of record sizes variations)
      */
-    const INCREASED_MARGIN = 50;
+    protected const DEFAULT_MARGIN = 1;
+    protected const MAX_MARGIN = 10;
 
-    const DEFAULT_SAMPLE_SIZE = 20;
+    protected const DEFAULT_SAMPLE_SIZE = 20;
+
+    protected const MAX_SAMPLE_SIZE = 1000;
 
     protected const OPTION_SAMPLE_SIZE = 'sample-size';
     protected const OPTION_SAMPLE_SIZE_SHORTCUT = 's';
 
-    const PRODUCTS_SIMPLE_TYPES = [
+    protected const OPTION_MARGIN = 'margin';
+    protected const OPTION_MARGIN_SHORTCUT = 'm';
+
+    protected const PRODUCTS_SIMPLE_TYPES = [
         'simple',
         'downloadable',
         'virtual',
         'giftcard'
     ];
 
-    const PRODUCTS_COMPLEX_TYPES = [
+    protected const PRODUCTS_COMPLEX_TYPES = [
         'configurable',
         'grouped',
         'bundle'
@@ -105,7 +106,13 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
                 self::OPTION_SAMPLE_SIZE,
                 '-' . self::OPTION_SAMPLE_SIZE_SHORTCUT,
                 InputOption::VALUE_REQUIRED,
-                'Sample size (number of products) - DEFAULT: ' . static::DEFAULT_SAMPLE_SIZE,
+                'Sample size (number of products) - DEFAULT: ' . self::DEFAULT_SAMPLE_SIZE . ' - MAXIMUM: ' . self::MAX_SAMPLE_SIZE,
+            ),
+            new InputOption(
+                self::OPTION_MARGIN,
+                '-' . self::OPTION_MARGIN_SHORTCUT,
+                InputOption::VALUE_REQUIRED,
+                'Safety margin - DEFAULT: ' . self::DEFAULT_MARGIN . ' - FROM 0 TO ' . self::MAX_MARGIN,
             )
         ];
     }
@@ -122,6 +129,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $storeIds = $this->getStoreIds($input);
 
         try {
+            $this->validateOptions();
             $this->scanProductRecords($storeIds);
         } catch (\Exception $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
@@ -129,6 +137,33 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         }
 
         return Cli::RETURN_SUCCESS;
+    }
+
+    /**
+     * @return void
+     * @throws AlgoliaException
+     */
+    protected function validateOptions(): void
+    {
+        if (
+            $this->input->getOption(self::OPTION_SAMPLE_SIZE)
+            && (
+                !ctype_digit((string) $this->input->getOption(self::OPTION_SAMPLE_SIZE))
+                || (int) $this->input->getOption(self::OPTION_SAMPLE_SIZE) > self::MAX_SAMPLE_SIZE
+            )
+        ) {
+            throw new AlgoliaException("Sample size option should be an integer (maximum 1000)" );
+        }
+
+        if (
+            $this->input->getOption(self::OPTION_MARGIN)
+            && (
+                !ctype_digit((string) $this->input->getOption(self::OPTION_MARGIN))
+                || (int) $this->input->getOption(self::OPTION_MARGIN) > self::MAX_MARGIN
+            )
+        ) {
+            throw new AlgoliaException("Margin option should be an integer (maximum 10)" );
+        }
     }
 
     /**
@@ -218,22 +253,23 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $standardDeviation = $this->getStandardDeviation($sample, $sizeAverage);
         $this->output->writeln('<comment>Standard Deviation</comment>          : ' . $standardDeviation);
 
-        $recommendedBatchCountLow = $this->getRecommendedBatchCount($sizeAverage, $standardDeviation, self::INCREASED_MARGIN);
-        $recommendedBatchCountHigh = $this->getRecommendedBatchCount($sizeAverage, $standardDeviation);
+        $margin = $this->input->getOption(self::OPTION_MARGIN) ?? self::DEFAULT_MARGIN;
+        $this->output->writeln('<comment>Safety margin</comment>               : ' . $margin);
+
+        $recommendedBatchCount = $this->getRecommendedBatchCount($sizeAverage, $standardDeviation, $margin);
         $this->output->writeln('<info> ============ </info>');
-        $this->output->writeln('<info>Recommended batch count (low)</info>  : ' . $recommendedBatchCountLow . ' records');
-        $this->output->writeln('<info>Recommended batch count (high)</info> : ' . $recommendedBatchCountHigh . ' records');
+        $this->output->writeln('<info>Recommended batch count</info>     : ' . $recommendedBatchCount . ' records');
         $this->output->writeln(' ');
         $this->output->writeln('<fg=red>Important:</fg=red> Those numbers are estimates only. Indexing activity should be monitored after making changes to ensure batches are not exceeding the recommended size of 10 MB.');
         $this->output->writeln('<info> ============ </info>');
         $this->output->writeln(
-            'This will override your "Maximum number of records processed per indexing job" configuration to <info>' . $recommendedBatchCountLow . '</info> for store "' . $storeName . '".');
+            'This will override your "Maximum number of records processed per indexing job" configuration to <info>' . $recommendedBatchCount . '</info> for store "' . $storeName . '".');
         $this->output->writeln(' ');
 
         if ($this->confirmOperation()) {
             $this->configWriter->save(
                 ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
-                $recommendedBatchCountLow,
+                $recommendedBatchCount,
                 'stores',
                 $storeId
             );
@@ -388,6 +424,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getRecommendedBatchCount(int $averageSize, float $standardDeviation, int $margin = self::DEFAULT_MARGIN): int
     {
-        return (int) (self::MAX_BATCH_SIZE_IN_BYTES / ($averageSize + ($margin/100) * $standardDeviation));
+        return (int) (self::MAX_BATCH_SIZE_IN_BYTES / ($averageSize + $margin * $standardDeviation));
     }
 }

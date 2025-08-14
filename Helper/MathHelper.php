@@ -6,27 +6,28 @@ class MathHelper
 {
     /**
      * @param array $values
-     * @return int
+     * @return float
      */
-    static public function getRoundedAverage(array $values): int
+    static public function getAverage(array $values): float
     {
         if (empty($values)) {
-            return 0.0;
+            return 0.00;
         }
 
-        return (int) round(array_sum(array_values($values)) / count($values));
+        return round(array_sum(array_values($values)) / count($values), 2);
     }
 
     /**
      * @param array $values
-     * @param int $average
      * @return float
      */
-    static public function getSampleStandardDeviation(array $values, int $average): float
+    static public function getSampleStandardDeviation(array $values): float
     {
         if (count($values) <= 1) {
             return 0.0;
         }
+
+        $average = self::getAverage($values);
 
         $sum = 0;
         foreach ($values as $value) {

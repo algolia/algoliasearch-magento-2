@@ -265,7 +265,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         }
 
         $this->output->writeln('<info> ============ </info>');
-        $sizeAverage = MathHelper::getRoundedAverage($sample);
+        $sizeAverage = (int) round(MathHelper::getAverage($sample));
         $this->output->writeln('<comment>Min record size</comment>             : ' . $this->storeCounts[$storeId]['sample_min'] . 'B');
         $this->output->writeln('<comment>Max record size</comment>             : ' . $this->storeCounts[$storeId]['sample_max'] . 'B');
         $this->output->writeln('<comment>Average record size</comment>         : ' . $sizeAverage . 'B');
@@ -273,7 +273,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $estimatedBatchCount = $this->getEstimatedMaxBatchCount($sizeAverage);
         $this->output->writeln('<comment>Estimated Max batch count</comment>   : ' . $estimatedBatchCount . ' records');
 
-        $standardDeviation = MathHelper::getSampleStandardDeviation($sample, $sizeAverage);
+        $standardDeviation = MathHelper::getSampleStandardDeviation($sample);
         $this->output->writeln('<comment>Standard Deviation</comment>          : ' . $standardDeviation);
 
         $margin = $this->input->getOption(self::OPTION_MARGIN) ?? self::DEFAULT_MARGIN;

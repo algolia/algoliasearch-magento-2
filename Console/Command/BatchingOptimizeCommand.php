@@ -381,7 +381,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getSizeAverage(array $sizes): int
     {
-        if (count($sizes) <= 1) {
+        if (empty($sizes)) {
             return 0.0;
         }
 

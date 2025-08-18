@@ -147,21 +147,26 @@
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
+                <!-- Replicas -->
                 <item name="replica_sync_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand</item>
                 <item name="replica_delete_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDeleteCommand</item>
                 <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand</item>
                 <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
                 <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
                 <item name="batching_optimize_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\BatchingOptimizeCommand</item>
-                <!-- custom indexers -->
+
+                <!-- Custom indexers -->
                 <item name="reindex_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand</item>
                 <item name="reindex_categories_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand</item>
                 <item name="reindex_pages_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand</item>
                 <item name="reindex_suggestions_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexSuggestionsCommand</item>
                 <item name="reindex_additional_sections_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAdditionalSectionsCommand</item>
                 <item name="delete_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\DeleteProductsCommand</item>
-                <item name="process_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand</item>
                 <item name="reindex_all_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand</item>
+
+                <!-- Queue processing-->
+                <item name="process_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand</item>
+                <item name="clear_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ClearQueueCommand</item>
             </argument>
         </arguments>
     </type>

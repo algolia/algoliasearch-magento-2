@@ -3,8 +3,8 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
-use Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand;
-use Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand;
+use Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaRebuildCommand;
+use Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;

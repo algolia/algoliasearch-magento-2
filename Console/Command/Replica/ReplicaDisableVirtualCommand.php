@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Console\Command;
+namespace Algolia\AlgoliaSearch\Console\Command\Replica;
 
 use Algolia\AlgoliaSearch\Api\Console\ReplicaSyncCommandInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;

@@ -89,7 +89,8 @@ class ClearQueueCommand extends AbstractStoreCommand
         $this->output->writeln('<fg=red>WARNING:</fg=red> This will clear all pending indexing jobs from the queue for the specified store(s). This action cannot be undone!');
         return $this->confirmOperation(
             'Indexing queue clear operation confirmed',
-            'Indexing queue clear operation cancelled'
+            'Indexing queue clear operation cancelled',
+            true
         );
     }
 

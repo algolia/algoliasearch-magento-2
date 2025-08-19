@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Console\Command\Queue;
 
 use Algolia\AlgoliaSearch\Console\Command\AbstractStoreCommand;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
-use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -38,7 +37,7 @@ class ClearQueueCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return "Clear the indexing queue for specified store(s) or all stores. This will remove all pending indexing tasks from the queue.";
+        return "Clear the indexing queue for specified store(s) or all stores. This will remove all pending indexing jobs from the queue.";
     }
 
     protected function getStoreArgumentDescription(): string
@@ -98,7 +97,7 @@ class ClearQueueCommand extends AbstractStoreCommand
      * Clear indexing queue for specified stores or all stores
      *
      * @param array $storeIds
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|LocalizedException
      */
     public function clearIndexingQueue(array $storeIds = []): void
     {
@@ -123,8 +122,6 @@ class ClearQueueCommand extends AbstractStoreCommand
         $this->output->writeln('<info>Clearing indexing queue for ' . $storeName . '...</info>');
 
         try {
-            // Clear the indexing queue for this store
-            // Note: You'll need to implement the actual queue clearing logic based on your queue implementation
             $this->clearQueueForStore($storeId);
 
             $this->output->writeln('<info>✓ Indexing queue cleared for ' . $storeName . '</info>');
@@ -146,14 +143,89 @@ class ClearQueueCommand extends AbstractStoreCommand
     }
 
     /**
-     * Clear the actual queue for a specific store
-     * This method should be implemented based on your specific queue implementation
+     * Clear the queue for a specific store (2 different approaches)
+     * Filters jobs by store_id in the JSON data field and deletes them
      *
      * @param int $storeId
      * @throws \Exception
      */
     protected function clearQueueForStore(int $storeId): void
     {
-        throw new \Exception('Queue clearing method not implemented by store');
+        try {
+            // Use JSON_EXTRACT to filter by store_id in the data field
+            // This assumes MySQL 5.7+ or MariaDB 10.2+ for JSON support
+            $connection = $this->jobResourceModel->getConnection();
+            $mainTable = $this->jobResourceModel->getMainTable();
+
+            $select = $connection->select()
+                ->from($mainTable, ['job_id'])
+                ->where('JSON_EXTRACT(data, "$.storeId") = ?', $storeId);
+
+            $jobIds = $connection->fetchCol($select);
+
+            if (empty($jobIds)) {
+                $this->output->writeln('<comment>No jobs found for store ID ' . $storeId . '</comment>');
+                return;
+            }
+
+            // Delete the filtered jobs
+            $deletedCount = $connection->delete(
+                $mainTable,
+                ['job_id IN (?)' => $jobIds]
+            );
+
+            $this->output->writeln('<info>Deleted ' . $deletedCount . ' jobs for store ID ' . $storeId . '</info>');
+
+        } catch (\Exception $e) {
+            // Fallback method if JSON_EXTRACT is not supported
+            $this->output->writeln('<comment>JSON filtering not supported by database, using fallback method...</comment>');
+            $this->clearQueueForStoreFallback($storeId);
+        }
+    }
+
+    /**
+     * Fallback method for clearing queue by store when JSON filtering is not supported
+     * Loads all jobs and filters them in PHP
+     *
+     * @param int $storeId
+     * @throws \Exception
+     */
+    protected function clearQueueForStoreFallback(int $storeId): void
+    {
+        try {
+            $connection = $this->jobResourceModel->getConnection();
+            $mainTable = $this->jobResourceModel->getMainTable();
+
+            // Get all jobs and filter by store_id in PHP
+            $select = $connection->select()
+                ->from($mainTable, ['job_id', 'data'])
+                ->where('data IS NOT NULL');
+
+            $jobs = $connection->fetchAll($select);
+            $jobsToDelete = [];
+
+            foreach ($jobs as $job) {
+                $data = json_decode($job['data'], true);
+                if (isset($data['storeId']) && $data['storeId'] == $storeId) {
+                    $jobsToDelete[] = $job['job_id'];
+                }
+            }
+
+            if (empty($jobsToDelete)) {
+                $this->output->writeln('<comment>No jobs found for store ID ' . $storeId . ' (fallback method)</comment>');
+                return;
+            }
+
+            // Delete the filtered jobs
+            $deletedCount = $connection->delete(
+                $mainTable,
+                ['job_id IN (?)' => $jobsToDelete]
+            );
+
+            $this->output->writeln('<info>Deleted ' . $deletedCount . ' jobs for store ID ' . $storeId . ' (fallback method)</info>');
+
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to clear queue for store ' . $storeId . ': ' . $e->getMessage());
+        }
     }
 }

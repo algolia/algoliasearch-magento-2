@@ -226,7 +226,7 @@ class ClearQueueCommand extends AbstractStoreCommand
             $this->output->writeln('<info>Deleted ' . $deletedCount . ' jobs for store ID ' . $storeId . ' (fallback method)</info>');
 
         } catch (\Exception $e) {
-            throw new \Exception('Failed to clear queue for store ' . $storeId . ': ' . $e->getMessage());
+            throw new \Exception(sprintf('Failed to clear queue for store %d: %s', $storeId, $e->getMessage()));
         }
     }
 }

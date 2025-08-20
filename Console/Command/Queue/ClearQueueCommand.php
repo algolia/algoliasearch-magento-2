@@ -69,7 +69,7 @@ class ClearQueueCommand extends AbstractStoreCommand
         $output->writeln($this->decorateOperationAnnouncementMessage('Clearing indexing queue for {{target}}', $storeIds));
 
         try {
-            $this->clearIndexingQueue($storeIds);
+            $this->clearQueue($storeIds);
         } catch (\Exception $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
             return Cli::RETURN_FAILURE;
@@ -100,14 +100,14 @@ class ClearQueueCommand extends AbstractStoreCommand
      * @param array $storeIds
      * @throws NoSuchEntityException|LocalizedException
      */
-    public function clearIndexingQueue(array $storeIds = []): void
+    protected function clearQueue(array $storeIds = []): void
     {
         if (count($storeIds)) {
             foreach ($storeIds as $storeId) {
-                $this->clearIndexingQueueForStore($storeId);
+                $this->clearQueueForStore($storeId);
             }
         } else {
-            $this->clearIndexingQueueForAllStores();
+            $this->clearQueueForAllStores();
         }
     }
 
@@ -117,13 +117,13 @@ class ClearQueueCommand extends AbstractStoreCommand
      * @param int $storeId
      * @throws NoSuchEntityException
      */
-    public function clearIndexingQueueForStore(int $storeId): void
+    protected function clearQueueForStore(int $storeId): void
     {
         $storeName = $this->storeNameFetcher->getStoreName($storeId);
         $this->output->writeln('<info>Clearing indexing queue for ' . $storeName . '...</info>');
 
         try {
-            $this->clearQueueForStore($storeId);
+            $this->clearQueueTableForStore($storeId);
 
             $this->output->writeln('<info>✓ Indexing queue cleared for ' . $storeName . '</info>');
         } catch (\Exception $e) {
@@ -137,7 +137,7 @@ class ClearQueueCommand extends AbstractStoreCommand
      * @throws NoSuchEntityException
      * @throws LocalizedException
      */
-    public function clearIndexingQueueForAllStores(): void
+    protected function clearQueueForAllStores(): void
     {
         $connection = $this->jobResourceModel->getConnection();
         $connection->truncateTable($this->jobResourceModel->getMainTable());
@@ -150,7 +150,7 @@ class ClearQueueCommand extends AbstractStoreCommand
      * @param int $storeId
      * @throws \Exception
      */
-    protected function clearQueueForStore(int $storeId): void
+    protected function clearQueueTableForStore(int $storeId): void
     {
         try {
             // Use JSON_EXTRACT to filter by store_id in the data field
@@ -180,7 +180,7 @@ class ClearQueueCommand extends AbstractStoreCommand
         } catch (\Exception $e) {
             // Fallback method if JSON_EXTRACT is not supported
             $this->output->writeln('<comment>JSON filtering not supported by database, using fallback method...</comment>');
-            $this->clearQueueForStoreFallback($storeId);
+            $this->clearQueueTableForStoreFallback($storeId);
         }
     }
 
@@ -191,7 +191,7 @@ class ClearQueueCommand extends AbstractStoreCommand
      * @param int $storeId
      * @throws \Exception
      */
-    protected function clearQueueForStoreFallback(int $storeId): void
+    protected function clearQueueTableForStoreFallback(int $storeId): void
     {
         try {
             $connection = $this->jobResourceModel->getConnection();

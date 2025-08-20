@@ -163,8 +163,8 @@
                 <item name="reindex_all_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand</item>
 
                 <!-- Queue processing-->
-                <item name="process_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand</item>
-                <item name="clear_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ClearQueueCommand</item>
+                <item name="queue_process_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand</item>
+                <item name="queue_clear_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ClearQueueCommand</item>
 
                 <!-- Misc -->
                 <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>

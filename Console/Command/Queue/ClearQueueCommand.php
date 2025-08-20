@@ -226,10 +226,8 @@ class ClearQueueCommand extends AbstractStoreCommand
             $this->output->writeln('<info>Deleted ' . $deletedCount . ' jobs for store ID ' . $storeId . ' (fallback method)</info>');
 
         } catch (\Exception $e) {
-            /**
-             * Escaping complaints represent a false positive as sprintf is used to convert the $storeId to an int and the error message is generated internally
-             * phpcs:ignore 
-             */
+            // Safe: $storeId is cast to int, exception messages are internal.
+            // phpcs:ignore
             throw new \Exception(sprintf('Failed to clear queue for store %d: %s', $storeId, $e->getMessage()));
         }
     }

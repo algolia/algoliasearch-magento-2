@@ -114,7 +114,7 @@ class Queue
      * @param int $dataSize
      * @param bool $isFullReindex
      */
-    public function addToQueue($className, $method, array $data, $dataSize = 1, $isFullReindex = false)
+    public function addToQueue(string $className, string $method, array $data, int $dataSize = 1, bool $isFullReindex = false): void
     {
         if (is_object($className)) {
             $className = $className::class;
@@ -146,7 +146,7 @@ class Queue
      *
      * @return float|null
      */
-    public function getAverageProcessingTime()
+    public function getAverageProcessingTime(): ?float
     {
         $select = $this->db->select()
             ->from($this->logTable, ['number_of_runs' => 'COUNT(duration)', 'average_time' => 'AVG(duration)'])
@@ -165,7 +165,7 @@ class Queue
      *
      * @throws Exception
      */
-    public function runCron($nbJobs = null, $force = false)
+    public function runCron(int $nbJobs = null, bool $force = false): void
     {
         if (!$this->configHelper->isQueueActive() && $force === false) {
             return;
@@ -213,7 +213,8 @@ class Queue
      * @param Job $job
      * @return string
      */
-    protected function jobToWhereClause(Job $job): string {
+    protected function jobToWhereClause(Job $job): string
+    {
         return sprintf('job_id IN (%s)',implode(',', $job->getMergedIds()));
     }
 
@@ -222,7 +223,8 @@ class Queue
      * @return void
      * @throws \Exception
      */
-    protected function processJob(Job $job): void {
+    protected function processJob(Job $job): void
+    {
         $job->execute();
 
         $where = $this->jobToWhereClause($job);
@@ -242,7 +244,8 @@ class Queue
      * @param Exception $e
      * @return void
      */
-    protected function handleFailedJob(Job $job, Exception $e): void {
+    protected function handleFailedJob(Job $job, Exception $e): void
+    {
         $this->noOfFailedJobs++;
 
         // Log error information
@@ -284,7 +287,7 @@ class Queue
      *
      * @throws Exception
      */
-    public function run($maxJobs)
+    public function run(int $maxJobs): void
     {
         $this->clearOldFailingJobs();
 
@@ -375,12 +378,12 @@ class Queue
     /**
      * @param int $maxJobs
      *
-     * @throws Exception
-     *
      * @return Job[]
      *
+     * @throws Exception
+     *
      */
-    protected function getJobs($maxJobs)
+    protected function getJobs(int $maxJobs): array
     {
         $maxJobs = ($maxJobs === -1) ? $this->configHelper->getNumberOfJobToRun() : $maxJobs;
 
@@ -432,14 +435,14 @@ class Queue
      *
      * @return Job[]
      */
-    protected function fetchJobs($jobsLimit, $fetchFullReindexJobs = false, $lastJobId = null)
+    protected function fetchJobs(int $jobsLimit, bool $fetchFullReindexJobs = false, int $lastJobId = null): array
     {
         $jobs = [];
 
         $actualBatchSize = 0;
-        $maxBatchSize = $this->configHelper->getNumberOfElementByPage() * $jobsLimit;
+        $maxBatchSize = $this->configHelper->getNumberOfElementByPage();
 
-        $limit = $maxJobs = $jobsLimit;
+        $limit = $jobsLimit;
         $offset = 0;
 
         $fetchFullReindexJobs = $fetchFullReindexJobs ? 1 : 0;
@@ -470,27 +473,26 @@ class Queue
             $rawJobsCount = count($rawJobs);
 
             $offset += $limit;
-            $limit = max(0, $maxJobs - $rawJobsCount);
+            $limit = max(0, $jobsLimit - $rawJobsCount);
 
             // $jobs will always be completely set from $rawJobs
             // Without resetting not-merged jobs would be stacked
             $jobs = [];
 
-            if (count($rawJobs) === $maxJobs) {
+            // At this point, if this condition is true, this means that no merge was possible in the last iteration
+            if (count($rawJobs) === $jobsLimit) {
                 $jobs = $rawJobs;
 
                 break;
             }
 
+            $jobSizes = [];
+
             foreach ($rawJobs as $job) {
                 $jobSize = (int) $job->getDataSize();
-
-                if ($actualBatchSize + $jobSize <= $maxBatchSize || !$jobs) {
-                    $jobs[] = $job;
-                    $actualBatchSize += $jobSize;
-                } else {
-                    break 2;
-                }
+                $jobSizes[$job->getId()] = $jobSize;
+                $actualBatchSize = array_sum($jobSizes);
+                $jobs[] = $job;
             }
         }
 
@@ -502,7 +504,7 @@ class Queue
      *
      * @return Job[]
      */
-    protected function mergeJobs(array $unmergedJobs)
+    protected function mergeJobs(array $unmergedJobs): array
     {
         $unmergedJobs = $this->sortJobs($unmergedJobs);
 
@@ -539,7 +541,7 @@ class Queue
      *
      * @return Job[]
      */
-    protected function sortJobs(array $jobs)
+    protected function sortJobs(array $jobs): array
     {
         $sortedJobs = [];
 
@@ -571,7 +573,7 @@ class Queue
      *
      * @return array
      */
-    protected function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, ?Job $job = null)
+    protected function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, ?Job $job = null): array
     {
         if ($tempSortableJobs && $tempSortableJobs !== []) {
             $tempSortableJobs = $this->jobSort(
@@ -599,7 +601,7 @@ class Queue
     /**
      * @return array
      */
-    protected function jobSort()
+    protected function jobSort(): array
     {
         $args = func_get_args();
 
@@ -631,7 +633,7 @@ class Queue
     /**
      * @param Job[] $jobs
      */
-    protected function lockJobs(array $jobs)
+    protected function lockJobs(array $jobs): void
     {
         $jobsIds = $this->getJobsIdsFromMergedJobs($jobs);
 
@@ -657,7 +659,7 @@ class Queue
      *
      * @return string[]
      */
-    protected function getJobsIdsFromMergedJobs(array $mergedJobs)
+    protected function getJobsIdsFromMergedJobs(array $mergedJobs): array
     {
         $jobsIds = [];
         foreach ($mergedJobs as $job) {
@@ -670,7 +672,7 @@ class Queue
     /**
      * @return void
      */
-    protected function clearOldFailingJobs()
+    protected function clearOldFailingJobs(): void
     {
         // Enhanced archive will have already logged this failure
         if (!$this->configHelper->isEnhancedQueueArchiveEnabled()) {
@@ -684,7 +686,7 @@ class Queue
     /**
      * @throws Zend_Db_Statement_Exception
      */
-    protected function clearOldLogRecords()
+    protected function clearOldLogRecords(): void
     {
         $select = $this->db->select()
             ->from($this->logTable, ['id'])
@@ -701,7 +703,7 @@ class Queue
     /**
      * @return void
      */
-    protected function clearOldArchiveRecords()
+    protected function clearOldArchiveRecords(): void
     {
         $archiveLogClearLimit = $this->configHelper->getArchiveLogClearLimit();
         // Adding a fallback in case this configuration was not set in a consistent way
@@ -718,7 +720,7 @@ class Queue
     /**
      * @return void
      */
-    protected function unlockStackedJobs()
+    protected function unlockStackedJobs(): void
     {
         $this->db->update($this->table, [
             'locked_at' => null,
@@ -729,7 +731,7 @@ class Queue
     /**
      * @return bool
      */
-    protected function shouldEmptyQueue()
+    protected function shouldEmptyQueue(): bool
     {
         if (getenv('PROCESS_FULL_QUEUE') && getenv('PROCESS_FULL_QUEUE') === '1') {
             return true;

@@ -493,9 +493,10 @@ class Queue
             foreach ($rawJobs as $job) {
                 $jobSize = (int) $job->getDataSize();
                 $jobSizes[$job->getId()] = $jobSize;
-                $actualBatchSize = array_sum($jobSizes);
                 $jobs[] = $job;
             }
+
+            $actualBatchSize = array_sum($jobSizes);
         }
 
         return $jobs;

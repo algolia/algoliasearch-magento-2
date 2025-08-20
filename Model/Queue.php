@@ -486,6 +486,8 @@ class Queue
                 break;
             }
 
+            // Introduced an array of job sizes to determine the total batch size currently processed (sum of all jobs contained in the run)
+            // This will determine if we can continue to loop over the jobs
             $jobSizes = [];
 
             foreach ($rawJobs as $job) {

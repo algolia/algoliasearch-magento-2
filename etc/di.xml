@@ -147,68 +147,59 @@
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="replica_sync_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand</item>
-                <item name="replica_delete_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDeleteCommand</item>
-                <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand</item>
-                <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
-                <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
-                <item name="batching_optimize_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\BatchingOptimizeCommand</item>
-                <!-- custom indexers -->
+                <!-- Replicas -->
+                <item name="replica_sync_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaSyncCommand</item>
+                <item name="replica_delete_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaDeleteCommand</item>
+                <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaRebuildCommand</item>
+                <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaDisableVirtualCommand</item>
+
+                <!-- Custom indexers -->
                 <item name="reindex_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand</item>
                 <item name="reindex_categories_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand</item>
                 <item name="reindex_pages_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand</item>
                 <item name="reindex_suggestions_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexSuggestionsCommand</item>
                 <item name="reindex_additional_sections_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAdditionalSectionsCommand</item>
                 <item name="delete_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\DeleteProductsCommand</item>
-                <item name="process_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand</item>
                 <item name="reindex_all_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand</item>
+
+                <!-- Queue processing-->
+                <item name="queue_process_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand</item>
+                <item name="queue_clear_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Queue\ClearQueueCommand</item>
+
+                <!-- Misc -->
+                <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
+                <item name="batching_optimize_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\BatchingOptimizeCommand</item>
+
             </argument>
         </arguments>
     </type>
 
-    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand">
+    <!-- Replicas -->
+    <type name="Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaSyncCommand">
         <arguments>
             <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
             <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
         </arguments>
     </type>
 
-    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaDeleteCommand">
+    <type name="Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaDeleteCommand">
         <arguments>
             <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
         </arguments>
     </type>
 
-    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand">
+    <type name="Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaRebuildCommand">
         <arguments>
             <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
             <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
         </arguments>
     </type>
 
-    <type name="Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand">
+    <type name="Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaDisableVirtualCommand">
         <arguments>
             <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
             <argument name="replicaManager" xsi:type="object">Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface\Proxy</argument>
             <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
-        </arguments>
-    </type>
-
-    <type name="Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand">
-        <arguments>
-            <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
-            <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
-        </arguments>
-    </type>
-
-    <type name="Algolia\AlgoliaSearch\Console\Command\BatchingOptimizeCommand">
-        <arguments>
-            <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
-            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
-            <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
-            <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
-            <argument name="recordBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\RecordBuilder\Proxy</argument>
-            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
         </arguments>
     </type>
 
@@ -249,19 +240,46 @@
             <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
         </arguments>
     </type>
-    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand">
-        <arguments>
-            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
-            <argument name="queue" xsi:type="object">Algolia\AlgoliaSearch\Model\Queue\Proxy</argument>
-            <argument name="algoliaCredentialsManager" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager\Proxy</argument>
-        </arguments>
-    </type>
     <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand">
         <arguments>
             <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
         </arguments>
     </type>
     <!-- custom indexers END -->
+
+    <!-- queue handling -->
+    <type name="Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand">
+        <arguments>
+            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
+            <argument name="queue" xsi:type="object">Algolia\AlgoliaSearch\Model\Queue\Proxy</argument>
+            <argument name="algoliaCredentialsManager" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Queue\ClearQueueCommand">
+        <arguments>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+
+    <!-- Misc commands -->
+    <type name="Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand">
+        <arguments>
+            <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
+            <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Algolia\AlgoliaSearch\Console\Command\BatchingOptimizeCommand">
+        <arguments>
+            <argument name="algoliaConnector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+            <argument name="indexOptionsBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder\Proxy</argument>
+            <argument name="productHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\Entity\ProductHelper\Proxy</argument>
+            <argument name="recordBuilder" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\RecordBuilder\Proxy</argument>
+            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
+        </arguments>
+    </type>
+
 
     <type name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger">
         <arguments>

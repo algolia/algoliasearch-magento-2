@@ -19,7 +19,7 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 
-abstract class TestCase extends \PHPUnit\Framework\TestCase
+abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 {
     /**
      * @var ObjectManagerInterface
@@ -228,35 +228,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $this->indexNameFetcher = $this->objectManager->get(IndexNameFetcher::class);
 
         $this->boostrapped = true;
-    }
-
-
-    /**
-     * @throws \ReflectionException
-     */
-    protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
-    {
-        $mock = $this->createMock($propertyClass);
-        $reflection = new \ReflectionClass($object);
-        $property = $reflection->getProperty($propertyName);
-        $property->setValue($object, $mock);
-    }
-
-    /**
-     * Call protected/private method of a class.
-     *
-     * @param object $object instantiated object that we will run method on
-     * @param string $methodName Method name to call
-     * @param array $parameters array of parameters to pass into method
-     *
-     * @throws \ReflectionException
-     *
-     * @return mixed method return
-     */
-    protected function invokeMethod(object $object, string $methodName, array $parameters = [])
-    {
-        $reflection = new \ReflectionClass($object::class);
-        return $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 
     private function getMagentoVersion()

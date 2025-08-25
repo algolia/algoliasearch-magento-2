@@ -153,6 +153,15 @@
                 <item name="replica_rebuild_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand</item>
                 <item name="replica_disable_virtual_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\ReplicaDisableVirtualCommand</item>
                 <item name="synonym_deduplicate_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\SynonymDeduplicateCommand</item>
+                <!-- custom indexers -->
+                <item name="reindex_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand</item>
+                <item name="reindex_categories_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand</item>
+                <item name="reindex_pages_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand</item>
+                <item name="reindex_suggestions_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexSuggestionsCommand</item>
+                <item name="reindex_additional_sections_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAdditionalSectionsCommand</item>
+                <item name="delete_products_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\DeleteProductsCommand</item>
+                <item name="process_queue_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand</item>
+                <item name="reindex_all_command" xsi:type="object">Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand</item>
             </argument>
         </arguments>
     </type>
@@ -192,7 +201,58 @@
         </arguments>
     </type>
 
-    <virtualType name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger" type="Monolog\Logger">
+    <!-- custom indexers -->
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand">
+        <arguments>
+            <argument name="productBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexCategoriesCommand">
+        <arguments>
+            <argument name="categoryBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexPagesCommand">
+        <arguments>
+            <argument name="pageBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexSuggestionsCommand">
+        <arguments>
+            <argument name="suggestionBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Suggestion\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAdditionalSectionsCommand">
+        <arguments>
+            <argument name="additionalSectionBatchQueueProcessorr" xsi:type="object">Algolia\AlgoliaSearch\Service\AdditionalSection\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\DeleteProductsCommand">
+        <arguments>
+            <argument name="productBatchQueueProcessor" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\ProcessQueueCommand">
+        <arguments>
+            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
+            <argument name="queue" xsi:type="object">Algolia\AlgoliaSearch\Model\Queue\Proxy</argument>
+            <argument name="algoliaCredentialsManager" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Algolia\AlgoliaSearch\Console\Command\Indexer\IndexAllCommand">
+        <arguments>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+        </arguments>
+    </type>
+    <!-- custom indexers END -->
+
+    <type name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger">
         <arguments>
             <argument name="name" xsi:type="string">algolia</argument>
             <argument name="handlers" xsi:type="array">
@@ -200,16 +260,6 @@
                 <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler</item>
             </argument>
         </arguments>
-    </virtualType>
-    <type name="Algolia\AlgoliaSearch\Logger\TimedLogger">
-        <arguments>
-            <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
-        </arguments>
     </type>
-
-    <type name="\Algolia\AlgoliaSearch\Observer\RecommendSettings">
-        <arguments>
-            <argument name="logger" xsi:type="object">Algolia\AlgoliaSearch\Logger\AlgoliaLogger</argument>
-        </arguments>
-    </type>
+    <preference for="Algolia\AlgoliaSearch\Api\LoggerInterface" type="Algolia\AlgoliaSearch\Logger\AlgoliaLogger"/>
 </config>

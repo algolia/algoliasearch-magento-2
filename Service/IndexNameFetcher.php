@@ -56,7 +56,7 @@ class IndexNameFetcher
 
     public function isTempIndex($indexName): bool
     {
-        return str_ends_with($indexName, self::INDEX_TEMP_SUFFIX);
+        return str_ends_with((string) $indexName, self::INDEX_TEMP_SUFFIX);
     }
 
     /**
@@ -69,7 +69,7 @@ class IndexNameFetcher
      */
     public function isQuerySuggestionsIndex($indexName): bool
     {
-        return str_ends_with($indexName, self::INDEX_QUERY_SUGGESTIONS_SUFFIX);
+        return str_ends_with((string) $indexName, self::INDEX_QUERY_SUGGESTIONS_SUFFIX);
     }
 
 }

@@ -1,5 +1,5 @@
 <?php
-
+/** @var \Magento\Framework\Escaper $escaper */
 /** @var \Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\SearchConfiguration $block */
 
 $configHelper = $block->getConfigHelper();
@@ -28,8 +28,8 @@ $isConfig = [
 ?>
 
 <input type="hidden" name="algolia_merchandising_positions" value="" data-form-part="algolia_algoliasearch_landingpage_form" />
-<input type="hidden" name="algolia_query" value="<?php echo htmlentities($landingPage->getQuery()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
-<input type="hidden" name="algolia_configuration" value="<?php echo htmlentities($landingPage->getConfiguration()) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
+<input type="hidden" name="algolia_query" value="<?= $escaper->escapeHtmlAttr(htmlentities($landingPage->getQuery())) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
+<input type="hidden" name="algolia_configuration" value="<?= $escaper->escapeHtmlAttr(htmlentities($landingPage->getConfiguration())) ?>" data-form-part="algolia_algoliasearch_landingpage_form" />
 <input type="hidden" name="price_key" value="" data-form-part="algolia_algoliasearch_landingpage_form">
 
 <div class="with-facets" id="algolia_instant_selector">
@@ -41,7 +41,7 @@ $isConfig = [
             <p>2. Pre-select applicable filters, for example a price range that is interesting to your customers.</p>
         </div>
         <div class="col-middle">
-            <img src="<?php echo $block->escapeUrl($merchIllustration); ?>"/>
+            <img src="<?= $escaper->escapeUrl($merchIllustration); ?>"/>
         </div>
         <div class="col-right">
             <p>3. You can see which products (and in what order) will be shown on the final landing page. If you're on Algolia's higher plans, you may manually set specific order of products, promote or demote as desired.</p>
@@ -117,7 +117,7 @@ $isConfig = [
                 {{/_highlightResult.sku.0}}
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
-            <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+            <td>{{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}</td>
             <td class="actions">
                 <div class="pin_block">
                     <a class="arrow up" href="#">
@@ -182,7 +182,7 @@ $isConfig = [
                 {{/_highlightResult.sku.0}}
             </td>
             <td>{{{ _highlightResult.name.value }}}</td>
-            <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+            <td>{{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}</td>
                 <td class="actions">
                     <div class="pin_block">
                         <a class="arrow up" href="#">
@@ -223,7 +223,7 @@ $isConfig = [
             {{/sku.0}}
         </td>
         <td>{{{ name }}}</td>
-        <td>{{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}</td>
+        <td>{{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}</td>
             <td class="actions">
                 <div class="pin_block">
                     <a class="arrow up" href="#">
@@ -250,7 +250,7 @@ $isConfig = [
         <div class="info">
             {{{ _highlightResult.name.value }}}
             <div class="price">
-                {{ price.<?php echo $configHelper->getCurrencyCode() ?>.default_formated }}
+                {{ price.<?= $escaper->escapeHtml($configHelper->getCurrencyCode()) ?>.default_formated }}
             </div>
         </div>
 
@@ -308,7 +308,7 @@ $isConfig = [
 
             algoliaAdminBundle.$(function ($) {
                 var storeId = $('select[name="store_id"]').val();
-                var config = <?php echo json_encode($isConfig); ?>;
+                var config = JSON.parse('<?= $escaper->escapeJs(json_encode($isConfig)) ?>');
 
                 config.appId = config.indexDataByStoreIds[storeId].appId;
                 config.apiKey = config.indexDataByStoreIds[storeId].apiKey;

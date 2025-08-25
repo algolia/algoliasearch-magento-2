@@ -2,27 +2,21 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
-use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Suggestion\BatchQueueProcessor as SuggestionBatchQueueProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:suggestions` command instead
+ * If you want to re-enable it, you can do it in the Magento configuration ("Algolia Search > Indexing Manager" section)
+ */
 class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected SuggestionHelper $suggestionHelper,
-        protected Data $dataHelper,
-        protected AlgoliaHelper $algoliaHelper,
-        protected Queue $queue,
         protected ConfigHelper $configHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    )
-    {}
+        protected SuggestionBatchQueueProcessor $suggestionBatchQueueProcessor
+    ) {}
 
     public function execute($ids)
     {
@@ -30,26 +24,12 @@ class Suggestion implements \Magento\Framework\Indexer\ActionInterface, \Magento
 
     public function executeFull()
     {
-        $storeIds = array_keys($this->storeManager->getStores());
+        if (!$this->configHelper->isSuggestionsIndexerEnabled()) {
+            return;
+        }
 
-        foreach ($storeIds as $storeId) {
-            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
-                continue;
-            }
-
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-                return;
-            }
-
-            /** @uses SuggestionIndexBuilder::buildIndexFull() */
-            $this->queue->addToQueue(
-                SuggestionIndexBuilder::class,
-                'buildIndexFull',
-                ['storeId' => $storeId],
-                1
-            );
+        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+            $this->suggestionBatchQueueProcessor->processBatch($storeId);
         }
     }
 

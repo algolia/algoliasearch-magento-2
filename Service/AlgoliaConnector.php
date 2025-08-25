@@ -61,17 +61,17 @@ class AlgoliaConnector
     /**
      * @var string|null
      */
-    protected ?string $lastUsedIndexName;
+    protected ?string $lastUsedIndexName = null;
 
     /**
      * @var string|null
      */
-    protected ?string $lastTaskId;
+    protected ?string $lastTaskId = null;
 
     /**
      * @var array|null
      */
-    protected ?array $lastTaskInfoByStore;
+    protected ?array $lastTaskInfoByStore = null;
 
     public function __construct(
         protected ConfigHelper $config,
@@ -150,16 +150,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string $name
-     * @throws AlgoliaException
-     * @deprecated This method has been completely removed from the Algolia PHP connector version 4 and should not be used.
-     */
-    public function getIndex(string $name)
-    {
-        throw new AlgoliaException("This method is no longer supported for PHP client v4!");
-    }
-
-    /**
      * @return ListIndicesResponse|array<string,mixed>
      * @throws AlgoliaException
      */
@@ -211,12 +201,10 @@ class AlgoliaConnector
 
         $requests = array_values(
             array_map(
-                function($id) use ($indexName) {
-                    return [
-                        self::ALGOLIA_API_INDEX_NAME => $indexName,
-                        self::ALGOLIA_API_OBJECT_ID => $id
-                    ];
-                },
+                fn($id) => [
+                    self::ALGOLIA_API_INDEX_NAME => $indexName,
+                    self::ALGOLIA_API_OBJECT_ID => $id
+                ],
                 $objectIds
             )
         );
@@ -293,14 +281,12 @@ class AlgoliaConnector
     {
         $requests = array_values(
             array_map(
-                function ($id) {
-                    return [
-                        'action' => 'deleteObject',
-                        'body'   => [
-                            self::ALGOLIA_API_OBJECT_ID => $id
-                        ]
-                    ];
-                },
+                fn($id) => [
+                    'action' => 'deleteObject',
+                    'body'   => [
+                        self::ALGOLIA_API_OBJECT_ID => $id
+                    ]
+                ],
                 $ids
             )
         );
@@ -311,13 +297,13 @@ class AlgoliaConnector
     /**
      * Warning: This method can't be performed across two different applications
      *
-     * @param IndexOptions $fromIndexOptions
-     * @param IndexOptions $toIndexOptions
+     * @param IndexOptionsInterface $fromIndexOptions
+     * @param IndexOptionsInterface $toIndexOptions
      * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function moveIndex(IndexOptions $fromIndexOptions, IndexOptions $toIndexOptions): void
+    public function moveIndex(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
     {
         $fromIndexName = $fromIndexOptions->getIndexName();
         $toIndexName = $toIndexOptions->getIndexName();
@@ -393,7 +379,7 @@ class AlgoliaConnector
             }
 
             $onlineSettings = $this->getClient($storeId)->getSettings($sourceIndex);
-        } catch (Exception $e) {
+        } catch (Exception) {
         }
 
         if (isset($settings['attributesToIndex'])) {
@@ -466,12 +452,10 @@ class AlgoliaConnector
 
         $requests = array_values(
             array_map(
-                function ($object) use ($action) {
-                    return [
-                        'action' => $action,
-                        'body'   => $object
-                    ];
-                },
+                fn($object) => [
+                    'action' => $action,
+                    'body'   => $object
+                ],
                 $objects
             )
         );
@@ -628,7 +612,7 @@ class AlgoliaConnector
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function searchRules(IndexOptionsInterface $indexOptions, array$searchRulesParams = null)
+    public function searchRules(IndexOptionsInterface $indexOptions, ?array $searchRulesParams = null)
     {
         $indexName = $indexOptions->getIndexName();
 
@@ -840,7 +824,7 @@ class AlgoliaConnector
 
             if (is_array($data) === false) {
                 if ($data != null) {
-                    $data = explode('|', $data);
+                    $data = explode('|', (string) $data);
                     if (count($data) === 1) {
                         $data = $data[0];
                         $data = $this->castAttribute($data);
@@ -1016,8 +1000,8 @@ class AlgoliaConnector
         foreach ($queryParams['disjunctiveFacets'] as $facetName) {
             $params = $queryParams;
             $params['facets'] = [$facetName];
-            $facetFilters = isset($params['facetFilters']) ? $params['facetFilters'] : [];
-            $numericFilters = isset($params['numericFilters']) ? $params['numericFilters'] : [];
+            $facetFilters = $params['facetFilters'] ?? [];
+            $numericFilters = $params['numericFilters'] ?? [];
 
             $additionalParams = [
                 'hitsPerPage' => 1,
@@ -1050,7 +1034,7 @@ class AlgoliaConnector
         for ($i = 0; $i < count($filters); $i++) {
             if (is_array($filters[$i])) {
                 foreach ($filters[$i] as $filter) {
-                    if (mb_substr($filter, 0, mb_strlen($needle)) === $needle) {
+                    if (mb_substr((string) $filter, 0, mb_strlen((string) $needle)) === $needle) {
                         unset($filters[$i]);
                         $filters = array_values($filters);
                         $i--;
@@ -1059,7 +1043,7 @@ class AlgoliaConnector
                     }
                 }
             } else {
-                if (mb_substr($filters[$i], 0, mb_strlen($needle)) === $needle) {
+                if (mb_substr((string) $filters[$i], 0, mb_strlen((string) $needle)) === $needle) {
                     unset($filters[$i]);
                     $filters = array_values($filters);
                     $i--;

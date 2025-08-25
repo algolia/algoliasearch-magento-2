@@ -48,7 +48,7 @@ class MigrateVirtualReplicaConfigPatch implements DataPatchInterface
     {
         $this->moduleDataSetup->getConnection()->startSetup();
 
-        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED, [$this, 'migrateSetting']);
+        $this->configChecker->checkAndApplyAllScopes(ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED, $this->migrateSetting(...));
 
         $this->scopeConfig->reinit();
 

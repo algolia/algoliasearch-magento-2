@@ -200,7 +200,7 @@ class AnalyticsHelper
      */
     public function getTopHitsForSearch($search, array $params): array
     {
-        return $this->safeFetch(self::ANALYTICS_HITS_PATH . '?search=' . urlencode($search), $params);
+        return $this->safeFetch(self::ANALYTICS_HITS_PATH . '?search=' . urlencode((string) $search), $params);
     }
 
     /**

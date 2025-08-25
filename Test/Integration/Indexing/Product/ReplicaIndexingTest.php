@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
 use Algolia\AlgoliaSearch\Algolia;
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -25,7 +26,6 @@ use Magento\Framework\App\State as AppState;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\Log\LoggerInterface;
 
 class ReplicaIndexingTest extends TestCase
 {
@@ -34,8 +34,6 @@ class ReplicaIndexingTest extends TestCase
     protected ?ReplicaManagerInterface $replicaManager = null;
 
     protected ?IndicesConfigurator $indicesConfigurator = null;
-
-    protected ?IndexOptionsBuilder $indexOptionsBuilder = null;
 
     protected ?string $indexName = null;
 
@@ -194,7 +192,7 @@ class ReplicaIndexingTest extends TestCase
     }
 
     /**
-     * @magentoConfigFixture current_store algoliasearch_credentials/credentials/enable_backend 0
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/algolia_indexing/enable_indexing 0
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      * @throws AlgoliaException
      * @throws ExceededRetriesException
@@ -243,7 +241,7 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * Test the RebuildReplicasPatch with API failures
-     * @magentoConfigFixture current_store algoliasearch_credentials/credentials/enable_backend 1
+     * @magentoConfigFixture current_store algoliasearch_indexing_manager/algolia_indexing/enable_indexing 1
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      */
     public function testReplicaRebuildPatch(): void
@@ -340,7 +338,7 @@ class ReplicaIndexingTest extends TestCase
         return $mock;
     }
 
-    protected function getMockReplicaManager($mockedMethods = array()): MockObject & ReplicaManager
+    protected function getMockReplicaManager($mockedMethods = []): MockObject & ReplicaManager
     {
         $mockedClass = ReplicaManager::class;
         $mockedReplicaManager = $this->getMockBuilder($mockedClass)

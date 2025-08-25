@@ -20,7 +20,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
      */
     protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode, $field)
     {
-        list($min, $max, $minOriginal, $maxOriginal) =
+        [$min, $max, $minOriginal, $maxOriginal] =
             $this->getMinMaxPrices($product, $withTax, $subProducts, $currencyCode);
         $dashedFormat = $this->getDashedPriceFormat($min, $max, $currencyCode);
         if ($min !== $max) {

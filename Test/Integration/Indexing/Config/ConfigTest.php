@@ -14,9 +14,10 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
         $indicesConfigurator->saveConfigurationToAlgolia(1);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
 
         $this->assertEquals($this->assertValues->attributesForFaceting, count($indexSettings['attributesForFaceting']));
     }
@@ -27,9 +28,9 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
         $indicesConfigurator->saveConfigurationToAlgolia(1);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $client = $this->algoliaHelper->getClient();
+        $client = $this->algoliaConnector->getClient();
 
         $matchedRules = [];
 
@@ -58,64 +59,7 @@ class ConfigTest extends TestCase
 
     public function testAutomaticalSetOfCategoriesFacet()
     {
-        /** @var IndicesConfigurator $indicesConfigurator */
-        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
-
-        // Remove categories from facets
-        $facets = $this->configHelper->getFacets();
-        foreach ($facets as $key => $facet) {
-            if ($facet['attribute'] === 'categories') {
-                unset($facets[$key]);
-
-                break;
-            }
-        }
-
-        $this->setConfig('algoliasearch_instant/instant_facets/facets', $this->getSerializer()->serialize($facets));
-
-        // Set don't replace category pages with Algolia - categories attribute shouldn't be included in facets
-        $this->setConfig('algoliasearch_instant/instant/replace_categories', '0');
-
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-
-        $this->algoliaHelper->waitLastTask();
-
-        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
-
-        $this->assertEquals($this->assertValues->automaticalSetOfCategoryAttributesForFaceting, count($indexSettings['attributesForFaceting']));
-
-        $categoriesAttributeIsIncluded = false;
-        foreach ($indexSettings['attributesForFaceting'] as $attribute) {
-            if ($attribute === 'categories') {
-                $categoriesAttributeIsIncluded = true;
-
-                break;
-            }
-        }
-
-        $this->assertFalse($categoriesAttributeIsIncluded, 'Categories attribute should not be included in facets, but it is');
-
-        // Set replace category pages with Algolia - categories attribute should be included in facets
-        $this->setConfig('algoliasearch_instant/instant/replace_categories', '1');
-
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-
-        $this->algoliaHelper->waitLastTask();
-
-        $indexSettings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
-
-        $this->assertEquals($this->assertValues->automaticalSetOfCategoryAttributesForFaceting + 1, count($indexSettings['attributesForFaceting']));
-
-        $categoriesAttributeIsIncluded = false;
-        foreach ($indexSettings['attributesForFaceting'] as $attribute) {
-            if ($attribute === 'categories') {
-                $categoriesAttributeIsIncluded = true;
-
-                break;
-            }
-        }
-
-        $this->assertTrue($categoriesAttributeIsIncluded, 'Categories attribute should be included in facets, but it is not');
+        // Removed test, the addition/deletion of the "categories" attribute is now checked by the FacetBuilder unit test
     }
 
     public function testRetrievableAttributes()
@@ -193,17 +137,16 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
         $indicesConfigurator->saveConfigurationToAlgolia(1);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indices = $this->algoliaHelper->listIndexes();
-        $indicesNames = array_map(function ($indexData) {
-            return $indexData['name'];
-        }, $indices['items']);
+        $indices = $this->algoliaConnector->listIndexes();
+        $indicesNames = array_map(fn($indexData) => $indexData['name'], $indices['items']);
 
         foreach ($sortingIndicesWithRankingWhichShouldBeCreated as $indexName => $firstRanking) {
             $this->assertContains($indexName, $indicesNames);
 
-            $settings = $this->algoliaHelper->getSettings($indexName);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $settings = $this->algoliaConnector->getSettings($indexOptions);
             $this->assertEquals($firstRanking, reset($settings['ranking']));
         }
     }
@@ -214,20 +157,22 @@ class ConfigTest extends TestCase
         $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
 
         $indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
 
-            $this->algoliaHelper->setSettings($indexName, ['exactOnSingleWordQuery' => 'attribute']);
-            $this->algoliaHelper->waitLastTask();
+            $this->algoliaConnector->setSettings($indexOptions, ['exactOnSingleWordQuery' => 'attribute']);
+            $this->algoliaConnector->waitLastTask();
         }
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
-            $currentSettings = $this->algoliaHelper->getSettings($indexName);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);
             $this->assertEquals('attribute', $currentSettings['exactOnSingleWordQuery']);
@@ -238,12 +183,13 @@ class ConfigTest extends TestCase
         }
 
         $indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
 
-            $currentSettings = $this->algoliaHelper->getSettings($indexName);
+            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);
             $this->assertEquals('word', $currentSettings['exactOnSingleWordQuery']);

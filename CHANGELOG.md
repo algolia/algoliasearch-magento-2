@@ -1,5 +1,54 @@
 # CHANGE LOG
 
+## 3.16.0
+
+### Features
+
+- Automatic full indexing has been deprecated in 3.16 - you can now opt out of Algolia initiating full reindexing from `indexer_reindex_all_invalid`.
+- Added an "Indexing Manager" section within the Algolia configuration which allows disabling automatic full reindexing with Magento indexers. **IMPORTANT: If you want to perform full reindexing, we highly suggest to turn this configuration off and run the newly created CLI commands instead.**
+- Added an "Indexing Manager" page which shows the created indices for main entities (products, categories and pages) and corresponding stores with a link to directly check them on the Algolia dashboard along with a form to reindex those entities directly from the Magento admin.
+- CLI commands are now provided to run explicit full reindex of all entities and stores.
+- Products and CMS pages can now be reindexed directly from Magento admin grids.
+- The indexing queue cron job can now be configured from the Magento admin.
+- Dynamic faceting through Algolia merchandising rules is now supported in Magento via an opt-in feature flag.
+- No code redirects via merchandising rules in Algolia are now supported in Magento for both Autocomplete and InstantSearch. Support is enabled by default for Autocomplete.
+- Settings updates are now automatically forwarded to replicas (if this behavior is not desirable it can be disabled in the admin)
+- Integration tests and unit tests added
+
+### Bug Fixes
+- Behavior of conjunctive vs disjunctive facets has been clarified.
+- Replica data patches and delete operations have been enhanced to handle potential latency when detaching from the primary index.
+- Prices are now indexed using store scoped currency codes.
+- Fixed WSOD error on invalid creds when using manual SKU indexer (also included in 3.15.1).
+- Fixed Recommend model validation when configuring through the Magento admin 
+- Fixed edge case with null queries - thank you @PromInc 
+- Removed conditional behavior on setting the vary string from the plugin on `\Magento\Framework\App\Http\Context` so that a consistent `X-Magento-Vary` cookie is sent across all requests 
+
+### Updates
+- `beforecontent.html` is no longer used and has been deprecated. If you're overriding or referencing this file, please update your layout and customizations accordingly.
+- An additional separate crontab is no longer needed to run the indexing queue. Enable via admin config to run the queue using Magento's built-in cron.  
+- `BatchQueueProcessorInterface` has been introduced to decouple Algolia operations for core `Indexer` models.
+- Magento will set a default `renderingContent` based on its configured facets. Be sure that "Facet Display" is supported by your Algolia plan before attempting to use.
+- Auto full indexing can be disabled in this release under Stores > Configuration > Algolia Search > Indexing Manager. We are moving towards more intentional indexing so please note that this will become the default in a future release.
+- InstantSearch has been refactored to support customization via JavaScript mixins. 
+- A new front end hook called `beforeFacetInitialization` has been added which allows a user to extend the functionality by adding, removing or modifying "builder" functions which are used to define a facet config that will drive the rendering of facets.
+- Removed InstantSearch enablement dependency in Magento admin to prevent losing facet and sorting config when disabling the feature.
+- InstantSearch has been updated to v4.78.
+- Autocomplete has been updated to v1.18.1.
+- PHP API client has been pinned to 4.18.3 (also included in 3.15.1).
+- Credentials form expanded by default in admin
+- Removed deprecated methods from Entity Helpers
+- Removed every call to deprecated `AlgoliaHelper`'s methods in the codebase, `AlgoliaConnector` is now targeted directly. (`AlgoliaHelper` will be removed in a future v3.17.0)
+- Updated integration tests
+- Added support for PHPUnit 10
+- Added support for Magento 2.4.8 on PHP 8.4 - Special shout out to @jajajaime for his help here
+- Refactored code to PHP 8.2 baseline standard
+- Added string escaping to untrusted inputs
+- The InstantSearch "replace categories" feature must now be explicitly enabled on new instances aligning with our documentation: https://www.algolia.com/doc/integration/magento-2/guides/category-pages/#enable-category-pages
+
+### Breaking Changes
+- `ProductHelper::setSettings()` is now taking `IndexOptions` objects as two first parameters instead of index names (strings).
+
 ## 3.15.1
 
 ### Features
@@ -50,6 +99,7 @@
 - Fixed a bug where categories highlighting didn't work as expected on PLP powered by InstantSearch
 - Fixed a bug where excluded websites weren't taken into account while indexing customer prices on products. (thanks @kamilszewczyk)
 - Fixed a bug where full page cache (FPC) didn't work on category pages
+- Fixed a bug where credentials errors weren't gracefully handled on the SKU reindexing form
 
 ### Breaking Changes
 - If you have customized your front end implementation based on the `algoliaBundle` you may need to shim your application accordingly (Full details are shared in [our documentation](https://www.algolia.com/doc/integration/magento-2/troubleshooting/front-end-issues/))

@@ -2,13 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Observer\Insights;
 
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Wishlist\Model\Item;
-use Psr\Log\LoggerInterface;
 
 class WishlistProductAddAfter implements ObserverInterface
 {
@@ -36,9 +36,7 @@ class WishlistProductAddAfter implements ObserverInterface
         }
 
         $eventProcessor = $this->insightsHelper->getEventProcessor();
-        $productIds = array_map(function (Item $item) {
-            return $item->getProductId();
-        }, $items);
+        $productIds = array_map(fn(Item $item) => $item->getProductId(), $items);
 
         try {
             $eventProcessor->convertedObjectIDs(

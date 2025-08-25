@@ -2,8 +2,9 @@
 
 namespace Algolia\AlgoliaSearch\Block;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
@@ -13,6 +14,7 @@ use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
 use Algolia\AlgoliaSearch\Model\LandingPage as LandingPageModel;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -40,12 +42,15 @@ class Algolia extends Template implements CollectionDataSourceInterface
 
     public function __construct(
         protected ConfigHelper          $config,
+        protected AutocompleteHelper    $autocompleteConfig,
+        protected InstantSearchHelper   $instantSearchConfig,
+        protected PersonalizationHelper $personalizationHelper,
         protected CatalogSearchHelper   $catalogSearchHelper,
         protected ProductHelper         $productHelper,
         protected Currency              $currency,
         protected Format                $format,
         protected CurrentProduct        $currentProduct,
-        protected AlgoliaHelper         $algoliaHelper,
+        protected AlgoliaConnector      $algoliaConnector,
         protected UrlHelper             $urlHelper,
         protected FormKey               $formKey,
         protected HttpContext           $httpContext,
@@ -53,7 +58,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
         protected CategoryHelper        $categoryHelper,
         protected SuggestionHelper      $suggestionHelper,
         protected LandingPageHelper     $landingPageHelper,
-        protected PersonalizationHelper $personalizationHelper,
         protected CheckoutSession       $checkoutSession,
         protected DateTime              $date,
         protected CurrentCategory       $currentCategory,
@@ -101,11 +105,6 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getCatalogSearchHelper(): CatalogSearchHelper
     {
         return $this->catalogSearchHelper;
-    }
-
-    public function getAlgoliaHelper(): AlgoliaHelper
-    {
-        return $this->algoliaHelper;
     }
 
     public function getPersonalizationHelper(): PersonalizationHelper
@@ -208,7 +207,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         $urlParamName = ActionInterface::PARAM_NAME_URL_ENCODED;
         $routeParams = [
             $urlParamName => $continueUrl,
-            '_secure' => $this->algoliaHelper->getRequest()->isSecure(),
+            '_secure' => $this->getRequest()->isSecure(),
         ];
         if ($additional !== []) {
             $routeParams = array_merge($routeParams, $additional);

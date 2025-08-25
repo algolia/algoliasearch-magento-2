@@ -1,0 +1,14 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+?>
+<div class="algolia-indexing-manager-overview">
+    <div class="algolia_dashboard_warning">
+        <p>Here is a list of all the main indices (excluding replicas) created by the extension on the Algolia Dashboard.</p>
+        <p>Those indices are listed by store for each entity section. You can click on them to directly open the Algolia Dashboard.</p>
+    </div>
+
+
+    <?= $block->getChildHtml('indexing_manager_products') ?>
+    <?= $block->getChildHtml('indexing_manager_categories') ?>
+    <?= $block->getChildHtml('indexing_manager_pages') ?>
+ </div>

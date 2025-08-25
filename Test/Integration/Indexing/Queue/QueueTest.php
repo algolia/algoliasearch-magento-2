@@ -3,12 +3,12 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Queue;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobsCollectionFactory;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
@@ -19,8 +19,6 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
  */
 class QueueTest extends TestCase
 {
-    private const INCOMPLETE_REASON = "Must revisit transaction handling across connections.";
-
     /** @var JobsCollectionFactory */
     private $jobsCollectionFactory;
 
@@ -53,9 +51,8 @@ class QueueTest extends TestCase
         $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(3, count($rows));
@@ -90,9 +87,8 @@ class QueueTest extends TestCase
         $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
 
         /** @var Queue $queue */
         $queue = $this->objectManager->get(Queue::class);
@@ -100,9 +96,9 @@ class QueueTest extends TestCase
         // Run the first two jobs - saveSettings, batch
         $queue->runCron(2, true);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indices = $this->algoliaHelper->listIndexes();
+        $indices = $this->algoliaConnector->listIndexes();
 
         $existsDefaultTmpIndex = false;
         foreach ($indices['items'] as $index) {
@@ -116,9 +112,9 @@ class QueueTest extends TestCase
         // Run the last move - move
         $queue->runCron(2, true);
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $indices = $this->algoliaHelper->listIndexes();
+        $indices = $this->algoliaConnector->listIndexes();
 
         $existsDefaultProdIndex = false;
         $existsDefaultTmpIndex = false;
@@ -154,11 +150,10 @@ class QueueTest extends TestCase
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
         // Reindex products multiple times
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->executeFull();
-        $indexer->executeFull();
-        $indexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
+        $productBatchQueueProcessor->processBatch(1);
+        $productBatchQueueProcessor->processBatch(1);
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(9, count($rows));
@@ -173,9 +168,10 @@ class QueueTest extends TestCase
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(0, count($rows));
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $settings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products');
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $settings = $this->algoliaConnector->getSettings($indexOptions);
         $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
     }
@@ -188,34 +184,35 @@ class QueueTest extends TestCase
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
-        /** @var Product $productIndexer */
-        $productIndexer = $this->objectManager->get(Product::class);
-        $productIndexer->executeFull();
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertCount(3, $rows);
 
         $productionIndexName = $this->indexPrefix . 'default_products';
 
-        $res = $this->algoliaHelper->setSettings($productionIndexName, ['disableTypoToleranceOnAttributes' => ['sku']]);
-        $this->algoliaHelper->waitLastTask();
+        $productionIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($productionIndexName);
+        $this->algoliaConnector->setSettings($productionIndexOptions, ['disableTypoToleranceOnAttributes' => ['sku']]);
+        $this->algoliaConnector->waitLastTask();
 
-        $settings = $this->algoliaHelper->getSettings($productionIndexName);
+        $settings = $this->algoliaConnector->getSettings($productionIndexOptions);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         /** @var QueueRunner $queueRunner */
         $queueRunner = $this->objectManager->get(QueueRunner::class);
         $queueRunner->executeFull();
 
-        $this->algoliaHelper->waitLastTask();
+        $this->algoliaConnector->waitLastTask();
 
-        $settings = $this->algoliaHelper->getSettings($this->indexPrefix . 'default_products_tmp');
+        $tmpIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products_tmp');
+        $settings = $this->algoliaConnector->getSettings($tmpIndexOptions);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 
         $queueRunner->executeFull();
         $queueRunner->executeFull();
 
-        $settings = $this->algoliaHelper->getSettings($productionIndexName);
+        $settings = $this->algoliaConnector->getSettings($productionIndexOptions);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
     }
 
@@ -884,9 +881,8 @@ class QueueTest extends TestCase
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
-        /** @var Product $indexer */
-        $indexer = $this->objectManager->get(Product::class);
-        $indexer->execute(range(1, 512));
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1, range(1, 512));
 
         $dbJobs = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertSame(6, count($dbJobs));

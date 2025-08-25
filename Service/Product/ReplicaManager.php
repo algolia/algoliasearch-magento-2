@@ -168,9 +168,7 @@ class ReplicaManager implements ReplicaManagerInterface
     {
         return array_filter(
             $algoliaReplicas,
-            function ($algoliaReplicaSetting) use ($baseIndexName) {
-                return $this->isMagentoReplicaIndex($this->getBareIndexNameFromReplicaSetting($algoliaReplicaSetting), $baseIndexName);
-            }
+            fn($algoliaReplicaSetting) => $this->isMagentoReplicaIndex($this->getBareIndexNameFromReplicaSetting($algoliaReplicaSetting), $baseIndexName)
         );
     }
 
@@ -355,9 +353,7 @@ class ReplicaManager implements ReplicaManagerInterface
     protected function getBareIndexNamesFromReplicaSetting(array $replicas): array
     {
         return array_map(
-            function ($str) {
-                return $this->getBareIndexNameFromReplicaSetting($str);
-            },
+            fn($str) => $this->getBareIndexNameFromReplicaSetting($str),
             $replicas
         );
     }
@@ -446,9 +442,7 @@ class ReplicaManager implements ReplicaManagerInterface
         return array_values(
             array_filter(
                 $replicaSetting,
-                function ($replicaIndexSetting) use ($regex) {
-                    return !preg_match($regex, $replicaIndexSetting);
-                }
+                fn($replicaIndexSetting) => !preg_match($regex, (string) $replicaIndexSetting)
             )
         );
     }
@@ -468,9 +462,7 @@ class ReplicaManager implements ReplicaManagerInterface
         $sortingIndices = $this->sortingTransformer->getSortingIndices($storeId);
         $replicaDetails = array_filter(
             $sortingIndices,
-            function($replica) use ($replicas) {
-                return in_array($replica['name'], $replicas);
-            }
+            fn($replica) => in_array($replica['name'], $replicas)
         );
         foreach ($replicaDetails as $replica) {
             $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($replica['name'], $storeId);
@@ -494,7 +486,7 @@ class ReplicaManager implements ReplicaManagerInterface
      */
     public function isReplicaSyncEnabled(int $storeId): bool
     {
-        return $this->configHelper->isInstantEnabled($storeId) && $this->configHelper->isEnabledBackend($storeId);
+        return $this->configHelper->isInstantEnabled($storeId) && $this->configHelper->isIndexingEnabled($storeId);
     }
 
     /**

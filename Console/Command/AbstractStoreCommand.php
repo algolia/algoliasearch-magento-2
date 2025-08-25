@@ -87,7 +87,7 @@ abstract class AbstractStoreCommand extends Command
     protected function validateStoreIds(array $storeIds): array
     {
         foreach ($storeIds as $storeId) {
-            if (!ctype_digit($storeId) || (int) $storeId < 1) {
+            if (!ctype_digit((string) $storeId) || (int) $storeId < 1) {
                 throw new LocalizedException(__("Store ID argument must be an integer"));
             }
         }
@@ -123,7 +123,7 @@ abstract class AbstractStoreCommand extends Command
     {
         $msg = str_replace('{{target}}', $this->getOperationTargetLabel($storeIds), $msg);
         return ($storeIds)
-            ? "<info>$msg: " . join(", ", $this->storeNameFetcher->getStoreNames($storeIds)) . '</info>'
+            ? "<info>$msg: " . implode(", ", $this->storeNameFetcher->getStoreNames($storeIds)) . '</info>'
             : "<info>$msg</info>";
     }
 

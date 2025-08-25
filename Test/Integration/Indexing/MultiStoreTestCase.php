@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
+use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -41,6 +42,17 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         }
     }
 
+    protected function reindexToAllStores(
+        BatchQueueProcessorInterface $batchQueueProcessor,
+        ?array $categoryIds = null
+    ): void
+    {
+        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+            $batchQueueProcessor->processBatch($storeId, $categoryIds);
+            $this->algoliaConnector->waitLastTask($storeId);
+        }
+    }
+
     /**
      * @param string $storeCode
      * @param string $entity
@@ -53,15 +65,15 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         string $storeCode,
         string $entity,
         int $expectedNumber,
-        int $storeId = null
+        ?int $storeId = null
     ): void
     {
-        $resultsDefault = $this->algoliaHelper->query(
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
             $this->indexPrefix .  $storeCode . '_' . $entity,
-            '',
-            [],
             $storeId
         );
+
+        $resultsDefault = $this->algoliaConnector->query($indexOptions, '', []);
 
         $this->assertEquals($expectedNumber, $resultsDefault['results'][0]['nbHits']);
     }
@@ -126,23 +138,24 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         foreach ($this->storeManager->getStores() as $store) {
             $deletedStoreIndices = 0;
 
-            $indices = $this->algoliaHelper->listIndexes($store->getId());
+            $indices = $this->algoliaConnector->listIndexes($store->getId());
 
             foreach ($indices['items'] as $index) {
                 $name = $index['name'];
 
-                if (mb_strpos($name, $this->indexPrefix) === 0) {
+                if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                     try {
-                        $this->algoliaHelper->deleteIndex($name, $store->getId());
+                        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name, $store->getId());
+                        $this->algoliaConnector->deleteIndex($indexOptions);
                         $deletedStoreIndices++;
-                    } catch (AlgoliaException $e) {
+                    } catch (AlgoliaException) {
                         // Might be a replica
                     }
                 }
             }
 
             if ($deletedStoreIndices > 0 && $wait) {
-                $this->algoliaHelper->waitLastTask($store->getId());
+                $this->algoliaConnector->waitLastTask($store->getId());
             }
         }
     }

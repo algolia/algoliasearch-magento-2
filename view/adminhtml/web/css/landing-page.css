@@ -346,23 +346,6 @@ input::-ms-clear {
     }
 }
 
-.aa-dropdown-menu .aa-dataset-products .aa-suggestion {
-    display: inline-block;
-    width: 100%;
-}
-
-@media (min-width: 768px) {
-    .aa-dropdown-menu .aa-dataset-products .aa-suggestion {
-        display: inline-block;
-    }
-}
-
-.aa-dataset-products .aa-suggestions:after {
-    content:'';
-    display:block;
-    clear: both;
-}
-
 .aa-dropdown-menu .algoliasearch-autocomplete-hit {
     display: block;
     position: relative;

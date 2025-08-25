@@ -318,3 +318,8 @@ button.ais-CurrentRefinements-delete:focus {
     padding: 3em 0;
     text-align: center;
 }
+
+.instant-redirect {
+    margin: 3em 0 1em 0;
+    text-align: center;
+}

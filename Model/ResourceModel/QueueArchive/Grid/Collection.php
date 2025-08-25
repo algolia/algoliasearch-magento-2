@@ -42,9 +42,9 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
         $eventPrefix,
         $eventObject,
         $resourceModel,
-        $model = 'Magento\Framework\View\Element\UiComponent\DataProvider\Document',
+        $model = \Magento\Framework\View\Element\UiComponent\DataProvider\Document::class,
         $connection = null,
-        AbstractDb $resource = null
+        ?AbstractDb $resource = null
     ) {
         parent::__construct(
             $entityFactory,
@@ -89,7 +89,7 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function setSearchCriteria(SearchCriteriaInterface $searchCriteria = null)
+    public function setSearchCriteria(?SearchCriteriaInterface $searchCriteria = null)
     {
         return $this;
     }
@@ -119,7 +119,7 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function setItems(array $items = null)
+    public function setItems(?array $items = null)
     {
         return $this;
     }

@@ -103,7 +103,7 @@ class FiltersHelper
         $landingPageFilter = [];
         $landingPage = $this->registry->registry('current_landing_page');
         if ($landingPage) {
-            $landingPageConfiguration = json_decode($landingPage->getConfiguration(), true);
+            $landingPageConfiguration = json_decode((string) $landingPage->getConfiguration(), true);
             $landingPageFilter['facetFilters'] = $this->getFacetFilters($storeId, $landingPageConfiguration);
             $landingPageFilter = array_merge(
                 $landingPageFilter,
@@ -153,7 +153,7 @@ class FiltersHelper
 
             $facetValues = is_array($parameters[$facet['attribute']]) ?
                 $parameters[$facet['attribute']] :
-                explode('~', $parameters[$facet['attribute']]);
+                explode('~', (string) $parameters[$facet['attribute']]);
 
             // Backward compatibility with native Magento filtering
             if (!$this->config->isInstantEnabled($storeId)) {
@@ -172,7 +172,7 @@ class FiltersHelper
             }
 
             if ($facet['type'] === 'conjunctive') {
-                foreach ($facetValues as $key => $facetValue) {
+                foreach ($facetValues as $facetValue) {
                     $facetFilters[] = $facet['attribute'] . ':' . $facetValue;
                 }
             }

@@ -55,6 +55,12 @@ class Queue
     /** @var array */
     protected $logRecord;
 
+    /**  @var int */
+    protected $maxBatchSize = 0;
+
+    /** @var array */
+    protected array $storeMaxBatchSizes;
+
     public function __construct(
         protected ConfigHelper           $configHelper,
         protected DiagnosticsLogger      $logger,
@@ -404,15 +410,13 @@ class Queue
     {
         $jobs = [];
 
-        $actualBatchSize = 0;
-        $maxBatchSize = $this->configHelper->getNumberOfElementByPage();
-
+        $actualBatchSize = -1;
         $limit = $jobsLimit;
         $offset = 0;
 
         $fetchFullReindexJobs = $fetchFullReindexJobs ? 1 : 0;
 
-        while ($actualBatchSize < $maxBatchSize) {
+        while ($actualBatchSize < $this->maxBatchSize) {
             $jobsCollection = $this->jobCollectionFactory->create();
             $jobsCollection
                 ->addFieldToFilter('pid', ['null' => true])
@@ -455,16 +459,34 @@ class Queue
             // This will determine if we can continue to loop over the jobs
             $jobSizes = [];
 
+            $this->maxBatchSize = 0;
+
             foreach ($rawJobs as $job) {
                 $jobSize = (int) $job->getDataSize();
                 $jobSizes[$job->getId()] = $jobSize;
                 $jobs[] = $job;
+                $this->maxBatchSize += $this->getStoreMaxBatchSize($job->getStoreId());
             }
 
+            // Final calculation for the loop
             $actualBatchSize = array_sum($jobSizes);
+            $this->maxBatchSize = round($this->maxBatchSize / count($jobSizes));
         }
 
         return $jobs;
+    }
+
+    /**
+     * @param int $storeId
+     * @return int
+     */
+    protected function getStoreMaxBatchSize(int $storeId): int
+    {
+        if (!isset($this->storeMaxBatchSizes[$storeId])) {
+            $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage($storeId);
+        }
+
+        return $this->storeMaxBatchSizes[$storeId];
     }
 
     /**

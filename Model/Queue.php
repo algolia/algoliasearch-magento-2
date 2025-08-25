@@ -21,9 +21,6 @@ class Queue
     public const UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
     public const CLEAR_ARCHIVE_LOGS_AFTER_DAYS = 30;
 
-    public const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
-    public const ERROR_LOG = 'algoliasearch_queue_errors.log';
-
     public const FAILED_JOB_ARCHIVE_CRITERIA = 'retries >= max_retries';
     public const MOVE_INDEX_METHOD_NAME = 'moveIndexWithSetSettings';
 
@@ -39,22 +36,8 @@ class Queue
     /** @var string */
     protected $archiveTable;
 
-    /** @var ObjectManagerInterface */
-    protected $objectManager;
-
-    /** @var ConsoleOutput */
-    protected $output;
-
     /** @var int */
     protected $elementsPerPage;
-
-    /** @var ConfigHelper */
-    protected $configHelper;
-
-    /** @var DiagnosticsLogger */
-    protected $logger;
-
-    protected $jobCollectionFactory;
 
     /** @var int */
     protected $maxSingleJobDataSize;
@@ -72,38 +55,20 @@ class Queue
     /** @var array */
     protected $logRecord;
 
-    /**
-     * @param ConfigHelper $configHelper
-     * @param DiagnosticsLogger $logger
-     * @param JobCollectionFactory $jobCollectionFactory
-     * @param ResourceConnection $resourceConnection
-     * @param ObjectManagerInterface $objectManager
-     * @param ConsoleOutput $output
-     */
     public function __construct(
-        ConfigHelper           $configHelper,
-        DiagnosticsLogger      $logger,
-        JobCollectionFactory   $jobCollectionFactory,
-        ResourceConnection     $resourceConnection,
-        ObjectManagerInterface $objectManager,
-        ConsoleOutput          $output
+        protected ConfigHelper           $configHelper,
+        protected DiagnosticsLogger      $logger,
+        protected JobCollectionFactory   $jobCollectionFactory,
+        protected ResourceConnection     $resourceConnection,
+        protected ObjectManagerInterface $objectManager,
+        protected ConsoleOutput          $output
     ) {
-        $this->configHelper = $configHelper;
-        $this->logger = $logger;
-        $this->jobCollectionFactory = $jobCollectionFactory;
-
         $this->table = $resourceConnection->getTableName('algoliasearch_queue');
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
         $this->archiveTable = $resourceConnection->getTableName('algoliasearch_queue_archive');
-
-        //$this->db = $resourceConnection->getConnection();
-
-        $this->objectManager = $objectManager;
         $this->db = $objectManager->create(ResourceConnection::class)->getConnection('core_write');
-        $this->output = $output;
 
         $this->elementsPerPage = $this->configHelper->getNumberOfElementByPage();
-
         $this->maxSingleJobDataSize = $this->configHelper->getNumberOfElementByPage();
     }
 

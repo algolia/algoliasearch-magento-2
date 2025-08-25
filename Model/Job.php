@@ -32,28 +32,15 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 {
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
-    /** @var ObjectManagerInterface */
-    protected ObjectManagerInterface $objectManager;
-
-    /**
-     * @param Context                $context
-     * @param Registry               $registry
-     * @param ObjectManagerInterface $objectManager
-     * @param AbstractResource|null  $resource
-     * @param AbstractDb|null        $resourceCollection
-     * @param array                  $data
-     */
     public function __construct(
-        Context                $context,
-        Registry               $registry,
-        ObjectManagerInterface $objectManager,
-        ?AbstractResource      $resource = null,
-        ?AbstractDb            $resourceCollection = null,
-        array                  $data = []
+        protected Context                $context,
+        protected Registry               $registry,
+        protected ObjectManagerInterface $objectManager,
+        protected ?AbstractResource      $resource = null,
+        protected ?AbstractDb            $resourceCollection = null,
+        array                            $data = []
     ) {
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
-
-        $this->objectManager = $objectManager;
     }
 
     /**
@@ -61,7 +48,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
         $this->_init(ResourceModel\Job::class);
     }
@@ -71,7 +58,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      * @throws AlreadyExistsException|\Exception
      *
      */
-    public function execute()
+    public function execute(): Job
     {
         $model = $this->objectManager->get($this->getClass());
         $method = $this->getMethod();
@@ -89,7 +76,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * @return $this
      */
-    public function prepare()
+    public function prepare(): Job
     {
         if ($this->getMergedIds() === null) {
             $this->setMergedIds([$this->getId()]);
@@ -99,10 +86,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
             $decodedData = json_decode((string) $this->getData('data'), true);
 
             $this->setDecodedData($decodedData);
-
-            if (isset($decodedData['store_id'])) {
-                $this->setStoreId($decodedData['store_id']);
-            }
 
             if (isset($decodedData['storeId'])) {
                 $this->setStoreId($decodedData['storeId']);
@@ -118,7 +101,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      *
      * @return bool
      */
-    public function canMerge(Job $job, $maxJobDataSize)
+    public function canMerge(Job $job, $maxJobDataSize): bool
     {
         if ($this->getClass() !== $job->getClass()) {
             return false;
@@ -156,7 +139,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      *
      * @return Job
      */
-    public function merge(Job $mergedJob)
+    public function merge(Job $mergedJob): Job
     {
         $mergedIds = $this->getMergedIds();
         array_push($mergedIds, $mergedJob->getId());
@@ -186,7 +169,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * @return array
      */
-    public function getDefaultValues()
+    public function getDefaultValues(): array
     {
         $values = [];
 
@@ -196,7 +179,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * @return string
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         $status = JobInterface::STATUS_PROCESSING;
 
@@ -218,7 +201,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      *
      * @return Job
      */
-    public function saveError(\Exception $e)
+    public function saveError(\Exception $e): Job
     {
         $this->setErrorLog($e->getMessage());
         $this->getResource()->save($this);

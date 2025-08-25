@@ -483,7 +483,12 @@ class Queue
     protected function getStoreMaxBatchSize(int $storeId): int
     {
         if (!isset($this->storeMaxBatchSizes[$storeId])) {
-            $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage($storeId);
+            try {
+                $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage($storeId);
+            } catch (\Exception $e) {
+                // In case a job was created before a store deletion
+                $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage();
+            }
         }
 
         return $this->storeMaxBatchSizes[$storeId];

@@ -54,14 +54,15 @@ class PricingTest extends ProductsIndexingTestCase
         if (!is_array($productIds)) {
             $productIds = [$productIds];
         }
-        $this->productIndexer->execute($productIds);
-        $this->algoliaHelper->waitLastTask();
+        $this->productBatchQueueProcessor->processBatch(1, $productIds);
+        $this->algoliaConnector->waitLastTask();
     }
 
     protected function getAlgoliaObjectById(int $productId): ?array
     {
-        $res = $this->algoliaHelper->getObjects(
-            $this->indexName,
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName);
+        $res = $this->algoliaConnector->getObjects(
+            $indexOptions,
             [(string) $productId]
         );
         return reset($res['results']);
@@ -121,7 +122,7 @@ class PricingTest extends ProductsIndexingTestCase
         /**
          * @var Product $product
          */
-        $product = $this->objectManager->get('Magento\Catalog\Model\ProductRepository')->getById($productId);
+        $product = $this->objectManager->get(\Magento\Catalog\Model\ProductRepository::class)->getById($productId);
         $this->assertTrue($product->isInStock(), "Product is not in stock");
         $this->assertTrue($product->getIsSalable(), "Product is not salable");
         $actualPrice = $product->getFinalPrice();
@@ -131,9 +132,7 @@ class PricingTest extends ProductsIndexingTestCase
     public static function productProvider(): array
     {
         return array_map(
-            function ($key, $value) {
-                return [$key, $value];
-            },
+            fn($key, $value) => [$key, $value],
             array_keys(self::ASSERT_PRODUCT_PRICES),
             self::ASSERT_PRODUCT_PRICES
         );
@@ -141,12 +140,12 @@ class PricingTest extends ProductsIndexingTestCase
 
     public function testSpecialPrice(): void
     {
-        $this->productIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
-        $this->algoliaHelper->waitLastTask();
+        $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
+        $this->algoliaConnector->waitLastTask();
 
-        $res = $this->algoliaHelper->getObjects(
-            $this->indexPrefix .
-            'default_products',
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $res = $this->algoliaConnector->getObjects(
+            $indexOptions,
             [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
         );
         $algoliaProduct = reset($res['results']);
@@ -175,12 +174,12 @@ class PricingTest extends ProductsIndexingTestCase
         ]);
         $product->save();
 
-        $this->productIndexer->execute([self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
-        $this->algoliaHelper->waitLastTask();
+        $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
+        $this->algoliaConnector->waitLastTask();
 
-        $res = $this->algoliaHelper->getObjects(
-            $this->indexPrefix .
-            'default_products',
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $res = $this->algoliaConnector->getObjects(
+            $indexOptions,
             [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
         );
         $algoliaProduct = reset($res['results']);

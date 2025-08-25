@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Source;
 
+use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
+
 class Facets extends AbstractTable
 {
     protected function getTableData()
@@ -17,7 +19,7 @@ class Facets extends AbstractTable
                     $attributes = $productHelper->getAllAttributes();
 
                     foreach ($attributes as $key => $label) {
-                        $options[$key] = $key ? $key : $label;
+                        $options[$key] = $key ?: $label;
                     }
 
                     return $options;
@@ -37,7 +39,11 @@ class Facets extends AbstractTable
             ],
             'searchable' => [
                 'label'  => 'Options',
-                'values' => ['1' => 'Searchable', '2' => 'Not Searchable', '3' => 'Filter Only'],
+                'values' => [
+                    FacetBuilder::FACET_SEARCHABLE_SEARCHABLE     => 'Searchable',
+                    FacetBuilder::FACET_SEARCHABLE_NOT_SEARCHABLE => 'Not Searchable',
+                    FacetBuilder::FACET_SEARCHABLE_FILTER_ONLY    => 'Filter Only'
+                ],
             ],
         ];
 

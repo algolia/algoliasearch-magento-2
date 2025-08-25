@@ -15,7 +15,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
- * @deprecated (will be removed in v3.16.0)
+ * @deprecated (will be removed from the codebase in v3.17.0)
  */
 class AlgoliaHelper extends AbstractHelper
 {
@@ -297,7 +297,7 @@ class AlgoliaHelper extends AbstractHelper
      *
      * @throws AlgoliaException|NoSuchEntityException
      */
-    public function searchRules(string $indexName, array $searchRulesParams = null, ?int $storeId = null)
+    public function searchRules(string $indexName, ?array $searchRulesParams = null, ?int $storeId = null)
     {
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 

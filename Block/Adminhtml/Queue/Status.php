@@ -70,20 +70,12 @@ class Status extends Template
     public function getQueueRunnerStatus()
     {
         $status = 'unknown';
-        switch ($this->queueRunnerIndexer->getStatus()) {
-            case \Magento\Framework\Indexer\StateInterface::STATUS_VALID:
-                $status = 'Ready';
-
-                break;
-            case \Magento\Framework\Indexer\StateInterface::STATUS_INVALID:
-                $status = 'Reindex required';
-
-                break;
-            case \Magento\Framework\Indexer\StateInterface::STATUS_WORKING:
-                $status = 'Processing';
-
-                break;
-        }
+        $status = match ($this->queueRunnerIndexer->getStatus()) {
+            \Magento\Framework\Indexer\StateInterface::STATUS_VALID => 'Ready',
+            \Magento\Framework\Indexer\StateInterface::STATUS_INVALID => 'Reindex required',
+            \Magento\Framework\Indexer\StateInterface::STATUS_WORKING => 'Processing',
+            default => $status,
+        };
 
         return $status;
     }

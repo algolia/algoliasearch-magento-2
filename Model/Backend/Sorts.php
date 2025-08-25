@@ -24,10 +24,10 @@ class Sorts extends ArraySerialized
         TypeListInterface       $cacheTypeList,
         protected ReplicaState  $replicaState,
         protected ConfigChecker $configChecker,
-        AbstractResource        $resource = null,
-        AbstractDb              $resourceCollection = null,
+        ?AbstractResource       $resource = null,
+        ?AbstractDb             $resourceCollection = null,
         array                   $data = [],
-        Json                    $serializer = null
+        ?Json                   $serializer = null
     )
     {
         $this->serializer = $serializer ?: ObjectManager::getInstance()->get(Json::class);

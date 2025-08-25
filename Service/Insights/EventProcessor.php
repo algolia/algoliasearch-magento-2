@@ -11,6 +11,7 @@ use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Tax\Model\Config as TaxConfig;
 
 class EventProcessor implements EventProcessorInterface
 {
@@ -18,6 +19,7 @@ class EventProcessor implements EventProcessorInterface
     protected const NO_QUERY_ID_KEY = '__NO_QUERY_ID__';
 
     public function __construct(
+        protected TaxConfig              $taxConfig,
         protected ?InsightsClient        $client = null,
         protected ?string                $userToken = null,
         protected ?string                $authenticatedUserToken = null,
@@ -128,7 +130,7 @@ class EventProcessor implements EventProcessorInterface
     /**
      * @inheritDoc
      */
-    public function convertAddToCart(string $eventName, string $indexName, Item $item, string $queryID = null): array
+    public function convertAddToCart(string $eventName, string $indexName, Item $item, ?string $queryID = null): array
     {
         $this->checkDependencies();
 
@@ -157,7 +159,7 @@ class EventProcessor implements EventProcessorInterface
     /**
      * @inheritDoc
      */
-    public function convertPurchaseForItems(string $eventName, string $indexName, array $items, string $queryID = null): array
+    public function convertPurchaseForItems(string $eventName, string $indexName, array $items, ?string $queryID = null): array
     {
         $this->checkDependencies();
 
@@ -236,9 +238,10 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getTotalRevenueForEvent(array $objectData): float
     {
-        return array_reduce($objectData, function($carry, $item) {
-           return floatval($carry) + floatval($item['quantity']) * floatval($item['price']);
-        });
+        return array_reduce(
+            $objectData,
+            fn($carry, $item) => floatval($carry) + floatval($item['quantity']) * floatval($item['price'])
+        );
     }
 
     /**
@@ -268,7 +271,9 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemSalePrice(OrderItem $item): float
     {
-        return floatval($item->getPrice()) - $this->getOrderItemCartDiscount($item);
+        return $this->taxConfig->priceIncludesTax($this->storeManager->getStore()->getId()) ?
+            floatval($item->getPriceInclTax()) - $this->getOrderItemCartDiscount($item):
+            floatval($item->getPrice()) - $this->getOrderItemCartDiscount($item);
     }
 
     /**
@@ -286,7 +291,9 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemDiscount(OrderItem $item): float
     {
-        $itemDiscount = floatval($item->getOriginalPrice()) - floatval($item->getPrice());
+        $itemDiscount = $this->taxConfig->priceIncludesTax($this->storeManager->getStore()->getId()) ?
+            floatval($item->getOriginalPrice()) - floatval($item->getPriceInclTax()) :
+            floatval($item->getOriginalPrice()) - floatval($item->getPrice());
         return $itemDiscount + $this->getOrderItemCartDiscount($item);
     }
 
@@ -300,13 +307,11 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getObjectDataForPurchase(array $items): array
     {
-        return array_map(function($item) {
-            return [
-                'price'    => $this->getOrderItemSalePrice($item),
-                'discount' => $this->getOrderItemDiscount($item),
-                'quantity' => intval($item->getQtyOrdered())
-            ];
-        }, $items);
+        return array_map(fn($item) => [
+            'price'    => $this->getOrderItemSalePrice($item),
+            'discount' => max(0, $this->getOrderItemDiscount($item)),
+            'quantity' => intval($item->getQtyOrdered())
+        ], $items);
     }
 
     /**
@@ -315,9 +320,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getObjectIdsForPurchase(array $items): array
     {
-        return array_map(function($item) {
-            return $item->getProduct()->getId();
-        }, $items);
+        return array_map(fn($item) => $item->getProduct()->getId(), $items);
     }
 
 

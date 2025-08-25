@@ -32,6 +32,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             'afterAutocompleteProductSourceOptions',
             'beforeInstantsearchInit',
             'beforeWidgetInitialization',
+            'beforeFacetInitialization',
             'beforeInstantsearchStart',
             'afterInstantsearchStart',
             'afterInsightsBindEvents'
@@ -275,43 +276,43 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             return "";
         },
 
-        // @deprecated This function will be removed from this module in a future version
+        // @deprecated This function will be removed from this module in v3.17
         // This global function is highly specific to InstantSearch and has never been used for anything else
-        // It will eventually be relocated to the algoliaInstantSearch lib
+        // It will be relocated to the algoliaInstantSearch lib
         transformHit: (hit, price_key, helper) => {
             if (Array.isArray(hit.categories))
                 hit.categories = hit.categories.join(', ');
-    
+
             if (hit._highlightResult.categories_without_path && Array.isArray(hit.categories_without_path)) {
                 hit.categories_without_path = $.map(hit._highlightResult.categories_without_path, function (category) {
                     return category.value;
                 });
-    
+
                 hit.categories_without_path = hit.categories_without_path.join(', ');
             }
-    
+
             var matchedColors = [];
-    
+
             if (helper && algoliaConfig.useAdaptiveImage === true) {
                 if (hit.images_data && helper.state.facetsRefinements.color) {
                     matchedColors = helper.state.facetsRefinements.color.slice(0); // slice to clone
                 }
-    
+
                 if (hit.images_data && helper.state.disjunctiveFacetsRefinements.color) {
                     matchedColors = helper.state.disjunctiveFacetsRefinements.color.slice(0); // slice to clone
                 }
             }
-    
+
             if (Array.isArray(hit.color)) {
                 var colors = [];
-    
+
                 $.each(hit._highlightResult.color, function (i, color) {
                     if (color.matchLevel === undefined || color.matchLevel === 'none') {
                         return;
                     }
-    
+
                     colors.push(color);
-    
+
                     if (algoliaConfig.useAdaptiveImage === true) {
                         var matchedColor = color.matchedWords.join(' ');
                         if (hit.images_data && color.fullyHighlighted && color.fullyHighlighted === true) {
@@ -319,53 +320,53 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                         }
                     }
                 });
-    
+
                 hit._highlightResult.color = colors;
             } else {
                 if (hit._highlightResult.color && hit._highlightResult.color.matchLevel === 'none') {
                     hit._highlightResult.color = {value: ''};
                 }
             }
-    
+
             if (algoliaConfig.useAdaptiveImage === true) {
                 $.each(matchedColors, function (i, color) {
                     color = color.toLowerCase();
-    
+
                     if (hit.images_data[color]) {
                         hit.image_url = hit.images_data[color];
                         hit.thumbnail_url = hit.images_data[color];
-    
+
                         return false;
                     }
                 });
             }
-    
+
             if (hit._highlightResult.color && hit._highlightResult.color.value && hit.categories_without_path) {
                 if (hit.categories_without_path.indexOf('<em>') === -1 && hit._highlightResult.color.value.indexOf('<em>') !== -1) {
                     hit.categories_without_path = '';
                 }
             }
-    
+
             if (Array.isArray(hit._highlightResult.name))
                 hit._highlightResult.name = hit._highlightResult.name[0];
-    
+
             if (Array.isArray(hit.price)) {
                 hit.price = hit.price[0];
                 if (hit['price'] !== undefined && price_key !== '.' + algoliaConfig.currencyCode + '.default' && hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_formated'] !== hit['price'][algoliaConfig.currencyCode]['default_formated']) {
                     hit['price'][algoliaConfig.currencyCode][price_key.substr(1) + '_original_formated'] = hit['price'][algoliaConfig.currencyCode]['default_formated'];
                 }
-    
+
                 if (hit['price'][algoliaConfig.currencyCode]['default_original_formated']
                     && hit['price'][algoliaConfig.currencyCode]['special_to_date']) {
                     var priceExpiration = hit['price'][algoliaConfig.currencyCode]['special_to_date'];
-    
+
                     if (algoliaConfig.now > priceExpiration + 1) {
                         hit['price'][algoliaConfig.currencyCode]['default_formated'] = hit['price'][algoliaConfig.currencyCode]['default_original_formated'];
                         hit['price'][algoliaConfig.currencyCode]['default_original_formated'] = false;
                     }
                 }
             }
-    
+
             /* Added code to bind default bundle options for add to cart */
             if (hit.default_bundle_options) {
                 var default_bundle_option = [];
@@ -409,69 +410,21 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
                 }
             }
-    
+
             return hit;
         },
 
-        /** @deprecated This function should no longer be used and will be removed in a future version */
-        fixAutocompleteCssHeight: () => {
-            if ($(document).width() > 768) {
-                $(".other-sections").css('min-height', '0');
-                $(".aa-dataset-products").css('min-height', '0');
-                var height = Math.max($(".other-sections").outerHeight(), $(".aa-dataset-products").outerHeight());
-                $(".aa-dataset-products").css('min-height', height);
-            }
-        },
-
-        /** @deprecated This function should no longer be used and will be removed in a future version */
-        fixAutocompleteCssSticky: (menu) => {
-            var dropdown_menu = $('#algolia-autocomplete-container .aa-dropdown-menu');
-            var autocomplete_container = $('#algolia-autocomplete-container');
-            autocomplete_container.removeClass('reverse');
-    
-            /** Reset computation **/
-            dropdown_menu.css('top', '0px');
-    
-            /** Stick menu vertically to the input **/
-            var targetOffset = Math.round(menu.offset().top + menu.outerHeight());
-            var currentOffset = Math.round(autocomplete_container.offset().top);
-    
-            dropdown_menu.css('top', (targetOffset - currentOffset) + 'px');
-    
-            if (menu.offset().left + menu.outerWidth() / 2 > $(document).width() / 2) {
-                /** Stick menu horizontally align on right to the input **/
-                dropdown_menu.css('right', '0px');
-                dropdown_menu.css('left', 'auto');
-    
-                var targetOffset = Math.round(menu.offset().left + menu.outerWidth());
-                var currentOffset = Math.round(autocomplete_container.offset().left + autocomplete_container.outerWidth());
-    
-                dropdown_menu.css('right', (currentOffset - targetOffset) + 'px');
-            } else {
-                /** Stick menu horizontally align on left to the input **/
-                dropdown_menu.css('left', 'auto');
-                dropdown_menu.css('right', '0px');
-                autocomplete_container.addClass('reverse');
-    
-                var targetOffset = Math.round(menu.offset().left);
-                var currentOffset = Math.round(autocomplete_container.offset().left);
-    
-                dropdown_menu.css('left', (targetOffset - currentOffset) + 'px');
-            }
-        },
-
         createISWidgetContainer: (attributeName) => {
-            var div = document.createElement('div');
+            const div = document.createElement('div');
             div.className = 'is-widget-container-' + attributeName.split('.').join('_');
             div.dataset.attr = attributeName;
-    
             return div;
         }
     };
 
     if (USE_GLOBALS) {
         Object.assign(
-            window, 
+            window,
             {
                 algolia,
                 routing

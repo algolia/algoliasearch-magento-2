@@ -2,24 +2,21 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:delete_products` command instead
+ * If you want to re-enable it, you can do it in the Magento configuration ("Algolia Search > Indexing Manager" section)
+ */
 class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected Data $dataHelper,
-        protected AlgoliaHelper $algoliaHelper,
-        protected Queue $queue,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected ProductIndexBuilder $productIndexBuilder
-    )
-    {}
+        protected ConfigHelper $configHelper,
+        protected ProductBatchQueueProcessor $productBatchQueueProcessor
+    ) {}
 
     public function execute($ids)
     {
@@ -28,20 +25,12 @@ class DeleteProduct implements \Magento\Framework\Indexer\ActionInterface, \Mage
 
     public function executeFull()
     {
-        $storeIds = array_keys($this->storeManager->getStores());
+        if (!$this->configHelper->isDeleteProductsIndexerEnabled()) {
+            return;
+        }
 
-        foreach ($storeIds as $storeId) {
-            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
-                continue;
-            }
-
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-                return;
-            }
-
-            $this->productIndexBuilder->deleteInactiveProducts($storeId);
+        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+            $this->productBatchQueueProcessor->deleteInactiveProducts($storeId);
         }
     }
 

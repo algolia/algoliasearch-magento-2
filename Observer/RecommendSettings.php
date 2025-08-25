@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Algolia\AlgoliaSearch\Observer;
 
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Api\RecommendManagementInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -14,7 +15,6 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Psr\Log\LoggerInterface;
 
 class RecommendSettings implements ObserverInterface
 {

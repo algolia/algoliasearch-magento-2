@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Observer\Insights;
 
+use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
@@ -11,7 +12,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
-use Psr\Log\LoggerInterface;
 
 class CheckoutOnePageControllerSuccessAction implements ObserverInterface
 {

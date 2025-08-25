@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Category;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Model\Indexer\Category;
+use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\CategoryInterface;
@@ -19,14 +19,14 @@ use Magento\Framework\Exception\NoSuchEntityException;
  */
 class MultiStoreCategoriesTest extends MultiStoreTestCase
 {
-    /** @var Category */
-    protected $categoriesIndexer;
-
     /** @var CategoryRepositoryInterface */
     protected $categoryRepository;
 
     /**  @var CollectionFactory */
     private $categoryCollectionFactory;
+
+    /** @var CategoryBatchQueueProcessor  */
+    protected $categoryBatchQueueProcessor;
 
     const BAGS_CATEGORY_ID = 4;
     const BAGS_CATEGORY_NAME = "Bags";
@@ -36,13 +36,11 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     {
         parent::setUp();
 
-        $this->categoriesIndexer = $this->objectManager->get(Category::class);
         $this->categoryRepository = $this->objectManager->get(CategoryRepositoryInterface::class);
         $this->categoryCollectionFactory = $this->objectManager->get(CollectionFactory::class);
 
-
-        $this->categoriesIndexer->executeFull();
-        $this->algoliaHelper->waitLastTask();
+        $this->categoryBatchQueueProcessor = $this->objectManager->get(CategoryBatchQueueProcessor::class);
+        $this->reindexToAllStores($this->categoryBatchQueueProcessor);
     }
 
     /**
@@ -80,10 +78,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->assertEquals(self::BAGS_CATEGORY_NAME, $bagsCategory->getName());
         $this->assertEquals(self::BAGS_CATEGORY_NAME_ALT, $bagsCategoryAlt->getName());
 
-        $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
-
-        $this->algoliaHelper->waitLastTask($defaultStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->reindexToAllStores($this->categoryBatchQueueProcessor, [self::BAGS_CATEGORY_ID]);
 
         $this->assertAlgoliaRecordValues(
             $this->indexPrefix . 'default_categories',
@@ -106,10 +101,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             ['is_active' => 0]
         );
 
-        $this->categoriesIndexer->execute([self::BAGS_CATEGORY_ID]);
-
-        $this->algoliaHelper->waitLastTask($defaultStore->getId());
-        $this->algoliaHelper->waitLastTask($fixtureSecondStore->getId());
+        $this->reindexToAllStores($this->categoryBatchQueueProcessor, [self::BAGS_CATEGORY_ID]);
 
         $this->assertNbOfRecordsPerStore(
             $defaultStore->getCode(),

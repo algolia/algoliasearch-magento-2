@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Framework\App\Area;
@@ -16,11 +16,11 @@ abstract class AbstractIndexBuilder
     protected bool $emulationRuns = false;
 
     public function __construct(
-        protected ConfigHelper      $configHelper,
-        protected DiagnosticsLogger $logger,
-        protected Emulation         $emulation,
-        protected ScopeCodeResolver $scopeCodeResolver,
-        protected AlgoliaHelper     $algoliaHelper
+        protected ConfigHelper        $configHelper,
+        protected DiagnosticsLogger   $logger,
+        protected Emulation           $emulation,
+        protected ScopeCodeResolver   $scopeCodeResolver,
+        protected AlgoliaConnector    $algoliaConnector,
     ){}
 
     /**
@@ -30,7 +30,7 @@ abstract class AbstractIndexBuilder
      */
     protected function isIndexingEnabled($storeId = null): bool
     {
-        if ($this->configHelper->isEnabledBackend($storeId) === false) {
+        if ($this->configHelper->isIndexingEnabled($storeId) === false) {
             $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
             return false;
         }
@@ -69,24 +69,25 @@ abstract class AbstractIndexBuilder
 
     /**
      * @param array $objects
-     * @param string $indexName
+     * @param IndexOptionsInterface $indexOptions
      * @param int|null $storeId
      * @return void
-     * @throws \Exception
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function saveObjects(array $objects, string $indexName, int $storeId = null): void
+    protected function saveObjects(array $objects, IndexOptionsInterface $indexOptions): void
     {
-        $this->algoliaHelper->saveObjects($indexName, $objects, $this->configHelper->isPartialUpdateEnabled(), $storeId);
+        $this->algoliaConnector->saveObjects($indexOptions, $objects, $this->configHelper->isPartialUpdateEnabled());
     }
 
     /**
-     * @param $indexName
-     * @param $idsToRemove
-     * @param null $storeId
-     * @return array|mixed
+     * @param IndexOptionsInterface $indexOptions
+     * @param array $idsToRemove
+     * @param int|null $storeId
+     * @return array
      * @throws AlgoliaException
      */
-    protected function getIdsToRealRemove($indexName, $idsToRemove, $storeId = null)
+    protected function getIdsToRealRemove(IndexOptionsInterface $indexOptions, array $idsToRemove, ?int $storeId = null)
     {
         if (count($idsToRemove) === 1) {
             return $idsToRemove;
@@ -95,7 +96,7 @@ abstract class AbstractIndexBuilder
         $toRealRemove = [];
         $idsToRemove = array_map('strval', $idsToRemove);
         foreach (array_chunk($idsToRemove, 1000) as $chunk) {
-            $objects = $this->algoliaHelper->getObjects($indexName, $chunk, $storeId);
+            $objects = $this->algoliaConnector->getObjects($indexOptions, $chunk);
             foreach ($objects['results'] as $object) {
                 if (isset($object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID])) {
                     $toRealRemove[] = $object[AlgoliaConnector::ALGOLIA_API_OBJECT_ID];

@@ -31,7 +31,7 @@ class Sections extends AbstractTable
 
                         $sections[] = [
                             'name' => $attribute['attribute'],
-                            'label' => $attribute['label'] ? $attribute['label'] : $attribute['attribute'],
+                            'label' => $attribute['label'] ?: $attribute['attribute'],
                         ];
                     }
 

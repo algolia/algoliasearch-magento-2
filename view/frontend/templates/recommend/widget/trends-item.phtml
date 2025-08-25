@@ -1,19 +1,21 @@
 <?php
 /** @var \Algolia\AlgoliaSearch\Block\Widget\TrendsItem $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
 $isEnabled = $block->isTrendingItemEnabled();
 if ($isEnabled):
     $trendConstainer =  'trendItems' . $block->generateUniqueToken(); ?>
     <div id="algoliaRecommend">
-        <div id="<?= $trendConstainer ?>" class="trendsItem recommend-component"></div>
+        <div id="<?= $escaper->escapeHtmlAttr($trendConstainer) ?>" class="trendsItem recommend-component"></div>
     </div>
     <script type="text/x-magento-init">
         {
             "*": {
                 "Algolia_AlgoliaSearch/js/recommend" : {
-                    "recommendTrendContainer" : "<?= $trendConstainer ?>",
-                    "numOfTrendsItem" : "<?= $block->getData('numOfTrendsItem') ?>",
-                    "facetName" : "<?= $block->getData('facetName') ?>",
-                    "facetValue" : "<?= $block->getData('facetValue') ?>"
+                    "recommendTrendContainer" : "<?= $escaper->escapeJs($trendConstainer) ?>",
+                    "numOfTrendsItem" : "<?= $escaper->escapeJs($block->getData('numOfTrendsItem')) ?>",
+                    "facetName" : "<?= $escaper->escapeJs($block->getData('facetName')) ?>",
+                    "facetValue" : "<?= $escaper->escapeJs($block->getData('facetValue')) ?>"
                 }
             }
         }

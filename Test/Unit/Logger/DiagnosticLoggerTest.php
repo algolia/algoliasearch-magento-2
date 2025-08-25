@@ -10,10 +10,10 @@ use PHPUnit\Framework\TestCase;
 
 class DiagnosticLoggerTest extends TestCase
 {
-    protected ConfigHelper $configHelper;
-    protected TimedLogger $timedLogger;
-    protected StoreNameFetcher $storeNameFetcher;
-    protected DiagnosticsLogger $diagnosticsLogger;
+    protected ?ConfigHelper $configHelper;
+    protected ?TimedLogger $timedLogger;
+    protected ?StoreNameFetcher $storeNameFetcher;
+    protected ?DiagnosticsLogger $diagnosticsLogger;
 
     protected function setUp(): void
     {

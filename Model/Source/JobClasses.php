@@ -5,15 +5,15 @@ namespace Algolia\AlgoliaSearch\Model\Source;
 class JobClasses implements \Magento\Framework\Data\OptionSourceInterface
 {
     private $classes = [
-        'Algolia\AlgoliaSearch\Model\IndicesConfigurator' => 'Model\IndicesConfigurator',
-        'Algolia\AlgoliaSearch\Model\IndexMover' => 'Model\IndexMover',
-        'Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder' => 'AdditionalSection\IndexBuilder',
-        'Algolia\AlgoliaSearch\Service\Category\IndexBuilder' => 'Category\IndexBuilder',
-        'Algolia\AlgoliaSearch\Service\Page\IndexBuilder' => 'Page\IndexBuilder',
-        'Algolia\AlgoliaSearch\Service\Product\IndexBuilder' => 'Product\IndexBuilder',
-        'Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder' => 'Suggestion\IndexBuilder',
+        \Algolia\AlgoliaSearch\Model\IndicesConfigurator::class => 'Model\IndicesConfigurator',
+        \Algolia\AlgoliaSearch\Model\IndexMover::class => 'Model\IndexMover',
+        \Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder::class => 'AdditionalSection\IndexBuilder',
+        \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class => 'Category\IndexBuilder',
+        \Algolia\AlgoliaSearch\Service\Page\IndexBuilder::class => 'Page\IndexBuilder',
+        \Algolia\AlgoliaSearch\Service\Product\IndexBuilder::class => 'Product\IndexBuilder',
+        \Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder::class => 'Suggestion\IndexBuilder',
         // @deprecated
-        'Algolia\AlgoliaSearch\Helper\Data' => 'Helper\Data',
+        \Algolia\AlgoliaSearch\Helper\Data::class => 'Helper\Data',
     ];
 
     /** @return array */

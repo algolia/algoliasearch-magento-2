@@ -2,15 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\AlgoliaHelper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -20,9 +22,6 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\CatalogInventory\Helper\Stock;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
-use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
-use Magento\Directory\Model\Currency as CurrencyHelper;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
@@ -73,23 +72,23 @@ class ProductHelper extends AbstractEntityHelper
     ];
 
     public function __construct(
-        protected Config                                  $eavConfig,
-        protected ConfigHelper                            $configHelper,
-        protected AlgoliaHelper                           $algoliaHelper,
-        protected DiagnosticsLogger                       $logger,
-        protected StoreManagerInterface                   $storeManager,
-        protected ManagerInterface                        $eventManager,
-        protected Visibility                              $visibility,
-        protected Stock                                   $stockHelper,
-        protected CurrencyHelper                          $currencyManager,
-        protected Type                                    $productType,
-        protected CollectionFactory                       $productCollectionFactory,
-        protected GroupCollection                         $groupCollection,
-        protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
-        protected IndexNameFetcher                        $indexNameFetcher,
-        protected ReplicaManagerInterface                 $replicaManager,
-        protected ProductInterfaceFactory                 $productFactory,
-        protected ProductRecordBuilder                    $productRecordBuilder,
+        protected Config                  $eavConfig,
+        protected ConfigHelper            $configHelper,
+        protected AlgoliaConnector        $algoliaConnector,
+        protected IndexOptionsBuilder     $indexOptionsBuilder,
+        protected DiagnosticsLogger       $logger,
+        protected StoreManagerInterface   $storeManager,
+        protected ManagerInterface        $eventManager,
+        protected Visibility              $visibility,
+        protected Stock                   $stockHelper,
+        protected Type                    $productType,
+        protected CollectionFactory       $productCollectionFactory,
+        protected IndexNameFetcher        $indexNameFetcher,
+        protected ReplicaManagerInterface $replicaManager,
+        protected ProductInterfaceFactory $productFactory,
+        protected ProductRecordBuilder    $productRecordBuilder,
+        protected FacetBuilder            $facetBuilder,
+        protected IndexSettingsHandler    $indexSettingsHandler,
     )
     {
         parent::__construct($indexNameFetcher);
@@ -145,23 +144,9 @@ class ProductHelper extends AbstractEntityHelper
             $attributes[''] = '';
         }
 
-        uksort($attributes, function ($a, $b) {
-            return strcmp($a, $b);
-        });
+        uksort($attributes, fn($a, $b) => strcmp((string) $a, (string) $b));
 
         return $attributes;
-    }
-
-    /**
-     * @param $additionalAttributes
-     * @param $attributeName
-     * @return bool
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function isAttributeEnabled($additionalAttributes, $attributeName): bool
-    {
-        return $this->productRecordBuilder->isAttributeEnabled($additionalAttributes, $attributeName);
     }
 
     /**
@@ -282,19 +267,18 @@ class ProductHelper extends AbstractEntityHelper
      */
     public function getIndexSettings(?int $storeId = null): array
     {
-        $searchableAttributes = $this->getSearchableAttributes($storeId);
-        $customRanking = $this->getCustomRanking($storeId);
-        $unretrievableAttributes = $this->getUnretrieveableAttributes($storeId);
-        $attributesForFaceting = $this->getAttributesForFaceting($storeId);
-
         $indexSettings = [
-            'searchableAttributes'    => $searchableAttributes,
-            'customRanking'           => $customRanking,
-            'unretrievableAttributes' => $unretrievableAttributes,
-            'attributesForFaceting'   => $attributesForFaceting,
+            'searchableAttributes'    => $this->getSearchableAttributes($storeId),
+            'customRanking'           => $this->getCustomRanking($storeId),
+            'unretrievableAttributes' => $this->getUnretrieveableAttributes($storeId),
+            'attributesForFaceting'   => $this->facetBuilder->getAttributesForFaceting($storeId),
             'maxValuesPerFacet'       => $this->configHelper->getMaxValuesPerFacet($storeId),
             'removeWordsIfNoResults'  => $this->configHelper->getRemoveWordsIfNoResult($storeId),
         ];
+
+        if ($this->configHelper->isDynamicFacetsEnabled($storeId)) {
+            $indexSettings['renderingContent'] = $this->facetBuilder->getRenderingContent($storeId);
+        }
 
         // Additional index settings from event observer
         $transport = new DataObject($indexSettings);
@@ -317,8 +301,8 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param string $indexName
-     * @param string $indexNameTmp
+     * @param IndexOptionsInterface $indexOptions
+     * @param IndexOptionsInterface $indexTmpOptions
      * @param int $storeId
      * @param bool $saveToTmpIndicesToo
      * @return void
@@ -326,57 +310,53 @@ class ProductHelper extends AbstractEntityHelper
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function setSettings(string $indexName, string $indexNameTmp, int $storeId, bool $saveToTmpIndicesToo = false): void
-    {
+    public function setSettings(
+        IndexOptionsInterface $indexOptions,
+        IndexOptionsInterface $indexTmpOptions,
+        int $storeId,
+        bool $saveToTmpIndicesToo = false
+    ): void {
         $indexSettings = $this->getIndexSettings($storeId);
 
-        $this->algoliaHelper->setSettings(
-            $indexName,
-            $indexSettings,
-            false,
-            true,
-            '',
-            $storeId
-        );
+        $this->indexSettingsHandler->setSettings($indexOptions, $indexSettings);
+
         $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo) {
-            $this->algoliaHelper->setSettings(
-                $indexNameTmp,
+            $this->indexSettingsHandler->setSettings(
+                $indexTmpOptions,
                 $indexSettings,
-                false,
-                true,
-                $indexName,
-                $storeId
+                $indexOptions->getIndexName()
             );
+
             $this->logger->log('Pushing the same settings to TMP index as well');
         }
 
-        $this->setFacetsQueryRules($indexName, $storeId);
-        $this->algoliaHelper->waitLastTask($storeId);
+        $this->setFacetsQueryRules($indexOptions);
+        $this->algoliaConnector->waitLastTask($storeId);
 
         if ($saveToTmpIndicesToo) {
-            $this->setFacetsQueryRules($indexNameTmp, $storeId);
-            $this->algoliaHelper->waitLastTask($storeId);
+            $this->setFacetsQueryRules($indexTmpOptions);
+            $this->algoliaConnector->waitLastTask($storeId);
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
 
         if ($saveToTmpIndicesToo) {
             try {
-                $this->algoliaHelper->copySynonyms($indexName, $indexNameTmp, $storeId);
-                $this->algoliaHelper->waitLastTask($storeId);
+                $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
+                $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
-                        Copying synonyms from production index to "' . $indexNameTmp . '" to not erase them with the index move.
+                        Copying synonyms from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
                     ');
             } catch (AlgoliaException $e) {
                 $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
             }
 
             try {
-                $this->algoliaHelper->copyQueryRules($indexName, $indexNameTmp, $storeId);
-                $this->algoliaHelper->waitLastTask($storeId);
+                $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
+                $this->algoliaConnector->waitLastTask($storeId);
                 $this->logger->log('
-                        Copying query rules from production index to "' . $indexNameTmp . '" to not erase them with the index move.
+                        Copying query rules from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
                     ');
             } catch (AlgoliaException $e) {
                 if ($e->getCode() !== 404) {
@@ -384,18 +364,6 @@ class ProductHelper extends AbstractEntityHelper
                 }
             }
         }
-    }
-
-    /**
-     * @param Product $product
-     * @return array|mixed|null
-     * @throws \Exception
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function getObject(Product $product)
-    {
-        return $this->productRecordBuilder->buildRecord($product);
     }
 
     /**
@@ -443,7 +411,7 @@ class ProductHelper extends AbstractEntityHelper
      * @param Product $product
      * @return mixed
      *
-     * @deprecated (will be removed in v3.16.0)
+     * @deprecated (will be removed in once MSI compatibility module will be added to this module)
      */
     protected function addInStock($defaultData, $customData, Product $product)
     {
@@ -512,77 +480,17 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $storeId
-     * @return array
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     */
-    protected function getAttributesForFaceting($storeId)
-    {
-        $attributesForFaceting = [];
-
-        $currencies = $this->currencyManager->getConfigAllowCurrencies();
-
-        $facets = $this->configHelper->getFacets($storeId);
-        $websiteId = (int)$this->storeManager->getStore($storeId)->getWebsiteId();
-        foreach ($facets as $facet) {
-            if ($facet['attribute'] === 'price') {
-                foreach ($currencies as $currency_code) {
-                    $facet['attribute'] = 'price.' . $currency_code . '.default';
-
-                    if ($this->configHelper->isCustomerGroupsEnabled($storeId)) {
-                        foreach ($this->groupCollection as $group) {
-                            $groupId = (int)$group->getData('customer_group_id');
-                            $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
-                            if (in_array($websiteId, $excludedWebsites)) {
-                                continue;
-                            }
-                            $attributesForFaceting[] = 'price.' . $currency_code . '.group_' . $groupId;
-                        }
-                    }
-
-                    $attributesForFaceting[] = $facet['attribute'];
-                }
-            } else {
-                $attribute = $facet['attribute'];
-                if (array_key_exists('searchable', $facet)) {
-                    if ($facet['searchable'] === '1') {
-                        $attribute = 'searchable(' . $attribute . ')';
-                    } elseif ($facet['searchable'] === '3') {
-                        $attribute = 'filterOnly(' . $attribute . ')';
-                    }
-                }
-
-                $attributesForFaceting[] = $attribute;
-            }
-        }
-
-        if ($this->configHelper->replaceCategories($storeId) && !in_array('categories', $attributesForFaceting, true)) {
-            $attributesForFaceting[] = 'categories';
-        }
-
-        // Used for merchandising
-        $attributesForFaceting[] = 'categoryIds';
-
-        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
-            $attributesForFaceting[] = 'searchable(' . $this->configHelper->getCategoryPageIdAttributeName($storeId) . ')';
-        }
-
-        return $attributesForFaceting;
-    }
-
-    /**
-     * @param string $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(string $indexName, int $storeId = null)
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions)
     {
-        $this->clearFacetsQueryRules($indexName, $storeId);
+        $this->clearFacetsQueryRules($indexOptions);
 
         $rules = [];
-        $facets = $this->configHelper->getFacets($storeId);
+        $facets = $this->configHelper->getFacets($indexOptions->getStoreId());
         foreach ($facets as $facet) {
             if (!array_key_exists('create_rule', $facet) || $facet['create_rule'] !== '1') {
                 continue;
@@ -612,31 +520,31 @@ class ProductHelper extends AbstractEntityHelper
         }
 
         if ($rules) {
-            $this->logger->log('Setting facets query rules to "' . $indexName . '" index: ' . json_encode($rules));
-            $this->algoliaHelper->saveRules($indexName, $rules, true, $storeId);
+            $this->logger->log('Setting facets query rules to "' . $indexOptions->getIndexName() . '" index: ' . json_encode($rules));
+
+            $this->algoliaConnector->saveRules($indexOptions, $rules, true);
         }
     }
 
     /**
-     * @param $indexName
-     * @param int|null $storeId
+     * @param IndexOptionsInterface $indexOptions
      * @return void
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
-    protected function clearFacetsQueryRules($indexName, int $storeId = null): void
+    protected function clearFacetsQueryRules(IndexOptionsInterface $indexOptions): void
     {
         try {
             $hitsPerPage = 100;
             $page = 0;
             do {
-                $fetchedQueryRules = $this->algoliaHelper->searchRules(
-                    $indexName,
+                $fetchedQueryRules = $this->algoliaConnector->searchRules(
+                    $indexOptions,
                     [
                         'context' => 'magento_filters',
                         'page' => $page,
                         'hitsPerPage' => $hitsPerPage,
-                    ],
-                    $storeId
+                    ]
                 );
 
                 if (!$fetchedQueryRules || !array_key_exists('hits', $fetchedQueryRules)) {
@@ -644,11 +552,10 @@ class ProductHelper extends AbstractEntityHelper
                 }
 
                 foreach ($fetchedQueryRules['hits'] as $hit) {
-                    $this->algoliaHelper->deleteRule(
-                        $indexName,
+                    $this->algoliaConnector->deleteRule(
+                        $indexOptions,
                         $hit[AlgoliaConnector::ALGOLIA_API_OBJECT_ID],
-                        true,
-                        $storeId
+                        true
                     );
                 }
 
@@ -659,22 +566,6 @@ class ProductHelper extends AbstractEntityHelper
                 throw $e;
             }
         }
-    }
-
-    /**
-     * Check if product can be index on Algolia
-     *
-     * @param Product $product
-     * @param int $storeId
-     * @param bool $isChildProduct
-     *
-     * @return bool
-     *
-     * @deprecated (will be removed in v3.16.0)
-     */
-    public function canProductBeReindexed($product, $storeId, $isChildProduct = false)
-    {
-        return $this->productRecordBuilder->canProductBeReindexed($product, $storeId, $isChildProduct);
     }
 
     /**
@@ -719,55 +610,5 @@ class ProductHelper extends AbstractEntityHelper
             },
             $sortingIndices
         );
-    }
-
-    /**
-     * Moving to ReplicaManager class
-     * @param string $indexName
-     * @param int $storeId
-     * @param array|bool $sortingAttribute
-     * @return void
-     * @throws AlgoliaException
-     * @throws ExceededRetriesException
-     * @throws LocalizedException
-     * @throws NoSuchEntityException
-     * @throws \Exception
-     * @deprecated This function will be removed in a future release
-     * @see Algolia::AlgoliaSearch::Api::Product::ReplicaManagerInterface
-     */
-    public function handlingReplica(string $indexName, int $storeId, array|bool $sortingAttribute = false): void
-    {
-        $sortingIndices = $this->configHelper->getSortingIndices($indexName, $storeId, null, $sortingAttribute);
-        if ($this->configHelper->isInstantEnabled($storeId)) {
-            $newReplicas = $this->decorateReplicasSetting($sortingIndices);
-
-            try {
-                $currentSettings = $this->algoliaHelper->getSettings($indexName, $storeId);
-                if (array_key_exists('replicas', $currentSettings)) {
-                    $oldReplicas = $currentSettings['replicas'];
-                    $replicasToDelete = array_diff($oldReplicas, $newReplicas);
-                    $this->algoliaHelper->setSettings(
-                        $indexName,
-                        ['replicas' => $newReplicas],
-                        false,
-                        false,
-                        '',
-                        $storeId
-                    );
-                    $setReplicasTaskId = $this->algoliaHelper->getLastTaskId($storeId);
-                    $this->algoliaHelper->waitLastTask($storeId, $indexName, $setReplicasTaskId);
-                    if (count($replicasToDelete) > 0) {
-                        foreach ($replicasToDelete as $deletedReplica) {
-                            $this->algoliaHelper->deleteIndex($deletedReplica, $storeId);
-                        }
-                    }
-                }
-            } catch (AlgoliaException $e) {
-                if ($e->getCode() !== 404) {
-                    $this->logger->log($e->getMessage());
-                    throw $e;
-                }
-            }
-        }
     }
 }

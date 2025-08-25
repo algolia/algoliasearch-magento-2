@@ -45,7 +45,7 @@ class SetAdminCurrentCategory
         try {
             $currentCategory = $this->categoryRepository->get($categoryId);
             $this->currentCategory->set($currentCategory);
-        } catch (NoSuchEntityException $e) {
+        } catch (NoSuchEntityException) {
             return null;
         }
 

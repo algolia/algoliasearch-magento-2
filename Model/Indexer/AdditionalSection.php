@@ -3,22 +3,20 @@
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Data;
-use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
+use Algolia\AlgoliaSearch\Service\AdditionalSection\BatchQueueProcessor as AdditionalSectionBatchQueueProcessor;
 use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * This indexer is now disabled by default, prefer use the `bin/magento algolia:reindex:additional_sections` command instead
+ * If you want to re-enable it, you can do it in the Magento configuration ("Algolia Search > Indexing Manager" section)
+ */
 class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected Data $dataHelper,
-        protected Queue $queue,
         protected ConfigHelper $configHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    )
-    {}
+        protected AdditionalSectionBatchQueueProcessor $additionalSectionBatchQueueProcessor
+    ) {}
 
     public function execute($ids)
     {
@@ -27,26 +25,12 @@ class AdditionalSection implements \Magento\Framework\Indexer\ActionInterface, \
 
     public function executeFull()
     {
-        $storeIds = array_keys($this->storeManager->getStores());
+        if (!$this->configHelper->isAdditionalSectionsIndexerEnabled()) {
+            return;
+        }
 
-        foreach ($storeIds as $storeId) {
-            if ($this->dataHelper->isIndexingEnabled($storeId) === false) {
-                continue;
-            }
-
-            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-                $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-                return;
-            }
-
-            /** @uses AdditionalSectionIndexBuilder::buildIndexFull() */
-            $this->queue->addToQueue(
-                AdditionalSectionIndexBuilder::class,
-                'buildIndexFull',
-                ['storeId' => $storeId],
-                1
-            );
+        foreach (array_keys($this->storeManager->getStores()) as $storeId) {
+            $this->additionalSectionBatchQueueProcessor->processBatch($storeId);
         }
     }
 

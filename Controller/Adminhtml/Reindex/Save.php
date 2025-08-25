@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Exception\UnknownSkuException;
 use Algolia\AlgoliaSearch\Helper\Data as DataHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
+use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Magento\Backend\App\Action\Context;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Controller\ResultFactory;
@@ -27,6 +28,7 @@ class Save extends \Magento\Backend\App\Action
         protected StoreManagerInterface $storeManager,
         protected DataHelper $dataHelper,
         protected ProductHelper $productHelper,
+        protected ProductRecordBuilder $productRecordBuilder,
         protected ProductIndexBuilder $productIndexBuilder
     ) {
         parent::__construct($context);
@@ -43,7 +45,7 @@ class Save extends \Magento\Backend\App\Action
         /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
         $resultRedirect->setPath('*/*/index');
-        $skus = preg_split("/(,|\r\n|\n|\r)/", $this->getRequest()->getParam('skus'));
+        $skus = preg_split("/(,|\r\n|\n|\r)/", (string) $this->getRequest()->getParam('skus'));
 
         $stores = $this->storeManager->getStores();
 
@@ -147,7 +149,7 @@ class Save extends \Magento\Backend\App\Action
 
             try {
                 $product = $this->productRepository->get($product->getSku(), false, $storeId);
-                $this->productHelper->canProductBeReindexed($product, $storeId);
+                $this->productRecordBuilder->canProductBeReindexed($product, $storeId);
             } catch (ProductDisabledException $e) {
                 // Product status is a Website specific attribute
                 $this->messageManager->addErrorMessage(

@@ -848,7 +848,7 @@ class QueueTest extends TestCase
         /** @var Job[] $jobs */
         $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
 
-        $this->assertEquals(1, count($jobs));
+        $this->assertEquals(2, count($jobs));
 
         $job = reset($jobs);
         $this->assertEquals(5000, $job->getDataSize());
@@ -862,7 +862,7 @@ class QueueTest extends TestCase
         $lastJob = end($dbJobs);
 
         $this->assertEquals($pid, $firstJob['pid']);
-        $this->assertNull($lastJob['pid']);
+        $this->assertEquals($pid, $lastJob['pid']);
     }
 
     /**

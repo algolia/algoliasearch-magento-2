@@ -37,12 +37,6 @@ class Queue
     protected $archiveTable;
 
     /** @var int */
-    protected $elementsPerPage;
-
-    /** @var int */
-    protected $maxSingleJobDataSize;
-
-    /** @var int */
     protected $noOfFailedJobs = 0;
 
     /** @var array */
@@ -73,9 +67,6 @@ class Queue
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
         $this->archiveTable = $resourceConnection->getTableName('algoliasearch_queue_archive');
         $this->db = $objectManager->create(ResourceConnection::class)->getConnection('core_write');
-
-        $this->elementsPerPage = $this->configHelper->getNumberOfElementByPage();
-        $this->maxSingleJobDataSize = $this->configHelper->getNumberOfElementByPage();
     }
 
     /**
@@ -513,7 +504,7 @@ class Queue
             if (count($unmergedJobs) > 0) {
                 $nextJob = array_shift($unmergedJobs);
 
-                if ($currentJob->canMerge($nextJob, $this->maxSingleJobDataSize)) {
+                if ($currentJob->canMerge($nextJob, $this->getStoreMaxBatchSize($currentJob->getStoreId()))) {
                     $currentJob->merge($nextJob);
 
                     continue;

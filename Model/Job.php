@@ -33,11 +33,11 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
     public function __construct(
-        protected Context                $context,
-        protected Registry               $registry,
+        Context                          $context,
+        Registry                         $registry,
         protected ObjectManagerInterface $objectManager,
-        protected ?AbstractResource      $resource = null,
-        protected ?AbstractDb            $resourceCollection = null,
+        ?AbstractResource                $resource = null,
+        ?AbstractDb                      $resourceCollection = null,
         array                            $data = []
     ) {
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);

@@ -21,9 +21,6 @@ class Queue
     public const UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
     public const CLEAR_ARCHIVE_LOGS_AFTER_DAYS = 30;
 
-    public const SUCCESS_LOG = 'algoliasearch_queue_log.txt';
-    public const ERROR_LOG = 'algoliasearch_queue_errors.log';
-
     public const FAILED_JOB_ARCHIVE_CRITERIA = 'retries >= max_retries';
     public const MOVE_INDEX_METHOD_NAME = 'moveIndexWithSetSettings';
 
@@ -39,26 +36,6 @@ class Queue
     /** @var string */
     protected $archiveTable;
 
-    /** @var ObjectManagerInterface */
-    protected $objectManager;
-
-    /** @var ConsoleOutput */
-    protected $output;
-
-    /** @var int */
-    protected $elementsPerPage;
-
-    /** @var ConfigHelper */
-    protected $configHelper;
-
-    /** @var DiagnosticsLogger */
-    protected $logger;
-
-    protected $jobCollectionFactory;
-
-    /** @var int */
-    protected $maxSingleJobDataSize;
-
     /** @var int */
     protected $noOfFailedJobs = 0;
 
@@ -72,39 +49,21 @@ class Queue
     /** @var array */
     protected $logRecord;
 
-    /**
-     * @param ConfigHelper $configHelper
-     * @param DiagnosticsLogger $logger
-     * @param JobCollectionFactory $jobCollectionFactory
-     * @param ResourceConnection $resourceConnection
-     * @param ObjectManagerInterface $objectManager
-     * @param ConsoleOutput $output
-     */
-    public function __construct(
-        ConfigHelper           $configHelper,
-        DiagnosticsLogger      $logger,
-        JobCollectionFactory   $jobCollectionFactory,
-        ResourceConnection     $resourceConnection,
-        ObjectManagerInterface $objectManager,
-        ConsoleOutput          $output
-    ) {
-        $this->configHelper = $configHelper;
-        $this->logger = $logger;
-        $this->jobCollectionFactory = $jobCollectionFactory;
+    /** @var array */
+    protected array $storeMaxBatchSizes;
 
+    public function __construct(
+        protected ConfigHelper           $configHelper,
+        protected DiagnosticsLogger      $logger,
+        protected JobCollectionFactory   $jobCollectionFactory,
+        protected ResourceConnection     $resourceConnection,
+        protected ObjectManagerInterface $objectManager,
+        protected ConsoleOutput          $output
+    ) {
         $this->table = $resourceConnection->getTableName('algoliasearch_queue');
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
         $this->archiveTable = $resourceConnection->getTableName('algoliasearch_queue_archive');
-
-        //$this->db = $resourceConnection->getConnection();
-
-        $this->objectManager = $objectManager;
         $this->db = $objectManager->create(ResourceConnection::class)->getConnection('core_write');
-        $this->output = $output;
-
-        $this->elementsPerPage = $this->configHelper->getNumberOfElementByPage();
-
-        $this->maxSingleJobDataSize = $this->configHelper->getNumberOfElementByPage();
     }
 
     /**
@@ -439,9 +398,8 @@ class Queue
     {
         $jobs = [];
 
-        $actualBatchSize = 0;
-        $maxBatchSize = $this->configHelper->getNumberOfElementByPage();
-
+        $actualBatchSize = -1;
+        $maxBatchSize = 0;
         $limit = $jobsLimit;
         $offset = 0;
 
@@ -496,10 +454,45 @@ class Queue
                 $jobs[] = $job;
             }
 
+            // Final calculation for the loop
             $actualBatchSize = array_sum($jobSizes);
+            $maxBatchSize = $this->calculateMaxBatchSize($jobs);
         }
 
         return $jobs;
+    }
+
+    /**
+     * @param Job[] $jobs
+     * @return int
+     */
+    protected function calculateMaxBatchSize(array $jobs): int
+    {
+        $maxBatchSize = 0;
+
+        foreach ($jobs as $job) {
+            $maxBatchSize += $this->getStoreMaxBatchSize($job->getStoreId());
+        }
+
+        return round($maxBatchSize / count($jobs));
+    }
+
+    /**
+     * @param int $storeId
+     * @return int
+     */
+    protected function getStoreMaxBatchSize(int $storeId): int
+    {
+        if (!isset($this->storeMaxBatchSizes[$storeId])) {
+            try {
+                $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage($storeId);
+            } catch (\Exception $e) {
+                // In case a job was created before a store deletion
+                $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage();
+            }
+        }
+
+        return $this->storeMaxBatchSizes[$storeId];
     }
 
     /**
@@ -521,7 +514,7 @@ class Queue
             if (count($unmergedJobs) > 0) {
                 $nextJob = array_shift($unmergedJobs);
 
-                if ($currentJob->canMerge($nextJob, $this->maxSingleJobDataSize)) {
+                if ($currentJob->canMerge($nextJob, $this->getStoreMaxBatchSize($currentJob->getStoreId()))) {
                     $currentJob->merge($nextJob);
 
                     continue;

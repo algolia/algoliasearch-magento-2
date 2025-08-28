@@ -51,7 +51,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
             return;
         }
 
-        $productsPerPage = $this->configHelper->getNumberOfElementByPage();
+        $productsPerPage = $this->configHelper->getNumberOfElementByPage($storeId);
 
         if (!empty($entityIds)) {
             $this->handleDeltaIndex($entityIds, $storeId, $productsPerPage);

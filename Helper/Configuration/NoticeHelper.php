@@ -100,7 +100,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
                                 in approx. ' . $eta . '.
                                 You may want to <a href="' . $indexingQueuePageUrl . '">clear the queue</a> or <a href="' . $indexingQueueConfigUrl . '">configure indexing queue</a>.
                                 <br><br>
-                                Depending on your configuration set on "Advanced > Maximum number of records processed per indexing job" and if the jobs can be merged into batches, you can expect higher performances.
+                                Depending on your configuration set on "Advanced > Maximum number of records sent per indexing request" and if the jobs can be merged into batches, you can expect higher performances.
                                 <br><br>
                                 Find out more about Indexing Queue in <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing-queue/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link" target="_blank">documentation</a>.';
         }

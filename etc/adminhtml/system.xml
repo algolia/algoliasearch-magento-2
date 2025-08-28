@@ -1518,6 +1518,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="number_of_element_by_page" translate="label comment" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Maximum number of records sent per indexing request</label>
+                    <comment>
+                        <![CDATA[
+                            Default value is 1000.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="max_record_size_limit" translate="label comment" type="text" sortOrder="96" showInDefault="1">
                     <label>Max record size limit per record</label>
                     <comment>
@@ -1578,15 +1587,6 @@
                             Indexing Queue is enabled under the "Indexing Queue / Cron" tab.
                       ]]>
                 </comment>
-                <field id="number_of_element_by_page" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <validate>validate-digits</validate>
-                    <label>Maximum number of records processed per indexing job</label>
-                    <comment>
-                        <![CDATA[
-                            Default value is 300.
-                        ]]>
-                    </comment>
-                </field>
                 <field id="archive_clear_limit" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Archive log clean limit</label>
                     <comment>

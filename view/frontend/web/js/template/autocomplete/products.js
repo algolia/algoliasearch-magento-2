@@ -34,6 +34,10 @@ define([], function () {
         },
 
         getFooterHtml: function ({html, ...resultDetails}) {
+            if( Object.keys(resultDetails).length < 1 ) {
+                return html;
+            }
+
             return html`<div id="autocomplete-products-footer">
                 ${this.getFooterSearchLinks(html, resultDetails)}
             </div>`;

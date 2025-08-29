@@ -81,7 +81,7 @@ class ConfigPatch implements SchemaPatchInterface
 
         'algoliasearch_synonyms/synonyms_group/enable_synonyms' => '0',
 
-        'algoliasearch_advanced/queue/number_of_element_by_page' => '300',
+        'algoliasearch_advanced/advanced/number_of_element_by_page' => '300',
         'algoliasearch_advanced/advanced/remove_words_if_no_result' => 'allOptional',
         'algoliasearch_advanced/advanced/partial_update' => '0',
         'algoliasearch_advanced/advanced/customer_groups_enable' => '0',

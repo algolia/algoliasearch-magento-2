@@ -121,6 +121,7 @@
         </algoliasearch_recommend>
         <algoliasearch_advanced>
             <advanced>
+                <number_of_element_by_page>1000</number_of_element_by_page>
                 <max_record_size_limit>10000</max_record_size_limit>
                 <analytics_region>us</analytics_region>
                 <connection_timeout>2</connection_timeout>
@@ -131,7 +132,6 @@
                 <enable_profiler>0</enable_profiler>
             </advanced>
             <queue>
-                <number_of_element_by_page>300</number_of_element_by_page>
                 <archive_clear_limit>30</archive_clear_limit>
                 <enhanced_archive>0</enhanced_archive>
             </queue>

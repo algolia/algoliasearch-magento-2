@@ -126,6 +126,7 @@ class ConfigHelper
     public const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
         'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
     public const NON_CASTABLE_ATTRIBUTES = 'algoliasearch_advanced/advanced/non_castable_attributes';
+    public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/advanced/number_of_element_by_page';
     public const MAX_RECORD_SIZE_LIMIT = 'algoliasearch_advanced/advanced/max_record_size_limit';
     public const ANALYTICS_REGION = 'algoliasearch_advanced/advanced/analytics_region';
     public const CONNECTION_TIMEOUT = 'algoliasearch_advanced/advanced/connection_timeout';
@@ -137,7 +138,6 @@ class ConfigHelper
 
     // Indexing Queue advanced settings
     public const ENHANCED_QUEUE_ARCHIVE = 'algoliasearch_advanced/queue/enhanced_archive';
-    public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/queue/number_of_element_by_page';
     public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
 
     // --- Extra index settings --- //
@@ -1294,6 +1294,15 @@ class ConfigHelper
      * @param $storeId
      * @return int
      */
+    public function getNumberOfElementByPage($storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(self::NUMBER_OF_ELEMENT_BY_PAGE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     */
     public function getMaxRecordSizeLimit($storeId = null)
     {
         return (int) $this->configInterface->getValue(
@@ -1366,16 +1375,7 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::PROFILER_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    // Indexing Queue advanced settings
-    /**
-     * @param $storeId
-     * @return int
-     */
-    public function getNumberOfElementByPage($storeId = null): int
-    {
-        return (int) $this->configInterface->getValue(self::NUMBER_OF_ELEMENT_BY_PAGE, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
+    // Indexing Queue advanced settingg
     /**
      * @param $storeId
      * @return int

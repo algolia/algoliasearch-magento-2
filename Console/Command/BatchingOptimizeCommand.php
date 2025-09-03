@@ -295,7 +295,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             'This will override your "Maximum number of records sent per indexing request" configuration to <info>' . $recommendedBatchCount . '</info> for store "' . $storeName . '".');
         $this->output->writeln(' ');
 
-        if ($this->confirmOperation()) {
+        if ($this->confirmOperation('Applying optimized batching configuration', 'Batching optimization cancelled - settings were NOT changed', true)) {
             $this->configWriter->save(
                 ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
                 $recommendedBatchCount,

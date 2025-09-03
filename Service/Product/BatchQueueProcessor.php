@@ -54,7 +54,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
             $this->areParentsLoaded = true;
         }
 
-        $productsPerPage = $this->configHelper->getNumberOfElementByPage();
+        $productsPerPage = $this->configHelper->getNumberOfElementByPage($storeId);
 
         if (is_array($entityIds) && count($entityIds) > 0) {
             foreach (array_chunk($entityIds, $productsPerPage) as $chunk) {

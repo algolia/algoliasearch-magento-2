@@ -1,14 +1,23 @@
 # CHANGE LOG
 
-## 3.17.0 
+## 3.17.0-beta.1
 
 ### Features
-
-(This is a WIP until release)
-
 - Added an Algolia indexing cache for storing metadata to prevent extra queries. Large collections that run periodic full indexes can benefit from this cache. 
 - Price indexing is now optional. If the price attribute is not present in the product attributes, sorts, facets or custom ranking then that information will not be indexed in the product record.
-- Creating a temporary index while performing a full index is now optional and can be enabled or disabled in the Magento admin. 
+- Creating a temporary index while performing a full index is now optional and can be enabled or disabled in the Magento admin.
+- Added Batching optimizer feature which performs a catalog analysis and provides recommendation regarding optimal batching size for indexing.
+- Added Clear queue CLI command which handles indexing queue clearing from the console.
+
+### Updates
+- Fixed Indexing Queue merging mechanism, it should now have way better performances with delta indexing (updates) jobs.
+- Updated CLI command organization, queue related commands now have a different prefix compared to the indexing ones.
+- Updated default "Maximum number of records sent per indexing request" to 1000 (previously 300).
+- Updated `ConfigHelper` class, it now has more methods deprecated and ported to separate helper classes.
+- Updated Unit and Integration tests.
+
+### Bug fixes
+- Fixed indexing queue templates escaping.
 
 ## 3.16.0
 

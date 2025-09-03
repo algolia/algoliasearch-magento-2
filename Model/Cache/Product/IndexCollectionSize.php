@@ -57,7 +57,7 @@ class IndexCollectionSize
 
     public function clear(?int $storeId = null): void
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $this->typeList->invalidate(Indexer::TYPE_IDENTIFIER);
             $this->typeList->cleanType(Indexer::TYPE_IDENTIFIER);
         }

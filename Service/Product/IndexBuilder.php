@@ -96,19 +96,14 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
         $collection = $this->productHelper->getProductCollectionQuery($storeId, $entityIds, $onlyVisible);
 
-        try {
-            $this->buildIndexPage(
-                $storeId,
-                $collection,
-                $options['page'] ?? 1,
-                $options['pageSize'] ?? $this->configHelper->getNumberOfElementByPage($storeId),
-                $entityIds,
-                $options['useTmpIndex'] ?? false
-            );
-        } finally {
-            $collection->walk('clearInstance');
-            $collection->clear();
-        }
+        $this->buildIndexPage(
+            $storeId,
+            $collection,
+            $options['page'] ?? 1,
+            $options['pageSize'] ?? $this->configHelper->getNumberOfElementByPage($storeId),
+            $entityIds,
+            $options['useTmpIndex'] ?? false
+        );
 
         $this->stopEmulation();
     }

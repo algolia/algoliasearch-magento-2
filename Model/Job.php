@@ -3,6 +3,12 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Registry;
 
 /**
  * @api
@@ -26,28 +32,15 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 {
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
-    /** @var \Magento\Framework\ObjectManagerInterface */
-    protected $objectManager;
-
-    /**
-     * @param \Magento\Framework\Model\Context                        $context
-     * @param \Magento\Framework\Registry                             $registry
-     * @param \Magento\Framework\ObjectManagerInterface               $objectManager
-     * @param \Magento\Framework\Model\ResourceModel\AbstractResource $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb           $resourceCollection
-     * @param array                                                   $data
-     */
     public function __construct(
-        \Magento\Framework\Model\Context $context,
-        \Magento\Framework\Registry $registry,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        ?\Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
-        ?\Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
-        array $data = []
+        Context                          $context,
+        Registry                         $registry,
+        protected ObjectManagerInterface $objectManager,
+        ?AbstractResource                $resource = null,
+        ?AbstractDb                      $resourceCollection = null,
+        array                            $data = []
     ) {
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
-
-        $this->objectManager = $objectManager;
     }
 
     /**
@@ -55,17 +48,17 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
-        $this->_init(\Algolia\AlgoliaSearch\Model\ResourceModel\Job::class);
+        $this->_init(ResourceModel\Job::class);
     }
 
     /**
-     * @throws \Magento\Framework\Exception\AlreadyExistsException
-     *
      * @return $this
+     * @throws AlreadyExistsException|\Exception
+     *
      */
-    public function execute()
+    public function execute(): Job
     {
         $model = $this->objectManager->get($this->getClass());
         $method = $this->getMethod();
@@ -83,7 +76,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * @return $this
      */
-    public function prepare()
+    public function prepare(): Job
     {
         if ($this->getMergedIds() === null) {
             $this->setMergedIds([$this->getId()]);
@@ -94,8 +87,8 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
             $this->setDecodedData($decodedData);
 
-            if (isset($decodedData['store_id'])) {
-                $this->setStoreId($decodedData['store_id']);
+            if (isset($decodedData['storeId'])) {
+                $this->setStoreId($decodedData['storeId']);
             }
         }
 
@@ -108,7 +101,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      *
      * @return bool
      */
-    public function canMerge(Job $job, $maxJobDataSize)
+    public function canMerge(Job $job, $maxJobDataSize): bool
     {
         if ($this->getClass() !== $job->getClass()) {
             return false;
@@ -124,44 +117,17 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
         $decodedData = $this->getDecodedData();
 
-        // @todo Remove legacy checks on 3.16.0
-        if ((!isset($decodedData['product_ids']) || count($decodedData['product_ids']) <= 0)
-            && (!isset($decodedData['category_ids']) || count($decodedData['category_ids']) < 0)
-            && (!isset($decodedData['entity_ids']) || count($decodedData['entity_ids']) < 0)
-            && (!isset($decodedData['page_ids']) || count($decodedData['page_ids']) < 0)) {
+        if (!isset($decodedData['entityIds']) || count($decodedData['entityIds']) <= 0) {
             return false;
         }
 
         $candidateDecodedData = $job->getDecodedData();
 
-        // @todo Remove legacy checks on 3.16.0
-        if ((!isset($candidateDecodedData['product_ids']) || count($candidateDecodedData['product_ids']) <= 0)
-            && (!isset($candidateDecodedData['category_ids']) || count($candidateDecodedData['category_ids']) < 0)
-            && (!isset($candidateDecodedData['entity_ids']) || count($candidateDecodedData['entity_ids']) < 0)
-            && (!isset($candidateDecodedData['page_ids']) || count($candidateDecodedData['page_ids']) < 0)) {
+        if (!isset($candidateDecodedData['entityIds']) || count($candidateDecodedData['entityIds']) <= 0) {
             return false;
         }
 
-        // @todo Remove on 3.16.0
-        if (isset($decodedData['product_ids'])
-            && count($decodedData['product_ids']) + count($candidateDecodedData['product_ids']) > $maxJobDataSize) {
-            return false;
-        }
-
-        // @todo Remove on 3.16.0
-        if (isset($decodedData['category_ids'])
-            && count($decodedData['category_ids']) + count($candidateDecodedData['category_ids']) > $maxJobDataSize) {
-            return false;
-        }
-
-        // @todo Remove on 3.16.0
-        if (isset($decodedData['page_ids'])
-            && count($decodedData['page_ids']) + count($candidateDecodedData['page_ids']) > $maxJobDataSize) {
-            return false;
-        }
-
-        if (isset($decodedData['entity_ids'])
-            && count($decodedData['entity_ids']) + count($candidateDecodedData['entity_ids']) > $maxJobDataSize) {
+        if (count($decodedData['entityIds']) + count($candidateDecodedData['entityIds']) > $maxJobDataSize) {
             return false;
         }
 
@@ -173,7 +139,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
      *
      * @return Job
      */
-    public function merge(Job $mergedJob)
+    public function merge(Job $mergedJob): Job
     {
         $mergedIds = $this->getMergedIds();
         array_push($mergedIds, $mergedJob->getId());
@@ -185,35 +151,13 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
         $dataSize = $this->getDataSize();
 
-        // @todo Remove useless code on 3.16.0
-        if (isset($decodedData['product_ids'])) {
-            $decodedData['product_ids'] = array_unique(array_merge(
-                $decodedData['product_ids'],
-                $mergedJobDecodedData['product_ids']
+        if (isset($decodedData['entityIds'])) {
+            $decodedData['entityIds'] = array_unique(array_merge(
+                $decodedData['entityIds'],
+                $mergedJobDecodedData['entityIds']
             ));
 
-            $dataSize = count($decodedData['product_ids']);
-        } elseif (isset($decodedData['category_ids'])) {
-            $decodedData['category_ids'] = array_unique(array_merge(
-                $decodedData['category_ids'],
-                $mergedJobDecodedData['category_ids']
-            ));
-
-            $dataSize = count($decodedData['category_ids']);
-        } elseif (isset($decodedData['page_ids'])) {
-            $decodedData['page_ids'] = array_unique(array_merge(
-                $decodedData['page_ids'],
-                $mergedJobDecodedData['page_ids']
-            ));
-
-            $dataSize = count($decodedData['page_ids']);
-        } elseif (isset($decodedData['entity_ids'])) {
-            $decodedData['entity_ids'] = array_unique(array_merge(
-                $decodedData['entity_ids'],
-                $mergedJobDecodedData['entity_ids']
-            ));
-
-            $dataSize = count($decodedData['entity_ids']);
+            $dataSize = count($decodedData['entityIds']);
         }
 
         $this->setDecodedData($decodedData);
@@ -225,7 +169,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * @return array
      */
-    public function getDefaultValues()
+    public function getDefaultValues(): array
     {
         $values = [];
 
@@ -235,7 +179,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * @return string
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         $status = JobInterface::STATUS_PROCESSING;
 
@@ -253,11 +197,11 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * @param \Exception $e
      *
-     * @throws \Magento\Framework\Exception\AlreadyExistsException
+     * @throws AlreadyExistsException
      *
      * @return Job
      */
-    public function saveError(\Exception $e)
+    public function saveError(\Exception $e): Job
     {
         $this->setErrorLog($e->getMessage());
         $this->getResource()->save($this);

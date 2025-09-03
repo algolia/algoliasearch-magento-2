@@ -70,7 +70,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
             'thumbnail_url',
             'image_url',
             'in_stock',
-            'price',
+            //'price', since version 3.17.0, the price attribute is not mandatory if it's not present in any attributes list
             'type_id',
             'algoliaLastUpdateAtCET',
             'categoryIds',
@@ -84,6 +84,8 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
             $this->assertArrayHasKey($attribute, $hit, 'Products attribute "' . $attribute . '" should be indexed but it is not"');
             unset($hit[$attribute]);
         }
+
+        $this->assertArrayNotHasKey('price', $hit, 'Record has a price attribute but it should not');
 
         $extraAttributes = implode(', ', array_keys($hit));
         $this->assertEmpty($hit, 'Extra products attributes (' . $extraAttributes . ') are indexed and should not be.');

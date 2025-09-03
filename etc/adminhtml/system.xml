@@ -1038,6 +1038,23 @@
                     <validate>validate-digits</validate>
                     <label>Number of times to retry processing of queued jobs</label>
                     <source_model>Algolia\AlgoliaSearch\Model\Source\RetryValues</source_model>
+                    <comment>
+                        <![CDATA[
+                           Defines the number of times that the queue tries to process a job.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="use_tmp_index" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Use a temporary index for full products reindex</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            This configuration defines if a temporary index suffixed by <code>_tmp</code> will be used for products full reindex. If you set it to "No", product updates will be sent directly to your production index.
+                        ]]>
+                    </comment>
                     <depends>
                         <field id="active">1</field>
                     </depends>
@@ -1501,6 +1518,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="number_of_element_by_page" translate="label comment" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Maximum number of records sent per indexing request</label>
+                    <comment>
+                        <![CDATA[
+                            Default value is 1000.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="max_record_size_limit" translate="label comment" type="text" sortOrder="96" showInDefault="1">
                     <label>Max record size limit per record</label>
                     <comment>
@@ -1561,15 +1587,6 @@
                             Indexing Queue is enabled under the "Indexing Queue / Cron" tab.
                       ]]>
                 </comment>
-                <field id="number_of_element_by_page" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <validate>validate-digits</validate>
-                    <label>Maximum number of records processed per indexing job</label>
-                    <comment>
-                        <![CDATA[
-                            Default value is 300.
-                        ]]>
-                    </comment>
-                </field>
                 <field id="archive_clear_limit" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Archive log clean limit</label>
                     <comment>

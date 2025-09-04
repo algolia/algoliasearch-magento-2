@@ -248,6 +248,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         }
 
         if (!isset($this->storeCounts[$storeId])) {
+            $this->output->writeln('<info>Scanning products for store ' . $storeName . '...</info>');
             $this->setStoreCounts($storeId);
         }
 
@@ -319,8 +320,8 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $complexProducts = $this->getProductsCollectionForStore($storeId, self::PRODUCTS_COMPLEX_TYPES);
 
         $this->storeCounts[$storeId] = [
-            'simple' => $simpleProducts->count(),
-            'complex' => $complexProducts->count()
+            'simple' => $this->getRawCount($simpleProducts),
+            'complex' => $this->getRawCount($complexProducts)
         ];
 
         $this->storeCounts[$storeId]['total'] =
@@ -373,6 +374,24 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
+     * Relying on Collection count method will unnecessarily hydrate the collection and consume memory
+     * This method will return the count of the collection without hydrating it
+     *
+     * @param Collection $collection
+     * @return int
+     */
+    protected function getRawCount(Collection $collection): int
+    {
+        $sql = $collection->getSelect()->__toString();
+
+        $connection = $collection->getConnection();
+
+        $rows = $connection->fetchAll($sql);
+
+        return count($rows);
+    }
+
+    /**
      * @param Collection $products
      * @param int $sampleSize
      * @return array
@@ -383,14 +402,15 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getProductsSizes(Collection $products, int $sampleSize): array
     {
+        if ($sampleSize === 0) {
+            return [];
+        }
+
         $stats = [];
-        $limit = 0;
+
+        $products->setPageSize($sampleSize)->setCurPage(1);
 
         foreach ($products as $product) {
-            if ($limit >= $sampleSize) {
-                break;
-            }
-
             $serializedRecord = json_encode($this->recordBuilder->buildRecord($product));
 
             if (function_exists('mb_strlen')) {
@@ -400,7 +420,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             }
 
             $stats[$product->getSku()] = $size;
-            $limit++;
         }
 
         return $stats;

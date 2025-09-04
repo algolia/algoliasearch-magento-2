@@ -374,7 +374,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
-     * Relying on Collection count method will unnecesarily hydrate the collection and consume memory
+     * Relying on Collection count method will unnecessarily hydrate the collection and consume memory
      * This method will return the count of the collection without hydrating it
      *
      * @param Collection $collection
@@ -402,6 +402,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected function getProductsSizes(Collection $products, int $sampleSize): array
     {
+        if ($sampleSize === 0) {
+            return [];
+        }
+
         $stats = [];
 
         $products->setPageSize($sampleSize)->setCurPage(1);

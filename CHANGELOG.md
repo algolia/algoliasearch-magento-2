@@ -1,5 +1,11 @@
 # CHANGE LOG
 
+## 3.17.0-beta.2
+
+### Bug fixes
+
+- Fixed 3.17 setup:upgrade on PHP 8.4
+
 ## 3.17.0-beta.1
 
 ### Features

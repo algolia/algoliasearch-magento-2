@@ -373,7 +373,7 @@ define([
                 allWidgetConfiguration.infiniteHits = {
                     container     : '#instant-search-results-container',
                     templates     : {
-                        empty       : '',
+                        empty       : '<div></div>',
                         item        : $('#instant-hit-template').html(),
                         showMoreText: algoliaConfig.translations.showMore,
                     },
@@ -403,7 +403,7 @@ define([
                 allWidgetConfiguration.hits = {
                     container     : '#instant-search-results-container',
                     templates     : {
-                        empty: '',
+                        empty: '<div></div>',
                         item : $('#instant-hit-template').html(),
                     },
                     transformItems: function (items, {results}) {

@@ -403,7 +403,7 @@ define([
                 allWidgetConfiguration.hits = {
                     container     : '#instant-search-results-container',
                     templates     : {
-                        empty: '<div></div>',
+                        empty: '<div></div>', // eslint-disable-line ESLint8_xss_no-mixed-html 
                         item : $('#instant-hit-template').html(),
                     },
                     transformItems: function (items, {results}) {

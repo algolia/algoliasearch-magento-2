@@ -373,7 +373,7 @@ define([
                 allWidgetConfiguration.infiniteHits = {
                     container     : '#instant-search-results-container',
                     templates     : {
-                        empty       : '<div></div>',
+                        empty       : '<div></div>', // eslint-disable-line xss/no-mixed-html 
                         item        : $('#instant-hit-template').html(),
                         showMoreText: algoliaConfig.translations.showMore,
                     },
@@ -403,7 +403,7 @@ define([
                 allWidgetConfiguration.hits = {
                     container     : '#instant-search-results-container',
                     templates     : {
-                        empty: '<div></div>', // eslint-disable-line ESLint8_xss_no-mixed-html 
+                        empty: '<div></div>', // eslint-disable-line xss/no-mixed-html 
                         item : $('#instant-hit-template').html(),
                     },
                     transformItems: function (items, {results}) {

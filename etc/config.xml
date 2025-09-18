@@ -7,17 +7,33 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
+        <!-- Credentials and Basic Setup -->
         <algoliasearch_credentials>
+            <credentials>
+                <enable_frontend>1</enable_frontend>
+                <debug>0</debug>
+                <index_prefix>magento2_</index_prefix>
+            </credentials>
             <algolia_cookie_configuration>
                 <default_consent_cookie_name>user_allowed_save_cookie</default_consent_cookie_name>
                 <allow_cookie_button_selector>#btn-cookie-allow</allow_cookie_button_selector>
                 <cookie_duration>15552000000</cookie_duration>
             </algolia_cookie_configuration>
         </algoliasearch_credentials>
+        <!-- Autocomplete Menu -->
         <algoliasearch_autocomplete>
             <autocomplete>
+                <is_popup_enabled>1</is_popup_enabled>
+                <autocomplete_selector>.algolia-search-input</autocomplete_selector>
+                <nb_of_products_suggestions>6</nb_of_products_suggestions>
+                <nb_of_categories_suggestions>2</nb_of_categories_suggestions>
+                <nb_of_queries_suggestions>0</nb_of_queries_suggestions>
+                <min_popularity>1000</min_popularity>
+                <min_number_of_results>2</min_number_of_results>
                 <sections><![CDATA[{"_1600351750374_374":{"name":"pages","label":"Pages","hitsPerPage":"2"}}]]></sections>
                 <excluded_pages><![CDATA[{"_1600351757831_831":{"attribute":"no-route"}}]]></excluded_pages>
+                <render_template_directives>1</render_template_directives>
+                <debug>0</debug>
                 <navigator>1</navigator>
                 <debounce_millisec>300</debounce_millisec>
                 <minimum_char_length>0</minimum_char_length>
@@ -28,8 +44,12 @@
                 <target>0</target>
             </redirects>
         </algoliasearch_autocomplete>
+        <!-- InstantSearch Results Page -->
         <algoliasearch_instant>
             <instant>
+                <is_instant_enabled>0</is_instant_enabled>
+                <instant_selector>.columns</instant_selector>
+                <number_product_results>9</number_product_results>
                 <replace_categories>0</replace_categories>
             </instant>
             <instant_facets>
@@ -42,6 +62,9 @@
             </instant_sorts>
             <instant_options>
                 <instantsearch_searchbox>1</instantsearch_searchbox>
+                <show_suggestions_on_no_result_page>1</show_suggestions_on_no_result_page>
+                <add_to_cart_enable>1</add_to_cart_enable>
+                <infinite_scroll_enable>0</infinite_scroll_enable>
                 <hide_pagination>0</hide_pagination>
             </instant_options>
             <instant_redirects>
@@ -49,56 +72,28 @@
                 <options>1,3</options>
             </instant_redirects>
         </algoliasearch_instant>
+        <!-- Products -->
         <algoliasearch_products>
             <products>
                 <product_additional_attributes><![CDATA[{"_1581608784535_535":{"attribute":"name","searchable":"1","order":"unordered","retrievable":"1"},"_1581608793630_630":{"attribute":"sku","searchable":"1","order":"unordered","retrievable":"1"},"_1582212731087_87":{"attribute":"manufacturer","searchable":"1","order":"unordered","retrievable":"1"},"_1582212739021_21":{"attribute":"categories","searchable":"1","order":"unordered","retrievable":"1"},"_1582212749587_587":{"attribute":"color","searchable":"1","order":"unordered","retrievable":"1"},"_1582212776086_86":{"attribute":"price","searchable":"2","order":"unordered","retrievable":"1"},"_1582212790407_407":{"attribute":"rating_summary","searchable":"2","order":"unordered","retrievable":"1"}}]]></product_additional_attributes>
                 <custom_ranking_product_attributes><![CDATA[{"_1600352070901_901":{"attribute":"in_stock","order":"desc"},"_1600352075148_148":{"attribute":"ordered_qty","order":"desc"},"_1600352080300_300":{"attribute":"created_at","order":"desc"}}]]></custom_ranking_product_attributes>
+                <use_adaptive_image>0</use_adaptive_image>
                 <enable_visual_merchandising>0</enable_visual_merchandising>
                 <category_page_id_attribute_name>categoryPageId</category_page_id_attribute_name>
                 <include_non_visible_products_in_index>0</include_non_visible_products_in_index>
             </products>
         </algoliasearch_products>
+        <!-- Categories -->
         <algoliasearch_categories>
             <categories>
                 <category_additional_attributes><![CDATA[{"_1582212881657_657":{"attribute":"name","searchable":"1","order":"unordered","retrievable":"1"},"_1582212904351_351":{"attribute":"path","searchable":"1","order":"unordered","retrievable":"1"},"_1582212910660_660":{"attribute":"meta_title","searchable":"1","order":"unordered","retrievable":"1"},"_1582212915890_890":{"attribute":"meta_keywords","searchable":"1","order":"unordered","retrievable":"1"},"_1582212922533_533":{"attribute":"meta_description","searchable":"1","order":"unordered","retrievable":"1"},"_1582212927307_307":{"attribute":"product_count","searchable":"2","order":"unordered","retrievable":"1"}}]]></category_additional_attributes>
                 <custom_ranking_category_attributes><![CDATA[{"_1600352142072_72":{"attribute":"product_count","order":"desc"}}]]></custom_ranking_category_attributes>
+                <show_cats_not_included_in_navigation>0</show_cats_not_included_in_navigation>
+                <index_empty_categories>0</index_empty_categories>
                 <category_separator> /// </category_separator>
             </categories>
         </algoliasearch_categories>
-        <algoliasearch_queue>
-            <queue>
-                <use_built_in_cron>0</use_built_in_cron>
-                <cron_expr>*/5 * * * *</cron_expr>
-                <use_tmp_index>1</use_tmp_index>
-            </queue>
-        </algoliasearch_queue>
-        <algoliasearch_indexing_manager>
-            <algolia_indexing>
-                <enable_indexing>1</enable_indexing>
-                <enable_query_suggestions_index>1</enable_query_suggestions_index>
-                <enable_pages_index>1</enable_pages_index>
-            </algolia_indexing>
-            <full_indexing>
-                <products>1</products>
-                <categories>1</categories>
-                <pages>1</pages>
-                <suggestions>1</suggestions>
-                <additional_sections>1</additional_sections>
-                <delete_products>1</delete_products>
-                <queue>1</queue>
-            </full_indexing>
-        </algoliasearch_indexing_manager>
-        <algoliasearch_personalization>
-            <personalization_group>
-                <personalization_click_events_group>
-                    <product_clicked_selector>.ais-Hits-item a.result, .ais-InfiniteHits-item a.result</product_clicked_selector>
-                    <filter_clicked_selector>.default-filter-selector</filter_clicked_selector>
-                    <product_recommended_clicked_selector>.products-upsell .product-item</product_recommended_clicked_selector>
-                </personalization_click_events_group>
-                <personalization_conversion_events_group>
-                </personalization_conversion_events_group>
-            </personalization_group>
-        </algoliasearch_personalization>
+        <!-- Recommend Products Settings -->
         <algoliasearch_recommend>
             <recommend>
                 <frequently_bought_together>
@@ -119,8 +114,84 @@
                 </looking_similar>
             </recommend>
         </algoliasearch_recommend>
+        <!-- Images -->
+        <algoliasearch_images>
+            <image>
+                <width>265</width>
+                <height>265</height>
+                <type>image</type>
+            </image>
+        </algoliasearch_images>
+        <!-- Indexing Queue / Cron -->
+        <algoliasearch_queue>
+            <queue>
+                <active>0</active>
+                <use_built_in_cron>0</use_built_in_cron>
+                <cron_expr>*/5 * * * *</cron_expr>
+                <number_of_job_to_run>5</number_of_job_to_run>
+                <number_of_retries>3</number_of_retries>
+                <use_tmp_index>1</use_tmp_index>
+            </queue>
+        </algoliasearch_queue>
+        <!-- Indexing Manager -->
+        <algoliasearch_indexing_manager>
+            <algolia_indexing>
+                <enable_indexing>1</enable_indexing>
+                <enable_query_suggestions_index>1</enable_query_suggestions_index>
+                <enable_pages_index>1</enable_pages_index>
+            </algolia_indexing>
+            <full_indexing>
+                <products>1</products>
+                <categories>1</categories>
+                <pages>1</pages>
+                <suggestions>1</suggestions>
+                <additional_sections>1</additional_sections>
+                <delete_products>1</delete_products>
+                <queue>1</queue>
+            </full_indexing>
+        </algoliasearch_indexing_manager>
+        <!-- Click & Conversion Analytics -->
+        <algoliasearch_cc_analytics>
+            <cc_analytics_group>
+                <enable>0</enable>
+                <is_selector>.ais-Hits-item a.result, .ais-InfiniteHits-item a.result</is_selector>
+                <enable_conversion_analytics>disable</enable_conversion_analytics>
+                <add_to_cart_selector>.action.primary.tocart</add_to_cart_selector>
+            </cc_analytics_group>
+        </algoliasearch_cc_analytics>
+        <!-- Personalization -->
+        <algoliasearch_personalization>
+            <personalization_group>
+                <personalization_click_events_group>
+                    <product_clicked_selector>.ais-Hits-item a.result, .ais-InfiniteHits-item a.result</product_clicked_selector>
+                    <filter_clicked_selector>.default-filter-selector</filter_clicked_selector>
+                    <product_recommended_clicked_selector>.products-upsell .product-item</product_recommended_clicked_selector>
+                </personalization_click_events_group>
+                <personalization_conversion_events_group>
+                </personalization_conversion_events_group>
+            </personalization_group>
+        </algoliasearch_personalization>
+        <!-- Google Analytics -->
+        <algoliasearch_analytics>
+            <analytics_group>
+                <enable>0</enable>
+                <delay>3000</delay>
+                <trigger_on_ui_interaction>1</trigger_on_ui_interaction>
+                <push_initial_search>0</push_initial_search>
+            </analytics_group>
+        </algoliasearch_analytics>
+        <!-- Advanced -->
         <algoliasearch_advanced>
             <advanced>
+                <remove_words_if_no_result>allOptional</remove_words_if_no_result>
+                <partial_update>0</partial_update>
+                <customer_groups_enable>0</customer_groups_enable>
+                <remove_pub_dir_in_url>0</remove_pub_dir_in_url>
+                <remove_branding>0</remove_branding>
+                <index_product_on_category_products_update>1</index_product_on_category_products_update>
+                <prevent_backend_rendering>0</prevent_backend_rendering>
+                <prevent_backend_rendering_display_mode>all</prevent_backend_rendering_display_mode>
+                <backend_rendering_allowed_user_agents>Googlebot\nBingbot</backend_rendering_allowed_user_agents>
                 <number_of_element_by_page>1000</number_of_element_by_page>
                 <max_record_size_limit>10000</max_record_size_limit>
                 <analytics_region>us</analytics_region>

@@ -8,11 +8,11 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
-use Algolia\AlgoliaSearch\Setup\Patch\Schema\ConfigPatch;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246CE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento246EE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247CE;
 use Algolia\AlgoliaSearch\Test\Integration\AssertValues\Magento247EE;
+use Algolia\AlgoliaSearch\Test\Integration\Config\DefaultConfigProvider;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -70,9 +70,9 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 
     protected function resetConfigs($configs = [])
     {
-        /** @var ConfigPatch $installClass */
-        $installClass = $this->getObjectManager()->get(ConfigPatch::class);
-        $defaultConfigData = $installClass->getDefaultConfigData();
+        /** @var DefaultConfigProvider $defaultConfigProvider */
+        $defaultConfigProvider = $this->getObjectManager()->get(DefaultConfigProvider::class);
+        $defaultConfigData = $defaultConfigProvider->getDefaultConfigData();
 
         foreach ($configs as $config) {
             $value = (string) $defaultConfigData[$config];

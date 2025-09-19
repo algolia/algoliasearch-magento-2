@@ -41,46 +41,34 @@ class IndexSettingsHandlerTest extends TestCase
         $this->connector->method('setSettings')
             ->willReturnCallback(function($indexOptions, $settings, $forwardToReplicas, $mergeSettings, $mergeFrom = '') {
                 $storeId = $indexOptions->getStoreId();
-                
+
                 // Initialize state if not exists
                 if (!isset($this->operationState[$storeId])) {
                     $this->operationState[$storeId] = [
-                        'totalCalls' => 0,
-                        'waitCalled' => false,
-                        'batchesCompleted' => 0
+                        'setSettingsCalled' => false,
+                        'waitCalled' => false
                     ];
                 }
-                
-                // Check if we have completed batches that haven't been waited for
-                if ($this->operationState[$storeId]['batchesCompleted'] > 0 && 
+
+                // Check that setSettings is not stacked for this $storeId
+                if ($this->operationState[$storeId]['setSettingsCalled'] &&
                     !$this->operationState[$storeId]['waitCalled']) {
                     throw new \RuntimeException(
                         "Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first."
                     );
                 }
-                
-                // Increment call count
-                $this->operationState[$storeId]['totalCalls']++;
+
+                // Update state
+                $this->operationState[$storeId]['setSettingsCalled'] = true;
                 $this->operationState[$storeId]['waitCalled'] = false;
             });
 
         $this->connector->method('waitLastTask')
             ->willReturnCallback(function($storeId = null) {
                 if ($storeId !== null && isset($this->operationState[$storeId])) {
-                    // Mark that wait has been called
                     $this->operationState[$storeId]['waitCalled'] = true;
                 }
             });
-    }
-
-    /**
-     * Call this after IndexSettingsHandler.setSettings() completes to mark the batch as done
-     */
-    private function markBatchCompleted(int $storeId): void
-    {
-        if (isset($this->operationState[$storeId])) {
-            $this->operationState[$storeId]['batchesCompleted']++;
-        }
     }
 
     private function resetOperationState(): void
@@ -91,7 +79,7 @@ class IndexSettingsHandlerTest extends TestCase
     public function testSetSettingsWithForwardingEnabledAndMixedSettings(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
@@ -125,13 +113,12 @@ class IndexSettingsHandlerTest extends TestCase
             });
 
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
     }
 
     public function testSetSettingsWithForwardingEnabledOnlyExcludedSettings(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = [
             'ranking' => ['asc(name)'],
@@ -154,13 +141,12 @@ class IndexSettingsHandlerTest extends TestCase
             );
 
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
     }
 
     public function testSetSettingsWithForwardingEnabledOnlyForwardableSettings(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = [
             'attributesToHighlight' => ['title'],
@@ -182,13 +168,12 @@ class IndexSettingsHandlerTest extends TestCase
             );
 
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
     }
 
     public function testSetSettingsWithForwardingDisabled(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
@@ -210,13 +195,12 @@ class IndexSettingsHandlerTest extends TestCase
             );
 
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
     }
 
     public function testForwardSettingsWithEmptyInput(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = [];
 
@@ -228,7 +212,6 @@ class IndexSettingsHandlerTest extends TestCase
         $this->connector->expects($this->never())->method('setSettings');
 
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
     }
 
 
@@ -249,70 +232,77 @@ class IndexSettingsHandlerTest extends TestCase
         ], $noForward);
     }
 
+    /**
+     * Ensure the state machine is working as expected by disabling replica forwarding
+     * and explicitly invoking subsequent setSettings operations
+     */
     public function testSubsequentSetSettingsWithoutWaitThrowsException(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = ['attributesToRetrieve' => ['name']];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);
+
+        // Disable forwarding for explicit test
         $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
             ->willReturn(false);
 
         // First call should succeed
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
-        
+
         // Second call without wait should throw exception
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
-        
+
         $this->handler->setSettings($this->indexOptions, $settings);
     }
 
+    /**
+     * Explicitly test the state machine succeeds by disabling replica forwarding
+     * and explicitly invoking the wait operation
+     * */
     public function testSubsequentSetSettingsAfterWaitSucceeds(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = ['attributesToRetrieve' => ['name']];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);
+        // Disable forwarding for explicit test
         $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
             ->willReturn(false);
 
-        // Configure connector to expect two setSettings calls and one waitLastTask call
         $this->connector->expects($this->exactly(2))
             ->method('setSettings');
-        
+
         $this->connector->expects($this->once())
             ->method('waitLastTask')
             ->with($storeId);
 
         // First call should succeed
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
-        
+
         // Wait for the task
         $this->connector->waitLastTask($storeId);
-        
+
         // Second call after wait should succeed
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
     }
 
     public function testDifferentStoreIdsDontInterfere(): void
     {
         $this->resetOperationState();
-        
+
         $storeId1 = 1;
         $storeId2 = 2;
         $settings = ['attributesToRetrieve' => ['name']];
 
         $indexOptions1 = $this->createMock(IndexOptionsInterface::class);
         $indexOptions1->method('getStoreId')->willReturn($storeId1);
-        
+
         $indexOptions2 = $this->createMock(IndexOptionsInterface::class);
         $indexOptions2->method('getStoreId')->willReturn($storeId2);
 
@@ -324,15 +314,19 @@ class IndexSettingsHandlerTest extends TestCase
             ->method('setSettings');
 
         $this->handler->setSettings($indexOptions1, $settings);
-        $this->markBatchCompleted($storeId1);
         $this->handler->setSettings($indexOptions2, $settings);
-        $this->markBatchCompleted($storeId2);
     }
 
+    /**
+     *  Replica forwarding should abstract the wait operation internally
+     *  However require caller to invoke wait for subsequent ops
+     *  This is *by design* to minimize unnecessary IO blocking
+     *  This test ensures this logic stays in place
+     */
     public function testForwardingEnabledMultipleCallsRequireWait(): void
     {
         $this->resetOperationState();
-        
+
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
@@ -343,14 +337,17 @@ class IndexSettingsHandlerTest extends TestCase
         $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
             ->willReturn(true);
 
+        // 2 internal calls + 1 explicit call
+        $this->connector->expects($this->exactly(3))
+            ->method('setSettings');
+
         // First call makes two internal setSettings calls
         $this->handler->setSettings($this->indexOptions, $settings);
-        $this->markBatchCompleted($storeId);
-        
-        // Second call should fail because no wait was called
+
+        // Second call to handler should fail because no wait was called
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
-        
+
         $this->handler->setSettings($this->indexOptions, $settings);
     }
 }

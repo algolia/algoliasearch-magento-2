@@ -5,3 +5,4 @@ vendor/
 .php_cs.cache
 .vscode
 .idea
+node_modules

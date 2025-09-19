@@ -54,6 +54,7 @@ class IndexSettingsHandlerTest extends TestCase
                 if ($this->operationState[$storeId]['setSettingsCalled'] &&
                     !$this->operationState[$storeId]['waitCalled']) {
                     throw new \RuntimeException(
+                        // phpcs:ignore
                         "Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first."
                     );
                 }

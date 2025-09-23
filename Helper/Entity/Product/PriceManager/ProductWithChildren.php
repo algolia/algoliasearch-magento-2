@@ -69,6 +69,11 @@ abstract class ProductWithChildren extends ProductWithoutChildren
 
                 $price     = $minPrice ?? $this->getTaxPrice($product, $finalPrice, $withTax);
                 $basePrice = $this->getTaxPrice($product, $basePrice, $withTax);
+
+                if ($this->configHelper->isFptEnabled($subProduct->getStoreId())) {
+                    $basePrice += $this->weeeTax->getWeeeAmount($subProduct);
+                }
+
                 $min = min($min, $price);
                 $original = min($original, $basePrice);
                 $max = max($max, $price);

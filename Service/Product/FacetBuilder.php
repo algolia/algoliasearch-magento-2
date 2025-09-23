@@ -95,7 +95,7 @@ class FacetBuilder
     {
         return array_combine(
             $attributes,
-            array_fill(0, count($attributes), [ 'sortRemainingBy' => 'alpha' ])
+            array_fill(0, count($attributes), [ 'sortRemainingBy' => 'count' ])
         );
     }
 

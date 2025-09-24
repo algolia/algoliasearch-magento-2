@@ -663,14 +663,21 @@ define([
         },
 
         getRefinementListOptions(facet) {
-            return {
+            const options = {
                 container   : this.getFacetContainer(facet),
                 attribute   : facet.attribute,
                 limit       : algoliaConfig.maxValuesPerFacet,
                 templates   : this.getRefinementsListTemplates(),
-                sortBy      : ['count:desc', 'name:asc'],
                 panelOptions: this.getRefinementFacetPanelOptions(facet)
             };
+            if (!algoliaConfig.instant.isDynamicFacetsEnabled) {
+                options['sortBy'] = this.getFacetSortBy()
+            }
+            return options;
+        },
+
+        getFacetSortBy() {
+            return ['count:desc', 'name:asc'];
         },
 
         getRefinementFacetPanelOptions(facet) {

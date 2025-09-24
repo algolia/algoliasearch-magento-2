@@ -3,18 +3,24 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Config;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class ConfigTest extends TestCase
 {
+
+    /**
+     * @throws NoSuchEntityException
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     */
     public function testFacets()
     {
-        /** @var IndicesConfigurator $indicesConfigurator */
-        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-
-        $this->algoliaConnector->waitLastTask();
+        $this->syncSettingsToAlgolia();
 
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
         $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
@@ -22,13 +28,30 @@ class ConfigTest extends TestCase
         $this->assertEquals($this->assertValues->attributesForFaceting, count($indexSettings['attributesForFaceting']));
     }
 
+    public function testRenderingContent()
+    {
+        $this->setConfig('algoliasearch_instant/instant_facets/enable_dynamic_facets', '1');
+
+        $this->syncSettingsToAlgolia();
+
+        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
+
+        $renderingContent = $indexSettings['renderingContent']['facetOrdering']['values'] ?? null;
+        $this->assertNotNull($renderingContent, "Rendering content not found in product index");
+        $this->assertEqualsCanonicalizing(['categories.level0', 'color', 'price.EUR.default', 'price.USD.default'], array_keys($renderingContent), "Expected facets not found in renderingContent");
+        $this->assertEquals('count', $renderingContent['color']['sortRemainingBy'], "Default sort not set to count");
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     */
     public function testQueryRules()
     {
-        /** @var IndicesConfigurator $indicesConfigurator */
-        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-
-        $this->algoliaConnector->waitLastTask();
+        $this->syncSettingsToAlgolia();
 
         $client = $this->algoliaConnector->getClient();
 
@@ -94,6 +117,12 @@ class ConfigTest extends TestCase
         $this->replicaCreationTest(true);
     }
 
+    /**
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
     private function replicaCreationTest($withCustomerGroups = false)
     {
         $enableCustomGroups = '0';
@@ -133,11 +162,7 @@ class ConfigTest extends TestCase
             $this->indexPrefix . 'default_products_created_at_desc' => 'desc(created_at)',
         ];
 
-        /** @var IndicesConfigurator $indicesConfigurator */
-        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-
-        $this->algoliaConnector->waitLastTask();
+        $this->syncSettingsToAlgolia();
 
         $indices = $this->algoliaConnector->listIndexes();
         $indicesNames = array_map(fn($indexData) => $indexData['name'], $indices['items']);
@@ -151,13 +176,15 @@ class ConfigTest extends TestCase
         }
     }
 
+    /**
+     * @throws ExceededRetriesException
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
+     */
     public function testExtraSettings()
     {
-        /** @var IndicesConfigurator $indicesConfigurator */
-        $indicesConfigurator = $this->getObjectManager()->create(IndicesConfigurator::class);
-
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaConnector->waitLastTask();
+        $this->syncSettingsToAlgolia();
 
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
@@ -182,8 +209,7 @@ class ConfigTest extends TestCase
             $this->setConfig('algoliasearch_extra_settings/extra_settings/' . $section . '_extra_settings', '{"exactOnSingleWordQuery":"word"}');
         }
 
-        $indicesConfigurator->saveConfigurationToAlgolia(1);
-        $this->algoliaConnector->waitLastTask();
+        $this->syncSettingsToAlgolia();
 
         foreach ($sections as $section) {
             $indexName = $this->indexPrefix . 'default_' . $section;
@@ -223,4 +249,22 @@ class ConfigTest extends TestCase
 
         $this->fail('AlgoliaException was not raised');
     }
+
+    /**
+     * @throws NoSuchEntityException
+     * @throws ExceededRetriesException
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     */
+    protected function syncSettingsToAlgolia(int $storeId = 1): IndicesConfigurator
+    {
+        /** @var IndicesConfigurator $indicesConfigurator */
+        $indicesConfigurator = $this->getObjectManager()->get(IndicesConfigurator::class);
+        $indicesConfigurator->saveConfigurationToAlgolia($storeId);
+
+        $this->algoliaConnector->waitLastTask();
+
+        return $indicesConfigurator; // return for reuse (as needed)
+    }
+
 }

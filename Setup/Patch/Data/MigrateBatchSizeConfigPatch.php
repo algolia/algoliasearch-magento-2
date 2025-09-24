@@ -3,12 +3,15 @@
 namespace Algolia\AlgoliaSearch\Setup\Patch\Data;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Setup\Patch\DataMigrationTrait;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchInterface;
 
 class MigrateBatchSizeConfigPatch implements DataPatchInterface
 {
+    use DataMigrationTrait;
+
     public function __construct(
         protected ModuleDataSetupInterface $moduleDataSetup,
     ) {}
@@ -35,14 +38,9 @@ class MigrateBatchSizeConfigPatch implements DataPatchInterface
     {
         $movedConfig = [
             'algoliasearch_advanced/queue/number_of_element_by_page' => ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
-       ];
+        ];
 
-        $connection = $this->moduleDataSetup->getConnection();
-        foreach ($movedConfig as $from => $to) {
-            $configDataTable = $this->moduleDataSetup->getTable('core_config_data');
-            $whereConfigPath = $connection->quoteInto('path = ?', $from);
-            $connection->update($configDataTable, ['path' => $to], $whereConfigPath);
-        }
+        $this->migrateConfig($movedConfig);
     }
 
     /**

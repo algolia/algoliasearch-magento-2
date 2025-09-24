@@ -1,31 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Setup\Patch\Schema;
+namespace Algolia\AlgoliaSearch\Test\Integration\Config;
 
-use Magento\Framework\App\Config\ConfigResource\ConfigInterface;
-use Magento\Framework\App\ProductMetadataInterface;
-use Magento\Framework\Indexer\IndexerInterfaceFactory;
-use Magento\Framework\Mview\View\SubscriptionFactory;
-use Magento\Framework\Setup\ModuleDataSetupInterface;
-use Magento\Framework\Setup\Patch\SchemaPatchInterface;
-
-class ConfigPatch implements SchemaPatchInterface
+class DefaultConfigProvider
 {
-    /**
-     * @var ConfigInterface
-     */
-    protected $config;
-
-    /**
-     * @var ProductMetadataInterface
-     */
-    protected $productMetadata;
-
-    /**
-     * @var ModuleDataSetupInterface
-     */
-    protected $moduleDataSetup;
-
     /**
      * @var string[]
      */
@@ -257,83 +235,16 @@ class ConfigPatch implements SchemaPatchInterface
         ],
     ];
 
-    /**
-     * @param ConfigInterface $config
-     * @param ProductMetadataInterface $productMetadata
-     * @param ModuleDataSetupInterface $moduleDataSetup Magento\Framework\App\ResourceConnection
-     */
-    public function __construct(
-        ConfigInterface $config,
-        ProductMetadataInterface $productMetadata,
-        ModuleDataSetupInterface $moduleDataSetup
-    ) {
-        $this->config = $config;
-        $this->productMetadata = $productMetadata;
-        $this->moduleDataSetup = $moduleDataSetup;
-
+    public function __construct()
+    {
         $this->serializeDefaultArrayConfigData();
         $this->mergeDefaultDataWithArrayData();
     }
 
     /**
-     * @return array|string[]
-     */
-    public static function getDependencies()
-    {
-        return [];
-    }
-
-    /**
-     * @return array|string[]
-     */
-    public function getAliases()
-    {
-        return [];
-    }
-
-    /**
-     * @return ConfigPatch|void
-     */
-    public function apply()
-    {
-        $movedConfigDirectives = [
-            'algoliasearch_credentials/credentials/use_adaptive_image' => 'algoliasearch_products/products/use_adaptive_image',
-            'algoliasearch_products/products/number_product_results' => 'algoliasearch_instant/instant/number_product_results',
-            'algoliasearch_products/products/show_suggestions_on_no_result_page' => 'algoliasearch_instant/instant/show_suggestions_on_no_result_page',
-            'algoliasearch_credentials/credentials/is_popup_enabled' => 'algoliasearch_autocomplete/autocomplete/is_popup_enabled',
-            'algoliasearch_credentials/credentials/is_instant_enabled' => 'algoliasearch_instant/instant/is_instant_enabled',
-        ];
-
-        $this->moduleDataSetup->getConnection()->startSetup();
-        $connection = $this->moduleDataSetup->getConnection();
-        $table = $this->moduleDataSetup->getTable('core_config_data');
-        foreach ($movedConfigDirectives as $from => $to) {
-            try {
-                $connection->query('UPDATE ' . $table . ' SET path = "' . $to . '" WHERE path = "' . $from . '"');
-            } catch (\Magento\Framework\DB\Adapter\DuplicateException) {
-                // Skip
-            }
-        }
-
-        /* SET DEFAULT CONFIG DATA */
-        $alreadyInserted = $connection->getConnection()
-            ->query('SELECT path, value FROM ' . $table . ' WHERE path LIKE "algoliasearch_%"')
-            ->fetchAll(\PDO::FETCH_KEY_PAIR);
-
-        foreach ($this->defaultConfigData as $path => $value) {
-            if (isset($alreadyInserted[$path])) {
-                continue;
-            }
-            $this->config->saveConfig($path, $value, 'default', 0);
-        }
-
-        $this->moduleDataSetup->getConnection()->endSetup();
-    }
-
-    /**
      * @return string[]
      */
-    public function getDefaultConfigData()
+    public function getDefaultConfigData(): array
     {
         return $this->defaultConfigData;
     }
@@ -341,24 +252,17 @@ class ConfigPatch implements SchemaPatchInterface
     /**
      * @return void
      */
-    protected function serializeDefaultArrayConfigData()
+    protected function serializeDefaultArrayConfigData(): void
     {
-        $serializeMethod = 'serialize';
-
-        $magentoVersion = $this->productMetadata->getVersion();
-        if (version_compare($magentoVersion, '2.2.0-dev', '>=') === true) {
-            $serializeMethod = 'json_encode';
-        }
-
         foreach ($this->defaultArrayConfigData as $path => $array) {
-            $this->defaultArrayConfigData[$path] = $serializeMethod($array);
+            $this->defaultArrayConfigData[$path] = json_encode($array);
         }
     }
 
     /**
      * @return void
      */
-    protected function mergeDefaultDataWithArrayData()
+    protected function mergeDefaultDataWithArrayData(): void
     {
         $this->defaultConfigData = array_merge($this->defaultConfigData, $this->defaultArrayConfigData);
     }

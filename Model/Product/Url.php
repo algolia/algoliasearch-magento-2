@@ -67,6 +67,7 @@ class Url extends ProductUrl
                     UrlRewrite::ENTITY_ID   => $product->getId(),
                     UrlRewrite::ENTITY_TYPE => ProductUrlRewriteGenerator::ENTITY_TYPE,
                     UrlRewrite::STORE_ID    => $storeId,
+                    UrlRewrite::REDIRECT_TYPE => 0,
                 ];
                 if ($categoryId) {
                     $filterData[UrlRewrite::METADATA]['category_id'] = $categoryId;

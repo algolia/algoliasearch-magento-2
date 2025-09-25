@@ -259,7 +259,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getQuoteItemDiscount(Item $item): float
     {
-        return floatval($item->getProduct()->getPrice()) - $this->getQuoteItemSalePrice($item);
+        return round(floatval($item->getProduct()->getPrice()) - $this->getQuoteItemSalePrice($item),2);
     }
 
     /**

@@ -12,55 +12,14 @@ use Magento\Catalog\Model\Product;
 
 class PriceManager
 {
-    /**
-     * @var PriceManagerSimple
-     */
-    protected $priceManagerSimple;
-
-    /**
-     * @var PriceManagerVirtual
-     */
-    protected $priceManagerVirtual;
-    /**
-     * @var PriceManagerDownloadable
-     */
-    protected $priceManagerDownloadable;
-    /**
-     * @var PriceManagerConfigurable
-     */
-    protected $priceManagerConfigurable;
-    /**
-     * @var PriceManagerBundle
-     */
-    protected $priceManagerBundle;
-    /**
-     * @var PriceManagerGrouped
-     */
-    protected $priceManagerGrouped;
-
-    /**
-     * @param PriceManagerSimple $priceManagerSimple
-     * @param PriceManagerVirtual $priceManagerVirtual
-     * @param PriceManagerDownloadable $priceManagerDownloadable
-     * @param PriceManagerConfigurable $priceManagerConfigurable
-     * @param PriceManagerBundle $priceManagerBundle
-     * @param PriceManagerGrouped $priceManagerGrouped
-     */
     public function __construct(
-        PriceManagerSimple $priceManagerSimple,
-        PriceManagerVirtual $priceManagerVirtual,
-        PriceManagerDownloadable $priceManagerDownloadable,
-        PriceManagerConfigurable $priceManagerConfigurable,
-        PriceManagerBundle $priceManagerBundle,
-        PriceManagerGrouped $priceManagerGrouped
-    ) {
-        $this->priceManagerSimple = $priceManagerSimple;
-        $this->priceManagerVirtual = $priceManagerVirtual;
-        $this->priceManagerDownloadable = $priceManagerDownloadable;
-        $this->priceManagerConfigurable = $priceManagerConfigurable;
-        $this->priceManagerBundle = $priceManagerBundle;
-        $this->priceManagerGrouped = $priceManagerGrouped;
-    }
+        protected PriceManagerSimple $priceManagerSimple,
+        protected PriceManagerVirtual $priceManagerVirtual,
+        protected PriceManagerDownloadable $priceManagerDownloadable,
+        protected PriceManagerConfigurable $priceManagerConfigurable,
+        protected PriceManagerBundle $priceManagerBundle,
+        protected PriceManagerGrouped $priceManagerGrouped
+    ) {}
 
     /**
      * @param $customData

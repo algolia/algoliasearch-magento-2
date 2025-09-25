@@ -8,9 +8,7 @@ use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\Group;
-use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Exception\LocalizedException;
 
 abstract class ProductWithoutChildren
@@ -22,8 +20,6 @@ abstract class ProductWithoutChildren
 
     public function __construct(
         protected ConfigHelper $configHelper,
-        protected CollectionFactory $customerGroupCollectionFactory,
-        protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger
     ) {}
@@ -44,7 +40,7 @@ abstract class ProductWithoutChildren
         $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
         $currencies = $this->store->getAvailableCurrencyCodes(true);
         $this->baseCurrencyCode = $this->store->getBaseCurrencyCode();
-        $this->groups = $this->customerGroupCollectionFactory->create();
+        $this->groups = $this->pricingHelper->getCustomerGroupCollection();
 
         if (!$this->areCustomersGroupsEnabled) {
             $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
@@ -52,7 +48,7 @@ abstract class ProductWithoutChildren
             $excludedGroups = [];
             foreach ($this->groups as $group) {
                 $groupId = (int)$group->getData('customer_group_id');
-                $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
+                $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
                 if (in_array($product->getStore()->getWebsiteId(), $excludedWebsites)) {
                     $excludedGroups[] = $groupId;
                 }

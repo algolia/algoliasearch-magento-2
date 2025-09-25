@@ -5,18 +5,42 @@ namespace Algolia\AlgoliaSearch\Helper;
 use DateTime;
 use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\CatalogRule\Model\ResourceModel\Rule;
+use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
+use Magento\Customer\Model\ResourceModel\Group\Collection as CustomerGroupResourceCollection;
+use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Weee\Model\Tax as WeeeTax;
 
 class PricingHelper
 {
     public function __construct(
-        protected ConfigHelper           $configHelper,
-        protected CatalogHelper          $catalogHelper,
+        protected ConfigHelper $configHelper,
+        protected CollectionFactory $customerGroupCollectionFactory,
+        protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
+        protected CatalogHelper $catalogHelper,
         protected PriceCurrencyInterface $priceCurrency,
-        protected WeeeTax                $weeeTax,
-        protected Rule                   $rule
+        protected WeeeTax $weeeTax,
+        protected Rule $rule
     ) {}
+
+    /**
+     * @return CustomerGroupResourceCollection
+     */
+    public function getCustomerGroupCollection(): CustomerGroupResourceCollection
+    {
+        return $this->customerGroupCollectionFactory->create();
+    }
+
+    /**
+     * @param int $groupId
+     * @return string[]
+     * @throws LocalizedException
+     */
+    public function getCustomerGroupExcludedWebsites(int $groupId): array
+    {
+        return $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($groupId);
+    }
 
     /**
      * @param $amount

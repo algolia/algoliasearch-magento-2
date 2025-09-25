@@ -6,25 +6,19 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Catalog\Model\Product;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\Group;
 use Magento\Catalog\Model\ProductFactory;
-use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 
 class Downloadable extends ProductWithoutChildren
 {
     public function __construct(
         protected ProductFactory $productFactory,
         protected ConfigHelper $configHelper,
-        protected CollectionFactory $customerGroupCollectionFactory,
-        protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger
     ) {
         parent::__construct(
             $configHelper,
-            $customerGroupCollectionFactory,
-            $groupExcludedWebsiteRepository,
             $pricingHelper,
             $logger
         );

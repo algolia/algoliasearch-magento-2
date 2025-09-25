@@ -7,24 +7,18 @@ use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
-use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\Group;
-use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 
 class Bundle extends ProductWithChildren
 {
     public function __construct(
         protected ProductFactory $productFactory,
         protected ConfigHelper $configHelper,
-        protected CollectionFactory $customerGroupCollectionFactory,
-        protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger
     ) {
         parent::__construct(
             $configHelper,
-            $customerGroupCollectionFactory,
-            $groupExcludedWebsiteRepository,
             $pricingHelper,
             $logger
         );

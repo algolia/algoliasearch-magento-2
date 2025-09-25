@@ -177,7 +177,7 @@ workflows:
       or:
         - equal: [ main, << pipeline.git.branch >> ]
         - matches:
-            pattern: "^release/.*"
+            pattern: ".*release.*"
             value: << pipeline.git.branch >>
     jobs:
       - magento-build:

@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.15.2
+
+### Bug fixes
+-  Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+
 ## 3.15.1
 
 ### Features

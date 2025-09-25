@@ -2,135 +2,50 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
-use DateTime;
-use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
-use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ProductFactory;
-use Magento\CatalogRule\Model\ResourceModel\Rule;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
-use Magento\Framework\Pricing\PriceCurrencyInterface;
-use Magento\Tax\Helper\Data as TaxHelper;
-use Magento\Tax\Model\Config as TaxConfig;
-use Magento\Weee\Model\Tax as WeeeTax;
+use Magento\Framework\Exception\LocalizedException;
 
 abstract class ProductWithoutChildren
 {
-    /**
-     * @var ConfigHelper
-     */
-    protected $configHelper;
-    /**
-     * @var CollectionFactory
-     */
-    protected $customerGroupCollectionFactory;
-    /**
-     * @var PriceCurrencyInterface
-     */
-    protected $priceCurrency;
-    /**
-     * @var CatalogHelper
-     */
-    protected $catalogHelper;
-    /**
-     * @var TaxHelper
-     */
-    protected $taxHelper;
-    /**
-     * @var WeeeTax
-     */
-    protected $weeeTax;
-    /**
-     * @var Rule
-     */
-    protected $rule;
-    /**
-     * @var ProductFactory
-     */
-    protected $productloader;
-
-    /**
-     * @var GroupExcludedWebsiteRepositoryInterface
-     */
-    protected $groupExcludedWebsiteRepository;
-
-    /**
-     * @var ScopedProductTierPriceManagementInterface
-     */
-    private $productTierPrice;
-
-    /**
-     * @var DiagnosticsLogger
-     */
-    protected $logger;
-
     protected $store;
     protected $baseCurrencyCode;
     protected $groups;
     protected $areCustomersGroupsEnabled;
-    protected $customData = [];
 
-    /**
-     * @param ConfigHelper $configHelper
-     * @param CollectionFactory $customerGroupCollectionFactory
-     * @param GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository
-     * @param PriceCurrencyInterface $priceCurrency
-     * @param CatalogHelper $catalogHelper
-     * @param TaxHelper $taxHelper
-     * @param WeeeTax $weeeTax
-     * @param Rule $rule
-     * @param ProductFactory $productloader
-     * @param ScopedProductTierPriceManagementInterface $productTierPrice
-     * @param DiagnosticsLogger $logger
-     */
     public function __construct(
-        ConfigHelper $configHelper,
-        CollectionFactory $customerGroupCollectionFactory,
-        GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
-        PriceCurrencyInterface $priceCurrency,
-        CatalogHelper $catalogHelper,
-        TaxHelper $taxHelper,
-        WeeeTax $weeeTax,
-        Rule $rule,
-        ProductFactory $productloader,
-        ScopedProductTierPriceManagementInterface $productTierPrice,
-        DiagnosticsLogger $logger
-    ) {
-        $this->configHelper = $configHelper;
-        $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
-        $this->groupExcludedWebsiteRepository = $groupExcludedWebsiteRepository;
-        $this->priceCurrency = $priceCurrency;
-        $this->catalogHelper = $catalogHelper;
-        $this->taxHelper = $taxHelper;
-        $this->weeeTax = $weeeTax;
-        $this->rule = $rule;
-        $this->productloader = $productloader;
-        $this->productTierPrice = $productTierPrice;
-        $this->logger = $logger;
-    }
+        protected ConfigHelper $configHelper,
+        protected CollectionFactory $customerGroupCollectionFactory,
+        protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
+        protected PricingHelper $pricingHelper,
+        protected DiagnosticsLogger $logger
+    ) {}
 
     /**
-     * @param $customData
      * @param Product $product
      * @param $subProducts
+     * @param bool $withTax
      * @return array
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws DiagnosticsException
+     * @throws LocalizedException
      */
-    public function addPriceData($customData, Product $product, $subProducts): array
+    public function getPriceData(Product $product, $subProducts, bool $withTax): array
     {
+        $priceData = [];
         $this->logger->startProfiling(__METHOD__);
-        $this->customData = $customData;
         $this->store = $product->getStore();
         $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
         $currencies = $this->store->getAvailableCurrencyCodes(true);
         $this->baseCurrencyCode = $this->store->getBaseCurrencyCode();
         $this->groups = $this->customerGroupCollectionFactory->create();
-        $fields = $this->getFields();
+
         if (!$this->areCustomersGroupsEnabled) {
             $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
         } else {
@@ -147,109 +62,58 @@ abstract class ProductWithoutChildren
                 $this->groups->clear();
             }
         }
-        // price/price_with_tax => true/false
-        foreach ($fields as $field => $withTax) {
-            $this->customData[$field] = [];
-            $product->setPriceCalculation(true);
-            foreach ($currencies as $currencyCode) {
-                $this->customData[$field][$currencyCode] = [];
-                $price = $product->getPrice();
-                if ($this->configHelper->isFptEnabled($product->getStoreId())) {
-                    $price += $this->weeeTax->getWeeeAmount($product);
-                }
-                if ($currencyCode !== $this->baseCurrencyCode) {
-                    $price = $this->convertPrice($price, $currencyCode);
-                }
-                $price = $this->getTaxPrice($product, $price, $withTax);
-                $this->customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($price);
-                $this->customData[$field][$currencyCode]['default_formated'] = $this->formatPrice($price, $currencyCode);
-                $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax, $subProducts);
-                $tierPrice = $this->getTierPrice($product, $currencyCode, $withTax);
-                if ($this->areCustomersGroupsEnabled) {
-                    $this->addCustomerGroupsPrices($product, $currencyCode, $withTax, $field);
-                }
-                $this->customData[$field][$currencyCode]['special_from_date'] =
-                    (!empty($product->getSpecialFromDate())) ? strtotime((string) $product->getSpecialFromDate()) : '';
-                $this->customData[$field][$currencyCode]['special_to_date'] =
-                    (!empty($product->getSpecialToDate())) ? strtotime((string) $product->getSpecialToDate()) : '';
-                $this->addSpecialPrices($specialPrice, $field, $currencyCode);
-                $this->addTierPrices($tierPrice, $field, $currencyCode);
-                $this->addAdditionalData($product, $withTax, $subProducts, $currencyCode, $field);
+
+        $product->setPriceCalculation(true);
+        foreach ($currencies as $currencyCode) {
+            $priceData[$currencyCode] = [];
+            $price = $product->getPrice();
+            if ($this->configHelper->isFptEnabled($product->getStoreId())) {
+                $price += $this->pricingHelper->getWeeeAmount($product);
             }
+            if ($currencyCode !== $this->baseCurrencyCode) {
+                $price = $this->pricingHelper->convertPrice($price, $this->store, $currencyCode);
+            }
+
+            $price = $this->pricingHelper->getTaxPrice($product, $price, $withTax);
+            $priceData[$currencyCode]['default'] = $this->pricingHelper->round($price);
+            $priceData[$currencyCode]['default_formated'] =
+                $this->pricingHelper->formatPrice($price, $this->store, $currencyCode);
+
+            $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax, $subProducts);
+            $tierPrice = $this->getTierPrice($product, $currencyCode, $withTax);
+
+            if ($this->areCustomersGroupsEnabled) {
+                $priceData = $this->addCustomerGroupsPrices($priceData, $product, $currencyCode, $withTax);
+            }
+
+            $priceData[$currencyCode]['special_from_date'] =
+                (!empty($product->getSpecialFromDate())) ? strtotime((string) $product->getSpecialFromDate()) : '';
+            $priceData[$currencyCode]['special_to_date'] =
+                (!empty($product->getSpecialToDate())) ? strtotime((string) $product->getSpecialToDate()) : '';
+
+            $priceData = $this->addSpecialPrices($priceData, $specialPrice, $currencyCode);
+            $priceData = $this->addTierPrices($priceData, $tierPrice, $currencyCode);
+            $priceData = $this->addAdditionalData($priceData, $product, $withTax, $subProducts, $currencyCode);
         }
+
 
         $this->logger->stopProfiling(__METHOD__);
-        return $this->customData;
+
+        return $priceData;
     }
 
     /**
-     * @return array
-     */
-    protected function getFields(): array
-    {
-        $priceDisplayType = $this->taxHelper->getPriceDisplayType($this->store);
-        if ($priceDisplayType === TaxConfig::DISPLAY_TYPE_EXCLUDING_TAX) {
-            return ['price' => false];
-        }
-        if ($priceDisplayType === TaxConfig::DISPLAY_TYPE_INCLUDING_TAX) {
-            return ['price' => true];
-        }
-        return ['price' => false, 'price_with_tax' => true];
-    }
-
-    /**
+     * @param $priceData
      * @param $product
      * @param $withTax
      * @param $subProducts
      * @param $currencyCode
-     * @param $field
-     * @return void
+     * @return array
      */
-    protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode, $field)
+    protected function addAdditionalData($priceData, $product, $withTax, $subProducts, $currencyCode): array
     {
         // Empty for products without children
-    }
-
-    /**
-     * @param $amount
-     * @param $currencyCode
-     * @return mixed
-     */
-    protected function formatPrice($amount, $currencyCode)
-    {
-        $currency = $this->priceCurrency->getCurrency($this->store, $currencyCode);
-        $options = ['locale' => $this->configHelper->getStoreLocale($this->store->getId())];
-        return $currency->formatPrecision($amount, PriceCurrencyInterface::DEFAULT_PRECISION, $options, false);
-    }
-
-    /**
-     * @param $amount
-     * @param $currencyCode
-     * @return float
-     */
-    protected function convertPrice($amount, $currencyCode): float
-    {
-        return $this->priceCurrency->convert($amount, $this->store, $currencyCode);
-    }
-
-    /**
-     * @param $product
-     * @param $amount
-     * @param $withTax
-     * @return float
-     */
-    public function getTaxPrice($product, $amount, $withTax): float
-    {
-        return (float) $this->catalogHelper->getTaxPrice(
-            $product,
-            $amount,
-            $withTax,
-            null,
-            null,
-            null,
-            $this->store,
-            null
-        );
+        return $priceData;
     }
 
     /**
@@ -266,11 +130,11 @@ abstract class ProductWithoutChildren
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $specialPrices[$groupId] = [];
-            $specialPrices[$groupId][] = $this->getRulePrice($groupId, $product, $subProducts);
+            $specialPrices[$groupId][] = $this->pricingHelper->getRulePrice($groupId, $product);
             // The price with applied catalog rules
             $finalPrice = $product->getFinalPrice(); // The product's special price
             if ($this->configHelper->isFptEnabled($product->getStoreId())) {
-                $finalPrice += $this->weeeTax->getWeeeAmount($product);
+                $finalPrice += $this->pricingHelper->getWeeeAmount($product);
             }
             $specialPrices[$groupId][] = $finalPrice;
             $specialPrices[$groupId] = array_filter($specialPrices[$groupId], fn($price) => $price > 0);
@@ -281,12 +145,25 @@ abstract class ProductWithoutChildren
             if ($specialPrice[$groupId]) {
                 if ($currencyCode !== $this->baseCurrencyCode) {
                     $specialPrice[$groupId] =
-                        $this->priceCurrency->round($this->convertPrice($specialPrice[$groupId], $currencyCode));
+                        $this->pricingHelper->round(
+                            $this->pricingHelper->convertPrice($specialPrice[$groupId], $this->store, $currencyCode)
+                        );
                 }
-                $specialPrice[$groupId] = $this->getTaxPrice($product, $specialPrice[$groupId], $withTax);
+                $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice($product, $specialPrice[$groupId], $withTax);
             }
         }
         return $specialPrice;
+    }
+
+    /**
+     * @param $groupId
+     * @param $product
+     * @param $subProducts
+     * @return float|int|mixed
+     */
+    protected function getRulePrice($groupId, $product, $subProducts)
+    {
+        return $this->pricingHelper->getRulePrice($groupId, $product);
     }
 
     /**
@@ -341,22 +218,23 @@ abstract class ProductWithoutChildren
 
             if ($currencyCode !== $this->baseCurrencyCode) {
                 $currentTierPrice =
-                    $this->priceCurrency->round($this->convertPrice($currentTierPrice, $currencyCode));
+                    $this->pricingHelper->round($this->pricingHelper->convertPrice($currentTierPrice, $currencyCode));
             }
-            $tierPrice[$groupId] = $this->getTaxPrice($product, $currentTierPrice, $withTax);
+            $tierPrice[$groupId] = $this->pricingHelper->getTaxPrice($product, $currentTierPrice, $withTax);
         }
 
         $this->logger->stopProfiling(__METHOD__);
+
         return $tierPrice;
     }
 
     /**
+     * @param array $priceData
      * @param $tierPrice
-     * @param $field
      * @param $currencyCode
-     * @return void
+     * @return array
      */
-    protected function addTierPrices($tierPrice, $field, $currencyCode)
+    protected function addTierPrices(array $priceData, $tierPrice, $currencyCode): array
     {
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
@@ -364,47 +242,33 @@ abstract class ProductWithoutChildren
                 $groupId = (int) $group->getData('customer_group_id');
 
                 if ($tierPrice[$groupId]) {
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_tier'] = $tierPrice[$groupId];
+                    $priceData[$currencyCode]['group_' . $groupId . '_tier'] = $tierPrice[$groupId];
 
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_tier_formated'] =
-                        $this->formatPrice($tierPrice[$groupId], $currencyCode);
+                    $priceData[$currencyCode]['group_' . $groupId . '_tier_formated'] =
+                        $this->pricingHelper->formatPrice($tierPrice[$groupId], $this->store, $currencyCode);
                 }
             }
 
-            return;
+            return $priceData;
         }
 
         if ($tierPrice[0]) {
-            $this->customData[$field][$currencyCode]['default_tier'] = $this->priceCurrency->round($tierPrice[0]);
-            $this->customData[$field][$currencyCode]['default_tier_formated'] =
-                $this->formatPrice($tierPrice[0], $currencyCode);
+            $priceData[$currencyCode]['default_tier'] = $this->pricingHelper->round($tierPrice[0]);
+            $priceData[$currencyCode]['default_tier_formated'] =
+                $this->pricingHelper->formatPrice($tierPrice[0], $this->store, $currencyCode);
         }
-    }
-    // TODO bookmarking getRulePrice function for a future refactor effort.
-    /**
-     * @param $groupId
-     * @param $product
-     * @param $subProducts
-     * @return float
-     */
-    protected function getRulePrice($groupId, $product, $subProducts)
-    {
-        return (float) $this->rule->getRulePrice(
-            new DateTime(),
-            $this->store->getWebsiteId(),
-            $groupId,
-            $product->getId()
-        );
+
+        return $priceData;
     }
 
     /**
+     * @param array $priceData
      * @param Product $product
      * @param $currencyCode
      * @param $withTax
-     * @param $field
-     * @return void
+     * @return array
      */
-    protected function addCustomerGroupsPrices(Product $product, $currencyCode, $withTax, $field)
+    protected function addCustomerGroupsPrices(array $priceData, Product $product, $currencyCode, $withTax): array
     {
         /** @var Group $group */
         foreach ($this->groups as $group) {
@@ -413,65 +277,68 @@ abstract class ProductWithoutChildren
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
             if ($currencyCode !== $this->baseCurrencyCode) {
-                $discountedPrice = $this->convertPrice($discountedPrice, $currencyCode);
+                $discountedPrice = $this->pricingHelper->convertPrice($discountedPrice, $this->store, $currencyCode);
             }
             if ($discountedPrice !== false) {
-                $this->customData[$field][$currencyCode]['group_' . $groupId] =
-                    $this->getTaxPrice($product, $discountedPrice, $withTax);
-                $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
-                    $this->formatPrice(
-                        $this->customData[$field][$currencyCode]['group_' . $groupId],
+                $priceData[$currencyCode]['group_' . $groupId] =
+                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax);
+                $priceData[$currencyCode]['group_' . $groupId . '_formated'] =
+                    $this->pricingHelper->formatPrice(
+                        $priceData[$currencyCode]['group_' . $groupId],
+                        $this->store,
                         $currencyCode
                     );
-                if ($this->customData[$field][$currencyCode]['default'] >
-                    $this->customData[$field][$currencyCode]['group_' . $groupId]) {
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_original_formated'] =
-                        $this->customData[$field][$currencyCode]['default_formated'];
+                if ($priceData[$currencyCode]['default'] > $priceData[$currencyCode]['group_' . $groupId]) {
+                    $priceData[$currencyCode]['group_' . $groupId . '_original_formated'] =
+                        $priceData[$currencyCode]['default_formated'];
                 }
             } else {
-                $this->customData[$field][$currencyCode]['group_' . $groupId] =
-                    $this->customData[$field][$currencyCode]['default'];
-                $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
-                    $this->customData[$field][$currencyCode]['default_formated'];
+                $priceData[$currencyCode]['group_' . $groupId] = $priceData[$currencyCode]['default'];
+                $priceData[$currencyCode]['group_' . $groupId . '_formated'] =
+                    $priceData[$currencyCode]['default_formated'];
             }
         }
 
         $product->setData('customer_group_id', null);
+
+        return $priceData;
     }
 
     /**
+     * @param $priceData
      * @param $specialPrice
-     * @param $field
      * @param $currencyCode
-     * @return void
+     * @return array
      */
-    protected function addSpecialPrices($specialPrice, $field, $currencyCode): void
+    protected function addSpecialPrices($priceData, $specialPrice, $currencyCode): array
     {
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
                 if ($specialPrice[$groupId]
-                    && $specialPrice[$groupId] < $this->customData[$field][$currencyCode]['group_' . $groupId]) {
-                    $this->customData[$field][$currencyCode]['group_' . $groupId] = $specialPrice[$groupId];
-                    $this->customData[$field][$currencyCode]['group_' . $groupId . '_formated'] =
-                        $this->formatPrice($specialPrice[$groupId], $currencyCode);
-                    if ($this->customData[$field][$currencyCode]['default'] >
-                        $this->customData[$field][$currencyCode]['group_' . $groupId]) {
-                        $this->customData[$field][$currencyCode]['group_' . $groupId . '_original_formated'] =
-                            $this->customData[$field][$currencyCode]['default_formated'];
+                    && $specialPrice[$groupId] < $priceData[$currencyCode]['group_' . $groupId]) {
+                    $priceData['group_' . $groupId] = $specialPrice[$groupId];
+                    $priceData['group_' . $groupId . '_formated'] =
+                        $this->pricingHelper->formatPrice($specialPrice[$groupId], $this->store, $currencyCode);
+                    if ($priceData[$currencyCode]['default'] >
+                        $priceData[$currencyCode]['group_' . $groupId]) {
+                        $priceData[$currencyCode]['group_' . $groupId . '_original_formated'] =
+                            $priceData[$currencyCode]['default_formated'];
                     }
                 }
             }
-            return;
+            return $priceData;
         }
 
-        if ($specialPrice[0] && $specialPrice[0] < $this->customData[$field][$currencyCode]['default']) {
-            $this->customData[$field][$currencyCode]['default_original_formated'] =
-                $this->customData[$field][$currencyCode]['default_formated'];
-            $this->customData[$field][$currencyCode]['default'] = $this->priceCurrency->round($specialPrice[0]);
-            $this->customData[$field][$currencyCode]['default_formated'] =
-                $this->formatPrice($specialPrice[0], $currencyCode);
+        if ($specialPrice[0] && $specialPrice[0] < $priceData[$currencyCode]['default']) {
+            $priceData[$currencyCode]['default_original_formated'] =
+                $priceData[$currencyCode]['default_formated'];
+            $priceData[$currencyCode]['default'] = $this->pricingHelper->round($specialPrice[0]);
+            $priceData[$currencyCode]['default_formated'] =
+                $this->pricingHelper->formatPrice($specialPrice[0], $this->store, $currencyCode);
         }
+
+        return $priceData;
     }
 }

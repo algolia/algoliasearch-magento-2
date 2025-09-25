@@ -2,8 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
-use DateTime;
-
 class Configurable extends ProductWithChildren
 {
     /**
@@ -23,12 +21,7 @@ class Configurable extends ProductWithChildren
         }
 
         foreach ($subProducts as $child) {
-            $childrenPrices[] = (float) $this->rule->getRulePrice(
-                new DateTime(),
-                $this->store->getWebsiteId(),
-                $groupId,
-                $child->getId()
-            );
+            $childrenPrices[] = $this->pricingHelper->getRulePrice($groupId, $child);
         }
         if ($childrenPrices === []) {
             return 0;

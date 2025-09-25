@@ -173,12 +173,6 @@ jobs:
 
 workflows:
   magento-build-and-test-workflow:
-    when:
-      or:
-        - equal: [ main, << pipeline.git.branch >> ]
-        - matches:
-            pattern: ".*release.*"
-            value: << pipeline.git.branch >>
     jobs:
       - magento-build:
           matrix:

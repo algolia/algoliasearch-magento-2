@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
+namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -16,8 +16,8 @@ use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Helper\Data as TaxHelper;
-use Magento\Weee\Model\Tax as WeeeTax;
 use Magento\Tax\Model\Config as TaxConfig;
+use Magento\Weee\Model\Tax as WeeeTax;
 
 abstract class ProductWithoutChildren
 {

@@ -1,10 +1,8 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
+namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
-use Magento\Bundle\Model\Product\Price;
 use Magento\Catalog\Model\Product;
-use Magento\Customer\Model\Group;
 
 class Bundle extends ProductWithChildren
 {

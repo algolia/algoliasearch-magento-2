@@ -2,12 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Entity\Product;
 
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager\Bundle as PriceManagerBundle;
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager\Configurable as PriceManagerConfigurable;
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager\Downloadable as PriceManagerDownloadable;
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager\Grouped as PriceManagerGrouped;
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager\Simple as PriceManagerSimple;
-use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager\Virtual as PriceManagerVirtual;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle as PriceManagerBundle;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable as PriceManagerConfigurable;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable as PriceManagerDownloadable;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Grouped as PriceManagerGrouped;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Simple as PriceManagerSimple;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Virtual as PriceManagerVirtual;
 use Magento\Catalog\Model\Product;
 
 class PriceManager

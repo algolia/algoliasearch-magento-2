@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
+namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;

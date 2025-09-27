@@ -87,7 +87,7 @@ class EventProcessorTest extends TestCase
     public function testConvertedObjectIDsAfterSearchWithAllDependencies(): void
     {
         $this->setupFullyConfiguredEventProcessor();
-        
+
         $this->insightsClient
             ->expects($this->once())
             ->method('pushEvents')
@@ -258,6 +258,84 @@ class EventProcessorTest extends TestCase
         );
     }
 
+    // Test convertPurchaseForItems
+    public function testConvertPurchaseForItems(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        $items = $this->createOrderItems([
+            ['id' => '1', 'price' => 50.0, 'originalPrice' => 60.0, 'cartDiscountAmount' => 10.0, 'qtyOrdered' => 2],
+            ['id' => '2', 'price' => 30.0, 'originalPrice' => 35.0, 'cartDiscountAmount' => 5.0, 'qtyOrdered' => 1],
+        ]);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    $this->assertEquals('purchase', $event['eventSubtype']);
+                    $this->assertEquals(['1', '2'], $event['objectIDs']);
+                    $this->assertEquals('USD', $event['currency']);
+                    $this->assertEquals(115.0, $event['value']); // (50 * 2 - 10) + (30 - 5)
+                    $this->assertEquals('query-789', $event['queryID']);
+
+                    $objectData = $event['objectData'];
+                    $this->assertCount(2, $objectData);
+                    $this->assertEquals(45, $objectData[0]['price']); // 50 - (10/2)
+                    $this->assertEquals(15, $objectData[0]['discount']); // 30 - (5/1)
+                    $this->assertEquals(2, $objectData[0]['quantity']);
+
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertPurchaseForItems(
+            'purchase-event',
+            'products-index',
+            $items,
+            'query-789'
+        );
+    }
+
+    public function testConvertPurchaseForItemsEnforcesObjectLimit(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        // Create more items than the limit allows
+        $itemsData = [];
+        for ($i = 1; $i <= 25; $i++) {
+            $itemsData[] = ['id' => (string) $i, 'price' => 10.0, 'originalPrice' => 10.0, 'cartDiscountAmount' => 0.0, 'qtyOrdered' => 1];
+        }
+        $items = $this->createOrderItems($itemsData);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    // Should be limited to MAX_OBJECT_IDS_PER_EVENT (20)
+                    $this->assertCount(EventProcessorInterface::MAX_OBJECT_IDS_PER_EVENT, $event['objectIDs']);
+                    $this->assertCount(EventProcessorInterface::MAX_OBJECT_IDS_PER_EVENT, $event['objectData']);
+                    // But value should include all 25 items
+                    $this->assertEquals(250.0, $event['value']); // 25 * 10
+
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertPurchaseForItems(
+            'purchase-event',
+            'products-index',
+            $items
+        );
+    }
+
     // Helper methods
 
     private function setupFullyConfiguredEventProcessor(): void
@@ -270,5 +348,24 @@ class EventProcessorTest extends TestCase
             ->setInsightsClient($this->insightsClient)
             ->setAnonymousUserToken('user-token')
             ->setStoreManager($this->storeManager);
+    }
+
+    private function createOrderItems(array $itemsData): array
+    {
+        $items = [];
+        foreach ($itemsData as $data) {
+            $product = $this->createMock(Product::class);
+            $product->method('getId')->willReturn($data['id']);
+
+            $item = $this->createMock(OrderItem::class);
+            $item->method('getProduct')->willReturn($product);
+            $item->method('getPrice')->willReturn($data['price']);
+            $item->method('getOriginalPrice')->willReturn($data['originalPrice']);
+            $item->method('getDiscountAmount')->willReturn($data['cartDiscountAmount']);
+            $item->method('getQtyOrdered')->willReturn($data['qtyOrdered']);
+
+            $items[] = $item;
+        }
+        return $items;
     }
 }

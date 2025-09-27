@@ -258,6 +258,44 @@ class EventProcessorTest extends TestCase
         );
     }
 
+    public function testConvertAddToCartFloatingPointPrecision(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        $product = $this->createMock(Product::class);
+        $product->method('getId')->willReturn('123');
+        $product->method('getPrice')->willReturn(23.99);
+
+        $item = $this->createMock(Item::class);
+        $item->method('getProduct')->willReturn($product);
+        $item->method('getData')
+            ->willReturnMap([
+                ['base_price', null, 23.93],
+                ['qty_to_add', null, 1]
+            ]);
+        $item->method('getPrice')->willReturn(23.93);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    $this->assertEquals([['price' => 23.93, 'discount' => .06, 'quantity' => 1]], $event['objectData']);
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertAddToCart(
+            'add-to-cart-event',
+            'products-index',
+            $item
+        );
+
+    }
+
     // Test convertPurchaseForItems
     public function testConvertPurchaseForItems(): void
     {
@@ -336,6 +374,152 @@ class EventProcessorTest extends TestCase
         );
     }
 
+    public function testConvertPurchaseForItemsFloatingPointPrecision(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        // These additions should trigger floating point precision errors if rounding is not applied
+        $items = $this->createOrderItems([
+            ['id' => '1', 'price' => 10.10, 'originalPrice' => 15.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
+            ['id' => '2', 'price' => 33.20, 'originalPrice' => 35.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
+        ]);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    $this->assertEquals(43.30, $event['value']); // 10.10 + 33.20
+
+                    $objectData = $event['objectData'];
+                    $this->assertEquals(['price' => 10.10, 'discount' => 4.90, 'quantity' => 1], $objectData[0]); // 15.00 - 10.10
+                    $this->assertEquals(['price' => 33.20, 'discount' => 1.80, 'quantity' => 1], $objectData[1]); // 35.00 - 33.20
+
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertPurchaseForItems(
+            'purchase-event',
+            'products-index',
+            $items,
+            'query-123'
+        );
+    }
+
+    /**
+     * The way discounts are recorded in Algolia are per product but Magento is per line item
+     * This test ensures the expected values are returned and that binary math does not impact the final value
+     */
+    public function testConvertPurchaseForItemsFloatingPointPrecisionWithCartDiscount(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        // These additions should trigger floating point precision errors if rounding is not applied
+        $items = $this->createOrderItems([
+            ['id' => '1', 'price' => 10.00, 'originalPrice' => 10.00, 'cartDiscountAmount' => .30, 'qtyOrdered' => 3],
+        ]);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    $this->assertEquals(29.70, $event['value']); // 10.00 * 3
+
+                    $objectData = $event['objectData'];
+                    $this->assertEquals(['price' => 9.90, 'discount' => .10, 'quantity' => 3], $objectData[0]);
+
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertPurchaseForItems(
+            'purchase-event',
+            'products-index',
+            $items,
+            'query-123'
+        );
+    }
+
+    // Test convertPurchase
+
+    public function testConvertPurchaseGroupsByQueryID(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        $order = $this->createMock(Order::class);
+
+        $items = [
+            $this->createOrderItemWithQueryId('1', 'query-1', 50.0, 1),
+            $this->createOrderItemWithQueryId('2', 'query-1', 30.0, 1),
+            $this->createOrderItemWithQueryId('3', 'query-2', 25.0, 2),
+            $this->createOrderItemWithQueryId('4', null, 15.0, 1), // No query ID
+        ];
+
+        $order->method('getAllVisibleItems')->willReturn($items);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    // There should be 3 different events for each query ID scenario: query-1, query-2, and no-query
+                    $events = $payload['events'];
+                    $this->assertCount(3, $events);
+                    $this->assertEquals(80.0, $events[0]['value']); // 50 + 30
+                    $this->assertEquals(50.0, $events[1]['value']); // 25 * 2
+                    $this->assertEquals(15.0, $events[2]['value']); // missing query ID should be final event
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $result = $this->eventProcessor->convertPurchase(
+            'purchase-event',
+            'products-index',
+            $order
+        );
+        // 3 events in one batch
+        $this->assertCount(1, $result);
+    }
+
+    public function testConvertPurchaseHandlesLargeOrders(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        $order = $this->createMock(Order::class);
+
+        // Create more events than MAX_EVENTS_PER_REQUEST allows
+        $items = [];
+        for ($i = 1; $i <= 1500; $i++) {
+            $items[] = $this->createOrderItemWithQueryId((string)$i, "query-$i", 10.0, 1);
+        }
+
+        $order->method('getAllVisibleItems')->willReturn($items);
+
+        // Should be called twice due to chunking (1000 + 500)
+        $this->insightsClient
+            ->expects($this->exactly(2))
+            ->method('pushEvents')
+            ->willReturn(['status' => 'ok']);
+
+        $result = $this->eventProcessor->convertPurchase(
+            'purchase-event',
+            'products-index',
+            $order
+        );
+
+        $this->assertCount(2, $result); // 2 chunks
+    }
+
     // Helper methods
 
     private function setupFullyConfiguredEventProcessor(): void
@@ -367,5 +551,27 @@ class EventProcessorTest extends TestCase
             $items[] = $item;
         }
         return $items;
+    }
+
+    private function createOrderItemWithQueryId(string $id, ?string $queryId, float $price, int $qty): OrderItem
+    {
+        $product = $this->createMock(Product::class);
+        $product->method('getId')->willReturn($id);
+
+        $item = $this->createMock(OrderItem::class);
+        $item->method('getProduct')->willReturn($product);
+        $item->method('getPrice')->willReturn($price);
+        $item->method('getOriginalPrice')->willReturn($price);
+        $item->method('getDiscountAmount')->willReturn(0.0);
+        $item->method('getQtyOrdered')->willReturn($qty);
+
+        if ($queryId !== null) {
+            $item->method('hasData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn(true);
+            $item->method('getData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn($queryId);
+        } else {
+            $item->method('hasData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn(false);
+        }
+
+        return $item;
     }
 }

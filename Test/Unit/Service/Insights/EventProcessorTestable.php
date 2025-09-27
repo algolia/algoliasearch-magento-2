@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Service;
+namespace Algolia\AlgoliaSearch\Test\Unit\Service\Insights;
 
 use Algolia\AlgoliaSearch\Service\Insights\EventProcessor;
 

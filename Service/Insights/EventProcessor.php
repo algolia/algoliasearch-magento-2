@@ -33,9 +33,9 @@ class EventProcessor implements EventProcessorInterface
         $this->initDecimalPrecision();
     }
 
-    private function initDecimalPrecision(): void
+    protected function initDecimalPrecision(): void
     {
-        $this->decimalPrecision = $this->localeFormat->getPriceFormat()['precision']
+        $this->decimalPrecision = $this->localeFormat->getPriceFormat()['requiredPrecision']
             ?? PriceCurrencyInterface::DEFAULT_PRECISION;
     }
 
@@ -267,7 +267,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getQuoteItemSalePrice(Item $item): float
     {
-        return (float) ($item->getData('base_price') ?? $item->getPrice());
+        return $this->applyPrecision((float) ($item->getData('base_price') ?? $item->getPrice()));
     }
 
     /**

@@ -578,7 +578,7 @@ class Queue
                 SORT_ASC,
                 'method',
                 SORT_ASC,
-                'store_id',
+                'storeId',
                 SORT_ASC,
                 'job_id',
                 SORT_ASC

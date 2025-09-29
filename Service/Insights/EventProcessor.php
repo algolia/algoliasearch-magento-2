@@ -337,7 +337,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getObjectIdsForPurchase(array $items): array
     {
-        return array_map(fn($item) => (int) $item->getProduct()->getId(), $items);
+        return array_map(fn($item) => (string) $item->getProduct()->getId(), $items);
     }
 
 

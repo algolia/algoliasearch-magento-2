@@ -16,24 +16,27 @@ use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Tax\Model\Config as TaxConfig;
 use PHPUnit\Framework\TestCase;
+use Magento\Framework\Locale\FormatInterface as LocaleFormatInterface;
 
 class EventProcessorTest extends TestCase
 {
     protected ?TaxConfig $taxConfig = null;
-    protected ?EventProcessor $eventProcessor = null;
-    protected ?InsightsClient $insightsClient = null;
     protected ?StoreManagerInterface $storeManager = null;
     protected ?Store $store = null;
+    protected ?LocaleFormatInterface $localeFormat = null;
     protected ?Currency $currency = null;
+    protected ?InsightsClient $insightsClient = null;
+    protected ?EventProcessor $eventProcessor = null;
 
     public function setUp(): void
     {
         $this->taxConfig =  $this->createMock(TaxConfig::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
         $this->store = $this->createMock(Store::class);
+        $this->localeFormat = $this->createMock(LocaleFormatInterface::class);
         $this->currency = $this->createMock(Currency::class);
         $this->insightsClient = $this->createMock(InsightsClient::class);
-        $this->eventProcessor = new EventProcessorTestable($this->taxConfig, $this->storeManager);
+        $this->eventProcessor = new EventProcessorTestable($this->taxConfig, $this->storeManager, $this->localeFormat);
     }
 
     // Test dependency validation and setup methods

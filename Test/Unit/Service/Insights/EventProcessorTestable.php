@@ -15,4 +15,9 @@ class EventProcessorTestable extends EventProcessor
     {
         return parent::getTotalRevenueForEvent(...$params);
     }
+
+    public function initDecimalPrecision(): void
+    {
+        parent::initDecimalPrecision();
+    }
 }

@@ -184,18 +184,8 @@ class EventProcessorTest extends TestCase
     {
         $this->setupFullyConfiguredEventProcessor();
 
-        $product = $this->createMock(Product::class);
-        $product->method('getId')->willReturn('123');
-        $product->method('getPrice')->willReturn(100.0);
-
-        $item = $this->createMock(Item::class);
-        $item->method('getProduct')->willReturn($product);
-        $item->method('getData')
-            ->willReturnMap([
-                ['base_price', null, 85.0],
-                ['qty_to_add', null, 2]
-            ]);
-        $item->method('getPrice')->willReturn(85.0);
+        $product = $this->createMockProduct('123', 100.0);
+        $item = $this->createMockItem($product, 85.0, 2);
 
         $this->insightsClient
             ->expects($this->once())
@@ -228,18 +218,8 @@ class EventProcessorTest extends TestCase
     {
         $this->setupFullyConfiguredEventProcessor();
 
-        $product = $this->createMock(Product::class);
-        $product->method('getId')->willReturn('123');
-        $product->method('getPrice')->willReturn(100.0);
-
-        $item = $this->createMock(Item::class);
-        $item->method('getProduct')->willReturn($product);
-        $item->method('getData')
-            ->willReturnMap([
-                ['base_price', null, 80.0],
-                ['qty_to_add', null, 1]
-            ]);
-        $item->method('getPrice')->willReturn(80.0);
+        $product = $this->createMockProduct('123', 100.0);
+        $item = $this->createMockItem($product, 80.0, 1);
 
         $this->insightsClient
             ->expects($this->once())
@@ -265,18 +245,8 @@ class EventProcessorTest extends TestCase
     {
         $this->setupFullyConfiguredEventProcessor();
 
-        $product = $this->createMock(Product::class);
-        $product->method('getId')->willReturn('123');
-        $product->method('getPrice')->willReturn(23.99);
-
-        $item = $this->createMock(Item::class);
-        $item->method('getProduct')->willReturn($product);
-        $item->method('getData')
-            ->willReturnMap([
-                ['base_price', null, 23.93],
-                ['qty_to_add', null, 1]
-            ]);
-        $item->method('getPrice')->willReturn(23.93);
+        $product = $this->createMockProduct('123', 23.99);
+        $item = $this->createMockItem($product, 23.93, 1);
 
         $this->insightsClient
             ->expects($this->once())
@@ -296,7 +266,62 @@ class EventProcessorTest extends TestCase
             'products-index',
             $item
         );
+    }
 
+    public function testConvertAddToCartWithStandardDecimalPrecision(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+        $this->setupCurrencyPrecision(2);
+
+        $product = $this->createMockProduct('123', 23.992);
+        $item = $this->createMockItem($product, 23.931, 1);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    $this->assertEquals([['price' => 23.93, 'discount' => .06, 'quantity' => 1]], $event['objectData']);
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertAddToCart(
+            'add-to-cart-event',
+            'products-index',
+            $item
+        );
+    }
+
+    public function testConvertAddToCartWith3PointDecimalPrecision(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+        $this->setupCurrencyPrecision(3);
+
+        $product = $this->createMockProduct('123', 23.992);
+        $item = $this->createMockItem($product, 23.931, 1);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    $this->assertEquals([['price' => 23.931, 'discount' => .061, 'quantity' => 1]], $event['objectData']);
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertAddToCart(
+            'add-to-cart-event',
+            'products-index',
+            $item
+        );
     }
 
     // Test convertPurchaseForItems
@@ -688,6 +713,35 @@ class EventProcessorTest extends TestCase
         $this->eventProcessor
             ->setInsightsClient($this->insightsClient)
             ->setAnonymousUserToken('user-token');
+    }
+
+    protected function setupCurrencyPrecision(int $decimalPrecision = \Magento\Framework\Pricing\PriceCurrencyInterface::DEFAULT_PRECISION): void
+    {
+        $this->localeFormat->method('getPriceFormat')->willReturn([
+            'requiredPrecision' => $decimalPrecision
+        ]);
+        $this->eventProcessor->initDecimalPrecision();
+    }
+
+    protected function createMockProduct(string $id, float $price): Product
+    {
+        $product = $this->createMock(Product::class);
+        $product->method('getId')->willReturn($id);
+        $product->method('getPrice')->willReturn($price);
+        return $product;
+    }
+
+    protected function createMockItem(Product $product, float $salePrice, int $qtyToAdd): Item
+    {
+        $item = $this->createMock(Item::class);
+        $item->method('getProduct')->willReturn($product);
+        $item->method('getData')
+            ->willReturnMap([
+                ['base_price', null, $salePrice],
+                ['qty_to_add', null, $qtyToAdd]
+            ]);
+        $item->method('getPrice')->willReturn($salePrice);
+        return $item;
     }
 
     protected function createOrderItems(array $itemsData): array

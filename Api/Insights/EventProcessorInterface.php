@@ -43,6 +43,7 @@ interface EventProcessorInterface
 
     public function setAnonymousUserToken(string $token): EventProcessorInterface;
 
+    /** @deprecated Store Manager now handled as injected dependency */
     public function setStoreManager(StoreManagerInterface $storeManager): EventProcessorInterface;
 
     /**

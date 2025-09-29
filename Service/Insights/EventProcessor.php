@@ -7,6 +7,8 @@ use Algolia\AlgoliaSearch\Api\InsightsClient;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Locale\FormatInterface as LocalFormatInterface;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
@@ -18,21 +20,24 @@ class EventProcessor implements EventProcessorInterface
     /** @var string  */
     protected const NO_QUERY_ID_KEY = '__NO_QUERY_ID__';
 
-    /**
-     * A higher precision is used by default for currency rounding
-     * KWD (Kuwaiti Dinar), BHD (Bahraini Dinar), JOD (Jordanian Dinar) require up to 3 decimal places
-     * Override this as needed or apply plugin on the applyPrecision method
-     */
-    /** @var int */
-    protected const DECIMAL_PRECISION_SCALE = 3;
+    protected int $decimalPrecision;
 
     public function __construct(
         protected TaxConfig             $taxConfig,
         protected StoreManagerInterface $storeManager,
+        protected LocalFormatInterface  $localeFormat,
         protected ?InsightsClient       $client = null,
         protected ?string               $userToken = null,
         protected ?string               $authenticatedUserToken = null,
-    ) {}
+    ) {
+        $this->initDecimalPrecision();
+    }
+
+    private function initDecimalPrecision(): void
+    {
+        $this->decimalPrecision = $this->localeFormat->getPriceFormat()['precision']
+            ?? PriceCurrencyInterface::DEFAULT_PRECISION;
+    }
 
     public function setInsightsClient(InsightsClient $client): EventProcessorInterface
     {
@@ -364,6 +369,9 @@ class EventProcessor implements EventProcessorInterface
     /**
      * A public method is provided to easily override this behavior as needed via plugins
      * as different currencies may have different precision requirements
+     * Default behavior is to rely on the store locale and currency configuration via
+     * \Magento\Framework\Locale\FormatInterface
+     *
      * e.g.
      * Some currencies have rounding rules (e.g., CHF (Swiss Franc) often rounds to 0.05 for cash)
      * KWD (Kuwaiti Dinar), BHD (Bahraini Dinar), JOD (Jordanian Dinar) → have 1,000 fils per unit
@@ -372,6 +380,6 @@ class EventProcessor implements EventProcessorInterface
      */
     public function applyPrecision(float $value): float
     {
-        return round($value, self::DECIMAL_PRECISION_SCALE);
+        return round($value, $this->decimalPrecision);
     }
 }

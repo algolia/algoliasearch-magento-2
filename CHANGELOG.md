@@ -3,7 +3,8 @@
 ## 3.15.2
 
 ### Bug fixes
--  Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+- Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+- Apply rounding to insight events revenue values to avoid floating point precision errors - thank you @PromInc 
 
 ## 3.15.1
 

@@ -18,12 +18,12 @@ class EventProcessor implements EventProcessorInterface
     protected const NO_QUERY_ID_KEY = '__NO_QUERY_ID__';
 
     /**
-     * A higher precision is used by default for currency rounding
+     * Default Magento precision is used for currency rounding
      * KWD (Kuwaiti Dinar), BHD (Bahraini Dinar), JOD (Jordanian Dinar) require up to 3 decimal places
      * Override this as needed or apply plugin on the applyPrecision method
      */
     /** @var int */
-    protected const DECIMAL_PRECISION_SCALE = 3;
+    protected const DECIMAL_PRECISION_SCALE = \Magento\Framework\Pricing\PriceCurrencyInterface::DEFAULT_PRECISION;
 
     public function __construct(
         protected ?InsightsClient        $client = null,

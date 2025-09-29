@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 
 class EventProcessorTest extends TestCase
 {
-    protected ?TaxConfig $taxConfig;
+    protected ?TaxConfig $taxConfig = null;
     protected ?EventProcessor $eventProcessor = null;
     protected ?InsightsClient $insightsClient = null;
     protected ?StoreManagerInterface $storeManager = null;
@@ -28,21 +28,17 @@ class EventProcessorTest extends TestCase
 
     public function setUp(): void
     {
-        $this->insightsClient = $this->createMock(InsightsClient::class);
-
+        $this->taxConfig =  $this->createMock(TaxConfig::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
         $this->store = $this->createMock(Store::class);
-        $this->store->method('getId')->willReturn(1);
-
         $this->currency = $this->createMock(Currency::class);
-        $this->taxConfig =  $this->createMock(TaxConfig::class);
-
-        $this->eventProcessor = new EventProcessorTestable($this->taxConfig);
+        $this->insightsClient = $this->createMock(InsightsClient::class);
+        $this->eventProcessor = new EventProcessorTestable($this->taxConfig, $this->storeManager);
     }
 
     // Test dependency validation and setup methods
 
-    public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenClientMissing(): void
+    public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenMissingDependencies(): void
     {
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage("Events model is missing necessary dependencies to function.");
@@ -70,10 +66,9 @@ class EventProcessorTest extends TestCase
         );
     }
 
-    public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenStoreManagerMissing(): void
+    public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenInsightsClientMissing(): void
     {
         $this->eventProcessor
-            ->setInsightsClient($this->insightsClient)
             ->setAnonymousUserToken('user-token');
 
         $this->expectException(AlgoliaException::class);
@@ -684,12 +679,12 @@ class EventProcessorTest extends TestCase
     {
         $this->currency->method('getCode')->willReturn('USD');
         $this->store->method('getCurrentCurrency')->willReturn($this->currency);
+        $this->store->method('getId')->willReturn(1);
         $this->storeManager->method('getStore')->willReturn($this->store);
 
         $this->eventProcessor
             ->setInsightsClient($this->insightsClient)
-            ->setAnonymousUserToken('user-token')
-            ->setStoreManager($this->storeManager);
+            ->setAnonymousUserToken('user-token');
     }
 
     protected function createOrderItems(array $itemsData): array

@@ -27,11 +27,11 @@ class EventProcessor implements EventProcessorInterface
     protected const DECIMAL_PRECISION_SCALE = 3;
 
     public function __construct(
-        protected TaxConfig              $taxConfig,
-        protected ?InsightsClient        $client = null,
-        protected ?string                $userToken = null,
-        protected ?string                $authenticatedUserToken = null,
-        protected ?StoreManagerInterface $storeManager = null
+        protected TaxConfig             $taxConfig,
+        protected StoreManagerInterface $storeManager,
+        protected ?InsightsClient       $client = null,
+        protected ?string               $userToken = null,
+        protected ?string               $authenticatedUserToken = null,
     ) {}
 
     public function setInsightsClient(InsightsClient $client): EventProcessorInterface

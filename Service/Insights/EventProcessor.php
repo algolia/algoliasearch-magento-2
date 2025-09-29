@@ -141,7 +141,7 @@ class EventProcessor implements EventProcessorInterface
         $this->checkDependencies();
 
         $price = $this->getQuoteItemSalePrice($item);
-        $qty = intval($item->getData('qty_to_add'));
+        $qty = (int) $item->getData('qty_to_add');
 
         $event = [
             self::EVENT_KEY_SUBTYPE     => self::EVENT_SUBTYPE_CART,
@@ -245,7 +245,7 @@ class EventProcessor implements EventProcessorInterface
     protected function getTotalRevenueForEvent(array $objectData): float
     {
         $total = array_reduce($objectData, function($carry, $item) {
-            return floatval($carry) + floatval($item['quantity']) * floatval($item['price']);
+            return (float) $carry + (float) $item['quantity'] * (float) $item['price'];
         });
         return $this->applyPrecision($total);
     }
@@ -259,7 +259,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getQuoteItemSalePrice(Item $item): float
     {
-        return floatval($item->getData('base_price') ?? $item->getPrice());
+        return (float) ($item->getData('base_price') ?? $item->getPrice());
     }
 
     /**
@@ -277,7 +277,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemSalePrice(OrderItem $item): float
     {
-        return $this->applyPrecision(floatval($item->getPrice()) - $this->getOrderItemCartDiscount($item));
+        return $this->applyPrecision((float) $item->getPrice() - $this->getOrderItemCartDiscount($item));
     }
 
     /**
@@ -288,7 +288,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemCartDiscount(OrderItem $item): float
     {
-        return $this->applyPrecision(floatval($item->getDiscountAmount()) / intval($item->getQtyOrdered()));
+        return $this->applyPrecision((float) $item->getDiscountAmount() / (int) $item->getQtyOrdered());
     }
 
     /**
@@ -297,7 +297,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemDiscount(OrderItem $item): float
     {
-        $itemDiscount = floatval($item->getOriginalPrice()) - floatval($item->getPrice());
+        $itemDiscount = (float) $item->getOriginalPrice() - (float) $item->getPrice();
         return $this->applyPrecision($itemDiscount + $this->getOrderItemCartDiscount($item));
     }
 
@@ -315,7 +315,7 @@ class EventProcessor implements EventProcessorInterface
             return [
                 'price'    => $this->getOrderItemSalePrice($item),
                 'discount' => $this->getOrderItemDiscount($item),
-                'quantity' => intval($item->getQtyOrdered())
+                'quantity' => (int) $item->getQtyOrdered()
             ];
         }, $items);
     }

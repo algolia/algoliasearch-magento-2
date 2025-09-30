@@ -4,6 +4,7 @@
 
 ### Bug fixes 
 -  Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+- Fix store id for queue jobs sorting - thank you @pikulsky
 
 ## 3.16.0
 

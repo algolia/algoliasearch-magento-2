@@ -17,6 +17,14 @@ class EventProcessor implements EventProcessorInterface
     /** @var string  */
     protected const NO_QUERY_ID_KEY = '__NO_QUERY_ID__';
 
+    /**
+     * Default Magento precision is used for currency rounding
+     * KWD (Kuwaiti Dinar), BHD (Bahraini Dinar), JOD (Jordanian Dinar) require up to 3 decimal places
+     * Override this as needed or apply plugin on the applyPrecision method
+     */
+    /** @var int */
+    protected const DECIMAL_PRECISION_SCALE = \Magento\Framework\Pricing\PriceCurrencyInterface::DEFAULT_PRECISION;
+
     public function __construct(
         protected ?InsightsClient        $client = null,
         protected ?string                $userToken = null,
@@ -133,7 +141,7 @@ class EventProcessor implements EventProcessorInterface
         $this->checkDependencies();
 
         $price = $this->getQuoteItemSalePrice($item);
-        $qty = intval($item->getData('qty_to_add'));
+        $qty = (int) $item->getData('qty_to_add');
 
         $event = [
             self::EVENT_KEY_SUBTYPE     => self::EVENT_SUBTYPE_CART,
@@ -236,9 +244,10 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getTotalRevenueForEvent(array $objectData): float
     {
-        return array_reduce($objectData, function($carry, $item) {
-           return floatval($carry) + floatval($item['quantity']) * floatval($item['price']);
+        $total = array_reduce($objectData, function($carry, $item) {
+            return (float) $carry + (float) $item['quantity'] * (float) $item['price'];
         });
+        return $this->applyPrecision($total);
     }
 
     /**
@@ -250,7 +259,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getQuoteItemSalePrice(Item $item): float
     {
-        return floatval($item->getData('base_price') ?? $item->getPrice());
+        return (float) ($item->getData('base_price') ?? $item->getPrice());
     }
 
     /**
@@ -259,7 +268,7 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getQuoteItemDiscount(Item $item): float
     {
-        return floatval($item->getProduct()->getPrice()) - $this->getQuoteItemSalePrice($item);
+        return $this->applyPrecision($item->getProduct()->getPrice() - $this->getQuoteItemSalePrice($item));
     }
 
     /**
@@ -268,16 +277,18 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemSalePrice(OrderItem $item): float
     {
-        return floatval($item->getPrice()) - $this->getOrderItemCartDiscount($item);
+        return $this->applyPrecision((float) $item->getPrice() - $this->getOrderItemCartDiscount($item));
     }
 
     /**
+     * Get discount for line item for a single product (qty = 1) which is what Algolia uses
+     * Line item discount retrieved from Magento for a cart rule is for all products (discount * qty) in the line item
      * @param OrderItem $item
      * @return float
      */
     protected function getOrderItemCartDiscount(OrderItem $item): float
     {
-        return floatval($item->getDiscountAmount()) / intval($item->getQtyOrdered());
+        return $this->applyPrecision((float) $item->getDiscountAmount() / (int) $item->getQtyOrdered());
     }
 
     /**
@@ -286,8 +297,8 @@ class EventProcessor implements EventProcessorInterface
      */
     protected function getOrderItemDiscount(OrderItem $item): float
     {
-        $itemDiscount = floatval($item->getOriginalPrice()) - floatval($item->getPrice());
-        return $itemDiscount + $this->getOrderItemCartDiscount($item);
+        $itemDiscount = (float) $item->getOriginalPrice() - (float) $item->getPrice();
+        return $this->applyPrecision($itemDiscount + $this->getOrderItemCartDiscount($item));
     }
 
     /**
@@ -304,7 +315,7 @@ class EventProcessor implements EventProcessorInterface
             return [
                 'price'    => $this->getOrderItemSalePrice($item),
                 'discount' => $this->getOrderItemDiscount($item),
-                'quantity' => intval($item->getQtyOrdered())
+                'quantity' => (int) $item->getQtyOrdered()
             ];
         }, $items);
     }
@@ -344,5 +355,19 @@ class EventProcessor implements EventProcessorInterface
         }
 
         return $itemsByQueryId;
+    }
+
+    /**
+     * A public method is provided to easily override this behavior as needed via plugins
+     * as different currencies may have different precision requirements
+     * e.g.
+     * Some currencies have rounding rules (e.g., CHF (Swiss Franc) often rounds to 0.05 for cash)
+     * KWD (Kuwaiti Dinar), BHD (Bahraini Dinar), JOD (Jordanian Dinar) → have 1,000 fils per unit
+     * JPY (Japanese Yen), KRW (Korean Won) do not use cents at all
+     *
+     */
+    public function applyPrecision(float $value): float
+    {
+        return round($value, self::DECIMAL_PRECISION_SCALE);
     }
 }

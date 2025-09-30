@@ -47,8 +47,16 @@ class MigrateInstantSearchConfigPatch implements DataPatchInterface
         $connection = $this->moduleDataSetup->getConnection();
         foreach ($movedConfig as $from => $to) {
             $configDataTable = $this->moduleDataSetup->getTable('core_config_data');
-            $whereConfigPath = $connection->quoteInto('path = ?', $from);
-            $connection->update($configDataTable, ['path' => $to], $whereConfigPath);
+            $whereConfigPathFrom = $connection->quoteInto('path = ?', $from);
+
+            $select = $connection->select()
+                ->from($configDataTable)
+                ->where('path = ?', $to);
+            $existingValues = $connection->fetchAll($select);
+
+            if (count($existingValues) === 0) {
+                $connection->update($configDataTable, ['path' => $to], $whereConfigPathFrom);
+            }
         }
     }
 

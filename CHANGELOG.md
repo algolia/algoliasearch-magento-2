@@ -3,7 +3,8 @@
 ## 3.15.2
 
 ### Bug fixes
--  Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+- Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+- Fix store id for queue jobs merging and sorting - thank you @pikulsky
 
 ## 3.15.1
 

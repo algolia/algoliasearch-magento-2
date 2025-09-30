@@ -27,10 +27,13 @@
 
 ## 3.16.1
 
-### Bug fixes
-- Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
-- Fix store id for queue jobs sorting - thank you @pikulsky
+### Updates
+- `EventProcessor` now calculates decimal precision on currency based on `Magento\Framework\Locale\FormatInterface`
 
+### Bug fixes 
+- Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+- Apply rounding to insight events revenue values to avoid floating point precision errors - thank you @PromInc
+- Fix store id for queue jobs sorting - thank you @pikulsky
 
 ## 3.16.0
 

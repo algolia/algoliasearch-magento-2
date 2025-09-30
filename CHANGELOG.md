@@ -2,9 +2,14 @@
 
 ## 3.15.2
 
+### Updates
+- Add checks on configuration migration processed on data patch
+
 ### Bug fixes
 - Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
 - Fix store id for queue jobs merging and sorting - thank you @pikulsky
+- Fix issue where double conversion occurred during price indexing in case of multi currency stores - thank you @natedawg92
+- Fix issue where non-clickable links where rendered on InstantSearch - thank you @PromInc
 
 ## 3.15.1
 

@@ -94,8 +94,8 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
             $this->setDecodedData($decodedData);
 
-            if (isset($decodedData['store_id'])) {
-                $this->setStoreId($decodedData['store_id']);
+            if (isset($decodedData['storeId'])) {
+                $this->setStoreId($decodedData['storeId']);
             }
         }
 

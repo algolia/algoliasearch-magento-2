@@ -548,6 +548,42 @@ class EventProcessorTest extends TestCase
         $this->assertCount(2, $result); // 2 chunks
     }
 
+    /** Insights API requires that `objectIDs` be submitted as strings */
+    public function testConvertPurchaseUsesStringIds(): void
+    {
+        $this->setupFullyConfiguredEventProcessor();
+
+        // These additions should trigger floating point precision errors if rounding is not applied
+        $items = $this->createOrderItems([
+            ['id' => 10, 'price' => 10.00, 'originalPrice' => 10.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
+            ['id' => '20', 'price' => 20.00, 'originalPrice' => 20.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
+            ['id' => 30.0, 'price' => 30.00, 'originalPrice' => 30.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
+        ]);
+
+        $this->insightsClient
+            ->expects($this->once())
+            ->method('pushEvents')
+            ->with(
+                $this->callback(function ($payload) {
+                    $event = $payload['events'][0];
+                    $objectIds = $event['objectIDs'];
+                    foreach ($objectIds as $objectId) {
+                        $this->assertIsString($objectId);
+                    }
+                    return true;
+                }),
+                []
+            )
+            ->willReturn(['status' => 'ok']);
+
+        $this->eventProcessor->convertPurchaseForItems(
+            'purchase-event',
+            'products-index',
+            $items,
+            'query-123'
+        );
+    }
+
 
     // Test protected methods
 

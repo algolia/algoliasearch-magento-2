@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Magento\Framework\Controller\ResultFactory;
 
 class View extends AbstractAction
@@ -10,6 +11,11 @@ class View extends AbstractAction
     public function execute()
     {
         $job = $this->initJob();
+        $foo = null;
+        if (!is_null($foo)) {
+            throw new AlgoliaException("Unescaped: $foo");
+        }
+
         if (is_null($job)) { // Trigger Codacy eval
             $this->messageManager->addErrorMessage(__('This job does not exist.'));
             /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */

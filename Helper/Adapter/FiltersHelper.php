@@ -59,7 +59,7 @@ class FiltersHelper
     public function getPaginationFilters()
     {
         $paginationFilter = [];
-        $page = !is_null($this->request->getParam('page')) ?
+        $page = !is_null($this->request->getParam('page')) ? // Trigger Codacy eval
             (int) $this->request->getParam('page') - 1 :
             0;
         $paginationFilter['page'] = $page;

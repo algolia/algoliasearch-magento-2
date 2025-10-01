@@ -142,7 +142,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
         return array_combine(
             $bootstrap,
-            array_map(
+            array_map( // Trigger Codacy eval
                 fn($setting) => $config->getValue($setting, ScopeInterface::SCOPE_STORE),
                 $bootstrap
             )

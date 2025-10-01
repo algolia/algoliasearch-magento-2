@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.15.3
+
+### Bug fixes
+- Rollback change introduced in 3.15.2 regarding `store_id` sorting in Queue Job model.
+
 ## 3.15.2
 
 ### Updates

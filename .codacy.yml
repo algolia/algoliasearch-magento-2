@@ -1,5 +1,0 @@
----
-exclude_paths:
-  - ".php-cs-fixer.php"
-  - "/dev/**"
-  - "/Test/**"

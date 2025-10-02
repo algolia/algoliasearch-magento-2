@@ -150,7 +150,7 @@ trait ReplicaAssertionsTrait
         $this->setConfig(
             ConfigHelper::SORTING_INDICES,
             json_encode($sorting),
-            !is_null($store) ? $store->getCode() : 'default'
+            $store?->getCode() ?? 'default'
         );
     }
 }

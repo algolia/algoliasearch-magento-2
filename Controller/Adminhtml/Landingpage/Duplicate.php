@@ -26,7 +26,7 @@ class Duplicate extends AbstractAction
         $landingPage = $this->landingPageFactory->create();
         $landingPage->getResource()->load($landingPage, $landingPageId);
 
-        if (is_null($landingPage)) {
+        if ($landingPage === null) {
             $this->messageManager->addErrorMessage(__('This landing page does not exists.'));
 
             return $resultRedirect->setPath('*/*/');

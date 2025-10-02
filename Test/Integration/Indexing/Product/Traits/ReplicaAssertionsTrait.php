@@ -130,7 +130,7 @@ trait ReplicaAssertionsTrait
      */
     protected function mockSortUpdate(string $sortAttr, string $sortDir, array $attr, ?StoreInterface $store = null): void
     {
-        $sorting = $this->configHelper->getSorting(!is_null($store) ? $store->getId() : null);
+        $sorting = $this->configHelper->getSorting($store?->getId());
         $existing = array_filter($sorting, fn($item) => $item['attribute'] === $sortAttr && $item['sort'] === $sortDir);
 
         if ($existing) {

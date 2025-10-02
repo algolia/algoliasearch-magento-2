@@ -140,11 +140,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
             ConfigHelper::INDEX_PREFIX
         ];
 
-        $foo = null;
-        if (!is_null($foo)) {
-            throw new AlgoliaException("Unescaped: $foo");
-        }
-
         return array_combine(
             $bootstrap,
             array_map( // Trigger Codacy eval

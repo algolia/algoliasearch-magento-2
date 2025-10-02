@@ -91,8 +91,7 @@ class InsightsHelper
             $this->eventProcessor = $this->eventProcessorFactory->create([
                 'client'                 => $this->getInsightsClient(),
                 'userToken'              => $this->getAnonymousUserToken(),
-                'authenticatedUserToken' => $this->getAuthenticatedUserToken(),
-                'storeManager'           => $this->storeManager
+                'authenticatedUserToken' => $this->getAuthenticatedUserToken()
             ]);
         }
         return $this->eventProcessor;

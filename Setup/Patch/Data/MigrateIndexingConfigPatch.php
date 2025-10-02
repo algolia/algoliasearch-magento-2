@@ -3,12 +3,15 @@
 namespace Algolia\AlgoliaSearch\Setup\Patch\Data;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Setup\Patch\DataMigrationTrait;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchInterface;
 
 class MigrateIndexingConfigPatch implements DataPatchInterface
 {
+    use DataMigrationTrait;
+
     public function __construct(
         protected ModuleDataSetupInterface $moduleDataSetup,
     ) {}
@@ -39,12 +42,7 @@ class MigrateIndexingConfigPatch implements DataPatchInterface
             'algoliasearch_credentials/credentials/enable_pages_index'             => ConfigHelper::ENABLE_PAGES_INDEX,
         ];
 
-        $connection = $this->moduleDataSetup->getConnection();
-        foreach ($movedConfig as $from => $to) {
-            $configDataTable = $this->moduleDataSetup->getTable('core_config_data');
-            $whereConfigPath = $connection->quoteInto('path = ?', $from);
-            $connection->update($configDataTable, ['path' => $to], $whereConfigPath);
-        }
+        $this->migrateConfig($movedConfig);
     }
 
     /**

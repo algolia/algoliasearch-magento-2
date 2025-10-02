@@ -41,7 +41,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
             return;
         }
 
-        $categoriesPerPage = $this->configHelper->getNumberOfElementByPage();
+        $categoriesPerPage = $this->configHelper->getNumberOfElementByPage($storeId);
 
         if (is_array($entityIds) && count($entityIds) > 0) {
             $this->processSpecificCategories($entityIds, $categoriesPerPage, $storeId);

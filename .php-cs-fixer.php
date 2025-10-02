@@ -2,7 +2,7 @@
 
 /** @var PhpCsFixer\Config $config */
 if (isset($_SERVER['argv']) && $_SERVER['argv'][3]) {
-   $config = require dirname($_SERVER['argv'][3], 3) . '/.php-cs-fixer.dist.php'; // Trigger Codacy eval
+   $config = require dirname($_SERVER['argv'][3], 3) . '/.php-cs-fixer.dist.php';
 } else {
     $config = require __DIR__ . '/../../../.php-cs-fixer.dist.php';
 }

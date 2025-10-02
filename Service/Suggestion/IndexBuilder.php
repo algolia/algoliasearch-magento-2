@@ -75,7 +75,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         $size = $collection->getSize();
 
         if ($size > 0) {
-            $pages = ceil($size / $this->configHelper->getNumberOfElementByPage());
+            $pages = ceil($size / $this->configHelper->getNumberOfElementByPage($storeId));
             $collection->clear();
             $page = 1;
 
@@ -84,7 +84,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                     $storeId,
                     $collection,
                     $page,
-                    $this->configHelper->getNumberOfElementByPage()
+                    $this->configHelper->getNumberOfElementByPage($storeId)
                 );
                 $page++;
             }

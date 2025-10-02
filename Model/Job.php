@@ -183,7 +183,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     {
         $status = JobInterface::STATUS_PROCESSING;
 
-        if (is_null($this->getPid())) {
+        if ($this->getPid() === null) {
             $status = JobInterface::STATUS_NEW;
         }
 

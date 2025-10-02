@@ -29,12 +29,12 @@ class Query extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             ->where('query_text = ?', $queryText);
 
         // Only check a particular store if specified
-        if (!is_null($storeId) && $storeId != 0) {
+        if ($storeId !== null && $storeId != 0) {
             $select->where('store_id = ?', $storeId);
         }
 
         // Handle the already existing query text for the query
-        if (!is_null($queryId) && $queryId != 0) {
+        if ($queryId !== null && $queryId != 0) {
             $select->where('query_id != ?', $queryId);
         }
 

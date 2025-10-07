@@ -32,7 +32,7 @@ class RenderingManager
            return;
         }
 
-        $layout->getUpdate()->addHandle('algolia_search_handle');
+        $this->addHandle($layout,'algolia_search_handle');
     }
 
     /**
@@ -58,12 +58,22 @@ class RenderingManager
         if ($category->getId() && $this->instantSearchConfigHelper->shouldReplaceCategories($storeId)) {
             $displayMode = $this->config->getBackendRenderingDisplayMode($storeId);
 
-            if ($displayMode === 'only_products' && $category->getData('display_mode') === Category::DM_PAGE) {
+            if ($displayMode === 'only_products' && $category->getDisplayMode() === Category::DM_PAGE) {
                 return;
             }
         }
 
-        $layout->getUpdate()->addHandle('algolia_search_handle_prevent_backend_rendering');
+        $this->addHandle($layout, 'algolia_search_handle_prevent_backend_rendering');
+    }
+
+    /**
+     * @param Layout $layout
+     * @param string $handleName
+     * @return void
+     */
+    protected function addHandle(Layout $layout, string $handleName): void
+    {
+        $layout->getUpdate()->addHandle($handleName);
     }
 
     /**

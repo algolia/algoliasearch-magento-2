@@ -33,6 +33,7 @@
 ### Updates
 - Add checks on configuration migration processed on data patch
 - `EventProcessor` now calculates decimal precision on currency based on `Magento\Framework\Locale\FormatInterface`
+- Local InstantSearch widgets can now override facet sorting behavior in merchandising rules
 - Updated various unit/integration tests
 
 ### Bug fixes
@@ -43,6 +44,7 @@
 - Apply rounding to insight events revenue values to avoid floating point precision errors - thank you @PromInc
 - Fix issue where double conversion occurred during price indexing in case of multi currency stores - thank you @natedawg92
 - Fix issue where non-clickable links where rendered on InstantSearch - thank you @PromInc
+- Fixed issue where replica setting forwarding can abort if async operation fails to complete in time
 - Fixed some Codacy issues
 
 ## 3.16.0

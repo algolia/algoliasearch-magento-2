@@ -58,8 +58,22 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                 } else {
                     $minPrice = $specialPrice[0];
                 }
-                $price     = $minPrice ?? $this->getTaxPrice($product, $subProduct->getFinalPrice(), $withTax);
-                $basePrice = $this->getTaxPrice($product, $subProduct->getPrice(), $withTax);
+
+                $finalPrice = $subProduct->getFinalPrice();
+                $basePrice  = $subProduct->getPrice();
+
+                if ($currencyCode !== $this->baseCurrencyCode) {
+                    $finalPrice = $this->convertPrice($finalPrice, $currencyCode);
+                    $basePrice  = $this->convertPrice($basePrice, $currencyCode);
+                }
+
+                $price     = $minPrice ?? $this->getTaxPrice($product, $finalPrice, $withTax);
+                $basePrice = $this->getTaxPrice($product, $basePrice, $withTax);
+
+                if ($this->configHelper->isFptEnabled($subProduct->getStoreId())) {
+                    $basePrice += $this->weeeTax->getWeeeAmount($subProduct);
+                }
+
                 $min = min($min, $price);
                 $original = min($original, $basePrice);
                 $max = max($max, $price);
@@ -68,14 +82,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         } else {
             $originalMax = $original = $min = $max;
         }
-        if ($currencyCode !== $this->baseCurrencyCode) {
-            $min      = $this->convertPrice($min, $currencyCode);
-            $original = $this->convertPrice($original, $currencyCode);
-            if ($min !== $max) {
-                $max = $this->convertPrice($max, $currencyCode);
-                $originalMax = $this->convertPrice($originalMax, $currencyCode);
-            }
-        }
+
         return [$min, $max, $original, $originalMax];
     }
 

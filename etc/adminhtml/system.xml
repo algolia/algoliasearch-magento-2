@@ -1454,6 +1454,16 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="fpt_enable" translate="label comment" type="select" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable FPT</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            Do you want to take into account Fixed Product Tax (FPT) configured on your products?
+                            <br><span class="algolia-config-warning">&#9888;</span> The extension will only take into account global FPT per country (state scoped FPT are not supported).
+                        ]]>
+                    </comment>
+                </field>
                 <field id="remove_pub_dir_in_url" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Remove pub/ from image URLs</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

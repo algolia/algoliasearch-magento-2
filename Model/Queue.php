@@ -124,7 +124,7 @@ class Queue
      *
      * @throws Exception
      */
-    public function runCron(int $nbJobs = null, bool $force = false): void
+    public function runCron(?int $nbJobs = null, bool $force = false): void
     {
         if (!$this->configHelper->isQueueActive() && $force === false) {
             return;
@@ -394,7 +394,7 @@ class Queue
      *
      * @return Job[]
      */
-    protected function fetchJobs(int $jobsLimit, bool $fetchFullReindexJobs = false, int $lastJobId = null): array
+    protected function fetchJobs(int $jobsLimit, bool $fetchFullReindexJobs = false, ?int $lastJobId = null): array
     {
         $jobs = [];
 

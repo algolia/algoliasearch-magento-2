@@ -18,6 +18,7 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Locale\Currency;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Weee\Helper\Data as WeeeHelper;
 
 class ConfigHelper
 {
@@ -117,6 +118,7 @@ class ConfigHelper
     public const REMOVE_IF_NO_RESULT = 'algoliasearch_advanced/advanced/remove_words_if_no_result';
     public const PARTIAL_UPDATES = 'algoliasearch_advanced/advanced/partial_update';
     public const CUSTOMER_GROUPS_ENABLE = 'algoliasearch_advanced/advanced/customer_groups_enable';
+    public const FPT_ENABLE = 'algoliasearch_advanced/advanced/fpt_enable';
     public const REMOVE_PUB_DIR_IN_URL = 'algoliasearch_advanced/advanced/remove_pub_dir_in_url';
     public const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
     public const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
@@ -172,7 +174,8 @@ class ConfigHelper
         protected CookieHelper                                          $cookieHelper,
         protected AutocompleteHelper                                    $autocompleteConfig,
         protected InstantSearchHelper                                   $instantSearchConfig,
-        protected QueueHelper                                           $queueHelper
+        protected QueueHelper                                           $queueHelper,
+        protected WeeeHelper                                            $weeeHelper
     )
     {}
 
@@ -1171,6 +1174,16 @@ class ConfigHelper
     public function isCustomerGroupsEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::CUSTOMER_GROUPS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @param $storeId
+     * @return bool
+     */
+    public function isFptEnabled($storeId = null): bool
+    {
+        return $this->weeeHelper->isEnabled($storeId) &&
+            $this->configInterface->isSetFlag(self::FPT_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function setCustomerGroupsEnabled(bool $val, ?string $scope = null, ?int $scopeId = null): void

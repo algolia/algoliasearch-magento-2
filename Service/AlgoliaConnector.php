@@ -135,7 +135,7 @@ class AlgoliaConnector
      */
     public function getClient(?int $storeId = self::ALGOLIA_DEFAULT_SCOPE): SearchClient
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $storeId = self::ALGOLIA_DEFAULT_SCOPE;
         }
 
@@ -477,7 +477,7 @@ class AlgoliaConnector
         $this->lastUsedIndexName = $indexName;
         $this->lastTaskId = $response[self::ALGOLIA_API_TASK_ID] ?? null;
 
-        if (!is_null($storeId)) {
+        if ($storeId !== null) {
             $this->lastTaskInfoByStore[$storeId] = [
                 'indexName' => $indexName,
                 'taskId' => $response[self::ALGOLIA_API_TASK_ID] ?? null
@@ -642,16 +642,16 @@ class AlgoliaConnector
      */
     public function waitLastTask(?int $storeId = null, ?string $lastUsedIndexName = null, ?int $lastTaskId = null): void
     {
-        if (is_null($lastUsedIndexName)) {
-            if (!is_null($storeId) && isset($this->lastTaskInfoByStore[$storeId])) {
+        if ($lastUsedIndexName === null) {
+            if ($storeId !== null && isset($this->lastTaskInfoByStore[$storeId])) {
                 $lastUsedIndexName = $this->lastTaskInfoByStore[$storeId]['indexName'];
             } elseif (isset($this->lastUsedIndexName)){
                 $lastUsedIndexName = $this->lastUsedIndexName;
             }
         }
 
-        if (is_null($lastTaskId)) {
-            if (!is_null($storeId) && isset($this->lastTaskInfoByStore[$storeId])) {
+        if ($lastTaskId === null) {
+            if ($storeId !== null && isset($this->lastTaskInfoByStore[$storeId])) {
                 $lastTaskId = $this->lastTaskInfoByStore[$storeId]['taskId'];
             } elseif (isset($this->lastTaskId)){
                 $lastTaskId = $this->lastTaskId;
@@ -662,7 +662,7 @@ class AlgoliaConnector
             return;
         }
 
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $storeId = self::ALGOLIA_DEFAULT_SCOPE;
         }
 
@@ -894,7 +894,7 @@ class AlgoliaConnector
     {
         $lastTaskId = null;
 
-        if (!is_null($storeId) && isset($this->lastTaskInfoByStore[$storeId])) {
+        if ($storeId !== null && isset($this->lastTaskInfoByStore[$storeId])) {
             $lastTaskId = $this->lastTaskInfoByStore[$storeId]['taskId'];
         } elseif (isset($this->lastTaskId)){
             $lastTaskId = $this->lastTaskId;

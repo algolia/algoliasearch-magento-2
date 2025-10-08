@@ -173,6 +173,10 @@ jobs:
 
 workflows:
   magento-build-and-test-workflow:
+    when:
+      matches:
+        pattern: "^(feat|fix|chore)/MAGE.*"
+        value: << pipeline.git.branch >>
     jobs:
       - magento-build:
           matrix:

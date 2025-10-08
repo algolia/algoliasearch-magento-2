@@ -10,7 +10,7 @@ class View extends AbstractAction
     public function execute()
     {
         $job = $this->initJob();
-        if (is_null($job)) {
+        if ($job === null) {
             $this->messageManager->addErrorMessage(__('This job does not exist.'));
             /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
             $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);

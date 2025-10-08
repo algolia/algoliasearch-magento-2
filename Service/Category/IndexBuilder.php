@@ -81,7 +81,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             return;
         }
 
-        if (!is_null($entityIds)) {
+        if ($entityIds !== null) {
             $this->rebuildEntityIds($storeId, $entityIds);
             return;
         }

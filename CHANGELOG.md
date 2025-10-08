@@ -2,9 +2,12 @@
 
 ## 3.17.0-beta.2
 
-### Bug fixes
+### Updates
+- Removed all `is_null` occurrences
 
+### Bug fixes
 - Fixed 3.17 setup:upgrade on PHP 8.4
+- Fixed many Codacy issues
 
 ## 3.17.0-beta.1
 
@@ -28,11 +31,19 @@
 ## 3.16.1
 
 ### Updates
+- Add checks on configuration migration processed on data patch
 - `EventProcessor` now calculates decimal precision on currency based on `Magento\Framework\Locale\FormatInterface`
+- Updated various unit/integration tests
 
-### Bug fixes 
+### Bug fixes
+- Fixed Indexing Queue display in backend templates.
+- Fixed Indexing Queue merging mechanism, it should now have way better performances with delta indexing (updates) jobs.
+- Fixed implicit nullable types for PHP 8.4
 - Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
 - Apply rounding to insight events revenue values to avoid floating point precision errors - thank you @PromInc
+- Fix issue where double conversion occurred during price indexing in case of multi currency stores - thank you @natedawg92
+- Fix issue where non-clickable links where rendered on InstantSearch - thank you @PromInc
+- Fixed some Codacy issues
 
 ## 3.16.0
 

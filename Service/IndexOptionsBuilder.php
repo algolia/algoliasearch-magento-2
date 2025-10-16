@@ -3,14 +3,16 @@
 namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterfaceFactory;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Model\IndexOptions;
+use Algolia\AlgoliaSearch\Model\Data\IndexOptions;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndexOptionsBuilder
 {
     public function __construct(
-        protected IndexNameFetcher $indexNameFetcher
+        protected IndexNameFetcher             $indexNameFetcher,
+        protected IndexOptionsInterfaceFactory $indexOptionsInterfaceFactory
     ) {}
 
     /**
@@ -25,14 +27,16 @@ class IndexOptionsBuilder
      */
     public function buildWithComputedIndex(
         ?string $indexSuffix = null,
-        ?int $storeId = null,
-        ?bool $isTmp = false
+        ?int    $storeId = null,
+        ?bool   $isTmp = false
     ): IndexOptionsInterface
     {
-        $indexOptions =  new IndexOptions([
-            IndexOptionsInterface::STORE_ID => $storeId,
-            IndexOptionsInterface::INDEX_SUFFIX => $indexSuffix,
-            IndexOptionsInterface::IS_TMP => $isTmp
+        $indexOptions =  $this->indexOptionsInterfaceFactory->create([
+            'data' => [
+                IndexOptionsInterface::STORE_ID     => $storeId,
+                IndexOptionsInterface::INDEX_SUFFIX => $indexSuffix,
+                IndexOptionsInterface::IS_TMP       => $isTmp
+            ]
         ]);
 
         return $this->build($indexOptions);
@@ -49,9 +53,11 @@ class IndexOptionsBuilder
      */
     public function buildWithEnforcedIndex(?string $indexName = null, ?int $storeId = null): IndexOptionsInterface
     {
-        $indexOptions = new IndexOptions([
-            IndexOptionsInterface::INDEX_NAME => $indexName,
-            IndexOptionsInterface::STORE_ID => $storeId
+        $indexOptions = $this->indexOptionsInterfaceFactory->create([
+            'data' => [
+                IndexOptionsInterface::INDEX_NAME => $indexName,
+                IndexOptionsInterface::STORE_ID   => $storeId
+            ]
         ]);
 
         return $this->build($indexOptions);

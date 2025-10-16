@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
@@ -165,21 +166,21 @@ class AlgoliaConnector
      * @throws AlgoliaException|NoSuchEntityException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    public function query(IndexOptionsInterface $indexOptions, string $q, array $params): array
+    public function query(SearchQueryInterface $query): array
     {
         // TODO: Revisit - not compatible with PHP v4
         // if (isset($params['disjunctiveFacets'])) {
         //    return $this->searchWithDisjunctiveFaceting($indexName, $q, $params);
         //}
 
-        $indexName = $indexOptions->getIndexName();
+        $indexOptions = $query->getIndexOptions();
 
         $params = array_merge(
             [
-                self::ALGOLIA_API_INDEX_NAME => $indexName,
-                'query' => $q
+                self::ALGOLIA_API_INDEX_NAME => $indexOptions->getIndexName(),
+                'query' => $query->getQuery()
             ],
-            $params
+            $query->getParams()
         );
 
         // TODO: Validate return value for integration tests

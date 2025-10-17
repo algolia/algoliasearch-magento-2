@@ -29,6 +29,12 @@ class CacheCleanProductPlugin
     public function afterSave(ProductResource $subject, ProductResource $result, Product $product): ProductResource
     {
         $original = $this->originalData[$product->getSku()] ?? [];
+
+        // In case of a product duplication
+        if (empty($original)) {
+            return $result;
+        }
+
         $storeId = $product->getStoreId();
 
         $shouldClearCache =

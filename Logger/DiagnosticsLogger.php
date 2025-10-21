@@ -114,17 +114,23 @@ class DiagnosticsLogger
         Profiler::setDefaultTags([]);
     }
 
-    public function log(string $message, int $logLevel = Logger::INFO): void
+    /**
+     * NOTE: Switch to Monolog\Level once MAGE 2.4.7 is no longer supported.
+     */
+    public function log(string $message, int $logLevel = Logger::INFO, array $context = []): void
     {
         if ($this->isLoggerEnabled) {
-            $this->logger->log($message, $logLevel);
+            $this->logger->log($message, $logLevel, $context);
         }
     }
 
-    public function error(string $message): void
+    /**
+     * NOTE: Switch to Monolog\Level once MAGE 2.4.7 is no longer supported.
+     */
+    public function error(string $message, array $context = []): void
     {
         if ($this->isLoggerEnabled) {
-            $this->logger->log($message, Logger::ERROR);
+            $this->logger->log($message, Logger::ERROR, $context);
         }
     }
 

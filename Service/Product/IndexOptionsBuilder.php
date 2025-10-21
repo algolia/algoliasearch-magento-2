@@ -13,10 +13,25 @@ class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndex
 {
     /**
      * @throws NoSuchEntityException
-     * @throws AlgoliaException
      */
     public function buildEntityIndexOptions(int $storeId, ?bool $isTmp = false): IndexOptionsInterface
     {
-        return $this->buildWithComputedIndex(ProductHelper::INDEX_NAME_SUFFIX, $storeId, $isTmp);
+        try {
+            return $this->buildWithComputedIndex(ProductHelper::INDEX_NAME_SUFFIX, $storeId, $isTmp);
+        } catch (AlgoliaException $e) {
+            // This should not happen with a valid suffix, but log it for debugging
+            $this->logger->error('Unexpected AlgoliaException in Product\IndexOptionsBuilder::buildEntityIndexOptions', [
+                'exception' => $e->getMessage()
+            ]);
+
+            // Return default index options to allow other processes to handle the error condition
+            return $this->indexOptionsInterfaceFactory->create([
+                'data' => [
+                    IndexOptionsInterface::STORE_ID => $storeId,
+                    IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
+                    IndexOptionsInterface::IS_TMP => $isTmp
+                ]
+            ]);
+        }
     }
 }

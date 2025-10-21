@@ -36,9 +36,12 @@ class TimedLogger
         $this->log('<<<<< END ' . $action . ' (' . $this->formatTime($this->timers[$action], microtime(true)) . ')');
     }
 
-    public function log(string $message, int $logLevel = Logger::INFO): void
+    /**
+     * NOTE: Switch to Monolog\Level once MAGE 2.4.7 is no longer supported.
+     */
+    public function log(string $message, int $logLevel = Logger::INFO, array $context = []): void
     {
-        $this->logger->log($logLevel, $message);
+        $this->logger->log($logLevel, $message, $context);
     }
 
     private function formatTime($begin, $end): string

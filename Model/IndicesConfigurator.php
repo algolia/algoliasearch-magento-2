@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
@@ -34,6 +35,7 @@ class IndicesConfigurator
         protected SuggestionIndexOptionsBuilder $suggestionIndexOptionsBuilder,
         protected AlgoliaConnector              $algoliaConnector,
         protected ConfigHelper                  $configHelper,
+        protected AutocompleteHelper            $autocompleteHelper,
         protected ProductHelper                 $productHelper,
         protected CategoryHelper                $categoryHelper,
         protected PageHelper                    $pageHelper,
@@ -159,7 +161,7 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
-        foreach ($this->configHelper->getAutocompleteSections() as $section) {
+        foreach ($this->autocompleteHelper->getAdditionalSections($storeId) as $section) {
             if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }

@@ -66,7 +66,7 @@ class IndexOptionsBuilder
             return $indexOptions->getIndexName(); // respect enforced index
         }
 
-        if ($indexOptions->getIndexSuffix() === null) {
+        if ($indexOptions->getIndexSuffix() === null || $indexOptions->getIndexSuffix() === '') {
             $msg = "Index name could not be computed due to missing suffix.";
             $this->logger->error(
                 $msg,

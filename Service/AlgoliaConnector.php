@@ -103,10 +103,22 @@ class AlgoliaConnector
             $this->config->getApplicationID($storeId),
             $this->config->getAPIKey($storeId)
         );
-        $config->setConnectTimeout($this->config->getConnectionTimeout($storeId));
-        $config->setReadTimeout($this->config->getReadTimeout($storeId));
+        $config->setConnectTimeout($this->getConnectionTimeout($storeId));
+        $config->setReadTimeout($this->getReadTimeout($storeId));
         $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
         $this->clients[$storeId] = SearchClient::createWithConfig($config);
+    }
+
+    /** Allow override by alternate connectors */
+    protected function getConnectionTimeout(int $storeId): int
+    {
+        return $this->config->getConnectionTimeout($storeId);
+    }
+
+    /** Allow override by alternate connectors */
+    protected function getReadTimeout(int $storeId): int
+    {
+        return $this->config->getReadTimeout($storeId);
     }
 
     /**

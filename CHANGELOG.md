@@ -1,5 +1,12 @@
 # CHANGE LOG
 
+## 3.18.0-dev
+
+### Updates
+- The unused legacy class `AlgoliaHelper` has been removed/
+- Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release.
+- Updated unit and integration tests,
+
 ## 3.17.0-beta.2
 
 ### Bug fixes

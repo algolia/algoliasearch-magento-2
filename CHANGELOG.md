@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.17.0-dev
+
+### Bug fixes
+- Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
+
 ## 3.17.0-beta.2
 
 ### Updates

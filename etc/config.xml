@@ -141,13 +141,13 @@
                 <enable_pages_index>1</enable_pages_index>
             </algolia_indexing>
             <full_indexing>
-                <products>1</products>
-                <categories>1</categories>
-                <pages>1</pages>
-                <suggestions>1</suggestions>
-                <additional_sections>1</additional_sections>
-                <delete_products>1</delete_products>
-                <queue>1</queue>
+                <products>0</products>
+                <categories>0</categories>
+                <pages>0</pages>
+                <suggestions>0</suggestions>
+                <additional_sections>0</additional_sections>
+                <delete_products>0</delete_products>
+                <queue>0</queue>
             </full_indexing>
         </algoliasearch_indexing_manager>
         <!-- Click & Conversion Analytics -->

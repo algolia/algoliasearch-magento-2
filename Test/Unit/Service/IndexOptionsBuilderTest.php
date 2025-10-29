@@ -87,29 +87,15 @@ class IndexOptionsBuilderTest extends TestCase
         $this->assertEquals($computedIndexName, $result->getIndexName());
     }
 
+    /** Suffix must always be supplied with a computed index  */
     public function testBuildWithComputedIndexWithNullParameters(): void
     {
-        $indexOptions = $this->createIndexOptionsMock(null, null, null, false);
+        $this->indexOptionsInterfaceFactory->expects($this->never())->method('create');
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
-            IndexOptionsInterface::STORE_ID => null,
-            IndexOptionsInterface::INDEX_SUFFIX => null,
-            IndexOptionsInterface::IS_TMP => false
-        ]);
+        $this->logger->expects($this->never())->method('error');
 
-        $this->logger
-            ->expects($this->once())
-            ->method('error')
-            ->with(
-                'Index name could not be computed due to missing suffix.',
-                [
-                    'storeId' => null,
-                    'isTmp' => false
-                ]
-            );
-
-        $this->expectException(AlgoliaException::class);
-        $this->expectExceptionMessage('Index name could not be computed due to missing suffix.');
+        $this->expectException(\ArgumentCountError::class);
+        $this->expectExceptionMessageMatches("/^Too few arguments to function/");
 
         $this->indexOptionsBuilder->buildWithComputedIndex();
     }

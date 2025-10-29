@@ -19,13 +19,12 @@ class IndexOptionsBuilder
     /**
      * Automatically converts information related to an index into a IndexOptions objects
      *
-     * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
     public function buildWithComputedIndex(
-        ?string $indexSuffix = null,
-        ?int    $storeId = null,
-        ?bool   $isTmp = false
+        string $indexSuffix,
+        ?int   $storeId = null,
+        ?bool  $isTmp = false
     ): IndexOptionsInterface
     {
         $indexOptions =  $this->indexOptionsInterfaceFactory->create([
@@ -36,7 +35,17 @@ class IndexOptionsBuilder
             ]
         ]);
 
-        $indexOptions->setIndexName($this->computeIndexName($indexOptions));
+        try {
+            $indexOptions->setIndexName($this->computeIndexName($indexOptions));
+        } catch (AlgoliaException $e) {
+            // This should not happen with a valid suffix, but log it for debugging
+            $this->logger->error("Unexpected AlgoliaException in buildEntityIndexOptions.", [
+                'suffix' => $indexSuffix,
+                'storeId' => $storeId,
+                'isTmp' => $isTmp,
+                'exception' => $e->getMessage()
+            ]);
+        }
 
         return $indexOptions;
     }

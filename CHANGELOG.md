@@ -5,7 +5,8 @@
 ### Updates
 - The unused legacy class `AlgoliaHelper` has been removed/
 - Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release.
-- Updated unit and integration tests,
+- Updated unit and integration tests.
+- `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix
 
 ## 3.17.0-beta.2
 

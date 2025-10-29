@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -11,10 +12,11 @@ use Magento\Framework\Exception\NoSuchEntityException;
 class BackendSearch
 {
     public function __construct(
-        protected ConfigHelper  $configHelper,
-        protected ProductHelper $productHelper,
-        protected AlgoliaConnector $algoliaConnector,
-        protected IndexOptionsBuilder $indexOptionsBuilder,
+        protected ConfigHelper                $configHelper,
+        protected ProductHelper               $productHelper,
+        protected AlgoliaConnector            $algoliaConnector,
+        protected IndexOptionsBuilder         $indexOptionsBuilder,
+        protected SearchQueryInterfaceFactory $searchQueryFactory,
     ){}
 
     /**
@@ -59,7 +61,11 @@ class BackendSearch
             $params = array_merge($params, $searchParams);
         }
 
-        $response = $this->algoliaConnector->query($indexOptions, $query, $params);
+        $response = $this->algoliaConnector->query($this->searchQueryFactory->create([
+            'indexOptions' => $indexOptions,
+            'query' => $query,
+            'params' => $params,
+        ]));
         $answer = reset($response['results']);
 
         $data = [];

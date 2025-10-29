@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Frontend\Search;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
@@ -91,10 +92,7 @@ class SearchTest extends TestCase
     }
 
     /**
-     * @param string $query
-     * @param int $storeId
-     * @param array $params
-     * @return array
+     * @throws AlgoliaException
      */
     protected function search(string $query = '', int $storeId = 1, array $params = []): array
     {

@@ -166,23 +166,6 @@ class Data
     }
 
     /**
-     * @param string $query
-     * @param int $storeId
-     * @param array|null $searchParams
-     * @param string|null $targetedIndex
-     * @return array
-     * @throws AlgoliaException|NoSuchEntityException
-     * @internal This method is currently unstable and should not be used. It may be revisited or fixed in a future version.
-     *
-     * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Product\BackendSearch::getSearchResult() instead
-     */
-    public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
-    {
-        return $this->backendSearch->getSearchResult($query, $storeId, $searchParams, $targetedIndex);
-    }
-
-    /**
      * @param $storeId
      * @return bool
      * @throws NoSuchEntityException

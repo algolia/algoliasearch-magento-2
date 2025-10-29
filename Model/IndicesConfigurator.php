@@ -2,8 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Model;
 
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
@@ -19,6 +21,7 @@ use Algolia\AlgoliaSearch\Service\Page\IndexOptionsBuilder as PageIndexOptionsBu
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexOptionsBuilder as SuggestionIndexOptionsBuilder;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndicesConfigurator
@@ -32,6 +35,7 @@ class IndicesConfigurator
         protected SuggestionIndexOptionsBuilder $suggestionIndexOptionsBuilder,
         protected AlgoliaConnector              $algoliaConnector,
         protected ConfigHelper                  $configHelper,
+        protected AutocompleteHelper            $autocompleteHelper,
         protected ProductHelper                 $productHelper,
         protected CategoryHelper                $categoryHelper,
         protected PageHelper                    $pageHelper,
@@ -43,11 +47,8 @@ class IndicesConfigurator
     ) {}
 
     /**
-     * @param int $storeId
-     * @param bool $useTmpIndex
-     * @return void
      * @throws AlgoliaException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      * @throws NoSuchEntityException
      */
     public function saveConfigurationToAlgolia(int $storeId, bool $useTmpIndex = false): void
@@ -98,9 +99,7 @@ class IndicesConfigurator
     }
 
     /**
-     * @param int $storeId
-     *
-     * @throws AlgoliaException|NoSuchEntityException
+     * @throws AlgoliaException|NoSuchEntityException|DiagnosticsException
      */
     protected function setCategoriesSettings(int $storeId): void
     {
@@ -118,9 +117,7 @@ class IndicesConfigurator
     }
 
     /**
-     * @param int $storeId
-     *
-     * @throws AlgoliaException|NoSuchEntityException
+     * @throws AlgoliaException|NoSuchEntityException|DiagnosticsException
      */
     protected function setPagesSettings(int $storeId): void
     {
@@ -138,9 +135,7 @@ class IndicesConfigurator
     }
 
     /**
-     * @param int $storeId
-     *
-     * @throws AlgoliaException|NoSuchEntityException
+     * @throws AlgoliaException|NoSuchEntityException|DiagnosticsException
      */
     protected function setQuerySuggestionsSettings(int $storeId): void
     {
@@ -158,9 +153,7 @@ class IndicesConfigurator
     }
 
     /**
-     * @param int $storeId
-     *
-     * @throws AlgoliaException|NoSuchEntityException
+     * @throws AlgoliaException|NoSuchEntityException|DiagnosticsException
      */
     protected function setAdditionalSectionsSettings(int $storeId): void
     {
@@ -168,7 +161,7 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
-        foreach ($this->configHelper->getAutocompleteSections() as $section) {
+        foreach ($this->autocompleteHelper->getAdditionalSections($storeId) as $section) {
             if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }
@@ -190,11 +183,8 @@ class IndicesConfigurator
     }
 
     /**
-     * @param int $storeId
-     * @param bool $useTmpIndex
-     * @return void
      * @throws AlgoliaException
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      * @throws NoSuchEntityException
      */
     protected function setProductsSettings(int $storeId, bool $useTmpIndex): void
@@ -214,11 +204,7 @@ class IndicesConfigurator
     }
 
     /**
-     * @param int $storeId
-     * @param bool $saveToTmpIndicesToo
-     *
-     * @throws AlgoliaException
-     * @throws NoSuchEntityException
+     * @throws AlgoliaException|NoSuchEntityException|DiagnosticsException
      */
     protected function setExtraSettings(int $storeId, bool $saveToTmpIndicesToo): void
     {

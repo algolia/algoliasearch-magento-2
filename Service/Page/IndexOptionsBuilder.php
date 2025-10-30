@@ -15,6 +15,6 @@ class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndex
      */
     public function buildEntityIndexOptions(int $storeId, ?bool $isTmp = false): IndexOptionsInterface
     {
-        return $this->safeBuildWithComputedIndex(PageHelper::INDEX_NAME_SUFFIX, $storeId, $isTmp);
+        return $this->buildWithComputedIndex(PageHelper::INDEX_NAME_SUFFIX, $storeId, $isTmp);
     }
 }

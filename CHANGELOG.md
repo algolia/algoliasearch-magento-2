@@ -4,6 +4,7 @@
 
 ### Bug fixes
 - Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
+- Fixed issue where category was not properly checked in the configuration block - thank you @benjamin-volle
 
 ## 3.16.1
 

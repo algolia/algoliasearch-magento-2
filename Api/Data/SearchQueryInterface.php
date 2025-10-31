@@ -12,7 +12,7 @@ interface SearchQueryInterface
     /**
      * Set the query string
      */
-    public function setQuery(string $query): void;
+    public function setQuery(string $query): SearchQueryInterface;
 
     /**
      * Get the search parameters
@@ -22,15 +22,25 @@ interface SearchQueryInterface
     /**
      * Set the parameters
      */
-    public function setParams(array $params): void;
+    public function setParams(array $params): SearchQueryInterface;
 
     /**
      * Get the index options
      */
-    public function getIndexOptions(): IndexOptionsInterface;
+    public function getIndexOptions(): ?IndexOptionsInterface;
 
     /**
      * Set the index options
      */
-    public function setIndexOptions(IndexOptionsInterface $indexOptions): void;
+    public function setIndexOptions(IndexOptionsInterface $indexOptions): SearchQueryInterface;
+
+    /**
+     * Get the pagination info
+     */
+    public function getPaginationInfo(): ?PaginationInfoInterface;
+
+    /**
+     * Set the pagination info
+     */
+    public function setPaginationInfo(PaginationInfoInterface $paginationInfo): SearchQueryInterface;
 }

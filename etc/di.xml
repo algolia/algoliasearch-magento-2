@@ -34,6 +34,7 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface" type="Algolia\AlgoliaSearch\Model\QueueArchive" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface" type="Algolia\AlgoliaSearch\Model\Data\SearchQuery" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface" type="Algolia\AlgoliaSearch\Model\Data\IndexOptions" />
+    <preference for="Algolia\AlgoliaSearch\Api\Data\PaginationInfoInterface" type="Algolia\AlgoliaSearch\Model\Data\PaginationInfo" />
 
     <!-- Algolia services -->
     <preference for="Algolia\AlgoliaSearch\Api\Insights\EventProcessorInterface" type="Algolia\AlgoliaSearch\Service\Insights\EventProcessor"/>

@@ -2,18 +2,16 @@
 
 namespace Algolia\AlgoliaSearch\Model\Data;
 
-use Algolia\AlgoliaSearch\Api\Data\PaginationInfoInterface;
-use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 
 class SearchQuery implements SearchQueryInterface
 {
 
     public function __construct(
-        protected string                   $query = "",
-        protected array                    $params = [],
-        protected ?IndexOptionsInterface   $indexOptions = null,
-        protected ?PaginationInfoInterface $paginationInfo = null,
+        protected ?IndexOptionsInterface $indexOptions = null,
+        protected string                 $query = "",
+        protected array                  $params = [],
     ) {}
 
     /**
@@ -35,7 +33,7 @@ class SearchQuery implements SearchQueryInterface
     /**
      * @inheritdoc
      */
-    public function getIndexOptions(): IndexOptionsInterface
+    public function getIndexOptions(): ?IndexOptionsInterface
     {
         return $this->indexOptions;
     }
@@ -43,7 +41,7 @@ class SearchQuery implements SearchQueryInterface
     /**
      * @inheritdoc
      */
-    public function setQuery(string $query): SearchQueryInterface
+    public function setQuery(string $query): self
     {
         $this->query = $query;
         return $this;
@@ -52,7 +50,7 @@ class SearchQuery implements SearchQueryInterface
     /**
      * @inheritdoc
      */
-    public function setParams(array $params): SearchQueryInterface
+    public function setParams(array $params): self
     {
         $this->params = $params;
         return $this;
@@ -61,26 +59,9 @@ class SearchQuery implements SearchQueryInterface
     /**
      * @inheritdoc
      */
-    public function setIndexOptions(IndexOptionsInterface $indexOptions): SearchQueryInterface
+    public function setIndexOptions(IndexOptionsInterface $indexOptions): self
     {
         $this->indexOptions = $indexOptions;
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPaginationInfo(): ?PaginationInfoInterface
-    {
-        return $this->paginationInfo;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setPaginationInfo(PaginationInfoInterface $paginationInfo): SearchQueryInterface
-    {
-        $this->paginationInfo = $paginationInfo;
         return $this;
     }
 }

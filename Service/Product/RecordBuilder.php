@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Builder\RecordBuilderInterface;
+use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exception\ProductDeletedException;
 use Algolia\AlgoliaSearch\Exception\ProductDisabledException;
@@ -89,11 +90,6 @@ class RecordBuilder implements RecordBuilderInterface
 
         $defaultData = $transport->getData();
 
-        $visibility = $product->getVisibility();
-
-        $visibleInCatalog = $this->visibility->getVisibleInCatalogIds();
-        $visibleInSearch = $this->visibility->getVisibleInSearchIds();
-
         $urlParams = [
             '_secure' => $this->configHelper->useSecureUrlsInFrontend($product->getStoreId()),
             '_nosid'  => true,
@@ -103,10 +99,10 @@ class RecordBuilder implements RecordBuilderInterface
             AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $product->getId(),
             'name'                                  => $product->getName(),
             'url'                                   => $product->getUrlModel()->getUrl($product, $urlParams),
-            'visibility_search'                     => (int) (in_array($visibility, $visibleInSearch)),
-            'visibility_catalog'                    => (int) (in_array($visibility, $visibleInCatalog)),
             'type_id'                               => $product->getTypeId(),
         ];
+
+        $customData = $this->addVisibilityAttributes($customData, $product);
 
         $additionalAttributes = $this->getAdditionalAttributes($product->getStoreId());
 
@@ -154,6 +150,15 @@ class RecordBuilder implements RecordBuilderInterface
         $this->logger->stop($logEventName, true);
 
         return $customData;
+    }
+
+    protected function addVisibilityAttributes(array $customData, Product $product): array
+    {
+        $visibility = $product->getVisibility();
+        return array_merge($customData, [
+            ProductRecordFieldsInterface::VISIBILITY_SEARCH  => (int) (in_array($visibility, $this->visibility->getVisibleInSearchIds())),
+            ProductRecordFieldsInterface::VISIBILITY_CATALOG => (int) (in_array($visibility, $this->visibility->getVisibleInCatalogIds())),
+        ]);
     }
 
     /**

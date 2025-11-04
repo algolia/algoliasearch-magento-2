@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
@@ -468,8 +469,8 @@ class ConfigHelper
             AlgoliaConnector::ALGOLIA_API_OBJECT_ID,
             'name',
             'url',
-            'visibility_search',
-            'visibility_catalog',
+            ProductRecordFieldsInterface::VISIBILITY_SEARCH,
+            ProductRecordFieldsInterface::VISIBILITY_CATALOG,
             'categories',
             'categories_without_path',
             'thumbnail_url',

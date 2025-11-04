@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
+use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -50,7 +51,7 @@ class BackendSearch
             'attributesToRetrieve'   => AlgoliaConnector::ALGOLIA_API_OBJECT_ID,
             'attributesToHighlight'  => '',
             'attributesToSnippet'    => '',
-            'numericFilters'         => ['visibility_search=1'],
+            'numericFilters'         => [sprintf('%s=1', ProductRecordFieldsInterface::VISIBILITY_SEARCH)],
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
             'analyticsTags'          => 'backend-search',
             'facets'                 => $facetsToRetrieve,

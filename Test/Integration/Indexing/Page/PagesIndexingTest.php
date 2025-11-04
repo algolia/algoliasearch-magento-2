@@ -37,7 +37,12 @@ class PagesIndexingTest extends IndexingTestCase
         $this->processTest($pageBatchQueueProcessor, 'pages', $this->assertValues->expectedExcludePages);
 
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_pages');
-        $response = $this->algoliaConnector->query($indexOptions, '', []);
+        $searchQuery = $this->searchQueryFactory->create([
+            'indexOptions' => $indexOptions,
+            'query' => '',
+            'params' => [],
+        ]);
+        $response = $this->algoliaConnector->query($searchQuery);
         $hits = reset($response['results'])['hits'];
 
         $noRoutePageExists = false;
@@ -66,7 +71,12 @@ class PagesIndexingTest extends IndexingTestCase
         $this->algoliaConnector->waitLastTask();
 
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_pages');
-        $response = $this->algoliaConnector->query($indexOptions, '', ['hitsPerPage' => 1]);
+        $searchQuery = $this->searchQueryFactory->create([
+            'indexOptions' => $indexOptions,
+            'query' => '',
+            'params' => ['hitsPerPage' => 1],
+        ]);
+        $response = $this->algoliaConnector->query($searchQuery);
         $hits = reset($response['results']);
         $hit = reset($hits['hits']);
 

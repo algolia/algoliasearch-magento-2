@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Data;
 
-use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 
 class SearchQuery implements SearchQueryInterface
 {
@@ -11,7 +11,7 @@ class SearchQuery implements SearchQueryInterface
     public function __construct(
         protected ?IndexOptionsInterface $indexOptions = null,
         protected string                 $query = "",
-        protected array                  $params = []
+        protected array                  $params = [],
     ) {}
 
     /**
@@ -33,7 +33,7 @@ class SearchQuery implements SearchQueryInterface
     /**
      * @inheritdoc
      */
-    public function getIndexOptions(): IndexOptionsInterface
+    public function getIndexOptions(): ?IndexOptionsInterface
     {
         return $this->indexOptions;
     }
@@ -41,24 +41,27 @@ class SearchQuery implements SearchQueryInterface
     /**
      * @inheritdoc
      */
-    public function setQuery(string $query): void
+    public function setQuery(string $query): self
     {
         $this->query = $query;
+        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function setParams(array $params): void
+    public function setParams(array $params): self
     {
         $this->params = $params;
+        return $this;
     }
 
     /**
      * @inheritdoc
      */
-    public function setIndexOptions(IndexOptionsInterface $indexOptions): void
+    public function setIndexOptions(IndexOptionsInterface $indexOptions): self
     {
         $this->indexOptions = $indexOptions;
+        return $this;
     }
 }

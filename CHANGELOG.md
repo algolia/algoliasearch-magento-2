@@ -8,13 +8,7 @@
 - Updated unit and integration tests.
 - `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix
 
-## 3.17.0-beta.2
-
-### Bug fixes
-
-- Fixed 3.17 setup:upgrade on PHP 8.4
-
-## 3.17.0-beta.1
+## 3.17.0
 
 ### Features
 - Added an Algolia indexing cache for storing metadata to prevent extra queries. Large collections that run periodic full indexes can benefit from this cache. 
@@ -32,6 +26,9 @@
 
 ### Bug fixes
 - Fixed indexing queue templates escaping.
+- Fixed 3.17 setup:upgrade on PHP 8.4
+- Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
+- Fixed issue where category was not properly checked in the configuration block - thank you @benjamin-volle
 
 ## 3.16.1
 

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -73,7 +74,12 @@ abstract class MultiStoreTestCase extends IndexingTestCase
             $storeId
         );
 
-        $resultsDefault = $this->algoliaConnector->query($indexOptions, '', []);
+        $searchQuery = $this->searchQueryFactory->create([
+            'indexOptions' => $indexOptions,
+            'query' => '',
+            'params' => [],
+        ]);
+        $resultsDefault = $this->algoliaConnector->query($searchQuery);
 
         $this->assertEquals($expectedNumber, $resultsDefault['results'][0]['nbHits']);
     }

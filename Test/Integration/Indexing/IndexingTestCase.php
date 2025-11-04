@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Console\Command\Indexer\AbstractIndexerCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
@@ -12,11 +13,16 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class IndexingTestCase extends TestCase
 {
+
+    protected ?SearchQueryInterfaceFactory $searchQueryFactory = null;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->setConfig('algoliasearch_queue/queue/active', '0');
+
+        $this->searchQueryFactory = $this->objectManager->get(SearchQueryInterfaceFactory::class);
     }
 
     protected function processTest(
@@ -81,7 +87,12 @@ abstract class IndexingTestCase extends TestCase
             $this->indexPrefix . 'default_' . $indexSuffix
         );
 
-        $resultsDefault = $this->algoliaConnector->query($indexOptions, '', []);
+        $searchQuery = $this->searchQueryFactory->create([
+            'indexOptions' => $indexOptions,
+            'query' => '',
+            'params' => [],
+        ]);
+        $resultsDefault = $this->algoliaConnector->query($searchQuery);
         $this->assertEquals($expectedNbHits, $resultsDefault['results'][0]['nbHits']);
     }
 

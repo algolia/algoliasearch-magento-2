@@ -148,7 +148,8 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
                 if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                     try {
-                        $indexOptions = $this->getIndexOptions($name, $store->getId());
+                        // Keep buildWithEnforcedIndex here since we get the index name from the API and Magento has nothing to do with it
+                        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name, $store->getId());
                         $this->algoliaConnector->deleteIndex($indexOptions);
                         $deletedStoreIndices++;
                     } catch (AlgoliaException) {

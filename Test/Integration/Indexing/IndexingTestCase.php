@@ -112,20 +112,4 @@ abstract class IndexingTestCase extends TestCase
             $this->assertEquals($expectedValue, $record[$attribute]);
         }
     }
-
-    /**
-     * @param string $indexSuffix
-     * @param int|null $storeId
-     * @param bool|null $isTmp
-     * @return IndexOptionsInterface
-     * @throws NoSuchEntityException
-     */
-    protected function getIndexOptions(
-        string $indexSuffix,
-        ?int $storeId = TestCase::DEFAULT_STORE_ID,
-        ?bool $isTmp = null
-    ): IndexOptionsInterface
-    {
-        return $this->indexOptionsBuilder->buildWithComputedIndex('_' . $indexSuffix, $storeId, $isTmp);
-    }
 }

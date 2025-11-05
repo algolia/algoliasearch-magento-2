@@ -2,11 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Console\Command\Indexer\AbstractIndexerCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\ActionInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -30,9 +32,7 @@ abstract class IndexingTestCase extends TestCase
         $indexSuffix,
         $expectedNbHits
     ) {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'default_' . $indexSuffix
-        );
+        $indexOptions = $this->getIndexOptions($indexSuffix);
 
         $this->algoliaConnector->clearIndex($indexOptions);
 
@@ -44,9 +44,7 @@ abstract class IndexingTestCase extends TestCase
 
     protected function processOldIndexerTest(ActionInterface $indexer, $indexSuffix, $expectedNbHits)
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'default_' . $indexSuffix
-        );
+        $indexOptions = $this->getIndexOptions($indexSuffix);
 
         $this->algoliaConnector->clearIndex($indexOptions);
 
@@ -61,9 +59,7 @@ abstract class IndexingTestCase extends TestCase
         $indexSuffix,
         $expectedNbHits
     ) {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'default_' . $indexSuffix
-        );
+        $indexOptions = $this->getIndexOptions($indexSuffix);
 
         $this->algoliaConnector->clearIndex($indexOptions);
 
@@ -83,9 +79,7 @@ abstract class IndexingTestCase extends TestCase
 
     protected function assertNumberofHits($indexSuffix, $expectedNbHits)
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'default_' . $indexSuffix
-        );
+        $indexOptions = $this->getIndexOptions($indexSuffix);
 
         $searchQuery = $this->searchQueryFactory->create([
             'indexOptions' => $indexOptions,
@@ -105,17 +99,33 @@ abstract class IndexingTestCase extends TestCase
      * @throws AlgoliaException
      */
     public function assertAlgoliaRecordValues(
-        string $indexName,
+        string $indexSuffix,
         string $recordId,
         array $expectedValues,
         ?int $storeId = null
     ) : void {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptions = $this->getIndexOptions($indexSuffix, $storeId);
 
         $res = $this->algoliaConnector->getObjects($indexOptions, [$recordId]);
         $record = reset($res['results']);
         foreach ($expectedValues as $attribute => $expectedValue) {
             $this->assertEquals($expectedValue, $record[$attribute]);
         }
+    }
+
+    /**
+     * @param string $indexSuffix
+     * @param int|null $storeId
+     * @param bool|null $isTmp
+     * @return IndexOptionsInterface
+     * @throws NoSuchEntityException
+     */
+    protected function getIndexOptions(
+        string $indexSuffix,
+        ?int $storeId = TestCase::DEFAULT_STORE_ID,
+        ?bool $isTmp = null
+    ): IndexOptionsInterface
+    {
+        return $this->indexOptionsBuilder->buildWithComputedIndex('_' . $indexSuffix, $storeId, $isTmp);
     }
 }

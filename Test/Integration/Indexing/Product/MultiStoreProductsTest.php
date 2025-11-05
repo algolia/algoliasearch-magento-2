@@ -104,14 +104,14 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         $this->reindexToAllStores($this->productBatchQueueProcessor, [self::VOYAGE_YOGA_BAG_ID]);
 
         $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'default_products',
+            'products',
             (string) self::VOYAGE_YOGA_BAG_ID,
             ['name' => self::VOYAGE_YOGA_BAG_NAME],
             $defaultStore->getId()
         );
 
         $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'fixture_second_store_products',
+            'products',
             (string) self::VOYAGE_YOGA_BAG_ID,
             ['name' => self::VOYAGE_YOGA_BAG_NAME_ALT],
             $fixtureSecondStore->getId()

@@ -21,6 +21,8 @@ use Magento\TestFramework\Helper\Bootstrap;
 
 abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 {
+    const DEFAULT_STORE_ID = 1;
+
     /**
      * @var ObjectManagerInterface
      */

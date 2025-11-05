@@ -69,10 +69,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         ?int $storeId = null
     ): void
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix .  $storeCode . '_' . $entity,
-            $storeId
-        );
+        $indexOptions = $this->getIndexOptions($entity, $storeId);
 
         $searchQuery = $this->searchQueryFactory->create([
             'indexOptions' => $indexOptions,
@@ -151,7 +148,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
                 if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                     try {
-                        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name, $store->getId());
+                        $indexOptions = $this->getIndexOptions($name, $store->getId());
                         $this->algoliaConnector->deleteIndex($indexOptions);
                         $deletedStoreIndices++;
                     } catch (AlgoliaException) {

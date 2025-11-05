@@ -196,8 +196,6 @@ class ConfigTest extends TestCase
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
-//            $indexName = $this->indexPrefix . 'default_' . $section;
-//            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
             $indexOptions = $this->getIndexOptions($section);
 
             $this->algoliaConnector->setSettings($indexOptions, ['exactOnSingleWordQuery' => 'attribute']);
@@ -205,8 +203,6 @@ class ConfigTest extends TestCase
         }
 
         foreach ($sections as $section) {
-//            $indexName = $this->indexPrefix . 'default_' . $section;
-//            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
             $indexOptions = $this->getIndexOptions($section);
             $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 
@@ -221,8 +217,6 @@ class ConfigTest extends TestCase
         $this->syncSettingsToAlgolia();
 
         foreach ($sections as $section) {
-//            $indexName = $this->indexPrefix . 'default_' . $section;
-//            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
             $indexOptions = $this->getIndexOptions($section);
             $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 

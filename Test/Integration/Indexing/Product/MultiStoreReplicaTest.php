@@ -185,7 +185,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $indexName = $this->indexPrefix . $store->getCode() . '_products';
 
         $settings = $this->algoliaConnector->getSettings(
-            $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $store->getId())
+            $this->getIndexOptions('products', $store->getId())
         );
 
         $this->assertArrayHasKey('replicas', $settings);

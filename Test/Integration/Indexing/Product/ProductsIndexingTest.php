@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -48,14 +49,14 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $empty = $this->getSerializer()->serialize([]);
 
         $this->setConfig(ConfigHelper::PRODUCT_ATTRIBUTES, $empty);
-        $this->setConfig(ConfigHelper::FACETS, $empty);
-        $this->setConfig(ConfigHelper::SORTING_INDICES, $empty);
+        $this->setConfig(InstantSearchHelper::FACETS, $empty);
+        $this->setConfig(InstantSearchHelper::SORTING_INDICES, $empty);
         $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
         $this->productBatchQueueProcessor->processBatch(1, [$this->getValidTestProduct()]);
         $this->algoliaConnector->waitLastTask();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexOptions = $this->getIndexOptions('products');
         $results = $this->algoliaConnector->getObjects($indexOptions, [$this->getValidTestProduct()]);
         $hit = reset($results['results']);
 

@@ -371,7 +371,17 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'sections'                  => $config->getAdditionalSections(),
             'nbOfProductsSuggestions'   => $config->getNumberOfProductsSuggestions(),
             'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
+            // SUGGESTIONS - START
+            'areSuggestionsEnabled'     => $config->areSuggestionsEnabled(),
+            'suggestionsMode'           => $config->getSuggestionsMode(),
+            // Magento
+            'showMagentoSuggestions'    => $config->showMagentoSuggestions(),
             'nbOfQueriesSuggestions'    => $config->getNumberOfQueriesSuggestions(),
+            // Algolia
+            'showAlgoliaSuggestions'    => $config->showAlgoliaSuggestions(),
+            'suggestionsIndexName'      => $config->getSuggestionsIndexName(),
+            'nbOfAlgoliaSuggestions'    => $config->getNumberOfAlgoliaSuggestions(),
+            // SUGGESTIONS - END
             'isDebugEnabled'            => $config->isDebugEnabled(),
             'isNavigatorEnabled'        => $config->isKeyboardNavigationEnabled(),
             'debounceMilliseconds'      => $config->getDebounceMilliseconds(),

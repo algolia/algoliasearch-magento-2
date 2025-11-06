@@ -189,7 +189,7 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
-                        <field id="enable_suggestions">1</field>
+                        <field id="suggestions_mode">1</field>
                     </depends>
                 </field>
                 <field id="min_popularity" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -202,7 +202,7 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
-                        <field id="enable_suggestions">1</field>
+                        <field id="suggestions_mode">1</field>
                     </depends>
                 </field>
                 <field id="min_number_of_results" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -215,7 +215,7 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
-                        <field id="enable_suggestions">1</field>
+                        <field id="suggestions_mode">1</field>
                     </depends>
                 </field>
                 <field id="suggestions_index_name" translate="label comment" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -227,7 +227,20 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
-                        <field id="enable_suggestions">2</field>
+                        <field id="suggestions_mode">2</field>
+                    </depends>
+                </field>
+                <field id="nb_of_algolia_suggestions" translate="label comment" type="text" sortOrder="47" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Number of Algolia Suggestions</label>
+                    <comment>
+                        <![CDATA[
+                            How many query Algolia Suggestions do you want to display ? (Must be higher than 0)
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">2</field>
                     </depends>
                 </field>
                 <field id="sections" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">

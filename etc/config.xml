@@ -27,9 +27,12 @@
                 <autocomplete_selector>.algolia-search-input</autocomplete_selector>
                 <nb_of_products_suggestions>6</nb_of_products_suggestions>
                 <nb_of_categories_suggestions>2</nb_of_categories_suggestions>
+                <suggestions_mode>0</suggestions_mode>
                 <nb_of_queries_suggestions>0</nb_of_queries_suggestions>
                 <min_popularity>1000</min_popularity>
                 <min_number_of_results>2</min_number_of_results>
+                <suggestions_index_name>query_suggestions_test</suggestions_index_name>
+                <nb_of_algolia_suggestions>2</nb_of_algolia_suggestions>
                 <sections><![CDATA[{"_1600351750374_374":{"name":"pages","label":"Pages","hitsPerPage":"2"}}]]></sections>
                 <excluded_pages><![CDATA[{"_1600351757831_831":{"attribute":"no-route"}}]]></excluded_pages>
                 <render_template_directives>1</render_template_directives>

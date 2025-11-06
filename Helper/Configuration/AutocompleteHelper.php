@@ -20,6 +20,7 @@ class AutocompleteHelper
     public const MIN_QUERY_POPULARITY = 'algoliasearch_autocomplete/autocomplete/min_popularity';
     public const MIN_QUERY_NUMBER_OF_RESULTS = 'algoliasearch_autocomplete/autocomplete/min_number_of_results';
     public const SUGGESTIONS_INDEX_NAME = 'algoliasearch_autocomplete/autocomplete/suggestions_index_name';
+    public const NB_OF_ALGOLIA_SUGGESTIONS = 'algoliasearch_autocomplete/autocomplete/nb_of_algolia_suggestions';
 
     public const EXCLUDED_PAGES = 'algoliasearch_autocomplete/autocomplete/excluded_pages';
     public const RENDER_TEMPLATE_DIRECTIVES = 'algoliasearch_autocomplete/autocomplete/render_template_directives';
@@ -88,16 +89,17 @@ class AutocompleteHelper
         return $this->getSuggestionsMode($storeId) > 0;
     }
 
-    public function areMagentoSearchQueriesEnabled(?int $storeId = null): bool
+    public function showMagentoSuggestions(?int $storeId = null): bool
     {
         return $this->getSuggestionsMode($storeId) === Suggestions::SUGGESTIONS_MAGENTO
             && $this->getNumberOfQueriesSuggestions($storeId) > 0;
     }
 
-    public function areAlgoliaQuerySuggestionsEnabled(?int $storeId = null): bool
+    public function showAlgoliaSuggestions(?int $storeId = null): bool
     {
         return $this->getSuggestionsMode($storeId) === Suggestions::SUGGESTIONS_ALGOLIA
-            && $this->getSuggestionsIndexName($storeId) !== '';
+            && $this->getSuggestionsIndexName($storeId) !== ''
+            && $this->getNumberOfAlgoliaSuggestions($storeId) > 0;
     }
 
     public function getSuggestionsMode(?int $storeId = null): int
@@ -142,6 +144,15 @@ class AutocompleteHelper
     {
         return $this->configInterface->getValue(
             self::SUGGESTIONS_INDEX_NAME,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function getNumberOfAlgoliaSuggestions(?int $storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(
+            self::NB_OF_ALGOLIA_SUGGESTIONS,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
+use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
@@ -64,8 +65,8 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
             'objectID',
             'name',
             'url',
-            'visibility_search',
-            'visibility_catalog',
+            ProductRecordFieldsInterface::VISIBILITY_SEARCH,
+            ProductRecordFieldsInterface::VISIBILITY_CATALOG,
             'categories',
             'categories_without_path',
             'thumbnail_url',

@@ -152,7 +152,7 @@ class RecordBuilder implements RecordBuilderInterface
         return $customData;
     }
 
-    protected function addVisibilityAttributes(array $customData, Product $product): array
+    public function addVisibilityAttributes(array $customData, Product $product): array
     {
         $visibility = $product->getVisibility();
         return array_merge($customData, [

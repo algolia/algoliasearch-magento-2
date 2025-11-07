@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
@@ -67,7 +68,7 @@ class ReplicaIndexingTest extends TestCase
         // Assert replica config created
         $primaryIndexName = $this->indexName;
         $currentSettings = $this->algoliaConnector->getSettings(
-            $this->indexOptionsBuilder->buildWithEnforcedIndex($primaryIndexName)
+            $this->getIndexOptions($this->indexSuffix)
         );
         $this->assertArrayHasKey('replicas', $currentSettings);
 
@@ -108,21 +109,21 @@ class ReplicaIndexingTest extends TestCase
         ];
         $this->configHelper->setSorting($sorting);
 
-        $this->assertConfigInDb(ConfigHelper::SORTING_INDICES, json_encode($sorting));
+        $this->assertConfigInDb(InstantSearchHelper::SORTING_INDICES, json_encode($sorting));
 
         $this->refreshConfigFromDb();
 
         $this->assertSortingAttribute($sortAttr, $sortDir);
 
         // Cannot use config fixture because we have disabled db isolation
-        $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1);
+        $this->setConfig(InstantSearchHelper::IS_ENABLED, 1);
 
         $this->indicesConfigurator->saveConfigurationToAlgolia(1);
         $this->algoliaConnector->waitLastTask();
 
         // Assert replica config created
         $currentSettings = $this->algoliaConnector->getSettings(
-            $this->indexOptionsBuilder->buildWithEnforcedIndex($primaryIndexName)
+            $this->getIndexOptions($this->indexSuffix)
         );
 
         $this->assertArrayHasKey('replicas', $currentSettings);
@@ -138,7 +139,7 @@ class ReplicaIndexingTest extends TestCase
 
         // Restore prior state (for this test only)
         $this->configHelper->setSorting($ogSortingState);
-        $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 0);
+        $this->setConfig(InstantSearchHelper::IS_ENABLED, 0);
     }
 
     /**
@@ -198,7 +199,7 @@ class ReplicaIndexingTest extends TestCase
      */
     public function testReplicaSyncDisabled(): void
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName);
+        $indexOptions = $this->getIndexOptions($this->indexSuffix);
         $settings = $this->algoliaConnector->getSettings($indexOptions);
 
         $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $settings);
@@ -376,7 +377,7 @@ class ReplicaIndexingTest extends TestCase
     protected function assertReplicasCreated(array $sorting): array
     {
         $currentSettings = $this->algoliaConnector->getSettings(
-            $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName)
+            $this->getIndexOptions($this->indexSuffix)
         );
         $this->assertArrayHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $currentSettings);
         $replicas = $currentSettings[ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS];
@@ -389,7 +390,7 @@ class ReplicaIndexingTest extends TestCase
     protected function assertReplicasDeleted($originalReplicas): void
     {
         $newSettings = $this->algoliaConnector->getSettings(
-            $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName)
+            $this->getIndexOptions($this->indexSuffix)
         );
         $this->assertArrayNotHasKey(ReplicaManager::ALGOLIA_SETTINGS_KEY_REPLICAS, $newSettings);
         foreach ($originalReplicas as $replica) {

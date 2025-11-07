@@ -69,10 +69,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         ?int $storeId = null
     ): void
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix .  $storeCode . '_' . $entity,
-            $storeId
-        );
+        $indexOptions = $this->getIndexOptions($entity, $storeId);
 
         $searchQuery = $this->searchQueryFactory->create([
             'indexOptions' => $indexOptions,
@@ -151,6 +148,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
 
                 if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
                     try {
+                        // Keep buildWithEnforcedIndex here since we get the index name from the API and Magento has nothing to do with it
                         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name, $store->getId());
                         $this->algoliaConnector->deleteIndex($indexOptions);
                         $deletedStoreIndices++;

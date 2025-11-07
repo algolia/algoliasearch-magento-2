@@ -22,7 +22,7 @@ class ConfigTest extends TestCase
     {
         $this->syncSettingsToAlgolia();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexOptions = $this->getIndexOptions('products');
         $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
 
         $this->assertEquals($this->assertValues->attributesForFaceting, count($indexSettings['attributesForFaceting']));
@@ -32,9 +32,15 @@ class ConfigTest extends TestCase
     {
         $this->setConfig('algoliasearch_instant/instant_facets/enable_dynamic_facets', '1');
 
-        $this->syncSettingsToAlgolia();
+        try {
+            $this->syncSettingsToAlgolia();
+        } catch (AlgoliaException $e) {
+            // Skip this test if the renderingContent feature isn't enabled on the application
+            $this->markTestSkipped($e->getMessage());
+        }
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+
+        $indexOptions = $this->getIndexOptions('products');
         $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
 
         $renderingContent = $indexSettings['renderingContent']['facetOrdering']['values'] ?? null;
@@ -170,6 +176,7 @@ class ConfigTest extends TestCase
         foreach ($sortingIndicesWithRankingWhichShouldBeCreated as $indexName => $firstRanking) {
             $this->assertContains($indexName, $indicesNames);
 
+            // $indexName is coming from the API
             $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
             $settings = $this->algoliaConnector->getSettings($indexOptions);
             $this->assertEquals($firstRanking, reset($settings['ranking']));
@@ -189,16 +196,14 @@ class ConfigTest extends TestCase
         $sections = ['products', 'categories', 'pages', 'suggestions'];
 
         foreach ($sections as $section) {
-            $indexName = $this->indexPrefix . 'default_' . $section;
-            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $indexOptions = $this->getIndexOptions($section);
 
             $this->algoliaConnector->setSettings($indexOptions, ['exactOnSingleWordQuery' => 'attribute']);
             $this->algoliaConnector->waitLastTask();
         }
 
         foreach ($sections as $section) {
-            $indexName = $this->indexPrefix . 'default_' . $section;
-            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $indexOptions = $this->getIndexOptions($section);
             $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);
@@ -212,9 +217,7 @@ class ConfigTest extends TestCase
         $this->syncSettingsToAlgolia();
 
         foreach ($sections as $section) {
-            $indexName = $this->indexPrefix . 'default_' . $section;
-
-            $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+            $indexOptions = $this->getIndexOptions($section);
             $currentSettings = $this->algoliaConnector->getSettings($indexOptions);
 
             $this->assertArrayHasKey('exactOnSingleWordQuery', $currentSettings);

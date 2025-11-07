@@ -188,6 +188,7 @@ class QueueTest extends TestCase
         ]);
 
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::ENABLE_INDEXER_QUEUE, '1');
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
@@ -212,7 +213,7 @@ class QueueTest extends TestCase
 
         $this->algoliaConnector->waitLastTask();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexOptions = $this->getIndexOptions('products');
         $settings = $this->algoliaConnector->getSettings($indexOptions);
         $this->assertFalse(empty($settings['attributesForFaceting']), 'AttributesForFacetting should be set, but they are not.');
         $this->assertFalse(empty($settings['searchableAttributes']), 'SearchableAttributes should be set, but they are not.');
@@ -221,6 +222,7 @@ class QueueTest extends TestCase
     public function testMergeSettings()
     {
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::ENABLE_INDEXER_QUEUE, '1');
         $this->setConfig(QueueHelper::NUMBER_OF_JOB_TO_RUN, 1);
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 
@@ -232,9 +234,7 @@ class QueueTest extends TestCase
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertCount(3, $rows);
 
-        $productionIndexName = $this->indexPrefix . 'default_products';
-
-        $productionIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($productionIndexName);
+        $productionIndexOptions = $this->getIndexOptions('products');
         $this->algoliaConnector->setSettings($productionIndexOptions, ['disableTypoToleranceOnAttributes' => ['sku']]);
         $this->algoliaConnector->waitLastTask();
 
@@ -247,7 +247,7 @@ class QueueTest extends TestCase
 
         $this->algoliaConnector->waitLastTask();
 
-        $tmpIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products_tmp');
+        $tmpIndexOptions =  $this->getIndexOptions('products', TestCase::DEFAULT_STORE_ID, true);
         $settings = $this->algoliaConnector->getSettings($tmpIndexOptions);
         $this->assertEquals(['sku'], $settings['disableTypoToleranceOnAttributes']);
 

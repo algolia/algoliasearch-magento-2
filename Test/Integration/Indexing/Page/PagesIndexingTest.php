@@ -36,7 +36,7 @@ class PagesIndexingTest extends IndexingTestCase
         $pageBatchQueueProcessor = $this->objectManager->get(PageBatchQueueProcessor::class);
         $this->processTest($pageBatchQueueProcessor, 'pages', $this->assertValues->expectedExcludePages);
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_pages');
+        $indexOptions = $this->getIndexOptions('pages');
         $searchQuery = $this->searchQueryFactory->create([
             'indexOptions' => $indexOptions,
             'query' => '',
@@ -70,7 +70,7 @@ class PagesIndexingTest extends IndexingTestCase
         $pageBatchQueueProcessor->processBatch(1);
         $this->algoliaConnector->waitLastTask();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_pages');
+        $indexOptions = $this->getIndexOptions('pages');
         $searchQuery = $this->searchQueryFactory->create([
             'indexOptions' => $indexOptions,
             'query' => '',

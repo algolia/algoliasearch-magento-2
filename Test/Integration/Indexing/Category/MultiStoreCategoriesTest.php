@@ -81,14 +81,14 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
         $this->reindexToAllStores($this->categoryBatchQueueProcessor, [self::BAGS_CATEGORY_ID]);
 
         $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'default_categories',
+            'categories',
             (string) self::BAGS_CATEGORY_ID,
             ['name' => self::BAGS_CATEGORY_NAME],
             $defaultStore->getId()
         );
 
         $this->assertAlgoliaRecordValues(
-            $this->indexPrefix . 'fixture_second_store_categories',
+            'categories',
             (string) self::BAGS_CATEGORY_ID,
             ['name' => self::BAGS_CATEGORY_NAME_ALT],
             $fixtureSecondStore->getId()

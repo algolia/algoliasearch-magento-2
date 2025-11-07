@@ -88,16 +88,10 @@ class MultiStoreConfigTest extends MultiStoreTestCase
 
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
 
-        $defaultCategoryIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'default_categories',
-            $defaultStore->getId()
-        );
+        $defaultCategoryIndexOptions = $this->getIndexOptions('categories', $defaultStore->getId());
         $defaultCategoryIndexSettings = $this->algoliaConnector->getSettings($defaultCategoryIndexOptions);
 
-        $fixtureCategoryIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'fixture_second_store_categories',
-            $fixtureSecondStore->getId()
-        );
+        $fixtureCategoryIndexOptions = $this->getIndexOptions('categories', $fixtureSecondStore->getId());
         $fixtureCategoryIndexSettings = $this->algoliaConnector->getSettings($fixtureCategoryIndexOptions);
 
         $attributeFromConfig = 'unordered(' . self::ADDITIONAL_ATTRIBUTE . ')';
@@ -108,16 +102,10 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $this->assertNotContains($rankingFromConfig, $defaultCategoryIndexSettings['customRanking']);
         $this->assertContains($rankingFromConfig, $fixtureCategoryIndexSettings['customRanking']);
 
-        $defaultIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'default_products',
-            $defaultStore->getId()
-        );
+        $defaultIndexOptions = $this->getIndexOptions('products', $defaultStore->getId());
         $defaultProductIndexRules = $this->algoliaConnector->searchRules($defaultIndexOptions);
 
-        $fixtureIndexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex(
-            $this->indexPrefix . 'fixture_second_store_products',
-            $fixtureSecondStore->getId()
-        );
+        $fixtureIndexOptions = $this->getIndexOptions('products', $fixtureSecondStore->getId());
         $fixtureProductIndexRules = $this->algoliaConnector->searchRules($fixtureIndexOptions);
 
         // Check that the Rule has only been created for the fixture store

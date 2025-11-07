@@ -32,14 +32,11 @@ class PricingTest extends ProductsIndexingTestCase
         self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE => 39.2
     ];
 
-    protected ?string $indexName = null;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->indexSuffix = 'products';
-        $this->indexName = $this->getIndexName('default');
     }
 
     /**
@@ -60,7 +57,7 @@ class PricingTest extends ProductsIndexingTestCase
 
     protected function getAlgoliaObjectById(int $productId): ?array
     {
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexName);
+        $indexOptions = $this->getIndexOptions($this->indexSuffix);
         $res = $this->algoliaConnector->getObjects(
             $indexOptions,
             [(string) $productId]
@@ -143,7 +140,8 @@ class PricingTest extends ProductsIndexingTestCase
         $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaConnector->waitLastTask();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexOptions = $this->getIndexOptions('products');
+
         $res = $this->algoliaConnector->getObjects(
             $indexOptions,
             [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
@@ -177,7 +175,7 @@ class PricingTest extends ProductsIndexingTestCase
         $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaConnector->waitLastTask();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexOptions = $this->getIndexOptions('products');
         $res = $this->algoliaConnector->getObjects(
             $indexOptions,
             [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]

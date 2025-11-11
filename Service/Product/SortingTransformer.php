@@ -26,7 +26,7 @@ class SortingTransformer
         protected ConfigHelper                            $configHelper,
         protected StoreManagerInterface                   $storeManager,
         protected IndexNameFetcher                        $indexNameFetcher,
-        protected GroupCollection                                      $groupCollection,
+        protected GroupCollection                         $groupCollection,
         protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository
     )
     {}
@@ -85,23 +85,23 @@ class SortingTransformer
                     $customerGroupId = (int) $group->getData('customer_group_id');
                     if (!$this->isGroupPricingExcludedFromWebsite($customerGroupId, $websiteId)) {
                         $newAttr = $this->getCustomerGroupSortPriceOverride($primaryIndexName, $customerGroupId, $currency, $attr);
-                        $attributesToAdd[$newAttr['sort']][] = $this->decorateSortAttribute($newAttr);
+                        $attributesToAdd[$newAttr[ReplicaManagerInterface::SORT_KEY_DIRECTION]][] = $this->decorateSortAttribute($newAttr);
                     }
                 }
                 // Regular pricing
             } elseif ($attr[ReplicaManagerInterface::SORT_KEY_ATTRIBUTE_NAME] === ReplicaManagerInterface::SORT_ATTRIBUTE_PRICE) {
-                $indexName = $primaryIndexName . '_' . $attr['attribute'] . '_' . 'default' . '_' . $attr['sort'];
+                $indexName = $primaryIndexName . '_' . $attr['attribute'] . '_' . 'default' . '_' . $attr[ReplicaManagerInterface::SORT_KEY_DIRECTION];
                 $sortAttribute = $attr['attribute'] . '.' . $currency . '.' . 'default';
                 // All other sort attributes
             } else {
-                $indexName = $primaryIndexName . '_' . $attr['attribute'] . '_' . $attr['sort'];
+                $indexName = $primaryIndexName . '_' . $attr['attribute'] . '_' . $attr[ReplicaManagerInterface::SORT_KEY_DIRECTION];
                 $sortAttribute = $attr['attribute'];
             }
 
             // Decorate all non group pricing attributes
             if ($indexName && $sortAttribute) {
-                $attrs[$key]['name'] = $indexName;
-                $attrs[$key]['ranking'] = $this->getSortAttributingRankingSetting($sortAttribute, $attr['sort']);
+                $attrs[$key][ReplicaManagerInterface::SORT_KEY_INDEX_NAME] = $indexName;
+                $attrs[$key]['ranking'] = $this->getSortAttributingRankingSetting($sortAttribute, $attr[ReplicaManagerInterface::SORT_KEY_DIRECTION]);
                 $attrs[$key] = $this->decorateSortAttribute($attrs[$key]);
             }
         }
@@ -110,8 +110,8 @@ class SortingTransformer
         foreach ($attrs as $attr) {
             if ($attr[ReplicaManagerInterface::SORT_KEY_ATTRIBUTE_NAME] == ReplicaManagerInterface::SORT_ATTRIBUTE_PRICE
                 && count($attributesToAdd)
-                && isset($attributesToAdd[$attr['sort']])) {
-                $attrsToReturn = array_merge($attrsToReturn, $attributesToAdd[$attr['sort']]);
+                && isset($attributesToAdd[$attr[ReplicaManagerInterface::SORT_KEY_DIRECTION]])) {
+                $attrsToReturn = array_merge($attrsToReturn, $attributesToAdd[$attr[ReplicaManagerInterface::SORT_KEY_DIRECTION]]);
             } else {
                 $attrsToReturn[] = $attr;
             }
@@ -149,14 +149,14 @@ class SortingTransformer
         string $currency,
         array  $origAttr): array
     {
-        $attrName = $origAttr['attribute'];
-        $sortDir = $origAttr['sort'];
+        $attrName = $origAttr[ReplicaManagerInterface::SORT_KEY_ATTRIBUTE_NAME];
+        $sortDir = $origAttr[ReplicaManagerInterface::SORT_KEY_DIRECTION];
         $groupIndexNameSuffix = 'group_' . $customerGroupId;
         $groupIndexName = $originalIndexName . '_' . $attrName . '_' . $groupIndexNameSuffix . '_' . $sortDir;
 
         $newAttr = array_merge(
             $origAttr,
-            ['name' => $groupIndexName]
+            [ReplicaManagerInterface::SORT_KEY_INDEX_NAME => $groupIndexName]
         );
 
         $groupSortAttribute = $attrName . '.' . $currency . '.' . $groupIndexNameSuffix;
@@ -208,7 +208,7 @@ class SortingTransformer
     {
         return array_map(
             function ($sort) use ($mode) {
-                $replica = $sort['name'];
+                $replica = $sort[ReplicaManagerInterface::SORT_KEY_INDEX_NAME];
                 if (
                     $mode === self::REPLICA_TRANSFORM_MODE_VIRTUAL
                     || !empty($sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA]) && $mode === self::REPLICA_TRANSFORM_MODE_ACTUAL

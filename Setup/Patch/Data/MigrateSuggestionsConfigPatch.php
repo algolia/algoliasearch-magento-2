@@ -41,7 +41,7 @@ class MigrateSuggestionsConfigPatch implements DataPatchInterface
         $whereConfigPathFrom = $connection->quoteInto('path = ?', AutocompleteHelper::NB_OF_QUERIES_SUGGESTIONS);
         $select = $connection->select()
             ->from($configDataTable)
-            ->where($whereConfigPathFrom);
+            ->where('path = ?', AutocompleteHelper::NB_OF_QUERIES_SUGGESTIONS);
         $existingValues = $connection->fetchAll($select);
 
         foreach ($existingValues as $item) {

@@ -166,7 +166,19 @@
                         <field id="is_popup_enabled">1</field>
                     </depends>
                 </field>
-                <field id="nb_of_queries_suggestions" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="suggestions_mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Suggestions</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\Suggestions</source_model>
+                    <comment>
+                        <![CDATA[
+                            Choose if you want to use Magento Suggestions (populated by the <code>search_query</code> table) or the Algolia Suggestions from your Algolia dashboard.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_popup_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="nb_of_queries_suggestions" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of queries</label>
                     <comment>
@@ -177,6 +189,7 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">1</field>
                     </depends>
                 </field>
                 <field id="min_popularity" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -189,6 +202,7 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">1</field>
                     </depends>
                 </field>
                 <field id="min_number_of_results" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -201,6 +215,33 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">1</field>
+                    </depends>
+                </field>
+                <field id="suggestions_index_name" translate="label comment" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Search suggestions index name</label>
+                    <comment>
+                        <![CDATA[
+                            Specify the index name you have configured in Algolia to use for search suggestions.<br/>
+                            For more information, check the <a target="_blank" href="https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/query-suggestions">Algolia official documentation</a>
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">2</field>
+                    </depends>
+                </field>
+                <field id="nb_of_algolia_suggestions" translate="label comment" type="text" sortOrder="47" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Number of Algolia Suggestions</label>
+                    <comment>
+                        <![CDATA[
+                            How many query Algolia Suggestions do you want to display ? (Must be higher than 0)
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">2</field>
                     </depends>
                 </field>
                 <field id="sections" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">

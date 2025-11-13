@@ -57,15 +57,19 @@ class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndex
     public function getReplicaIndexName(int $storeId, string $sortField, string $sortDirection): ?string
     {
         $availableSorts = $this->sortingTransformer->getSortingIndices($storeId, $this->getCustomerGroupId());
-        $sort = null;
-        foreach ($availableSorts as $item) {
-            if (strcasecmp($item[ReplicaManagerInterface::SORT_KEY_ATTRIBUTE_NAME], $sortField) === 0
-                && strcasecmp($item[ReplicaManagerInterface::SORT_KEY_DIRECTION], $sortDirection) === 0) {
-                $sort = $item;
-                break;
+        $sort = $this->findMatchingSort($availableSorts, $sortField, $sortDirection);
+        return $sort[ReplicaManagerInterface::SORT_KEY_INDEX_NAME] ?? null;
+    }
+
+    protected function findMatchingSort(array $availableSorts, string $sortField, string $sortDirection): ?array
+    {
+        foreach ($availableSorts as $sort) {
+            if (strcasecmp($sort[ReplicaManagerInterface::SORT_KEY_ATTRIBUTE_NAME], $sortField) === 0
+                && strcasecmp($sort[ReplicaManagerInterface::SORT_KEY_DIRECTION], $sortDirection) === 0) {
+                return $sort;
             }
         }
-        return $sort[ReplicaManagerInterface::SORT_KEY_INDEX_NAME] ?? null;
+        return null;
     }
 
     protected function getCustomerGroupId(): ?int

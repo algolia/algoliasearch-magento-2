@@ -1,21 +1,6 @@
 # CHANGE LOG
 
-## 3.17.0-dev
-
-### Bug fixes
-- Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
-- Fixed issue where category was not properly checked in the configuration block - thank you @benjamin-volle
-
-## 3.17.0-beta.2
-
-### Updates
-- Removed all `is_null` occurrences
-
-### Bug fixes
-- Fixed 3.17 setup:upgrade on PHP 8.4
-- Fixed many Codacy issues
-
-## 3.17.0-beta.1
+## 3.17.0
 
 ### Features
 - Added an Algolia indexing cache for storing metadata to prevent extra queries. Large collections that run periodic full indexes can benefit from this cache. 
@@ -30,9 +15,14 @@
 - Updated default "Maximum number of records sent per indexing request" to 1000 (previously 300).
 - Updated `ConfigHelper` class, it now has more methods deprecated and ported to separate helper classes.
 - Updated Unit and Integration tests.
+- Removed all `is_null` occurrences
 
 ### Bug fixes
 - Fixed indexing queue templates escaping.
+- Fixed 3.17 setup:upgrade on PHP 8.4
+- Fixed many Codacy issues
+- Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
+- Fixed issue where category was not properly checked in the configuration block - thank you @benjamin-volle
 
 ## 3.16.1
 

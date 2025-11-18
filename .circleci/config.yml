@@ -159,7 +159,7 @@ jobs:
           working_directory: ~/Sites
           command: |
             bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
-  
+
   notify:
     docker:
       - image: cimg/base:current

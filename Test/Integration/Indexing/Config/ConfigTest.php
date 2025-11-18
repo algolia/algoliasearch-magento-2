@@ -32,7 +32,13 @@ class ConfigTest extends TestCase
     {
         $this->setConfig('algoliasearch_instant/instant_facets/enable_dynamic_facets', '1');
 
-        $this->syncSettingsToAlgolia();
+        try {
+            $this->syncSettingsToAlgolia();
+        } catch (AlgoliaException $e) {
+            // Skip this test if the renderingContent feature isn't enabled on the application
+            $this->setConfig('algoliasearch_instant/instant_facets/enable_dynamic_facets', '0');
+            $this->markTestSkipped($e->getMessage());
+        }
 
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
         $indexSettings = $this->algoliaConnector->getSettings($indexOptions);

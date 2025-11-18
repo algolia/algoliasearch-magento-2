@@ -188,6 +188,7 @@ class QueueTest extends TestCase
         ]);
 
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::ENABLE_INDEXER_QUEUE, '1');
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
@@ -221,6 +222,7 @@ class QueueTest extends TestCase
     public function testMergeSettings()
     {
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::ENABLE_INDEXER_QUEUE, '1');
         $this->setConfig(QueueHelper::NUMBER_OF_JOB_TO_RUN, 1);
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 

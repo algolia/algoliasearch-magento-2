@@ -3,54 +3,37 @@
 namespace Algolia\AlgoliaSearch\Block\Instant;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Magento\Customer\Model\Context as CustomerContext;
-use Magento\Framework\App\Http\Context as HttpContext;
+use Algolia\AlgoliaSearch\Service\PriceKeyResolver;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Template;
 
 class Hit extends Template
 {
-    private $config;
-    private $priceKey;
-    private $httpContext;
-
     public function __construct(
+        protected ConfigHelper $config,
+        protected PriceKeyResolver $priceKeyResolver,
         Template\Context $context,
-        ConfigHelper $config,
-        HttpContext $httpContext,
         array $data = []
     ) {
-        $this->config = $config;
-        $this->httpContext = $httpContext;
-
         parent::__construct($context, $data);
     }
 
-    public function getPriceKey()
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function getPriceKey(): string
     {
-        if ($this->priceKey === null) {
-            $groupId = $this->getGroupId();
-
-            /** @var \Magento\Store\Model\Store $store */
-            $store = $this->_storeManager->getStore();
-
-            $currencyCode = $store->getCurrentCurrencyCode();
-            $this->priceKey = $this->config->isCustomerGroupsEnabled($store->getStoreId())
-                ? '.' . $currencyCode . '.group_' . $groupId : '.' . $currencyCode . '.default';
-        }
-
-        return $this->priceKey;
+        $store = $this->_storeManager->getStore();
+        return $this->priceKeyResolver->getPriceKey($store->getId());
     }
 
-    public function getCurrencyCode()
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function getCurrencyCode(): string
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->_storeManager->getStore();
-
         return $store->getCurrentCurrencyCode();
-    }
-
-    public function getGroupId()
-    {
-        return $this->httpContext->getValue(CustomerContext::CONTEXT_GROUP);
     }
 }

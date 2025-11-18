@@ -15,6 +15,7 @@ use Algolia\AlgoliaSearch\Model\LandingPage as LandingPageModel;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\PriceKeyResolver;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -38,8 +39,6 @@ use Magento\Store\Api\Data\StoreInterface;
 
 class Algolia extends Template implements CollectionDataSourceInterface
 {
-    protected ?string $priceKey = null;
-
     public function __construct(
         protected ConfigHelper          $config,
         protected AutocompleteHelper    $autocompleteConfig,
@@ -62,6 +61,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         protected DateTime              $date,
         protected CurrentCategory       $currentCategory,
         protected SortingTransformer    $sortingTransformer,
+        protected PriceKeyResolver      $priceKeyResolver,
         Template\Context                $context,
         array                           $data = []
     )
@@ -143,18 +143,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
      */
     public function getPriceKey(): string
     {
-        if ($this->priceKey === null) {
-            $currencyCode = $this->getCurrencyCode();
-
-            $this->priceKey = '.' . $currencyCode . '.default';
-
-            if ($this->config->isCustomerGroupsEnabled($this->getStore()->getStoreId())) {
-                $groupId = $this->getGroupId();
-                $this->priceKey = '.' . $currencyCode . '.group_' . $groupId;
-            }
-        }
-
-        return $this->priceKey;
+        return $this->priceKeyResolver->getPriceKey($this->getStore()->getStoreId());
     }
 
     /**

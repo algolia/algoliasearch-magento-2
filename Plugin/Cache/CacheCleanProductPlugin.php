@@ -107,7 +107,7 @@ class CacheCleanProductPlugin
         $oldStock = $orig[$key];
         $newStock = $new[$key];
 
-        // In case of a product duplication on second save
+        // In case of a product duplication on second save (for some reason, Magento returns a different data structure in that case).
         if (!is_array($newStock)) {
             $newStock = ['is_in_stock' => $newStock];
         }

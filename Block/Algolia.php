@@ -15,7 +15,7 @@ use Algolia\AlgoliaSearch\Model\LandingPage as LandingPageModel;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\PriceKeyResolver;
+use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;

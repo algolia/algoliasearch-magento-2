@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Block\Instant;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\PriceKeyResolver;
+use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Template;
 

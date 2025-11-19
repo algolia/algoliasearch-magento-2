@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service;
+namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Magento\Customer\Model\Context as CustomerContext;
@@ -45,4 +45,3 @@ class PriceKeyResolver
             : 'default';
     }
 }
-

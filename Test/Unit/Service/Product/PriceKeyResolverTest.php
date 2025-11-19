@@ -1,9 +1,9 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Service;
+namespace Algolia\AlgoliaSearch\Test\Unit\Service\Product;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\PriceKeyResolver;
+use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Customer\Model\Context as CustomerContext;
 use Magento\Framework\App\Http\Context as HttpContext;
@@ -380,4 +380,3 @@ class PriceKeyResolverTest extends TestCase
         $this->assertEquals('group_3', $result);
     }
 }
-

@@ -106,6 +106,12 @@ class CacheCleanProductPlugin
         $key = 'quantity_and_stock_status';
         $oldStock = $orig[$key];
         $newStock = $new[$key];
+
+        // In case of a product duplication on second save (for some reason, Magento returns a different data structure in that case).
+        if (!is_array($newStock)) {
+            $newStock = ['is_in_stock' => $newStock];
+        }
+
         return $this->canCompareValues($oldStock, $newStock, 'is_in_stock')
             && (bool) $oldStock['is_in_stock'] !== (bool) $newStock['is_in_stock']
             || $this->canCompareValues($oldStock, $newStock, 'qty')

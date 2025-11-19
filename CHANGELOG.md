@@ -23,6 +23,7 @@
 - Performed code sanitization for Codacy compliance
 - Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
 - Fixed issue where category was not properly checked in the configuration block - thank you @benjamin-volle
+- Fixed issue on duplicated product save
 
 ## 3.16.1
 

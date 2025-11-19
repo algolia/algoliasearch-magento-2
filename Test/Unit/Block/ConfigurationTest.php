@@ -15,6 +15,7 @@ use Algolia\AlgoliaSearch\Helper\LandingPageHelper;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Magento\Catalog\Model\Category;
 use Magento\Checkout\Model\Session as CheckoutSession;
@@ -54,8 +55,8 @@ class ConfigurationTest extends TestCase
     protected ?DateTime $date;
     protected ?CurrentCategory $currentCategory;
     protected ?SortingTransformer $sortingTransformer;
+    protected ?PriceKeyResolver $priceKeyResolver;
     protected ?Context $context;
-
     protected ?Http $request;
 
     protected function setUp(): void
@@ -81,33 +82,34 @@ class ConfigurationTest extends TestCase
         $this->date = $this->createMock(DateTime::class);
         $this->currentCategory = $this->createMock(CurrentCategory::class);
         $this->sortingTransformer = $this->createMock(SortingTransformer::class);
+        $this->priceKeyResolver = $this->createMock(PriceKeyResolver::class);
         $this->context = $this->createMock(Context::class);
-
         $this->request = $this->createMock(Http::class);
         $this->context->method('getRequest')->willReturn($this->request);
 
         $this->configurationBlock = new ConfigurationBlock(
             $this->config,
-            $this->autocompleteConfig ,
-            $this->instantSearchConfig ,
-            $this->personalizationHelper ,
-            $this->catalogSearchHelper ,
+            $this->autocompleteConfig,
+            $this->instantSearchConfig,
+            $this->personalizationHelper,
+            $this->catalogSearchHelper,
             $this->productHelper,
-            $this->currency ,
-            $this->format ,
-            $this->currentProduct ,
-            $this->algoliaConnector ,
-            $this->urlHelper ,
-            $this->formKey ,
-            $this->httpContext ,
-            $this->coreHelper ,
+            $this->currency,
+            $this->format,
+            $this->currentProduct,
+            $this->algoliaConnector,
+            $this->urlHelper,
+            $this->formKey,
+            $this->httpContext,
+            $this->coreHelper,
             $this->categoryHelper,
-            $this->suggestionHelper ,
-            $this->landingPageHelper ,
+            $this->suggestionHelper,
+            $this->landingPageHelper,
             $this->checkoutSession,
-            $this->date ,
-            $this->currentCategory ,
-            $this->sortingTransformer ,
+            $this->date,
+            $this->currentCategory,
+            $this->sortingTransformer,
+            $this->priceKeyResolver,
             $this->context,
         );
     }
@@ -117,14 +119,14 @@ class ConfigurationTest extends TestCase
      */
     public function testIsSearchPage($action, $categoryId, $categoryDisplayMode, $expectedResult): void
     {
-        $this->config->method('isInstantEnabled')->willReturn(true);
+        $this->instantSearchConfig->method('isEnabled')->willReturn(true);
         $this->request->method('getFullActionName')->willReturn($action);
 
         $controller = explode('_', $action);
         $controller = $controller[1];
 
         $this->request->method('getControllerName')->willReturn($controller);
-        $this->config->method('replaceCategories')->willReturn(true);
+        $this->instantSearchConfig->method('shouldReplaceCategories')->willReturn(true);
 
         $category = $this->createMock(Category::class);
         $category->method('getId')->willReturn($categoryId);

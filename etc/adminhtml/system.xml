@@ -408,15 +408,28 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="pagination_mode" translate="label comment" type="select" sortOrder="4" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\PaginationMode</source_model>
+                    <label>Pagination</label>
+                    <comment>
+                        <![CDATA[
+                            The number of products displayed on the InstantSearch results page. You can choose either to inherit from the Magento configuration or define a custom one.<br/>
+                            <strong>Magento Grid Pagination: </strong> see "Catalog > StoreFront > Products per Page on Grid Default Value"<br/>
+                            <strong>Magento List Pagination: </strong> see "Catalog > StoreFront > Products per Page on List Default Value"
+                        ]]>
+                    </comment>
+                </field>
                 <field id="number_product_results" translate="label comment" type="text" sortOrder="5" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
-                    <label>Number of products per page</label>
+                    <label>Number of products per page (custom)</label>
                     <comment>
                         <![CDATA[
-                            The number of products displayed on the InstantSearch results page. Default value is 9.
+                            Default custom value is 9.
                         ]]>
                     </comment>
+                    <depends><field id="pagination_mode">2</field></depends>
                 </field>
                 <field id="replace_categories" translate="label comment" type="select" sortOrder="40" showInDefault="1"
                        showInWebsite="1" showInStore="1">

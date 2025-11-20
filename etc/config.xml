@@ -52,6 +52,7 @@
             <instant>
                 <is_instant_enabled>0</is_instant_enabled>
                 <instant_selector>.columns</instant_selector>
+                <pagination_mode>0</pagination_mode>
                 <number_product_results>9</number_product_results>
                 <replace_categories>0</replace_categories>
             </instant>

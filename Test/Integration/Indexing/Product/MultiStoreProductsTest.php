@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -10,6 +11,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 
 /**
@@ -117,6 +119,11 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             $fixtureSecondStore->getId()
         );
 
+        // Check the base url of the products
+        $this->validateProductUrl($defaultStore, "http://default.test/");
+        $this->validateProductUrl($fixtureThirdStore, "http://fixture_third_store.test/");
+        $this->validateProductUrl($fixtureSecondStore, "http://fixture_second_store.test/");
+
         // Unassign product from a single website (removed from test website (second and third store))
         $baseWebsite = $this->websiteRepository->get('base');
 
@@ -150,6 +157,23 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             count(self::SKUS) - 1,
             $fixtureSecondStore->getId()
         );
+    }
+
+    /**
+     * Fetch a product from an index and check its base url
+     *
+     * @param StoreInterface $store
+     * @param string $baseUrl
+     * @return void
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
+     */
+    protected function validateProductUrl(StoreInterface $store, string $baseUrl): void
+    {
+        $indexOptions = $this->getIndexOptions('products', $store->getId());
+        $results = $this->algoliaConnector->getObjects($indexOptions, [(string)self::VOYAGE_YOGA_BAG_ID]);
+        $hit = reset($results['results']);
+        $this->assertStringContainsString($baseUrl, $hit['url']);
     }
 
     /**

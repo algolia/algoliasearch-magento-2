@@ -124,6 +124,23 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
+     * Fetch a category from an index and check its base url
+     *
+     * @param StoreInterface $store
+     * @param string $baseUrl
+     * @return void
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
+     */
+    protected function validateEntityUrl(string $entity, string $entityId, StoreInterface $store, string $baseUrl): void
+    {
+        $indexOptions = $this->getIndexOptions($entity, $store->getId());
+        $results = $this->algoliaConnector->getObjects($indexOptions, [$entityId]);
+        $hit = reset($results['results']);
+        $this->assertStringContainsString($baseUrl, $hit['url']);
+    }
+
+    /**
      * @throws ExceededRetriesException
      * @throws AlgoliaException
      */

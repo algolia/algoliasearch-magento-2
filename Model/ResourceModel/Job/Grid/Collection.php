@@ -22,7 +22,7 @@ class Collection extends JobCollection implements SearchResultInterface
      * @param mixed                                                        $eventObject
      * @param mixed                                                        $resourceModel
      * @param string                                                       $model
-     * @param null                                                         $connection
+     * @param \Magento\Framework\DB\Adapter\AdapterInterface|null          $connection
      * @param \Magento\Framework\Model\ResourceModel\Db\AbstractDb|null    $resource
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -37,7 +37,7 @@ class Collection extends JobCollection implements SearchResultInterface
         $eventObject,
         $resourceModel,
         $model = \Magento\Framework\View\Element\UiComponent\DataProvider\Document::class,
-        $connection = null,
+        ?\Magento\Framework\DB\Adapter\AdapterInterface $connection = null,
         ?\Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource = null
     ) {
         parent::__construct(
@@ -91,7 +91,7 @@ class Collection extends JobCollection implements SearchResultInterface
     }
 
     /**
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     * @param \Magento\Framework\Api\SearchCriteriaInterface|null $searchCriteria
      *
      * @return $this
      *
@@ -121,7 +121,7 @@ class Collection extends JobCollection implements SearchResultInterface
     }
 
     /**
-     * @param \Magento\Framework\Api\ExtensibleDataInterface[] $items
+     * @param \Magento\Framework\Api\ExtensibleDataInterface[]|null $items
      *
      * @return $this
      *

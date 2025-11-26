@@ -120,9 +120,27 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         );
 
         // Check the base url of the products
-        $this->validateProductUrl($defaultStore, "http://default.test/");
-        $this->validateProductUrl($fixtureThirdStore, "http://fixture_third_store.test/");
-        $this->validateProductUrl($fixtureSecondStore, "http://fixture_second_store.test/");
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $defaultStore,
+            "http://default.test/"
+        );
+
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $fixtureSecondStore,
+            "http://fixture_second_store.test/"
+        );
+
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $fixtureThirdStore,
+            "http://fixture_third_store.test/"
+        );
+
 
         // Unassign product from a single website (removed from test website (second and third store))
         $baseWebsite = $this->websiteRepository->get('base');
@@ -157,23 +175,6 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             count(self::SKUS) - 1,
             $fixtureSecondStore->getId()
         );
-    }
-
-    /**
-     * Fetch a product from an index and check its base url
-     *
-     * @param StoreInterface $store
-     * @param string $baseUrl
-     * @return void
-     * @throws NoSuchEntityException
-     * @throws AlgoliaException
-     */
-    protected function validateProductUrl(StoreInterface $store, string $baseUrl): void
-    {
-        $indexOptions = $this->getIndexOptions('products', $store->getId());
-        $results = $this->algoliaConnector->getObjects($indexOptions, [(string)self::VOYAGE_YOGA_BAG_ID]);
-        $hit = reset($results['results']);
-        $this->assertStringContainsString($baseUrl, $hit['url']);
     }
 
     /**

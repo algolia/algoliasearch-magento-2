@@ -11,9 +11,10 @@ use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Api\Data\StoreInterface;
 
 /**
- * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php
+ * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/second_website_with_two_stores_and_products.php
  * @magentoDbIsolation disabled
  * @magentoAppIsolation enabled
  */
@@ -63,6 +64,20 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
 
         $defaultStore = $this->storeRepository->get('default');
         $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
+
+        // Check the base url of the categories
+        $this->validateEntityUrl(
+            'categories',
+            self::BAGS_CATEGORY_ID,
+            $defaultStore,
+            "http://default.test/"
+        );
+        $this->validateEntityUrl(
+            'categories',
+            self::BAGS_CATEGORY_ID,
+            $fixtureSecondStore,
+            "http://fixture_second_store.test/"
+        );
 
         $bagsCategory = $this->loadCategory(self::BAGS_CATEGORY_ID, $defaultStore->getId());
 

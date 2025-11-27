@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper\Configuration;
 
+use Algolia\AlgoliaSearch\Model\Source\PaginationMode;
 use Algolia\AlgoliaSearch\Service\Serializer;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
@@ -12,6 +13,11 @@ class InstantSearchHelper
     // General config
     public const IS_ENABLED = 'algoliasearch_instant/instant/is_instant_enabled';
     public const DOM_SELECTOR = 'algoliasearch_instant/instant/instant_selector';
+    public const PAGINATION_MODE = 'algoliasearch_instant/instant/pagination_mode';
+
+    public const MAGENTO_GRID_PER_PAGE = 'catalog/frontend/grid_per_page';
+    public const MAGENTO_LIST_PER_PAGE = 'catalog/frontend/list_per_page';
+
     public const NUMBER_OF_PRODUCT_RESULTS = 'algoliasearch_instant/instant/number_product_results';
     public const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
 
@@ -50,13 +56,46 @@ class InstantSearchHelper
         return (string) $this->configInterface->getValue(self::DOM_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getNumberOfProductResults(?int $storeId = null): int
+    public function getMagentoGridProductsPerPage(string $scope, ?int $storeId = null): int
     {
         return (int) $this->configInterface->getValue(
-            self::NUMBER_OF_PRODUCT_RESULTS,
+            self::MAGENTO_GRID_PER_PAGE,
+            $scope,
+            $storeId
+        );
+    }
+
+    public function getMagentoListProductsPerPage(string $scope, ?int $storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(
+            self::MAGENTO_LIST_PER_PAGE,
+            $scope,
+            $storeId
+        );
+    }
+
+    public function getPaginationMode(?int $storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(
+            self::PAGINATION_MODE,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
+    }
+
+    public function getNumberOfProductResults(?int $storeId = null): int
+    {
+        return match ($this->getPaginationMode($storeId)) {
+            PaginationMode::PAGINATION_MAGENTO_GRID =>
+                $this->getMagentoGridProductsPerPage(ScopeInterface::SCOPE_STORE, $storeId),
+            PaginationMode::PAGINATION_MAGENTO_LIST =>
+                $this->getMagentoListProductsPerPage(ScopeInterface::SCOPE_STORE, $storeId),
+            default =>
+                (int) $this->configInterface->getValue(
+                    self::NUMBER_OF_PRODUCT_RESULTS,
+                    ScopeInterface::SCOPE_STORE,
+                    $storeId),
+        };
     }
 
     public function shouldReplaceCategories(?int $storeId = null): bool

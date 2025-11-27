@@ -17,7 +17,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
     public function isSearchPage(): bool
     {
-        if ($this->getConfigHelper()->isInstantEnabled()) {
+        if ($this->instantSearchConfig->isEnabled()) {
             /** @var Http $request */
             $request = $this->getRequest();
 
@@ -25,7 +25,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 return true;
             }
 
-            if ($this->getConfigHelper()->replaceCategories() && $request->getControllerName() === 'category') {
+            if ($this->instantSearchConfig->shouldReplaceCategories() && $request->getControllerName() === 'category') {
                 $category = $this->getCurrentCategory();
                 if ($category->getId() && $category->getDisplayMode() !== 'PAGE') {
                     return true;
@@ -88,8 +88,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $baseUrl = rtrim($this->getBaseUrl(), '/');
 
-        $currencyCode = $this->getCurrencyCode();
-        $currencySymbol = $this->getCurrencySymbol();
         $priceFormat = $this->getPriceFormat();
 
         $customerGroupId = $this->getGroupId();
@@ -247,8 +245,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'priceGroup' => $priceGroup,
             'origFormatedVar' => 'price' . $priceKey . '_original_formated',
             'tierFormatedVar' => 'price' . $priceKey . '_tier_formated',
-            'currencyCode' => $currencyCode,
-            'currencySymbol' => $currencySymbol,
+            'currencyCode' => $this->getCurrencyCode(),
+            'currencySymbol' => $this->getCurrencySymbol(),
             'priceFormat' => $priceFormat,
             'maxValuesPerFacet' => (int) $config->getMaxValuesPerFacet(),
             'autofocus' => true,

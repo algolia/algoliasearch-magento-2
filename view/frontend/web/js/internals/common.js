@@ -163,7 +163,10 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
 
                 }
-                routeParameters['product_list_order'] = utils.replicaToSortParam(productIndexName, uiStateProductIndex.sortBy);
+                routeParameters[algoliaConfig.sortingParameter] = algoliaConfig.sortingParameter === 'product_list_order' ?
+                    utils.replicaToSortParam(productIndexName, uiStateProductIndex.sortBy) :
+                    uiStateProductIndex.sortBy;
+
                 routeParameters['page'] = uiStateProductIndex.page;
                 return routeParameters;
             },
@@ -229,7 +232,10 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
 
                 }
-                uiStateProductIndex['sortBy'] = utils.sortParamToReplica(productIndexName, routeParameters['product_list_order']);
+                uiStateProductIndex['sortBy'] = algoliaConfig.sortingParameter === 'product_list_order' ?
+                    utils.sortParamToReplica(productIndexName, routeParameters[algoliaConfig.sortingParameter]) :
+                    routeParameters[algoliaConfig.sortingParameter];
+
                 uiStateProductIndex['page'] = routeParameters.page;
 
                 var uiState = {};

@@ -63,6 +63,7 @@
             </instant_facets>
             <instant_sorts>
                 <sorts><![CDATA[{"_4581608784535_789":{"attribute":"price","sort":"asc","sortLabel":"Lowest price"},"_2541555584535_585":{"attribute":"price","sort":"desc","sortLabel":"Highest price"},"_5581608784535_898":{"attribute":"created_at","sort":"desc","sortLabel":"Newest first"}}]]></sorts>
+                <instantsearch_searchbox>sortBy</instantsearch_searchbox>
             </instant_sorts>
             <instant_options>
                 <instantsearch_searchbox>1</instantsearch_searchbox>

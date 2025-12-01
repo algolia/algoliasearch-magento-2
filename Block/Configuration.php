@@ -237,6 +237,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 $this->getStoreId(),
                 $customerGroupId
             )),
+            'sortingParameter' => $this->instantSearchConfig->getSortingParameter(),
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $isCategoryPage,
             'isLandingPage' => $this->isLandingPage(),

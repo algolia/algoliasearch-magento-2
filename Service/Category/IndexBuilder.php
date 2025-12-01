@@ -81,7 +81,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             return;
         }
 
-        if (!is_null($entityIds)) {
+        if ($entityIds !== null) {
             $this->rebuildEntityIds($storeId, $entityIds);
             return;
         }
@@ -117,14 +117,14 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             }
 
             if ($size > 0) {
-                $pages = ceil($size / $this->configHelper->getNumberOfElementByPage());
+                $pages = ceil($size / $this->configHelper->getNumberOfElementByPage($storeId));
                 $page = 1;
                 while ($page <= $pages) {
                     $this->buildIndexPage(
                         $storeId,
                         $collection,
                         $page,
-                        $this->configHelper->getNumberOfElementByPage(),
+                        $this->configHelper->getNumberOfElementByPage($storeId),
                         $categoryIds
                     );
                     $page++;

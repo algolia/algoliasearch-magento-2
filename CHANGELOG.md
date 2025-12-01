@@ -1,5 +1,49 @@
 # CHANGE LOG
 
+## 3.17.0
+
+### Features
+- Added an Algolia indexing cache for storing metadata to prevent extra queries. Large collections that run periodic full indexes can benefit from this cache. 
+- Price indexing is now optional. If the price attribute is not present in the product attributes, sorts, facets or custom ranking then that information will not be indexed in the product record.
+- Creating a temporary index while performing a full index is now optional and can be enabled or disabled in the Magento admin.
+- Added Batching optimizer feature which performs a catalog analysis and provides recommendation regarding optimal batching size for indexing.
+- Added Clear queue CLI command which handles indexing queue clearing from the console.
+
+### Updates
+- Fixed Indexing Queue merging mechanism, it should now have way better performances with delta indexing (updates) jobs.
+- Updated CLI command organization, queue related commands now have a different prefix compared to the indexing ones.
+- Updated default "Maximum number of records sent per indexing request" to 1000 (previously 300).
+- Updated `ConfigHelper` class, it now has more methods deprecated and ported to separate helper classes.
+- Updated Unit and Integration tests.
+- Removed all `is_null` occurrences
+
+### Bug fixes
+- Fixed indexing queue templates escaping.
+- Fixed 3.17 setup:upgrade on PHP 8.4
+- Performed code sanitization for Codacy compliance
+- Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
+- Fixed issue where category was not properly checked in the configuration block - thank you @benjamin-volle
+- Fixed issue on duplicated product save
+
+## 3.16.1
+
+### Updates
+- Add checks on configuration migration processed on data patch
+- `EventProcessor` now calculates decimal precision on currency based on `Magento\Framework\Locale\FormatInterface`
+- Local InstantSearch widgets can now override facet sorting behavior in merchandising rules
+- Updated various unit/integration tests
+
+### Bug fixes
+- Fixed Indexing Queue display in backend templates.
+- Fixed Indexing Queue merging mechanism, it should now have way better performances with delta indexing (updates) jobs.
+- Fixed implicit nullable types for PHP 8.4
+- Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
+- Apply rounding to insight events revenue values to avoid floating point precision errors - thank you @PromInc
+- Fix issue where double conversion occurred during price indexing in case of multi currency stores - thank you @natedawg92
+- Fix issue where non-clickable links where rendered on InstantSearch - thank you @PromInc
+- Fixed issue where replica setting forwarding can abort if async operation fails to complete in time
+- Fixed some Codacy issues
+
 ## 3.16.0
 
 ### Features

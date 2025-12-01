@@ -2,12 +2,15 @@
 
 namespace Algolia\AlgoliaSearch\Setup\Patch\Data;
 
+use Algolia\AlgoliaSearch\Setup\Patch\DataMigrationTrait;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchInterface;
 
 class MigrateInstantSearchConfigPatch implements DataPatchInterface
 {
+    use DataMigrationTrait;
+
     public function __construct(
         protected ModuleDataSetupInterface $moduleDataSetup,
     ) {}
@@ -44,12 +47,8 @@ class MigrateInstantSearchConfigPatch implements DataPatchInterface
             'algoliasearch_instant/instant/infinite_scroll_enable'             => 'algoliasearch_instant/instant_options/infinite_scroll_enable',
             'algoliasearch_instant/instant/hide_pagination'                    => 'algoliasearch_instant/instant_options/hide_pagination'
         ];
-        $connection = $this->moduleDataSetup->getConnection();
-        foreach ($movedConfig as $from => $to) {
-            $configDataTable = $this->moduleDataSetup->getTable('core_config_data');
-            $whereConfigPath = $connection->quoteInto('path = ?', $from);
-            $connection->update($configDataTable, ['path' => $to], $whereConfigPath);
-        }
+
+        $this->migrateConfig($movedConfig);
     }
 
     /**

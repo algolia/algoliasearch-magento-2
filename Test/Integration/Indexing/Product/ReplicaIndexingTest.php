@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
-use Algolia\AlgoliaSearch\Algolia;
 use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
@@ -11,15 +10,14 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
-use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\Traits\ReplicaAssertionsTrait;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
-use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\Traits\ReplicaAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Algolia\AlgoliaSearch\Validator\VirtualReplicaValidatorFactory;
 use Magento\Framework\App\State as AppState;
@@ -157,7 +155,7 @@ class ReplicaIndexingTest extends TestCase
 
         $sorting = $this->populateReplicas(1);
 
-        $rebuildCmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaRebuildCommand::class);
+        $rebuildCmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaRebuildCommand::class);
         $this->invokeMethod(
             $rebuildCmd,
             'execute',
@@ -410,7 +408,7 @@ class ReplicaIndexingTest extends TestCase
     {
         $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices($storeId, null, null, true);
 
-        $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\ReplicaSyncCommand::class);
+        $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaSyncCommand::class);
 
         $this->mockProperty($cmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
 

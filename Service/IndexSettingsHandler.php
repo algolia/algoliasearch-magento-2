@@ -55,6 +55,7 @@ class IndexSettingsHandler
                 true,
                 false
             );
+            $this->connector->waitLastTask($indexOptions->getStoreId());
         }
         if ($noForward) {
             $this->connector->setSettings(

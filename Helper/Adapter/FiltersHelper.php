@@ -59,7 +59,7 @@ class FiltersHelper
     public function getPaginationFilters()
     {
         $paginationFilter = [];
-        $page = !is_null($this->request->getParam('page')) ?
+        $page = $this->request->getParam('page') !== null ?
             (int) $this->request->getParam('page') - 1 :
             0;
         $paginationFilter['page'] = $page;
@@ -84,7 +84,7 @@ class FiltersHelper
             $categoryId = $category->getEntityId();
         }
 
-        if (!is_null($categoryId)) {
+        if ($categoryId !== null) {
             $categoryFilter['facetFilters'][] = 'categoryIds:' . $categoryId;
         }
 
@@ -234,13 +234,13 @@ class FiltersHelper
         $prices = [];
 
         // Instantsearch price facet compatibility
-        if (!is_null($this->request->getParam($paramPriceSlider))) {
+        if ($this->request->getParam($paramPriceSlider) !== null) {
             $pricesFilter = $this->request->getParam($paramPriceSlider);
             $prices = explode(':', $pricesFilter);
         }
 
         // Native Magento price facet compatibility
-        if (!$this->config->isInstantEnabled($storeId) && !is_null($this->request->getParam('price'))) {
+        if (!$this->config->isInstantEnabled($storeId) && $this->request->getParam('price') !== null) {
             $pricesFilter = $this->request->getParam('price');
             $prices = explode('-', $pricesFilter);
         }

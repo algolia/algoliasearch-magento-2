@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Console\Command\Indexer;
+namespace Algolia\AlgoliaSearch\Console\Command\Queue;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
@@ -29,7 +29,7 @@ class ProcessQueueCommand extends Command
 
     protected function getCommandName(): string
     {
-        return 'algolia:reindex:process_queue';
+        return 'algolia:queue:process';
     }
 
     protected function getCommandDescription(): string
@@ -40,7 +40,8 @@ class ProcessQueueCommand extends Command
     protected function configure(): void
     {
         $this->setName($this->getCommandName())
-            ->setDescription($this->getCommandDescription());
+            ->setDescription($this->getCommandDescription())
+            ->setAliases(['algolia:reindex:process_queue']);
 
         parent::configure();
     }

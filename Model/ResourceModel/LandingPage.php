@@ -136,12 +136,12 @@ class LandingPage extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             ->where('request_path = ?', $urlKey);
 
         // Only check a particular store if specified
-        if (!is_null($storeId) && $storeId != 0) {
+        if ($storeId) {
             $select->where('store_id = ?', $storeId);
         }
 
         // Handle the already existing url rewrite for the landing page
-        if (!is_null($landingPageId) && $landingPageId != 0) {
+        if ($landingPageId) {
             $select->where('!(entity_type = "landing-page" AND entity_id = ?)', $landingPageId);
         }
 

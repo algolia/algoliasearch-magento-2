@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
 use Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions;
+use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
@@ -93,7 +94,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $customerGroupId = $this->getGroupId();
 
         $priceKey = $this->getPriceKey();
-        $priceGroup = null;
+        $priceGroup = PriceKeyResolver::DEFAULT_PRICE_GROUP;
         if ($config->isCustomerGroupsEnabled()) {
             $pricegroupArray = explode('.', $priceKey);
             $priceGroup = $pricegroupArray[2];

@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
+use Algolia\AlgoliaSearch\Model\Source\SortParam;
 use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
 use Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions;
 use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
@@ -238,6 +239,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 $customerGroupId
             )),
             'sortingParameter' => $this->instantSearchConfig->getSortingParameter(),
+            'pagingParameter' => $this->instantSearchConfig->getSortingParameter() === SortParam::SORT_PARAM_MAGENTO ? 'p' : 'page',
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $isCategoryPage,
             'isLandingPage' => $this->isLandingPage(),

@@ -167,7 +167,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     utils.replicaToSortParam(productIndexName, uiStateProductIndex.sortBy) :
                     uiStateProductIndex.sortBy;
 
-                routeParameters['page'] = uiStateProductIndex.page;
+                routeParameters[algoliaConfig.pagingParameter] = uiStateProductIndex.page;
                 return routeParameters;
             },
             routeToState: function (routeParameters) {
@@ -236,7 +236,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     utils.sortParamToReplica(productIndexName, routeParameters[algoliaConfig.sortingParameter]) :
                     routeParameters[algoliaConfig.sortingParameter];
 
-                uiStateProductIndex['page'] = routeParameters.page;
+                uiStateProductIndex['page'] = routeParameters[algoliaConfig.pagingParameter];
 
                 var uiState = {};
                 uiState[productIndexName] = uiStateProductIndex;

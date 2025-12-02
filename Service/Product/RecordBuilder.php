@@ -123,7 +123,11 @@ class RecordBuilder implements RecordBuilderInterface
         }
         $subProducts = $this->getSubProducts($product);
         $customData = $this->addAdditionalAttributes($customData, $additionalAttributes, $product, $subProducts);
-        $customData = $this->priceManager->addPriceDataByProductType($customData, $product, $subProducts);
+
+        if ($this->isPriceIndexingEnabled($additionalAttributes)) {
+            $customData = $this->priceManager->addPriceDataByProductType($customData, $product, $subProducts);
+        }
+
         $transport = new DataObject($customData);
         $this->eventManager->dispatch(
             'algolia_subproducts_index',
@@ -186,13 +190,16 @@ class RecordBuilder implements RecordBuilderInterface
      */
     public function isAttributeEnabled($additionalAttributes, $attributeName): bool
     {
-        foreach ($additionalAttributes as $attr) {
-            if ($attr['attribute'] === $attributeName) {
-                return true;
-            }
-        }
+        return $this->configHelper->isAttributeInList($additionalAttributes, $attributeName);
+    }
 
-        return false;
+    /**
+     * @param array $additionalAttributes
+     * @return bool
+     */
+    protected function isPriceIndexingEnabled(array $additionalAttributes): bool
+    {
+        return $this->configHelper->isAttributeInList($additionalAttributes, 'price');
     }
 
     /**
@@ -816,3 +823,4 @@ class RecordBuilder implements RecordBuilderInterface
         return $product->isSaleable() && $stockItem->getIsInStock();
     }
 }
+

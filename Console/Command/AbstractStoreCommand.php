@@ -127,10 +127,10 @@ abstract class AbstractStoreCommand extends Command
             : "<info>$msg</info>";
     }
 
-    protected function confirmOperation(string $okMessage = '', string $cancelMessage = 'Operation cancelled'): bool
+    protected function confirmOperation(string $okMessage = '', string $cancelMessage = 'Operation cancelled', bool $default = false): bool
     {
         $helper = $this->getHelper('question');
-        $question = new ConfirmationQuestion('<question>Are you sure wish to proceed? (y/n)</question> ', false);
+        $question = new ConfirmationQuestion('<question>Are you sure wish to proceed? (y/n)</question> ', $default);
         if (!$helper->ask($this->input, $this->output, $question)) {
             if ($cancelMessage) {
                 $this->output->writeln("<comment>$cancelMessage</comment>");

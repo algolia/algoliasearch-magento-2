@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Console\Command;
+namespace Algolia\AlgoliaSearch\Console\Command\Replica;
 
 use Algolia\AlgoliaSearch\Api\Console\ReplicaSyncCommandInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
@@ -151,7 +151,7 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
     public function removeLegacyVirtualReplicaConfig(string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, int $scopeId = 0): void
     {
         $value = $this->scopeConfig->getValue(ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED, $scope, $scopeId);
-        if (is_null($value)) {
+        if ($value === null) {
             return;
         }
         $this->output->writeln("<info>Removing legacy configuration " . ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED . " for $scope scope" . ($scope != ScopeConfigInterface::SCOPE_TYPE_DEFAULT ? " (ID=$scopeId)" : "") . "</info>");

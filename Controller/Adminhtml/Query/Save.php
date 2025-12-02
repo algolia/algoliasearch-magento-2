@@ -120,7 +120,7 @@ class Save extends AbstractAction
                 $query->getResource()->save($query);
 
                 if (isset($data['algolia_merchandising_positions']) && $data['algolia_merchandising_positions'] != ''
-                    || !is_null($data['banner_image'])) {
+                    || $data['banner_image'] !== null) {
                     $this->manageQueryRules($query->getId(), $data);
                 }
 
@@ -168,7 +168,7 @@ class Save extends AbstractAction
         $bannerContent = $this->prepareBannerContent($data);
 
         foreach ($stores as $storeId) {
-            if (!$positions && is_null($bannerContent)) {
+            if (!$positions && $bannerContent === null) {
                 $this->merchandisingHelper->deleteQueryRule(
                     $storeId,
                     $queryId,

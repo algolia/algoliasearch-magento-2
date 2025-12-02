@@ -53,11 +53,11 @@ class MerchandisingHelper
             ],
         ];
 
-        if (!is_null($query) && $query != '') {
+        if ($query !== null && $query != '') {
             $condition['pattern'] = $query;
         }
 
-        if (!is_null($banner)) {
+        if ($banner !== null) {
             $rule['consequence']['userData']['banner'] = $banner;
         }
 

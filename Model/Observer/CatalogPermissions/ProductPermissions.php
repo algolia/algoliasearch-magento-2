@@ -39,9 +39,9 @@ class ProductPermissions implements ObserverInterface
             $customerGroupId = $customerGroup->getCustomerGroupId();
 
             $isVisible  = (int) $this->permissionsFactory->getCatalogPermissionsHelper()->isAllowedCategoryView($storeId, $customerGroupId);
-            if (!is_null($product->getData('shared_catalog_permission_' . $customerGroupId))) {
+            if ($product->getData('shared_catalog_permission_' . $customerGroupId) !== null) {
                 $isVisible = (int) $product->getData('shared_catalog_permission_' . $customerGroupId);
-            } elseif (!is_null($product->getData('customer_group_permission_' . $customerGroupId))) {
+            } elseif ($product->getData('customer_group_permission_' . $customerGroupId) !== null) {
                 $isVisible = (int) $product->getData('customer_group_permission_' . $customerGroupId);
             }
 

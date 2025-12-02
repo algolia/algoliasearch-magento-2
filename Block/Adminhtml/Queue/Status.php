@@ -158,7 +158,7 @@ class Status extends Template
     {
         $averageProcessingTime = $this->queue->getAverageProcessingTime();
 
-        return !is_null($averageProcessingTime) && $averageProcessingTime < self::QUEUE_FAST_LIMIT;
+        return $averageProcessingTime !== null && $averageProcessingTime < self::QUEUE_FAST_LIMIT;
     }
 
     /** @return int */

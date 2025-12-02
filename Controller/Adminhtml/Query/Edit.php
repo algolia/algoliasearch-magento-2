@@ -10,7 +10,7 @@ class Edit extends AbstractAction
     public function execute()
     {
         $query = $this->initQuery();
-        if (is_null($query)) {
+        if ($query === null) {
             $this->messageManager->addErrorMessage(__('This query does not exists.'));
             /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
             $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);

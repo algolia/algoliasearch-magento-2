@@ -27,7 +27,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
             if ($this->getConfigHelper()->replaceCategories() && $request->getControllerName() === 'category') {
                 $category = $this->getCurrentCategory();
-                if ($category && $category->getDisplayMode() !== 'PAGE') {
+                if ($category->getId() && $category->getDisplayMode() !== 'PAGE') {
                     return true;
                 }
             }
@@ -125,7 +125,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             && $request->getControllerName() === 'category') {
             $category = $this->getCurrentCategory();
 
-            if ($category && $category->getDisplayMode() !== 'PAGE') {
+            if ($category->getId() && $category->getDisplayMode() !== 'PAGE') {
                 $category->getUrlInstance()->setStore($this->getStoreId());
                 if (self::IS_CATEGORY_NAVIGATION_ENABLED) {
                     $childCategories = $this->getChildCategoryUrls($category);

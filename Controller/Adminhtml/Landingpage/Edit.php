@@ -10,7 +10,7 @@ class Edit extends AbstractAction
     public function execute()
     {
         $landingPage = $this->initLandingPage();
-        if (is_null($landingPage)) {
+        if ($landingPage === null) {
             $this->messageManager->addErrorMessage(__('This landing page does not exists.'));
             /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
             $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);

@@ -2,9 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Indexer;
 
+use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -16,34 +15,43 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     public function __construct(
         protected StoreManagerInterface $storeManager,
         protected ConfigHelper $configHelper,
-        protected ProductBatchQueueProcessor $productBatchQueueProcessor
+        protected BatchQueueProcessorInterface $productBatchQueueProcessor
     ) {}
 
     /**
-     * @throws NoSuchEntityException
+     * {@inheritdoc}
      */
-    public function execute($productIds)
+    public function execute($ids): void
     {
         foreach (array_keys($this->storeManager->getStores()) as $storeId) {
-            $this->productBatchQueueProcessor->processBatch($storeId, $productIds);
+            $this->productBatchQueueProcessor->processBatch($storeId, $ids);
         }
     }
 
-    public function executeFull()
+    /**
+     * {@inheritdoc}
+     */
+    public function executeFull(): void
     {
         if (!$this->configHelper->isProductsIndexerEnabled()) {
             return;
         }
 
-        $this->execute(null);
+        $this->execute([]);
     }
 
-    public function executeList(array $ids)
+    /**
+     * {@inheritdoc}
+     */
+    public function executeList(array $ids): void
     {
         $this->execute($ids);
     }
 
-    public function executeRow($id)
+    /**
+     * {@inheritdoc}
+     */
+    public function executeRow($id): void
     {
         $this->execute([$id]);
     }

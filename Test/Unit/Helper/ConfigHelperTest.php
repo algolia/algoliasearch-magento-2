@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Service\Serializer;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
@@ -16,8 +17,8 @@ use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Locale\Currency;
 use Magento\Framework\Module\ResourceInterface;
-
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Weee\Helper\Data as WeeeHelper;
 use PHPUnit\Framework\TestCase;
 
 class ConfigHelperTest extends TestCase
@@ -38,6 +39,9 @@ class ConfigHelperTest extends TestCase
     protected ?CookieHelper $cookieHelper;
     protected ?AutocompleteHelper $autocompleteHelper;
     protected ?InstantSearchHelper $instantSearchHelper;
+    protected ?QueueHelper $queueHelper;
+
+    protected ?WeeeHelper $weeeHelper;
 
     protected function setUp(): void
     {
@@ -56,6 +60,8 @@ class ConfigHelperTest extends TestCase
         $this->cookieHelper = $this->createMock(CookieHelper::class);
         $this->autocompleteHelper = $this->createMock(AutocompleteHelper::class);
         $this->instantSearchHelper = $this->createMock(InstantSearchHelper::class);
+        $this->queueHelper = $this->createMock(QueueHelper::class);
+        $this->weeeHelper = $this->createMock(WeeeHelper::class);
 
         $this->configHelper = new ConfigHelperTestable(
             $this->configInterface,
@@ -72,7 +78,9 @@ class ConfigHelperTest extends TestCase
             $this->groupExcludedWebsiteRepository,
             $this->cookieHelper,
             $this->autocompleteHelper,
-            $this->instantSearchHelper
+            $this->instantSearchHelper,
+            $this->queueHelper,
+            $this->weeeHelper
         );
     }
 

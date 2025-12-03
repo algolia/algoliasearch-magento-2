@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -10,6 +11,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 
 /**
@@ -116,6 +118,29 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             ['name' => self::VOYAGE_YOGA_BAG_NAME_ALT],
             $fixtureSecondStore->getId()
         );
+
+        // Check the base url of the products
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $defaultStore,
+            "http://default.test/"
+        );
+
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $fixtureSecondStore,
+            "http://fixture_second_store.test/"
+        );
+
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $fixtureThirdStore,
+            "http://fixture_third_store.test/"
+        );
+
 
         // Unassign product from a single website (removed from test website (second and third store))
         $baseWebsite = $this->websiteRepository->get('base');

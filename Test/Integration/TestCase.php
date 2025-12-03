@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration;
 
+use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -21,6 +22,8 @@ use Magento\TestFramework\Helper\Bootstrap;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
+    const DEFAULT_STORE_ID = 1;
+
     /**
      * @var ObjectManagerInterface
      */
@@ -290,5 +293,21 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         }
 
         return null;
+    }
+
+    /**
+     * @param string $indexSuffix
+     * @param int|null $storeId
+     * @param bool|null $isTmp
+     * @return IndexOptionsInterface
+     * @throws NoSuchEntityException
+     */
+    protected function getIndexOptions(
+        string $indexSuffix,
+        ?int $storeId = self::DEFAULT_STORE_ID,
+        ?bool $isTmp = null
+    ): IndexOptionsInterface
+    {
+        return $this->indexOptionsBuilder->buildWithComputedIndex('_' . $indexSuffix, $storeId, $isTmp);
     }
 }

@@ -10,10 +10,10 @@ define(function () {
             return SORTING_PARAMETER;
         },
         getSortingValueFromUiState: function(uiStateProductIndex) {
-            return uiStateProductIndex[SORTING_PARAMETER];
+            return uiStateProductIndex.sortBy;
         },
         getSortingFromRoute: function(routeParameters) {
-            return routeParameters[SORTING_PARAMETER];
+            return routeParameters.sortBy;
         }
     }
 });

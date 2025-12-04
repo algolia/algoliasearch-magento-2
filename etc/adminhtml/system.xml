@@ -522,14 +522,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="sort_param" translate="label comment" type="select" sortOrder="50"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Sort Parameters</label>
-                    <source_model>Algolia\AlgoliaSearch\Model\Source\SortParam</source_model>
-                    <comment>
-                        <model>Algolia\AlgoliaSearch\Model\Config\SortParam</model>
-                    </comment>
-                </field>
             </group>
             <group id="instant_options" translate="label" type="text" sortOrder="10" showInDefault="1"
                    showInWebsite="1" showInStore="1">

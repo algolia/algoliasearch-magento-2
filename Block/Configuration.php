@@ -238,8 +238,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 $this->getStoreId(),
                 $customerGroupId
             )),
-            'sortingParameter' => $this->instantSearchConfig->getSortingParameter(),
-            'pagingParameter' => $this->instantSearchConfig->getSortingParameter() === SortParam::SORT_PARAM_MAGENTO ? 'p' : 'page',
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $isCategoryPage,
             'isLandingPage' => $this->isLandingPage(),

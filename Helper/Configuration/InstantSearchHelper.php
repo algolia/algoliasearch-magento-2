@@ -29,8 +29,6 @@ class InstantSearchHelper
     // Sorts
     public const SORTING_INDICES = 'algoliasearch_instant/instant_sorts/sorts';
 
-    public const SORTING_PARAMETER = 'algoliasearch_instant/instant_sorts/sort_param';
-
     // Display options
     public const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant_options/show_suggestions_on_no_result_page';
     public const IS_SEARCHBOX_ENABLED = 'algoliasearch_instant/instant_options/instantsearch_searchbox';
@@ -148,15 +146,6 @@ class InstantSearchHelper
     public function getSorting(?int $storeId = null): array
     {
         return $this->serializer->unserialize($this->getRawSortingValue($storeId));
-    }
-
-    public function getSortingParameter(?int $storeId = null): string
-    {
-        return (string) $this->configInterface->getValue(
-            self::SORTING_PARAMETER,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
     }
 
     public function getRawSortingValue(?int $storeId = null): string

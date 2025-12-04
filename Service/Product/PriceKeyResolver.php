@@ -10,6 +10,8 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class PriceKeyResolver
 {
+    const DEFAULT_PRICE_GROUP = 'default';
+
     /** @var array<string, string> */
     protected array $priceKeys = [];
 
@@ -42,6 +44,6 @@ class PriceKeyResolver
     {
         return $this->config->isCustomerGroupsEnabled($storeId)
             ? 'group_' . $this->httpContext->getValue(CustomerContext::CONTEXT_GROUP)
-            : 'default';
+            : self::DEFAULT_PRICE_GROUP;
     }
 }

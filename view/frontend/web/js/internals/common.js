@@ -1,4 +1,4 @@
-define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache/js/form-key-provider'], function ($, instantsearch, algoliaBase64) {
+define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSearch/js/internals/params-manager', 'Magento_PageCache/js/form-key-provider'], function ($, instantsearch, algoliaBase64, algoliaParamsManager) {
     const USE_GLOBALS = true;
 
     // Character maps supplied for more performant Regex ops
@@ -163,11 +163,10 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
 
                 }
-                routeParameters[algoliaConfig.sortingParameter] = algoliaConfig.sortingParameter === 'product_list_order' ?
-                    utils.replicaToSortParam(productIndexName, uiStateProductIndex.sortBy) :
-                    uiStateProductIndex.sortBy;
 
-                routeParameters[algoliaConfig.pagingParameter] = uiStateProductIndex.page;
+                routeParameters[algoliaParamsManager.getSortingParam()] = algoliaParamsManager.getSortingValueFromUiState(uiStateProductIndex);
+                routeParameters[algoliaParamsManager.getPagingParam()] = uiStateProductIndex.page;
+
                 return routeParameters;
             },
             routeToState: function (routeParameters) {
@@ -232,11 +231,9 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
 
                 }
-                uiStateProductIndex['sortBy'] = algoliaConfig.sortingParameter === 'product_list_order' ?
-                    utils.sortParamToReplica(productIndexName, routeParameters[algoliaConfig.sortingParameter]) :
-                    routeParameters[algoliaConfig.sortingParameter];
 
-                uiStateProductIndex['page'] = routeParameters[algoliaConfig.pagingParameter];
+                uiStateProductIndex['sortBy'] = algoliaParamsManager.getSortingFromRoute(routeParameters);
+                uiStateProductIndex['page'] = routeParameters[algoliaParamsManager.getPagingParam()];
 
                 var uiState = {};
                 uiState[productIndexName] = uiStateProductIndex;
@@ -255,43 +252,6 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
             return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         },
 
-        replicaToSortParam: (productIndexName, replica) => {
-            // if no replica is selected, we don't want it to be part of the url
-            if (replica === undefined) {
-                return;
-            }
-
-            // Remove the main product index name so we keep only the replica suffix
-            const rawSorting = replica.replace(productIndexName + '_', '');
-            // Get only the direction
-            const direction = rawSorting.split('_').slice(-1);
-            // Isolate the sort by removing the direction
-            let sort = rawSorting.replace('_' + direction, '');
-
-            // Edge case for prices replicas => remove the price group
-            if (sort.includes('price')) {
-                sort = sort.replace('_' + algoliaConfig.priceGroup, '');
-            }
-
-            return [sort, direction].join("~");
-        },
-
-        sortParamToReplica: (productIndexName, sortParam) => {
-            if (sortParam === undefined) {
-                return;
-            }
-
-            // Get both sort and direction from param
-            let explodedSortParam = sortParam.split("~"), sort = explodedSortParam[0], direction = explodedSortParam[1];
-
-            // Edge case for prices => re-add the price group to retrieve the right replica
-            if (sort === 'price') {
-                sort = 'price_' + algoliaConfig.priceGroup;
-            }
-
-            // Return recomputed replica index name
-            return productIndexName + '_' + sort + '_' + direction;
-        },
     };
 
     const legacyGlobalFunctions = {

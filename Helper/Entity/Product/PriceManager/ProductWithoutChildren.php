@@ -16,6 +16,7 @@ use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Tax\Helper\Data as TaxHelper;
+use Magento\Weee\Model\Tax as WeeeTax;
 use Magento\Tax\Model\Config as TaxConfig;
 
 abstract class ProductWithoutChildren
@@ -40,6 +41,10 @@ abstract class ProductWithoutChildren
      * @var TaxHelper
      */
     protected $taxHelper;
+    /**
+     * @var WeeeTax
+     */
+    protected $weeeTax;
     /**
      * @var Rule
      */
@@ -77,6 +82,7 @@ abstract class ProductWithoutChildren
      * @param PriceCurrencyInterface $priceCurrency
      * @param CatalogHelper $catalogHelper
      * @param TaxHelper $taxHelper
+     * @param WeeeTax $weeeTax
      * @param Rule $rule
      * @param ProductFactory $productloader
      * @param ScopedProductTierPriceManagementInterface $productTierPrice
@@ -89,6 +95,7 @@ abstract class ProductWithoutChildren
         PriceCurrencyInterface $priceCurrency,
         CatalogHelper $catalogHelper,
         TaxHelper $taxHelper,
+        WeeeTax $weeeTax,
         Rule $rule,
         ProductFactory $productloader,
         ScopedProductTierPriceManagementInterface $productTierPrice,
@@ -100,6 +107,7 @@ abstract class ProductWithoutChildren
         $this->priceCurrency = $priceCurrency;
         $this->catalogHelper = $catalogHelper;
         $this->taxHelper = $taxHelper;
+        $this->weeeTax = $weeeTax;
         $this->rule = $rule;
         $this->productloader = $productloader;
         $this->productTierPrice = $productTierPrice;
@@ -146,6 +154,9 @@ abstract class ProductWithoutChildren
             foreach ($currencies as $currencyCode) {
                 $this->customData[$field][$currencyCode] = [];
                 $price = $product->getPrice();
+                if ($this->configHelper->isFptEnabled($product->getStoreId())) {
+                    $price += $this->weeeTax->getWeeeAmount($product);
+                }
                 if ($currencyCode !== $this->baseCurrencyCode) {
                     $price = $this->convertPrice($price, $currencyCode);
                 }
@@ -257,7 +268,11 @@ abstract class ProductWithoutChildren
             $specialPrices[$groupId] = [];
             $specialPrices[$groupId][] = $this->getRulePrice($groupId, $product, $subProducts);
             // The price with applied catalog rules
-            $specialPrices[$groupId][] = $product->getFinalPrice(); // The product's special price
+            $finalPrice = $product->getFinalPrice(); // The product's special price
+            if ($this->configHelper->isFptEnabled($product->getStoreId())) {
+                $finalPrice += $this->weeeTax->getWeeeAmount($product);
+            }
+            $specialPrices[$groupId][] = $finalPrice;
             $specialPrices[$groupId] = array_filter($specialPrices[$groupId], fn($price) => $price > 0);
             $specialPrice[$groupId] = false;
             if ($specialPrices[$groupId] && $specialPrices[$groupId] !== []) {

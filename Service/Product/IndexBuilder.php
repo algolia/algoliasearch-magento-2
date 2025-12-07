@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Builder\UpdatableIndexBuilderInterface;
+use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -86,71 +87,24 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      */
     public function buildIndex(int $storeId, ?array $entityIds, ?array $options): void
     {
-        if ($this->isIndexingEnabled($storeId) === false) {
+        if (!$this->isIndexingEnabled($storeId)) {
             return;
         }
 
-        if (!is_null($entityIds)) {
-            $this->rebuildEntityIds($storeId, $entityIds);
-            return;
-        }
+        $this->startEmulation($storeId);
 
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
-        $collection = $this->productHelper->getProductCollectionQuery($storeId, null, $onlyVisible);
+        $collection = $this->productHelper->getProductCollectionQuery($storeId, $entityIds, $onlyVisible);
+
         $this->buildIndexPage(
             $storeId,
             $collection,
-            $options['page'],
-            $options['pageSize'],
-            null,
-            $options['entityIds'],
-            $options['useTmpIndex']
+            $options['page'] ?? 1,
+            $options['pageSize'] ?? $this->configHelper->getNumberOfElementByPage($storeId),
+            $entityIds,
+            $options['useTmpIndex'] ?? false
         );
-    }
 
-    /**
-     * @param int $storeId
-     * @param string[] $productIds
-     * @return void
-     * @throws \Exception
-     */
-    protected function rebuildEntityIds(int $storeId, array $productIds): void
-    {
-        $this->startEmulation($storeId);
-        $this->logger->start('Indexing');
-        try {
-            $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
-            $collection = $this->productHelper->getProductCollectionQuery($storeId, $productIds, $onlyVisible);
-            $timerName = __METHOD__ . ' (Get product collection size)';
-            $this->logger->startProfiling($timerName);
-            $size = $collection->getSize();
-            $this->logger->stopProfiling($timerName);
-
-            if (!empty($productIds)) {
-                $size = max(count($productIds), $size);
-            }
-            $this->logger->log('Store ' . $this->logger->getStoreName($storeId) . ' collection size : ' . $size);
-            if ($size > 0) {
-                $pages = ceil($size / $this->configHelper->getNumberOfElementByPage());
-                $collection->clear();
-                $page = 1;
-                while ($page <= $pages) {
-                    $this->buildIndexPage(
-                        $storeId,
-                        $collection,
-                        $page,
-                        $this->configHelper->getNumberOfElementByPage(),
-                        null,
-                        $productIds
-                    );
-                    $page++;
-                }
-            }
-        } catch (\Exception $e) {
-            $this->stopEmulation();
-            throw $e;
-        }
-        $this->logger->stop('Indexing');
         $this->stopEmulation();
     }
 
@@ -186,42 +140,41 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param $storeId
-     * @param $collectionDefault
-     * @param $page
-     * @param $pageSize
-     * @param $emulationInfo
-     * @param $productIds
-     * @param $useTmpIndex
+     * @param int $storeId
+     * @param Collection $collection - collection to be paged
+     * @param int $page
+     * @param int $pageSize
+     * @param array|null $productIds - pre-batched product ids - if specified no paging will be applied
+     * @param bool|null $useTmpIndex
      * @return void
-     * @throws \Exception
+     * @throws AlgoliaException
+     * @throws DiagnosticsException
+     * @throws NoSuchEntityException
      */
     protected function buildIndexPage(
-        $storeId,
-        $collectionDefault,
-        $page,
-        $pageSize,
-        $emulationInfo = null,
-        $productIds = null,
-        $useTmpIndex = false
+        int $storeId,
+        Collection $collection,
+        int $page,
+        int $pageSize,
+        ?array $productIds = null,
+        ?bool $useTmpIndex = false
     ): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
         }
 
-        $wrapperLogMessage = 'rebuildStoreProductIndexPage: ' . $this->logger->getStoreName($storeId) . ',
+        $wrapperLogMessage = 'Build products index page: ' . $this->logger->getStoreName($storeId) . ',
             page ' . $page . ',
             pageSize ' . $pageSize;
         $this->logger->start($wrapperLogMessage, true);
-        if ($emulationInfo === null) {
-            $this->startEmulation($storeId);
-        }
+
         $additionalAttributes = $this->configHelper->getProductAdditionalAttributes($storeId);
 
-        /** @var Collection $collection */
-        $collection = clone $collectionDefault;
-        $collection->setCurPage($page)->setPageSize($pageSize);
+        if (empty($productIds)) {
+            $collection->setCurPage($page)->setPageSize($pageSize);
+        }
+
         $collection->addCategoryIds();
         $collection->addUrlRewrite();
 
@@ -248,7 +201,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             collection page: ' . $page . ',
             pageSize: ' . $pageSize;
         $this->logger->start($logMessage);
-        $collection->load();
+        $collection->load(); // eliminate extra query to obtain count
         $this->logger->log('Loaded ' . count($collection) . ' products');
         $this->logger->stop($logMessage);
         $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $useTmpIndex);
@@ -269,14 +222,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                 $this->logger->stop('REMOVE FROM ALGOLIA');
             }
         }
-        unset($indexData);
-        $collection->walk('clearInstance');
-        $collection->clear();
-        unset($collection);
-        if ($emulationInfo === null) {
-            $this->stopEmulation();
-        }
-
         $this->logger->stop($wrapperLogMessage, true);
     }
 

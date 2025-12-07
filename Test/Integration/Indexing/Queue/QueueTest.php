@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Queue;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Job;
@@ -44,11 +45,11 @@ class QueueTest extends TestCase
     public function testFill()
     {
         $this->resetConfigs([
-            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            QueueHelper::NUMBER_OF_JOB_TO_RUN,
             ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
         ]);
 
-        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
@@ -84,7 +85,7 @@ class QueueTest extends TestCase
 
     public function testExecute()
     {
-        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
         $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
@@ -136,16 +137,58 @@ class QueueTest extends TestCase
         $this->assertEquals(0, count($rows));
     }
 
+    public function testTmpIndexConfig()
+    {
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        // Setting "Use a temporary index for full products reindex" configuration to "No"
+        $this->setConfig(QueueHelper::USE_TMP_INDEX, '0');
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+
+        $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->processBatch(1);
+
+        $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
+        // Without temporary index enabled, there are only 2 jobs (saveConfigurationToAlgolia and buildIndexFull)
+        $this->assertEquals(2, count($rows));
+
+        $indexingJob = $rows[1];
+        $jobData = json_decode($indexingJob['data'], true);
+
+        $this->assertEquals('buildIndexFull', $indexingJob['method']);
+        $this->assertFalse($jobData['options']['useTmpIndex']);
+
+        /** @var Queue $queue */
+        $queue = $this->objectManager->get(Queue::class);
+
+        // Run the first job (saveSettings)
+        $queue->runCron(1, true);
+
+        $this->algoliaConnector->waitLastTask();
+
+        $indices = $this->algoliaConnector->listIndexes();
+
+        $existsDefaultTmpIndex = false;
+        foreach ($indices['items'] as $index) {
+            if ($index['name'] === $this->indexPrefix . 'default_products_tmp') {
+                $existsDefaultTmpIndex = true;
+            }
+        }
+        // Checking if the temporary index hasn't been created
+        $this->assertFalse($existsDefaultTmpIndex, 'Temporary index exists and it should not');
+    }
+
     public function testSettings()
     {
         $this->resetConfigs([
-            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            QueueHelper::NUMBER_OF_JOB_TO_RUN,
             ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
             ConfigHelper::FACETS,
+            QueueHelper::USE_TMP_INDEX,
             ConfigHelper::PRODUCT_ATTRIBUTES
         ]);
 
-        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::ENABLE_INDEXER_QUEUE, '1');
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
 
@@ -178,8 +221,9 @@ class QueueTest extends TestCase
 
     public function testMergeSettings()
     {
-        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
-        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 1);
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->setConfig(ConfigHelper::ENABLE_INDEXER_QUEUE, '1');
+        $this->setConfig(QueueHelper::NUMBER_OF_JOB_TO_RUN, 1);
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 
         $this->connection->query('DELETE FROM algoliasearch_queue');
@@ -791,7 +835,7 @@ class QueueTest extends TestCase
     public function testHugeJob()
     {
         // Default value - maxBatchSize = 1000
-        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(QueueHelper::NUMBER_OF_JOB_TO_RUN, 10);
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $productIds = range(1, 5000);
@@ -829,7 +873,7 @@ class QueueTest extends TestCase
     public function testMaxSingleJobSize()
     {
         // Default value - maxBatchSize = 1000
-        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(QueueHelper::NUMBER_OF_JOB_TO_RUN, 10);
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $productIds = range(1, 99);
@@ -870,13 +914,13 @@ class QueueTest extends TestCase
     public function testMaxSingleJobsSizeOnProductReindex()
     {
         $this->resetConfigs([
-            ConfigHelper::NUMBER_OF_JOB_TO_RUN,
+            QueueHelper::NUMBER_OF_JOB_TO_RUN,
             ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
         ]);
 
-        $this->setConfig(ConfigHelper::IS_ACTIVE, '1');
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
 
-        $this->setConfig(ConfigHelper::NUMBER_OF_JOB_TO_RUN, 10);
+        $this->setConfig(QueueHelper::NUMBER_OF_JOB_TO_RUN, 10);
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');

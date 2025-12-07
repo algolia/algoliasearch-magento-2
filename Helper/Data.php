@@ -239,9 +239,9 @@ class Data
      */
     protected function buildIndexData(?StoreInterface $store = null): array
     {
-        $storeId = !is_null($store) ? $store->getStoreId() : null;
-        $currencyCode = !is_null($store) ?
-            $store->getCurrentCurrencyCode($storeId) :
+        $storeId = $store?->getStoreId();
+        $currencyCode = 
+            $store?->getCurrentCurrencyCode($storeId) ??
             $this->configHelper->getCurrencyCode();
 
         return [
@@ -250,7 +250,7 @@ class Data
             'indexName' => $this->getBaseIndexName($storeId),
             'priceKey' => '.' . $currencyCode . '.default',
             'facets' => $this->configHelper->getFacets($storeId),
-            'currencyCode' => $this->configHelper->getCurrencyCode($storeId),
+            'currencyCode' => $currencyCode,
             'maxValuesPerFacet' => (int) $this->configHelper->getMaxValuesPerFacet($storeId),
             'categorySeparator' => $this->configHelper->getCategorySeparator($storeId),
         ];

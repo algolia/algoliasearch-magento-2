@@ -82,11 +82,11 @@ class IndexOptionsBuilder
      */
     protected function computeIndexName(IndexOptionsInterface $indexOptions): ?string
     {
-        if (!is_null($indexOptions->getIndexName())) {
+        if ($indexOptions->getIndexName() !== null) {
             return $indexOptions->getIndexName();
         }
 
-        if (is_null($indexOptions->getIndexSuffix())) {
+        if ($indexOptions->getIndexSuffix() === null) {
             throw new AlgoliaException('Index suffix is mandatory in case no enforced index name is specified.');
         }
 

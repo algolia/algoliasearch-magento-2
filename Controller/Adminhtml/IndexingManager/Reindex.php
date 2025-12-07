@@ -149,7 +149,7 @@ class Reindex extends Action
                 $message = $this->storeNameFetcher->getStoreName($storeId) . " ";
                 $message .= "(" . $this->indexNameFetcher->getIndexName('_' . $entity, $storeId);
 
-                if (!is_null($entityIds)) {
+                if ($entityIds !== null) {
                     $recordLabel = count($entityIds) > 1 ? "records" : "record";
                     $message .= " - " . count($entityIds) . " " . $recordLabel;
                 } else {

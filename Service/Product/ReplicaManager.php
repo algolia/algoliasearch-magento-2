@@ -126,7 +126,7 @@ class ReplicaManager implements ReplicaManagerInterface
 
     protected function clearAlgoliaReplicaSettingCache($primaryIndexName = null): void
     {
-        if (is_null($primaryIndexName)) {
+        if ($primaryIndexName === null) {
             $this->_algoliaReplicaConfig = [];
         } else {
             unset($this->_algoliaReplicaConfig[$primaryIndexName]);
@@ -565,7 +565,7 @@ class ReplicaManager implements ReplicaManagerInterface
 
     protected function clearUnusedReplicaIndicesCache(?int $storeId = null): void
     {
-        if (is_null($storeId)) {
+        if ($storeId === null) {
             $this->_unusedReplicaIndices = [];
         } else {
             unset($this->_unusedReplicaIndices[$storeId]);

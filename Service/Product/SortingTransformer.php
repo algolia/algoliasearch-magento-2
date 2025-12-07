@@ -51,7 +51,7 @@ class SortingTransformer
     ): array
     {
         // Selectively cache this result - only cache manipulation of saved settings per store
-        $useCache = is_null($currentCustomerGroupId) && is_null($attrs);
+        $useCache = $currentCustomerGroupId === null && $attrs === null;
 
         if ($clearCache) {
             unset($this->_sortingIndices[$storeId]);
@@ -78,7 +78,7 @@ class SortingTransformer
             if ($this->configHelper->isCustomerGroupsEnabled($storeId) && $attr[ReplicaManagerInterface::SORT_KEY_ATTRIBUTE_NAME] === ReplicaManagerInterface::SORT_ATTRIBUTE_PRICE) {
                 $websiteId = $this->storeManager->getStore($storeId)->getWebsiteId();
                 $groupCollection = $this->groupCollection;
-                if (!is_null($currentCustomerGroupId)) {
+                if ($currentCustomerGroupId !== null) {
                     $groupCollection->addFilter('customer_group_id', $currentCustomerGroupId);
                 }
                 foreach ($groupCollection as $group) {

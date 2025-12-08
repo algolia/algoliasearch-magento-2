@@ -10,7 +10,7 @@ Algolia Search & Discovery extension for Magento 2
 
 -------
 
-## Features 
+## Features  
 
 The Algolia extension replaces the default search in Magento Open Source and Adobe Commerce with a robust autocomplete search menu and Instantsearch results page.
 

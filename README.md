@@ -1,10 +1,10 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.17.1-green)
+![Latest version](https://img.shields.io/badge/latest-3.17.0-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.7+-orange)
 
-![PHP](https://img.shields.io/badge/PHP-8.1%2C8.2%2C8.3%2C8.4-blue)
+![PHP](https://img.shields.io/badge/PHP-8.2%2C8.3%2C8.4-blue)
 
 [![CircleCI](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/main.svg?style=svg)](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/main)
 
@@ -34,6 +34,16 @@ Try the Autocomplete and the InstantSearch results page on our [live demo](https
 Magento 2.3 and earlier versions are no longer supported by the Algolia extension.
 
 Version 3.x of our extension is compatible with Magento 2.4. Review the [Customisation](https://github.com/algolia/algoliasearch-magento-2#customisation) section to learn more about the differences between our extension versions.
+
+### Extension versions support
+
+We support the two latest minor versions of our extension (see "Extension Version" column in the compatibility matrix below) :
+- The 2 latest minor versions are maintained with security and critical bug fixes.
+- The latest minor version is maintained with "general" bug fixes as well.
+
+### Magento versions support
+
+We support the 2 or 3 latest patch versions of Magento depending on releases overlap (see matrix below):
 
 | Extension Version | End of Life | Magento                      | PHP                                    |
 |-------------------|-------------|------------------------------|----------------------------------------|

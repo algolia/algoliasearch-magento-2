@@ -1,4 +1,4 @@
-define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache/js/form-key-provider'], function ($, instantsearch, algoliaBase64) {
+define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSearch/js/internals/params-manager', 'Magento_PageCache/js/form-key-provider'], function ($, instantsearch, algoliaBase64, algoliaParamsManager) {
     const USE_GLOBALS = true;
 
     // Character maps supplied for more performant Regex ops
@@ -163,8 +163,10 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
 
                 }
-                routeParameters['sortBy'] = uiStateProductIndex.sortBy;
-                routeParameters['page'] = uiStateProductIndex.page;
+
+                routeParameters[algoliaParamsManager.getSortingParam()] = algoliaParamsManager.getSortingValueFromUiState(uiStateProductIndex);
+                routeParameters[algoliaParamsManager.getPagingParam()] = uiStateProductIndex.page;
+
                 return routeParameters;
             },
             routeToState: function (routeParameters) {
@@ -229,8 +231,9 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
 
                 }
-                uiStateProductIndex['sortBy'] = routeParameters.sortBy;
-                uiStateProductIndex['page'] = routeParameters.page;
+
+                uiStateProductIndex['sortBy'] = algoliaParamsManager.getSortingFromRoute(routeParameters);
+                uiStateProductIndex['page'] = routeParameters[algoliaParamsManager.getPagingParam()];
 
                 var uiState = {};
                 uiState[productIndexName] = uiStateProductIndex;
@@ -247,7 +250,8 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
 
         isTouchDevice: () => {
             return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        }
+        },
+
     };
 
     const legacyGlobalFunctions = {

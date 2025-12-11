@@ -1,5 +1,12 @@
 # CHANGE LOG
 
+## 3.17.1
+
+### Updates
+- Removed `Magento\Catalog\Model\Product\Url` preference
+- Moved `algolia_algoliasearch_plugin_category_url` plugin to global area so it can be used in the new indexers
+- Added "Extension/Magento versions support" paragraphs to the README file.
+
 ## 3.17.0
 
 ### Features

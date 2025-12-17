@@ -552,7 +552,7 @@ define([
         buildAutocompletePlugins(searchClient) {
             const plugins = [];
 
-            if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
+            if (algoliaConfig.autocomplete.areSuggestionsEnabled === true) {
                 this.state.hasSuggestionSection = true;
                 plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
@@ -859,13 +859,14 @@ define([
         },
 
         buildSuggestionsPlugin(searchClient) {
+            const numberOfSuggestions = this.getNumberOfSuggestions();
             return querySuggestionsPlugin.createQuerySuggestionsPlugin(
                 {
                     searchClient,
-                    indexName: `${algoliaConfig.indexName}_suggestions`,
+                    indexName: this.getSuggestionsIndexName(),
                     getSearchParams() {
                         return {
-                            hitsPerPage   : algoliaConfig.autocomplete.nbOfQueriesSuggestions,
+                            hitsPerPage   : numberOfSuggestions,
                             clickAnalytics: true,
                         };
                     },
@@ -1000,6 +1001,22 @@ define([
                     '<style>.aa-Item[aria-selected="true"]{background-color: #f2f2f2;}</style>'
                 );
             }
+        },
+
+        getSuggestionsIndexName() {
+            if (algoliaConfig.autocomplete.showAlgoliaSuggestions) {
+                return algoliaConfig.autocomplete.suggestionsIndexName;
+            }
+
+            return `${algoliaConfig.indexName}_suggestions`;
+        },
+
+        getNumberOfSuggestions() {
+            if (algoliaConfig.autocomplete.showAlgoliaSuggestions) {
+                return algoliaConfig.autocomplete.nbOfAlgoliaSuggestions;
+            }
+
+            return algoliaConfig.autocomplete.nbOfQueriesSuggestions;
         }
     });
 });

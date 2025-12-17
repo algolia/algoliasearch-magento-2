@@ -86,7 +86,8 @@ class AutocompleteHelper
 
     public function areSuggestionsEnabled(?int $storeId = null): bool
     {
-        return $this->getSuggestionsMode($storeId) > 0;
+        return $this->getSuggestionsMode($storeId) > 0 &&
+            ($this->showAlgoliaSuggestions($storeId) || $this->showMagentoSuggestions($storeId));
     }
 
     public function showMagentoSuggestions(?int $storeId = null): bool

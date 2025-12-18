@@ -171,6 +171,18 @@ class AlgoliaConnector
     }
 
     /**
+     * @param string $indexName
+     * @param int|null $storeId
+     * @return bool
+     * @throws AlgoliaException
+     * @throws \Throwable
+     */
+    public function indexExists(string $indexName, ?int $storeId = null): bool
+    {
+        return $this->getClient($storeId)->indexExists($indexName);
+    }
+
+    /**
      * @param IndexOptionsInterface $indexOptions
      * @param string $q
      * @param array $params

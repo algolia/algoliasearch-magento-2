@@ -224,6 +224,7 @@
                     <comment>
                         <![CDATA[
                             Specify the index name you have configured in Algolia to use for search suggestions.<br/>
+                            By default, it is <code>%PRODUCT_INDEX_NAME%_query_suggestions</code><br/>
                             For more information, check the <a target="_blank" href="https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/query-suggestions">Algolia official documentation</a><br/>
                             If you just created it in the Algolia dashboard, this may takes some time for it to be available.
                         ]]>

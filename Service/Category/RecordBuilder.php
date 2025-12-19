@@ -17,7 +17,9 @@ use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Module\Manager;
 use Magento\Framework\Url;
+use Magento\Framework\UrlInterface;
 use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 
 class RecordBuilder implements RecordBuilderInterface
 {
@@ -32,6 +34,7 @@ class RecordBuilder implements RecordBuilderInterface
         protected CategoryCollectionFactory $categoryCollectionFactory,
         protected ResourceConnection        $resourceConnection,
         protected Manager                   $moduleManager,
+        protected StoreManagerInterface     $storeManager,
     ) {}
 
     /**
@@ -137,20 +140,36 @@ class RecordBuilder implements RecordBuilderInterface
      */
     protected function getUrl(Category $category)
     {
-        $categoryUrl = $category->getUrl();
+        $storeId = $category->getStoreId();
+        $originalStoreId = $this->storeManager->getStore()->getId();
+        
+        try {
+            // Ensure we're using the category's store context for URL generation
+            // This is critical during indexing when store emulation may not be active
+            if ($originalStoreId !== $storeId) {
+                $this->storeManager->setCurrentStore($storeId);
+            }
+            
+            $categoryUrl = $category->getUrl();
 
-        if ($this->configHelper->useSecureUrlsInFrontend($category->getStoreId()) === false) {
+            if ($this->configHelper->useSecureUrlsInFrontend($storeId) === false) {
+                return $categoryUrl;
+            }
+
+            $unsecureBaseUrl = $category->getUrlInstance()->getBaseUrl(['_secure' => false]);
+            $secureBaseUrl = $category->getUrlInstance()->getBaseUrl(['_secure' => true]);
+
+            if (mb_strpos($categoryUrl, $unsecureBaseUrl) === 0) {
+                return substr_replace($categoryUrl, $secureBaseUrl, 0, mb_strlen($unsecureBaseUrl));
+            }
+
             return $categoryUrl;
+        } finally {
+            // Always restore original store context to prevent side effects
+            if ($originalStoreId !== $storeId) {
+                $this->storeManager->setCurrentStore($originalStoreId);
+            }
         }
-
-        $unsecureBaseUrl = $category->getUrlInstance()->getBaseUrl(['_secure' => false]);
-        $secureBaseUrl = $category->getUrlInstance()->getBaseUrl(['_secure' => true]);
-
-        if (mb_strpos($categoryUrl, $unsecureBaseUrl) === 0) {
-            return substr_replace($categoryUrl, $secureBaseUrl, 0, mb_strlen($unsecureBaseUrl));
-        }
-
-        return $categoryUrl;
     }
 
     /**

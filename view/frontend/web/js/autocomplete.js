@@ -552,7 +552,7 @@ define([
         buildAutocompletePlugins(searchClient) {
             const plugins = [];
 
-            if (algoliaConfig.autocomplete.nbOfQueriesSuggestions > 0) {
+            if (algoliaConfig.autocomplete.areSuggestionsEnabled) {
                 this.state.hasSuggestionSection = true;
                 plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
@@ -858,14 +858,49 @@ define([
             return redirectUrlPlugin.createRedirectUrlPlugin(params);
         },
 
+        /**
+         * Create a wrapped searchClient that gracefully handles missing indices
+         */
+        createSuggestionsSearchClient(searchClient, suggestionsIndexName) {
+            return {
+                ...searchClient,
+                search: (requests, ...rest) => {
+                    return searchClient.search(requests, ...rest).catch((error) => {
+                        // If the suggestions index doesn't exist, return empty results
+                        if (error.status === 404 && error.message?.includes(suggestionsIndexName)) {
+                            console.warn(`Algolia: Suggestions index "${suggestionsIndexName}" does not exist. Skipping suggestions.`);
+                            return {
+                                results: requests.map((req) => ({
+                                    // Return sensible defaults for zero result scenario
+                                    hits: [],
+                                    nbHits: 0,
+                                    page: 0,
+                                    nbPages: 0,
+                                    hitsPerPage: 0,
+                                    processingTimeMS: 0,
+                                    query: req.query,
+                                    params: ''
+                                }))
+                            };
+                        }
+                        throw error;
+                    });
+                }
+            };
+        },
+
         buildSuggestionsPlugin(searchClient) {
+            const numberOfSuggestions = this.getNumberOfSuggestions();
+            const suggestionsIndexName = this.getSuggestionsIndexName();
+            const suggestionsSearchClient = this.createSuggestionsSearchClient(searchClient, suggestionsIndexName);
+
             return querySuggestionsPlugin.createQuerySuggestionsPlugin(
                 {
-                    searchClient,
-                    indexName: `${algoliaConfig.indexName}_suggestions`,
+                    searchClient: suggestionsSearchClient,
+                    indexName: suggestionsIndexName,
                     getSearchParams() {
                         return {
-                            hitsPerPage   : algoliaConfig.autocomplete.nbOfQueriesSuggestions,
+                            hitsPerPage   : numberOfSuggestions,
                             clickAnalytics: true,
                         };
                     },
@@ -1000,6 +1035,19 @@ define([
                     '<style>.aa-Item[aria-selected="true"]{background-color: #f2f2f2;}</style>'
                 );
             }
+        },
+
+        getSuggestionsIndexName() {
+            return algoliaConfig.autocomplete.showAlgoliaSuggestions ?
+                algoliaConfig.autocomplete.suggestionsIndexName :
+                `${algoliaConfig.indexName}_suggestions`;
+        },
+
+        getNumberOfSuggestions() {
+            return algoliaConfig.autocomplete.showAlgoliaSuggestions ?
+                algoliaConfig.autocomplete.nbOfAlgoliaSuggestions :
+                algoliaConfig.autocomplete.nbOfQueriesSuggestions;
+
         }
     });
 });

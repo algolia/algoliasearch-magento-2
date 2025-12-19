@@ -552,7 +552,7 @@ define([
         buildAutocompletePlugins(searchClient) {
             const plugins = [];
 
-            if (algoliaConfig.autocomplete.areSuggestionsEnabled === true) {
+            if (algoliaConfig.autocomplete.areSuggestionsEnabled) {
                 this.state.hasSuggestionSection = true;
                 plugins.push(this.buildSuggestionsPlugin(searchClient));
             }
@@ -1038,19 +1038,16 @@ define([
         },
 
         getSuggestionsIndexName() {
-            if (algoliaConfig.autocomplete.showAlgoliaSuggestions) {
-                return algoliaConfig.autocomplete.suggestionsIndexName;
-            }
-
-            return `${algoliaConfig.indexName}_suggestions`;
+            return algoliaConfig.autocomplete.showAlgoliaSuggestions ?
+                algoliaConfig.autocomplete.suggestionsIndexName :
+                `${algoliaConfig.indexName}_suggestions`;
         },
 
         getNumberOfSuggestions() {
-            if (algoliaConfig.autocomplete.showAlgoliaSuggestions) {
-                return algoliaConfig.autocomplete.nbOfAlgoliaSuggestions;
-            }
+            return algoliaConfig.autocomplete.showAlgoliaSuggestions ?
+                algoliaConfig.autocomplete.nbOfAlgoliaSuggestions :
+                algoliaConfig.autocomplete.nbOfQueriesSuggestions;
 
-            return algoliaConfig.autocomplete.nbOfQueriesSuggestions;
         }
     });
 });

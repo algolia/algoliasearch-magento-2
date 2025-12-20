@@ -267,6 +267,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'url' => $this->getUrl('*/*/*', ['_use_rewrite' => true, '_forced_secure' => true]),
                 'ruleContexts' => [
                     'facetFilters' => RuleContextInterface::FACET_FILTERS_CONTEXT,
+                    'merchCategoryPrefix' => RuleContextInterface::MERCH_RULE_CATEGORY_PREFIX,
+                    'merchQueryPrefix' => RuleContextInterface::MERCH_RULE_QUERY_PREFIX,
+                    'landingPagePrefix' => RuleContextInterface::LANDING_PAGE_PREFIX
                 ],
             ],
             'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),

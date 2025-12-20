@@ -456,7 +456,7 @@ define([
 
             options.facets = ['categories.level0'];
             options.numericFilters = 'visibility_search=1';
-            options.ruleContexts = ['magento_filters', '']; // Empty context to keep backward compatibility for already created rules in dashboard
+            options.ruleContexts = [algoliaConfig.request.ruleContexts.facetFilters, '']; // Empty context to keep backward compatibility for already created rules in dashboard
 
             options = algoliaCommon.triggerHooks(
                 'afterAutocompleteProductSourceOptions',

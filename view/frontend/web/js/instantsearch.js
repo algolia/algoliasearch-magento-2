@@ -1267,7 +1267,7 @@ define([
          * @returns {string[]}
          */
         getRuleContexts() {
-            const ruleContexts = ['magento_filters', '']; // Empty context to keep BC for already create rules in dashboard
+            const ruleContexts = [algoliaConfig.request.ruleContexts.facetFilters, '']; // Empty context to keep BC for already create rules in dashboard
             if (algoliaConfig.request.categoryId.length) {
                 ruleContexts.push('magento-category-' + algoliaConfig.request.categoryId);
             }

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Block;
 
+use Algolia\AlgoliaSearch\Api\Product\RuleContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Algolia\AlgoliaSearch\Model\Source\SortParam;
@@ -263,7 +264,10 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'level' => $level,
                 'parentCategory' => $parentCategoryName,
                 'childCategories' => $childCategories,
-                'url' => $this->getUrl('*/*/*', ['_use_rewrite' => true, '_forced_secure' => true])
+                'url' => $this->getUrl('*/*/*', ['_use_rewrite' => true, '_forced_secure' => true]),
+                'ruleContexts' => [
+                    'facetFilters' => RuleContextInterface::FACET_FILTERS_CONTEXT,
+                ],
             ],
             'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
             'showSuggestionsOnNoResultsPage' => $config->showSuggestionsOnNoResultsPage(),

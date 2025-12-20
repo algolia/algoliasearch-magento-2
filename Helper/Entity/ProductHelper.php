@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Api\Product\RuleContextInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -501,7 +502,7 @@ class ProductHelper extends AbstractEntityHelper
             $condition = [
                 'anchoring' => 'contains',
                 'pattern' => '{facet:' . $attribute . '}',
-                'context' => 'magento_filters',
+                'context' => RuleContextInterface::FACET_FILTERS_CONTEXT,
             ];
 
             $rules[] = [
@@ -541,7 +542,7 @@ class ProductHelper extends AbstractEntityHelper
                 $fetchedQueryRules = $this->algoliaConnector->searchRules(
                     $indexOptions,
                     [
-                        'context' => 'magento_filters',
+                        'context' => RuleContextInterface::FACET_FILTERS_CONTEXT,
                         'page' => $page,
                         'hitsPerPage' => $hitsPerPage,
                     ]

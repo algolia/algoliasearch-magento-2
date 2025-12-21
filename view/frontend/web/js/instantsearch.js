@@ -1269,7 +1269,7 @@ define([
         getRuleContexts() {
             const ruleContexts = [algoliaConfig.request.ruleContexts.facetFilters, '']; // Empty context to keep BC for already create rules in dashboard
             if (algoliaConfig.request.categoryId.length) {
-                ruleContexts.push(alogliaConfig.request.ruleContexts.merchCategoryPrefix + algoliaConfig.request.categoryId);
+                ruleContexts.push(algoliaConfig.request.ruleContexts.merchCategoryPrefix + algoliaConfig.request.categoryId);
             }
 
             if (algoliaConfig.request.landingPageId.length) {

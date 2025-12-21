@@ -9,9 +9,11 @@ use Algolia\AlgoliaSearch\Model\Source\SortParam;
 use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
 use Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions;
 use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
+use Magento\Catalog\Model\Category;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Data\CollectionDataSourceInterface;
 use Magento\Framework\DataObject;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 class Configuration extends Algolia implements CollectionDataSourceInterface
 {
@@ -40,10 +42,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     }
 
     /**
-     * @param \Magento\Catalog\Model\Category $cat
-     * @return string
+     * @throws NoSuchEntityException
      */
-    protected function initCategoryParentPath(\Magento\Catalog\Model\Category $cat): string
+    protected function initCategoryParentPath(Category $cat): string
     {
         $path = '';
         foreach ($cat->getPathIds() as $treeCategoryId) {
@@ -55,13 +56,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         return $path;
     }
 
+
     /**
-     * @param \Magento\Catalog\Model\Category $cat
-     * @param string $parent
-     * @param array $arr
-     * @return array
+     * @throws NoSuchEntityException
      */
-    protected function getChildCategoryUrls(\Magento\Catalog\Model\Category $cat, string $parent = '', array $arr = []): array
+    protected function getChildCategoryUrls(Category $cat, string $parent = '', array $arr = []): array
     {
         if (!$parent) {
             $parent = $this->initCategoryParentPath($cat);
@@ -335,31 +334,31 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     {
         $config = $this->autocompleteConfig;
         return [
-            'enabled' => $config->isEnabled(),
-            'selector' => $config->getDomSelector(),
-            'sections' => $config->getAdditionalSections(),
-            'nbOfProductsSuggestions' => $config->getNumberOfProductsSuggestions(),
+            'enabled'                   => $config->isEnabled(),
+            'selector'                  => $config->getDomSelector(),
+            'sections'                  => $config->getAdditionalSections(),
+            'nbOfProductsSuggestions'   => $config->getNumberOfProductsSuggestions(),
             'nbOfCategoriesSuggestions' => $config->getNumberOfCategoriesSuggestions(),
             // SUGGESTIONS - START
-            'areSuggestionsEnabled' => $config->areSuggestionsEnabled(),
-            'suggestionsMode' => $config->getSuggestionsMode(),
+            'areSuggestionsEnabled'     => $config->areSuggestionsEnabled(),
+            'suggestionsMode'           => $config->getSuggestionsMode(),
             // Magento
-            'showMagentoSuggestions' => $config->showMagentoSuggestions(),
-            'nbOfQueriesSuggestions' => $config->getNumberOfQueriesSuggestions(),
+            'showMagentoSuggestions'    => $config->showMagentoSuggestions(),
+            'nbOfQueriesSuggestions'    => $config->getNumberOfQueriesSuggestions(),
             // Algolia
-            'showAlgoliaSuggestions' => $config->showAlgoliaSuggestions(),
-            'suggestionsIndexName' => $config->getSuggestionsIndexName(),
-            'nbOfAlgoliaSuggestions' => $config->getNumberOfAlgoliaSuggestions(),
+            'showAlgoliaSuggestions'    => $config->showAlgoliaSuggestions(),
+            'suggestionsIndexName'      => $config->getSuggestionsIndexName(),
+            'nbOfAlgoliaSuggestions'    => $config->getNumberOfAlgoliaSuggestions(),
             // SUGGESTIONS - END
-            'isDebugEnabled' => $config->isDebugEnabled(),
-            'isNavigatorEnabled' => $config->isKeyboardNavigationEnabled(),
-            'debounceMilliseconds' => $config->getDebounceMilliseconds(),
-            'minimumCharacters' => $config->getMinimumCharacterLength(),
-            'redirects' => [
-                'enabled' => $config->isRedirectEnabled(),
+            'isDebugEnabled'            => $config->isDebugEnabled(),
+            'isNavigatorEnabled'        => $config->isKeyboardNavigationEnabled(),
+            'debounceMilliseconds'      => $config->getDebounceMilliseconds(),
+            'minimumCharacters'         => $config->getMinimumCharacterLength(),
+            'redirects'                 => [
+                'enabled'                => $config->isRedirectEnabled(),
                 'showSelectableRedirect' => $config->getRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
-                'showHitsWithRedirect' => $config->getRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
-                'openInNewWindow' => $config->isRedirectInNewWindowEnabled()
+                'showHitsWithRedirect'   => $config->getRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
+                'openInNewWindow'        => $config->isRedirectInNewWindowEnabled()
             ]
         ];
     }
@@ -371,25 +370,25 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $mainConfig = $this->config;
 
         return [
-            'enabled' => $config->isEnabled(),
-            'selector' => $config->getDomSelector(),
-            'isAddToCartEnabled' => $config->isAddToCartEnabled(),
-            'addToCartParams' => $addToCartParams,
-            'infiniteScrollEnabled' => $config->isInfiniteScrollEnabled(),
-            'urlTrackedParameters' => $this->getUrlTrackedParameters(),
-            'isSearchBoxEnabled' => $config->isSearchBoxEnabled(),
-            'isVisualMerchEnabled' => $mainConfig->isVisualMerchEnabled(),
-            'categorySeparator' => $mainConfig->getCategorySeparator(),
-            'categoryPageIdAttribute' => $mainConfig->getCategoryPageIdAttributeName(),
+            'enabled'                     => $config->isEnabled(),
+            'selector'                    => $config->getDomSelector(),
+            'isAddToCartEnabled'          => $config->isAddToCartEnabled(),
+            'addToCartParams'             => $addToCartParams,
+            'infiniteScrollEnabled'       => $config->isInfiniteScrollEnabled(),
+            'urlTrackedParameters'        => $this->getUrlTrackedParameters(),
+            'isSearchBoxEnabled'          => $config->isSearchBoxEnabled(),
+            'isVisualMerchEnabled'        => $mainConfig->isVisualMerchEnabled(),
+            'categorySeparator'           => $mainConfig->getCategorySeparator(),
+            'categoryPageIdAttribute'     => $mainConfig->getCategoryPageIdAttributeName(),
             'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
-            'hidePagination' => $config->shouldHidePagination(),
-            'isDynamicFacetsEnabled' => $config->isDynamicFacetsEnabled(),
-            'redirects' => [
-                'enabled' => $config->isInstantRedirectEnabled(),
-                'onPageLoad' => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $redirectOptions),
-                'onSearchAsYouType' => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $redirectOptions),
+            'hidePagination'              => $config->shouldHidePagination(),
+            'isDynamicFacetsEnabled'      => $config->isDynamicFacetsEnabled(),
+            'redirects'                   => [
+                'enabled'                => $config->isInstantRedirectEnabled(),
+                'onPageLoad'             => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $redirectOptions),
+                'onSearchAsYouType'      => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $redirectOptions),
                 'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $redirectOptions),
-                'openInNewWindow' => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $redirectOptions)
+                'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $redirectOptions)
             ]
         ];
     }
@@ -408,7 +407,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             && $this->getRequest()->getControllerName() === 'category') {
             $category = $this->getCurrentCategory();
 
-            if ($category instanceof \Magento\Catalog\Model\Category
+            if ($category instanceof Category
                 && $category->getId()
                 && $category->getDisplayMode() !== 'PAGE') {
                 $category->getUrlInstance()->setStore($this->getStoreId());
@@ -429,11 +428,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         }
 
         return [
-            'isCategoryPage' => $isCategoryPage,
-            'categoryId' => $categoryId,
-            'path' => $path,
-            'level' => $level,
-            'parentCategory' => $parentCategory,
+            'isCategoryPage'  => $isCategoryPage,
+            'categoryId'      => $categoryId,
+            'path'            => $path,
+            'level'           => $level,
+            'parentCategory'  => $parentCategory,
             'childCategories' => $childCategories,
         ];
     }

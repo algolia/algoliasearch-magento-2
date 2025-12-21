@@ -23,7 +23,7 @@ class CategoryPathProvider
      */
     public function getCategoryPathDetails(Category $category, ?int $storeId = null): array
     {
-        $level = -1;
+        $level = '';
         $path = '';
         $parentCategory = '';
         $previousCategoryName = '';
@@ -33,6 +33,10 @@ class CategoryPathProvider
 
             if ($categoryName === null) {
                 continue;
+            }
+
+            if ($level === '') {
+                $level = -1;
             }
 
             if ($path !== '') {
@@ -46,8 +50,8 @@ class CategoryPathProvider
         }
 
         return [
-            'path' => $path,
-            'level' => $level,
+            'path'           => $path,
+            'level'          => $level,
             'parentCategory' => $parentCategory,
         ];
     }

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection;
@@ -93,6 +94,12 @@ class Queue
             ]);
         } else {
             $object = $this->objectManager->get($className);
+
+            if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
+                !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
+                throw new AlgoliaException('Unauthorized job handler');
+            }
+
             call_user_func_array([$object, $method], $data);
         }
     }

@@ -15,6 +15,7 @@ use Algolia\AlgoliaSearch\Model\LandingPage as LandingPageModel;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Category\CategoryPathProvider;
 use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Magento\Catalog\Api\Data\CategoryInterface;
@@ -62,6 +63,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         protected CurrentCategory       $currentCategory,
         protected SortingTransformer    $sortingTransformer,
         protected PriceKeyResolver      $priceKeyResolver,
+        protected CategoryPathProvider  $categoryPathProvider,
         Template\Context                $context,
         array                           $data = []
     )

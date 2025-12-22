@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Config;
 
+use Algolia\AlgoliaSearch\Api\Product\RuleContextInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
@@ -70,7 +71,7 @@ class ConfigTest extends TestCase
                 $this->indexPrefix . 'default_products',
                 [
                     'query'       => '',
-                    'context'     => 'magento_filters',
+                    'context'     => RuleContextInterface::FACET_FILTERS_CONTEXT,
                     'page'        => $page,
                     'hitsPerPage' => $hitsPerPage,
                 ]

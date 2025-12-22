@@ -20,7 +20,7 @@ $isConfig = [
         'getRankingInfo' => true,
         'ruleContexts' => [
             '',
-            'magento-landingpage-' . $landingPageId,
+            \Algolia\AlgoliaSearch\Api\Product\RuleContextInterface::LANDING_PAGE_PREFIX . $landingPageId,
         ],
     ],
 ];

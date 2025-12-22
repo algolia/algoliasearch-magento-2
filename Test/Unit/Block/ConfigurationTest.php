@@ -17,6 +17,7 @@ use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
+use Algolia\AlgoliaSearch\Service\Category\CategoryPathProvider;
 use Magento\Catalog\Model\Category;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Http\Context as HttpContext;
@@ -56,6 +57,7 @@ class ConfigurationTest extends TestCase
     protected ?CurrentCategory $currentCategory;
     protected ?SortingTransformer $sortingTransformer;
     protected ?PriceKeyResolver $priceKeyResolver;
+    protected ?CategoryPathProvider $categoryPathProvider;
     protected ?Context $context;
     protected ?Http $request;
 
@@ -83,6 +85,7 @@ class ConfigurationTest extends TestCase
         $this->currentCategory = $this->createMock(CurrentCategory::class);
         $this->sortingTransformer = $this->createMock(SortingTransformer::class);
         $this->priceKeyResolver = $this->createMock(PriceKeyResolver::class);
+        $this->categoryPathProvider = $this->createMock(CategoryPathProvider::class);
         $this->context = $this->createMock(Context::class);
         $this->request = $this->createMock(Http::class);
         $this->context->method('getRequest')->willReturn($this->request);
@@ -110,6 +113,7 @@ class ConfigurationTest extends TestCase
             $this->currentCategory,
             $this->sortingTransformer,
             $this->priceKeyResolver,
+            $this->categoryPathProvider,
             $this->context,
         );
     }

@@ -39,6 +39,9 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         'Algolia\AlgoliaSearch\Model\IndicesConfigurator' => [
             'saveConfigurationToAlgolia',
         ],
+        'Algolia\AlgoliaSearch\Model\IndexMover' => [
+            'moveIndexWithSetSettings'
+        ],
         'Algolia\AlgoliaSearch\Service\Product\IndexBuilder' => [
             IndexBuilderInterface::BUILD_INDEX_METHOD,
             IndexBuilderInterface::BUILD_INDEX_FULL_METHOD,
@@ -98,8 +101,7 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
     /**
      * @return $this
-     * @throws AlreadyExistsException|\Exception
-     *
+     * @throws AlgoliaException
      */
     public function execute(): Job
     {

@@ -80,6 +80,11 @@ class Queue
             $className = $className::class;
         }
 
+        if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
+            !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
+            throw new AlgoliaException('Unauthorized job handler');
+        }
+
         if ($this->configHelper->isQueueActive()) {
             $this->db->insert($this->table, [
                 'created'   => date('Y-m-d H:i:s'),
@@ -94,11 +99,6 @@ class Queue
             ]);
         } else {
             $object = $this->objectManager->get($className);
-
-            if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
-                !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
-                throw new AlgoliaException('Unauthorized job handler');
-            }
 
             call_user_func_array([$object, $method], $data);
         }

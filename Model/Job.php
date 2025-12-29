@@ -2,8 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Model;
 
-use Algolia\AlgoliaSearch\Api\Builder\IndexBuilderInterface;
-use Algolia\AlgoliaSearch\Api\Builder\UpdatableIndexBuilderInterface;
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Magento\Framework\Data\Collection\AbstractDb;
@@ -35,6 +33,10 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 {
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
+    private const METHOD_BUILD_INDEX = 'buildIndex';
+    private const METHOD_BUILD_INDEX_FULL = 'buildIndexFull';
+    private const METHOD_BUILD_INDEX_LIST = 'buildIndexList';
+
     public const ALLOWED_HANDLERS = [
         'Algolia\AlgoliaSearch\Model\IndicesConfigurator' => [
             'saveConfigurationToAlgolia',
@@ -43,27 +45,27 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
             'moveIndexWithSetSettings'
         ],
         'Algolia\AlgoliaSearch\Service\Product\IndexBuilder' => [
-            IndexBuilderInterface::BUILD_INDEX_METHOD,
-            IndexBuilderInterface::BUILD_INDEX_FULL_METHOD,
-            UpdatableIndexBuilderInterface::BUILD_INDEX_LIST_METHOD,
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
+            self::METHOD_BUILD_INDEX_LIST,
             'deleteInactiveProducts'
         ],
         'Algolia\AlgoliaSearch\Service\Category\IndexBuilder' => [
-            IndexBuilderInterface::BUILD_INDEX_METHOD,
-            IndexBuilderInterface::BUILD_INDEX_FULL_METHOD,
-            UpdatableIndexBuilderInterface::BUILD_INDEX_LIST_METHOD,
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
+            self::METHOD_BUILD_INDEX_LIST,
         ],
         'Algolia\AlgoliaSearch\Service\Page\IndexBuilder' => [
-            IndexBuilderInterface::BUILD_INDEX_METHOD,
-            IndexBuilderInterface::BUILD_INDEX_FULL_METHOD,
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
         ],
         'Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder' => [
-            IndexBuilderInterface::BUILD_INDEX_METHOD,
-            IndexBuilderInterface::BUILD_INDEX_FULL_METHOD,
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
         ],
         'Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder' => [
-            IndexBuilderInterface::BUILD_INDEX_METHOD,
-            IndexBuilderInterface::BUILD_INDEX_FULL_METHOD,
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
         ],
         // @deprecated
         'Algolia\AlgoliaSearch\Helper\Data' => [

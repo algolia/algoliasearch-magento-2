@@ -199,7 +199,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         }
                         // Handle categories facet
                         if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters['categories'] && routeParameters['categories'].split('~');
+                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters['categories'] && routeParameters['categories'].split(algoliaConfig.instant.categoryRouteDelimiter);
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['hierarchicalMenu']['categories.level0'] === 'undefined' &&
                                 'categories.level0' in landingPageConfig) {

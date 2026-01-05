@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Api\Product\RuleContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Algolia\AlgoliaSearch\Model\Source\SortParam;
 use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
@@ -379,6 +380,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'isSearchBoxEnabled'          => $config->isSearchBoxEnabled(),
             'isVisualMerchEnabled'        => $mainConfig->isVisualMerchEnabled(),
             'categorySeparator'           => $mainConfig->getCategorySeparator(),
+            'categoryRouteDelimiter'      => InstantSearchHelper::CATEGORY_ROUTE_DELIMITER,
             'categoryPageIdAttribute'     => $mainConfig->getCategoryPageIdAttributeName(),
             'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
             'hidePagination'              => $config->shouldHidePagination(),

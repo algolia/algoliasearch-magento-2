@@ -10,6 +10,9 @@ use Magento\Framework\Exception\LocalizedException;
 
 class CategoryPathProvider
 {
+    protected const DEFAULT_STORE_ID = 0;
+    protected array $categoryNameCache = [];
+
     public function __construct(
         protected ConfigHelper              $config,
         protected CategoryRepositoryInterface   $categoryRepository,
@@ -34,7 +37,7 @@ class CategoryPathProvider
         $previousCategoryName = '';
 
         $pathIds = $category->getPathIds();
-        $categoryNameMap = $this->getCategoryNamesForPath($pathIds);
+        $categoryNameMap = $this->getCategoryNameMap($pathIds, $storeId);
 
         $separator = $altSeparator ?? $this->config->getCategorySeparator($storeId);
 
@@ -71,31 +74,45 @@ class CategoryPathProvider
      *     e.g.[ "11" => "Men", "12" => "Tops", "15" => 'Hoodies & Sweatshirts" ]
      * @throws LocalizedException
      */
-    protected function getCategoryNamesForPath(array $categoryIds, ?int $storeId = null): array
+    protected function getCategoryNameMap(array $categoryIds, ?int $storeId = null): array
     {
-        $collection = $this->categoryCollectionFactory->create();
+        $storeCacheId = $storeId ?? self::DEFAULT_STORE_ID; // null is not a valid array key
+        $this->categoryNameCache[$storeCacheId] ??= [];
 
-        if ($storeId) {
-            $collection->setStoreId($storeId);
+        $cachedForStore = $this->categoryNameCache[$storeCacheId];
+        $uncachedIds = array_diff($categoryIds, array_keys($cachedForStore));
+        $result = array_intersect_key($cachedForStore, array_flip($categoryIds));
+
+        if (!empty($uncachedIds)) {
+            $collection = $this->categoryCollectionFactory->create();
+
+            if ($storeId) {
+                $collection->setStoreId($storeId);
+            }
+
+            $collection
+                ->addAttributeToSelect('name')
+                ->addFieldToFilter('entity_id', ['in' => $uncachedIds])
+                ->addFieldToFilter('level', ['gt' => 1]);
+
+            foreach ($collection as $category) {
+                $id = $category->getId();
+                $name = $category->getName();
+                $this->categoryNameCache[$storeCacheId][$id] = $name;
+                $result[$id] = $name;
+            }
         }
 
-        $collection
-            ->addAttributeToSelect('name')
-            ->addFieldToFilter('entity_id', ['in' => $categoryIds])
-            ->addFieldToFilter('level', ['gt' => 1]);
-
-        $names = [];
-        foreach ($collection as $category) {
-            $names[$category->getId()] = $category->getName();
-        }
-
-        return $names;
+        return $result;
     }
 
+    /**
+     * @throws LocalizedException
+     */
     public function getCategoryPageId(Category|int $category, ?int $storeId = null, ?string $altSeparator = null): string
     {
-        if (is_numeric($category)) { // normalize to Category objct
-            $category = $this->categoryRepository->get($category);
+        if (is_numeric($category)) { // normalize to Category object
+            $category = $this->categoryRepository->get($category, $storeId);
             if (!$category instanceof Category) {
                 return '';
             }

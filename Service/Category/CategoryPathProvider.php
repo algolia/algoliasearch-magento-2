@@ -8,15 +8,19 @@ use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Framework\Exception\LocalizedException;
 
+/**
+ * Provides category path details and name mappings.
+ * Deals primarily with individual Category objects.
+ */
 class CategoryPathProvider
 {
     protected const DEFAULT_STORE_ID = 0;
     protected array $categoryNameCache = [];
 
     public function __construct(
-        protected ConfigHelper              $config,
-        protected CategoryRepositoryInterface   $categoryRepository,
-        protected CategoryCollectionFactory $categoryCollectionFactory,
+        protected ConfigHelper                $config,
+        protected CategoryRepositoryInterface $categoryRepository,
+        protected CategoryCollectionFactory   $categoryCollectionFactory,
     ) {}
 
     /**
@@ -70,11 +74,14 @@ class CategoryPathProvider
     }
 
     /**
-     * @return array<string, string>
+     * Returns a map of category IDs to category names
+     * Maintains an internal cache of category names for each store.
+     *
+     * @return array<string, string> A map of entity ID to category name
      *     e.g.[ "11" => "Men", "12" => "Tops", "15" => 'Hoodies & Sweatshirts" ]
      * @throws LocalizedException
      */
-    protected function getCategoryNameMap(array $categoryIds, ?int $storeId = null): array
+    public function getCategoryNameMap(array $categoryIds, ?int $storeId = null): array
     {
         $storeCacheId = $storeId ?? self::DEFAULT_STORE_ID; // null is not a valid array key
         $this->categoryNameCache[$storeCacheId] ??= [];
@@ -84,16 +91,14 @@ class CategoryPathProvider
         $result = array_intersect_key($cachedForStore, array_flip($categoryIds));
 
         if (!empty($uncachedIds)) {
-            $collection = $this->categoryCollectionFactory->create();
+            $collection = $this->categoryCollectionFactory->create()
+                ->addAttributeToSelect('name')
+                ->addFieldToFilter('entity_id', ['in' => $uncachedIds])
+                ->addFieldToFilter('level', ['gt' => 1]);
 
             if ($storeId) {
                 $collection->setStoreId($storeId);
             }
-
-            $collection
-                ->addAttributeToSelect('name')
-                ->addFieldToFilter('entity_id', ['in' => $uncachedIds])
-                ->addFieldToFilter('level', ['gt' => 1]);
 
             foreach ($collection as $category) {
                 $id = $category->getId();
@@ -107,6 +112,10 @@ class CategoryPathProvider
     }
 
     /**
+     * Returns the category page ID for a given category which represents the full category path as a string.
+     * 
+     * It defaults to using the configured category separator but can be overridden with an alternative separator.
+     * 
      * @throws LocalizedException
      */
     public function getCategoryPageId(Category|int $category, ?int $storeId = null, ?string $altSeparator = null): string

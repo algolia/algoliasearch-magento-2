@@ -1,18 +1,18 @@
 define(function () {
-    const PAGING_PARAMETER = "page";
-    const SORTING_PARAMETER = "sortBy";
-
     return {
-        getPagingParam: function() {
-            return PAGING_PARAMETER;
+        getPagingParam() {
+            return algoliaConfig.routing.pagingParameter;
         },
-        getSortingParam: function() {
-            return SORTING_PARAMETER;
+        getSortingParam() {
+            return algoliaConfig.routing.sortingParameter;
         },
-        getSortingValueFromUiState: function(uiStateProductIndex) {
+        getCategoryParam() {
+            return algoliaConfig.routing.categoryParameter;
+        },
+        getSortingValueFromUiState(uiStateProductIndex) {
             return uiStateProductIndex.sortBy;
         },
-        getSortingFromRoute: function(routeParameters) {
+        getSortingFromRoute(routeParameters) {
             return routeParameters.sortBy;
         }
     }

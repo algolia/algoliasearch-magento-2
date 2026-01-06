@@ -152,6 +152,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $algoliaJsConfig = [
             'instant' => $this->getInstantSearchConfig($addToCartParams),
             'autocomplete' => $this->getAutocompleteConfiguration(),
+            'routing' => $this->getRoutingConfig(),
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),
                 'configuration' => $this->getLandingPageConfiguration(),
@@ -380,7 +381,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'isSearchBoxEnabled'          => $config->isSearchBoxEnabled(),
             'isVisualMerchEnabled'        => $mainConfig->isVisualMerchEnabled(),
             'categorySeparator'           => $mainConfig->getCategorySeparator(),
-            'categoryRouteDelimiter'      => InstantSearchHelper::CATEGORY_ROUTE_DELIMITER,
             'categoryPageIdAttribute'     => $mainConfig->getCategoryPageIdAttributeName(),
             'isCategoryNavigationEnabled' => self::IS_CATEGORY_NAVIGATION_ENABLED,
             'hidePagination'              => $config->shouldHidePagination(),
@@ -392,6 +392,16 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $redirectOptions),
                 'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $redirectOptions)
             ]
+        ];
+    }
+
+    protected function getRoutingConfig(): array
+    {
+        return [
+            'categoryRouteDelimiter' => InstantSearchHelper::CATEGORY_ROUTE_DELIMITER,
+            'sortingParameter'       => 'sortBy',
+            'pagingParameter'        => 'page',
+            'categoryParameter'      => 'categories',
         ];
     }
 
@@ -444,6 +454,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         return in_array('categories', array_column($facets, 'attribute'));
     }
 
+    /** TODO: Determine whether these parameters are still useful  */
     protected function getUrlTrackedParameters()
     {
         $urlTrackedParameters = ['query', 'attribute:*', 'index'];

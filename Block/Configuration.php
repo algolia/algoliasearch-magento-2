@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Block;
 
 use Algolia\AlgoliaSearch\Api\Product\RuleContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Algolia\AlgoliaSearch\Model\Source\SortParam;
 use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
@@ -151,6 +152,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         $algoliaJsConfig = [
             'instant' => $this->getInstantSearchConfig($addToCartParams),
             'autocomplete' => $this->getAutocompleteConfiguration(),
+            'routing' => $this->getRoutingConfig(),
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),
                 'configuration' => $this->getLandingPageConfiguration(),
@@ -393,6 +395,16 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         ];
     }
 
+    protected function getRoutingConfig(): array
+    {
+        return [
+            'categoryRouteDelimiter' => InstantSearchHelper::CATEGORY_ROUTE_DELIMITER,
+            'sortingParameter'       => 'sortBy',
+            'pagingParameter'        => 'page',
+            'categoryParameter'      => 'categories',
+        ];
+    }
+
     protected function getCategoryConfig(): array
     {
         $isCategoryPage = false;
@@ -442,6 +454,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         return in_array('categories', array_column($facets, 'attribute'));
     }
 
+    /** TODO: Determine whether these parameters are still useful  */
     protected function getUrlTrackedParameters()
     {
         $urlTrackedParameters = ['query', 'attribute:*', 'index'];

@@ -514,8 +514,9 @@ class RecordBuilder implements RecordBuilderInterface
      * This serves to emulate anchoring in Magento in order to use category page id filtering
      * without explicit category assignment.
      *
-     * @param array $paths
-     * @return array
+     * This mimics legacy indexing behavior with `categoryIds`
+     * @see \Algolia\AlgoliaSearch\Service\Product\RecordBuilder::buildCategoryData
+     *
      */
     protected function autoAnchorParentCategories(array $paths): array {
         foreach ($paths as $path) {

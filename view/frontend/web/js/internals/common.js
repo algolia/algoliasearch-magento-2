@@ -150,9 +150,8 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         }
                         // Handle categories
                         if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-                            routeParameters[currentFacet.attribute] = (uiStateProductIndex.hierarchicalMenu &&
-                                uiStateProductIndex.hierarchicalMenu[currentFacet.attribute + '.level0'] &&
-                                uiStateProductIndex.hierarchicalMenu[currentFacet.attribute + '.level0'].join('~'));
+                            routeParameters[algoliaParamsManager.getCategoryParam()] =
+                                uiStateProductIndex.hierarchicalMenu?.[currentFacet.attribute + '.level0']?.join('~');
                         }
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
@@ -199,7 +198,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         }
                         // Handle categories facet
                         if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters['categories'] && routeParameters['categories'].split(algoliaConfig.routing.categoryRouteDelimiter);
+                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters[algoliaParamsManager.getCategoryParam()]?.split(algoliaConfig.routing.categoryRouteDelimiter);
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['hierarchicalMenu']['categories.level0'] === 'undefined' &&
                                 'categories.level0' in landingPageConfig) {

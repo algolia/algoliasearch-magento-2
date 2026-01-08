@@ -9,6 +9,12 @@ define(function () {
         getCategoryParam() {
             return algoliaConfig.routing.categoryParameter;
         },
+        getPriceParam() {
+            return algoliaConfig.routing.priceParameter;
+        },
+        getPriceDelimiter() {
+            return algoliaConfig.routing.priceRouteDelimiter;
+        },
         getSortingValueFromUiState(uiStateProductIndex) {
             return uiStateProductIndex.sortBy;
         },

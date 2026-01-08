@@ -399,9 +399,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     {
         return [
             'categoryRouteDelimiter' => InstantSearchHelper::CATEGORY_ROUTE_DELIMITER,
+            'priceRouteDelimiter'    => InstantSearchHelper::PRICE_DELIMITER,
             'sortingParameter'       => 'sortBy',
             'pagingParameter'        => 'page',
             'categoryParameter'      => 'categories',
+            'priceParameter'         => 'price' . $this->getPriceKey(),
         ];
     }
 

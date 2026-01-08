@@ -155,7 +155,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         }
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
-                            routeParameters[currentFacet.attribute] = (uiStateProductIndex.range &&
+                            routeParameters[algoliaParamsManager.getPriceParam()] = (uiStateProductIndex.range &&
                                 uiStateProductIndex.range[currentFacet.attribute] &&
                                 uiStateProductIndex.range[currentFacet.attribute]);
                         }
@@ -211,7 +211,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
                             var currentFacetAttribute = currentFacet.attribute;
-                            uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[currentFacetAttribute] && routeParameters[currentFacetAttribute];
+                            uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[algoliaParamsManager.getPriceParam()] && routeParameters[algoliaParamsManager.getPriceParam()];
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
                                 currentFacetAttribute in landingPageConfig) {
@@ -220,7 +220,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                                 if (typeof landingPageConfig[currentFacetAttribute]['>='] !== "undefined") {
                                     facetValue = landingPageConfig[currentFacetAttribute]['>='][0];
                                 }
-                                facetValue += ':';
+                                facetValue += algoliaParamsManager.priceRouteDelimiter();
                                 if (typeof landingPageConfig[currentFacetAttribute]['<='] !== "undefined") {
                                     facetValue += landingPageConfig[currentFacetAttribute]['<='][0];
                                 }

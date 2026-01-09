@@ -156,7 +156,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
                             routeParameters[algoliaParamsManager.getPriceParam()] =
-                                uiStateProductIndex.range?.[currentFacet.attribute]?.replace(':', algoliaParamsManager.getPriceDelimiter());
+                                uiStateProductIndex.range?.[currentFacet.attribute]?.replace(':', algoliaParamsManager.getPriceSeparator());
                         }
                     }
 
@@ -212,7 +212,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                             var currentFacetAttribute = currentFacet.attribute;
 
                             uiStateProductIndex['range'][currentFacetAttribute] =
-                                routeParameters[algoliaParamsManager.getPriceParam()]?.replace(algoliaParamsManager.getPriceDelimiter(), ':');
+                                routeParameters[algoliaParamsManager.getPriceParam()]?.replace(algoliaParamsManager.getPriceSeparator(), ':');
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
                                 currentFacetAttribute in landingPageConfig) {
@@ -221,7 +221,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                                 if (typeof landingPageConfig[currentFacetAttribute]['>='] !== "undefined") {
                                     facetValue = landingPageConfig[currentFacetAttribute]['>='][0];
                                 }
-                                facetValue += algoliaParamsManager.getPriceDelimiter();
+                                facetValue += algoliaParamsManager.getPriceSeparator();
                                 if (typeof landingPageConfig[currentFacetAttribute]['<='] !== "undefined") {
                                     facetValue += landingPageConfig[currentFacetAttribute]['<='][0];
                                 }

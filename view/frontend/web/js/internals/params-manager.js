@@ -12,8 +12,8 @@ define(function () {
         getPriceParam() {
             return algoliaConfig.routing.priceParameter;
         },
-        getPriceDelimiter() {
-            return algoliaConfig.routing.priceRouteDelimiter;
+        getPriceSeparator() {
+            return algoliaConfig.routing.priceRouteSeparator;
         },
         getSortingValueFromUiState(uiStateProductIndex) {
             return uiStateProductIndex.sortBy;

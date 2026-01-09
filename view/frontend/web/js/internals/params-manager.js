@@ -15,6 +15,9 @@ define(function () {
         getPriceSeparator() {
             return algoliaConfig.routing.priceRouteSeparator;
         },
+        transformPriceUpperBoundary(range) {
+            return range;
+        },
         getSortingValueFromUiState(uiStateProductIndex) {
             return uiStateProductIndex.sortBy;
         },

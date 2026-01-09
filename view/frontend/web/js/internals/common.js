@@ -213,6 +213,10 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
 
                             uiStateProductIndex['range'][currentFacetAttribute] =
                                 routeParameters[algoliaParamsManager.getPriceParam()]?.replace(algoliaParamsManager.getPriceSeparator(), ':');
+
+                            uiStateProductIndex['range'][currentFacetAttribute] =
+                                algoliaParamsManager.transformPriceUpperBoundary(uiStateProductIndex['range'][currentFacetAttribute]);
+
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
                                 currentFacetAttribute in landingPageConfig) {

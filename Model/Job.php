@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Model\Context;
@@ -32,6 +33,53 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 {
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
+    private const METHOD_BUILD_INDEX = 'buildIndex';
+    private const METHOD_BUILD_INDEX_FULL = 'buildIndexFull';
+    private const METHOD_BUILD_INDEX_LIST = 'buildIndexList';
+
+    public const ALLOWED_HANDLERS = [
+        'Algolia\AlgoliaSearch\Model\IndicesConfigurator' => [
+            'saveConfigurationToAlgolia',
+        ],
+        'Algolia\AlgoliaSearch\Model\IndexMover' => [
+            'moveIndexWithSetSettings'
+        ],
+        'Algolia\AlgoliaSearch\Service\Product\IndexBuilder' => [
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
+            self::METHOD_BUILD_INDEX_LIST,
+            'deleteInactiveProducts'
+        ],
+        'Algolia\AlgoliaSearch\Service\Category\IndexBuilder' => [
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
+            self::METHOD_BUILD_INDEX_LIST,
+        ],
+        'Algolia\AlgoliaSearch\Service\Page\IndexBuilder' => [
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
+        ],
+        'Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder' => [
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
+        ],
+        'Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder' => [
+            self::METHOD_BUILD_INDEX,
+            self::METHOD_BUILD_INDEX_FULL,
+        ],
+        // @deprecated
+        'Algolia\AlgoliaSearch\Helper\Data' => [
+            'deleteObjects',
+            'rebuildStoreCategoryIndex',
+            'rebuildCategoryIndex',
+            'rebuildStoreProductIndex',
+            'rebuildProductIndex',
+            'rebuildStoreAdditionalSectionsIndex',
+            'rebuildStoreSuggestionIndex',
+            'rebuildStorePageIndex',
+        ],
+    ];
+
     public function __construct(
         Context                          $context,
         Registry                         $registry,
@@ -55,13 +103,18 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
     /**
      * @return $this
-     * @throws AlreadyExistsException|\Exception
-     *
+     * @throws AlgoliaException
      */
     public function execute(): Job
     {
-        $model = $this->objectManager->get($this->getClass());
+        $class = $this->getClass();
         $method = $this->getMethod();
+
+        if (!isset(self::ALLOWED_HANDLERS[$class]) || !in_array($method, self::ALLOWED_HANDLERS[$class], true)) {
+            throw new AlgoliaException('Unauthorized job handler');
+        }
+
+        $model = $this->objectManager->get($class);
         $data = $this->getDecodedData();
 
         $this->setRetries((int) $this->getRetries() + 1);

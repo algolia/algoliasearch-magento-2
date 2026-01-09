@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.17.2
+
+### Security
+- Hardened queue job handler validation
+
 ## 3.17.1
 
 ### Updates

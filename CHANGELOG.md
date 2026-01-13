@@ -2,6 +2,9 @@
 
 ## 3.16.2
 
+### Security
+- Hardened queue job handler validation
+
 ### Updates
 - Removed `Magento\Catalog\Model\Product\Url` preference
 - Moved `algolia_algoliasearch_plugin_category_url` plugin to global area so it can be used in the new indexers

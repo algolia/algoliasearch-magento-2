@@ -40,7 +40,7 @@ class QueueTest extends TestCase
         $resource = $this->objectManager->get(ResourceConnection::class);
         $this->connection = $resource->getConnection();
 
-        $this->queue = $this->objectManager->get(Queue::class);
+        $this->queue = $this->objectManager->create(Queue::class);
     }
 
     public function testFill()
@@ -160,11 +160,8 @@ class QueueTest extends TestCase
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
-        /** @var Queue $queue */
-        $queue = $this->objectManager->get(Queue::class);
-
         try {
-            $queue->runCron();
+            $this->queue->runCron();
         } catch (AlgoliaException $e) {
             $this->expectException(AlgoliaException::class);
             $this->expectExceptionMessage('Unauthorized job handler');
@@ -193,11 +190,8 @@ class QueueTest extends TestCase
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
 
-        /** @var Queue $queue */
-        $queue = $this->objectManager->get(Queue::class);
-
         try {
-            $queue->runCron();
+            $this->queue->runCron();
         } catch (AlgoliaException $e) {
             $this->expectException(AlgoliaException::class);
             $this->expectExceptionMessage('Unauthorized job handler');

@@ -39,7 +39,7 @@ class QueueTest extends TestCase
         $resource = $this->objectManager->get(ResourceConnection::class);
         $this->connection = $resource->getConnection();
 
-        $this->queue = $this->objectManager->get(Queue::class);
+        $this->queue = $this->objectManager->create(Queue::class);
     }
 
     public function testFill()

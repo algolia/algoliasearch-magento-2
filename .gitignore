@@ -1,8 +1,11 @@
-dev/frontend/node_modules/
-dev/bin/auth.json
 composer.lock
 vendor/
 .php_cs.cache
+
+node_modules/
+
+# Local dev
 .vscode
 .idea
-node_modules
+.github/instructions/codacy.instructions.md
+dev/bin/auth.json

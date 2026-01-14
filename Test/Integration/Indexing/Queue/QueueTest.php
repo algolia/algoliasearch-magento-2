@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Queue;
 
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\QueueRunner;
@@ -39,7 +40,7 @@ class QueueTest extends TestCase
         $resource = $this->objectManager->get(ResourceConnection::class);
         $this->connection = $resource->getConnection();
 
-        $this->queue = $this->objectManager->get(Queue::class);
+        $this->queue = $this->objectManager->create(Queue::class);
     }
 
     public function testFill()
@@ -135,6 +136,66 @@ class QueueTest extends TestCase
         /** TODO: There are mystery items being added to queue from unknown save process on product_id=1 */
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(0, count($rows));
+    }
+
+    public function testExecuteWithWrongJobClass()
+    {
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+
+        $data = [
+            [
+                'job_id' => 1,
+                'created' => '2017-09-01 12:00:00',
+                'pid' => null,
+                'class' => '\Algolia\AlgoliaSearch\Dummy\Class',
+                'method' => 'buildIndexList',
+                'data' => '{"storeId":"1","entityIds":["9","22"]}',
+                'max_retries' => 3,
+                'retries' => 0,
+                'error_log' => '',
+                'data_size' => 2,
+            ]
+        ];
+
+        $this->connection->insertMultiple('algoliasearch_queue', $data);
+
+        try {
+            $this->queue->runCron();
+        } catch (AlgoliaException $e) {
+            $this->expectException(AlgoliaException::class);
+            $this->expectExceptionMessage('Unauthorized job handler');
+        }
+    }
+
+    public function testExecuteWithWrongJobMethod()
+    {
+        $this->setConfig(QueueHelper::IS_ACTIVE, '1');
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+
+        $data = [
+            [
+                'job_id' => 1,
+                'created' => '2017-09-01 12:00:00',
+                'pid' => null,
+                'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+                'method' => 'dummyMethod',
+                'data' => '{"storeId":"1","entityIds":["9","22"]}',
+                'max_retries' => 3,
+                'retries' => 0,
+                'error_log' => '',
+                'data_size' => 2,
+            ]
+        ];
+
+        $this->connection->insertMultiple('algoliasearch_queue', $data);
+
+        try {
+            $this->queue->runCron();
+        } catch (AlgoliaException $e) {
+            $this->expectException(AlgoliaException::class);
+            $this->expectExceptionMessage('Unauthorized job handler');
+        }
     }
 
     public function testTmpIndexConfig()

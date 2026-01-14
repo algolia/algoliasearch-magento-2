@@ -25,12 +25,11 @@ class InstantSearchHelper
     public const REPLACE_CATEGORIES = 'algoliasearch_instant/instant/replace_categories';
 
     // Facets
-    public const FACETS = 'algoliasearch_instant/instant_facets/facets';
     public const MAX_VALUES_PER_FACET = 'algoliasearch_instant/instant_facets/max_values_per_facet';
     public const IS_DYNAMIC_FACETS_ENABLED = 'algoliasearch_instant/instant_facets/enable_dynamic_facets';
 
     // Sorts
-    public const SORTING_INDICES = 'algoliasearch_instant/instant_sorts/sorts';
+
 
     // Display options
     public const SHOW_SUGGESTIONS_NO_RESULTS = 'algoliasearch_instant/instant_options/show_suggestions_on_no_result_page';
@@ -106,25 +105,6 @@ class InstantSearchHelper
         return $this->configInterface->isSetFlag(self::REPLACE_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getFacets(?int $storeId = null): array
-    {
-        $attrs = $this->serializer->unserialize($this->configInterface->getValue(
-            self::FACETS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        ));
-        if ($attrs) {
-            foreach ($attrs as &$attr) {
-                if ($attr['type'] === 'other') {
-                    $attr['type'] = $attr['other_type'];
-                }
-            }
-            if (is_array($attrs)) {
-                return array_values($attrs);
-            }
-        }
-        return [];
-    }
     public function getMaxValuesPerFacet(?int $storeId = null): int
     {
         return (int) $this->configInterface->getValue(
@@ -143,36 +123,7 @@ class InstantSearchHelper
         );
     }
 
-    /***
-     * @return array<string,<array<string, mixed>>>
-     */
-    public function getSorting(?int $storeId = null): array
-    {
-        return $this->serializer->unserialize($this->getRawSortingValue($storeId));
-    }
 
-    public function getRawSortingValue(?int $storeId = null): string
-    {
-        return (string) $this->configInterface->getValue(
-            self::SORTING_INDICES,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    public function setSorting(
-        array $sorting,
-        string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-        ?int $scopeId = null
-    ): void
-    {
-        $this->configWriter->save(
-            self::SORTING_INDICES,
-            $this->serializer->serialize($sorting),
-            $scope,
-            $scopeId
-        );
-    }
 
     public function shouldShowSuggestionsOnNoResultsPage(?int $storeId = null): bool
     {

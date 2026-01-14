@@ -38,6 +38,8 @@ class ConfigHelper
     // --- Products --- //
 
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
+    public const FACETS = 'algoliasearch_products/products/facets';
+    public const SORTING_INDICES = 'algoliasearch_products/products/sorts';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
     public const ENABLE_VISUAL_MERCHANDISING = 'algoliasearch_products/products/enable_visual_merchandising';
@@ -547,6 +549,61 @@ class ConfigHelper
             ScopeInterface::SCOPE_STORE,
             $storeId
         ));
+    }
+
+    /**
+     * @param int|null $storeId
+     * @return array
+     */
+    public function getFacets(?int $storeId = null): array
+    {
+        $attrs = $this->serializer->unserialize($this->configInterface->getValue(
+            self::FACETS,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        ));
+        if ($attrs) {
+            foreach ($attrs as &$attr) {
+                if ($attr['type'] === 'other') {
+                    $attr['type'] = $attr['other_type'];
+                }
+            }
+            if (is_array($attrs)) {
+                return array_values($attrs);
+            }
+        }
+        return [];
+    }
+
+    /***
+     * @return array<string,<array<string, mixed>>>
+     */
+    public function getSorting(?int $storeId = null): array
+    {
+        return $this->serializer->unserialize($this->getRawSortingValue($storeId));
+    }
+
+    public function getRawSortingValue(?int $storeId = null): string
+    {
+        return (string) $this->configInterface->getValue(
+            self::SORTING_INDICES,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function setSorting(
+        array $sorting,
+        string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+        ?int $scopeId = null
+    ): void
+    {
+        $this->configWriter->save(
+            self::SORTING_INDICES,
+            $this->serializer->serialize($sorting),
+            $scope,
+            $scopeId
+        );
     }
 
     // --- Categories --- //
@@ -1678,12 +1735,6 @@ class ConfigHelper
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::FACETS
-     */
-    public const FACETS = InstantSearchHelper::FACETS;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::MAX_VALUES_PER_FACET
      */
     public const MAX_VALUES_PER_FACET = InstantSearchHelper::MAX_VALUES_PER_FACET;
@@ -1693,12 +1744,6 @@ class ConfigHelper
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED
      */
     public const ENABLE_DYNAMIC_FACETS = InstantSearchHelper::IS_DYNAMIC_FACETS_ENABLED;
-
-    /**
-     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::SORTING_INDICES
-     */
-    public const SORTING_INDICES = InstantSearchHelper::SORTING_INDICES;
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
@@ -1988,17 +2033,6 @@ class ConfigHelper
 
     /**
      * @param $storeId
-     * @return array|bool|float|int|mixed|string
-     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getFacets()
-     */
-    public function getFacets($storeId = null)
-    {
-        return $this->instantSearchConfig->getFacets($storeId);
-    }
-
-    /**
-     * @param $storeId
      * @return int
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getMaxValuesPerFacet()
@@ -2017,41 +2051,6 @@ class ConfigHelper
     public function isDynamicFacetsEnabled(?int $storeId = null): bool
     {
         return $this->instantSearchConfig->isDynamicFacetsEnabled($storeId);
-    }
-
-    /***
-     * @param int|null $storeId
-     * @return array<string,<array<string, mixed>>>
-     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getSorting()
-     */
-    public function getSorting(?int $storeId = null): array
-    {
-        return $this->instantSearchConfig->getSorting($storeId);
-    }
-
-    /**
-     * @param int|null $storeId
-     * @return string
-     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getRawSortingValue()
-     */
-    public function getRawSortingValue(?int $storeId = null): string
-    {
-        return $this->instantSearchConfig->getRawSortingValue($storeId);
-    }
-
-    /**
-     * @param array $sorting
-     * @param string|null $scope
-     * @param int|null $scopeId
-     * @return void
-     * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
-     * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::setSorting()
-     */
-    public function setSorting(array $sorting, string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, ?int $scopeId = null): void
-    {
-        $this->instantSearchConfig->setSorting($sorting, $scope, $scopeId);
     }
 
     /**

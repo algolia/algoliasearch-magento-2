@@ -444,34 +444,6 @@
             <group id="instant_facets" translate="label" type="text" sortOrder="10" showInDefault="1"
                    showInWebsite="1" showInStore="1">
                 <label>Faceting</label>
-
-                <field id="facets" translate="label comment" type="text" sortOrder="10" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Facets</label>
-                    <frontend_model>Algolia\AlgoliaSearch\Model\Source\Facets</frontend_model>
-                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Facets</backend_model>
-                    <comment>
-                        <![CDATA[
-                            Specify the <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#conjunctive-and-disjunctive-faceting" target="_blank">filtering options</a> you want to offer on a search results page.<br>
-                                &nbsp; - Disjunctive facets filter your results on <em>any</em> match (e.g. hotels with 4 OR 5 stars).<br>
-                                &nbsp; - Conjunctive facets filter your results on <em>all</em> matches (e.g. shirts that come in "Size M" AND "Size L").
-
-                            <br><br>
-                            Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
-                            <br><br>
-                            <div class="algolia_block blue icon-documentation">
-                                <b>Create a Query rule</b> for a facet when you want Algolia to automatically filter on a facet
-                                when a user searches for its value in a query. For example, when you create a Query rule
-                                for a "color" facet and a user is searching "red shorts", Algolia will internally filter
-                                results for the color "red" and search only "shorts". It leads to more relevant results.
-                                This query rule is applied for both Autocomplete and InstantSearch results.
-                                <br><br>
-                                Find out more about Facets in
-                                <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets" target="_blank">documentation</a>.
-                            </div>
-                        ]]>
-                    </comment>
-                </field>
                 <field id="max_values_per_facet" translate="label comment" type="text" sortOrder="10"
                        showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
@@ -499,29 +471,6 @@
                             <strong>IMPORTANT!</strong> Do not enable dynamic facets unless you have the "renderingContent" feature enabled on your Algolia application. Otherwise this configuration
                             can cause your indexing to fail.
 
-                        ]]>
-                    </comment>
-                </field>
-            </group>
-            <group id="instant_sorts" translate="label" type="text" sortOrder="10" showInDefault="1"
-                   showInWebsite="1" showInStore="1">
-                <label>Sorting</label>
-                <field id="sorts" translate="label comment" type="text" sortOrder="20" showInDefault="1"
-                       showInWebsite="1" showInStore="1">
-                    <label>Sorts</label>
-                    <frontend_model>Algolia\AlgoliaSearch\Model\Source\Sorts</frontend_model>
-                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Sorts</backend_model>
-                    <comment>
-                        <![CDATA[
-                            Specify different sorting options you want to offer on a search results page and (if enabled) category pages.<br>
-                            By default, each sort is created as a full replica of your primary index which can significantly increase the number of records you store in Algolia.<br>
-                            Premium plans can utilize virtual replicas but there are differences in how these kinds of sorts behave and certain limitations apply.<br>
-                            For further details see <a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/refine-results/sorting/">our documentation</a>
-                            <!--
-                            TODO: Update this documentation and provide links
-                            <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a>
-                            <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#sorting-strategies">documentation</a>.
-                            -->
                         ]]>
                     </comment>
                 </field>
@@ -630,6 +579,52 @@
                             The order of the searchable attributes matters: a query matching the first searchable attribute of a product will put this product before the others in the results.<br><br>
                             Searchable attributes' documentation: <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes">Products' searchable attributes</a>
                             <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Products indexer after you've modified this panel.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="facets" translate="label comment" type="text" sortOrder="15" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Facets</label>
+                    <frontend_model>Algolia\AlgoliaSearch\Model\Source\Facets</frontend_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Facets</backend_model>
+                    <comment>
+                        <![CDATA[
+                            Specify the <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#conjunctive-and-disjunctive-faceting" target="_blank">filtering options</a> you want to offer on a search results page.<br>
+                                &nbsp; - Disjunctive facets filter your results on <em>any</em> match (e.g. hotels with 4 OR 5 stars).<br>
+                                &nbsp; - Conjunctive facets filter your results on <em>all</em> matches (e.g. shirts that come in "Size M" AND "Size L").
+
+                            <br><br>
+                            Set facet as searchable if you want your customers to be able to <a target="_blank" href="https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/">search for facet values</a>. It's handy when a facet has a lot of values.
+                            <br><br>
+                            <div class="algolia_block blue icon-documentation">
+                                <b>Create a Query rule</b> for a facet when you want Algolia to automatically filter on a facet
+                                when a user searches for its value in a query. For example, when you create a Query rule
+                                for a "color" facet and a user is searching "red shorts", Algolia will internally filter
+                                results for the color "red" and search only "shorts". It leads to more relevant results.
+                                This query rule is applied for both Autocomplete and InstantSearch results.
+                                <br><br>
+                                Find out more about Facets in
+                                <a href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#facets" target="_blank">documentation</a>.
+                            </div>
+                        ]]>
+                    </comment>
+                </field>
+                <field id="sorts" translate="label comment" type="text" sortOrder="17" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Sorts</label>
+                    <frontend_model>Algolia\AlgoliaSearch\Model\Source\Sorts</frontend_model>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\Sorts</backend_model>
+                    <comment>
+                        <![CDATA[
+                            Specify different sorting options you want to offer on a search results page and (if enabled) category pages.<br>
+                            By default, each sort is created as a full replica of your primary index which can significantly increase the number of records you store in Algolia.<br>
+                            Premium plans can utilize virtual replicas but there are differences in how these kinds of sorts behave and certain limitations apply.<br>
+                            For further details see <a target="_blank" href="https://www.algolia.com/doc/guides/managing-results/refine-results/sorting/">our documentation</a>
+                            <!--
+                            TODO: Update this documentation and provide links
+                            <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?client=php#switching-to-virtual-replica">documentation</a>
+                            <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#sorting-strategies">documentation</a>.
+                            -->
                         ]]>
                     </comment>
                 </field>

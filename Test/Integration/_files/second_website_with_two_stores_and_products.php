@@ -87,6 +87,22 @@ $configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable
 $configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 1, 'store', 'fixture_second_store');
 $configManager->setValue('algoliasearch_indexing_manager/algolia_indexing/enable_indexing', 1, 'store', 'fixture_third_store');
 
+// Set base urls
+$configManager->setValue('web/secure/base_url', 'http://default.test/', 'store', 'default');
+$configManager->setValue('web/unsecure/base_url', 'http://default.test/', 'store', 'default');
+$configManager->setValue('web/secure/base_link_url', 'http://default.test/', 'store', 'default');
+$configManager->setValue('web/unsecure/base_link_url', 'http://default.test/', 'store', 'default');
+
+$configManager->setValue('web/secure/base_url', 'http://fixture_second_store.test/', 'store', 'fixture_second_store');
+$configManager->setValue('web/unsecure/base_url', 'http://fixture_second_store.test/', 'store', 'fixture_second_store');
+$configManager->setValue('web/secure/base_link_url', 'http://fixture_second_store.test/', 'store', 'fixture_second_store');
+$configManager->setValue('web/unsecure/base_link_url', 'http://fixture_second_store.test/', 'store', 'fixture_second_store');
+
+$configManager->setValue('web/secure/base_url', 'http://fixture_third_store.test/', 'store', 'fixture_third_store');
+$configManager->setValue('web/unsecure/base_url','http://fixture_third_store.test/', 'store', 'fixture_third_store');
+$configManager->setValue('web/secure/base_link_url', 'http://fixture_third_store.test/', 'store', 'fixture_third_store');
+$configManager->setValue('web/unsecure/base_link_url','http://fixture_third_store.test/', 'store', 'fixture_third_store');
+
 /* Refresh CatalogSearch index */
 /** @var IndexerRegistry $indexerRegistry */
 $indexerRegistry = Bootstrap::getObjectManager()

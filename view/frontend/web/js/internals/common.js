@@ -210,8 +210,13 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
                             var currentFacetAttribute = currentFacet.attribute;
 
-                             uiStateProductIndex['range'][currentFacet.attribute] =
-                                 algoliaParamsManager.getPriceParamValue(currentFacetAttribute, routeParameters);
+                            // Guard against prototype pollution
+                            if (Object.hasOwn(Object.prototype, currentFacetAttribute)) {
+                                continue;
+                            }
+
+                            uiStateProductIndex['range'][currentFacetAttribute] =
+                                algoliaParamsManager.getPriceParamValue(currentFacetAttribute, routeParameters);
 
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&

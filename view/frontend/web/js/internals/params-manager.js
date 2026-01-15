@@ -13,11 +13,7 @@ define(function () {
             return algoliaConfig.routing.priceRouteSeparator;
         },
         getPriceParamValue(currentFacetAttribute, routeParameters) {
-            if (!Object.hasOwn(routeParameters, currentFacetAttribute)) {
-                return '';
-            }
-
-            return routeParameters.currentFacetAttribute;
+            return routeParameters[currentFacetAttribute];
         },
         getSortingValueFromUiState(uiStateProductIndex) {
             return uiStateProductIndex.sortBy;

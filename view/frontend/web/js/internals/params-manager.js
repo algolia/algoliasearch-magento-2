@@ -17,7 +17,7 @@ define(function () {
                 return '';
             }
 
-            return routeParameters[currentFacetAttribute];
+            return routeParameters.currentFacetAttribute;
         },
         getSortingValueFromUiState(uiStateProductIndex) {
             return uiStateProductIndex.sortBy;

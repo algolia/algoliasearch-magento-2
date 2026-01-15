@@ -404,9 +404,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'categoryParameter'           => 'categories',
             'priceParameter'              => 'price' . $this->getPriceKey(),
             'priceRouteSeparator'         => InstantSearchHelper::PRICE_SEPARATOR,
-            // Won't be overridden by Adapter module
-            'originalPriceParameter'      => 'price' . $this->getPriceKey(),
-            'originalPriceRouteSeparator' => InstantSearchHelper::PRICE_SEPARATOR,
         ];
     }
 

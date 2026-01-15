@@ -215,6 +215,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                                 continue;
                             }
 
+                            // eslint-disable-next-line security/detect-object-injection
                             uiStateProductIndex['range'][currentFacetAttribute] =
                                 algoliaParamsManager.getPriceParamValue(currentFacetAttribute, routeParameters);
 

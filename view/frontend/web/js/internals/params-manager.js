@@ -13,6 +13,12 @@ define(function () {
             return algoliaConfig.routing.priceRouteSeparator;
         },
         getPriceParamValue(currentFacetAttribute, routeParameters) {
+            // Guard against prototype pollution
+            if (Object.hasOwn(Object.prototype, currentFacetAttribute)) {
+                return '';
+            }
+
+            // eslint-disable-next-line security/detect-object-injection
             return routeParameters[currentFacetAttribute];
         },
         getSortingValueFromUiState(uiStateProductIndex) {

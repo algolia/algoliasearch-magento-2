@@ -9,11 +9,11 @@ define(function () {
         getCategoryParam() {
             return algoliaConfig.routing.categoryParameter;
         },
-        getPriceParam() {
-            return algoliaConfig.routing.priceParameter;
-        },
         getPriceSeparator() {
             return algoliaConfig.routing.priceRouteSeparator;
+        },
+        getPriceParamValue(currentFacetAttribute, routeParameters) {
+            return routeParameters[currentFacetAttribute];
         },
         transformPriceUpperBoundary(range) {
             return range;

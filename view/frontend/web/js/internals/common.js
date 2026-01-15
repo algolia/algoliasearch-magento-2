@@ -156,8 +156,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
                             // InstantSearch always updates the original routing parameter (ex: price.USD.default)
-                            routeParameters[algoliaConfig.routing.originalPriceParameter] =
-                                uiStateProductIndex.range?.[currentFacet.attribute]?.replace(':', algoliaConfig.routing.originalPriceRouteSeparator);
+                            routeParameters[currentFacet.attribute] = uiStateProductIndex?.range?.[currentFacet.attribute];
                         }
                     }
                 }
@@ -211,17 +210,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
                             var currentFacetAttribute = currentFacet.attribute;
 
-                            // Price param should be fetched dynamically because it can be overridden by Adapter
-                            // Fallbacks to the original parameter in case it's not found
-                            var priceParamValue = routeParameters[algoliaParamsManager.getPriceParam()] ?
-                                routeParameters[algoliaParamsManager.getPriceParam()]?.replace(algoliaParamsManager.getPriceSeparator(), ':') :
-                                routeParameters[algoliaConfig.routing.originalPriceParameter]?.replace(algoliaConfig.routing.originalPriceRouteSeparator, ':');
-
-                            if (routeParameters[algoliaParamsManager.getPriceParam()]) {
-                                uiStateProductIndex['range'][currentFacetAttribute] = algoliaParamsManager.transformPriceUpperBoundary(priceParamValue);
-                            } else {
-                                uiStateProductIndex['range'][currentFacetAttribute] = priceParamValue;
-                            }
+                            uiStateProductIndex['range'][currentFacetAttribute] = algoliaParamsManager.getPriceParamValue(currentFacetAttribute, routeParameters);
 
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&

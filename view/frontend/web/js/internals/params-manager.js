@@ -15,9 +15,6 @@ define(function () {
         getPriceParamValue(currentFacetAttribute, routeParameters) {
             return routeParameters[currentFacetAttribute];
         },
-        transformPriceUpperBoundary(range) {
-            return range;
-        },
         getSortingValueFromUiState(uiStateProductIndex) {
             return uiStateProductIndex.sortBy;
         },

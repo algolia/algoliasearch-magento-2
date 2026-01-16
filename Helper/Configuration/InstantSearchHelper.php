@@ -13,6 +13,8 @@ class InstantSearchHelper
     // Routing
     public const CATEGORY_ROUTE_DELIMITER = '~';
 
+    public const PRICE_SEPARATOR = ':';
+
     // General config
     public const IS_ENABLED = 'algoliasearch_instant/instant/is_instant_enabled';
     public const DOM_SELECTOR = 'algoliasearch_instant/instant/instant_selector';

@@ -398,10 +398,12 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     protected function getRoutingConfig(): array
     {
         return [
-            'categoryRouteDelimiter' => InstantSearchHelper::CATEGORY_ROUTE_DELIMITER,
-            'sortingParameter'       => 'sortBy',
-            'pagingParameter'        => 'page',
-            'categoryParameter'      => 'categories',
+            'categoryRouteDelimiter'      => InstantSearchHelper::CATEGORY_ROUTE_DELIMITER,
+            'sortingParameter'            => 'sortBy',
+            'pagingParameter'             => 'page',
+            'categoryParameter'           => 'categories',
+            'priceParameter'              => 'price' . $this->getPriceKey(),
+            'priceRouteSeparator'         => InstantSearchHelper::PRICE_SEPARATOR,
         ];
     }
 

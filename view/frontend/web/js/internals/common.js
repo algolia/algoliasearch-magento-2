@@ -155,12 +155,10 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         }
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
-                            routeParameters[currentFacet.attribute] = (uiStateProductIndex.range &&
-                                uiStateProductIndex.range[currentFacet.attribute] &&
-                                uiStateProductIndex.range[currentFacet.attribute]);
+                            // InstantSearch always updates the original routing parameter (ex: price.USD.default)
+                            routeParameters[currentFacet.attribute] = uiStateProductIndex?.range?.[currentFacet.attribute];
                         }
                     }
-
                 }
 
                 routeParameters[algoliaParamsManager.getSortingParam()] = algoliaParamsManager.getSortingValueFromUiState(uiStateProductIndex);
@@ -211,7 +209,16 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
                             var currentFacetAttribute = currentFacet.attribute;
-                            uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[currentFacetAttribute] && routeParameters[currentFacetAttribute];
+
+                            // Guard against prototype pollution
+                            if (Object.hasOwn(Object.prototype, currentFacetAttribute)) {
+                                continue;
+                            }
+
+                            // eslint-disable-next-line security/detect-object-injection
+                            uiStateProductIndex['range'][currentFacetAttribute] =
+                                algoliaParamsManager.getPriceParamValue(currentFacetAttribute, routeParameters);
+
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
                                 currentFacetAttribute in landingPageConfig) {
@@ -220,7 +227,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                                 if (typeof landingPageConfig[currentFacetAttribute]['>='] !== "undefined") {
                                     facetValue = landingPageConfig[currentFacetAttribute]['>='][0];
                                 }
-                                facetValue += ':';
+                                facetValue += algoliaParamsManager.getPriceSeparator();
                                 if (typeof landingPageConfig[currentFacetAttribute]['<='] !== "undefined") {
                                     facetValue += landingPageConfig[currentFacetAttribute]['<='][0];
                                 }

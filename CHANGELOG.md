@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.17.3
+
+### Updates
+- Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
+
 ## 3.17.2
 
 ### Security

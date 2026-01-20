@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model\Config;
 
-class Attribute extends AbstractConfigComment
+class AttributesComment extends AbstractConfigComment
 {
     public function getCommentText($elementValue): string
     {

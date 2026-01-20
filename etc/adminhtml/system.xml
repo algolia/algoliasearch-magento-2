@@ -625,7 +625,7 @@
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\SortOrderProduct</frontend_model>
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
-                        <model>Algolia\AlgoliaSearch\Model\Config\Attribute</model>
+                        <model>Algolia\AlgoliaSearch\Model\Config\AttributesComment</model>
                     </comment>
                 </field>
                 <field id="custom_ranking_product_attributes" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">

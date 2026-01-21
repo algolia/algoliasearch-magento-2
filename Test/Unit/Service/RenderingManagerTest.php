@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
@@ -15,7 +14,6 @@ use PHPUnit\Framework\TestCase;
 
 class RenderingManagerTest extends TestCase
 {
-    protected ?ConfigHelper $configHelper;
     protected ?AutocompleteHelper $autocompleteConfigHelper;
     protected ?InstantSearchHelper $instantSearchConfigHelper;
     protected ?CurrentCategory $category;
@@ -25,14 +23,12 @@ class RenderingManagerTest extends TestCase
 
     public function setUp(): void
     {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
         $this->autocompleteConfigHelper = $this->createMock(AutocompleteHelper::class);
         $this->instantSearchConfigHelper = $this->createMock(InstantSearchHelper::class);
         $this->category = $this->createMock(CurrentCategory::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
 
         $this->renderingManager = new RenderingManager(
-            $this->configHelper,
             $this->autocompleteConfigHelper,
             $this->instantSearchConfigHelper,
             $this->category,
@@ -67,11 +63,10 @@ class RenderingManagerTest extends TestCase
     /**
      * @dataProvider backendValuesProvider
      */
-    public function testBackendRendering($actionName, $preventBackendRendering, $isLayoutUpdated): void
+    public function testBackendRendering($actionName, $isLayoutUpdated): void
     {
         $this->autocompleteConfigHelper->method('isEnabled')->willReturn(true);
         $this->instantSearchConfigHelper->method('isEnabled')->willReturn(true);
-        $this->configHelper->method('preventBackendRendering')->willReturn($preventBackendRendering);
 
         $layout = $this->createMock(Layout::class);
         $update = $this->createMock(ProcessorInterface::class);
@@ -92,13 +87,11 @@ class RenderingManagerTest extends TestCase
     /**
      * @dataProvider displayValuesProvider
      */
-    public function testDisplayMode($displayMode, $categoryDisplayMode, $isLayoutUpdated): void
+    public function testDisplayMode($categoryDisplayMode, $isLayoutUpdated): void
     {
         $this->autocompleteConfigHelper->method('isEnabled')->willReturn(true);
         $this->instantSearchConfigHelper->method('isEnabled')->willReturn(true);
         $this->instantSearchConfigHelper->method('shouldReplaceCategories')->willReturn(true);
-        $this->configHelper->method('preventBackendRendering')->willReturn(true);
-        $this->configHelper->method('getBackendRenderingDisplayMode')->willReturn($displayMode);
 
         $currentCategory = $this->createMock(Category::class);
         $this->category->method('get')->willReturn($currentCategory);
@@ -134,22 +127,18 @@ class RenderingManagerTest extends TestCase
     public static function backendValuesProvider(): array
     {
         return [
-            ['actionName' => 'catalog_category_view','preventBackendRendering' => true, 'isLayoutUpdated' => true],
-            ['actionName' => 'catalogsearch_result_index', 'preventBackendRendering' => true, 'isLayoutUpdated' => true],
-            ['actionName' => 'foo_bar', 'preventBackendRendering' => true, 'isLayoutUpdated' => false],
-            ['actionName' => 'catalog_category_view', 'preventBackendRendering' => false, 'isLayoutUpdated' => false]
+            ['actionName' => 'catalog_category_view', 'isLayoutUpdated' => true],
+            ['actionName' => 'catalogsearch_result_index', 'isLayoutUpdated' => true],
+            ['actionName' => 'foo_bar', 'isLayoutUpdated' => false]
         ];
     }
 
     public static function displayValuesProvider(): array
     {
         return [
-            ['displayMode' => 'all', 'categoryDisplayMode' => 'PAGE',  'isLayoutUpdated' => true],
-            ['displayMode' => 'all', 'categoryDisplayMode' => 'PRODUCTS',  'isLayoutUpdated' => true],
-            ['displayMode' => 'all', 'categoryDisplayMode' => 'PRODUCTS_AND_PAGE',  'isLayoutUpdated' => true],
-            ['displayMode' => 'only_products', 'categoryDisplayMode' => 'PAGE', 'isLayoutUpdated' => false],
-            ['displayMode' => 'only_products', 'categoryDisplayMode' => 'PRODUCTS', 'isLayoutUpdated' => true],
-            ['displayMode' => 'only_products', 'categoryDisplayMode' => 'PRODUCTS_AND_PAGE', 'isLayoutUpdated' => true],
+            ['categoryDisplayMode' => 'PAGE',  'isLayoutUpdated' => false],
+            ['categoryDisplayMode' => 'PRODUCTS',  'isLayoutUpdated' => true],
+            ['categoryDisplayMode' => 'PRODUCTS_AND_PAGE',  'isLayoutUpdated' => true]
         ];
     }
 }

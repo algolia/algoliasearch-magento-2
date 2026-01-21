@@ -2,22 +2,18 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Registry\CurrentCategory;
 use Magento\Catalog\Model\Category;
 use Magento\Framework\View\Layout;
-use Magento\Store\Model\StoreManagerInterface;
 
 class RenderingManager
 {
     public function __construct(
-        protected ConfigHelper $config,
-        protected AutocompleteHelper $autocompleteConfigHelper,
-        protected InstantSearchHelper $instantSearchConfigHelper,
-        protected CurrentCategory $category,
-        protected StoreManagerInterface $storeManager
+        protected AutocompleteHelper    $autocompleteConfigHelper,
+        protected InstantSearchHelper   $instantSearchConfigHelper,
+        protected CurrentCategory       $category
     ) {}
 
     /**
@@ -29,10 +25,10 @@ class RenderingManager
     {
         // If an Algolia frontend feature is enabled, add the frontend assets
         if (!$this->hasAlgoliaFrontend($storeId)) {
-           return;
+            return;
         }
 
-        $this->addHandle($layout,'algolia_search_handle');
+        $this->addHandle($layout, 'algolia_search_handle');
     }
 
     /**
@@ -43,27 +39,49 @@ class RenderingManager
      */
     public function handleBackendRendering(Layout $layout, string $actionName, int $storeId): void
     {
-        // If the page is not a category or the catalogsearch page or if no Algolia frontend feature is enabled, no need to go further
-        if (!$this->isSearchPage($actionName) || !$this->hasAlgoliaFrontend($storeId)) {
+        if (!$this->shouldPreventBackendRendering($actionName, $storeId)) {
             return;
-        }
-
-        // @todo replace this check with the new backend rendering feature (MAGE-1325)
-        if (!$this->config->preventBackendRendering($storeId)) {
-            return;
-        }
-
-        $category = $this->category->get();
-        // Legacy check regarding category display mode (we don't want to hide the static blocks if there's not product list
-        if ($category->getId() && $this->instantSearchConfigHelper->shouldReplaceCategories($storeId)) {
-            $displayMode = $this->config->getBackendRenderingDisplayMode($storeId);
-
-            if ($displayMode === 'only_products' && $category->getDisplayMode() === Category::DM_PAGE) {
-                return;
-            }
         }
 
         $this->addHandle($layout, 'algolia_search_handle_prevent_backend_rendering');
+    }
+
+    /**
+     * Backend rendering is prevented by default for InstantSearch enabled pages.
+     *
+     * If backend rendering is desired - install the Algolia_SearchAdapter extension.
+     * See https://github.com/algolia/algoliasearch-adapter-magento-2
+     */
+    public function shouldPreventBackendRendering(string $actionName, int $storeId): bool
+    {
+        if (!$this->instantSearchConfigHelper->isEnabled($storeId) // Backend render only prevented with InstantSearch
+            || !$this->isSearchPage($actionName) // Route must be a category or the catalogsearch page
+            || !$this->shouldHandleCurrentCategory($storeId)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Only handle categories if Algolia "browse" mode is enabled and category features a PLP
+     */
+    protected function shouldHandleCurrentCategory(int $storeId): bool
+    {
+        $category = $this->category->get();
+
+        if ($category->getId()) {
+            if (!$this->instantSearchConfigHelper->shouldReplaceCategories($storeId)) {
+                return false;
+            }
+
+            if ($category->getDisplayMode() === Category::DM_PAGE) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

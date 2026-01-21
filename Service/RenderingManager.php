@@ -11,32 +11,16 @@ use Magento\Framework\View\Layout;
 class RenderingManager
 {
     public function __construct(
-        protected AutocompleteHelper    $autocompleteConfigHelper,
-        protected InstantSearchHelper   $instantSearchConfigHelper,
-        protected CurrentCategory       $category
+        protected AutocompleteHelper  $autocompleteConfigHelper,
+        protected InstantSearchHelper $instantSearchConfigHelper,
+        protected CurrentCategory     $category
     ) {}
 
-    /**
-     * @param Layout $layout
-     * @param int $storeId
-     * @return void
-     */
     public function handleFrontendAssets(Layout $layout, int $storeId): void
     {
-        // If an Algolia frontend feature is enabled, add the frontend assets
-        if (!$this->hasAlgoliaFrontend($storeId)) {
-            return;
-        }
-
         $this->addHandle($layout, 'algolia_search_handle');
     }
 
-    /**
-     * @param Layout $layout
-     * @param string $actionName
-     * @param int $storeId
-     * @return void
-     */
     public function handleBackendRendering(Layout $layout, string $actionName, int $storeId): void
     {
         if (!$this->shouldPreventBackendRendering($actionName, $storeId)) {
@@ -84,30 +68,10 @@ class RenderingManager
         return true;
     }
 
-    /**
-     * @param Layout $layout
-     * @param string $handleName
-     * @return void
-     */
     protected function addHandle(Layout $layout, string $handleName): void
     {
         $layout->getUpdate()->addHandle($handleName);
     }
-
-    /**
-     * @param int $storeId
-     * @return bool
-     */
-    protected function hasAlgoliaFrontend(int $storeId): bool
-    {
-        return $this->autocompleteConfigHelper->isEnabled($storeId) ||
-            $this->instantSearchConfigHelper->isEnabled($storeId);
-    }
-
-    /**
-     * @param string $actionName
-     * @return bool
-     */
     protected function isSearchPage(string $actionName): bool
     {
         return $actionName === 'catalog_category_view' || $actionName === 'catalogsearch_result_index';

@@ -24,8 +24,6 @@ use Magento\Weee\Helper\Data as WeeeHelper;
 class ConfigHelper
 {
     // --- Credentials & Basic Setup --- //
-
-    public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
     public const LOGGING_ENABLED = 'algoliasearch_credentials/credentials/debug';
     public const APPLICATION_ID = 'algoliasearch_credentials/credentials/application_id';
     public const API_KEY = 'algoliasearch_credentials/credentials/api_key';
@@ -236,7 +234,8 @@ class ConfigHelper
      */
     public function isEnabledFrontEnd($storeId = null): bool
     {
-        return $this->configInterface->isSetFlag(self::ENABLE_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->instantSearchConfig->isEnabled($storeId)
+            || $this->autocompleteConfig->isEnabled($storeId);
     }
 
     /**
@@ -1774,6 +1773,13 @@ class ConfigHelper
      * @deprecated This configuration is no longer being used and will be removed in a future release
      */
     public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
+
+    // --- Miscellaneous --- //
+
+    /**
+     * @deprecated This configuration is no longer being used and will be removed in a future release
+     */
+    public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
 
     /*** METHODS ***/
 

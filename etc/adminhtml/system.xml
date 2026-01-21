@@ -53,16 +53,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="enable_frontend" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Search</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            Do you want to use Algolia for search?<br>
-                            If not, Magento will perform all searches and not touch Algolia at all.
-                        ]]>
-                    </comment>
-                </field>
                 <field id="debug" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Logging</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

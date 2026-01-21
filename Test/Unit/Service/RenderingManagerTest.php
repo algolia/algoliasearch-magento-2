@@ -37,30 +37,6 @@ class RenderingManagerTest extends TestCase
     }
 
     /**
-     * @dataProvider frontendValuesProvider
-     */
-    public function testFrontendAssets($isAutocompleteEnabled, $isInstantSearchEnabled, $isLayoutUpdated): void
-    {
-        $this->autocompleteConfigHelper->method('isEnabled')->willReturn($isAutocompleteEnabled);
-        $this->instantSearchConfigHelper->method('isEnabled')->willReturn($isInstantSearchEnabled);
-
-        $layout = $this->createMock(Layout::class);
-        $update = $this->createMock(ProcessorInterface::class);
-        $layout->method('getUpdate')->willReturn($update);
-
-        if ($isLayoutUpdated) {
-            $update->expects($this->once())
-                ->method('addHandle')
-                ->with('algolia_search_handle');
-        } else {
-            $update->expects($this->never())
-                ->method('addHandle');
-        }
-
-        $this->renderingManager->handleFrontendAssets($layout, 0);
-    }
-
-    /**
      * @dataProvider backendValuesProvider
      */
     public function testBackendRendering($actionName, $isLayoutUpdated): void
@@ -165,16 +141,6 @@ class RenderingManagerTest extends TestCase
                 'categoryDisplayMode' => Category::DM_MIXED,
                 'expectedResult' => true,
             ],
-        ];
-    }
-
-    public static function frontendValuesProvider(): array
-    {
-        return [
-            ['isAutocompleteEnabled' => true, 'isInstantSearchEnabled' => true, 'isLayoutUpdated' => true],
-            ['isAutocompleteEnabled' => false, 'isInstantSearchEnabled' => true, 'isLayoutUpdated' => true],
-            ['isAutocompleteEnabled' => true, 'isInstantSearchEnabled' => false, 'isLayoutUpdated' => true],
-            ['isAutocompleteEnabled' => false, 'isInstantSearchEnabled' => false, 'isLayoutUpdated' => false]
         ];
     }
 

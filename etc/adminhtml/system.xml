@@ -1525,37 +1525,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="prevent_backend_rendering" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Prevent default backend rendering</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            <span class="algolia-config-warning">&#9888;</span>
-                            Algolia injects its search results via InstantSearch in place of default search results. Enable this setting to hide default search results completely.
-                            By preventing your store from backend rendering you might break your SEO and accessibility of your store by search crawlers.
-                            <br/><br/>
-                            <em>This feature is deprecated and will be replaced in a future version.</em>
-                        ]]>
-                    </comment>
-                </field>
-                <field id="prevent_backend_rendering_display_mode" translate="label comment" type="select" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Prevent backend rendering for</label>
-                    <source_model>Algolia\AlgoliaSearch\Model\Source\BackendRenderingDisplayMode</source_model>
-                    <depends>
-                        <field id="prevent_backend_rendering">1</field>
-                    </depends>
-                </field>
-                <field id="backend_rendering_allowed_user_agents" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Allow backend rendering for User Agents</label>
-                    <comment>
-                        <![CDATA[
-                            To specify multiple User-Agents, please put one User-Agent per line.
-                        ]]>
-                    </comment>
-                    <depends>
-                        <field id="prevent_backend_rendering">1</field>
-                    </depends>
-                </field>
                 <field id="non_castable_attributes" translate="label comment" type="text" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Product numeric textfield attributes</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\ProductAttributes</frontend_model>

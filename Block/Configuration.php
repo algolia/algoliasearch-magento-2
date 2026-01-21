@@ -295,7 +295,6 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'retryLimit' => $config->getRetryLimit($this->getStoreId()),
                 'nbOfElementsPerIndexingJob' => $config->getNumberOfElementByPage($this->getStoreId()),
             ],
-            'isPreventBackendRenderingEnabled' => $config->preventBackendRendering($this->getStoreId()),
             'translations' => [
                 'to' => __('to'),
                 'or' => __('or'),

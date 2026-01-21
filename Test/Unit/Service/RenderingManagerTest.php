@@ -85,33 +85,87 @@ class RenderingManagerTest extends TestCase
     }
 
     /**
-     * @dataProvider displayValuesProvider
+     * @dataProvider shouldPreventBackendRenderingProvider
      */
-    public function testDisplayMode($categoryDisplayMode, $isLayoutUpdated): void
-    {
-        $this->autocompleteConfigHelper->method('isEnabled')->willReturn(true);
-        $this->instantSearchConfigHelper->method('isEnabled')->willReturn(true);
-        $this->instantSearchConfigHelper->method('shouldReplaceCategories')->willReturn(true);
+    public function testShouldPreventBackendRendering(
+        string $actionName,
+        bool $isInstantSearchEnabled,
+        ?int $categoryId,
+        bool $shouldReplaceCategories,
+        ?string $categoryDisplayMode,
+        bool $expectedResult
+    ): void {
+        $this->instantSearchConfigHelper->method('isEnabled')->willReturn($isInstantSearchEnabled);
+        $this->instantSearchConfigHelper->method('shouldReplaceCategories')->willReturn($shouldReplaceCategories);
 
         $currentCategory = $this->createMock(Category::class);
         $this->category->method('get')->willReturn($currentCategory);
-        $currentCategory->method('getId')->willReturn(1);
+        $currentCategory->method('getId')->willReturn($categoryId);
         $currentCategory->method('getDisplayMode')->willReturn($categoryDisplayMode);
 
-        $layout = $this->createMock(Layout::class);
-        $update = $this->createMock(ProcessorInterface::class);
-        $layout->method('getUpdate')->willReturn($update);
+        $this->assertSame($expectedResult, $this->renderingManager->shouldPreventBackendRendering($actionName, 0));
+    }
 
-        if ($isLayoutUpdated) {
-            $update->expects($this->once())
-                ->method('addHandle')
-                ->with('algolia_search_handle_prevent_backend_rendering');
-        } else {
-            $update->expects($this->never())
-                ->method('addHandle');
-        }
-
-        $this->renderingManager->handleBackendRendering($layout, 'catalog_category_view', 0);
+    public static function shouldPreventBackendRenderingProvider(): array
+    {
+        return [
+            'InstantSearch disabled' => [
+                'actionName' => 'catalog_category_view',
+                'isInstantSearchEnabled' => false,
+                'categoryId' => null,
+                'shouldReplaceCategories' => false,
+                'categoryDisplayMode' => null,
+                'expectedResult' => false,
+            ],
+            'Not a search page' => [
+                'actionName' => 'cms_index_index',
+                'isInstantSearchEnabled' => true,
+                'categoryId' => null,
+                'shouldReplaceCategories' => false,
+                'categoryDisplayMode' => null,
+                'expectedResult' => false,
+            ],
+            'Search results page with InstantSearch' => [
+                'actionName' => 'catalogsearch_result_index',
+                'isInstantSearchEnabled' => true,
+                'categoryId' => null,
+                'shouldReplaceCategories' => false,
+                'categoryDisplayMode' => null,
+                'expectedResult' => true,
+            ],
+            'Category page - replace categories disabled' => [
+                'actionName' => 'catalog_category_view',
+                'isInstantSearchEnabled' => true,
+                'categoryId' => 1,
+                'shouldReplaceCategories' => false,
+                'categoryDisplayMode' => Category::DM_PRODUCT,
+                'expectedResult' => false,
+            ],
+            'Category page - display mode PAGE (static block only)' => [
+                'actionName' => 'catalog_category_view',
+                'isInstantSearchEnabled' => true,
+                'categoryId' => 1,
+                'shouldReplaceCategories' => true,
+                'categoryDisplayMode' => Category::DM_PAGE,
+                'expectedResult' => false,
+            ],
+            'Category page - display mode PRODUCTS' => [
+                'actionName' => 'catalog_category_view',
+                'isInstantSearchEnabled' => true,
+                'categoryId' => 1,
+                'shouldReplaceCategories' => true,
+                'categoryDisplayMode' => Category::DM_PRODUCT,
+                'expectedResult' => true,
+            ],
+            'Category page - display mode PRODUCTS_AND_PAGE' => [
+                'actionName' => 'catalog_category_view',
+                'isInstantSearchEnabled' => true,
+                'categoryId' => 1,
+                'shouldReplaceCategories' => true,
+                'categoryDisplayMode' => Category::DM_MIXED,
+                'expectedResult' => true,
+            ],
+        ];
     }
 
     public static function frontendValuesProvider(): array
@@ -130,15 +184,6 @@ class RenderingManagerTest extends TestCase
             ['actionName' => 'catalog_category_view', 'isLayoutUpdated' => true],
             ['actionName' => 'catalogsearch_result_index', 'isLayoutUpdated' => true],
             ['actionName' => 'foo_bar', 'isLayoutUpdated' => false]
-        ];
-    }
-
-    public static function displayValuesProvider(): array
-    {
-        return [
-            ['categoryDisplayMode' => 'PAGE',  'isLayoutUpdated' => false],
-            ['categoryDisplayMode' => 'PRODUCTS',  'isLayoutUpdated' => true],
-            ['categoryDisplayMode' => 'PRODUCTS_AND_PAGE',  'isLayoutUpdated' => true]
         ];
     }
 }

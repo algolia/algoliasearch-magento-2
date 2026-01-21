@@ -7,6 +7,7 @@
 - Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release.
 - Updated unit and integration tests.
 - `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix
+- Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
 
 ## 3.17.2
 

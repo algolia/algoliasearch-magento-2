@@ -187,47 +187,27 @@ class ConfigHelper
             $this->getSearchOnlyAPIKey($storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed'
-     */
-    public function getApplicationID($storeId = null)
+    public function getApplicationID(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::APPLICATION_ID, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::APPLICATION_ID, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getAPIKey($storeId = null)
+    public function getAPIKey(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getSearchOnlyAPIKey($storeId = null)
+    public function getSearchOnlyAPIKey(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::SEARCH_ONLY_API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::SEARCH_ONLY_API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return string
-     */
     public function getIndexPrefix(?int $storeId = null): string
     {
         return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isEnabledFrontEnd($storeId = null): bool
+    public function isEnabledFrontEnd(?int $storeId = null): bool
     {
         return $this->instantSearchConfig->isEnabled($storeId)
             || $this->autocompleteConfig->isEnabled($storeId);

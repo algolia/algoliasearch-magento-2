@@ -6,7 +6,6 @@ use Algolia\AlgoliaSearch\Api\Product\RuleContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
-use Algolia\AlgoliaSearch\Model\Source\SortParam;
 use Algolia\AlgoliaSearch\Model\Source\AutocompleteRedirectMode;
 use Algolia\AlgoliaSearch\Model\Source\InstantSearchRedirectOptions;
 use Algolia\AlgoliaSearch\Service\Product\PriceKeyResolver;

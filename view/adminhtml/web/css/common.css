@@ -411,6 +411,7 @@
 	border : 1px solid #F8E5C4;
 	padding : 20px 20px 10px 90px;
 	margin-bottom : 20px;
+    min-height: 40px;
 }
 
 .algolia_dashboard_warning_page {
@@ -578,12 +579,9 @@ form[action*="algoliasearch"] .accordion .config .value {
     display: none !important;
 }
 
+/* Help content formatting */
 .algolia-help-content p {
 	margin-bottom: 1em;
-}
-
-.algolia-help-content p:last-child {
-	margin-bottom: 0;
 }
 
 .algolia-help-content ul {

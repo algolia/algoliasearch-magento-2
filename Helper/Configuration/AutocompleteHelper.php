@@ -143,7 +143,7 @@ class AutocompleteHelper
 
     public function getSuggestionsIndexName(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(
+        return (string) $this->configInterface->getValue(
             self::SUGGESTIONS_INDEX_NAME,
             ScopeInterface::SCOPE_STORE,
             $storeId

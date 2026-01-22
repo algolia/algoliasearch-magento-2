@@ -38,7 +38,9 @@ require(
 			pageWarning += '<p>These settings are also available in the Algolia Dashboard. We advise you to manage it from this page, cause saving Magento settings will override the Algolia settings.</p>';
 			pageWarning += '</div>';
 
+			// TODO: Move these to admin notices
 			let pageWarningSynonyms = '<div class="algolia_dashboard_warning algolia_dashboard_warning_page">';
+			pageWarningSynonyms += '<p>Algolia search is now configured per feature (for example: InstantSearch, Autocomplete, etc.). Please enable and configure the search features you wish to use in their respective sections.</p>';
 			pageWarningSynonyms += '<p>Configurations related to indexing have been moved to the "Indexing Manager" section.</p>';
 			pageWarningSynonyms += '<p>Configurations related to Synonyms have been removed from the Magento dashboard. We advise you to configure synonyms from the Algolia dashboard.</p>';
 			pageWarningSynonyms += '</div>';

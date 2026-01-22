@@ -19,10 +19,10 @@ use Magento\Store\Model\StoreManagerInterface;
 class AddAlgoliaAssetsObserver implements ObserverInterface
 {
     public function __construct(
-        protected ConfigHelper $config,
-        protected RenderingManager $renderingManager,
-        protected StoreManagerInterface $storeManager,
-        protected Http $request,
+        protected ConfigHelper              $config,
+        protected RenderingManager          $renderingManager,
+        protected StoreManagerInterface     $storeManager,
+        protected Http                      $request,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
     ) {}
 
@@ -38,7 +38,9 @@ class AddAlgoliaAssetsObserver implements ObserverInterface
 
         $storeId = $this->storeManager->getStore()->getId();
 
-        if ($this->config->isEnabledFrontEnd($storeId) && $this->algoliaCredentialsManager->checkCredentials($storeId)) {
+        if ($this->config->isEnabledFrontEnd($storeId)
+            && $this->algoliaCredentialsManager->checkCredentials($storeId)
+        ) {
             /** @var Layout $layout */
             $layout = $observer->getData('layout');
 

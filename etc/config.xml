@@ -191,6 +191,7 @@
                 <backend_rendering_allowed_user_agents>Googlebot\nBingbot</backend_rendering_allowed_user_agents>
                 <number_of_element_by_page>1000</number_of_element_by_page>
                 <max_record_size_limit>10000</max_record_size_limit>
+                <max_replicas_limit>20</max_replicas_limit>
                 <analytics_region>us</analytics_region>
                 <connection_timeout>2</connection_timeout>
                 <read_timeout>30</read_timeout>

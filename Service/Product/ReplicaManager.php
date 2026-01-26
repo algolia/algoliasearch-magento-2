@@ -492,9 +492,11 @@ class ReplicaManager implements ReplicaManagerInterface
     /**
      * @inheritDoc
      */
-    public function getMaxVirtualReplicasPerIndex() : int
+    public function getMaxVirtualReplicasPerIndex(): int
     {
-        return self::MAX_VIRTUAL_REPLICA_LIMIT;
+        return $this->configHelper->getMaxReplicasLimit() > 0 ?
+            $this->configHelper->getMaxReplicasLimit() :
+            self::MAX_VIRTUAL_REPLICA_LIMIT;
     }
 
     /**

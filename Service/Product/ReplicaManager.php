@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Exception\TooManyCustomerGroupsAsReplicasException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
@@ -57,6 +58,7 @@ class ReplicaManager implements ReplicaManagerInterface
 
     public function __construct(
         protected ConfigHelper                   $configHelper,
+        protected InstantSearchHelper            $instantSearchHelper,
         protected AlgoliaConnector               $algoliaConnector,
         protected IndexOptionsBuilder            $indexOptionsBuilder,
         protected ReplicaState                   $replicaState,
@@ -73,9 +75,9 @@ class ReplicaManager implements ReplicaManagerInterface
      * Evaluate the replica state of the index for a given store and determine
      * if Algolia and Magento are no longer in sync
      *
-     * @return bool Returns true if replica state has changed or if unknown then result is determined based on whether Magento and Algolia have fallen out of sync
-     * @throws NoSuchEntityException
-     * @throws LocalizedException
+     * @return bool Returns true if replica state has changed or if unknown then
+     *  result is determined based on whether Magento and Algolia have fallen out of sync
+     * @throws LocalizedException|AlgoliaException
      */
     protected function hasReplicaConfigurationChanged(int $storeId): bool
     {
@@ -327,7 +329,7 @@ class ReplicaManager implements ReplicaManagerInterface
     protected function revertReplicaConfig(int $storeId): bool
     {
         if ($ogConfig = $this->replicaState->getOriginalSortConfiguration($storeId)) {
-            $this->configHelper->setSorting(
+            $this->instantSearchHelper->setSorting(
                 $ogConfig,
                 $this->replicaState->getParentScope(),
                 $this->replicaState->getParentScopeId()
@@ -486,7 +488,7 @@ class ReplicaManager implements ReplicaManagerInterface
      */
     public function isReplicaSyncEnabled(int $storeId): bool
     {
-        return $this->configHelper->isInstantEnabled($storeId) && $this->configHelper->isIndexingEnabled($storeId);
+        return $this->instantSearchHelper->isEnabled($storeId) && $this->configHelper->isIndexingEnabled($storeId);
     }
 
     /**

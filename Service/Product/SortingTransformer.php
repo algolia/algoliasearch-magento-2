@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
@@ -24,12 +25,12 @@ class SortingTransformer
 
     public function __construct(
         protected ConfigHelper                            $configHelper,
+        protected InstantSearchHelper                     $instantSearchHelper,
         protected StoreManagerInterface                   $storeManager,
         protected IndexNameFetcher                        $indexNameFetcher,
         protected GroupCollection                         $groupCollection,
         protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository
-    )
-    {}
+    ) {}
 
     /**
      * Augment sorting configuration with corresponding replica indices, ranking,
@@ -65,7 +66,7 @@ class SortingTransformer
 
         // If no sorting configuration is supplied - obtain from the saved configuration
         if (!$attrs) {
-            $attrs = $this->configHelper->getSorting($storeId);
+            $attrs = $this->instantSearchHelper->getSorting($storeId);
         }
 
         $primaryIndexName = $this->indexNameFetcher->getProductIndexName($storeId);

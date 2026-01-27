@@ -4,9 +4,9 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
 use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
+use Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -34,6 +34,8 @@ class ReplicaIndexingTest extends TestCase
 
     protected ?IndicesConfigurator $indicesConfigurator = null;
 
+    protected ?InstantSearchHelper $instantSearchHelper = null;
+
     protected ?string $indexName = null;
 
     protected ?int $patchRetries = 3;
@@ -44,6 +46,7 @@ class ReplicaIndexingTest extends TestCase
         $this->replicaManager = $this->objectManager->get(ReplicaManagerInterface::class);
         $this->indicesConfigurator = $this->objectManager->get(IndicesConfigurator::class);
         $this->indexOptionsBuilder = $this->objectManager->get(IndexOptionsBuilder::class);
+        $this->instantSearchHelper = $this->objectManager->get(InstantSearchHelper::class);
         $this->indexSuffix = 'products';
         $this->indexName = $this->getIndexName('default');
     }
@@ -90,7 +93,7 @@ class ReplicaIndexingTest extends TestCase
     public function testVirtualReplicaConfig(): void
     {
         $primaryIndexName = $this->getIndexName('default');
-        $ogSortingState = $this->configHelper->getSorting();
+        $ogSortingState = $this->instantSearchHelper->getSorting();
 
         $productHelper = $this->objectManager->get(ProductHelper::class);
         $sortAttr = 'color';
@@ -100,14 +103,14 @@ class ReplicaIndexingTest extends TestCase
 
         $this->assertNoSortingAttribute($sortAttr, $sortDir);
 
-        $sorting = $this->configHelper->getSorting();
+        $sorting = $this->instantSearchHelper->getSorting();
         $sorting[] = [
             'attribute'      => $sortAttr,
             'sort'           => $sortDir,
             'sortLabel'      => $sortAttr,
             'virtualReplica' => 1
         ];
-        $this->configHelper->setSorting($sorting);
+        $this->instantSearchHelper->setSorting($sorting);
 
         $this->assertConfigInDb(InstantSearchHelper::SORTING_INDICES, json_encode($sorting));
 
@@ -138,7 +141,7 @@ class ReplicaIndexingTest extends TestCase
         $this->assertVirtualReplicaRanking($replicaSettings, "$sortDir($sortAttr)");
 
         // Restore prior state (for this test only)
-        $this->configHelper->setSorting($ogSortingState);
+        $this->instantSearchHelper->setSorting($ogSortingState);
         $this->setConfig(InstantSearchHelper::IS_ENABLED, 0);
     }
 
@@ -343,6 +346,7 @@ class ReplicaIndexingTest extends TestCase
         $mockedReplicaManager = $this->getMockBuilder($mockedClass)
             ->setConstructorArgs([
                 $this->configHelper,
+                $this->instantSearchHelper,
                 $this->algoliaConnector,
                 $this->objectManager->get(IndexOptionsBuilder::class),
                 $this->objectManager->get(ReplicaState::class),
@@ -407,9 +411,9 @@ class ReplicaIndexingTest extends TestCase
      */
     protected function populateReplicas(int $storeId): array
     {
-        $sorting = $this->objectManager->get(\Algolia\AlgoliaSearch\Service\Product\SortingTransformer::class)->getSortingIndices($storeId, null, null, true);
+        $sorting = $this->objectManager->get(SortingTransformer::class)->getSortingIndices($storeId, null, null, true);
 
-        $cmd = $this->objectManager->get(\Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaSyncCommand::class);
+        $cmd = $this->objectManager->get(ReplicaSyncCommand::class);
 
         $this->mockProperty($cmd, 'output', \Symfony\Component\Console\Output\OutputInterface::class);
 
@@ -424,7 +428,7 @@ class ReplicaIndexingTest extends TestCase
         parent::tearDown();
 
         // Makes sure that the original values are restored in case a test is failing and doesn't finish
-        $this->configHelper->setSorting(
+        $this->instantSearchHelper->setSorting(
             [
                 [
                     'attribute' => 'price',

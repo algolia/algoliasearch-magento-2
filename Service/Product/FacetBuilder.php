@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Framework\Exception\LocalizedException;
@@ -27,6 +28,7 @@ class FacetBuilder
 
     public function __construct(
         protected ConfigHelper                            $configHelper,
+        protected InstantSearchHelper                     $instantSearchHelper,
         protected StoreManagerInterface                   $storeManager,
         protected GroupCollection                         $groupCollection,
         protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
@@ -158,7 +160,7 @@ class FacetBuilder
         }
 
         $rawFacets = [];
-        $configFacets = $this->configHelper->getFacets($storeId);
+        $configFacets = $this->instantSearchHelper->getFacets($storeId);
         foreach ($configFacets as $configFacet) {
             if ($configFacet[self::FACET_KEY_ATTRIBUTE_NAME] === self::FACET_ATTRIBUTE_PRICE) {
                 $rawFacets = array_merge($rawFacets, array_map(
@@ -196,7 +198,7 @@ class FacetBuilder
      */
     protected function assertCategoryFacet(int $storeId, array $facets): array
     {
-        if ($this->configHelper->replaceCategories($storeId)
+        if ($this->instantSearchHelper->shouldReplaceCategories($storeId)
             && !$this->hasCategoryFacet($facets)
         ) {
             $facets[] = $this->getRawFacet(self::FACET_ATTRIBUTE_CATEGORIES);

@@ -3,8 +3,17 @@
 namespace Algolia\AlgoliaSearch\Model\ResourceModel\Query\Grid;
 
 use Algolia\AlgoliaSearch\Model\ResourceModel\Query\Collection as QueryCollection;
+use Magento\Framework\Api\ExtensibleDataInterface;
 use Magento\Framework\Api\Search\AggregationInterface;
 use Magento\Framework\Api\Search\SearchResultInterface;
+use Magento\Framework\Api\SearchCriteriaInterface;
+use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
+use Magento\Framework\Data\Collection\EntityFactoryInterface;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\View\Element\UiComponent\DataProvider\Document;
+use Psr\Log\LoggerInterface;
 
 class Collection extends QueryCollection implements SearchResultInterface
 {
@@ -12,32 +21,32 @@ class Collection extends QueryCollection implements SearchResultInterface
     protected $aggregations;
 
     /**
-     * @param \Magento\Framework\Data\Collection\EntityFactoryInterface $entityFactory
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\Data\Collection\Db\FetchStrategyInterface $fetchStrategy
-     * @param \Magento\Framework\Event\ManagerInterface $eventManager
-     * @param mixed|null $mainTable
-     * @param \Magento\Framework\Model\ResourceModel\Db\AbstractDb $eventPrefix
-     * @param mixed $eventObject
-     * @param mixed $resourceModel
+     * @param EntityFactoryInterface $entityFactory
+     * @param LoggerInterface $logger
+     * @param FetchStrategyInterface $fetchStrategy
+     * @param ManagerInterface $eventManager
+     * @param string|null $mainTable
+     * @param string $eventPrefix
+     * @param string $eventObject
+     * @param string $resourceModel
      * @param string $model
-     * @param \Magento\Framework\DB\Adapter\AdapterInterface|null $connection
-     * @param \Magento\Framework\Model\ResourceModel\Db\AbstractDb|null $resource
+     * @param AdapterInterface|null $connection
+     * @param AbstractDb|null $resource
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        \Magento\Framework\Data\Collection\EntityFactoryInterface $entityFactory,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\Data\Collection\Db\FetchStrategyInterface $fetchStrategy,
-        \Magento\Framework\Event\ManagerInterface $eventManager,
-        $mainTable,
-        $eventPrefix,
-        $eventObject,
-        $resourceModel,
-        $model = \Magento\Framework\View\Element\UiComponent\DataProvider\Document::class,
-        ?\Magento\Framework\DB\Adapter\AdapterInterface $connection = null,
-        ?\Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource = null
+        EntityFactoryInterface $entityFactory,
+        LoggerInterface        $logger,
+        FetchStrategyInterface $fetchStrategy,
+        ManagerInterface       $eventManager,
+        ?string                $mainTable,
+        string                 $eventPrefix,
+        string                 $eventObject,
+        string                 $resourceModel,
+        string                 $model = Document::class,
+        ?AdapterInterface      $connection = null,
+        ?AbstractDb            $resource = null
     ) {
         parent::__construct(
             $entityFactory,
@@ -54,7 +63,7 @@ class Collection extends QueryCollection implements SearchResultInterface
     }
 
     /** @return AggregationInterface */
-    public function getAggregations()
+    public function getAggregations(): AggregationInterface
     {
         return $this->aggregations;
     }
@@ -62,33 +71,31 @@ class Collection extends QueryCollection implements SearchResultInterface
     /**
      * @param AggregationInterface $aggregations
      *
-     * @return $this
+     * @return void
      */
-    public function setAggregations($aggregations)
+    public function setAggregations($aggregations): void
     {
         $this->aggregations = $aggregations;
     }
 
-    /** @return \Magento\Framework\Api\SearchCriteriaInterface|null */
-    public function getSearchCriteria()
+    /** @return SearchCriteriaInterface|null */
+    public function getSearchCriteria(): ?SearchCriteriaInterface
     {
         return null;
     }
 
     /**
-     * @param \Magento\Framework\Api\SearchCriteriaInterface|null $searchCriteria
+     * @param SearchCriteriaInterface|null $searchCriteria
      *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @return Collection
      */
-    public function setSearchCriteria(?\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria = null)
+    public function setSearchCriteria(?SearchCriteriaInterface $searchCriteria = null): Collection
     {
         return $this;
     }
 
     /** @return int */
-    public function getTotalCount()
+    public function getTotalCount(): int
     {
         return $this->getSize();
     }
@@ -96,23 +103,19 @@ class Collection extends QueryCollection implements SearchResultInterface
     /**
      * @param int $totalCount
      *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @return Collection
      */
-    public function setTotalCount($totalCount)
+    public function setTotalCount($totalCount): Collection
     {
         return $this;
     }
 
     /**
-     * @param \Magento\Framework\Api\ExtensibleDataInterface[]|null $items
+     * @param ExtensibleDataInterface[]|null $items
      *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @return Collection
      */
-    public function setItems(?array $items = null)
+    public function setItems(?array $items = null): Collection
     {
         return $this;
     }

@@ -9,8 +9,10 @@ use Magento\Framework\Api\Search\SearchResultInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
 use Magento\Framework\Data\Collection\EntityFactoryInterface;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\View\Element\UiComponent\DataProvider\Document;
 use Psr\Log\LoggerInterface;
 
 class Collection extends QueueArchiveCollection implements SearchResultInterface
@@ -23,28 +25,28 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
      * @param LoggerInterface $logger
      * @param FetchStrategyInterface $fetchStrategy
      * @param ManagerInterface $eventManager
-     * @param mixed|null $mainTable
-     * @param AbstractDb $eventPrefix
-     * @param mixed $eventObject
-     * @param mixed $resourceModel
+     * @param string|null $mainTable
+     * @param string $eventPrefix
+     * @param string $eventObject
+     * @param string $resourceModel
      * @param string $model
-     * @param \Magento\Framework\DB\Adapter\AdapterInterface|null $connection
+     * @param AdapterInterface|null $connection
      * @param AbstractDb|null $resource
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         EntityFactoryInterface $entityFactory,
-        LoggerInterface $logger,
+        LoggerInterface        $logger,
         FetchStrategyInterface $fetchStrategy,
-        ManagerInterface $eventManager,
-        $mainTable,
-        $eventPrefix,
-        $eventObject,
-        $resourceModel,
-        $model = \Magento\Framework\View\Element\UiComponent\DataProvider\Document::class,
-        ?\Magento\Framework\DB\Adapter\AdapterInterface $connection = null,
-        ?AbstractDb $resource = null
+        ManagerInterface       $eventManager,
+        ?string                $mainTable,
+        string                 $eventPrefix,
+        string                 $eventObject,
+        string                 $resourceModel,
+        string                 $model = Document::class,
+        ?AdapterInterface      $connection = null,
+        ?AbstractDb            $resource = null
     ) {
         parent::__construct(
             $entityFactory,
@@ -71,13 +73,13 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
      *
      * @return void
      */
-    public function setAggregations($aggregations)
+    public function setAggregations($aggregations): void
     {
         $this->aggregations = $aggregations;
     }
 
     /** @return SearchCriteriaInterface|null */
-    public function getSearchCriteria()
+    public function getSearchCriteria(): ?SearchCriteriaInterface
     {
         return null;
     }
@@ -85,17 +87,15 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
     /**
      * @param SearchCriteriaInterface|null $searchCriteria
      *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @return Collection
      */
-    public function setSearchCriteria(?SearchCriteriaInterface $searchCriteria = null)
+    public function setSearchCriteria(?SearchCriteriaInterface $searchCriteria = null): Collection
     {
         return $this;
     }
 
     /** @return int */
-    public function getTotalCount()
+    public function getTotalCount(): int
     {
         return $this->getSize();
     }
@@ -103,11 +103,9 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
     /**
      * @param int $totalCount
      *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @return Collection
      */
-    public function setTotalCount($totalCount)
+    public function setTotalCount($totalCount): Collection
     {
         return $this;
     }
@@ -115,11 +113,9 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
     /**
      * @param ExtensibleDataInterface[]|null $items
      *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @return Collection
      */
-    public function setItems(?array $items = null)
+    public function setItems(?array $items = null): Collection
     {
         return $this;
     }

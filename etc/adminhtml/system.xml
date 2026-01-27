@@ -1552,7 +1552,15 @@
                             If your Algolia plan allows a higher record size limit, you can customize the record size limit.]]>
                     </comment>
                 </field>
-                <field id="analytics_region" translate="label comment" type="select" sortOrder="96" showInDefault="1">
+                <field id="max_replicas_limit" translate="label comment" type="text" sortOrder="97" showInDefault="1">
+                    <label>Maximum number of replicas per index</label>
+                    <comment>
+                        <![CDATA[
+                            By default, the Algolia extension allows the creation of 20 replicas per index.
+                            If your Algolia plan allows a higher number of replicas, you can increase it.]]>
+                    </comment>
+                </field>
+                <field id="analytics_region" translate="label comment" type="select" sortOrder="99" showInDefault="1">
                     <label>Analytics Region</label>
                     <source_model>Algolia\AlgoliaSearch\Model\Source\AnalyticsRegion</source_model>
                 </field>

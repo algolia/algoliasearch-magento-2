@@ -17,11 +17,12 @@ use PHPUnit\Framework\TestCase;
 
 class ReplicaManagerTest extends TestCase
 {
+    protected ?ConfigHelper $configHelper;
     protected ?ReplicaManager $replicaManager;
 
     public function setUp(): void
     {
-        $configHelper = $this->createMock(ConfigHelper::class);
+        $this->configHelper = $this->createMock(ConfigHelper::class);
         $algoliaConnector = $this->createMock(AlgoliaConnector::class);
         $indexOptionsBuilder = $this->createMock(IndexOptionsBuilder::class);
         $replicaState = $this->createMock(ReplicaState::class);
@@ -33,7 +34,7 @@ class ReplicaManagerTest extends TestCase
         $logger = $this->createMock(DiagnosticsLogger::class);
 
         $this->replicaManager = new ReplicaManagerTestable(
-            $configHelper,
+            $this->configHelper,
             $algoliaConnector,
             $indexOptionsBuilder,
             $replicaState,
@@ -76,6 +77,13 @@ class ReplicaManagerTest extends TestCase
         $this->assertNotContains($replicaToRemove, $newReplicas);
         $this->assertContains('replica1', $newReplicas);
         $this->assertContains('replica3', $newReplicas);
+    }
 
+    public function testMaxReplicasLimit(): void
+    {
+        $this->assertEquals(20, $this->replicaManager->getMaxVirtualReplicasPerIndex());
+
+        $this->configHelper->method('getMaxReplicasLimit')->willReturn(10);
+        $this->assertEquals(10, $this->replicaManager->getMaxVirtualReplicasPerIndex());
     }
 }

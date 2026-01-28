@@ -17,22 +17,9 @@ use Psr\Log\LoggerInterface;
 
 class Collection extends QueueArchiveCollection implements SearchResultInterface
 {
-    /** @var AggregationInterface */
-    protected $aggregations;
+    protected AggregationInterface $aggregations;
 
     /**
-     * @param EntityFactoryInterface $entityFactory
-     * @param LoggerInterface $logger
-     * @param FetchStrategyInterface $fetchStrategy
-     * @param ManagerInterface $eventManager
-     * @param string|null $mainTable
-     * @param string $eventPrefix
-     * @param string $eventObject
-     * @param string $resourceModel
-     * @param string $model
-     * @param AdapterInterface|null $connection
-     * @param AbstractDb|null $resource
-     *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -62,60 +49,46 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
         $this->setMainTable($mainTable);
     }
 
-    /** @return AggregationInterface */
     public function getAggregations(): AggregationInterface
     {
         return $this->aggregations;
     }
 
     /**
-     * @param AggregationInterface $aggregations
-     *
-     * @return void
+     * @param AggregationInterface $aggregations (compatibility with SearchResultInterface::setAggregations()
      */
     public function setAggregations($aggregations): void
     {
         $this->aggregations = $aggregations;
     }
 
-    /** @return SearchCriteriaInterface|null */
     public function getSearchCriteria(): ?SearchCriteriaInterface
     {
         return null;
     }
 
-    /**
-     * @param SearchCriteriaInterface|null $searchCriteria
-     *
-     * @return Collection
-     */
-    public function setSearchCriteria(?SearchCriteriaInterface $searchCriteria = null): Collection
+    public function setSearchCriteria(?SearchCriteriaInterface $searchCriteria = null): self
     {
         return $this;
     }
 
-    /** @return int */
     public function getTotalCount(): int
     {
         return $this->getSize();
     }
 
     /**
-     * @param int $totalCount
-     *
-     * @return Collection
+     * @param int $totalCount (compatibility with SearchResultsInterface::setTotalCount())
      */
-    public function setTotalCount($totalCount): Collection
+    public function setTotalCount($totalCount): self
     {
         return $this;
     }
 
     /**
      * @param ExtensibleDataInterface[]|null $items
-     *
-     * @return Collection
      */
-    public function setItems(?array $items = null): Collection
+    public function setItems(?array $items = null): self
     {
         return $this;
     }

@@ -4,41 +4,37 @@ namespace Algolia\AlgoliaSearch\Model\ResourceModel\Job\Grid;
 
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection as JobCollection;
+use Magento\Framework\Api\ExtensibleDataInterface;
 use Magento\Framework\Api\Search\AggregationInterface;
 use Magento\Framework\Api\Search\SearchResultInterface;
+use Magento\Framework\Api\SearchCriteriaInterface;
+use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
+use Magento\Framework\Data\Collection\EntityFactoryInterface;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\View\Element\UiComponent\DataProvider\Document;
+use Psr\Log\LoggerInterface;
 
 class Collection extends JobCollection implements SearchResultInterface
 {
-    /** @var AggregationInterface */
-    protected $aggregations;
+    protected AggregationInterface $aggregations;
 
     /**
-     * @param \Magento\Framework\Data\Collection\EntityFactoryInterface    $entityFactory
-     * @param \Psr\Log\LoggerInterface                                     $logger
-     * @param \Magento\Framework\Data\Collection\Db\FetchStrategyInterface $fetchStrategy
-     * @param \Magento\Framework\Event\ManagerInterface                    $eventManager
-     * @param mixed|null                                                   $mainTable
-     * @param \Magento\Framework\Model\ResourceModel\Db\AbstractDb         $eventPrefix
-     * @param mixed                                                        $eventObject
-     * @param mixed                                                        $resourceModel
-     * @param string                                                       $model
-     * @param \Magento\Framework\DB\Adapter\AdapterInterface|null          $connection
-     * @param \Magento\Framework\Model\ResourceModel\Db\AbstractDb|null    $resource
-     *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        \Magento\Framework\Data\Collection\EntityFactoryInterface $entityFactory,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\Data\Collection\Db\FetchStrategyInterface $fetchStrategy,
-        \Magento\Framework\Event\ManagerInterface $eventManager,
-        $mainTable,
-        $eventPrefix,
-        $eventObject,
-        $resourceModel,
-        $model = \Magento\Framework\View\Element\UiComponent\DataProvider\Document::class,
-        ?\Magento\Framework\DB\Adapter\AdapterInterface $connection = null,
-        ?\Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource = null
+        EntityFactoryInterface $entityFactory,
+        LoggerInterface        $logger,
+        FetchStrategyInterface $fetchStrategy,
+        ManagerInterface       $eventManager,
+        ?string                $mainTable,
+        string                 $eventPrefix,
+        string                 $eventObject,
+        string                 $resourceModel,
+        string                 $model = Document::class,
+        ?AdapterInterface      $connection = null,
+        ?AbstractDb            $resource = null
     ) {
         parent::__construct(
             $entityFactory,
@@ -56,7 +52,7 @@ class Collection extends JobCollection implements SearchResultInterface
         $this->addStatusToCollection();
     }
 
-    private function addStatusToCollection()
+    private function addStatusToCollection(): void
     {
         $this->addExpressionFieldToSelect('status', "IF({{retries}} >= {{max_retries}}, '{{error}}', IF({{pid}} IS NULL, '{{new}}', '{{progress}}'))", [
             'pid' => JobInterface::FIELD_PID,
@@ -68,66 +64,46 @@ class Collection extends JobCollection implements SearchResultInterface
         ]);
     }
 
-    /** @return AggregationInterface */
-    public function getAggregations()
+    public function getAggregations(): AggregationInterface
     {
         return $this->aggregations;
     }
 
     /**
-     * @param AggregationInterface $aggregations
-     *
-     * @return $this
+     * @param AggregationInterface $aggregations (compatibility with SearchResultInterface::setAggregations()
      */
-    public function setAggregations($aggregations)
+    public function setAggregations($aggregations): void
     {
         $this->aggregations = $aggregations;
     }
 
-    /** @return \Magento\Framework\Api\SearchCriteriaInterface|null */
-    public function getSearchCriteria()
+    public function getSearchCriteria(): ?SearchCriteriaInterface
     {
         return null;
     }
 
-    /**
-     * @param \Magento\Framework\Api\SearchCriteriaInterface|null $searchCriteria
-     *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
-    public function setSearchCriteria(?\Magento\Framework\Api\SearchCriteriaInterface $searchCriteria = null)
+    public function setSearchCriteria(?SearchCriteriaInterface $searchCriteria = null): self
     {
         return $this;
     }
 
-    /** @return int */
-    public function getTotalCount()
+    public function getTotalCount(): int
     {
         return $this->getSize();
     }
 
     /**
-     * @param int $totalCount
-     *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @param int $totalCount (compatibility with SearchResultsInterface::setTotalCount())
      */
-    public function setTotalCount($totalCount)
+    public function setTotalCount($totalCount): self
     {
         return $this;
     }
 
     /**
-     * @param \Magento\Framework\Api\ExtensibleDataInterface[]|null $items
-     *
-     * @return $this
-     *
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @param ExtensibleDataInterface[]|null $items
      */
-    public function setItems(?array $items = null)
+    public function setItems(?array $items = null): self
     {
         return $this;
     }

@@ -20,10 +20,9 @@ use Magento\Framework\Indexer\IndexerRegistry;
 class ProductsIndexingTest extends ProductsIndexingTestCase
 {
 
-    /*** @var IndexerRegistry */
-    protected $indexerRegistry;
+    protected ?IndexerRegistry $indexerRegistry;
 
-    protected $testProductId;
+    protected int $testProductId;
 
     const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
 

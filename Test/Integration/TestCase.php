@@ -186,13 +186,13 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         $this->productMetadata = $this->objectManager->get(ProductMetadataInterface::class);
 
         if (version_compare($this->getMagentoVersion(), '2.4.7', '<')) {
-            if ($this->getMagentEdition() === 'Community') {
+            if ($this->getMagentoEdition() === 'Community') {
                 $this->assertValues = new Magento246CE();
             } else {
                 $this->assertValues = new Magento246EE();
             }
         } else {
-            if ($this->getMagentEdition() === 'Community') {
+            if ($this->getMagentoEdition() === 'Community') {
                 $this->assertValues = new Magento247CE();
             } else {
                 $this->assertValues = new Magento247EE();
@@ -242,12 +242,12 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         $this->boostrapped = true;
     }
 
-    private function getMagentoVersion()
+    private function getMagentoVersion(): string
     {
         return $this->productMetadata->getVersion();
     }
 
-    private function getMagentEdition()
+    private function getMagentoEdition(): string
     {
         return $this->productMetadata->getEdition();
     }

@@ -51,20 +51,23 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     protected ?AlgoliaConnector $algoliaConnector = null;
     protected ?IndexNameFetcher $indexNameFetcher = null;
 
+    public static function setUpBeforeClass(): void
+    {
+        IndexCleaner::init();
+    }
+
     protected function setUp(): void
     {
         $this->bootstrap();
     }
 
     /**
-     * @throws ExceededRetriesException
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     protected function tearDown(): void
     {
-        $this->clearIndices();
-        $this->algoliaConnector->waitLastTask();
-        $this->clearIndices(); // Remaining replicas
+        IndexCleaner::clean($this->indexPrefix);
     }
 
     protected function getIndexName(string $storeIndexPart): string
@@ -164,24 +167,6 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         foreach ($settings as $key => $value) {
             $this->setConfig($key, $value);
             $this->setConfig($key, $value, 'admin');
-        }
-    }
-
-    protected function clearIndices()
-    {
-        $indices = $this->algoliaConnector->listIndexes();
-
-        foreach ($indices['items'] as $index) {
-            $name = $index['name'];
-
-            if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
-                try {
-                    $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name);
-                    $this->algoliaConnector->deleteIndex($indexOptions);
-                } catch (AlgoliaException) {
-                    // Might be a replica
-                }
-            }
         }
     }
 

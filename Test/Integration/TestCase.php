@@ -25,25 +25,17 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 {
     const DEFAULT_STORE_ID = 1;
 
-    /**
-     * @var ObjectManagerInterface
-     */
-    protected $objectManager;
+    protected ?ObjectManagerInterface $objectManager = null;
 
-    /** @var bool */
-    private $boostrapped = false;
+    private bool $bootstrapped = false;
 
-    /** @var string */
-    protected $indexPrefix;
+    protected ?string $indexPrefix = null;
 
-    /** @var ConfigHelper */
-    protected $configHelper;
+    protected ?ConfigHelper $configHelper = null;
 
-    /** @var Magento246CE|Magento246EE|Magento247CE|Magento247EE */
-    protected $assertValues;
+    protected null|Magento246CE|Magento246EE|Magento247CE|Magento247EE $assertValues;
 
-    /** @var ProductMetadataInterface */
-    protected $productMetadata;
+    protected ?ProductMetadataInterface $productMetadata = null;
 
     protected ?string $indexSuffix = null;
 
@@ -166,7 +158,7 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     {
         foreach ($settings as $key => $value) {
             $this->setConfig($key, $value);
-            $this->setConfig($key, $value, 'admin');
+            $this->setConfig($key, $value, scopeCode: 'admin');
         }
     }
 
@@ -178,7 +170,7 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 
     private function bootstrap()
     {
-        if ($this->boostrapped === true) {
+        if ($this->bootstrapped) {
             return;
         }
 
@@ -199,7 +191,7 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
             }
         }
 
-        $this->configHelper = $this->getObjectManager()->create(ConfigHelper::class);
+        $this->configHelper = $this->objectManager->create(ConfigHelper::class);
 
         $this->indexPrefix =  'magento2_' . date('Y-m-d_H:i:s') . '_' . (getenv('INDEX_PREFIX') ?: 'circleci_');
 
@@ -239,7 +231,7 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         $this->algoliaConnector = $this->objectManager->get(AlgoliaConnector::class);
         $this->indexNameFetcher = $this->objectManager->get(IndexNameFetcher::class);
 
-        $this->boostrapped = true;
+        $this->bootstrapped = true;
     }
 
     private function getMagentoVersion(): string

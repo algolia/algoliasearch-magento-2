@@ -85,14 +85,16 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     }
 
     protected function setConfig(
-        $path,
-        $value,
-        $scopeCode = 'default'
-    ) {
-        $this->getObjectManager()->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class)->setValue(
+        string $path,
+        mixed $value,
+        string $scope = ScopeInterface::SCOPE_STORE,
+        ?string $scopeCode = 'default'
+    ): void
+    {
+        $this->objectManager->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class)->setValue(
             $path,
             $value,
-            ScopeInterface::SCOPE_STORE,
+            $scope,
             $scopeCode
         );
     }
@@ -217,10 +219,31 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         $this->indexPrefix =  'magento2_' . date('Y-m-d_H:i:s') . '_' . (getenv('INDEX_PREFIX') ?: 'circleci_');
 
         // Admin
-        $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'), 'admin');
-        $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_KEY'), 'admin');
-        $this->setConfig('algoliasearch_credentials/credentials/api_key', getenv('ALGOLIA_API_KEY'), 'admin');
-        $this->setConfig('algoliasearch_credentials/credentials/index_prefix', $this->indexPrefix, 'admin');
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/application_id',
+            getenv('ALGOLIA_APPLICATION_ID'),
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/search_only_api_key',
+            getenv('ALGOLIA_SEARCH_KEY'),
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/api_key',
+            getenv('ALGOLIA_API_KEY'),
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/index_prefix',
+            $this->indexPrefix,
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+
         // Default website
         $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'));
         $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_KEY'));

@@ -43,11 +43,6 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     protected ?AlgoliaConnector $algoliaConnector = null;
     protected ?IndexNameFetcher $indexNameFetcher = null;
 
-    public static function setUpBeforeClass(): void
-    {
-        IndexCleaner::init();
-    }
-
     protected function setUp(): void
     {
         $this->bootstrap();
@@ -59,7 +54,9 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
      */
     protected function tearDown(): void
     {
-        IndexCleaner::clean($this->indexPrefix);
+        if ($this->indexPrefix) {
+            IndexCleaner::clean($this->indexPrefix);
+        }
     }
 
     protected function getIndexName(string $storeIndexPart): string

@@ -112,8 +112,12 @@ class RecordBuilder implements RecordBuilderInterface
         $customData = $this->addAttribute('rating_summary', $defaultData, $customData, $additionalAttributes, $product);
         $customData = $this->addCategoryData($customData, $product);
         $customData = $this->addImageData($customData, $product, $additionalAttributes);
-        $customData = $this->addInStock($defaultData, $customData, $product);
-        $customData = $this->addStockQty($defaultData, $customData, $additionalAttributes, $product);
+
+        // Cache stock item to avoid duplicate database calls
+        $stockItem = $this->stockRegistry->getStockItem($product->getId());
+
+        $customData = $this->addInStock($defaultData, $customData, $product, $stockItem);
+        $customData = $this->addStockQty($defaultData, $customData, $additionalAttributes, $product, $stockItem);
         if ($product->getTypeId() == "bundle") {
             $customData = $this->addBundleProductDefaultOptions($customData, $product);
         }
@@ -276,12 +280,15 @@ class RecordBuilder implements RecordBuilderInterface
      * @param $defaultData
      * @param $customData
      * @param Product $product
+     * @param \Magento\CatalogInventory\Api\Data\StockItemInterface|null $stockItem
      * @return mixed
      */
-    public function addInStock($defaultData, $customData, Product $product)
+    public function addInStock($defaultData, $customData, Product $product, $stockItem = null)
     {
         if (isset($defaultData['in_stock']) === false) {
-            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            if ($stockItem === null) {
+                $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            }
             $customData['in_stock'] = $product->isSaleable() && $stockItem->getIsInStock();
         }
 
@@ -293,15 +300,18 @@ class RecordBuilder implements RecordBuilderInterface
      * @param $customData
      * @param $additionalAttributes
      * @param Product $product
+     * @param \Magento\CatalogInventory\Api\Data\StockItemInterface|null $stockItem
      * @return mixed
      */
-    protected function addStockQty($defaultData, $customData, $additionalAttributes, Product $product)
+    protected function addStockQty($defaultData, $customData, $additionalAttributes, Product $product, $stockItem = null)
     {
         if (isset($defaultData['stock_qty']) === false
             && $this->isAttributeEnabled($additionalAttributes, 'stock_qty')) {
             $customData['stock_qty'] = 0;
 
-            $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            if ($stockItem === null) {
+                $stockItem = $this->stockRegistry->getStockItem($product->getId());
+            }
             if ($stockItem) {
                 $customData['stock_qty'] = (int)$stockItem->getQty();
             }

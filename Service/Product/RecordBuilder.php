@@ -17,6 +17,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Category\CategoryPathProvider;
 use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
 use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -55,7 +56,7 @@ class RecordBuilder implements RecordBuilderInterface
         protected ImageHelper            $imageHelper,
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
-        protected \Algolia\AlgoliaSearch\Service\Category\CategoryPathProvider $categoryPathProvider,
+        protected CategoryPathProvider   $categoryPathProvider,
     ){}
 
     /**

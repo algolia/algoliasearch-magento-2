@@ -193,6 +193,11 @@ class ProductHelper extends AbstractEntityHelper
         $attrs = array_merge($this->predefinedProductAttributes, $additionalAttr);
         $attrs = array_diff($attrs, $this->createdAttributes);
 
+        // Add media_gallery if configured to avoid lazy loading in RecordBuilder
+        if (in_array('media_gallery', $additionalAttr, true)) {
+            $attrs[] = 'media_gallery';
+        }
+
         $products = $products->addAttributeToSelect(array_values($attrs));
 
         if ($productIds && count($productIds) > 0) {

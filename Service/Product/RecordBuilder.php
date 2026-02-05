@@ -261,7 +261,8 @@ class RecordBuilder implements RecordBuilderInterface
             $customData['image_url'] = $this->imageHelper->getUrl();
 
             if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
-                $product->load($product->getId(), 'media_gallery');
+                // media_gallery is now preloaded in collection, no need for lazy load
+                // $product->load($product->getId(), 'media_gallery');
 
                 $customData['media_gallery'] = [];
 

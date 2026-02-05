@@ -55,6 +55,7 @@ class RecordBuilder implements RecordBuilderInterface
         protected ImageHelper            $imageHelper,
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
+        protected \Algolia\AlgoliaSearch\Service\Category\CategoryPathProvider $categoryPathProvider,
     ){}
 
     /**
@@ -400,6 +401,16 @@ class RecordBuilder implements RecordBuilderInterface
             $store = $this->storeManager->getStore($product->getStoreId());
             $rootCat = $store->getRootCategoryId();
 
+            // Collect all path IDs from all categories to batch-load names
+            $allPathIds = [];
+            foreach ($categoryCollection as $category) {
+                $allPathIds = array_merge($allPathIds, $category->getPathIds());
+            }
+            $allPathIds = array_unique($allPathIds);
+
+            // Batch-load all category names in single query to avoid N+1
+            $categoryNamesMap = $this->categoryPathProvider->getCategoryNameMap($allPathIds, $storeId);
+
             foreach ($categoryCollection as $category) {
                 $categoryName = $this->getValidCategoryName($category, $rootCat, $storeId);
                 if (!$categoryName) {
@@ -411,7 +422,8 @@ class RecordBuilder implements RecordBuilderInterface
                 $paths = [];
 
                 foreach ($category->getPathIds() as $treeCategoryId) {
-                    $name = $this->categoryHelper->getCategoryName($treeCategoryId, $storeId);
+                    // Use preloaded category name instead of database call
+                    $name = $categoryNamesMap[$treeCategoryId] ?? null;
                     if ($name) {
                         $categoryData['categoryIds'][] = $treeCategoryId;
                         $paths[] = $name;

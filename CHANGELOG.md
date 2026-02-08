@@ -1,13 +1,43 @@
 # CHANGE LOG
 
-## 3.18.0-dev
+## 3.18.0
+
+### Security
+- Hardened job execute validation to prevent remote code execution [#1890](https://github.com/algolia/algoliasearch-magento-2/pull/1890)
+
+### Features
+- Added Backend Rendering Manager for server-side search rendering [#1844](https://github.com/algolia/algoliasearch-magento-2/pull/1844)
+- Added backend aggregation support with price key resolver service [#1872](https://github.com/algolia/algoliasearch-magento-2/pull/1872)
+- Added Algolia Query Suggestions backend configuration with migration patch and indexing control [#1863](https://github.com/algolia/algoliasearch-magento-2/pull/1863)
+- Added Algolia Query Suggestions frontend with backend validator and search client wrapper [#1885](https://github.com/algolia/algoliasearch-magento-2/pull/1885)
+- Added pagination mode configuration with migration setup and unit tests [#1869](https://github.com/algolia/algoliasearch-magento-2/pull/1869)
+- Added sort and paging parameters frontend manager [#1873](https://github.com/algolia/algoliasearch-magento-2/pull/1873)
+- Added configurable price parameter for InstantSearch with prototype pollution guard [#1889](https://github.com/algolia/algoliasearch-magento-2/pull/1889)
+- Added configurable max replicas limit [#1901](https://github.com/algolia/algoliasearch-magento-2/pull/1901)
+- Added API contract for canonical visibility fields [#1862](https://github.com/algolia/algoliasearch-magento-2/pull/1862)
+- Added index option builder for replica indices [#1864](https://github.com/algolia/algoliasearch-magento-2/pull/1864)
 
 ### Updates
-- The unused legacy class `AlgoliaHelper` has been removed/
-- Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release.
-- Updated unit and integration tests.
-- `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix
-- Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
+- The unused legacy class `AlgoliaHelper` has been removed
+- Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release
+- Updated unit and integration tests [#1861](https://github.com/algolia/algoliasearch-magento-2/pull/1861)
+- `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix [#1855](https://github.com/algolia/algoliasearch-magento-2/pull/1855)
+- Relocated backend render logic to new adapter module [#1900](https://github.com/algolia/algoliasearch-magento-2/pull/1900)
+- Refactored search adapter plumbing with DTO for search query abstraction and IndexOptions factory pattern [#1846](https://github.com/algolia/algoliasearch-magento-2/pull/1846)
+- Refactored entity option builders and added config comment utils [#1850](https://github.com/algolia/algoliasearch-magento-2/pull/1850)
+- Refactored backend category parameter support with category name mapping and lazy loading cache [#1888](https://github.com/algolia/algoliasearch-magento-2/pull/1888)
+- Extracted category path logic and established single source of truth for facet filter context [#1887](https://github.com/algolia/algoliasearch-magento-2/pull/1887)
+- Removed Product Url Model rewrite and moved category url plugin [#1870](https://github.com/algolia/algoliasearch-magento-2/pull/1870)
+- Changed indexing manager default values [#1854](https://github.com/algolia/algoliasearch-magento-2/pull/1854)
+- Cleaned up Collection grid types [#1902](https://github.com/algolia/algoliasearch-magento-2/pull/1902)
+- Added link to facets and sortings configuration in the products section [#1899](https://github.com/algolia/algoliasearch-magento-2/pull/1899)
+
+### Bug fixes
+- Fixed PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet [#1898](https://github.com/algolia/algoliasearch-magento-2/pull/1898)
+- Fixed category check in configuration block - thank you @benjamin-volle [#1859](https://github.com/algolia/algoliasearch-magento-2/pull/1859)
+- Fixed missed method on page options [#1856](https://github.com/algolia/algoliasearch-magento-2/pull/1856)
+- Fixed missing price keys handled gracefully [#1849](https://github.com/algolia/algoliasearch-magento-2/pull/1849)
+- Fixed integration test state persistence [#1860](https://github.com/algolia/algoliasearch-magento-2/pull/1860)
 
 ## 3.17.2
 

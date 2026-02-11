@@ -75,7 +75,11 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $fixtureThirdStore = $this->storeRepository->get('fixture_third_store');
 
         // Enable customer groups for second fixture store and save configuration
-        $this->setConfig( ConfigHelper::CUSTOMER_GROUPS_ENABLE, 1, $fixtureSecondStore->getCode());
+        $this->setConfig(
+            path: ConfigHelper::CUSTOMER_GROUPS_ENABLE,
+            value: 1,
+            scopeCode: $fixtureSecondStore->getCode()
+        );
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
         $this->algoliaConnector->waitLastTask($fixtureSecondStore->getId());
 

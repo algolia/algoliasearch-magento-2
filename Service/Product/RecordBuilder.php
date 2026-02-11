@@ -54,6 +54,7 @@ class RecordBuilder implements RecordBuilderInterface
         protected ImageHelper            $imageHelper,
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
+        protected UrlBuilder             $urlBuilder,
     ){}
 
     /**
@@ -102,7 +103,7 @@ class RecordBuilder implements RecordBuilderInterface
         $customData = [
             AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $product->getId(),
             'name'                                  => $product->getName(),
-            'url'                                   => $product->getUrlModel()->getUrl($product, $urlParams),
+            'url'                                   => $this->urlBuilder->getUrl($product, $urlParams),
             'visibility_search'                     => (int) (in_array($visibility, $visibleInSearch)),
             'visibility_catalog'                    => (int) (in_array($visibility, $visibleInCatalog)),
             'type_id'                               => $product->getTypeId(),

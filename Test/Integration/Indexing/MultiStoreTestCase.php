@@ -141,6 +141,8 @@ abstract class MultiStoreTestCase extends IndexingTestCase
         $results = $this->algoliaConnector->getObjects($indexOptions, [$entityId]);
         $hit = reset($results['results']);
         $this->assertStringContainsString($baseUrl, $hit['url']);
+        // Ensure product url doesn't contain admin url (see MAGE-1515)
+        $this->assertStringNotContainsString('admin', $hit['url']);
     }
 
     /**

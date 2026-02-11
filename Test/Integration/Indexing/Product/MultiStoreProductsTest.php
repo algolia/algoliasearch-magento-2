@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
@@ -141,6 +142,36 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             "http://fixture_third_store.test/"
         );
 
+        $resource = $this->objectManager->get(ResourceConnection::class);
+
+        // Check again without url rewrite (see MAGE-1515)
+        $resource->getConnection()->query(
+            'DELETE FROM url_rewrite WHERE entity_id = ? AND entity_type = "product" ',
+            [self::VOYAGE_YOGA_BAG_ID]
+        );
+
+        $this->reindexToAllStores($this->productBatchQueueProcessor, [self::VOYAGE_YOGA_BAG_ID]);
+
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $defaultStore,
+            "http://default.test/"
+        );
+
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $fixtureSecondStore,
+            "http://fixture_second_store.test/"
+        );
+
+        $this->validateEntityUrl(
+            'products',
+            self::VOYAGE_YOGA_BAG_ID,
+            $fixtureThirdStore,
+            "http://fixture_third_store.test/"
+        );
 
         // Unassign product from a single website (removed from test website (second and third store))
         $baseWebsite = $this->websiteRepository->get('base');

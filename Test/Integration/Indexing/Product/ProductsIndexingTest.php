@@ -22,7 +22,7 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
 
     protected ?IndexerRegistry $indexerRegistry;
 
-    protected int $testProductId;
+    protected ?string $testProductId = null; // REST API requires objectID as string
 
     const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
 
@@ -124,12 +124,12 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->processOldIndexerTest($productsIndexer, 'products', $this->assertValues->productsOnStockCount);
     }
 
-    private function getValidTestProduct()
+    private function getValidTestProduct(): string
     {
         if (!$this->testProductId) {
             /** @var Product $product */
             $product = $this->getObjectManager()->get(Product::class);
-            $this->testProductId = $product->getIdBySku('MSH09');
+            $this->testProductId = (string) $product->getIdBySku('MSH09');
         }
 
         return $this->testProductId;

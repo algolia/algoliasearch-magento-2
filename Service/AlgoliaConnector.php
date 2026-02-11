@@ -215,7 +215,7 @@ class AlgoliaConnector
 
     /**
      * @param IndexOptionsInterface $indexOptions
-     * @param array $objectIds
+     * @param string[] $objectIds REST API requires objectID sent as type string
      * @return array<string, mixed>
      * @throws AlgoliaException
      */

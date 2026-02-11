@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaRebuildCommand;
 use Algolia\AlgoliaSearch\Console\Command\Replica\ReplicaSyncCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits\ConfigAssertionsTrait;
@@ -219,9 +220,9 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $sorting[] = $newSorting;
 
         $this->setConfig(
-            ConfigHelper::SORTING_INDICES,
-            $this->serializer->serialize($sorting),
-            $store->getCode()
+            path: InstantSearchHelper::SORTING_INDICES,
+            value: $this->serializer->serialize($sorting),
+            scopeCode: $store->getCode()
         );
 
         $this->assertSortingAttribute($attr, $dir);
@@ -235,8 +236,8 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
 
         foreach ($stores as $store) {
             $this->setConfig(
-                ConfigHelper::SORTING_INDICES,
-                $this->serializer->serialize([
+                path: InstantSearchHelper::SORTING_INDICES,
+                value: $this->serializer->serialize([
                     [
                         'attribute' => 'price',
                         'sort' => 'asc',
@@ -253,10 +254,14 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
                         'sortLabel' => 'Newest first'
                     ]
                 ]),
-                $store->getCode()
+                scopeCode: $store->getCode()
             );
 
-            $this->setConfig( ConfigHelper::CUSTOMER_GROUPS_ENABLE, 0, $store->getCode());
+            $this->setConfig(
+                path: ConfigHelper::CUSTOMER_GROUPS_ENABLE,
+                value: 0,
+                scopeCode: $store->getCode()
+            );
         }
     }
 

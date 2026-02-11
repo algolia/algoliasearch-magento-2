@@ -34,7 +34,7 @@ class UrlBuilder
      * @param array $params
      * @return string
      *
-     *@throws NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function getUrl(Product $product, array $params = []): string
     {

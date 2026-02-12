@@ -22,6 +22,7 @@ use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Url as ProductUrl;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
@@ -55,7 +56,7 @@ class RecordBuilder implements RecordBuilderInterface
         protected ImageHelper            $imageHelper,
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
-        protected UrlBuilder             $urlBuilder,
+        protected ProductUrl             $productUrl,
     ){}
 
     /**
@@ -99,7 +100,7 @@ class RecordBuilder implements RecordBuilderInterface
         $customData = [
             AlgoliaConnector::ALGOLIA_API_OBJECT_ID => $product->getId(),
             'name'                                  => $product->getName(),
-            'url'                                   => $this->urlBuilder->getUrl($product, $urlParams),
+            'url'                                   => $this->productUrl->getUrl($product, $urlParams),
             'type_id'                               => $product->getTypeId(),
         ];
 

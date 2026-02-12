@@ -208,6 +208,7 @@ class ConfigHelper
         return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
+    /** Is the Algolia search experience enabled on the frontend? */
     public function isEnabledFrontEnd(?int $storeId = null): bool
     {
         return $this->instantSearchConfig->isEnabled($storeId)
@@ -490,7 +491,7 @@ class ConfigHelper
     public function useVirtualReplica(?int $storeId = null): bool
     {
         return (bool) count(array_filter(
-            $this->getSorting($storeId),
+            $this->instantSearchConfig->getSorting($storeId),
             fn($sort) => $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA]
         ));
     }

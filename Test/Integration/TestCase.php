@@ -25,25 +25,17 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 {
     const DEFAULT_STORE_ID = 1;
 
-    /**
-     * @var ObjectManagerInterface
-     */
-    protected $objectManager;
+    protected ?ObjectManagerInterface $objectManager = null;
 
-    /** @var bool */
-    private $boostrapped = false;
+    private bool $bootstrapped = false;
 
-    /** @var string */
-    protected $indexPrefix;
+    protected ?string $indexPrefix = null;
 
-    /** @var ConfigHelper */
-    protected $configHelper;
+    protected ?ConfigHelper $configHelper = null;
 
-    /** @var Magento246CE|Magento246EE|Magento247CE|Magento247EE */
-    protected $assertValues;
+    protected null|Magento246CE|Magento246EE|Magento247CE|Magento247EE $assertValues;
 
-    /** @var ProductMetadataInterface */
-    protected $productMetadata;
+    protected ?ProductMetadataInterface $productMetadata = null;
 
     protected ?string $indexSuffix = null;
 
@@ -57,14 +49,14 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     }
 
     /**
-     * @throws ExceededRetriesException
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     protected function tearDown(): void
     {
-        $this->clearIndices();
-        $this->algoliaConnector->waitLastTask();
-        $this->clearIndices(); // Remaining replicas
+        if ($this->indexPrefix) {
+            IndexCleaner::clean($this->indexPrefix);
+        }
     }
 
     protected function getIndexName(string $storeIndexPart): string
@@ -85,14 +77,16 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     }
 
     protected function setConfig(
-        $path,
-        $value,
-        $scopeCode = 'default'
-    ) {
-        $this->getObjectManager()->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class)->setValue(
+        string $path,
+        mixed $value,
+        string $scope = ScopeInterface::SCOPE_STORE,
+        ?string $scopeCode = 'default'
+    ): void
+    {
+        $this->objectManager->get(\Magento\Framework\App\Config\MutableScopeConfigInterface::class)->setValue(
             $path,
             $value,
-            ScopeInterface::SCOPE_STORE,
+            $scope,
             $scopeCode
         );
     }
@@ -161,25 +155,7 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     {
         foreach ($settings as $key => $value) {
             $this->setConfig($key, $value);
-            $this->setConfig($key, $value, 'admin');
-        }
-    }
-
-    protected function clearIndices()
-    {
-        $indices = $this->algoliaConnector->listIndexes();
-
-        foreach ($indices['items'] as $index) {
-            $name = $index['name'];
-
-            if (mb_strpos((string) $name, $this->indexPrefix) === 0) {
-                try {
-                    $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($name);
-                    $this->algoliaConnector->deleteIndex($indexOptions);
-                } catch (AlgoliaException) {
-                    // Might be a replica
-                }
-            }
+            $this->setConfig($key, $value, scopeCode: 'admin');
         }
     }
 
@@ -191,7 +167,7 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 
     private function bootstrap()
     {
-        if ($this->boostrapped === true) {
+        if ($this->bootstrapped) {
             return;
         }
 
@@ -199,28 +175,49 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         $this->productMetadata = $this->objectManager->get(ProductMetadataInterface::class);
 
         if (version_compare($this->getMagentoVersion(), '2.4.7', '<')) {
-            if ($this->getMagentEdition() === 'Community') {
+            if ($this->getMagentoEdition() === 'Community') {
                 $this->assertValues = new Magento246CE();
             } else {
                 $this->assertValues = new Magento246EE();
             }
         } else {
-            if ($this->getMagentEdition() === 'Community') {
+            if ($this->getMagentoEdition() === 'Community') {
                 $this->assertValues = new Magento247CE();
             } else {
                 $this->assertValues = new Magento247EE();
             }
         }
 
-        $this->configHelper = $this->getObjectManager()->create(ConfigHelper::class);
+        $this->configHelper = $this->objectManager->create(ConfigHelper::class);
 
         $this->indexPrefix =  'magento2_' . date('Y-m-d_H:i:s') . '_' . (getenv('INDEX_PREFIX') ?: 'circleci_');
 
         // Admin
-        $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'), 'admin');
-        $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_KEY'), 'admin');
-        $this->setConfig('algoliasearch_credentials/credentials/api_key', getenv('ALGOLIA_API_KEY'), 'admin');
-        $this->setConfig('algoliasearch_credentials/credentials/index_prefix', $this->indexPrefix, 'admin');
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/application_id',
+            getenv('ALGOLIA_APPLICATION_ID'),
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/search_only_api_key',
+            getenv('ALGOLIA_SEARCH_KEY'),
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/api_key',
+            getenv('ALGOLIA_API_KEY'),
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+        $this->setConfig(
+            'algoliasearch_credentials/credentials/index_prefix',
+            $this->indexPrefix,
+            ScopeInterface::SCOPE_STORE,
+            'admin'
+        );
+
         // Default website
         $this->setConfig('algoliasearch_credentials/credentials/application_id', getenv('ALGOLIA_APPLICATION_ID'));
         $this->setConfig('algoliasearch_credentials/credentials/search_only_api_key', getenv('ALGOLIA_SEARCH_KEY'));
@@ -231,15 +228,15 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         $this->algoliaConnector = $this->objectManager->get(AlgoliaConnector::class);
         $this->indexNameFetcher = $this->objectManager->get(IndexNameFetcher::class);
 
-        $this->boostrapped = true;
+        $this->bootstrapped = true;
     }
 
-    private function getMagentoVersion()
+    private function getMagentoVersion(): string
     {
         return $this->productMetadata->getVersion();
     }
 
-    private function getMagentEdition()
+    private function getMagentoEdition(): string
     {
         return $this->productMetadata->getEdition();
     }

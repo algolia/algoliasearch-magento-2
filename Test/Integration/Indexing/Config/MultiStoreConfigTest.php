@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Config;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits\ConfigAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 
@@ -52,9 +53,9 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         ];
 
         $this->setConfig(
-            ConfigHelper::CATEGORY_ATTRIBUTES,
-            json_encode($attributesFromConfigAlt),
-            $fixtureSecondStore->getCode())
+            path: ConfigHelper::CATEGORY_ATTRIBUTES,
+            value: json_encode($attributesFromConfigAlt),
+            scopeCode: $fixtureSecondStore->getCode())
         ;
 
         $rankingsFromConfig = $this->configHelper->getCategoryCustomRanking($defaultStore->getId());
@@ -65,9 +66,9 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         ];
 
         $this->setConfig(
-            ConfigHelper::CATEGORY_CUSTOM_RANKING,
-            json_encode($rankingsFromConfigAlt),
-            $fixtureSecondStore->getCode())
+            path: ConfigHelper::CATEGORY_CUSTOM_RANKING,
+            value: json_encode($rankingsFromConfigAlt),
+            scopeCode: $fixtureSecondStore->getCode())
         ;
 
         // Query rules check (activate one QR on the fixture store)
@@ -81,9 +82,9 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         }
 
         $this->setConfig(
-            ConfigHelper::FACETS,
-            json_encode($facetsFromConfigAlt),
-            $fixtureSecondStore->getCode()
+            path:InstantSearchHelper::FACETS,
+            value: json_encode($facetsFromConfigAlt),
+            scopeCode: $fixtureSecondStore->getCode()
         );
 
         $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
@@ -117,6 +118,6 @@ class MultiStoreConfigTest extends MultiStoreTestCase
     {
         parent::tearDown();
 
-        $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 0);
+        $this->setConfig(InstantSearchHelper::IS_ENABLED, 0);
     }
 }

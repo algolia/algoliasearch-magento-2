@@ -5,28 +5,32 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Frontend\Search;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
+use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\ProductsIndexingTestCase;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
 
-class SearchTest extends TestCase
+/**
+ * Test basic search functionality.
+ *
+ * @magentoDbIsolation disabled
+ */
+class SearchTest extends SearchTestCase
 {
     const BAGS_CATEGORY_ID = 4;
 
-    /** @var Product */
-    protected $productIndexer;
-
-    /** @var BackendSearch */
-    protected $backendSearch;
+    protected ?BackendSearch $backendSearch = null;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->productIndexer = $this->objectManager->get(Product::class);
         $this->backendSearch = $this->objectManager->create(BackendSearch::class);
+        $this->indexOncePerClass(__CLASS__ . '::indexProducts');
+    }
 
-        $this->productIndexer->executeFull();
-        $this->algoliaConnector->waitLastTask();
+    protected function tearDown(): void
+    {
+        // Prevent inherited tear down and perform after all tests have executed
     }
 
     public function testSearch()

@@ -36,6 +36,9 @@ class PricingTest extends ProductsIndexingTestCase
     {
         parent::setUp();
 
+        $this->indexerRegistry->get('catalogrule_product')->reindexAll();
+        $this->indexerRegistry->get('catalogrule_rule')->reindexAll();
+
         $this->indexSuffix = 'products';
     }
 

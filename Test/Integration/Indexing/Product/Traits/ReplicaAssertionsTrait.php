@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\Traits;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Magento\Store\Api\Data\StoreInterface;
 
@@ -149,9 +148,9 @@ trait ReplicaAssertionsTrait
             );
         }
         $this->setConfig(
-            InstantSearchHelper::SORTING_INDICES,
-            json_encode($sorting),
-            $store?->getCode() ?? 'default'
+            path: InstantSearchHelper::SORTING_INDICES,
+            value: json_encode($sorting),
+            scopeCode: $store?->getCode() ?? 'default'
         );
     }
 }

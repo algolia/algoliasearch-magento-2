@@ -4,7 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Page;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Cms\Api\Data\PageInterface;
@@ -129,9 +129,9 @@ class MultiStorePagesTest extends MultiStoreTestCase
             [];
 
         $this->setConfig(
-            ConfigHelper::EXCLUDED_PAGES,
-            $this->getSerializer()->serialize($excludedPages),
-            $store->getCode()
+            path: AutocompleteHelper::EXCLUDED_PAGES,
+            value: $this->getSerializer()->serialize($excludedPages),
+            scopeCode: $store->getCode()
         );
 
         parent::setupStore($store, $enableInstantSearch);

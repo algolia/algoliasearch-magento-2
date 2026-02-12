@@ -122,11 +122,11 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         /**
          * Handle search
          */
-        $facets = $config->getFacets();
+        $facets = $this->instantSearchConfig->getFacets();
 
         $areCategoriesInFacets = $this->areCategoriesInFacets($facets);
 
-        if ($config->isInstantEnabled()) {
+        if ($this->instantSearchConfig->isEnabled()) {
             $pageIdentifier = $request->getFullActionName();
 
             if ($pageIdentifier === 'catalogsearch_result_index') {
@@ -196,7 +196,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'attributeFilter' => $attributesToFilter,
             'facets' => $facets,
             'areCategoriesInFacets' => $areCategoriesInFacets,
-            'hitsPerPage' => $config->getNumberOfProductResults(),
+            'hitsPerPage' => $this->instantSearchConfig->getNumberOfProductResults(),
             'sortingIndices' => array_values($this->sortingTransformer->getSortingIndices(
                 $this->getStoreId(),
                 $customerGroupId
@@ -204,7 +204,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'isSearchPage' => $this->isSearchPage(),
             'isCategoryPage' => $categoryConfig['isCategoryPage'],
             'isLandingPage' => $this->isLandingPage(),
-            'removeBranding' => (bool)$config->isRemoveBranding(),
+            'removeBranding' => $config->isRemoveBranding(),
             'productId' => $productId,
             'priceKey' => $priceKey,
             'priceGroup' => $priceGroup,
@@ -213,7 +213,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'currencyCode' => $this->getCurrencyCode(),
             'currencySymbol' => $this->getCurrencySymbol(),
             'priceFormat' => $priceFormat,
-            'maxValuesPerFacet' => (int)$config->getMaxValuesPerFacet(),
+            'maxValuesPerFacet' => $this->instantSearchConfig->getMaxValuesPerFacet(),
             'autofocus' => true,
             'resultPageUrl' => $this->getCatalogSearchHelper()->getResultUrl(),
             'request' => [
@@ -235,7 +235,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 ],
             ],
             'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
-            'showSuggestionsOnNoResultsPage' => $config->showSuggestionsOnNoResultsPage(),
+            'showSuggestionsOnNoResultsPage' => $this->instantSearchConfig->shouldShowSuggestionsOnNoResultsPage(),
             'baseUrl' => $baseUrl,
             'popularQueries' => $suggestionHelper->getPopularQueries($this->getStoreId()),
             'useAdaptiveImage' => $config->useAdaptiveImage(),
@@ -459,7 +459,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     {
         $urlTrackedParameters = ['query', 'attribute:*', 'index'];
 
-        if ($this->getConfigHelper()->isInfiniteScrollEnabled() === false) {
+        if (!$this->instantSearchConfig->isInfiniteScrollEnabled()) {
             $urlTrackedParameters[] = 'page';
         }
 
@@ -511,7 +511,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
     public function canLoadInstantSearch(): bool
     {
-        return $this->getConfigHelper()->isInstantEnabled()
+        return $this->instantSearchConfig->isEnabled()
             && $this->isProductListingPage();
     }
 

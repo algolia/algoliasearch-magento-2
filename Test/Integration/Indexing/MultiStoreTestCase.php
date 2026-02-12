@@ -2,11 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
-use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -93,34 +92,38 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     protected function setupStore(StoreInterface $store, bool $enableInstantSearch = false): void
     {
         $this->setConfig(
-            'algoliasearch_credentials/credentials/application_id',
-            $store->getCode() === 'fixture_second_store' && getenv('ALGOLIA_APPLICATION_ID_ALT') ?
+            path: 'algoliasearch_credentials/credentials/application_id',
+            value: $store->getCode() === 'fixture_second_store' && getenv('ALGOLIA_APPLICATION_ID_ALT') ?
                 getenv('ALGOLIA_APPLICATION_ID_ALT') :
                 getenv('ALGOLIA_APPLICATION_ID'),
-            $store->getCode()
+            scopeCode: $store->getCode()
         );
         $this->setConfig(
-            'algoliasearch_credentials/credentials/search_only_api_key',
-            $store->getCode() === 'fixture_second_store' && getenv('ALGOLIA_SEARCH_KEY_ALT') ?
+            path: 'algoliasearch_credentials/credentials/search_only_api_key',
+            value: $store->getCode() === 'fixture_second_store' && getenv('ALGOLIA_SEARCH_KEY_ALT') ?
                 getenv('ALGOLIA_SEARCH_KEY_ALT') :
                 getenv('ALGOLIA_SEARCH_KEY'),
-            $store->getCode()
+            scopeCode: $store->getCode()
         );
         $this->setConfig(
-            'algoliasearch_credentials/credentials/api_key',
-            $store->getCode() === 'fixture_second_store' && getenv('ALGOLIA_API_KEY_ALT') ?
+            path: 'algoliasearch_credentials/credentials/api_key',
+            value: $store->getCode() === 'fixture_second_store' && getenv('ALGOLIA_API_KEY_ALT') ?
                 getenv('ALGOLIA_API_KEY_ALT') :
                 getenv('ALGOLIA_API_KEY'),
-            $store->getCode()
+            scopeCode: $store->getCode()
         );
         $this->setConfig(
-            'algoliasearch_credentials/credentials/index_prefix',
-            $this->indexPrefix,
-            $store->getCode()
+            path: 'algoliasearch_credentials/credentials/index_prefix',
+            value: $this->indexPrefix,
+            scopeCode: $store->getCode()
         );
 
         if ($enableInstantSearch) {
-            $this->setConfig(ConfigHelper::IS_INSTANT_ENABLED, 1, $store->getCode());
+            $this->setConfig(
+                path: InstantSearchHelper::IS_ENABLED,
+                value: 1,
+                scopeCode: $store->getCode()
+            );
         }
 
         $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());

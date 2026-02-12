@@ -153,6 +153,8 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     protected function validateModelUrl(string $entityId, StoreInterface $store): void
     {
         $hit = $this->getEntityHit('products', $entityId, $store);
+        // When area is adminhtml, the url returned by the backend model starts with http://localhost/index.php/backend
+        // So we need to check if "backend" is not part of the url to assert that the frontend url model is called
         $this->assertStringNotContainsString('backend', $hit['url']);
     }
 

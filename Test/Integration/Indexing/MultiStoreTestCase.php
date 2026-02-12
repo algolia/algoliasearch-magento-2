@@ -127,20 +127,51 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * Fetch a category from an index and check its base url
+     * Fetch an entity from an index and check its base url
      *
+     * @param string $entity
+     * @param string $entityId
      * @param StoreInterface $store
      * @param string $baseUrl
      * @return void
-     * @throws NoSuchEntityException
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     protected function validateEntityUrl(string $entity, string $entityId, StoreInterface $store, string $baseUrl): void
     {
+        $hit = $this->getEntityHit($entity, $entityId, $store);
+        $this->assertStringContainsString($baseUrl, $hit['url']);
+    }
+
+    /**
+     * @param string $entityId
+     * @param StoreInterface $store
+     * @return void
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     */
+    protected function validateModelUrl(string $entityId, StoreInterface $store): void
+    {
+        $hit = $this->getEntityHit('products', $entityId, $store);
+        // When area is adminhtml, the url returned by the backend model starts with http://localhost/index.php/backend
+        // So we need to check if "backend" is not part of the url to assert that the frontend url model is called
+        $this->assertStringNotContainsString('backend', $hit['url']);
+    }
+
+    /**
+     * @param string $entity
+     * @param string $entityId
+     * @param StoreInterface $store
+     * @return array
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     */
+    protected function getEntityHit(string $entity, string $entityId, StoreInterface $store): array
+    {
         $indexOptions = $this->getIndexOptions($entity, $store->getId());
         $results = $this->algoliaConnector->getObjects($indexOptions, [$entityId]);
-        $hit = reset($results['results']);
-        $this->assertStringContainsString($baseUrl, $hit['url']);
+
+        return reset($results['results']);
     }
 
     /**

@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
@@ -141,7 +142,6 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             "http://fixture_third_store.test/"
         );
 
-
         // Unassign product from a single website (removed from test website (second and third store))
         $baseWebsite = $this->websiteRepository->get('base');
 
@@ -175,6 +175,40 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             count(self::SKUS) - 1,
             $fixtureSecondStore->getId()
         );
+    }
+
+    /**
+     * We set the area to adminhtml to check the url model (see MAGE-1515)
+     * We need a separate test for this because urls will start with http://localhost no matter the config we set in
+     * the data fixture (which breaks the tests asserted by the validateEntityUrl() method in the previous test)
+     *
+     * @magentoDbIsolation disabled
+     * @magentoAppIsolation enabled
+     * @magentoAppArea adminhtml
+     */
+    public function testUrlModel()
+    {
+        $defaultStore = $this->storeRepository->get('default');
+        $fixtureSecondStore = $this->storeRepository->get('fixture_second_store');
+        $fixtureThirdStore = $this->storeRepository->get('fixture_third_store');
+
+        $resource = $this->objectManager->get(ResourceConnection::class);
+
+        $this->validateModelUrl(self::VOYAGE_YOGA_BAG_ID, $defaultStore);
+        $this->validateModelUrl(self::VOYAGE_YOGA_BAG_ID, $fixtureSecondStore);
+        $this->validateModelUrl(self::VOYAGE_YOGA_BAG_ID, $fixtureThirdStore);
+
+        // Check again without url rewrite (see MAGE-1515)
+        $resource->getConnection()->query(
+            'DELETE FROM url_rewrite WHERE entity_id = ? AND entity_type = "product" ',
+            [self::VOYAGE_YOGA_BAG_ID]
+        );
+
+        $this->reindexToAllStores($this->productBatchQueueProcessor, [self::VOYAGE_YOGA_BAG_ID]);
+
+        $this->validateModelUrl(self::VOYAGE_YOGA_BAG_ID, $defaultStore);
+        $this->validateModelUrl(self::VOYAGE_YOGA_BAG_ID, $fixtureSecondStore);
+        $this->validateModelUrl(self::VOYAGE_YOGA_BAG_ID, $fixtureThirdStore);
     }
 
     /**

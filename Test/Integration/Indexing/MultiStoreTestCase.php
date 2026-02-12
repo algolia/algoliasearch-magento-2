@@ -124,22 +124,49 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * Fetch a category from an index and check its base url
+     * Fetch an entity from an index and check its base url
      *
+     * @param string $entity
+     * @param string $entityId
      * @param StoreInterface $store
      * @param string $baseUrl
      * @return void
-     * @throws NoSuchEntityException
      * @throws AlgoliaException
+     * @throws NoSuchEntityException
      */
     protected function validateEntityUrl(string $entity, string $entityId, StoreInterface $store, string $baseUrl): void
     {
+        $hit = $this->getEntityHit($entity, $entityId, $store);
+        $this->assertStringContainsString($baseUrl, $hit['url']);
+    }
+
+    /**
+     * @param string $entityId
+     * @param StoreInterface $store
+     * @return void
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     */
+    protected function validateModelUrl(string $entityId, StoreInterface $store): void
+    {
+        $hit = $this->getEntityHit('products', $entityId, $store);
+        $this->assertStringNotContainsString('backend', $hit['url']);
+    }
+
+    /**
+     * @param string $entity
+     * @param string $entityId
+     * @param StoreInterface $store
+     * @return array
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     */
+    protected function getEntityHit(string $entity, string $entityId, StoreInterface $store): array
+    {
         $indexOptions = $this->getIndexOptions($entity, $store->getId());
         $results = $this->algoliaConnector->getObjects($indexOptions, [$entityId]);
-        $hit = reset($results['results']);
-        $this->assertStringContainsString($baseUrl, $hit['url']);
-        // Ensure product url doesn't contain admin url (see MAGE-1515)
-        $this->assertStringNotContainsString('admin', $hit['url']);
+
+        return reset($results['results']);
     }
 
     /**

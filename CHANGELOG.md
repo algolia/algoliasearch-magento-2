@@ -7,7 +7,7 @@
   - Added possibility to switch between legacy Magento Search Queries and Algolia Query Suggestions.
   - Updated configuration in the Autocomplete menu section.
   - Implemented the feature on the frontend out of the box.
-- Introduced (Algolia Adapter module)[https://github.com/algolia/algoliasearch-adapter-magento-2]
+- Introduced [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2)
 - Added configurable number of replicas limit.
 
 ### Updates
@@ -32,7 +32,7 @@
 - Fixed some integration tests
 
 ### Breaking Changes
-- Backend rendering management is no longer supported in this module, please refer to the (Algolia Adapter module)[https://github.com/algolia/algoliasearch-adapter-magento-2].
+- Backend rendering management is no longer supported in this module, please refer to the [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2).
 
 ## 3.17.2
 

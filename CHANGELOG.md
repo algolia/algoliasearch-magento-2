@@ -1,13 +1,42 @@
 # CHANGE LOG
 
-## 3.18.0-dev
+## 3.18.0-beta.1
+
+### Features
+- Introduced **Algolia Query Suggestions** feature:
+  - Added possibility to switch between legacy Magento Search Queries and Algolia Query Suggestions.
+  - Updated configuration in the Autocomplete menu section.
+  - Implemented the feature on the frontend out of the box.
+- Introduced [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2)
+  - Registers Algolia as a native Magento 2 search engine.
+  - Provides backend (server-side) rendering for category pages and search results.
+  - Provides friendly indexable content for search-engine crawlers, LLM-based discovery tools, and any client that doesn't execute JavaScript.
+- Added configurable number of replicas limit.
+- Enhanced paging configuration which now takes into account Magento's configuration for grid mode and list mode in addition to the custom mode (value set by the user).
 
 ### Updates
-- The unused legacy class `AlgoliaHelper` has been removed/
+- **Removed backend rendering management** (see "Breaking Changes section")
+- Refactored many portions of the codebase to expose extendable components to be used by the Algolia Adapter module.
+- Synchronized InstantSearch price, sorting and paging params with backend render by introducing `params-manager.js` object.
+- The unused legacy class `AlgoliaHelper` has been removed.
 - Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release.
-- Updated unit and integration tests.
 - `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix
+- Added `ProductRecordFieldsInterface` API contract for canonical visibility fields
+- Added `CategoryPathProvider`, `PriceKeyResolver` and `RenderingManager` services
+- Added `FrontendProductUrl` virtual type
+- Added links leading to facets and sortings configurations in the InstantSearch section.
 - Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
+- Clean up some types in the `Model\ResourceModel` directory.
+- Updated Indexing Manager default values
+- Updated admin CSS
+- Updated and refactored unit and integration tests.
+
+### Bug Fixes
+- Fixed product url indexing when URL rewrites are disabled
+- Fixed some integration tests
+
+### Breaking Changes
+- Backend rendering management is no longer supported in this module, please refer to the [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2).
 
 ## 3.17.2
 

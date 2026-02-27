@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.16.3
+
+### Bug Fixes
+- Fixed product url indexing when URL rewrites are disabled
+
 ## 3.16.2
 
 ### Security

@@ -4,6 +4,9 @@
 
 ### Updates
 - Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
+- 
+### Bug Fixes
+- Fixed product url indexing when URL rewrites are disabled
 
 ## 3.17.2
 

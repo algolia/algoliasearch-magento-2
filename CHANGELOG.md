@@ -7,7 +7,7 @@
 
 ### Bug Fixes
 - Fixed product url indexing when URL rewrites are disabled
-- Defaulted `scopeId` to `0` for config write call in `InstantSearch::SetSorting` method to prevent integrity constraint violation in integration tests.
+- Defaulted `scopeId` to `0` for config writer call in `InstantSearch::SetSorting` method to prevent integrity constraint violation in integration tests.
 
 ## 3.17.2
 

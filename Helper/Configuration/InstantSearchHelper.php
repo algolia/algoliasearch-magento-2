@@ -128,7 +128,7 @@ class InstantSearchHelper
             self::SORTING_INDICES,
             $this->serializer->serialize($sorting),
             $scope,
-            $scopeId
+            $scopeId ?? 0
         );
     }
 

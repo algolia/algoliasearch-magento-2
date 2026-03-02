@@ -4,9 +4,10 @@
 
 ### Updates
 - Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
-- 
+
 ### Bug Fixes
 - Fixed product url indexing when URL rewrites are disabled
+- Defaulted `scopeId` to `0` for config writer call in `InstantSearch::SetSorting` method to prevent integrity constraint violation in integration tests.
 
 ## 3.17.2
 

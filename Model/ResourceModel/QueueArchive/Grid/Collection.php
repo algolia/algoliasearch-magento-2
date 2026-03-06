@@ -28,7 +28,7 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
      * @param mixed $eventObject
      * @param mixed $resourceModel
      * @param string $model
-     * @param null $connection
+     * @param \Magento\Framework\DB\Adapter\AdapterInterface|null $connection
      * @param AbstractDb|null $resource
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -43,7 +43,7 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
         $eventObject,
         $resourceModel,
         $model = \Magento\Framework\View\Element\UiComponent\DataProvider\Document::class,
-        $connection = null,
+        ?\Magento\Framework\DB\Adapter\AdapterInterface $connection = null,
         ?AbstractDb $resource = null
     ) {
         parent::__construct(
@@ -113,7 +113,7 @@ class Collection extends QueueArchiveCollection implements SearchResultInterface
     }
 
     /**
-     * @param ExtensibleDataInterface[] $items
+     * @param ExtensibleDataInterface[]|null $items
      *
      * @return $this
      *

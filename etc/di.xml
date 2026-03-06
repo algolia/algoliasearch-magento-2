@@ -295,4 +295,21 @@
         </arguments>
     </type>
     <preference for="Algolia\AlgoliaSearch\Api\LoggerInterface" type="Algolia\AlgoliaSearch\Logger\AlgoliaLogger"/>
+
+    <!-- url model management for indexing -->
+    <virtualType name="Algolia\AlgoliaSearch\Factory\Product\FrontendUrlFactory" type="Magento\Framework\UrlFactory">
+        <arguments>
+            <argument name="instanceName" xsi:type="string">Magento\Framework\Url</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Algolia\AlgoliaSearch\Model\Product\FrontendProductUrl" type="Magento\Catalog\Model\Product\Url">
+        <arguments>
+            <argument name="urlFactory" xsi:type="object">Algolia\AlgoliaSearch\Factory\Product\FrontendUrlFactory</argument>
+        </arguments>
+    </virtualType>
+    <type name="Algolia\AlgoliaSearch\Service\Product\RecordBuilder">
+        <arguments>
+            <argument name="productUrl" xsi:type="object">Algolia\AlgoliaSearch\Model\Product\FrontendProductUrl</argument>
+        </arguments>
+    </type>
 </config>

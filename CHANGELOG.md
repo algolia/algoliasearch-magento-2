@@ -34,6 +34,7 @@
 ### Bug Fixes
 - Fixed product url indexing when URL rewrites are disabled
 - Fixed some integration tests
+- Fixed undefined property `indexerRegistry` exception on `CategoryObserver`
 
 ### Breaking Changes
 - Backend rendering management is no longer supported in this module, please refer to the [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2).

@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.17.4
+
+### Bug Fixes
+- Fixed undefined property `indexerRegistry` exception on `CategoryObserver`
+
 ## 3.17.3
 
 ### Updates

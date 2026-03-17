@@ -1,44 +1,43 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 Algolia Search & Discovery extension for Magento 2 (`Algolia_AlgoliaSearch`). Provides autocomplete, InstantSearch results pages, faceted navigation, and Algolia Recommend integration. Uses the Algolia PHP API Client v4.18.3.
 
 **Requirements:** PHP 8.2-8.4, Magento 2.4.6+, `algolia/algoliasearch-client-php` 4.18.3
 
-## Common Commands
+## Verification (local — no Magento environment needed)
 
-### Quality Tools (preferred — used by CI)
+- **`php -l <file>`** — Syntax-check modified PHP files
+- **`composer validate`** — Verify `composer.json` correctness
+- **`magento2-lint <path>`** — PHP-CS-Fixer (requires `composer global require algolia/magento2-tools`)
+- **`magento2-types <path>`** — PHPStan level 1 (same global install)
+- **`magento2-test <path>`** — Run all quality checks in dry-run mode
 
-Install: `composer global require algolia/magento2-tools`
+### Validating Changes Without Tests
 
-- **`magento2-lint <path>`** — Run PHP-CS-Fixer and auto-fix issues
-- **`magento2-types <path>`** — Run PHPStan (level 1)
-- **`magento2-php-compatibility <path>`** — Check PHP version compatibility
-- **`magento2-test <path>`** — Run all above in dry-run mode
+This repo is a Magento 2 extension — unit/integration tests require a full Magento environment (Docker or otherwise) and cannot be run from this checkout alone. When tests are unavailable:
 
-### Unit Tests
+- Follow existing patterns in the same directory for new/modified classes
+- Verify DI wiring in `etc/di.xml` when adding new classes or interfaces
+- Ensure PSR-4 namespace alignment (`Algolia\AlgoliaSearch\<path>`)
+- Confirm `etc/db_schema.xml` consistency for schema changes
+- Run `php -l` on all modified PHP files
 
-Run within a Magento Docker environment (uses `bin/cli`):
+## Testing (requires Magento environment)
+
+These commands are for developers with a running Magento instance. CI runs them automatically on `(feat|fix|chore)/MAGE*` branches.
+
+**Unit tests** (Docker via `markshust/docker-magento`):
 ```bash
 bin/cli vendor/bin/phpunit -c /var/www/html/dev/tests/unit/phpunit.xml.dist \
   /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
 ```
 
-### Integration Tests
-
-Requires Algolia credentials as env vars (`ALGOLIA_APPLICATION_ID`, `ALGOLIA_SEARCH_API_KEY`, `ALGOLIA_API_KEY`, optional `INDEX_PREFIX`):
+**Integration tests** (requires `ALGOLIA_APPLICATION_ID`, `ALGOLIA_SEARCH_API_KEY`, `ALGOLIA_API_KEY` env vars):
 ```bash
 cd <magento_root>/dev/tests/integration
 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/
-```
-
-### Static Analysis (MEQP2)
-
-```bash
-phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test <extension_path> --standard=MEQP2 --extensions=php,phtml
 ```
 
 ## Architecture
@@ -59,8 +58,8 @@ PSR-4 root: `Algolia\AlgoliaSearch` (registered in `registration.php`). Module n
   - `Insights/EventProcessor` — Analytics event handling
 
 - **Model/** — Magento models, indexers, and queue system:
-  - `Queue` — Async job queue (database-backed, `algoliasearch_queue` table)
-  - `Indexer/` — 7 indexers: Products, Categories, Pages, Suggestions, AdditionalSections, QueueRunner, DeleteProduct
+  - `Queue` — Cron-driven async job queue (`algoliasearch_queue` table). Materialized views (`etc/mview.xml`) track catalog/CMS changes.
+  - `Indexer/` — 7 indexers (configured in `etc/indexer.xml`): Products, Categories, Pages, Suggestions, AdditionalSections, QueueRunner, DeleteProduct
   - `IndicesConfigurator` — Orchestrates index settings across all entity types
   - `Observer/` — Respond to catalog/CMS save/delete events to trigger reindexing
 
@@ -72,10 +71,6 @@ PSR-4 root: `Algolia\AlgoliaSearch` (registered in `registration.php`). Module n
 - **Block/**, **ViewModel/** — Frontend rendering (autocomplete, InstantSearch, Recommend widgets)
 
 - **Console/Command/** — CLI commands for indexing (`algolia:reindex:*`), queue management, and replica operations
-
-### Indexing System
-
-Six indexable entity types configured in `etc/indexer.xml`: products, categories, pages, suggestions, additional sections, delete products. Materialized views (`etc/mview.xml`) track changes to catalog/CMS tables. A cron-driven queue (`algoliasearch_queue` table) processes index operations asynchronously.
 
 ### Database Tables
 

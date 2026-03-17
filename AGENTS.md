@@ -42,47 +42,9 @@ cd <magento_root>/dev/tests/integration
 
 ## Architecture
 
-### Namespace & Registration
+See [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) for the full architectural overview: topology, data flows, indexing pipeline, queue system, key decisions, invariants, and contributor guidelines.
 
-PSR-4 root: `Algolia\AlgoliaSearch` (registered in `registration.php`). Module name: `Algolia_AlgoliaSearch`.
-
-### Core Layers
-
-- **Service/** — Business logic for indexing. Key classes:
-  - `AlgoliaConnector` — Low-level Algolia API wrapper
-  - `Product/IndexBuilder`, `Category/IndexBuilder` — Build index records
-  - `Product/RecordBuilder`, `Product/FacetBuilder` — Construct product records and facet configs
-  - `Product/ReplicaManager` — Manage sorting replicas
-  - `Product/BatchQueueProcessor`, `Category/BatchQueueProcessor` — Batch indexing
-  - `IndexSettingsHandler` — Push index settings to Algolia
-  - `Insights/EventProcessor` — Analytics event handling
-
-- **Model/** — Magento models, indexers, and queue system:
-  - `Queue` — Cron-driven async job queue (`algoliasearch_queue` table). Materialized views (`etc/mview.xml`) track catalog/CMS changes.
-  - `Indexer/` — 7 indexers (configured in `etc/indexer.xml`): Products, Categories, Pages, Suggestions, AdditionalSections, QueueRunner, DeleteProduct
-  - `IndicesConfigurator` — Orchestrates index settings across all entity types
-  - `Observer/` — Respond to catalog/CMS save/delete events to trigger reindexing
-
-- **Helper/** — Configuration and utilities:
-  - `ConfigHelper` (78KB) — Central config access for all admin settings. Most configuration reads go through here.
-  - `Data` — General utility helper
-  - `Image` — Product image processing
-
-- **Block/**, **ViewModel/** — Frontend rendering (autocomplete, InstantSearch, Recommend widgets)
-
-- **Console/Command/** — CLI commands for indexing (`algolia:reindex:*`), queue management, and replica operations
-
-### Database Tables
-
-Defined in `etc/db_schema.xml`: `algoliasearch_queue`, `algoliasearch_queue_log`, `algoliasearch_queue_archive`, `algoliasearch_landing_page`, `algoliasearch_query`.
-
-### Frontend JS Libraries
-
-Bundled in `view/frontend/`: autocomplete.js, instantsearch.js, search-insights.js, recommend-js.
-
-### Admin Configuration
-
-All extension settings defined in `etc/adminhtml/system.xml` — credentials, autocomplete, InstantSearch, analytics, cookie consent. Default values in `etc/config.xml`.
+**Namespace:** PSR-4 root `Algolia\AlgoliaSearch` (registered in `registration.php`). Module name: `Algolia_AlgoliaSearch`.
 
 ## CI/CD
 

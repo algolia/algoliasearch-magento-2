@@ -113,7 +113,7 @@ Magento XML configuration. Key files:
 - `indexer.xml` - 7 indexer registrations
 - `mview.xml` - materialized view subscriptions for delta indexing (~12 catalog tables)
 - `crontab.xml` - queue processing cron job
-- `db_schema.xml` - 5 extension tables plus columns on `quote_item`/`sales_order_item`
+- `db_schema.xml` - extension tables (see [Database Tables](#database-tables)) plus columns on `quote_item`/`sales_order_item`
 - `adminhtml/system.xml` - all admin settings
 - `config.xml` - default values
 - `events.xml`, `frontend/events.xml`, `adminhtml/events.xml` - observer bindings
@@ -190,6 +190,20 @@ Since v3.16, each indexer's `executeFull()` has a guard clause (e.g.,
 `ConfigHelper::isProductsIndexerEnabled()`). As of v3.18, all guards default to disabled
 in `etc/config.xml`. Full reindexing should be an intentional, scheduled operation
 invoked via the Algolia CLI commands.
+
+## Database Tables
+
+Defined in `etc/db_schema.xml`:
+
+| Table | Purpose |
+|-------|---------|
+| `algoliasearch_queue` | Pending indexing jobs |
+| `algoliasearch_queue_log` | Per-run execution logs |
+| `algoliasearch_queue_archive` | Completed/failed job archive |
+| `algoliasearch_landing_page` | Built-in merchandising landing pages (see Cross-Cutting Concerns) |
+| `algoliasearch_query` | Search query data for suggestions |
+
+Additionally, `quote_item` and `sales_order_item` gain columns for Insights analytics tracking.
 
 ## Queue System
 

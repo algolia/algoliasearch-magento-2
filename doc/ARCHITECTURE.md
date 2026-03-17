@@ -4,7 +4,7 @@ This document describes the high-level architecture of the Algolia Search & Disc
 extension for Magento 2 (`Algolia_AlgoliaSearch`). If you want to familiarize yourself
 with the codebase, you are in the right place.
 
-See also [CLAUDE.md](../CLAUDE.md) for verification commands, testing, CI/CD, and code style.
+See also [AGENTS.md](../AGENTS.md) for verification commands, testing, CI/CD, and code style.
 
 ## Bird's Eye View
 

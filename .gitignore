@@ -9,3 +9,4 @@ node_modules/
 .idea
 .github/instructions/codacy.instructions.md
 dev/bin/auth.json
+.claude/settings.local.json

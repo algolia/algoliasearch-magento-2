@@ -294,6 +294,15 @@ reworked in a future release.
 
 ## For Contributors
 
+### Module Development Standards
+
+- Follow Magento 2 Coding Standards strictly
+- Use Service Contracts for all public APIs
+- Dependency Injection instead of `ObjectManager`
+- Repository Pattern for data access
+- Factory Pattern for object creation
+- Plugin Pattern preferred over preferences/rewrites
+
 ### Patterns to follow
 
 **Adding a new indexable entity:**

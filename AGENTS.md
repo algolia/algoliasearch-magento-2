@@ -40,6 +40,16 @@ cd <magento_root>/dev/tests/integration
 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/
 ```
 
+## Before Making Code Changes
+
+Read these sections in [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) before writing or modifying any code:
+
+- **[Architectural Invariants](doc/ARCHITECTURE.md#architectural-invariants)** — hard rules that must not be violated
+- **[For Contributors](doc/ARCHITECTURE.md#for-contributors)** — required patterns for new entities, config, and queue handlers
+- **[Key Decisions](doc/ARCHITECTURE.md#key-decisions)** — design rationale that must be preserved
+
+These apply equally to human contributors and agents. Non-compliance blocks merge.
+
 ## Architecture
 
 See [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) for the full architectural overview: topology, data flows, indexing pipeline, queue system, key decisions, invariants, and contributor guidelines.

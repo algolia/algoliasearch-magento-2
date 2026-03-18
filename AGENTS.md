@@ -28,13 +28,13 @@ This repo is a Magento 2 extension — unit/integration tests require a full Mag
 
 These commands are for developers with a running Magento instance. CI runs them automatically on `(feat|fix|chore)/MAGE*` branches.
 
-**Unit tests** (Docker via `markshust/docker-magento`):
+**Unit tests**:
 ```bash
-bin/cli vendor/bin/phpunit -c /var/www/html/dev/tests/unit/phpunit.xml.dist \
-  /var/www/html/vendor/algolia/algoliasearch-magento-2/Test/Unit
+vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist \
+  vendor/algolia/algoliasearch-magento-2/Test/Unit
 ```
 
-**Integration tests** (requires `ALGOLIA_APPLICATION_ID`, `ALGOLIA_SEARCH_API_KEY`, `ALGOLIA_API_KEY` env vars):
+**Integration tests** (requires `ALGOLIA_APPLICATION_ID`, `ALGOLIA_SEARCH_API_KEY`, `ALGOLIA_API_KEY`, `INDEX_PREFIX` env vars):
 ```bash
 cd <magento_root>/dev/tests/integration
 ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/

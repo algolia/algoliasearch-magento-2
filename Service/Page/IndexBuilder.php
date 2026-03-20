@@ -108,6 +108,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $tempIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
 
             $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
+            $this->algoliaConnector->copySynonyms($indexName, $tempIndexName, $storeId);
             $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
         }
         $this->algoliaConnector->setSettings(

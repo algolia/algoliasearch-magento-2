@@ -1,15 +1,25 @@
 <?php
 
-/** @var PhpCsFixer\Config $config */
+use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
+
+// Merge with dist config if available (if running php-cs-fixer cmd from Magento root)
 $distConfig = getcwd() . '/.php-cs-fixer.dist.php';
-if (!file_exists($distConfig)) {
-    throw new RuntimeException(sprintf('Could not find .php-cs-fixer.dist.php in %s', getcwd()));
+
+/** @var PhpCsFixer\Config $config */
+$config = new PhpCsFixer\Config();
+$originalRules = [];
+
+if (file_exists($distConfig)) {    
+    $config = require $distConfig;
+    $originalRules = $config->getRules();
 }
-$config = require $distConfig;
 
-$originalRules = $config->getRules();
-
+// Extension specific rules
 $extensionRules = [
+    // anchor to minimum compatibility level
+    '@PHP82Migration' => true, 
+
+    // explicit rules
     'blank_line_after_opening_tag' => true,
     'blank_line_before_statement' => true,
     'cast_spaces' => true,
@@ -42,7 +52,6 @@ $extensionRules = [
     'phpdoc_scalar' => true,
     'phpdoc_separation' => true,
     'phpdoc_single_line_var_spacing' => true,
-    'protected_to_private' => true,
     'psr_autoloading' => true,
     'short_scalar_cast' => true, 
     'blank_lines_before_namespace' => true,
@@ -54,4 +63,6 @@ $extensionRules = [
     'trim_array_spaces' => true,
 ];
 
-return $config->setRules(array_merge($originalRules, $extensionRules));
+return $config
+    ->setParallelConfig(ParallelConfigFactory::detect())
+    ->setRules(array_merge($originalRules, $extensionRules));

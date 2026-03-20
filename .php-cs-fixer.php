@@ -44,7 +44,7 @@ $extensionRules = [
     'not_operator_with_space' => false,
     'object_operator_without_whitespace' => true,
     'phpdoc_annotation_without_dot' => true,
-    'phpdoc_line_span' => ['const' => 'single', 'property' => 'multi', 'method' => 'multi'],
+    'phpdoc_line_span' => ['const' => 'single', 'property' => 'single', 'method' => 'multi'],
     'general_phpdoc_tag_rename' => true,
     'phpdoc_inline_tag_normalizer' => true,
     'phpdoc_tag_type' => true,

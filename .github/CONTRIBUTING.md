@@ -171,7 +171,7 @@ $ vendor/bin/phpcs --standard=Magento2 --extensions=php,phtml -n --error-severit
 ```
 
 ## Quality Tools
-As an alternative to testing Code Styling and Static Analysis individually, you can use our [Quality Tools](https://github.com/algolia/magento2-tools) tool that our CircleCI integration check against, to lint and test your changes. 
+As an alternative to testing Code Styling and Static Analysis individually, you can use our [Quality Tools](https://github.com/algolia/magento2-tools) tool that our CircleCI integration check against, to lint and test your changes.
 
 You can install the tool via composer:
 ```bash
@@ -182,16 +182,18 @@ Make sure to place Composer's system-wide vendor bin directory in your `$PATH` s
 
 Finally, you can launch the quality tools with:
 ```bash
-{command} path/to/magento/extension
+{command} path/to/magento/extension [vendor/bin/path/]
 ```
+
+The second argument is optional. If omitted, the scripts will attempt to auto-resolve the vendor bin directory by checking for a local `vendor/bin/` install (e.g. after running `composer install` in the package directory) and then falling back to the global Composer vendor bin. If neither is found, the tools are expected to be on your `$PATH`.
 
 Here is the list of available commands:
 
 - **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php-cs-fixer.php`.
 
-- **`magento2-types`**: Runs the type checker and displays the found issues - configuration file under `algoliasearch-magento-2/phpstan.neon`.
+- **`magento2-analyse`**: Runs PHPStan static analysis. Uses `phpstan.neon` or `phpstan.neon.dist` from the extension directory if present; otherwise runs at level 1 with sensible defaults. Requires the extension to be installed within a Magento project (detects Magento root automatically).
 
-- **`magento2-php-compatibility`**: Checks if your code is compatibility between multiple all php versions supported by magento.
+- **`magento2-php-compatibility`**: Checks if your code is compatible across all PHP versions supported by Magento.
 
-- **`magento2-test`**: Runs all previous commands in `--dry-run` mode.
+- **`magento2-test`**: Runs all previous commands in `--dry-run` / read-only mode (coding style, PHP compatibility, and PHPStan analysis).
 

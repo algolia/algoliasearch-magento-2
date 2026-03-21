@@ -11,7 +11,7 @@ Algolia Search & Discovery extension for Magento 2 (`Algolia_AlgoliaSearch`). In
 - **`php -l <file>`** — Syntax-check modified PHP files
 - **`composer validate`** — Verify `composer.json` correctness
 - **`magento2-lint <path>`** — PHP-CS-Fixer (requires `composer global require algolia/magento2-tools`)
-- **`magento2-types <path>`** — PHPStan level 1 (same global install)
+- **`magento2-analyse <path>`** — PHPStan level 1 (same global install)
 - **`magento2-test <path>`** — Run all quality checks in dry-run mode
 
 ### Validating Changes Without Tests

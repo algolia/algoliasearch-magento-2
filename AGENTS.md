@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-Algolia Search & Discovery extension for Magento 2 (`Algolia_AlgoliaSearch`). Indexes Magento entities (products, categories, pages, suggestions, additional sections) into Algolia, manages sorting replicas, captures analytics events (clicks, conversions) and personalization signals, and provides frontend search via autocomplete, InstantSearch, faceted navigation, and Recommend widgets. Includes built-in merchandising (landing pages) — likely to be deprecated or reworked. Uses the Algolia PHP API Client v4.18.3.
+Algolia Search & Discovery extension for Magento 2 (`Algolia_AlgoliaSearch`). Indexes Magento entities (products, categories, pages, suggestions, additional sections) into Algolia, manages sorting replicas, captures analytics events (clicks, conversions) and personalization signals, and provides frontend search via autocomplete, InstantSearch, faceted navigation, and Recommend widgets. Includes built-in merchandising (landing pages) — likely to be deprecated or reworked. Uses the Algolia PHP API Client v4.
 
-**Requirements:** PHP 8.2-8.4, Magento 2.4.6+, `algolia/algoliasearch-client-php` 4.18.3
+**Requirements:** PHP 8.2-8.4, Magento 2.4.6+, `algolia/algoliasearch-client-php` ^4.0
 
 ## Verification (local — no Magento environment needed)
 

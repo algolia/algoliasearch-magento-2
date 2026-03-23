@@ -32,8 +32,9 @@ Full (complete rebuild):
     -> BatchQueueProcessor.handleFullIndex()
     -> buildIndexFull queue jobs
     -> IndexBuilder -> RecordBuilder -> AlgoliaConnector
-    -> records written to a temporary index
-    -> IndexMover atomically swaps temp -> production
+    -> records written to the live index (default)
+       OR to a temporary index (if temp indexing enabled)
+    -> IndexMover atomically swaps temp -> production (when temp index used)
 ```
 
 **Frontend** delivers search configuration from the server to client-side JS:
@@ -66,7 +67,9 @@ Magento models, the indexer layer, and the queue system.
 `Model/Indexer/` contains 7 Magento indexers (registered in `etc/indexer.xml`): Products,
 Categories, Pages, Suggestions, AdditionalSections, QueueRunner, and DeleteProduct. It
 also contains three observer-style classes (ProductObserver, CategoryObserver,
-PageObserver) that intercept entity save/delete via Magento's plugin system.
+PageObserver) that intercept entity save/delete via Magento's plugin system. These are
+functionally Magento plugins (interceptors) despite their "Observer" naming and
+`Model/Indexer/` location; a future refactor may relocate them under `Plugin/`.
 
 `Queue` is the cron-driven async job queue backed by the `algoliasearch_queue` table.
 `Job` defines the handler whitelist (`ALLOWED_HANDLERS`) that restricts which
@@ -171,8 +174,11 @@ A complete rebuild of an entire entity index. This is triggered in two ways:
 2. **Magento's `executeFull()`** on the registered indexers - disabled by default
    (see below).
 
-Full indexing builds into a temporary index, then atomically swaps it into production
-via `IndexMover.moveIndexWithSetSettings()`. The live index is never in a partial state.
+Since v3.17, temporary indexing is optional. When enabled (requires the queue to be
+active and the temp index setting turned on via `QueueHelper::useTmpIndex()`), full
+indexing builds into a temporary index, then `IndexMover` atomically swaps it into
+production so the live index is never in a partial state. When disabled (the default),
+records are written directly to the live index during full reindex.
 
 ### Why Full Indexing Is Opt-In
 
@@ -219,16 +225,82 @@ The queue processes full reindex and delta jobs in a mixed ratio
 (`FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33`), ensuring delta updates get at least 67%
 of each processing cycle.
 
-## Multi-Store Architecture
+## Index Architecture
 
-Every index is scoped to a single Magento store. Index names follow the convention
-`{prefix}_{entity}_{storeId}`. Configuration and optionally credentials can differ per
-store.
+### Multi-Store Scoping
+
+Every index is scoped to a single Magento store. Configuration and optionally credentials
+can differ per store.
 
 The indexer layer iterates stores explicitly - search for the store iteration loop in any
 `Model/Indexer/` class. `$storeId` is threaded through nearly every Service method.
 `AbstractIndexBuilder` handles store emulation so product data (prices, attributes,
 visibility) reflects the correct store context.
+
+### Index Naming
+
+Index names follow a consistent convention built by `IndexNameFetcher`:
+
+| Component | Pattern | Example |
+|-----------|---------|---------|
+| Base | `{prefix}{storeCode}` | `magento_default` |
+| Entity index | `{base}_{entitySuffix}` | `magento_default_products` |
+| Temp index | `{entityIndex}_tmp` | `magento_default_products_tmp` |
+| Query suggestions | `{base}_query_suggestions` | `magento_default_query_suggestions` |
+
+The prefix is configured via `ConfigHelper::getIndexPrefix()`.
+
+**Replica index naming:**
+
+| Sort type | Pattern | Example |
+|-----------|---------|---------|
+| Non-price | `{primary}_{attribute}_{direction}` | `magento_default_products_name_desc` |
+| Price (default) | `{primary}_price_default_{direction}` | `magento_default_products_price_default_asc` |
+| Price (customer group) | `{primary}_price_group_{groupId}_{direction}` | `magento_default_products_price_group_2_asc` |
+
+All Magento-managed replica names are prefixed with the primary index name. This is how
+`ReplicaManager` distinguishes Magento replicas from non-Magento replicas (e.g., those
+created in the Algolia dashboard or Merchandising Studio).
+
+### Sorting Replicas
+
+Algolia replicas enable sorting on attributes beyond the primary index's default ranking.
+The extension manages two types:
+
+- **Virtual replicas** are lightweight references to the primary index where only
+  `customRanking` differs. They are more efficient and allow more replicas per index, but
+  are subject to a configurable limit (default 20).
+- **Standard replicas** are full index copies with a completely replaced ranking
+  configuration. They are more resource-intensive in Algolia.
+
+The type is determined per sort attribute in the admin sorting configuration.
+
+**Customer group multiplication.** Most sort attributes produce one replica per direction
+(asc/desc) - a straightforward one-to-one mapping. Price sorting is different. When
+customer groups are enabled and a price sort is configured, one replica is created for
+*each* customer group in the store's website. A single price sort config line produces N
+replicas where N is the number of non-excluded customer groups. This one-to-many
+relationship can quickly approach the replica limit.
+
+**Ownership boundary.** `ReplicaManager` only manages replicas whose names are prefixed
+with the primary index name. During sync, it merges Magento-managed replicas with any
+non-Magento replicas before writing the `replicas` setting on the primary index. This
+preserves replicas created externally (Algolia dashboard, Merchandising Studio).
+
+**Lifecycle.** Replica config changes are detected via a registry (`ReplicaState`) that
+captures before/after state when admin config is saved. On the next product indexing run,
+`ReplicaManager` compares the current Magento sorting config to what Algolia has,
+calculates a diff, and applies add/update/delete operations. Ranking is configured per
+replica type: virtual replicas prepend the sort attribute to `customRanking` inherited
+from the primary; standard replicas replace the full `ranking` array.
+
+**Validation.** Replica count is validated against the limit before sync. Price-sort
+replicas are tracked separately to detect customer-group-driven overflow. On failure, the
+system attempts to revert config to the previous state.
+
+The implementation lives primarily in `Service/Product/` (`ReplicaManager`,
+`SortingTransformer`) with change detection in `Registry/ReplicaState` and config hooks
+in `Model/Backend/`.
 
 ## Key Decisions
 
@@ -259,7 +331,7 @@ visibility) reflects the correct store context.
 
 - **Replica forwarding.** Sorting replica settings are forwarded from the primary index
   via `IndexSettingsHandler`, not configured independently. `ReplicaManager` handles the
-  replica lifecycle.
+  replica lifecycle. See [Sorting Replicas](#sorting-replicas) for details.
 
 ## Architectural Invariants
 

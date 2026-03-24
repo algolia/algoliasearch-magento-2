@@ -246,9 +246,17 @@ Index names follow a consistent convention built by `IndexNameFetcher`:
 | Base | `{prefix}{storeCode}` | `magento_default` |
 | Entity index | `{base}_{entitySuffix}` | `magento_default_products` |
 | Temp index | `{entityIndex}_tmp` | `magento_default_products_tmp` |
-| Query suggestions | `{base}_query_suggestions` | `magento_default_query_suggestions` |
+| Query suggestions (Magento) | `{base}_query_suggestions` | `magento_default_query_suggestions` |
 
 The prefix is configured via `ConfigHelper::getIndexPrefix()`.
+
+Starting with v3.18, the extension also supports
+[Algolia Query Suggestions](https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js)
+as an alternative to the built-in Magento suggestions index. When the "Use Algolia Query
+Suggestions" mode is selected in the autocomplete configuration, the extension references
+an index name configured directly in the Algolia dashboard rather than using the
+`_query_suggestions` suffix convention. The Magento suggestions mode (which populates from
+the `search_query` table) is now deprecated in favor of this approach.
 
 **Replica index naming:**
 

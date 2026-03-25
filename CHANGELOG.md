@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.19.0-dev
+
+### Updates
+- Update Algolia PHP Client to version 4.40.0. 
+
 ## 3.18.0-beta.1
 
 ### Features

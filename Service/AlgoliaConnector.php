@@ -79,7 +79,8 @@ class AlgoliaConnector
         protected ConsoleOutput $consoleOutput,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
         protected IndexNameFetcher $indexNameFetcher,
-        protected IndexOptionsBuilder $indexOptionsBuilder
+        protected IndexOptionsBuilder $indexOptionsBuilder,
+        protected SendStrategyResolver $sendStrategyResolver
     ) {
         // Merge non castable attributes set in config
         $this->nonCastableAttributes = array_merge(
@@ -272,12 +273,9 @@ class AlgoliaConnector
      */
     protected function performBatchOperation(IndexOptionsInterface $indexOptions, array $requests): array
     {
-        $indexName = $indexOptions->getIndexName();
-
-        $response = $this->getClient($indexOptions->getStoreId())->batch($indexName, [ 'requests' => $requests ] );
-
+        $strategy = $this->sendStrategyResolver->resolve($indexOptions->getStoreId());
+        $response = $strategy->send($indexOptions, $requests);
         $this->setLastOperationInfo($indexOptions, $response);
-
         return $response;
     }
 

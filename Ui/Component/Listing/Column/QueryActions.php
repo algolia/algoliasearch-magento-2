@@ -24,15 +24,6 @@ class QueryActions extends Column
     /** @var UrlBuilder */
     protected $frontendUrlBuilder;
 
-    /**
-     * @param ContextInterface $context
-     * @param UiComponentFactory $uiComponentFactory
-     * @param UrlInterface $urlBuilder
-     * @param Escaper $escaper
-     * @param UrlBuilder $frontendUrlBuilder
-     * @param array $components
-     * @param array $data
-     */
     public function __construct(
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
@@ -50,7 +41,6 @@ class QueryActions extends Column
     }
 
     /**
-     * @param array $dataSource
      *
      * @return array
      */
@@ -63,7 +53,7 @@ class QueryActions extends Column
                     $this->frontendUrlBuilder->setScope($item['store_id_num']);
                 }
                 $link = $this->frontendUrlBuilder->getUrl(static::URL_PATH_VIEW . $item['query_text']);
-                $link = rtrim($link, '/');
+                $link = mb_rtrim($link, '/');
                 $item[$this->getData('name')] = [
                     'view' => [
                         'href' => $link,

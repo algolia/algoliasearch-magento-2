@@ -46,7 +46,7 @@ class IndexSettingsHandlerTest extends TestCase
                 if (!isset($this->operationState[$storeId])) {
                     $this->operationState[$storeId] = [
                         'setSettingsCalled' => false,
-                        'waitCalled' => false
+                        'waitCalled' => false,
                     ];
                 }
 
@@ -84,7 +84,7 @@ class IndexSettingsHandlerTest extends TestCase
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
-            'attributesToRetrieve' => ['name', 'price']
+            'attributesToRetrieve' => ['name', 'price'],
         ];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);
@@ -104,14 +104,17 @@ class IndexSettingsHandlerTest extends TestCase
                             $this->assertEquals(['attributesToRetrieve' => ['name', 'price']], $indexSettings);
                             $this->assertTrue($forwardToReplicas);
                             $this->assertFalse($mergeSettings);
+
                             break;
                         case 2:
                             $this->assertEquals(['customRanking' => ['desc(price)']], $indexSettings);
                             $this->assertFalse($forwardToReplicas);
                             $this->assertTrue($mergeSettings);
+
                             break;
                 }
-            });
+            }
+            );
 
         $this->handler->setSettings($this->indexOptions, $settings);
     }
@@ -123,7 +126,7 @@ class IndexSettingsHandlerTest extends TestCase
         $storeId = 1;
         $settings = [
             'ranking' => ['asc(name)'],
-            'customRanking' => ['desc(price)']
+            'customRanking' => ['desc(price)'],
         ];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);
@@ -151,7 +154,7 @@ class IndexSettingsHandlerTest extends TestCase
         $storeId = 1;
         $settings = [
             'attributesToHighlight' => ['title'],
-            'attributesToRetrieve' => ['name']
+            'attributesToRetrieve' => ['name'],
         ];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);
@@ -178,7 +181,7 @@ class IndexSettingsHandlerTest extends TestCase
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
-            'attributesToRetrieve' => ['name', 'price']
+            'attributesToRetrieve' => ['name', 'price'],
         ];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);
@@ -221,7 +224,7 @@ class IndexSettingsHandlerTest extends TestCase
         $settings = [
             'customRanking' => ['desc(price)'],
             'ranking' => ['asc(name)'],
-            'attributesToRetrieve' => ['name']
+            'attributesToRetrieve' => ['name'],
         ];
 
         [$forward, $noForward] = $this->handler->splitSettings($settings);
@@ -229,7 +232,7 @@ class IndexSettingsHandlerTest extends TestCase
         $this->assertEquals(['attributesToRetrieve' => ['name']], $forward);
         $this->assertEquals([
             'customRanking' => ['desc(price)'],
-            'ranking' => ['asc(name)']
+            'ranking' => ['asc(name)'],
         ], $noForward);
     }
 
@@ -331,7 +334,7 @@ class IndexSettingsHandlerTest extends TestCase
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
-            'attributesToRetrieve' => ['name']
+            'attributesToRetrieve' => ['name'],
         ];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);

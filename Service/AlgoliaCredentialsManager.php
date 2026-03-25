@@ -21,8 +21,6 @@ class AlgoliaCredentialsManager
     /**
      * Validates the credentials set on a given store level
      *
-     * @param int|null $storeId
-     * @return bool
      */
     public function checkCredentials(?int $storeId = null): bool
     {
@@ -32,8 +30,6 @@ class AlgoliaCredentialsManager
     /**
      * Validates the credentials set on a given store level with an additional check on the search only API Key
      *
-     * @param int|null $storeId
-     * @return bool
      */
     public function checkCredentialsWithSearchOnlyAPIKey(?int $storeId = null): bool
     {
@@ -43,9 +39,6 @@ class AlgoliaCredentialsManager
     /**
      * Displays an error message in the console or in the admin
      *
-     * @param string $class
-     * @param int|null $storeId
-     * @return void
      */
     public function displayErrorMessage(string $class, ?int $storeId = null): void
     {
@@ -63,14 +56,13 @@ class AlgoliaCredentialsManager
 
             $this->messageManager->addErrorMessage($errorMessage);
         } catch (NoSuchEntityException $exception) {
-            $this->messageManager->addErrorMessage(__("Unable to locate store details: %1", $exception->getMessage()));
+            $this->messageManager->addErrorMessage(__('Unable to locate store details: %1', $exception->getMessage()));
         }
     }
 
     /**
      * Checks if multiple application IDs are configured
      *
-     * @return bool
      */
     public function hasMultipleApplicationIDs(): bool
     {

@@ -8,7 +8,7 @@ use Monolog\Logger;
 
 class TimedLogger
 {
-    /** @var string[]  */
+    /** @var string[] */
     protected array $timers = [];
 
     public function __construct(

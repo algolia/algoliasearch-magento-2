@@ -12,9 +12,6 @@ class Index extends Action
     /** @var ResultFactory */
     protected $resultFactory;
 
-    /**
-     * @param Context $context
-     */
     public function __construct(Context $context)
     {
         parent::__construct($context);

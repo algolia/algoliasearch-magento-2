@@ -10,9 +10,6 @@ class Index extends \Magento\Backend\App\Action
     /** @var ResultFactory */
     protected $resultFactory;
 
-    /**
-     * @param Context $context
-     */
     public function __construct(Context $context)
     {
         parent::__construct($context);

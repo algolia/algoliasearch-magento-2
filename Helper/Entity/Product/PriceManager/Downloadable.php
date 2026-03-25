@@ -8,10 +8,6 @@ use Magento\Customer\Model\Group;
 class Downloadable extends ProductWithoutChildren
 {
     /**
-     * @param Product $product
-     * @param $currencyCode
-     * @param $withTax
-     * @param $field
      * @return void
      */
     protected function addCustomerGroupsPrices(Product $product, $currencyCode, $withTax, $field)

@@ -6,7 +6,6 @@ use Magento\Framework\Data\OptionSourceInterface;
 
 class Suggestions implements OptionSourceInterface
 {
-
     public const SUGGESTIONS_DISABLED = 0;
     public const SUGGESTIONS_MAGENTO = 1;
     public const SUGGESTIONS_ALGOLIA = 2;

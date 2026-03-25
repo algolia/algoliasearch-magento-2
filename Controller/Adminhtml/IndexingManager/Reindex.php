@@ -43,9 +43,9 @@ class Reindex extends Action
     public function execute()
     {
         $params = $this->getRequest()->getParams();
-        $storeIds = !isset($params["store_id"]) || $params["store_id"] === (string) AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE ?
+        $storeIds = !isset($params['store_id']) || $params['store_id'] === (string) AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE ?
             array_keys($this->storeManager->getStores()) :
-            [(int) $params["store_id"]];
+            [(int) $params['store_id']];
 
         $entities = $this->defineEntitiesToIndex($params);
         $entityIds = $params['selected'] ?? null;
@@ -64,12 +64,12 @@ class Reindex extends Action
     protected function defineEntitiesToIndex(array $params): array
     {
         $entities = [];
-        if (isset($params["entity"])) {
+        if (isset($params['entity'])) {
             $entities = $this->isFullIndex($params) ?
                 ['products', 'categories', 'pages'] :
-                [$params["entity"]];
+                [$params['entity']];
         } else if ($this->isMassAction($params)) {
-            $entities = match ($params["namespace"]) {
+            $entities = match ($params['namespace']) {
                 'product_listing' => ['products'],
                 'cms_page_listing' => ['pages'],
                 default => []
@@ -79,20 +79,16 @@ class Reindex extends Action
         return $entities;
     }
 
-    /**
-     * @param array $params
-     * @return string
-     */
     protected function defineRedirectPath(array $params): string
     {
         $redirect = '*/*/';
 
-        if (isset($params["redirect"])) {
-            return $params["redirect"];
+        if (isset($params['redirect'])) {
+            return $params['redirect'];
         }
 
         if ($this->isMassAction($params)) {
-            $redirect = match ($params["namespace"]) {
+            $redirect = match ($params['namespace']) {
                 'product_listing' => 'catalog/product/index',
                 'cms_page_listing' => 'cms/page/index',
                 default => '*/*/'
@@ -105,30 +101,22 @@ class Reindex extends Action
     /**
      * Defines if all entities need to be reindex
      *
-     * @param array $params
-     * @return bool
      */
     protected function isFullIndex(array $params): bool
     {
-        return isset($params["entity"]) && $params["entity"] === 'all';
+        return isset($params['entity']) && $params['entity'] === 'all';
     }
 
     /**
      * Check if the request is coming from a grid (products or pages)
      *
-     * @param array $params
-     * @return bool
      */
     protected function isMassAction(array $params): bool
     {
-        return isset($params["namespace"]);
+        return isset($params['namespace']);
     }
 
     /**
-     * @param array $entities
-     * @param array|null $storeIds
-     * @param array|null $entityIds
-     * @return void
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws NoSuchEntityException
@@ -146,20 +134,20 @@ class Reindex extends Action
 
             foreach ($storeIds as $storeId) {
                 $processor->processBatch($storeId, $entityIds);
-                $message = $this->storeNameFetcher->getStoreName($storeId) . " ";
-                $message .= "(" . $this->indexNameFetcher->getIndexName('_' . $entity, $storeId);
+                $message = $this->storeNameFetcher->getStoreName($storeId) . ' ';
+                $message .= '(' . $this->indexNameFetcher->getIndexName('_' . $entity, $storeId);
 
                 if ($entityIds !== null) {
-                    $recordLabel = count($entityIds) > 1 ? "records" : "record";
-                    $message .= " - " . count($entityIds) . " " . $recordLabel;
+                    $recordLabel = count($entityIds) > 1 ? 'records' : 'record';
+                    $message .= ' - ' . count($entityIds) . ' ' . $recordLabel;
                 } else {
-                    $message .= " - full reindexing job";
+                    $message .= ' - full reindexing job';
                 }
 
                 if (!$this->configHelper->isQueueActive($storeId)) {
-                    $message .= " successfully processed)";
+                    $message .= ' successfully processed)';
                 } else {
-                    $message .= " successfully added to the Algolia indexing queue)";
+                    $message .= ' successfully added to the Algolia indexing queue)';
                 }
 
                 $this->messageManager->addSuccessMessage(htmlentities(__($message)));

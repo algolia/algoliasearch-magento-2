@@ -66,6 +66,7 @@ class IndicesConfigurator
         if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
             $this->logger->log('Indexing is not enabled for the store.');
             $this->logger->stop($logEventName, true);
+
             return;
         }
 
@@ -216,14 +217,14 @@ class IndicesConfigurator
             'categories' => $this->categoryHelper->getIndexName($storeId),
             'pages' => $this->pageHelper->getIndexName($storeId),
             'suggestions' => $this->suggestionHelper->getIndexName($storeId),
-            'additional_sections' => $this->additionalSectionHelper->getIndexName($storeId)
+            'additional_sections' => $this->additionalSectionHelper->getIndexName($storeId),
         ];
         $sections = [
             'products',
             'categories',
             'pages',
             'suggestions',
-            'additional_sections'
+            'additional_sections',
         ];
 
         $error = [];

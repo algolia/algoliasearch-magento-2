@@ -14,36 +14,21 @@ use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 
 class Save extends AbstractAction
 {
-    /**
-     * @var DataPersistorInterface
-     */
+    /** @var DataPersistorInterface */
     protected $dataPersistor;
 
-    /**
-     * @var CollectionFactory
-     */
+    /** @var CollectionFactory */
     protected $customerGroupCollectionFactory;
 
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @var SessionManagerInterface
-     */
+    /** @var SessionManagerInterface */
     protected $backendSession;
 
     /**
      * PHP Constructor
      *
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param LandingPageFactory $landingPageFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     * @param DataPersistorInterface $dataPersistor
-     * @param CollectionFactory $customerGroupCollectionFactory
      * @return Save
      */
     public function __construct(
@@ -156,9 +141,8 @@ class Save extends AbstractAction
     }
 
     /**
-     * @param int $landingPageId
      * @param array<string, mixed> $data
-     * @return void
+     *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     protected function manageQueryRules(int $landingPageId, array $data): void

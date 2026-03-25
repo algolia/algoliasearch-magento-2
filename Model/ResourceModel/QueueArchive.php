@@ -6,6 +6,7 @@ use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
  * Class QueueArchive
+ *
  * @package Algolia\AlgoliaSearch\Model\ResourceModel
  */
 class QueueArchive extends AbstractDb

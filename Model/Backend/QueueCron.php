@@ -7,8 +7,8 @@ use Magento\Framework\App\Config\Value;
 
 class QueueCron extends Value
 {
-    const CRON_FORMAT_REGEX = '/^(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)$/';
-    const CRON_DISALLOW_REGEX = '/[^@a-z0-9\*\-,\/ ]/';
+    public const CRON_FORMAT_REGEX = '/^(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)\s+(\*|[0-9,\-\/\*]+)$/';
+    public const CRON_DISALLOW_REGEX = '/[^@a-z0-9\*\-,\/ ]/';
 
     protected array $mappings = [
         '@yearly' => '0 0 1 1 *',
@@ -16,12 +16,12 @@ class QueueCron extends Value
         '@monthly' => '0 0 1 * *',
         '@weekly' => '0 0 * * 0',
         '@daily' => '0 0 * * *',
-        '@hourly' => '0 * * * *'
+        '@hourly' => '0 * * * *',
     ];
 
     public function beforeSave()
     {
-        $value = trim((string) $this->getData('value'));
+        $value = mb_trim((string) $this->getData('value'));
 
         if (isset($this->mappings[$value])) {
             $value = $this->mappings[$value];
@@ -38,6 +38,7 @@ class QueueCron extends Value
                     'Cron expression "%s" is not valid.',
                     htmlspecialchars($safeValue, ENT_QUOTES, 'UTF-8')
                 );
+
             // Content is already escaped at this point
             // phpcs:ignore
             throw new InvalidCronException($msg);

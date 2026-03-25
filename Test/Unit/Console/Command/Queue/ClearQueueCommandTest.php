@@ -34,6 +34,7 @@ class ClearQueueCommandTest extends TestCase
 
     /**
      * Test that the command returns success when the user cancels the operation
+     *
      * @throws \ReflectionException
      */
     public function testExecuteReturnsSuccessWhenUserCancels(): void
@@ -54,6 +55,7 @@ class ClearQueueCommandTest extends TestCase
 
     /**
      * Test that the command clears the indexing queue for the provided store IDs
+     *
      * @throws \ReflectionException
      */
     public function testExecuteClearsProvidedStoreIds(): void
@@ -94,7 +96,7 @@ class ClearQueueCommandTest extends TestCase
         $cmd->method('getStoreIds')->willReturn([]);
         $cmd->method('decorateOperationAnnouncementMessage')->willReturn('Clearing indexing queue for all stores');
 
-        $errMsg = "Error encountered while attempting to clear queue.";
+        $errMsg = 'Error encountered while attempting to clear queue.';
         $cmd->method('clearQueue')->willThrowException(new \Exception($errMsg));
 
         $input  = new ArrayInput([]);
@@ -357,7 +359,6 @@ class ClearQueueCommandTest extends TestCase
      * Create a partial mock of the ClearQueueCommand
      *
      * @param array $methodsToMock List of methods to mock
-     * @return ClearQueueCommand&MockObject
      */
     private function makePartial(array $methodsToMock = []): ClearQueueCommand&MockObject
     {
@@ -368,7 +369,7 @@ class ClearQueueCommandTest extends TestCase
                 $this->storeNameFetcher,
                 $this->storeManager,
                 $this->jobResourceModel,
-                null
+                null,
             ])
             ->onlyMethods($methodsToMock)
             ->getMock();

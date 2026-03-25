@@ -11,21 +11,13 @@ use Magento\Framework\View\ConfigInterface;
 
 class Image extends \Magento\Catalog\Helper\Image
 {
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
     private $logger;
 
     /**
      * Image constructor.
      *
-     * @param Context $context
-     * @param ImageFactory $productImageFactory
-     * @param Repository $assetRepo
-     * @param ConfigInterface $viewConfig
-     * @param DiagnosticsLogger $logger
-     * @param ConfigHelper $configHelper
      */
     public function __construct(
         Context           $context,
@@ -79,7 +71,6 @@ class Image extends \Magento\Catalog\Helper\Image
      * Configurable::setImageFromChildProduct() only pulls 'image' type
      * and not the type set by the imageHelper
      *
-     * @param \Magento\Catalog\Model\Product\Image $model
      *
      * @return mixed|string|null
      */

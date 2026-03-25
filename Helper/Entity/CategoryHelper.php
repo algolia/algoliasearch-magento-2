@@ -39,10 +39,6 @@ class CategoryHelper extends AbstractEntityHelper
         parent::__construct($indexNameFetcher);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return array
-     */
     public function getIndexSettings(?int $storeId = null): array
     {
         $searchableAttributes = [];
@@ -90,7 +86,6 @@ class CategoryHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $storeId
      * @return array
      */
     public function getAdditionalAttributes($storeId = null)
@@ -99,7 +94,6 @@ class CategoryHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $storeId
      * @param null $categoryIds
      *
      * @throws LocalizedException
@@ -161,8 +155,9 @@ class CategoryHelper extends AbstractEntityHelper
     }
 
     /**
-     * @return array
      * @throws LocalizedException
+     *
+     * @return array
      */
     public function getAllAttributes()
     {
@@ -197,8 +192,9 @@ class CategoryHelper extends AbstractEntityHelper
     }
 
     /**
-     * @return int|mixed
      * @throws LocalizedException
+     *
+     * @return int|mixed
      */
     protected function getRootCategoryId()
     {

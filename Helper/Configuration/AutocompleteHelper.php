@@ -121,7 +121,9 @@ class AutocompleteHelper
         );
     }
 
-    /** Throttles query suggestions that are indexed from Magento to Algolia */
+    /**
+     * Throttles query suggestions that are indexed from Magento to Algolia
+     */
     public function getMinQueryPopularity(?int $storeId = null): int
     {
         return (int) $this->configInterface->getValue(
@@ -131,7 +133,9 @@ class AutocompleteHelper
         );
     }
 
-    /** Throttles query suggestions that are indexed from Magento to Algolia */
+    /**
+     * Throttles query suggestions that are indexed from Magento to Algolia
+     */
     public function getMinQueryNumberOfResults(?int $storeId = null): int
     {
         return (int) $this->configInterface->getValue(

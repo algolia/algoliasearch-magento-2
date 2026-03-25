@@ -12,21 +12,12 @@ use Magento\UrlRewrite\Service\V1\Data\UrlRewrite;
 
 class LandingPage extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
-    /**
-     * @var LandingPageUrlRewriteGenerator
-     */
+    /** @var LandingPageUrlRewriteGenerator */
     protected $landingPageUrlRewriteGenerator;
 
-    /**
-     * @var UrlPersistInterface
-     */
+    /** @var UrlPersistInterface */
     protected $urlPersist;
 
-    /**
-     * @param Context $context
-     * @param LandingPageUrlRewriteGenerator $landingPageUrlRewriteGenerator
-     * @param UrlPersistInterface $urlPersist
-     */
     public function __construct(
         Context $context,
         LandingPageUrlRewriteGenerator $landingPageUrlRewriteGenerator,
@@ -46,7 +37,6 @@ class LandingPage extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     /**
      * Create url rewrite before saving
      *
-     * @param AbstractModel $object
      *
      * @throws LocalizedException
      *
@@ -74,7 +64,6 @@ class LandingPage extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     /**
      * Delete url rewrite after deletion
      *
-     * @param AbstractModel $object
      *
      * @throws LocalizedException
      *

@@ -15,7 +15,9 @@ class Common implements \Magento\Framework\View\Element\Block\ArgumentInterface
         $this->configHelper = $configHelper;
     }
 
-    /** @return string */
+    /**
+     * @return string
+     */
     public function getApplicationId()
     {
         return $this->configHelper->getApplicationID();

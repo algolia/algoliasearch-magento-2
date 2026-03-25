@@ -18,9 +18,7 @@ class SortingTransformer
     public const REPLICA_TRANSFORM_MODE_VIRTUAL = 2;
     public const REPLICA_TRANSFORM_MODE_ACTUAL = 3;
 
-    /**
-     * @var array<int,<array<string, mixed>>>
-     */
+    /** @var array<int,<array<string, mixed>>> */
     protected array $_sortingIndices = [];
 
     public function __construct(
@@ -36,13 +34,13 @@ class SortingTransformer
      * Augment sorting configuration with corresponding replica indices, ranking,
      * and (as needed) customer group pricing
      *
-     * @param ?int $storeId
-     * @param ?int $currentCustomerGroupId
      * @param ?array $attrs - serialized array of sorting attributes to transform (defaults to saved sorting config)
      * @param bool $clearCache - If set to true will update the cache
-     * @return array of transformed sorting / replica objects
+     *
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return array of transformed sorting / replica objects
      */
     public function getSortingIndices(
         ?int   $storeId = null,
@@ -131,6 +129,7 @@ class SortingTransformer
     protected function isGroupPricingExcludedFromWebsite(int $customerGroupId, int $websiteId): bool
     {
         $excludedWebsites = $this->groupExcludedWebsiteRepository->getCustomerGroupExcludedWebsites($customerGroupId);
+
         return in_array($websiteId, $excludedWebsites);
     }
 
@@ -138,17 +137,13 @@ class SortingTransformer
     /**
      * When group pricing is enabled a replica must be created for each possible sort
      *
-     * @param string $originalIndexName
-     * @param int $customerGroupId
-     * @param string $currency
-     * @param array $origAttr
-     * @return array
      */
     protected function getCustomerGroupSortPriceOverride(
         string $originalIndexName,
         int    $customerGroupId,
         string $currency,
-        array  $origAttr): array
+        array  $origAttr
+    ): array
     {
         $attrName = $origAttr[ReplicaManagerInterface::SORT_KEY_ATTRIBUTE_NAME];
         $sortDir = $origAttr[ReplicaManagerInterface::SORT_KEY_DIRECTION];
@@ -162,6 +157,7 @@ class SortingTransformer
 
         $groupSortAttribute = $attrName . '.' . $currency . '.' . $groupIndexNameSuffix;
         $newAttr['ranking'] = $this->getSortAttributingRankingSetting($groupSortAttribute, $sortDir);
+
         return $this->decorateSortAttribute($newAttr);
     }
 
@@ -173,13 +169,13 @@ class SortingTransformer
         if (!array_key_exists('label', $attr) && array_key_exists('sortLabel', $attr)) {
             $attr['label'] = $attr['sortLabel'];
         }
+
         return $attr;
     }
 
     /**
      * Get ranking setting to be used for the standard sorting replica
-     * @param string $attrName
-     * @param string $sortDir
+     *
      * @return string[]
      */
     protected function getSortAttributingRankingSetting(string $attrName, string $sortDir): array
@@ -200,6 +196,7 @@ class SortingTransformer
     /**
      * @param array $sortingIndices - array of sortingIndices objects
      * @param int $mode Use REPLICA_TRANSFORM_MODE_ constant - defaults to _ACTUAL which will give the configuration defined in the admin panel
+     *
      * @return string[]
      */
     public function transformSortingIndicesToReplicaSetting(
@@ -216,6 +213,7 @@ class SortingTransformer
                 ) {
                     $replica = "virtual($replica)";
                 }
+
                 return $replica;
             },
             $sortingIndices

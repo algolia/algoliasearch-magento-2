@@ -149,7 +149,7 @@ class RenderingManagerTest extends TestCase
         return [
             ['actionName' => 'catalog_category_view', 'isLayoutUpdated' => true],
             ['actionName' => 'catalogsearch_result_index', 'isLayoutUpdated' => true],
-            ['actionName' => 'foo_bar', 'isLayoutUpdated' => false]
+            ['actionName' => 'foo_bar', 'isLayoutUpdated' => false],
         ];
     }
 }

@@ -19,7 +19,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     ) {}
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function execute($ids): void
     {
@@ -29,7 +29,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function executeFull(): void
     {
@@ -41,7 +41,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function executeList(array $ids): void
     {
@@ -49,7 +49,7 @@ class Product implements \Magento\Framework\Indexer\ActionInterface, \Magento\Fr
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function executeRow($id): void
     {

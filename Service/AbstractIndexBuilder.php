@@ -24,22 +24,20 @@ abstract class AbstractIndexBuilder
     ){}
 
     /**
-     * @param $storeId
-     * @return bool
      * @throws NoSuchEntityException
      */
     protected function isIndexingEnabled($storeId = null): bool
     {
         if ($this->configHelper->isIndexingEnabled($storeId) === false) {
             $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
+
             return false;
         }
+
         return true;
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws \Exception
      */
     protected function startEmulation(int $storeId): void
@@ -56,7 +54,6 @@ abstract class AbstractIndexBuilder
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     protected function stopEmulation(): void
@@ -68,10 +65,6 @@ abstract class AbstractIndexBuilder
     }
 
     /**
-     * @param array $objects
-     * @param IndexOptionsInterface $indexOptions
-     * @param int|null $storeId
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -81,11 +74,9 @@ abstract class AbstractIndexBuilder
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param array $idsToRemove
-     * @param int|null $storeId
-     * @return array
      * @throws AlgoliaException
+     *
+     * @return array
      */
     protected function getIdsToRealRemove(IndexOptionsInterface $indexOptions, array $idsToRemove, ?int $storeId = null)
     {
@@ -103,6 +94,7 @@ abstract class AbstractIndexBuilder
                 }
             }
         }
+
         return $toRealRemove;
     }
 }

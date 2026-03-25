@@ -24,13 +24,13 @@ interface EventProcessorInterface
     /** @var string */
     public const EVENT_KEY_QUERY_ID = 'queryID';
 
-    /** @var string  */
+    /** @var string */
     public const EVENT_SUBTYPE_CART = 'addToCart';
-    /** @var string  */
+    /** @var string */
     public const EVENT_SUBTYPE_PURCHASE = 'purchase';
 
     // https://www.algolia.com/doc/rest-api/insights/#method-param-objectids
-    /** @var int  */
+    /** @var int */
     public const MAX_OBJECT_IDS_PER_EVENT = 20;
 
     // https://www.algolia.com/doc/rest-api/insights/#events-endpoints
@@ -43,17 +43,15 @@ interface EventProcessorInterface
 
     public function setAnonymousUserToken(string $token): EventProcessorInterface;
 
-    /** @deprecated Store Manager now handled as injected dependency */
+    /**
+     * @deprecated Store Manager now handled as injected dependency
+     */
     public function setStoreManager(StoreManagerInterface $storeManager): EventProcessorInterface;
 
     /**
-     * @param string $eventName
-     * @param string $indexName
-     * @param array $objectIDs
-     * @param string $queryID
-     * @param array $requestOptions
-     * @return array<string, mixed> API response
      * @throws AlgoliaException
+     *
+     * @return array<string, mixed> API response
      */
     public function convertedObjectIDsAfterSearch(
         string $eventName,
@@ -64,12 +62,9 @@ interface EventProcessorInterface
     ): array;
 
     /**
-     * @param string $eventName
-     * @param string $indexName
-     * @param array $objectIDs
-     * @param array $requestOptions
-     * @return array<string, mixed> API response
      * @throws AlgoliaException
+     *
+     * @return array<string, mixed> API response
      */
     public function convertedObjectIDs(
         string $eventName,
@@ -80,13 +75,13 @@ interface EventProcessorInterface
 
     /**
      * Track conversion for add to cart operation
-     * @param string $eventName
-     * @param string $indexName
-     * @param Item $item
+     *
      * @param string|null $queryID specify if conversion is result of a search
-     * @return array<string, mixed> API response
+     *
      * @throws AlgoliaException
      * @throws LocalizedException
+     *
+     * @return array<string, mixed> API response
      */
     public function convertAddToCart(
         string $eventName,
@@ -97,12 +92,11 @@ interface EventProcessorInterface
 
     /**
      * Track purchase conversion for all items on an order in as few batches as possible
-     * @param string $eventName
-     * @param string $indexName
-     * @param Order $order
-     * @return array<array<string, mixed>> An array of API responses for all batches processed
+     *
      * @throws AlgoliaException
      * @throws LocalizedException
+     *
+     * @return array<array<string, mixed>> An array of API responses for all batches processed
      */
     public function convertPurchase(
         string $eventName,
@@ -112,13 +106,13 @@ interface EventProcessorInterface
 
     /**
      * Track purchase conversion event for an arbitrary group of items
-     * @param string $eventName
-     * @param string $indexName
+     *
      * @param Order\Item[] $items
-     * @param string|null $queryID
-     * @return array<string, mixed> API response
+     *
      * @throws AlgoliaException
      * @throws LocalizedException
+     *
+     * @return array<string, mixed> API response
      */
     public function convertPurchaseForItems(
         string $eventName,

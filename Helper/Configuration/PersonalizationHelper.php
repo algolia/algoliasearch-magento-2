@@ -31,11 +31,6 @@ class PersonalizationHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
     private ConfigResourceInterface $configResourceInterface;
 
-    /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param ScopeConfigInterface $configInterface
-     * @param ConfigResourceInterface $configResourceInterface
-     */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         ScopeConfigInterface                  $configInterface,
@@ -46,138 +41,72 @@ class PersonalizationHelper extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isPersoEnabled(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_PERSO_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return void
-     */
     public function disablePerso(?int $storeId = null): void
     {
         $this->configResourceInterface->saveConfig(self::IS_PERSO_ENABLED, 0, 'default', 0);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isViewProductTracked(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::VIEW_PRODUCT, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isProductClickedTracked(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::PRODUCT_CLICKED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return string
-     */
     public function getProductClickedSelector(?int $storeId = null): string
     {
         return $this->configInterface->getValue(self::PRODUCT_CLICKED_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isFilterClickedTracked(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::FILTER_CLICKED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isWishlistAddTracked(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::WISHLIST_ADD, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return string
-     */
     public function getWishlistAddSelector(?int $storeId = null): string
     {
         return $this->configInterface->getValue(self::WISHLIST_ADD_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isProductRecommendedTracked(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::PRODUCT_RECOMMENDED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return string
-     */
     public function getProductRecommendedSelector(?int $storeId = null): string
     {
         return $this->configInterface->getValue(self::PRODUCT_RECOMMENDED_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isCartAddTracked(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::CART_ADD, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return string
-     */
     public function getCartAddSelector(?int $storeId = null): string
     {
         return $this->configInterface->getValue(self::CART_ADD_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     *
-     * @return bool
-     */
     public function isOrderPlacedTracked(?int $storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::ORDER_PLACED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
-     * @return string|null
      * @internal Algolia user tokens can now be anonymous or authenticated. This function should no longer be used.
      */
     public function getUserToken(): ?string

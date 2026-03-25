@@ -13,22 +13,21 @@ abstract class AbstractEntityHelper
 
     /**
      * Get the index suffix for this entity type (used to distinguish Magento managed indices in Algolia by entity)
-     * @return string
      */
     abstract public function getIndexNameSuffix(): string;
 
     /**
      * Get the settings related to an entity to index
      *
-     * @param int|null $storeId
-     * @return array
      */
     abstract public function getIndexSettings(?int $storeId = null): array;
 
     /**
      * For a given entity helper, return the Algolia index for the specified store
+     *
      * @param int $storeId The store index desired
      * @param bool $tmp (Optional) Specify whether to obtain the temp index
+     *
      * @throws NoSuchEntityException
      */
     public function getIndexName(int $storeId, bool $tmp = false): string
@@ -39,8 +38,7 @@ abstract class AbstractEntityHelper
     /**
      * For a given entity helper, return the temp Algolia index for the specified store
      * (Convenience method, used for handling full reindex via the indexing queue)
-     * @param int $storeId
-     * @return string
+     *
      * @throws NoSuchEntityException
      */
     public function getTempIndexName(int $storeId): string

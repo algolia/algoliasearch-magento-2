@@ -15,7 +15,6 @@ class Form extends Overview implements \Magento\Framework\View\Element\Block\Arg
     /**
      * Set Default Date Range if Form Value for dates are not set
      *
-     * @param $key
      *
      * @return string
      */

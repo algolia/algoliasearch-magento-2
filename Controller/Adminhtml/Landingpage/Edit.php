@@ -6,7 +6,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Edit extends AbstractAction
 {
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $landingPage = $this->initLandingPage();

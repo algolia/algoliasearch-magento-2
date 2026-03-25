@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Algolia\AlgoliaSearch\Model;
@@ -11,23 +12,13 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 class RecommendManagement implements RecommendManagementInterface
 {
-    /**
-     * @var null|RecommendClient
-     */
     protected ?RecommendClient $client = null;
 
-    /**
-     * @param ConfigHelper $configHelper
-     * @param IndexNameFetcher $indexNameFetcher
-     */
     public function __construct(
         protected readonly ConfigHelper          $configHelper,
         protected readonly IndexNameFetcher      $indexNameFetcher
     ){}
 
-    /**
-     * @return RecommendClient
-     */
     protected function getClient(): RecommendClient
     {
         if ($this->client === null) {
@@ -36,12 +27,11 @@ class RecommendManagement implements RecommendManagementInterface
                 $this->configHelper->getAPIKey()
             );
         }
+
         return $this->client;
     }
 
     /**
-     * @param string $productId
-     * @return array
      * @throws NoSuchEntityException
      */
     public function getBoughtTogetherRecommendation(string $productId): array
@@ -50,8 +40,6 @@ class RecommendManagement implements RecommendManagementInterface
     }
 
     /**
-     * @param string $productId
-     * @return array
      * @throws NoSuchEntityException
      */
     public function getRelatedProductsRecommendation(string $productId): array
@@ -60,7 +48,6 @@ class RecommendManagement implements RecommendManagementInterface
     }
 
     /**
-     * @return array
      * @throws NoSuchEntityException
      */
     public function getTrendingItemsRecommendation(): array
@@ -69,8 +56,6 @@ class RecommendManagement implements RecommendManagementInterface
     }
 
     /**
-     * @param string $productId
-     * @return array
      * @throws NoSuchEntityException
      */
     public function getLookingSimilarRecommendation(string $productId): array
@@ -79,10 +64,6 @@ class RecommendManagement implements RecommendManagementInterface
     }
 
     /**
-     * @param string $productId
-     * @param string $model
-     * @param float|int $threshold
-     * @return array
      * @throws NoSuchEntityException
      */
     protected function getRecommendations(string $productId, string $model, float|int $threshold = 50): array
@@ -98,7 +79,7 @@ class RecommendManagement implements RecommendManagementInterface
         $recommendations = $client->getRecommendations(
             [
                 'requests' => [
-                    $request
+                    $request,
                 ],
             ],
         );

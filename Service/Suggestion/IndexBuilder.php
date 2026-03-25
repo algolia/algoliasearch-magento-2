@@ -39,9 +39,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -52,10 +49,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -68,6 +61,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if (!$this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             $this->logger->log('Query Suggestions Indexing is not enabled for the store.');
+
             return;
         }
 
@@ -94,11 +88,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param QueryCollection $collectionDefault
-     * @param int $page
-     * @param int $pageSize
-     * @return void
      * @throws NoSuchEntityException
      * @throws \Exception
      */
@@ -133,8 +122,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      * @throws ExceededRetriesException

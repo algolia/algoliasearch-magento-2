@@ -57,9 +57,7 @@ class ReplicaSyncCommand extends AbstractReplicaCommand implements ReplicaSyncCo
 
     /**
      * @inheritDoc
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws LocalizedException
@@ -79,10 +77,12 @@ class ReplicaSyncCommand extends AbstractReplicaCommand implements ReplicaSyncCo
         } catch (BadRequestException) {
             $this->output->writeln('<comment>You appear to have a corrupted replica configuration in Algolia for your Magento instance.</comment>');
             $this->output->writeln('<comment>Run the "algolia:replicas:rebuild" command to correct this.</comment>');
+
             return CLI::RETURN_FAILURE;
         } catch (ReplicaLimitExceededException $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
             $this->output->writeln('<comment>Reduce the number of sorting attributes that have enabled virtual replicas and try again.</comment>');
+
             return CLI::RETURN_FAILURE;
         }
 

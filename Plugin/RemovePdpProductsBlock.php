@@ -7,24 +7,17 @@ use Magento\Framework\View\Element\AbstractBlock;
 
 class RemovePdpProductsBlock
 {
-    const RELATED_BLOCK_NAME = 'catalog.product.related';
-    const UPSELL_BLOCK_NAME = 'product.info.upsell';
-    /**
-     * @var ConfigHelper
-     */
+    public const RELATED_BLOCK_NAME = 'catalog.product.related';
+    public const UPSELL_BLOCK_NAME = 'product.info.upsell';
+    /** @var ConfigHelper */
     private $_configHelper;
 
-    /**
-     * @param ConfigHelper $configHelper
-     */
     public function __construct(ConfigHelper $configHelper)
     {
         $this->_configHelper = $configHelper;
     }
 
     /**
-     * @param AbstractBlock $subject
-     * @param $result
      *
      * @return mixed|string
      */

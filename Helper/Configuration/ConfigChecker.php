@@ -18,10 +18,6 @@ class ConfigChecker
 
     /**
      * Is a scoped value different from its higher scope?
-     * @param string $path
-     * @param string $scope
-     * @param mixed $code
-     * @return bool
      */
     public function isSettingAppliedForScopeAndCode(string $path, string $scope, mixed $code): bool
     {
@@ -31,33 +27,29 @@ class ConfigChecker
         } else {
             $defaultValue = $this->scopeConfig->getValue($path);
         }
-        return ($value !== $defaultValue);
+
+        return $value !== $defaultValue;
     }
 
     /**
      * Does a store config override the website config?
-     * @param string $path
-     * @param mixed $websiteId
-     * @param int $storeId
-     * @return bool
      */
     protected function isStoreSettingOverridingWebsite(string $path, mixed $websiteId, int $storeId): bool
     {
         $storeValue = $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORES, $storeId);
         $websiteValue = $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_WEBSITES, $websiteId);
-        return ($storeValue !== $websiteValue);
+
+        return $storeValue !== $websiteValue;
     }
 
     /**
      * For a given path, check if that path has a non-default value
      * and if so perform corresponding logic (specified via callback)
      *
-     * @param string $path
      * @param callable $callback Callback to execute for a given config scope
      *                           Signature: function(string $scope, int $scopeId = 0)
      * @param bool $includeDefault Update the default (global) scope as well (defaults to true)
      *
-     * @return void
      */
     public function checkAndApplyAllScopes(string $path, callable $callback, bool $includeDefault = true): void
     {
@@ -93,11 +85,14 @@ class ConfigChecker
 
     /**
      * For a given path and scope determine which stores are affected
+     *
      * @param string $path The configuration path
      * @param string $scope The scope: `default`, `websites` or `stores`
      * @param int $scopeId The entity referenced by the corresponding scope
-     * @return int[]
+     *
      * @throws NoSuchEntityException
+     *
+     * @return int[]
      */
     public function getAffectedStoreIds(string $path, string $scope, int $scopeId): array
     {
@@ -115,6 +110,7 @@ class ConfigChecker
                         $storeIds[] = $store->getId();
                     }
                 }
+
                 break;
 
             // website config applied - check and find all stores under that website that are not overridden
@@ -129,12 +125,14 @@ class ConfigChecker
                         $storeIds[] = $store->getId();
                     }
                 }
+
                 break;
 
             // simple store specific config
             case ScopeInterface::SCOPE_STORES:
                 $storeIds[] = $scopeId;
         }
+
         return $storeIds;
     }
 }

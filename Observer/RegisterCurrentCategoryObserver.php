@@ -9,7 +9,6 @@ use Magento\Framework\Event\ObserverInterface;
 
 class RegisterCurrentCategoryObserver implements ObserverInterface
 {
-    /** @var CurrentCategory  */
     private CurrentCategory $currentCategory;
 
     public function __construct(CurrentCategory $currentCategory) {

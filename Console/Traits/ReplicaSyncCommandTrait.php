@@ -10,10 +10,9 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 trait ReplicaSyncCommandTrait
 {
-
     /**
      * @param int[] $storeIds
-     * @return void
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws LocalizedException
@@ -39,10 +38,12 @@ trait ReplicaSyncCommandTrait
     public function syncReplicasForStore(int $storeId): void
     {
         $this->output->writeln('<info>Syncing ' . $this->storeNameFetcher->getStoreName($storeId) . '...</info>');
+
         try {
             $this->replicaManager->syncReplicasToAlgolia($storeId, $this->productHelper->getIndexSettings($storeId));
         } catch (BadRequestException $e) {
             $this->output->writeln('<error>Failed syncing replicas for store "' . $this->storeNameFetcher->getStoreName($storeId) . '": ' . $e->getMessage() . '</error>');
+
             throw $e;
         }
     }

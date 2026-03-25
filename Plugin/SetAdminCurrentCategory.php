@@ -13,15 +13,9 @@ class SetAdminCurrentCategory
     /** @var CurrentCategory */
     protected $currentCategory;
 
-    /**
-     * @var CategoryRepositoryInterface
-     */
+    /** @var CategoryRepositoryInterface */
     private $categoryRepository;
 
-    /**
-     * @param CurrentCategory $currentCategory
-     * @param CategoryRepositoryInterface $categoryRepository
-     */
     public function __construct(
         CurrentCategory $currentCategory,
         CategoryRepositoryInterface $categoryRepository
@@ -34,7 +28,6 @@ class SetAdminCurrentCategory
      * Set the current category in adminhtml area in the Algolia registry without using Magento registry
      * (which is deprecated)
      *
-     * @param EditController $subject
      * @param Page $result
      *
      * @return Page
@@ -42,6 +35,7 @@ class SetAdminCurrentCategory
     public function afterExecute(EditController $subject, $result)
     {
         $categoryId = $subject->getRequest()->getParam('id');
+
         try {
             $currentCategory = $this->categoryRepository->get($categoryId);
             $this->currentCategory->set($currentCategory);

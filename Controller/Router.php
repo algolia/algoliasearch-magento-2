@@ -28,13 +28,6 @@ class Router implements \Magento\Framework\App\RouterInterface
     /** @var LandingPageFactory */
     protected $landingPageFactory;
 
-    /**
-     * @param ActionFactory $actionFactory
-     * @param LandingPageFactory $landingPageFactory
-     * @param TimezoneInterface $localeDate
-     * @param DateTime $dateTime
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
         ActionFactory $actionFactory,
         LandingPageFactory $landingPageFactory,
@@ -52,13 +45,12 @@ class Router implements \Magento\Framework\App\RouterInterface
     /**
      * Validate and match landing pages from Algolia and modify request
      *
-     * @param \Magento\Framework\App\RequestInterface $request
      *
      * @return \Magento\Framework\App\ActionInterface|null
      */
     public function match(\Magento\Framework\App\RequestInterface $request)
     {
-        $identifier = trim($request->getPathInfo(), '/');
+        $identifier = mb_trim($request->getPathInfo(), '/');
 
         /** @var \Algolia\AlgoliaSearch\Model\LandingPage $landingPage */
         $landingPage = $this->landingPageFactory->create();

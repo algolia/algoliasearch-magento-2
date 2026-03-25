@@ -26,13 +26,6 @@ class SliderRenderer extends Template implements FilterRendererInterface
     /** @var FilterInterface */
     protected $filter;
 
-    /**
-     *
-     * @param Context $context
-     * @param EncoderInterface $jsonEncoder
-     * @param FormatInterface $localeFormat
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         EncoderInterface $jsonEncoder,
@@ -64,7 +57,9 @@ class SliderRenderer extends Template implements FilterRendererInterface
         return $this->filter;
     }
 
-    /** @return string */
+    /**
+     * @return string
+     */
     public function getJsonConfig()
     {
         $config = $this->getConfig();
@@ -72,7 +67,9 @@ class SliderRenderer extends Template implements FilterRendererInterface
         return $this->jsonEncoder->encode($config);
     }
 
-    /** @return string */
+    /**
+     * @return string
+     */
     public function getDataRole()
     {
         $filter = $this->getFilter();
@@ -88,7 +85,9 @@ class SliderRenderer extends Template implements FilterRendererInterface
         return true;
     }
 
-    /** @return array */
+    /**
+     * @return array
+     */
     protected function getFieldFormat()
     {
         $format = $this->localeFormat->getPriceFormat();
@@ -103,7 +102,9 @@ class SliderRenderer extends Template implements FilterRendererInterface
         return $format;
     }
 
-    /** @return array */
+    /**
+     * @return array
+     */
     protected function getConfig()
     {
         $config = [
@@ -117,19 +118,25 @@ class SliderRenderer extends Template implements FilterRendererInterface
         return $config;
     }
 
-    /** @return int */
+    /**
+     * @return int
+     */
     protected function getMinValue()
     {
         return $this->getFilter()->getMinValue();
     }
 
-    /** @return int */
+    /**
+     * @return int
+     */
     protected function getMaxValue()
     {
         return $this->getFilter()->getMaxValue();
     }
 
-    /** @return array */
+    /**
+     * @return array
+     */
     private function getCurrentValue()
     {
         $currentValue = $this->getFilter()->getCurrentValue();
@@ -149,7 +156,9 @@ class SliderRenderer extends Template implements FilterRendererInterface
         return $currentValue;
     }
 
-    /** @return string */
+    /**
+     * @return string
+     */
     private function getUrlTemplate()
     {
         $filter = $this->getFilter();

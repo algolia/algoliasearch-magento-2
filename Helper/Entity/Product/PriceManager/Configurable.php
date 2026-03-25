@@ -7,9 +7,6 @@ use DateTime;
 class Configurable extends ProductWithChildren
 {
     /**
-     * @param $groupId
-     * @param $product
-     * @param $subProducts
      * @return float|int|mixed
      */
     protected function getRulePrice($groupId, $product, $subProducts)
@@ -19,6 +16,7 @@ class Configurable extends ProductWithChildren
 
         if (!$typeInstance instanceof \Magento\ConfigurableProduct\Model\Product\Type\Configurable) {
             $this->logger->log('Unexpected product type encountered, reverting to default price calculation. Where Product Id is ' .$product->getId(). ' and Group Id is ' .$groupId);
+
             return parent::getRulePrice($groupId, $product, $subProducts);
         }
 
@@ -33,6 +31,7 @@ class Configurable extends ProductWithChildren
         if ($childrenPrices === []) {
             return 0;
         }
+
         return min($childrenPrices);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Setup\Patch\Data;
 
-use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Model\Source\PaginationMode;
 use Algolia\AlgoliaSearch\Model\Source\Suggestions;
@@ -34,7 +33,6 @@ class MigratePaginationConfigPatch implements DataPatchInterface
 
     /**
      * Migrate legacy configurations
-     * @return void
      */
     protected function moveIndexingSettings(): void
     {
@@ -55,7 +53,7 @@ class MigratePaginationConfigPatch implements DataPatchInterface
                     'scope' => $item['scope'],
                     'scope_id' => $item['scope_id'],
                     'path' => InstantSearchHelper::PAGINATION_MODE,
-                    'value' => PaginationMode::PAGINATION_CUSTOM
+                    'value' => PaginationMode::PAGINATION_CUSTOM,
                 ]
             );
         }

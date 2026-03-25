@@ -9,9 +9,6 @@ class Suggestions implements \Magento\Framework\View\Element\Block\ArgumentInter
     /** @var LandingPageCollectionFactory */
     private $landingPageCollectionFactory;
 
-    /**
-     * @param LandingPageCollectionFactory $landingPageCollectionFactory
-     */
     public function __construct(LandingPageCollectionFactory $landingPageCollectionFactory)
     {
         $this->landingPageCollectionFactory = $landingPageCollectionFactory;

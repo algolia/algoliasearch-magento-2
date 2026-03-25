@@ -57,9 +57,9 @@ class IndexEntityDataProvider
     }
 
     /**
-     * @param int $storeId
-     * @return array<string, string>
      * @throws NoSuchEntityException
+     *
+     * @return array<string, string>
      */
     public function getEntityIndexes(int $storeId): array
     {
@@ -67,7 +67,7 @@ class IndexEntityDataProvider
             $this->entityIndexes = [
                 'products'   => $this->productHelper->getIndexName($storeId),
                 'categories' => $this->categoryHelper->getIndexName($storeId),
-                'pages'      => $this->pageHelper->getIndexName($storeId)
+                'pages'      => $this->pageHelper->getIndexName($storeId),
             ];
         }
 
@@ -75,10 +75,7 @@ class IndexEntityDataProvider
     }
 
     /**
-     * @param string $entity
-     * @param int $storeId
      *
-     * @return string
      * @throws NoSuchEntityException
      */
     public function getIndexNameByEntity(string $entity, int $storeId): string

@@ -4,17 +4,12 @@ namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 
 use Magento\Bundle\Model\Product\Price;
 use Magento\Catalog\Model\Product;
-use Magento\Customer\Model\Group;
 
 class Bundle extends ProductWithChildren
 {
     /**
      * Overide parent addAdditionalData function
-     * @param $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
-     * @param $field
+     *
      * @return void
      */
     protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode, $field) {
@@ -35,10 +30,6 @@ class Bundle extends ProductWithChildren
     }
 
     /**
-     * @param Product $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
      * @return array
      */
     protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode)
@@ -80,22 +71,18 @@ class Bundle extends ProductWithChildren
                 $max = $this->convertPrice($max, $currencyCode);
             }
         }
+
         return [
             'min' => $minPriceArray,
             'max' => $maxPriceArray,
             'min_price' => $minPrice,
             'max_price' => $max,
             'min_original' => $minOriginalPrice,
-            'max_original' => $maxOriginalPrice
+            'max_original' => $maxOriginalPrice,
         ];
     }
 
     /**
-     * @param $field
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
      * @return void
      */
     protected function handleBundleNonEqualMinMaxPrices($field, $currencyCode, $min, $max, $dashedFormat) {
@@ -115,9 +102,6 @@ class Bundle extends ProductWithChildren
     }
 
     /**
-     * @param $minPrices
-     * @param $max
-     * @param $currencyCode
      * @return array
      */
     protected function getBundleDashedPriceFormat($minPrices, $max, $currencyCode) {
@@ -128,15 +112,11 @@ class Bundle extends ProductWithChildren
             }
             $dashedFormatPrice[$groupId] = $this->formatPrice($min, $currencyCode) . ' - ' . $this->formatPrice($max[$groupId], $currencyCode);
         }
+
         return $dashedFormatPrice;
     }
 
     /**
-     * @param $field
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
      * @return void
      */
     protected function setFinalGroupPricesBundle($field, $currencyCode, $min, $max, $dashedFormat)

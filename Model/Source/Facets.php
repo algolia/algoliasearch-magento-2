@@ -42,7 +42,7 @@ class Facets extends AbstractTable
                 'values' => [
                     FacetBuilder::FACET_SEARCHABLE_SEARCHABLE     => 'Searchable',
                     FacetBuilder::FACET_SEARCHABLE_NOT_SEARCHABLE => 'Not Searchable',
-                    FacetBuilder::FACET_SEARCHABLE_FILTER_ONLY    => 'Filter Only'
+                    FacetBuilder::FACET_SEARCHABLE_FILTER_ONLY    => 'Filter Only',
                 ],
             ],
         ];

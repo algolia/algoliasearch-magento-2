@@ -43,6 +43,7 @@ class AddAlgoliaAssetsObserverTest extends TestCase
     {
         $store = $this->createMock(StoreInterface::class);
         $store->method('getId')->willReturn($storeId);
+
         return $store;
     }
 
@@ -51,6 +52,7 @@ class AddAlgoliaAssetsObserverTest extends TestCase
         $layout = $this->createMock(Layout::class);
         $observer = $this->createMock(Observer::class);
         $observer->method('getData')->with('layout')->willReturn($layout);
+
         return $observer;
     }
 

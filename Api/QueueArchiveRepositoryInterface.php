@@ -8,6 +8,7 @@ use Magento\Framework\Api\SearchResultsInterface;
 
 /**
  * Interface QueueArchiveRepositoryInterface
+ *
  * @package Algolia\AlgoliaSearch\Api
  */
 interface QueueArchiveRepositoryInterface
@@ -15,9 +16,9 @@ interface QueueArchiveRepositoryInterface
     /**
      * Save queue archive
      *
-     * @param QueueArchiveInterface $queueArchive
-     * @return QueueArchiveInterface
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return QueueArchiveInterface
      */
     public function save(QueueArchiveInterface $queueArchive);
 
@@ -25,26 +26,28 @@ interface QueueArchiveRepositoryInterface
      * Retrieve queue archive by id
      *
      * @param int $id
-     * @return QueueArchiveInterface
+     *
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return QueueArchiveInterface
      */
     public function getById($id);
 
     /**
      * Retrieve queue archives matching the specified criteria
      *
-     * @param SearchCriteriaInterface $searchCriteria
-     * @return SearchResultsInterface
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return SearchResultsInterface
      */
     public function getList(SearchCriteriaInterface $searchCriteria);
 
     /**
      * Delete queue archive
      *
-     * @param QueueArchiveInterface $queueArchive
-     * @return bool true on success
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return bool true on success
      */
     public function delete(QueueArchiveInterface $queueArchive);
 
@@ -52,9 +55,11 @@ interface QueueArchiveRepositoryInterface
      * Delete queue archive by ID
      *
      * @param int $id
-     * @return bool true on success
+     *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return bool true on success
      */
     public function deleteById($id);
 }

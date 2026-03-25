@@ -19,24 +19,16 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AlgoliaConnector
 {
-    /**
-     * @var string Case-sensitive object ID key
-     */
+    /** @var string Case-sensitive object ID key */
     public const ALGOLIA_API_OBJECT_ID = 'objectID';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const ALGOLIA_API_INDEX_NAME = 'indexName';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const ALGOLIA_API_TASK_ID = 'taskID';
 
-    /**
-     * @var int
-     */
+    /** @var int */
     public const ALGOLIA_DEFAULT_SCOPE = 0;
 
     /** @var int This value should be configured based on system/full_page_cache/ttl
@@ -55,22 +47,12 @@ class AlgoliaConnector
     /** @var string[] */
     protected array $nonCastableAttributes = ['sku', 'name', 'description', 'query'];
 
-    /** @var bool */
     protected bool $userAgentsAdded = false;
 
-    /**
-     * @var string|null
-     */
     protected ?string $lastUsedIndexName = null;
 
-    /**
-     * @var string|null
-     */
     protected ?string $lastTaskId = null;
 
-    /**
-     * @var array|null
-     */
     protected ?array $lastTaskInfoByStore = null;
 
     public function __construct(
@@ -90,8 +72,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws AlgoliaException
      */
     protected function createClient(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
@@ -110,21 +90,23 @@ class AlgoliaConnector
         $this->clients[$storeId] = SearchClient::createWithConfig($config);
     }
 
-    /** Allow override by alternate connectors */
+    /**
+     * Allow override by alternate connectors
+     */
     protected function getConnectionTimeout(int $storeId): int
     {
         return $this->config->getConnectionTimeout($storeId);
     }
 
-    /** Allow override by alternate connectors */
+    /**
+     * Allow override by alternate connectors
+     */
     protected function getReadTimeout(int $storeId): int
     {
         return $this->config->getReadTimeout($storeId);
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws AlgoliaException
      */
     protected function addAlgoliaUserAgent(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
@@ -142,8 +124,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param int|null $storeId
-     * @return SearchClient
      * @throws AlgoliaException
      */
     public function getClient(?int $storeId = self::ALGOLIA_DEFAULT_SCOPE): SearchClient
@@ -163,8 +143,9 @@ class AlgoliaConnector
     }
 
     /**
-     * @return ListIndicesResponse|array<string,mixed>
      * @throws AlgoliaException
+     *
+     * @return ListIndicesResponse|array<string,mixed>
      */
     public function listIndexes(?int $storeId = null)
     {
@@ -172,9 +153,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string $indexName
-     * @param int|null $storeId
-     * @return bool
      * @throws AlgoliaException
      * @throws \Throwable
      */
@@ -184,11 +162,10 @@ class AlgoliaConnector
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param string $q
-     * @param array $params
-     * @return array<string, mixed>
      * @throws AlgoliaException|NoSuchEntityException
+     *
+     * @return array<string, mixed>
+     *
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
     public function query(SearchQueryInterface $query): array
@@ -203,22 +180,23 @@ class AlgoliaConnector
         $params = array_merge(
             [
                 self::ALGOLIA_API_INDEX_NAME => $indexOptions->getIndexName(),
-                'query' => $query->getQuery()
+                'query' => $query->getQuery(),
             ],
             $query->getParams()
         );
 
         // TODO: Validate return value for integration tests
         return $this->getClient($indexOptions->getStoreId())->search([
-            'requests' => [ $params ]
+            'requests' => [$params],
         ]);
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
      * @param string[] $objectIds REST API requires objectID sent as type string
-     * @return array<string, mixed>
+     *
      * @throws AlgoliaException
+     *
+     * @return array<string, mixed>
      */
     public function getObjects(IndexOptionsInterface $indexOptions, array $objectIds): array
     {
@@ -228,21 +206,16 @@ class AlgoliaConnector
             array_map(
                 fn($id) => [
                     self::ALGOLIA_API_INDEX_NAME => $indexName,
-                    self::ALGOLIA_API_OBJECT_ID => $id
+                    self::ALGOLIA_API_OBJECT_ID => $id,
                 ],
                 $objectIds
             )
         );
 
-        return $this->getClient($indexOptions->getStoreId())->getObjects([ 'requests' => $requests ]);
+        return $this->getClient($indexOptions->getStoreId())->getObjects(['requests' => $requests]);
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param $settings
-     * @param bool $forwardToReplicas
-     * @param bool $mergeSettings
-     * @param string $mergeSettingsFrom
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -265,11 +238,10 @@ class AlgoliaConnector
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param array $requests
-     * @return array<string, mixed>
      * @throws AlgoliaException
      * @throws NoSuchEntityException
+     *
+     * @return array<string, mixed>
      */
     protected function performBatchOperation(IndexOptionsInterface $indexOptions, array $requests): array
     {
@@ -280,8 +252,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @return void
      * @throws AlgoliaException|NoSuchEntityException
      */
     public function deleteIndex(IndexOptionsInterface $indexOptions): void
@@ -294,9 +264,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param array $ids
-     * @param IndexOptionsInterface $indexOptions
-     * @return void
      * @throws AlgoliaException|NoSuchEntityException
      */
     public function deleteObjects(array $ids, IndexOptionsInterface $indexOptions): void
@@ -306,8 +273,8 @@ class AlgoliaConnector
                 fn($id) => [
                     'action' => 'deleteObject',
                     'body'   => [
-                        self::ALGOLIA_API_OBJECT_ID => $id
-                    ]
+                        self::ALGOLIA_API_OBJECT_ID => $id,
+                    ],
                 ],
                 $ids
             )
@@ -319,9 +286,6 @@ class AlgoliaConnector
     /**
      * Warning: This method can't be performed across two different applications
      *
-     * @param IndexOptionsInterface $fromIndexOptions
-     * @param IndexOptionsInterface $toIndexOptions
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -334,17 +298,13 @@ class AlgoliaConnector
             $fromIndexName,
             [
                 'operation'   => 'move',
-                'destination' => $toIndexName
+                'destination' => $toIndexName,
             ]
         );
         $this->setLastOperationInfo($toIndexOptions, $response);
     }
 
     /**
-     * @param string $key
-     * @param array $params
-     * @param int|null $storeId
-     * @return string
      * @throws AlgoliaException
      */
     public function generateSearchSecuredApiKey(string $key, array $params = [], ?int $storeId = null): string
@@ -360,9 +320,9 @@ class AlgoliaConnector
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @return array<string, mixed>
      * @throws AlgoliaException|NoSuchEntityException
+     *
+     * @return array<string, mixed>
      */
     public function getSettings(IndexOptionsInterface $indexOptions): array
     {
@@ -374,17 +334,11 @@ class AlgoliaConnector
             if ($e->getCode() !== 404) {
                 throw $e;
             }
+
             return [];
         }
     }
 
-    /**
-     * @param string $indexName
-     * @param array $settings
-     * @param string $mergeSettingsFrom
-     * @param int|null $storeId
-     * @return SettingsResponse|array
-     */
     protected function mergeSettings(
         string $indexName,
         array $settings,
@@ -429,7 +383,9 @@ class AlgoliaConnector
 
     /**
      * These settings are to be managed by other processes
+     *
      * @param string[] $onlineSettings
+     *
      * @return string[]
      */
     protected function getSettingsToRemove(array $onlineSettings): array
@@ -451,16 +407,13 @@ class AlgoliaConnector
         return [
             'synonyms',
             'altCorrections',
-            'placeholders'
+            'placeholders',
         ];
     }
 
     /**
      * Save objects to index (upserts records)
-     * @param IndexOptionsInterface $indexOptions
-     * @param array $objects
-     * @param bool $isPartialUpdate
-     * @return void
+     *
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -476,7 +429,7 @@ class AlgoliaConnector
             array_map(
                 fn($object) => [
                     'action' => $action,
-                    'body'   => $object
+                    'body'   => $object,
                 ],
                 $objects
             )
@@ -486,9 +439,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param array $response
-     * @return void
      * @throws NoSuchEntityException
      */
     protected function setLastOperationInfo(IndexOptionsInterface $indexOptions, array $response): void
@@ -502,16 +452,14 @@ class AlgoliaConnector
         if ($storeId !== null) {
             $this->lastTaskInfoByStore[$storeId] = [
                 'indexName' => $indexName,
-                'taskId' => $response[self::ALGOLIA_API_TASK_ID] ?? null
+                'taskId' => $response[self::ALGOLIA_API_TASK_ID] ?? null,
             ];
         }
     }
 
     /**
      * @param array<string, mixed> $rule
-     * @param IndexOptionsInterface $indexOptions
-     * @param bool $forwardToReplicas
-     * @return void
+     *
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -530,10 +478,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param array $rules
-     * @param bool $forwardToReplicas
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -548,10 +492,6 @@ class AlgoliaConnector
 
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param string $objectID
-     * @param bool $forwardToReplicas
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -571,9 +511,6 @@ class AlgoliaConnector
     /**
      * Warning: This method can't be performed across two different applications
      *
-     * @param IndexOptionsInterface $fromIndexOptions
-     * @param IndexOptionsInterface $toIndexOptions
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -587,7 +524,7 @@ class AlgoliaConnector
             [
                 'operation'   => 'copy',
                 'destination' => $toIndexName,
-                'scope'       => ['synonyms']
+                'scope'       => ['synonyms'],
             ]
         );
         $this->setLastOperationInfo($fromIndexOptions, $response);
@@ -604,9 +541,6 @@ class AlgoliaConnector
     /**
      * Warning: This method can't be performed across two different applications
      *
-     * @param IndexOptionsInterface $fromIndexOptions
-     * @param IndexOptionsInterface $toIndexOptions
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -620,19 +554,18 @@ class AlgoliaConnector
             [
                 'operation'   => 'copy',
                 'destination' => $toIndexName,
-                'scope'       => ['rules']
+                'scope'       => ['rules'],
             ]
         );
         $this->setLastOperationInfo($fromIndexOptions, $response);
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param array|null $searchRulesParams
-     * @return array
      *
      * @throws AlgoliaException
      * @throws NoSuchEntityException
+     *
+     * @return array
      */
     public function searchRules(IndexOptionsInterface $indexOptions, ?array $searchRulesParams = null)
     {
@@ -642,8 +575,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -657,9 +588,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param string|null $lastUsedIndexName
-     * @param int|null $lastTaskId
-     * @return void
      * @throws ExceededRetriesException|AlgoliaException
      */
     public function waitLastTask(?int $storeId = null, ?string $lastUsedIndexName = null, ?int $lastTaskId = null): void
@@ -692,9 +620,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param array $objects
-     * @param string $indexName
-     * @return void
      * @throws Exception
      */
     protected function prepareRecords(array &$objects, string $indexName): void
@@ -747,9 +672,6 @@ class AlgoliaConnector
         }
     }
 
-    /**
-     * @return int
-     */
     protected function getMaxRecordSize(): int
     {
         if (!$this->maxRecordSize) {
@@ -760,7 +682,6 @@ class AlgoliaConnector
     }
 
     /**
-     * @param $object
      * @return false|mixed
      */
     protected function handleTooBigRecord($object): mixed
@@ -809,10 +730,6 @@ class AlgoliaConnector
         return $object;
     }
 
-    /**
-     * @param $object
-     * @return int|string
-     */
     protected function getLongestAttribute($object): int|string
     {
         $maxLength = 0;
@@ -831,10 +748,6 @@ class AlgoliaConnector
         return $longestAttribute;
     }
 
-    /**
-     * @param $productData
-     * @return void
-     */
     public function castProductObject(&$productData): void
     {
         foreach ($productData as $key => &$data) {
@@ -860,10 +773,6 @@ class AlgoliaConnector
         }
     }
 
-    /**
-     * @param $object
-     * @return mixed
-     */
     protected function castRecord($object): mixed
     {
         foreach ($object as $key => &$value) {
@@ -885,16 +794,11 @@ class AlgoliaConnector
      * PHP you can implement an "after" plugin on this method.
      *
      * @param $value - what PHP thinks is a floating point number
-     * @return bool
      */
     public function isValidFloat(string $value) : bool {
         return floatval($value) !== INF;
     }
 
-    /**
-     * @param $value
-     * @return mixed
-     */
     protected function castAttribute($value): mixed
     {
         if (is_numeric($value) && floatval($value) === floatval((int) $value)) {
@@ -908,10 +812,6 @@ class AlgoliaConnector
         return $value;
     }
 
-    /**
-     * @param int|null $storeId
-     * @return int|null
-     */
     public function getLastTaskId(?int $storeId = null): int|null
     {
         $lastTaskId = null;
@@ -925,28 +825,21 @@ class AlgoliaConnector
         return $lastTaskId;
     }
 
-    /**
-     * @param $object
-     *
-     * @return int
-     */
     protected function calculateObjectSize($object): int
     {
         return mb_strlen(json_encode($object));
     }
 
     /**
-     * @param $indexName
-     * @param $q
-     * @param $params
-     * @param int|null $storeId
-     * @return mixed|null
      * @throws AlgoliaException
+     *
+     * @return mixed|null
+     *
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
     protected function searchWithDisjunctiveFaceting($indexName, $q, $params, ?int $storeId = null): mixed
     {
-        throw new AlgoliaException("This function is not currently supported on PHP connector v4");
+        throw new AlgoliaException('This function is not currently supported on PHP connector v4');
 
         // TODO: Revisit this implementation for backend render
         if (! is_array($params['disjunctiveFacets']) || count($params['disjunctiveFacets']) <= 0) {
@@ -1011,10 +904,6 @@ class AlgoliaConnector
         return $queryResults;
     }
 
-    /**
-     * @param $queryParams
-     * @return array
-     */
     protected function getDisjunctiveQueries($queryParams): array
     {
         $queriesParams = [];
@@ -1045,11 +934,6 @@ class AlgoliaConnector
         return $queriesParams;
     }
 
-    /**
-     * @param $filters
-     * @param $needle
-     * @return array
-     */
     protected function getAlgoliaFiltersArrayWithoutCurrentRefinement($filters, $needle): array
     {
         // iterate on each filters which can be string or array and filter out every refinement matching the needle

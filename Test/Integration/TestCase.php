@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
@@ -23,7 +22,7 @@ use Magento\TestFramework\Helper\Bootstrap;
 
 abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 {
-    const DEFAULT_STORE_ID = 1;
+    public const DEFAULT_STORE_ID = 1;
 
     protected ?ObjectManagerInterface $objectManager = null;
 
@@ -135,7 +134,7 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
             ConfigHelper::APPLICATION_ID,
             ConfigHelper::SEARCH_ONLY_API_KEY,
             ConfigHelper::API_KEY,
-            ConfigHelper::INDEX_PREFIX
+            ConfigHelper::INDEX_PREFIX,
         ];
 
         return array_combine(
@@ -149,7 +148,6 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 
     /**
      * @param array<string, string> $settings
-     * @return void
      */
     protected function setConfigFromArray(array $settings): void
     {
@@ -159,7 +157,9 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
         }
     }
 
-    /** @return \Magento\Framework\ObjectManagerInterface */
+    /**
+     * @return \Magento\Framework\ObjectManagerInterface
+     */
     protected function getObjectManager()
     {
         return Bootstrap::getObjectManager();
@@ -248,16 +248,16 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
 
     /**
      * Run a callback once and only once
-     * @param callable $callback
+     *
      * @param string|null $key - a unique key for this operation - if null a unique key will be derived
-     * @return mixed
      */
-    function runOnce(callable $callback, ?string $key = null): mixed
+    public function runOnce(callable $callback, ?string $key = null): mixed
     {
         static $executed = [];
         $key ??= is_string($callback) ? $callback : spl_object_hash((object) $callback);
         if (!isset($executed[$key])) {
             $executed[$key] = true;
+
             return $callback();
         }
 
@@ -265,10 +265,6 @@ abstract class TestCase extends \Algolia\AlgoliaSearch\Test\TestCase
     }
 
     /**
-     * @param string $indexSuffix
-     * @param int|null $storeId
-     * @param bool|null $isTmp
-     * @return IndexOptionsInterface
      * @throws NoSuchEntityException
      */
     protected function getIndexOptions(

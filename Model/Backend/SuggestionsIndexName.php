@@ -36,7 +36,7 @@ class SuggestionsIndexName extends Value
      */
     public function beforeSave()
     {
-        $value = trim((string) $this->getData('value'));
+        $value = mb_trim((string) $this->getData('value'));
         $storeId = $this->request->getParam('store');
 
         try {

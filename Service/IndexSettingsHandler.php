@@ -13,12 +13,10 @@ use Magento\Framework\Exception\NoSuchEntityException;
  */
 class IndexSettingsHandler
 {
-    /**
-     * As replicas are used for sorting we do not want to override these replicas specific configurations
-     */
+    /** As replicas are used for sorting we do not want to override these replicas specific configurations */
     protected const FORWARDING_EXCLUDED_ATTRIBUTES = [
         'customRanking',
-        'ranking'
+        'ranking',
     ];
 
     public function __construct(
@@ -44,6 +42,7 @@ class IndexSettingsHandler
                 true,
                 $mergeSettingsFrom
             );
+
             return;
         }
 
@@ -70,14 +69,16 @@ class IndexSettingsHandler
 
     /**
      * Split settings based on whether they should be forwarded to the replicas
+     *
      * @return array Tuple of settings (to forward and not to forward)
      */
     protected function splitSettings(array $settings): array
     {
         $excludedKeys = array_flip(self::FORWARDING_EXCLUDED_ATTRIBUTES);
+
         return [
             array_diff_key($settings, $excludedKeys),
-            array_intersect_key($settings, $excludedKeys)
+            array_intersect_key($settings, $excludedKeys),
         ];
     }
 

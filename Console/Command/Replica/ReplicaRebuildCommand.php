@@ -45,7 +45,7 @@ class ReplicaRebuildCommand
 
     protected function getCommandDescription(): string
     {
-        return "Delete and rebuild replica configuration for Magento sorting attributes (only run this operation if errors are encountered during regular sync)";
+        return 'Delete and rebuild replica configuration for Magento sorting attributes (only run this operation if errors are encountered during regular sync)';
     }
 
     protected function getStoreArgumentDescription(): string
@@ -75,12 +75,14 @@ class ReplicaRebuildCommand
         } catch (ReplicaLimitExceededException $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
             $this->output->writeln('<comment>Reduce the number of sorting attributes that have enabled virtual replicas and try again.</comment>');
+
             return CLI::RETURN_FAILURE;
         } catch (BadRequestException $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
             if ($storeIds) {
                 $this->output->writeln('<comment>Your Algolia application may contain cris-crossed replicas. Try running "algolia:replicas:rebuild" for all stores to correct this.');
             }
+
             return CLI::RETURN_FAILURE;
         }
 
@@ -90,8 +92,8 @@ class ReplicaRebuildCommand
     /**
      * Force the replica change state to always sync the replica configuration
      * Also serves to avoid latency from Algolia API when reading replica configuration for comparison with local Magento config
+     *
      * @param int[] $storeIds
-     * @return void
      */
     protected function forceState(array $storeIds): void
     {

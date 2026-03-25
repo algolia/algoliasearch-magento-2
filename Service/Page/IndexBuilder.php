@@ -35,9 +35,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -48,10 +45,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -64,6 +57,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if (!$this->configHelper->isPagesIndexEnabled($storeId)) {
             $this->logger->log('Pages Indexing is not enabled for the store.');
+
             return;
         }
 
@@ -87,6 +81,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                     $this->saveObjects($chunk, $toIndexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
+
                     continue;
                 }
             }
@@ -99,6 +94,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                     $this->algoliaConnector->deleteObjects($chunk, $indexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
+
                     continue;
                 }
             }

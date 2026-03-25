@@ -172,15 +172,16 @@ class Algolia extends Template implements CollectionDataSourceInterface
     }
 
     /**
-     * @return array<string, string>
      * @throws LocalizedException
+     *
+     * @return array<string, string>
      */
     public function getAddToCartParams(): array
     {
         return [
             'action' => $this->_urlBuilder->getUrl('checkout/cart/add', []),
             'formKey' => $this->formKey->getFormKey(),
-            'redirectUrlParam' => ActionInterface::PARAM_NAME_URL_ENCODED
+            'redirectUrlParam' => ActionInterface::PARAM_NAME_URL_ENCODED,
         ];
     }
 
@@ -203,6 +204,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         if ($additional !== []) {
             $routeParams = array_merge($routeParams, $additional);
         }
+
         return $this->_urlBuilder->getUrl('checkout/cart/add', $routeParams);
     }
 
@@ -212,6 +214,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         if (!$landingPageId) {
             return null;
         }
+
         return $this->landingPageHelper->getLandingPage($landingPageId);
     }
 }

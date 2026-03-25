@@ -59,7 +59,7 @@ class ReplicaManagerTest extends TestCase
         $replicaSetting = [
             'virtual(replica1)',
             'virtual(replica2)',
-            'virtual(replica3)'
+            'virtual(replica3)',
         ];
         $replicaToRemove = 'replica2';
 
@@ -82,7 +82,7 @@ class ReplicaManagerTest extends TestCase
         $replicaSetting = [
             'replica1',
             'replica2',
-            'replica3'
+            'replica3',
         ];
         $replicaToRemove = 'replica2';
 

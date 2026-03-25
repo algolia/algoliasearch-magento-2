@@ -23,13 +23,16 @@ class StoreNameFetcher
         if (!isset($this->_storeNames[$storeId])) {
             $this->_storeNames[$storeId] = $this->storeManager->getStore($storeId)->getName();
         }
+
         return $this->_storeNames[$storeId];
     }
 
     /**
      * @param int[] $storeIds
-     * @return string[]
+     *
      * @throws NoSuchEntityException
+     *
+     * @return string[]
      */
     public function getStoreNames(array $storeIds): array
     {

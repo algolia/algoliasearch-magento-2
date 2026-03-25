@@ -14,8 +14,6 @@ $indexNamePrefix = getenv('MAGENTO_CLOUD_ENVIRONMENT');
 /**
  * @param $algoliaConnector Algolia\AlgoliaSearch\Service\AlgoliaConnector
  * @param $indexOptionsBuilder Algolia\AlgoliaSearch\Service\IndexOptionsBuilder
- * @param array $indices
- * @param $indexNamePrefix
  */
 function deleteIndexes($algoliaConnector, $indexOptionsBuilder, array $indices, $indexNamePrefix)
 {

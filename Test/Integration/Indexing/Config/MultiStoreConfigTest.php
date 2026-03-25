@@ -14,7 +14,7 @@ class MultiStoreConfigTest extends MultiStoreTestCase
 {
     use ConfigAssertionsTrait;
 
-    const ADDITIONAL_ATTRIBUTE = 'additional_attribute';
+    public const ADDITIONAL_ATTRIBUTE = 'additional_attribute';
 
     public function testMultiStoreIndicesCreation()
     {
@@ -46,37 +46,40 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $attributesFromConfig = $this->configHelper->getCategoryAdditionalAttributes($defaultStore->getId());
         $attributesFromConfigAlt = $attributesFromConfig;
         $attributesFromConfigAlt[] = [
-            "attribute" => self::ADDITIONAL_ATTRIBUTE,
-            "searchable" => "1",
-            "order" => "unordered",
-            "retrievable" => "1",
+            'attribute' => self::ADDITIONAL_ATTRIBUTE,
+            'searchable' => '1',
+            'order' => 'unordered',
+            'retrievable' => '1',
         ];
 
         $this->setConfig(
             path: ConfigHelper::CATEGORY_ATTRIBUTES,
             value: json_encode($attributesFromConfigAlt),
-            scopeCode: $fixtureSecondStore->getCode())
+            scopeCode: $fixtureSecondStore->getCode()
+        )
         ;
 
         $rankingsFromConfig = $this->configHelper->getCategoryCustomRanking($defaultStore->getId());
         $rankingsFromConfigAlt = $rankingsFromConfig;
         $rankingsFromConfigAlt[] = [
-            "attribute" => self::ADDITIONAL_ATTRIBUTE,
-            "order" => "desc",
+            'attribute' => self::ADDITIONAL_ATTRIBUTE,
+            'order' => 'desc',
         ];
 
         $this->setConfig(
             path: ConfigHelper::CATEGORY_CUSTOM_RANKING,
             value: json_encode($rankingsFromConfigAlt),
-            scopeCode: $fixtureSecondStore->getCode())
+            scopeCode: $fixtureSecondStore->getCode()
+        )
         ;
 
         // Query rules check (activate one QR on the fixture store)
         $facetsFromConfig = $this->configHelper->getFacets($defaultStore->getId());
         $facetsFromConfigAlt = $facetsFromConfig;
         foreach ($facetsFromConfigAlt as $key => $facet) {
-            if ($facet['attribute'] === "color") {
-                $facetsFromConfigAlt[$key]['create_rule'] = "1";
+            if ($facet['attribute'] === 'color') {
+                $facetsFromConfigAlt[$key]['create_rule'] = '1';
+
                 break;
             }
         }

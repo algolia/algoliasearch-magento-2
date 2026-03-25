@@ -4,29 +4,19 @@ namespace Algolia\AlgoliaSearch\Model;
 
 class ImageUploader
 {
-    /**
-     * @var \Magento\MediaStorage\Helper\File\Storage\Database
-     */
+    /** @var \Magento\MediaStorage\Helper\File\Storage\Database */
     protected $coreFileStorageDatabase;
 
-    /**
-     * @var \Magento\Framework\Filesystem\Directory\WriteInterface
-     */
+    /** @var \Magento\Framework\Filesystem\Directory\WriteInterface */
     protected $mediaDirectory;
 
-    /**
-     * @var \Magento\MediaStorage\Model\File\UploaderFactory
-     */
+    /** @var \Magento\MediaStorage\Model\File\UploaderFactory */
     private $uploaderFactory;
 
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
+    /** @var \Magento\Store\Model\StoreManagerInterface */
     protected $storeManager;
 
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
+    /** @var \Psr\Log\LoggerInterface */
     protected $logger;
 
     /**
@@ -53,11 +43,6 @@ class ImageUploader
     /**
      * ImageUploader constructor
      *
-     * @param \Magento\MediaStorage\Helper\File\Storage\Database $coreFileStorageDatabase
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\MediaStorage\Model\File\UploaderFactory $uploaderFactory
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Psr\Log\LoggerInterface $logger
      * @param string $baseTmpPath
      * @param string $basePath
      * @param string[] $allowedExtensions
@@ -144,7 +129,7 @@ class ImageUploader
      */
     public function getFilePath($path, $imageName)
     {
-        return rtrim($path, '/') . '/' . ltrim($imageName, '/');
+        return mb_rtrim($path, '/') . '/' . mb_ltrim($imageName, '/');
     }
 
     /**
@@ -219,7 +204,7 @@ class ImageUploader
 
         if (isset($result['file'])) {
             try {
-                $relativePath = rtrim($baseTmpPath, '/') . '/' . ltrim($result['file'], '/');
+                $relativePath = mb_rtrim($baseTmpPath, '/') . '/' . mb_ltrim($result['file'], '/');
                 $this->coreFileStorageDatabase->saveFile($relativePath);
             } catch (\Exception $e) {
                 $this->logger->critical($e);

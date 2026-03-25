@@ -9,9 +9,6 @@ use Magento\Framework\Event\ObserverInterface;
 
 class CustomerLogin implements ObserverInterface
 {
-    /**
-     * @param InsightsHelper $insightsHelper
-     */
     public function __construct(
         protected InsightsHelper $insightsHelper
     ) {}

@@ -177,8 +177,6 @@ class ConfigHelper
     // --- Credentials & Basic Setup --- //
 
     /**
-     * @param $storeId
-     * @return bool
      * @deprecated Use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager instead
      */
     public function credentialsAreConfigured($storeId = null): bool
@@ -208,17 +206,15 @@ class ConfigHelper
         return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /** Is the Algolia search experience enabled on the frontend? */
+    /**
+     * Is the Algolia search experience enabled on the frontend?
+     */
     public function isEnabledFrontEnd(?int $storeId = null): bool
     {
         return $this->instantSearchConfig->isEnabled($storeId)
             || $this->autocompleteConfig->isEnabled($storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isLoggingEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::LOGGING_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
@@ -226,7 +222,7 @@ class ConfigHelper
 
     /**
      * Used for front end search API key generation
-     * @param $groupId
+     *
      * @return array
      */
     public function getAttributesToFilter($groupId)
@@ -239,14 +235,11 @@ class ConfigHelper
         $attributes = $transport->getData();
         $attributes = array_unique($attributes);
         $attributes = array_values($attributes);
+
         return count($attributes) ? ['filters' => implode(' AND ', $attributes)] : [];
     }
 
     // Algolia Cookie Configuration
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getDefaultConsentCookieName($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -256,10 +249,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getAllowCookieButtonSelector($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -269,10 +258,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getAlgoliaCookieDuration($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -285,7 +270,6 @@ class ConfigHelper
     // --- Products --- //
 
     /**
-     * @param $storeId
      * @return array
      */
     public function getProductAdditionalAttributes($storeId = null)
@@ -317,17 +301,10 @@ class ConfigHelper
         if (is_array($attributes)) {
             return $attributes;
         }
+
         return [];
     }
 
-    /**
-     * @param $attributes
-     * @param $addedAttributes
-     * @param $searchable
-     * @param $retrievable
-     * @param $indexNoValue
-     * @return mixed
-     */
     protected function addIndexableAttributes(
         $attributes,
         $addedAttributes,
@@ -335,8 +312,8 @@ class ConfigHelper
         $retrievable = '1',
         $indexNoValue = '1'
     ) {
-        foreach ((array)$addedAttributes as $addedAttribute) {
-            foreach ((array)$attributes as $attribute) {
+        foreach ((array) $addedAttributes as $addedAttribute) {
+            foreach ((array) $attributes as $attribute) {
                 if ($addedAttribute['attribute'] === $attribute['attribute']) {
                     continue 2;
                 }
@@ -348,11 +325,11 @@ class ConfigHelper
                 'index_no_value' => $indexNoValue,
             ];
         }
+
         return $attributes;
     }
 
     /**
-     * @param $storeId
      * @return array
      */
     public function getProductCustomRanking($storeId = null)
@@ -361,13 +338,10 @@ class ConfigHelper
         if (is_array($attrs)) {
             return $attrs;
         }
+
         return [];
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getRawProductCustomRanking($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -377,28 +351,16 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function useAdaptiveImage($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::USE_ADAPTIVE_IMAGE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isVisualMerchEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::ENABLE_VISUAL_MERCHANDISING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return string
-     */
     public function getCategoryPageIdAttributeName($storeId = null): string
     {
         return (string) $this->configInterface->getValue(self::CATEGORY_PAGE_ID_ATTRIBUTE_NAME, ScopeInterface::SCOPE_STORE, $storeId);
@@ -407,8 +369,6 @@ class ConfigHelper
     /**
      * Returns config flag
      *
-     * @param $storeId
-     * @return bool
      */
     public function includeNonVisibleProductsInIndex($storeId = null): bool
     {
@@ -422,7 +382,7 @@ class ConfigHelper
     /**
      * NOTE: This method is currently only used in integration tests and was removed from the general implementation
      * TODO: Evaluate use cases with product permissions where we may need to restore this functionality
-     * @param $groupId
+     *
      * @return array
      */
     public function getAttributesToRetrieve($groupId)
@@ -481,13 +441,10 @@ class ConfigHelper
         $attributes = $transport->getData();
         $attributes = array_unique($attributes);
         $attributes = array_values($attributes);
+
         return ['attributesToRetrieve' => $attributes];
     }
 
-    /**
-     * @param int|null $storeId
-     * @return bool
-     */
     public function useVirtualReplica(?int $storeId = null): bool
     {
         return (bool) count(array_filter(
@@ -496,11 +453,6 @@ class ConfigHelper
         ));
     }
 
-    /**
-     * @param $attributes
-     * @param $attributeName
-     * @return bool
-     */
     public function isAttributeInList($attributes, $attributeName): bool
     {
         foreach ($attributes as $attr) {
@@ -512,10 +464,6 @@ class ConfigHelper
         return false;
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getProductAttributesList($storeId = null)
     {
         return $this->serializer->unserialize($this->configInterface->getValue(
@@ -527,7 +475,6 @@ class ConfigHelper
 
     // --- Categories --- //
     /**
-     * @param $storeId
      * @return array
      */
     public function getCategoryAdditionalAttributes($storeId = null)
@@ -548,13 +495,10 @@ class ConfigHelper
         if (is_array($attributes)) {
             return $attributes;
         }
+
         return [];
     }
 
-    /**
-     * @param $storeId
-     * @return array
-     */
     public function getCategoryCustomRanking($storeId = null): array
     {
         $attrs = $this->serializer->unserialize($this->configInterface->getValue(
@@ -565,11 +509,11 @@ class ConfigHelper
         if (is_array($attrs)) {
             return $attrs;
         }
+
         return [];
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
     public function showCatsNotIncludedInNavigation($storeId = null)
@@ -581,19 +525,11 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function shouldIndexEmptyCategories($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::INDEX_EMPTY_CATEGORIES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return string
-     */
     public function getCategorySeparator($storeId = null): string
     {
         return (string) $this->configInterface->getValue(self::CATEGORY_SEPARATOR, ScopeInterface::SCOPE_STORE, $storeId);
@@ -601,64 +537,36 @@ class ConfigHelper
 
     // --- Recommend Product Settings --- //
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isRecommendFrequentlyBroughtTogetherEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isRecommendRelatedProductsEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_RECOMMEND_RELATED_PRODUCTS_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isRecommendFrequentlyBroughtTogetherEnabledOnCartPage($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED_ON_CART_PAGE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isRecommendRelatedProductsEnabledOnCartPage($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_RECOMMEND_RELATED_PRODUCTS_ENABLED_ON_CART_PAGE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isRemoveCoreRelatedProductsBlock($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_REMOVE_RELATED_PRODUCTS_BLOCK, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isRemoveUpsellProductsBlock($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_REMOVE_UPSELL_PRODUCTS_BLOCK, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return int
-     */
     public function getNumberOfRelatedProducts($storeId = null): int
     {
         return (int) $this->configInterface->getValue(
@@ -668,10 +576,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return int
-     */
     public function getNumberOfFrequentlyBoughtTogetherProducts($storeId = null): int
     {
         return (int) $this->configInterface->getValue(
@@ -683,21 +587,18 @@ class ConfigHelper
 
     /**
      * @param int $storeId
+     *
      * @return int
      */
     public function isRecommendTrendingItemsEnabled($storeId = null)
     {
-        return (int)$this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::IS_RECOMMEND_TRENDING_ITEMS_ENABLED,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
 
-    /**
-     * @param $storeId
-     * @return int
-     */
     public function getNumberOfTrendingItems($storeId = null): int
     {
         return (int) $this->configInterface->getValue(
@@ -710,8 +611,6 @@ class ConfigHelper
     /**
      * Returns number of looking similar products to display
      *
-     * @param $storeId
-     * @return int
      */
     public function getNumberOfLookingSimilar($storeId = null): int
     {
@@ -722,10 +621,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getTrendingItemsFacetName($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -735,10 +630,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getTrendingItemsFacetValue($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -751,12 +642,11 @@ class ConfigHelper
     /**
      * Determines whether Looking Similar enabled (for widgets))
      *
-     * @param $storeId
      * @return int
      */
     public function isRecommendLookingSimilarEnabled($storeId = null)
     {
-        return (int)$this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::IS_RECOMMEND_LOOKING_SIMILAR_ENABLED,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -766,12 +656,11 @@ class ConfigHelper
     /**
      * Determines whether Looking Similar enabled on PDP
      *
-     * @param $storeId
      * @return int
      */
     public function isLookingSimilarEnabledInPDP($storeId = null)
     {
-        return (int)$this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::IS_LOOKING_SIMILAR_ENABLED_IN_PDP,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -782,17 +671,17 @@ class ConfigHelper
     {
         return $this->configInterface->getValue(
             self::LOOKING_SIMILAR_TITLE,
-            ScopeInterface::SCOPE_STORE, $storeId
+            ScopeInterface::SCOPE_STORE,
+            $storeId
         );
     }
 
     /**
-     * @param $storeId
      * @return int
      */
     public function isLookingSimilarEnabledInShoppingCart($storeId = null)
     {
-        return (int)$this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -800,12 +689,11 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
      */
     public function isTrendItemsEnabledInPDP($storeId = null)
     {
-        return (int)$this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::IS_TREND_ITEMS_ENABLED_IN_PDP,
             ScopeInterface::SCOPE_STORE,
             $storeId
@@ -813,40 +701,27 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
      */
     public function isTrendItemsEnabledInShoppingCart($storeId = null)
     {
-        return (int)$this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::IS_TREND_ITEMS_ENABLED_IN_SHOPPING_CART,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isAddToCartEnabledInFrequentlyBoughtTogether($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_ADDTOCART_ENABLED_IN_FREQUENTLY_BOUGHT_TOGETHER, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isAddToCartEnabledInRelatedProducts($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_ADDTOCART_ENABLED_IN_RELATED_PRODUCTS, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isAddToCartEnabledInTrendsItem($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_ADDTOCART_ENABLED_IN_TRENDS_ITEM, ScopeInterface::SCOPE_STORE, $storeId);
@@ -855,8 +730,6 @@ class ConfigHelper
     /**
      * Determines whether add to cart is enabled in Looking Similar
      *
-     * @param $storeId
-     * @return bool
      */
     public function isAddToCartEnabledInLookingSimilar($storeId = null): bool
     {
@@ -868,7 +741,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return string
      */
     public function getFBTTitle($storeId = null)
@@ -877,7 +749,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return string
      */
     public function getRelatedProductsTitle($storeId = null)
@@ -886,7 +757,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return string
      */
     public function getTrendingItemsTitle($storeId = null)
@@ -897,7 +767,6 @@ class ConfigHelper
     // --- Images --- //
 
     /**
-     * @param $storeId
      * @return int
      */
     public function getImageWidth($storeId = null)
@@ -912,11 +781,10 @@ class ConfigHelper
             return 265;
         }
 
-        return (int)$imageWidth;
+        return (int) $imageWidth;
     }
 
     /**
-     * @param $storeId
      * @return int
      */
     public function getImageHeight($storeId = null)
@@ -931,13 +799,9 @@ class ConfigHelper
             return 265;
         }
 
-        return (int)$imageHeight;
+        return (int) $imageHeight;
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getImageType($storeId = null)
     {
         return $this->configInterface->getValue(self::XML_PATH_IMAGE_TYPE, ScopeInterface::SCOPE_STORE, $storeId);
@@ -945,36 +809,21 @@ class ConfigHelper
 
     // --- Indexing Manager --- //
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isIndexingEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::ENABLE_INDEXING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isQuerySuggestionsIndexEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::ENABLE_QUERY_SUGGESTIONS_INDEX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isPagesIndexEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::ENABLE_PAGES_INDEX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @return bool
-     */
     public function isProductsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
@@ -983,9 +832,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function isCategoriesIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
@@ -994,9 +840,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function isPagesIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
@@ -1005,9 +848,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function isSuggestionsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
@@ -1016,9 +856,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function isAdditionalSectionsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
@@ -1027,9 +864,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function isDeleteProductsIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
@@ -1038,9 +872,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function isQueueIndexerEnabled(): bool
     {
         return $this->configInterface->isSetFlag(
@@ -1051,28 +882,16 @@ class ConfigHelper
 
     // --- Click & Conversion Analytics --- //
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isClickConversionAnalyticsEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::CC_ANALYTICS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getClickConversionAnalyticsISSelector($storeId = null)
     {
         return $this->configInterface->getValue(self::CC_ANALYTICS_IS_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getConversionAnalyticsMode($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -1082,10 +901,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getConversionAnalyticsAddToCartSelector($storeId = null)
     {
         return $this->configInterface->getValue(self::CC_ADD_TO_CART_SELECTOR, ScopeInterface::SCOPE_STORE, $storeId);
@@ -1094,7 +909,6 @@ class ConfigHelper
     // --- Google Analytics --- //
 
     /**
-     * @param $storeId
      * @return array
      */
     public function getAnalyticsConfig($storeId = null)
@@ -1115,10 +929,6 @@ class ConfigHelper
         ];
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isAnalyticsEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::GA_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
@@ -1126,37 +936,21 @@ class ConfigHelper
 
     // --- Advanced --- //
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getRemoveWordsIfNoResult($storeId = null)
     {
         return $this->configInterface->getValue(self::REMOVE_IF_NO_RESULT, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isPartialUpdateEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::PARTIAL_UPDATES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isCustomerGroupsEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::CUSTOMER_GROUPS_ENABLE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isFptEnabled($storeId = null): bool
     {
         return $this->weeeHelper->isEnabled($storeId) &&
@@ -1173,28 +967,16 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function shouldRemovePubDirectory($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::REMOVE_PUB_DIR_IN_URL, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isRemoveBranding($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::REMOVE_BRANDING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function indexProductOnCategoryProductsUpdate($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -1205,7 +987,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return array
      */
     public function getNonCastableAttributes($storeId = null)
@@ -1223,20 +1004,16 @@ class ConfigHelper
                 }
             }
         }
+
         return $nonCastableAttributes;
     }
 
-    /**
-     * @param $storeId
-     * @return int
-     */
     public function getNumberOfElementByPage($storeId = null): int
     {
         return (int) $this->configInterface->getValue(self::NUMBER_OF_ELEMENT_BY_PAGE, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
-     * @param $storeId
      * @return int
      */
     public function getMaxRecordSizeLimit($storeId = null)
@@ -1248,10 +1025,6 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @param $storeId
-     * @return int
-     */
     public function getMaxReplicasLimit($storeId = null): int
     {
         return (int) $this->configInterface->getValue(
@@ -1262,7 +1035,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return string
      */
     public function getAnalyticsRegion($storeId = null)
@@ -1275,7 +1047,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return mixed'
      */
     public function getConnectionTimeout($storeId = null)
@@ -1284,7 +1055,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return mixed'
      */
     public function getReadTimeout($storeId = null)
@@ -1293,7 +1063,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return mixed'
      */
     public function getWriteTimeout($storeId = null)
@@ -1326,22 +1095,17 @@ class ConfigHelper
 
     // Indexing Queue advanced settingg
     /**
-     * @param $storeId
      * @return int
      */
     public function getArchiveLogClearLimit($storeId = null)
     {
-        return (int)$this->configInterface->getValue(
+        return (int) $this->configInterface->getValue(
             self::ARCHIVE_LOG_CLEAR_LIMIT,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function isEnhancedQueueArchiveEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::ENHANCED_QUEUE_ARCHIVE, ScopeInterface::SCOPE_STORE, $storeId);
@@ -1349,16 +1113,12 @@ class ConfigHelper
 
     // --- Extra index settings --- //
 
-    /**
-     * @param $section
-     * @param $storeId
-     * @return string
-     */
     public function getExtraSettings($section, $storeId = null): string
     {
         $constant = 'EXTRA_SETTINGS_' . mb_strtoupper((string) $section);
         $value = $this->configInterface->getValue(constant('self::' . $constant), ScopeInterface::SCOPE_STORE, $storeId);
-        return trim((string)$value);
+
+        return mb_trim((string) $value);
     }
 
     // --- Magento Core --- //
@@ -1394,12 +1154,12 @@ class ConfigHelper
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
+
         return $store->getCurrentCurrencyCode();
     }
 
     /**
      * Obtain the store scoped currency configuration or fall back to all allowed currencies
-     * @return array
      */
     public function getAllowedCurrencies(?int $storeId = null): array
     {
@@ -1411,6 +1171,7 @@ class ConfigHelper
                 $storeId
             ) ?? ''
         );
+
         return $configured ?: $this->dirCurrency->getConfigAllowCurrencies();
     }
 
@@ -1422,10 +1183,6 @@ class ConfigHelper
         return $this->storeManager->getStore()->getId();
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getStoreLocale($storeId)
     {
         return $this->configInterface->getValue(
@@ -1436,30 +1193,23 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return string|null
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return string|null
      */
     public function getCurrency($storeId = null)
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->storeManager->getStore($storeId);
+
         return $this->currency->getCurrency($store->getCurrentCurrencyCode())->getSymbol();
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function getShowOutOfStock($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::SHOW_OUT_OF_STOCK, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     public function useSecureUrlsInFrontend($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(
@@ -1469,27 +1219,16 @@ class ConfigHelper
         );
     }
 
-    /**
-     * @return bool
-     */
     public function isCookieRestrictionModeEnabled(): bool
     {
         return (bool) $this->cookieHelper->isCookieRestrictionModeEnabled();
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getCookieLifetime($storeId = null)
     {
         return $this->configInterface->getValue(self::COOKIE_LIFETIME, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getCacheTime($storeId = null)
     {
         return $this->configInterface->getValue(
@@ -1665,9 +1404,7 @@ class ConfigHelper
      */
     public const HIDE_PAGINATION = InstantSearchHelper::HIDE_PAGINATION;
 
-    /**
-     * @deprecated This constant is retained purely for data patches to migrate from older versions
-     */
+    /** @deprecated This constant is retained purely for data patches to migrate from older versions */
     public const LEGACY_USE_VIRTUAL_REPLICA_ENABLED = 'algoliasearch_instant/instant/use_virtual_replica';
 
     // --- Indexing Queue / Cron --- //
@@ -1705,33 +1442,23 @@ class ConfigHelper
     public const ENABLE_BACKEND = self::ENABLE_INDEXING;
 
     // --- Advanced --- //
-    /**
-     * @deprecated This configuration is no longer being used and will be removed in a future release
-     */
+    /** @deprecated This configuration is no longer being used and will be removed in a future release */
     public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
 
-    /**
-     * @deprecated This configuration is no longer being used and will be removed in a future release
-     */
+    /** @deprecated This configuration is no longer being used and will be removed in a future release */
     public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
 
-    /**
-     * @deprecated This configuration is no longer being used and will be removed in a future release
-     */
+    /** @deprecated This configuration is no longer being used and will be removed in a future release */
     public const PREVENT_BACKEND_RENDERING_DISPLAY_MODE =
         'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode';
 
-    /**
-     * @deprecated This configuration is no longer being used and will be removed in a future release
-     */
+    /** @deprecated This configuration is no longer being used and will be removed in a future release */
     public const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
         'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
 
     // --- Miscellaneous --- //
 
-    /**
-     * @deprecated This configuration is no longer being used and will be removed in a future release
-     */
+    /** @deprecated This configuration is no longer being used and will be removed in a future release */
     public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
 
     /*** METHODS ***/
@@ -1739,8 +1466,8 @@ class ConfigHelper
     // --- Autocomplete --- //
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isEnabled
      */
@@ -1750,8 +1477,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @internal This is an internal function only and should not be used by customizations
      */
     public function isDefaultSelector($storeId = null)
@@ -1760,8 +1487,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getDomSelector()
      */
@@ -1771,8 +1496,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return array
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getAdditionalSections()
      */
@@ -1782,8 +1507,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfProductsSuggestions()
      */
@@ -1793,8 +1518,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfCategoriesSuggestions()
      */
@@ -1804,8 +1529,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getNumberOfQueriesSuggestions()
      */
@@ -1815,8 +1540,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinQueryPopularity()
      */
@@ -1826,8 +1551,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getMinQueryNumberOfResults()
      */
@@ -1837,8 +1562,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return array
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::getExcludedPages()
      */
@@ -1848,8 +1573,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::shouldRenderTemplateDirectives()
      */
@@ -1859,8 +1582,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isDebugEnabled()
      */
@@ -1870,8 +1593,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
      * @deprecated This method has been moved to the Autocomplete config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper::isKeyboardNavigationEnabled()
      */
@@ -1901,8 +1622,8 @@ class ConfigHelper
     // --- InstantSearch --- //
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isEnabled()
      * /
@@ -1913,8 +1634,6 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
-     * @return mixed
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getDomSelector()
      */
@@ -1924,8 +1643,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getNumberOfProductResults()
      */
@@ -1935,8 +1654,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::shouldReplaceCategories()
      */
@@ -1946,8 +1665,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return array|bool|float|int|mixed|string
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getFacets()
      */
@@ -1957,8 +1676,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return int
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getMaxValuesPerFacet()
      */
@@ -1968,8 +1687,6 @@ class ConfigHelper
     }
 
     /**
-     * @param int|null $storeId
-     * @return bool
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isDynamicFacetsEnabled()
      */
@@ -1990,8 +1707,6 @@ class ConfigHelper
     }
 
     /**
-     * @param int|null $storeId
-     * @return string
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::getRawSortingValue()
      */
@@ -2001,10 +1716,8 @@ class ConfigHelper
     }
 
     /**
-     * @param array $sorting
      * @param string|null $scope
-     * @param int|null $scopeId
-     * @return void
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::setSorting()
      */
@@ -2014,8 +1727,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isSearchBoxEnabled()
      */
@@ -2025,8 +1738,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::shouldShowSuggestionsOnNoResultsPage()
      */
@@ -2036,8 +1749,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isAddToCartEnabled()
      */
@@ -2047,8 +1760,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::isInfiniteScrollEnabled()
      */
@@ -2058,8 +1771,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the InstantSearch config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper::shouldHidePagination()
      */
@@ -2071,8 +1784,8 @@ class ConfigHelper
     // --- Indexing Queue / Cron --- //
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::isQueueActive()
      */
@@ -2082,8 +1795,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::useBuiltInCron()
      */
@@ -2093,8 +1806,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getNumberOfJobToRun()
      */
@@ -2104,8 +1817,8 @@ class ConfigHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getRetryLimit()
      */
@@ -2117,8 +1830,8 @@ class ConfigHelper
     // --- Indexing Manager --- //
 
     /**
-     * @param $storeId
      * @return bool
+     *
      * @deprecated This method has been renamed to be more meaningful and to avoid confusion with "backend rendering" statements
      * @see \Algolia\AlgoliaSearch\Helper\ConfigHelper::isIndexingEnabled()
      */

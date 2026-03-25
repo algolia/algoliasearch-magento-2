@@ -33,7 +33,7 @@ class ReindexTest extends TestCase
     protected ?CategoryBatchQueueProcessor $categoryBatchQueueProcessor = null;
     protected ?PageBatchQueueProcessor $pageBatchQueueProcessor = null;
 
-    protected ?array $stores = ["1" => "foo", "2" => "bar"];
+    protected ?array $stores = ['1' => 'foo', '2' => 'bar'];
 
     protected function setUp(): void
     {
@@ -79,8 +79,8 @@ class ReindexTest extends TestCase
             ->expects($this->once())
             ->method('getParams')
             ->willReturn([
-                "store_id" => null,
-                "entity" => "all",
+                'store_id' => null,
+                'entity' => 'all',
             ]);
 
         $this->productBatchQueueProcessor
@@ -104,8 +104,8 @@ class ReindexTest extends TestCase
             ->expects($this->once())
             ->method('getParams')
             ->willReturn([
-                "store_id" => null,
-                "entity" => "pages",
+                'store_id' => null,
+                'entity' => 'pages',
             ]);
 
         $this->productBatchQueueProcessor
@@ -129,8 +129,8 @@ class ReindexTest extends TestCase
             ->expects($this->once())
             ->method('getParams')
             ->willReturn([
-                "store_id" => "1",
-                "entity" => "products",
+                'store_id' => '1',
+                'entity' => 'products',
             ]);
 
         $this->productBatchQueueProcessor
@@ -156,9 +156,9 @@ class ReindexTest extends TestCase
             ->expects($this->once())
             ->method('getParams')
             ->willReturn([
-                "store_id" => null,
-                "namespace" => "product_listing",
-                "selected" => $selectedProducts,
+                'store_id' => null,
+                'namespace' => 'product_listing',
+                'selected' => $selectedProducts,
             ]);
 
         $this->productBatchQueueProcessor

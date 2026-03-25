@@ -7,10 +7,9 @@ use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 
 class SearchQuery implements SearchQueryInterface
 {
-
     public function __construct(
         protected ?IndexOptionsInterface $indexOptions = null,
-        protected string                 $query = "",
+        protected string                 $query = '',
         protected array                  $params = [],
     ) {}
 
@@ -44,6 +43,7 @@ class SearchQuery implements SearchQueryInterface
     public function setQuery(string $query): self
     {
         $this->query = $query;
+
         return $this;
     }
 
@@ -53,6 +53,7 @@ class SearchQuery implements SearchQueryInterface
     public function setParams(array $params): self
     {
         $this->params = $params;
+
         return $this;
     }
 
@@ -62,6 +63,7 @@ class SearchQuery implements SearchQueryInterface
     public function setIndexOptions(IndexOptionsInterface $indexOptions): self
     {
         $this->indexOptions = $indexOptions;
+
         return $this;
     }
 }

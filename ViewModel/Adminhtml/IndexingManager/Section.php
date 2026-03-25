@@ -20,33 +20,22 @@ class Section implements ArgumentInterface
         protected IndexNameFetcher $indexNameFetcher
     ) {}
 
-    /**
-     * @param string $entity
-     * @return void
-     */
     public function setEntity(string $entity): void
     {
         $this->entity = $entity;
     }
 
-    /**
-     * @return string
-     */
     public function getEntity(): string
     {
         return $this->entity;
     }
 
-    /**
-     * @return string
-     */
     public function getSectionTitle(): string
     {
         return ucfirst(str_replace('_', ' ', $this->getEntity()));
     }
 
     /**
-     * @return array
      * @throws NoSuchEntityException
      */
     public function getRelatedIndices(): array
@@ -59,18 +48,13 @@ class Section implements ArgumentInterface
                 'index' => $this->indexNameFetcher->getIndexName(
                     '_' . $this->getEntity(),
                     $store->getId()
-                )
+                ),
             ];
         }
 
         return $relatedIndices;
     }
 
-    /**
-     * @param string $indexName
-     * @param int $storeId
-     * @return string
-     */
     public function getIndexUrl(string $indexName, int $storeId): string
     {
         $url = 'https://dashboard.algolia.com/apps/';

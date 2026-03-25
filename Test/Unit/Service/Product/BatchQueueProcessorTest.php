@@ -103,7 +103,7 @@ class BatchQueueProcessorTest extends TestCase
                 $this->arrayHasKey('entityIds')
             );
 
-        $this->processor->processBatch(1, range(1,5));
+        $this->processor->processBatch(1, range(1, 5));
     }
 
     public function testProcessBatchHandlesDeltaIndexingPaged()
@@ -120,6 +120,7 @@ class BatchQueueProcessorTest extends TestCase
                 'buildIndexList',
                 $this->callback(function(array $arg) use (&$invocationCount, $pageSize) {
                     $invocationCount++;
+
                     return array_key_exists('storeId', $arg)
                         && array_key_exists('entityIds', $arg)
                         && array_key_exists('options', $arg)
@@ -128,7 +129,7 @@ class BatchQueueProcessorTest extends TestCase
                 })
             );
 
-        $this->processor->processBatch(1, range(1,50));
+        $this->processor->processBatch(1, range(1, 50));
     }
 
     /**
@@ -152,7 +153,8 @@ class BatchQueueProcessorTest extends TestCase
                     string $method,
                     array $data,
                     int $dataSize,
-                    bool $isFullReindex)
+                    bool $isFullReindex
+                )
                 use (&$invocationCount) {
                     $invocationCount++;
                     switch ($invocationCount) {
@@ -160,11 +162,13 @@ class BatchQueueProcessorTest extends TestCase
                             $this->assertEquals(IndicesConfigurator::class, $className);
                             $this->assertEquals('saveConfigurationToAlgolia', $method);
                             $this->assertArrayHasKey('storeId', $data);
+
                             break;
                         case 2:
                             $this->assertEquals(IndexBuilder::class, $className);
                             $this->assertEquals('buildIndexFull', $method);
                             $this->assertArrayHasKey('storeId', $data);
+
                             break;
                     }
                 }
@@ -213,13 +217,15 @@ class BatchQueueProcessorTest extends TestCase
                     string $method,
                     array $data,
                     int $dataSize,
-                    bool $isFullReindex)
+                    bool $isFullReindex
+                )
                 use (&$invocationCount, $pageSize) {
                     $invocationCount++;
                     switch ($invocationCount) {
                         case 1:
                             $this->assertEquals(IndicesConfigurator::class, $className);
                             $this->assertEquals('saveConfigurationToAlgolia', $method);
+
                             break;
                         default:
                             $this->assertEquals(IndexBuilder::class, $className);
@@ -227,6 +233,7 @@ class BatchQueueProcessorTest extends TestCase
                             $this->assertArrayHasKey('options', $data);
                             $this->assertEquals($pageSize, $data['options']['pageSize']);
                             $this->assertEquals($invocationCount - 1, $data['options']['page']);
+
                             break;
                     }
                 }
@@ -260,7 +267,8 @@ class BatchQueueProcessorTest extends TestCase
                     string $method,
                     array $data,
                     int $dataSize,
-                    bool $isFullReindex)
+                    bool $isFullReindex
+                )
                 use (&$invocationCount) {
                     $invocationCount++;
                     if ($invocationCount === 3) {
@@ -288,6 +296,7 @@ class BatchQueueProcessorTest extends TestCase
     {
         $mockCollection = $this->createMock(Collection::class);
         $mockCollection->expects($this->exactly($expectedSizeCalls))->method('getSize')->willReturn($size);
+
         return $mockCollection;
     }
 }

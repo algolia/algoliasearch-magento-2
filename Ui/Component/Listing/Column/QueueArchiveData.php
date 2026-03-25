@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Ui\Component\Listing\Column;
 class QueueArchiveData extends \Magento\Ui\Component\Listing\Columns\Column
 {
     /**
-     * @param array $dataSource
      *
      * @return array
      *

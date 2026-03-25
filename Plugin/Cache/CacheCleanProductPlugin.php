@@ -47,6 +47,7 @@ class CacheCleanProductPlugin
     public function afterDelete(ProductResource $subject, ProductResource $result): ProductResource
     {
         $this->cache->clear();
+
         return $result;
     }
 
@@ -57,12 +58,14 @@ class CacheCleanProductPlugin
     public function afterUpdateAttributes(Action $subject, Action $result, array $productIds, array $attributes, int $storeId): Action
     {
         $this->cacheHelper->handleBulkAttributeChange($productIds, $attributes, $storeId);
+
         return $result;
     }
 
     protected function isEligibleNewProduct(Product $product): bool
     {
         $storeId = $product->getStoreId();
+
         return $product->isObjectNew()
             && $product->getStatus() === Status::STATUS_ENABLED
             && $this->configHelper->includeNonVisibleProductsInIndex($storeId)
@@ -74,6 +77,7 @@ class CacheCleanProductPlugin
     protected function hasEnablementChanged(array $orig, array $new): bool
     {
         $key = 'status';
+
         return $orig[$key] !== $new[$key];
     }
 
@@ -84,6 +88,7 @@ class CacheCleanProductPlugin
         }
 
         $key = 'visibility';
+
         return $this->isVisible($orig[$key]) !== $this->isVisible($new[$key]);
     }
 
@@ -100,6 +105,7 @@ class CacheCleanProductPlugin
         $key = 'quantity_and_stock_status';
         $oldStock = $orig[$key];
         $newStock = $new[$key];
+
         return $this->canCompareValues($oldStock, $newStock, 'is_in_stock')
             && (bool) $oldStock['is_in_stock'] !== (bool) $newStock['is_in_stock']
             || $this->canCompareValues($oldStock, $newStock, 'qty')

@@ -10,9 +10,6 @@ class Index extends \Magento\Backend\App\Action
     /** @var ResultFactory */
     protected $resultFactory;
 
-    /**
-     * @param Context $context
-     */
     public function __construct(Context $context)
     {
         parent::__construct($context);
@@ -20,7 +17,9 @@ class Index extends \Magento\Backend\App\Action
         $this->resultFactory = $context->getResultFactory();
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');

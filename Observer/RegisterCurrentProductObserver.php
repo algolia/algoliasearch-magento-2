@@ -14,15 +14,12 @@ use Algolia\AlgoliaSearch\Registry\CurrentProduct;
  */
 class RegisterCurrentProductObserver implements ObserverInterface
 {
-    /**
-     * @var CurrentProduct
-     */
+    /** @var CurrentProduct */
     private $currentProduct;
 
     /**
      * RegisterCurrentProductObserver constructor.
      *
-     * @param CurrentProduct $currentProduct
      */
     public function __construct(
         CurrentProduct $currentProduct
@@ -33,7 +30,6 @@ class RegisterCurrentProductObserver implements ObserverInterface
     /**
      * Trigger event
      *
-     * @param Event $event
      */
     public function execute(Event $event)
     {

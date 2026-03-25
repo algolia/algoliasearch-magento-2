@@ -24,15 +24,6 @@ class LandingPageActions extends Column
     /** @var UrlBuilder */
     protected $frontendUrlBuilder;
 
-    /**
-     * @param ContextInterface $context
-     * @param UiComponentFactory $uiComponentFactory
-     * @param UrlInterface $urlBuilder
-     * @param Escaper $escaper
-     * @param UrlBuilder $frontendUrlBuilder
-     * @param array $components
-     * @param array $data
-     */
     public function __construct(
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
@@ -50,7 +41,6 @@ class LandingPageActions extends Column
     }
 
     /**
-     * @param array $dataSource
      *
      * @return array
      */

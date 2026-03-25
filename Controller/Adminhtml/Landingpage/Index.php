@@ -6,7 +6,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Index extends AbstractAction
 {
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $breadMain = __('Algolia | Landing Page Builder');
@@ -22,7 +24,9 @@ class Index extends AbstractAction
         return $resultPage;
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');

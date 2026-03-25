@@ -1,4 +1,5 @@
 <?php
+
 namespace Algolia\AlgoliaSearch\Model;
 
 use Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface;
@@ -28,6 +29,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set archive ID
      *
      * @param int $id
+     *
      * @return $this
      */
     public function setArchiveId($id)
@@ -49,6 +51,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set PID
      *
      * @param int $pid
+     *
      * @return $this
      */
     public function setPid($pid)
@@ -70,6 +73,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set class name
      *
      * @param string $className
+     *
      * @return $this
      */
     public function setClassName($className)
@@ -91,6 +95,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set method name
      *
      * @param string $methodName
+     *
      * @return $this
      */
     public function setMethodName($methodName)
@@ -112,6 +117,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set data field
      *
      * @param string $dataField
+     *
      * @return $this
      */
     public function setDataField($dataField)
@@ -133,6 +139,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set retries
      *
      * @param int $retries
+     *
      * @return $this
      */
     public function setRetries($retries)
@@ -154,6 +161,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set error log
      *
      * @param string $errorLog
+     *
      * @return $this
      */
     public function setErrorLog($errorLog)
@@ -175,6 +183,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set data size
      *
      * @param int $dataSize
+     *
      * @return $this
      */
     public function setDataSize($dataSize)
@@ -196,6 +205,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set whether the job is part of a full reindex
      *
      * @param bool $isFullReindex
+     *
      * @return $this
      */
     public function setIsFullReindex($isFullReindex)
@@ -217,6 +227,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set creation date and time
      *
      * @param string $createdAt
+     *
      * @return $this
      */
     public function setCreatedAt($createdAt)
@@ -238,6 +249,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set processing date and time
      *
      * @param string $processedAt
+     *
      * @return $this
      */
     public function setProcessedAt($processedAt)
@@ -259,6 +271,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set whether the job was successful
      *
      * @param bool $success
+     *
      * @return $this
      */
     public function setSuccess($success)
@@ -280,6 +293,7 @@ class QueueArchive extends AbstractModel implements QueueArchiveInterface
      * Set debug info
      *
      * @param string $debug
+     *
      * @return $this
      */
     public function setDebug($debug)

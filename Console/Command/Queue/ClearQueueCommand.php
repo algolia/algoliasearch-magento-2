@@ -37,7 +37,7 @@ class ClearQueueCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return "Clear the indexing queue for specified store(s) or all stores. This will remove all pending indexing jobs from the queue.";
+        return 'Clear the indexing queue for specified store(s) or all stores. This will remove all pending indexing jobs from the queue.';
     }
 
     protected function getStoreArgumentDescription(): string
@@ -72,21 +72,23 @@ class ClearQueueCommand extends AbstractStoreCommand
             $this->clearQueue($storeIds);
         } catch (\Exception $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+
             return Cli::RETURN_FAILURE;
         }
 
         $output->writeln('<info>Indexing queue cleared successfully!</info>');
+
         return Cli::RETURN_SUCCESS;
     }
 
     /**
      * Confirm the clear operation as it's destructive
      *
-     * @return bool
      */
     protected function confirmClearOperation(): bool
     {
         $this->output->writeln('<fg=red>WARNING:</fg=red> This will clear all pending indexing jobs from the queue for the specified store(s). This action cannot be undone!');
+
         return $this->confirmOperation(
             'Indexing queue clear operation confirmed',
             'Indexing queue clear operation cancelled',
@@ -97,7 +99,6 @@ class ClearQueueCommand extends AbstractStoreCommand
     /**
      * Clear indexing queue for specified stores or all stores
      *
-     * @param array $storeIds
      * @throws NoSuchEntityException|LocalizedException
      */
     protected function clearQueue(array $storeIds = []): void
@@ -114,7 +115,6 @@ class ClearQueueCommand extends AbstractStoreCommand
     /**
      * Clear indexing queue for a specific store
      *
-     * @param int $storeId
      * @throws NoSuchEntityException
      */
     protected function clearQueueForStore(int $storeId): void
@@ -147,7 +147,6 @@ class ClearQueueCommand extends AbstractStoreCommand
      * Clear the queue for a specific store (2 different approaches)
      * Filters jobs by store_id in the JSON data field and deletes them
      *
-     * @param int $storeId
      * @throws \Exception
      */
     protected function clearQueueTableForStore(int $storeId): void
@@ -166,6 +165,7 @@ class ClearQueueCommand extends AbstractStoreCommand
 
             if (empty($jobIds)) {
                 $this->output->writeln('<comment>No jobs found for store ID ' . $storeId . '</comment>');
+
                 return;
             }
 
@@ -188,7 +188,6 @@ class ClearQueueCommand extends AbstractStoreCommand
      * Fallback method for clearing queue by store when JSON filtering is not supported
      * Loads all jobs and filters them in PHP
      *
-     * @param int $storeId
      * @throws \Exception
      */
     protected function clearQueueTableForStoreFallback(int $storeId): void
@@ -214,6 +213,7 @@ class ClearQueueCommand extends AbstractStoreCommand
 
             if (empty($jobsToDelete)) {
                 $this->output->writeln('<comment>No jobs found for store ID ' . $storeId . ' (fallback method)</comment>');
+
                 return;
             }
 

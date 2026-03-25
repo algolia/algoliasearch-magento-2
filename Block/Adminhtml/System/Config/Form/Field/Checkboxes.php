@@ -31,37 +31,38 @@ class Checkboxes extends Field
         }
 
         $html .= '</div>';
+
         return $html;
     }
 
     protected function getCss($elementId): string {
         return <<<CSS
-            <style>
-                #$elementId .form-group {
-                  display: grid;
-                  grid-template-columns: 24px 1fr;
-                  align-items: start;
-                  margin-bottom: 20px;
-                }
+                <style>
+                    #$elementId .form-group {
+                      display: grid;
+                      grid-template-columns: 24px 1fr;
+                      align-items: start;
+                      margin-bottom: 20px;
+                    }
 
-                #$elementId .form-group input[type="checkbox"] {
-                  margin-top: 2px;
-                }
-                #$elementId .form-content {
-                  display: flex;
-                  flex-direction: column;
-                }
-                #$elementId .form-content label {
-                  font-weight: bold;
-                  color: #333;
-                }
-                #$elementId .form-content .description {
-                  font-size: 0.9em;
-                  color: #666;
-                  margin-top: 2px;
-                }
-            </style>
-        CSS;
+                    #$elementId .form-group input[type="checkbox"] {
+                      margin-top: 2px;
+                    }
+                    #$elementId .form-content {
+                      display: flex;
+                      flex-direction: column;
+                    }
+                    #$elementId .form-content label {
+                      font-weight: bold;
+                      color: #333;
+                    }
+                    #$elementId .form-content .description {
+                      font-size: 0.9em;
+                      color: #666;
+                      margin-top: 2px;
+                    }
+                </style>
+            CSS;
     }
 
     protected function getCheckboxHtml(
@@ -82,12 +83,13 @@ class Checkboxes extends Field
             $checked ? 'checked' : ''
         );
         $html .= '<div class="form-content">';
-        $html .= sprintf('<label for="%s">%s</label>',$id, $label ?? $name);
+        $html .= sprintf('<label for="%s">%s</label>', $id, $label ?? $name);
         if ($description) {
             $html .= sprintf('<span class="description">%s</span>', $description);
         }
         $html .= '</div>';
         $html .= '</div>';
+
         return $html;
     }
 }

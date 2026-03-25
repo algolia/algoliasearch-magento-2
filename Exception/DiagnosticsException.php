@@ -6,5 +6,4 @@ use Magento\Framework\Exception\LocalizedException;
 
 class DiagnosticsException extends LocalizedException
 {
-
 }

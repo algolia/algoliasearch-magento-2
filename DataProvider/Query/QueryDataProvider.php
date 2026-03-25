@@ -10,19 +10,13 @@ class QueryDataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
 {
     protected $collection;
 
-    /**
-     * @var DataPersistorInterface
-     */
+    /** @var DataPersistorInterface */
     protected $dataPersistor;
 
-    /**
-     * @var StoreManagerInterface
-     */
+    /** @var StoreManagerInterface */
     protected $storeManager;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $loadedData;
 
     /**
@@ -31,11 +25,6 @@ class QueryDataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
      * @param string $name
      * @param string $primaryFieldName
      * @param string $requestFieldName
-     * @param CollectionFactory $collectionFactory
-     * @param DataPersistorInterface $dataPersistor
-     * @param StoreManagerInterface $storeManager
-     * @param array $meta
-     * @param array $data
      */
     public function __construct(
         $name,

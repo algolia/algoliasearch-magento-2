@@ -14,17 +14,15 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     /** @var SupportHelper */
     private $supportHelper;
 
-    /**
-     * @param BackendView $backendView
-     * @param SupportHelper $supportHelper
-     */
     public function __construct(BackendView $backendView, SupportHelper $supportHelper)
     {
         $this->backendView = $backendView;
         $this->supportHelper = $supportHelper;
     }
 
-    /** @return string */
+    /**
+     * @return string
+     */
     public function getApplicationId()
     {
         return $this->supportHelper->getApplicationId();

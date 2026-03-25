@@ -22,7 +22,7 @@ class DiagnosticsLogger
     protected bool $isLoggerEnabled = false;
     protected bool $isProfilerEnabled = false;
 
-    /** @var string[]  */
+    /** @var string[] */
     private array $timerStack = [];
 
     public function __construct(
@@ -106,7 +106,7 @@ class DiagnosticsLogger
         $timerName = $this->simplifyMethodName($timerName);
 
         if ($lastTimerName !== $timerName) {
-            throw new DiagnosticsException(__("Profiling on %1 was stopped before nested operation %2 completed.", $timerName, $lastTimerName));
+            throw new DiagnosticsException(__('Profiling on %1 was stopped before nested operation %2 completed.', $timerName, $lastTimerName));
         }
 
         Profiler::setDefaultTags(self::ALGOLIA_TAGS);
@@ -137,14 +137,13 @@ class DiagnosticsLogger
     /**
      * Gets the name of the method that called the diagnostics
      *
-     * @param int $level
-     * @return string|null
      */
     protected function getCallingMethodName(int $level = 2): ?string
     {
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $level + 1);
+
         return array_key_exists($level, $backtrace)
-            ? $backtrace[$level]['class'] . "::" . $backtrace[$level]['function']
+            ? $backtrace[$level]['class'] . '::' . $backtrace[$level]['function']
             : null;
     }
 
@@ -159,8 +158,9 @@ class DiagnosticsLogger
 
         $simplified = implode($separator, array_slice($parts, $namespaceDepth));
         if (!count($this->timerStack)) {
-            $simplified = "ALGOLIA:" . $simplified;
+            $simplified = 'ALGOLIA:' . $simplified;
         }
+
         return $simplified;
     }
 

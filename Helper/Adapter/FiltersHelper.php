@@ -25,13 +25,6 @@ class FiltersHelper
     /** @var Http */
     private $request;
 
-    /**
-     * @param ConfigHelper $config
-     * @param Registry $registry
-     * @param CustomerSession $customerSession
-     * @param AttributeHelper $attributeHelper
-     * @param Http $request
-     */
     public function __construct(
         ConfigHelper $config,
         Registry $registry,

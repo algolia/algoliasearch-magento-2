@@ -4,9 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Config;
 
 class DefaultConfigProvider
 {
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected $defaultConfigData = [
         'algoliasearch_indexing_manager/algolia_indexing/enable_indexing' => '1',
         'algoliasearch_credentials/credentials/enable_frontend' => '1',
@@ -72,9 +70,7 @@ class DefaultConfigProvider
         'algoliasearch_advanced/queue/archive_clear_limit' => '30',
     ];
 
-    /**
-     * @var string[][][]
-     */
+    /** @var string[][][] */
     protected $defaultArrayConfigData = [
         'algoliasearch_autocomplete/autocomplete/sections' => [
             [
@@ -249,9 +245,6 @@ class DefaultConfigProvider
         return $this->defaultConfigData;
     }
 
-    /**
-     * @return void
-     */
     protected function serializeDefaultArrayConfigData(): void
     {
         foreach ($this->defaultArrayConfigData as $path => $array) {
@@ -259,9 +252,6 @@ class DefaultConfigProvider
         }
     }
 
-    /**
-     * @return void
-     */
     protected function mergeDefaultDataWithArrayData(): void
     {
         $this->defaultConfigData = array_merge($this->defaultConfigData, $this->defaultArrayConfigData);

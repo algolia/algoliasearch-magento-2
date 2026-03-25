@@ -4,7 +4,9 @@ namespace Algolia\AlgoliaSearch\Model\Source;
 
 class LandingPageStatuses implements \Magento\Framework\Data\OptionSourceInterface
 {
-    /** @return array */
+    /**
+     * @return array
+     */
     public function toOptionArray()
     {
         $options = [

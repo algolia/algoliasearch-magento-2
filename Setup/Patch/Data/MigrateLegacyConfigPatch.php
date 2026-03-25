@@ -31,7 +31,6 @@ class MigrateLegacyConfigPatch implements DataPatchInterface
 
     /**
      * Migrate legacy configurations
-     * @return void
      */
     protected function moveIndexingSettings(): void
     {

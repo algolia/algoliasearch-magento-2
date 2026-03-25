@@ -18,7 +18,6 @@ class QueueHelper
     ) {}
 
     /**
-     * @param $storeId
      * @return bool
      */
     public function isQueueActive($storeId = null)
@@ -27,7 +26,6 @@ class QueueHelper
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
     public function useBuiltInCron($storeId = null)
@@ -35,28 +33,22 @@ class QueueHelper
         return $this->configInterface->isSetFlag(self::USE_BUILT_IN_CRON, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
     public function getNumberOfJobToRun($storeId = null)
     {
-        $nbJobs = (int)$this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
+        $nbJobs = (int) $this->configInterface->getValue(self::NUMBER_OF_JOB_TO_RUN, ScopeInterface::SCOPE_STORE, $storeId);
 
         return max($nbJobs, 1);
     }
 
     /**
-     * @param $storeId
      * @return int
      */
     public function getRetryLimit($storeId = null)
     {
-        return (int)$this->configInterface->getValue(self::RETRY_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
+        return (int) $this->configInterface->getValue(self::RETRY_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
-     * @param $storeId
      * @return bool
      */
     public function useTmpIndex($storeId = null)

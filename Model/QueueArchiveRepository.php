@@ -12,28 +12,19 @@ use Magento\Framework\Api\SearchResultsInterfaceFactory;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\StateException;
 
 class QueueArchiveRepository implements QueueArchiveRepositoryInterface
 {
-    /**
-     * @var QueueArchiveResource
-     */
+    /** @var QueueArchiveResource */
     private $resource;
 
-    /**
-     * @var QueueArchiveFactory
-     */
+    /** @var QueueArchiveFactory */
     private $queueArchiveFactory;
 
-    /**
-     * @var CollectionFactory
-     */
+    /** @var CollectionFactory */
     private $collectionFactory;
 
-    /**
-     * @var SearchResultsInterfaceFactory
-     */
+    /** @var SearchResultsInterfaceFactory */
     private $searchResultsFactory;
 
     public function __construct(
@@ -52,9 +43,9 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
     /**
      * Save queue archive
      *
-     * @param QueueArchiveInterface $queueArchive
-     * @return QueueArchiveInterface
      * @throws CouldNotSaveException
+     *
+     * @return QueueArchiveInterface
      */
     public function save(QueueArchiveInterface $queueArchive)
     {
@@ -63,6 +54,7 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
         } catch (\Exception $e) {
             throw new CouldNotSaveException(__($e->getMessage()));
         }
+
         return $queueArchive;
     }
 
@@ -70,8 +62,10 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
      * Retrieve queue archive by id
      *
      * @param int $id
-     * @return QueueArchiveInterface
+     *
      * @throws NoSuchEntityException
+     *
+     * @return QueueArchiveInterface
      */
     public function getById($id)
     {
@@ -80,13 +74,13 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
         if (!$queueArchive->getId()) {
             throw new NoSuchEntityException(__('The queue archive with the "%1" ID doesn\'t exist.', $id));
         }
+
         return $queueArchive;
     }
 
     /**
      * Retrieve queue archives matching the specified criteria
      *
-     * @param SearchCriteriaInterface $searchCriteria
      * @return SearchResultsInterface
      */
     public function getList(SearchCriteriaInterface $searchCriteria)
@@ -105,9 +99,9 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
     /**
      * Delete queue archive
      *
-     * @param QueueArchiveInterface $queueArchive
-     * @return bool
      * @throws CouldNotDeleteException
+     *
+     * @return bool
      */
     public function delete(QueueArchiveInterface $queueArchive)
     {
@@ -116,6 +110,7 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
         } catch (\Exception $e) {
             throw new CouldNotDeleteException(__($e->getMessage()));
         }
+
         return true;
     }
 
@@ -123,9 +118,11 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
      * Delete queue archive by ID
      *
      * @param int $id
-     * @return bool
+     *
      * @throws CouldNotDeleteException
      * @throws NoSuchEntityException
+     *
+     * @return bool
      */
     public function deleteById($id)
     {

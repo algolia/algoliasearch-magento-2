@@ -19,9 +19,6 @@ class IndexMover
     ){}
 
     /**
-     * @param string $tmpIndexName
-     * @param string $indexName
-     * @param int $storeId
      * @throws NoSuchEntityException|AlgoliaException
      */
     public function moveIndex(string $tmpIndexName, string $indexName, int $storeId): void
@@ -37,9 +34,6 @@ class IndexMover
     }
 
     /**
-     * @param string $tmpIndexName
-     * @param string $indexName
-     * @param int $storeId
      *
      * @throws AlgoliaException
      * @throws NoSuchEntityException

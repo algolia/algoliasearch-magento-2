@@ -46,7 +46,8 @@ class IndexAdditionalSectionsCommand extends AbstractIndexerCommand
 
         foreach ($storeIds as $storeId) {
             $output->writeln(
-                '<info>Reindexing additional sections for ' . $this->storeNameFetcher->getStoreName($storeId)) . '</info>';
+                '<info>Reindexing additional sections for ' . $this->storeNameFetcher->getStoreName($storeId)
+            ) . '</info>';
             $this->additionalSectionBatchQueueProcessorr->processBatch($storeId);
         }
 

@@ -36,7 +36,9 @@ class PriceRenderer extends SliderRenderer
         return $config;
     }
 
-    /** @return int */
+    /**
+     * @return int
+     */
     protected function getMinValue()
     {
         $minValue = $this->getFilter()->getMinValue();

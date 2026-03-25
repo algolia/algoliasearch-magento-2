@@ -44,7 +44,7 @@ class EventProcessorTest extends TestCase
     public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenMissingDependencies(): void
     {
         $this->expectException(AlgoliaException::class);
-        $this->expectExceptionMessage("Events model is missing necessary dependencies to function.");
+        $this->expectExceptionMessage('Events model is missing necessary dependencies to function.');
 
         $this->eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
@@ -59,7 +59,7 @@ class EventProcessorTest extends TestCase
         $this->eventProcessor->setInsightsClient($this->insightsClient);
 
         $this->expectException(AlgoliaException::class);
-        $this->expectExceptionMessage("Events model is missing necessary dependencies to function.");
+        $this->expectExceptionMessage('Events model is missing necessary dependencies to function.');
 
         $this->eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
@@ -75,7 +75,7 @@ class EventProcessorTest extends TestCase
             ->setAnonymousUserToken('user-token');
 
         $this->expectException(AlgoliaException::class);
-        $this->expectExceptionMessage("Events model is missing necessary dependencies to function.");
+        $this->expectExceptionMessage('Events model is missing necessary dependencies to function.');
 
         $this->eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
@@ -133,6 +133,7 @@ class EventProcessorTest extends TestCase
                 $this->callback(function ($payload) {
                     $event = $payload['events'][0];
                     $this->assertEquals('auth-token-123', $event['authenticatedUserToken']);
+
                     return true;
                 }),
                 []
@@ -228,6 +229,7 @@ class EventProcessorTest extends TestCase
                 $this->callback(function ($payload) {
                     $event = $payload['events'][0];
                     $this->assertArrayNotHasKey('queryID', $event);
+
                     return true;
                 }),
                 []
@@ -255,6 +257,7 @@ class EventProcessorTest extends TestCase
                 $this->callback(function ($payload) {
                     $event = $payload['events'][0];
                     $this->assertEquals([['price' => 23.93, 'discount' => .06, 'quantity' => 1]], $event['objectData']);
+
                     return true;
                 }),
                 []
@@ -283,6 +286,7 @@ class EventProcessorTest extends TestCase
                 $this->callback(function ($payload) {
                     $event = $payload['events'][0];
                     $this->assertEquals([['price' => 23.93, 'discount' => .06, 'quantity' => 1]], $event['objectData']);
+
                     return true;
                 }),
                 []
@@ -311,6 +315,7 @@ class EventProcessorTest extends TestCase
                 $this->callback(function ($payload) {
                     $event = $payload['events'][0];
                     $this->assertEquals([['price' => 23.931, 'discount' => .061, 'quantity' => 1]], $event['objectData']);
+
                     return true;
                 }),
                 []
@@ -504,6 +509,7 @@ class EventProcessorTest extends TestCase
                     $this->assertEquals(80.0, $events[0]['value']); // 50 + 30
                     $this->assertEquals(50.0, $events[1]['value']); // 25 * 2
                     $this->assertEquals(15.0, $events[2]['value']); // missing query ID should be final event
+
                     return true;
                 }),
                 []
@@ -528,7 +534,7 @@ class EventProcessorTest extends TestCase
         // Create more events than MAX_EVENTS_PER_REQUEST allows
         $items = [];
         for ($i = 1; $i <= 1500; $i++) {
-            $items[] = $this->createOrderItemWithQueryId((string)$i, "query-$i", 10.0, 1);
+            $items[] = $this->createOrderItemWithQueryId((string) $i, "query-$i", 10.0, 1);
         }
 
         $order->method('getAllVisibleItems')->willReturn($items);
@@ -548,7 +554,9 @@ class EventProcessorTest extends TestCase
         $this->assertCount(2, $result); // 2 chunks
     }
 
-    /** Insights API requires that `objectIDs` be submitted as strings */
+    /**
+     * Insights API requires that `objectIDs` be submitted as strings
+     */
     public function testConvertPurchaseUsesStringIds(): void
     {
         $this->setupFullyConfiguredEventProcessor();
@@ -570,6 +578,7 @@ class EventProcessorTest extends TestCase
                     foreach ($objectIds as $objectId) {
                         $this->assertIsString($objectId);
                     }
+
                     return true;
                 }),
                 []
@@ -631,16 +640,16 @@ class EventProcessorTest extends TestCase
                         'getOriginalPrice' => 32.00,
                         'getDiscountAmount' => 0.00,
                         'getQtyOrdered' => 1,
-                    ]
+                    ],
                 ],
                 'expectedResult' => [
                     [
                         'price' => 32.00,
                         'discount' => 0.00,
                         'quantity' => 1,
-                    ]
+                    ],
                 ],
-                'expectedTotalRevenue' => 32.00
+                'expectedTotalRevenue' => 32.00,
             ],
             [ // One item (tax excluded)
                 'priceIncludesTax' => false,
@@ -651,16 +660,16 @@ class EventProcessorTest extends TestCase
                         'getOriginalPrice' => 25.00,
                         'getDiscountAmount' => 0.00,
                         'getQtyOrdered' => 1,
-                    ]
+                    ],
                 ],
                 'expectedResult' => [
                     [
                         'price' => 25.00,
                         'discount' => 0.00,
                         'quantity' => 1,
-                    ]
+                    ],
                 ],
-                'expectedTotalRevenue' => 25.00
+                'expectedTotalRevenue' => 25.00,
             ],
             [ // One item with discount
                 'priceIncludesTax' => true,
@@ -671,16 +680,16 @@ class EventProcessorTest extends TestCase
                         'getOriginalPrice' => 32.00,
                         'getDiscountAmount' => 7.00,
                         'getQtyOrdered' => 1,
-                    ]
+                    ],
                 ],
                 'expectedResult' => [
                     [
                         'price' => 25.00,
                         'discount' => 7.00,
                         'quantity' => 1,
-                    ]
+                    ],
                 ],
-                'expectedTotalRevenue' => 25.00
+                'expectedTotalRevenue' => 25.00,
             ],
             [ // One item with discount (tax excluded)
                 'priceIncludesTax' => false,
@@ -691,16 +700,16 @@ class EventProcessorTest extends TestCase
                         'getOriginalPrice' => 25.00,
                         'getDiscountAmount' => 7.00,
                         'getQtyOrdered' => 1,
-                    ]
+                    ],
                 ],
                 'expectedResult' => [
                     [
                         'price' => 18.00,
                         'discount' => 7.00,
                         'quantity' => 1,
-                    ]
+                    ],
                 ],
-                'expectedTotalRevenue' => 18.00
+                'expectedTotalRevenue' => 18.00,
             ],
             [ // Two items
                 'priceIncludesTax' => true,
@@ -730,9 +739,9 @@ class EventProcessorTest extends TestCase
                         'price' => 32.00,
                         'discount' => 0.00,
                         'quantity' => 2,
-                    ]
+                    ],
                 ],
-                'expectedTotalRevenue' => 89.00 // 25 + 32*2
+                'expectedTotalRevenue' => 89.00, // 25 + 32*2
             ],
         ];
     }
@@ -754,7 +763,7 @@ class EventProcessorTest extends TestCase
     protected function setupCurrencyPrecision(int $decimalPrecision = \Magento\Framework\Pricing\PriceCurrencyInterface::DEFAULT_PRECISION): void
     {
         $this->localeFormat->method('getPriceFormat')->willReturn([
-            'requiredPrecision' => $decimalPrecision
+            'requiredPrecision' => $decimalPrecision,
         ]);
         $this->eventProcessor->initDecimalPrecision();
     }
@@ -764,6 +773,7 @@ class EventProcessorTest extends TestCase
         $product = $this->createMock(Product::class);
         $product->method('getId')->willReturn($id);
         $product->method('getPrice')->willReturn($price);
+
         return $product;
     }
 
@@ -774,9 +784,10 @@ class EventProcessorTest extends TestCase
         $item->method('getData')
             ->willReturnMap([
                 ['base_price', null, $salePrice],
-                ['qty_to_add', null, $qtyToAdd]
+                ['qty_to_add', null, $qtyToAdd],
             ]);
         $item->method('getPrice')->willReturn($salePrice);
+
         return $item;
     }
 
@@ -796,6 +807,7 @@ class EventProcessorTest extends TestCase
 
             $items[] = $item;
         }
+
         return $items;
     }
 

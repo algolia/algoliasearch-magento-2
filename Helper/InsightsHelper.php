@@ -16,9 +16,9 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class InsightsHelper
 {
-    /** @var string  */
+    /** @var string */
     public const ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME = '_ALGOLIA';
-    /** @var string  */
+    /** @var string */
     public const ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME = '_ALGOLIA_MAGENTO_AUTH';
     /** @var string */
     public const ALGOLIA_CUSTOMER_USER_TOKEN_PREFIX = 'aa-';
@@ -38,10 +38,8 @@ class InsightsHelper
     public const CONVERSION_ANALYTICS_MODE_CART = 'add_to_cart';
     public const CONVERSION_ANALYTICS_MODE_PURCHASE = 'place_order';
 
-    /** @var InsightsClient|null */
     protected ?InsightsClient $insightsClient = null;
 
-    /** @var EventProcessorInterface|null  */
     protected ?EventProcessorInterface $eventProcessor = null;
 
     public function __construct(
@@ -68,7 +66,6 @@ class InsightsHelper
 
     /**
      * @internal Intended for internal use only - visibility may change at a future time
-     * @return InsightsClient
      */
     public function getInsightsClient(): InsightsClient
     {
@@ -82,24 +79,22 @@ class InsightsHelper
         return $this->insightsClient;
     }
 
-    /**
-     * @return EventProcessorInterface
-     */
     public function getEventProcessor(): EventProcessorInterface
     {
         if (!$this->eventProcessor) {
             $this->eventProcessor = $this->eventProcessorFactory->create([
                 'client'                 => $this->getInsightsClient(),
                 'userToken'              => $this->getAnonymousUserToken(),
-                'authenticatedUserToken' => $this->getAuthenticatedUserToken()
+                'authenticatedUserToken' => $this->getAuthenticatedUserToken(),
             ]);
         }
+
         return $this->eventProcessor;
     }
 
     public function getAnonymousUserToken(): string
     {
-        return (string) $this->cookieManager->getCookie(self::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME) ?? "";
+        return (string) $this->cookieManager->getCookie(self::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME) ?? '';
     }
 
     public function getAuthenticatedUserToken(): string
@@ -111,7 +106,8 @@ class InsightsHelper
                 $userToken = $this->setAuthenticatedUserToken($this->customerSession->getCustomer());
             }
         }
-        return $userToken ?? "";
+
+        return $userToken ?? '';
     }
 
     /**
@@ -119,8 +115,6 @@ class InsightsHelper
      * https://www.algolia.com/doc/api-reference/api-methods/set-authenticated-user-token/#method-param-authenticatedusertoken
      * Uniquely identify the user for this Magento store but obfuscate any PII
      *
-     * @param Customer $customer
-     * @return string
      */
     public function generateAuthenticatedUserToken(Customer $customer): string
     {
@@ -128,13 +122,14 @@ class InsightsHelper
         $userToken = base64_encode('customer-' . $hash . '-' . $customer->getId());
         $userToken = self::ALGOLIA_CUSTOMER_USER_TOKEN_PREFIX . preg_replace('/[^A-Za-z0-9_=+\/\-]/', '', $userToken);
         $userToken = mb_substr($userToken, 0, self::ALGOLIA_USER_TOKEN_MAX_LENGTH);
+
         return $userToken;
     }
 
     /**
      * For a Magento customer, generated an authentication token to be used for personalization and insights
      * and store as a cookie in the browser (requires customer consent)
-     * @param Customer $customer
+     *
      * @return string|null The user token that was generated for the customer, null if unable to create
      */
     public function setAuthenticatedUserToken(Customer $customer): string|null
@@ -150,17 +145,13 @@ class InsightsHelper
         try {
             $this->cookieManager->setPublicCookie(self::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME, $userToken, $metaData);
         } catch (LocalizedException $e) {
-            $this->logger->error("Error writing Algolia customer cookie: " . $e->getMessage());
+            $this->logger->error('Error writing Algolia customer cookie: ' . $e->getMessage());
             $userToken = null;
         }
 
         return $userToken;
     }
 
-    /**
-     * @param int|null $storeId
-     * @return bool
-     */
     public function isInsightsEnabled(?int $storeId = null): bool
     {
         return $this->configHelper->isClickConversionAnalyticsEnabled($storeId)
@@ -169,9 +160,7 @@ class InsightsHelper
 
     /**
      * A general check - should any kind of tracking be applied to the "place order" operation?
-     * @param int|null $storeId
      *
-     * @return bool
      */
     public function isOrderPlacedTracked(?int $storeId = null): bool
     {
@@ -184,16 +173,15 @@ class InsightsHelper
      * Conversion tracking is not the same as perso tracking!
      * Conversions must track usage of the queryID
      *
-     * @param int|null $storeId
-     * @return bool
      */
     public function isConversionTrackedPlaceOrder(?int $storeId = null): bool
     {
         return $this->configHelper->isClickConversionAnalyticsEnabled($storeId)
-            && in_array($this->configHelper->getConversionAnalyticsMode($storeId),
+            && in_array(
+                $this->configHelper->getConversionAnalyticsMode($storeId),
                 [
                     InsightsHelper::CONVERSION_ANALYTICS_MODE_PURCHASE,
-                    InsightsHelper::CONVERSION_ANALYTICS_MODE_ALL
+                    InsightsHelper::CONVERSION_ANALYTICS_MODE_ALL,
                 ]
             );
     }
@@ -201,9 +189,7 @@ class InsightsHelper
     /**
      * A general check - should any kind of tracking be applied to the "add to cart" operation?
      *
-     * @param int|null $storeId
      *
-     * @return bool
      */
     public function isAddedToCartTracked(?int $storeId = null): bool
     {
@@ -216,24 +202,21 @@ class InsightsHelper
      * Conversion tracking is not the same as perso tracking!
      * Conversions must track usage of the queryID
      *
-     * @param int|null $storeId
-     * @return bool
      */
     public function isConversionTrackedAddToCart(?int $storeId = null): bool
     {
         return $this->configHelper->isClickConversionAnalyticsEnabled($storeId)
-            && in_array($this->configHelper->getConversionAnalyticsMode($storeId),
+            && in_array(
+                $this->configHelper->getConversionAnalyticsMode($storeId),
                 [
                     InsightsHelper::CONVERSION_ANALYTICS_MODE_CART,
-                    InsightsHelper::CONVERSION_ANALYTICS_MODE_ALL
+                    InsightsHelper::CONVERSION_ANALYTICS_MODE_ALL,
                 ]
             );
     }
 
     /**
-     * @param Customer $customer
-     * @return string|null
-     * @deprecated This function has been supplanted by setAuthenticatedUserToken for clarity of intent and may be removed in a future release.
+     * @deprecated this function has been supplanted by setAuthenticatedUserToken for clarity of intent and may be removed in a future release
      */
     public function setUserToken(Customer $customer): string|null
     {
@@ -242,11 +225,10 @@ class InsightsHelper
 
     /**
      * Indicates whether we have user consent to use cookies
-     * @return bool
      */
     public function getUserAllowedSavedCookie(): bool
     {
         return !$this->configHelper->isCookieRestrictionModeEnabled()
-            || !!$this->cookieManager->getCookie($this->configHelper->getDefaultConsentCookieName());
+            || (bool) $this->cookieManager->getCookie($this->configHelper->getDefaultConsentCookieName());
     }
 }

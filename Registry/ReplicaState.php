@@ -26,9 +26,6 @@ class ReplicaState
      * Retaining this is necessary for potential state reversion on error because while changes are persisted
      * to Algolia indices for each store, the idea of default / website scope is a Magento only concept.
      *
-     * @param string $scope
-     * @param int $scopeId
-     * @return void
      */
     public function setAppliedScope(string $scope, int $scopeId): void {
         $this->_parentScope = $scope;
@@ -79,6 +76,7 @@ class ReplicaState
                 ? self::REPLICA_STATE_UNCHANGED
                 : self::REPLICA_STATE_CHANGED;
         }
+
         return $state;
     }
 

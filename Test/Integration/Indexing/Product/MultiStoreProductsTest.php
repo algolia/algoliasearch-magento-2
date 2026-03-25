@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -12,12 +11,13 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\IndexerRegistry;
-use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 
 /**
  * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/second_website_with_two_stores_and_products.php
+ *
  * @magentoDbIsolation disabled
+ *
  * @magentoAppIsolation enabled
  */
 class MultiStoreProductsTest extends MultiStoreTestCase
@@ -28,7 +28,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
     /** @var ProductRepositoryInterface */
     protected $productRepository;
 
-    /**  @var CollectionFactory */
+    /** @var CollectionFactory */
     private $productCollectionFactory;
 
     /** @var WebsiteRepositoryInterface */
@@ -39,9 +39,9 @@ class MultiStoreProductsTest extends MultiStoreTestCase
 
     protected $productPriceIndexer;
 
-    const VOYAGE_YOGA_BAG_ID = 8;
-    const VOYAGE_YOGA_BAG_NAME = "Voyage Yoga Bag";
-    const VOYAGE_YOGA_BAG_NAME_ALT = "Voyage Yoga Bag Alt";
+    public const VOYAGE_YOGA_BAG_ID = 8;
+    public const VOYAGE_YOGA_BAG_NAME = 'Voyage Yoga Bag';
+    public const VOYAGE_YOGA_BAG_NAME_ALT = 'Voyage Yoga Bag Alt';
 
     public const SKUS = [
         '24-MB01',
@@ -49,7 +49,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
         '24-MB03',
         '24-MB05',
         '24-MB06',
-        '24-WB01'
+        '24-WB01',
     ];
 
     protected function setUp():void
@@ -125,21 +125,21 @@ class MultiStoreProductsTest extends MultiStoreTestCase
             'products',
             self::VOYAGE_YOGA_BAG_ID,
             $defaultStore,
-            "http://default.test/"
+            'http://default.test/'
         );
 
         $this->validateEntityUrl(
             'products',
             self::VOYAGE_YOGA_BAG_ID,
             $fixtureSecondStore,
-            "http://fixture_second_store.test/"
+            'http://fixture_second_store.test/'
         );
 
         $this->validateEntityUrl(
             'products',
             self::VOYAGE_YOGA_BAG_ID,
             $fixtureThirdStore,
-            "http://fixture_third_store.test/"
+            'http://fixture_third_store.test/'
         );
 
         // Unassign product from a single website (removed from test website (second and third store))
@@ -183,7 +183,9 @@ class MultiStoreProductsTest extends MultiStoreTestCase
      * the data fixture (which breaks the tests asserted by the validateEntityUrl() method in the previous test)
      *
      * @magentoDbIsolation disabled
+     *
      * @magentoAppIsolation enabled
+     *
      * @magentoAppArea adminhtml
      */
     public function testUrlModel()
@@ -214,10 +216,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
     /**
      * Loads product by id.
      *
-     * @param int $productId
-     * @param int|null $storeId
      *
-     * @return ProductInterface
      * @throws NoSuchEntityException
      */
     private function loadProduct(int $productId, ?int $storeId = null): ProductInterface
@@ -226,11 +225,7 @@ class MultiStoreProductsTest extends MultiStoreTestCase
     }
 
     /**
-     * @param int $productId
-     * @param int $storeId
-     * @param array $values
      *
-     * @return ProductInterface
      * @throws CouldNotSaveException
      * @throws NoSuchEntityException
      *

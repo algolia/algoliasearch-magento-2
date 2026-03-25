@@ -9,7 +9,6 @@ class StoreView extends NativeStoreView
     /**
      * Prepare Data Source
      *
-     * @param array $dataSource
      *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      *

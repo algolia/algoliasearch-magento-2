@@ -87,7 +87,9 @@ class ReplicaIndexingTest extends TestCase
     /**
      * This test involves verifying modifications in the database
      * so it must be responsible for its own set up and tear down
+     *
      * @magentoDbIsolation disabled
+     *
      * @group virtual
      */
     public function testVirtualReplicaConfig(): void
@@ -108,7 +110,7 @@ class ReplicaIndexingTest extends TestCase
             'attribute'      => $sortAttr,
             'sort'           => $sortDir,
             'sortLabel'      => $sortAttr,
-            'virtualReplica' => 1
+            'virtualReplica' => 1,
         ];
         $this->instantSearchHelper->setSorting($sorting);
 
@@ -147,7 +149,9 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * @depends testReplicaSync
+     *
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws \ReflectionException
@@ -165,7 +169,7 @@ class ReplicaIndexingTest extends TestCase
             'execute',
             [
                 $this->createMock(\Symfony\Component\Console\Input\InputInterface::class),
-                $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class)
+                $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class),
             ]
         );
         $this->algoliaConnector->waitLastTask();
@@ -177,6 +181,7 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws \ReflectionException
@@ -196,6 +201,7 @@ class ReplicaIndexingTest extends TestCase
     /**
      * @magentoConfigFixture current_store algoliasearch_indexing_manager/algolia_indexing/enable_indexing 0
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws \ReflectionException
@@ -230,6 +236,7 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * Test failure to clear index replica setting
+     *
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      */
     public function testReplicaDeleteUnreliable(): void
@@ -243,6 +250,7 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * Test the RebuildReplicasPatch with API failures
+     *
      * @magentoConfigFixture current_store algoliasearch_indexing_manager/algolia_indexing/enable_indexing 1
      * @magentoConfigFixture current_store algoliasearch_instant/instant/is_instant_enabled 1
      */
@@ -251,7 +259,7 @@ class ReplicaIndexingTest extends TestCase
         $currentStoreId = 1;
 
         $credentialsManager = $this->objectManager->get(AlgoliaCredentialsManager::class);
-        $this->assertTrue($credentialsManager->checkCredentials(), "Credentials not available to apply patch.");
+        $this->assertTrue($credentialsManager->checkCredentials(), 'Credentials not available to apply patch.');
         $this->assertTrue($this->replicaManager->isReplicaSyncEnabled($currentStoreId), "Replica sync is not enabled for test store $currentStoreId.");
 
         $sorting = $this->populateReplicas($currentStoreId);
@@ -294,10 +302,11 @@ class ReplicaIndexingTest extends TestCase
         $mock = $this->getMockReplicaManager([
             $mockedMethod => function(...$params) {
                 //DO NOTHING
-                return;
-            }
+
+            },
         ]);
         $mock->expects($this->once())->method($mockedMethod);
+
         return $mock;
     }
 
@@ -311,7 +320,7 @@ class ReplicaIndexingTest extends TestCase
     {
         $mock = $this->getMockReplicaManager([
             'clearReplicasSettingInAlgolia' => null,
-            'deleteReplicas' => null
+            'deleteReplicas' => null,
         ]);
         $mock
             ->expects($this->exactly($this->patchRetries))
@@ -355,7 +364,7 @@ class ReplicaIndexingTest extends TestCase
                 $this->objectManager->get(StoreNameFetcher::class),
                 $this->objectManager->get(SortingTransformer::class),
                 $this->objectManager->get(StoreManagerInterface::class),
-                $this->objectManager->get(DiagnosticsLogger::class)
+                $this->objectManager->get(DiagnosticsLogger::class),
             ])
             ->onlyMethods(array_keys($mockedMethods))
             ->getMock();
@@ -372,11 +381,14 @@ class ReplicaIndexingTest extends TestCase
 
     /**
      * Setup replicas for testing and assert that they have been synced to Algolia
+     *
      * @param array $sorting - the array of sorts from Magento
-     * @return array - The replica setting from Algolia
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws \ReflectionException
+     *
+     * @return array - The replica setting from Algolia
      */
     protected function assertReplicasCreated(array $sorting): array
     {
@@ -433,18 +445,18 @@ class ReplicaIndexingTest extends TestCase
                 [
                     'attribute' => 'price',
                     'sort' => 'asc',
-                    'sortLabel' => 'Lowest Price'
+                    'sortLabel' => 'Lowest Price',
                 ],
                 [
                     'attribute' => 'price',
                     'sort' => 'desc',
-                    'sortLabel' => 'Highest Price'
+                    'sortLabel' => 'Highest Price',
                 ],
                 [
                     'attribute' => 'created_at',
                     'sort' => 'desc',
-                    'sortLabel' => 'Newest first'
-                ]
+                    'sortLabel' => 'Newest first',
+                ],
             ]
         );
     }

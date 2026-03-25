@@ -60,7 +60,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -116,7 +116,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => $isTmp,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -171,7 +171,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -249,7 +249,7 @@ class IndexOptionsBuilderTest extends TestCase
                 'data' => [
                     IndexOptionsInterface::INDEX_NAME => $replicaIndexName,
                     IndexOptionsInterface::STORE_ID => $storeId,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -295,7 +295,7 @@ class IndexOptionsBuilderTest extends TestCase
                 'data' => [
                     IndexOptionsInterface::INDEX_NAME => $replicaIndexName,
                     IndexOptionsInterface::STORE_ID => $storeId,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -342,7 +342,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -412,7 +412,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 

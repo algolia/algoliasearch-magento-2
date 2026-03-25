@@ -23,10 +23,6 @@ class IndexNameFetcher
     /**
      * Ex: magento2_default_products
      *
-     * @param string $indexSuffix
-     * @param int|null $storeId
-     * @param bool $tmp
-     * @return string
      * @throws NoSuchEntityException
      */
     public function getIndexName(string $indexSuffix, ?int $storeId = null, bool $tmp = false): string
@@ -37,8 +33,6 @@ class IndexNameFetcher
     /**
      * Ex: magento2_default
      *
-     * @param int|null $storeId
-     * @return string
      * @throws NoSuchEntityException
      */
     public function getBaseIndexName(?int $storeId = null): string
@@ -64,8 +58,6 @@ class IndexNameFetcher
      * This is a temporary workaround for delete index operations
      * TODO: Revisit this approach when a QuerySuggestionsClient is implemented in algoliasearch-client-php
      *
-     * @param $indexName
-     * @return bool
      */
     public function isQuerySuggestionsIndex($indexName): bool
     {

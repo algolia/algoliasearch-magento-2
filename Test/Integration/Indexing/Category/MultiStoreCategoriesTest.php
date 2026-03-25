@@ -11,11 +11,12 @@ use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Api\Data\StoreInterface;
 
 /**
  * @magentoDataFixture Algolia_AlgoliaSearch::Test/Integration/_files/second_website_with_two_stores_and_products.php
+ *
  * @magentoDbIsolation disabled
+ *
  * @magentoAppIsolation enabled
  */
 class MultiStoreCategoriesTest extends MultiStoreTestCase
@@ -23,15 +24,15 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     /** @var CategoryRepositoryInterface */
     protected $categoryRepository;
 
-    /**  @var CollectionFactory */
+    /** @var CollectionFactory */
     private $categoryCollectionFactory;
 
-    /** @var CategoryBatchQueueProcessor  */
+    /** @var CategoryBatchQueueProcessor */
     protected $categoryBatchQueueProcessor;
 
-    const BAGS_CATEGORY_ID = 4;
-    const BAGS_CATEGORY_NAME = "Bags";
-    const BAGS_CATEGORY_NAME_ALT = "Bags Alt";
+    public const BAGS_CATEGORY_ID = 4;
+    public const BAGS_CATEGORY_NAME = 'Bags';
+    public const BAGS_CATEGORY_NAME_ALT = 'Bags Alt';
 
     protected function setUp():void
     {
@@ -70,13 +71,13 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             'categories',
             self::BAGS_CATEGORY_ID,
             $defaultStore,
-            "http://default.test/"
+            'http://default.test/'
         );
         $this->validateEntityUrl(
             'categories',
             self::BAGS_CATEGORY_ID,
             $fixtureSecondStore,
-            "http://fixture_second_store.test/"
+            'http://fixture_second_store.test/'
         );
 
         $bagsCategory = $this->loadCategory(self::BAGS_CATEGORY_ID, $defaultStore->getId());
@@ -136,10 +137,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     /**
      * Loads category by name.
      *
-     * @param int $categoryId
-     * @param int $storeId
      *
-     * @return CategoryInterface
      * @throws NoSuchEntityException
      */
     private function loadCategory(int $categoryId, int $storeId): CategoryInterface
@@ -148,11 +146,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
     }
 
     /**
-     * @param int $categoryId
-     * @param int $storeId
-     * @param array $values
      *
-     * @return CategoryInterface
      * @throws CouldNotSaveException
      * @throws NoSuchEntityException
      *
@@ -182,7 +176,7 @@ class MultiStoreCategoriesTest extends MultiStoreTestCase
             $defaultStore->getId(),
             [
                 'name' => self::BAGS_CATEGORY_NAME,
-                'is_active' => 1
+                'is_active' => 1,
             ]
         );
 

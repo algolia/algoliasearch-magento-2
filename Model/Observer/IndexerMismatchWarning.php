@@ -10,21 +10,15 @@ use Magento\Framework\Mview\View\StateInterface;
 
 class IndexerMismatchWarning implements ObserverInterface
 {
-    /**
-     * @var ManagerInterface
-     */
+    /** @var ManagerInterface */
     protected $messageManager;
 
-    /**
-     * @var StateInterface
-     */
+    /** @var StateInterface */
     protected $mviewState;
 
     /**
      * IndexerWarning constructor.
      *
-     * @param StateInterface $mviewState
-     * @param ManagerInterface $messageManager
      */
     public function __construct(
         StateInterface $mviewState,

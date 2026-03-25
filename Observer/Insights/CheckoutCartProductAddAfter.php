@@ -33,7 +33,7 @@ class CheckoutCartProductAddAfter implements ObserverInterface
 
     protected function addQueryIdToQuoteItems(Product $product, Item $quoteItem, string $queryId): void
     {
-        if ($product->getTypeId() == "grouped") {
+        if ($product->getTypeId() == 'grouped') {
             $groupProducts = $product->getTypeInstance()->getAssociatedProducts($product);
             foreach ($quoteItem->getQuote()->getAllItems() as $item) {
                 foreach ($groupProducts as $groupProduct) {
@@ -88,9 +88,9 @@ class CheckoutCartProductAddAfter implements ObserverInterface
                     $this->insightsHelper->isConversionTrackedAddToCart($storeId) ? $queryId : null
                 );
             } catch (AlgoliaException $e) {
-                $this->logger->critical("Unable to send add to cart event due to Algolia events model misconfiguration: " . $e->getMessage());
+                $this->logger->critical('Unable to send add to cart event due to Algolia events model misconfiguration: ' . $e->getMessage());
             } catch (LocalizedException $e) {
-                $this->logger->error("Error tracking conversion for add to cart event: " . $e->getMessage());
+                $this->logger->error('Error tracking conversion for add to cart event: ' . $e->getMessage());
             }
         }
     }

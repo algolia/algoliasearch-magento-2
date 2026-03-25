@@ -65,14 +65,14 @@ abstract class AbstractStoreCommand extends Command
             $this->state->setAreaCode(Area::AREA_CRONTAB);
         } catch (LocalizedException $e) {
             // Area code is already set - nothing to do - but report regardless
-            $this->output->writeln("Unable to set area code due to the following error: " . $e->getMessage());
+            $this->output->writeln('Unable to set area code due to the following error: ' . $e->getMessage());
         }
     }
 
     /**
-     * @param InputInterface $input
-     * @return int[]
      * @throws LocalizedException
+     *
+     * @return int[]
      */
     protected function getStoreIds(InputInterface $input): array
     {
@@ -80,15 +80,15 @@ abstract class AbstractStoreCommand extends Command
     }
 
     /**
-     * @param array $storeIds
-     * @return int[]
      * @throws LocalizedException
+     *
+     * @return int[]
      */
     protected function validateStoreIds(array $storeIds): array
     {
         foreach ($storeIds as $storeId) {
             if (!ctype_digit((string) $storeId) || (int) $storeId < 1) {
-                throw new LocalizedException(__("Store ID argument must be an integer"));
+                throw new LocalizedException(__('Store ID argument must be an integer'));
             }
         }
 
@@ -105,7 +105,6 @@ abstract class AbstractStoreCommand extends Command
 
     /**
      * @param int[] $storeIds
-     * @return string
      */
     protected function getOperationTargetLabel(array $storeIds): string
     {
@@ -114,16 +113,18 @@ abstract class AbstractStoreCommand extends Command
 
     /**
      * Generate a CLI operation announcement based on passed store arguments
+     *
      * @param string $msg Use {{target} in message as a placeholder for inserting the generated target label
      * @param int[] $storeIds
-     * @return string
+     *
      * @throws NoSuchEntityException
      */
     protected function decorateOperationAnnouncementMessage(string $msg, array $storeIds): string
     {
         $msg = str_replace('{{target}}', $this->getOperationTargetLabel($storeIds), $msg);
+
         return ($storeIds)
-            ? "<info>$msg: " . implode(", ", $this->storeNameFetcher->getStoreNames($storeIds)) . '</info>'
+            ? "<info>$msg: " . implode(', ', $this->storeNameFetcher->getStoreNames($storeIds)) . '</info>'
             : "<info>$msg</info>";
     }
 
@@ -135,12 +136,14 @@ abstract class AbstractStoreCommand extends Command
             if ($cancelMessage) {
                 $this->output->writeln("<comment>$cancelMessage</comment>");
             }
+
             return false;
         }
 
         if ($okMessage) {
             $this->output->writeln("<comment>$okMessage</comment>");
         }
+
         return true;
     }
 }

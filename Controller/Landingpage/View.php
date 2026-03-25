@@ -10,10 +10,6 @@ class View extends Action
     /** @var \Magento\Framework\Controller\Result\ForwardFactory */
     protected $resultForwardFactory;
 
-    /**
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory
-     */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
         \Magento\Framework\Controller\Result\ForwardFactory $resultForwardFactory

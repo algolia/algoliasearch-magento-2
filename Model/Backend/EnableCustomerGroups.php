@@ -31,8 +31,9 @@ class EnableCustomerGroups extends Value
     }
 
     /**
-     * @return $this
      * @throws NoSuchEntityException
+     *
+     * @return $this
      */
     public function afterSave(): Value
     {
@@ -50,7 +51,8 @@ class EnableCustomerGroups extends Value
                 $this->isValueChanged()
                     ? ReplicaState::REPLICA_STATE_CHANGED
                     : ReplicaState::REPLICA_STATE_UNCHANGED,
-                $storeId);
+                $storeId
+            );
         }
 
         return parent::afterSave();

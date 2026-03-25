@@ -125,7 +125,7 @@ class FacetBuilderTest extends TestCase
 
     /**
      * attributesForFaceting must include level0 to be selectable via renderingContent/merch rule UI
-     * @return void
+     *
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -140,7 +140,7 @@ class FacetBuilderTest extends TestCase
 
     /**
      * If category PLPs are supported then attributesForFaceting must contain category merch meta data
-     * @return void
+     *
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -228,7 +228,7 @@ class FacetBuilderTest extends TestCase
             ->method('getFacets')
             ->willReturn([
                 [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color'],
-                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size']
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size'],
             ]);
 
         $this->mockGroups();
@@ -247,7 +247,7 @@ class FacetBuilderTest extends TestCase
 
     /**
      * Category merch meta data should not be included with renderingContent
-     * @return void
+     *
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -279,7 +279,7 @@ class FacetBuilderTest extends TestCase
             ->method('getFacets')
             ->willReturn([
                 [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size'],
-                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => FacetBuilder::FACET_ATTRIBUTE_PRICE]
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => FacetBuilder::FACET_ATTRIBUTE_PRICE],
             ]);
 
         $this->mockStoreConfig($storeId, $websiteId);
@@ -310,7 +310,7 @@ class FacetBuilderTest extends TestCase
     {
         $facet = [
             FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'brand',
-            FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_SEARCHABLE
+            FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_SEARCHABLE,
         ];
         $result = $this->facetBuilder->decorateAttributeForFaceting($facet);
         $this->assertEquals('searchable(brand)', $result);
@@ -320,7 +320,7 @@ class FacetBuilderTest extends TestCase
     {
         $facet = [
             FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size',
-            FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_FILTER_ONLY
+            FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_FILTER_ONLY,
         ];
         $result = $this->facetBuilder->decorateAttributeForFaceting($facet);
         $this->assertEquals('filterOnly(size)', $result);
@@ -333,7 +333,7 @@ class FacetBuilderTest extends TestCase
             ->willReturn([
                 [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'brand', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_NOT_SEARCHABLE],
                 [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_SEARCHABLE],
-                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => FacetBuilder::FACET_ATTRIBUTE_PRICE]
+                [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => FacetBuilder::FACET_ATTRIBUTE_PRICE],
             ]);
     }
 

@@ -12,8 +12,6 @@ class CookieRefresherObserver implements ObserverInterface
     /**
      * CookieRefresherObserver observer constructor.
      *
-     * @param CustomerSession  $customerSession
-     * @param InsightsHelper $insightsHelper
      *
      */
     public function __construct(
@@ -24,9 +22,7 @@ class CookieRefresherObserver implements ObserverInterface
     /**
      * Renew anonymous or customer session token to update the lifetime
      *
-     * @param Observer $observer
      *
-     * @return void
      */
     public function execute(Observer $observer): void
     {

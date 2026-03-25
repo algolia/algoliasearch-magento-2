@@ -19,11 +19,6 @@ class ApplyProductPermissionsFilter implements ObserverInterface
     /** @var StoreManager */
     private $storeManager;
 
-    /**
-     * @param CatalogPermissionsFactory $permissionsFactory
-     * @param SharedCatalogFactory $sharedCatalogFactory
-     * @param StoreManager $storeManager
-     */
     public function __construct(
         CatalogPermissionsFactory $permissionsFactory,
         SharedCatalogFactory $sharedCatalogFactory,

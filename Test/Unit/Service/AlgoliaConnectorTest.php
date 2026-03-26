@@ -70,6 +70,7 @@ class AlgoliaConnectorTest extends TestCase
                     $this->assertEquals('addObject', $requests[1]['action']);
                     $this->assertEquals('1', $requests[0]['body']['objectID']);
                     $this->assertEquals('2', $requests[1]['body']['objectID']);
+
                     return true;
                 })
             )
@@ -90,6 +91,7 @@ class AlgoliaConnectorTest extends TestCase
                 $this->indexOptions,
                 $this->callback(function ($requests) {
                     $this->assertEquals('partialUpdateObject', $requests[0]['action']);
+
                     return true;
                 })
             )
@@ -123,6 +125,7 @@ class AlgoliaConnectorTest extends TestCase
                     $body = $requests[0]['body'];
                     $this->assertArrayHasKey('algoliaLastUpdateAtCET', $body);
                     $this->assertGreaterThanOrEqual($beforeTime, $body['algoliaLastUpdateAtCET']);
+
                     return true;
                 })
             )
@@ -143,6 +146,7 @@ class AlgoliaConnectorTest extends TestCase
                     $body = $requests[0]['body'];
                     $this->assertSame(29.99, $body['price']);
                     $this->assertSame(5, $body['qty']);
+
                     return true;
                 })
             )
@@ -168,6 +172,7 @@ class AlgoliaConnectorTest extends TestCase
                 $this->callback(function ($requests) {
                     $this->assertCount(1, $requests);
                     $this->assertEquals('1', $requests[0]['body']['objectID']);
+
                     return true;
                 })
             )
@@ -194,6 +199,7 @@ class AlgoliaConnectorTest extends TestCase
                     $this->assertEquals('100', $requests[0]['body']['objectID']);
                     $this->assertEquals('200', $requests[1]['body']['objectID']);
                     $this->assertEquals('300', $requests[2]['body']['objectID']);
+
                     return true;
                 })
             )

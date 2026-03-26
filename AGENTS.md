@@ -64,5 +64,6 @@ CircleCI runs on branches matching `^(feat|fix|chore)/MAGE.*`. Tests against PHP
 
 - PSR-2 base with additional rules in `.php-cs-fixer.php`
 - Comments should be rare and only when logic isn't self-descriptive — prefer renaming classes/methods over adding comments
+- Do not add PHPDoc blocks that merely restate PHP type declarations. Only add PHPDoc when it provides information beyond what the type signature already conveys (e.g., `@throws`, descriptions of non-obvious behavior, or types that cannot be expressed natively such as `array<string, int>`). The `no_superfluous_phpdoc_tags` fixer rule enforces this automatically.
 - PHPStan level 1 compliance required
 - MEQP2 marketplace standard — ERRORs block merge, WARNINGs should be avoided

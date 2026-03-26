@@ -22,6 +22,7 @@ class SendStrategyResolver
                 return $strategy;
             }
         }
+
         return $this->defaultStrategy;
     }
 }

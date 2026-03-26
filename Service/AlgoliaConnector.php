@@ -248,6 +248,7 @@ class AlgoliaConnector
         $strategy = $this->sendStrategyResolver->resolve($indexOptions->getStoreId());
         $response = $strategy->send($indexOptions, $requests);
         $this->setLastOperationInfo($indexOptions, $response);
+
         return $response;
     }
 

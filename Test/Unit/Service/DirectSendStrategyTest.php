@@ -87,6 +87,7 @@ class DirectSendStrategyTest extends TestCase
                 $this->callback(function ($batchParams) {
                     $this->assertEquals('deleteObject', $batchParams['requests'][0]['action']);
                     $this->assertEquals('100', $batchParams['requests'][0]['body']['objectID']);
+
                     return true;
                 })
             )

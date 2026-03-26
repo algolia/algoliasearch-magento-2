@@ -5,13 +5,12 @@ namespace Algolia\AlgoliaSearch\Service;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
-use Algolia\AlgoliaSearch\Configuration\SearchConfig;
+use Algolia\AlgoliaSearch\Api\SearchClientProviderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Model\Search\SettingsResponse;
-use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Exception;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
@@ -36,9 +35,6 @@ class AlgoliaConnector
      */
     protected const ALGOLIA_API_SECURED_KEY_TIMEOUT_SECONDS = 60 * 60 * 24; // TODO: Implement as config
 
-    /** @var SearchClient[] */
-    protected array $clients = [];
-
     protected ?int $maxRecordSize = null;
 
     /** @var string[] */
@@ -46,8 +42,6 @@ class AlgoliaConnector
 
     /** @var string[] */
     protected array $nonCastableAttributes = ['sku', 'name', 'description', 'query'];
-
-    protected bool $userAgentsAdded = false;
 
     protected ?string $lastUsedIndexName = null;
 
@@ -59,7 +53,7 @@ class AlgoliaConnector
         protected ConfigHelper $config,
         protected ManagerInterface $messageManager,
         protected ConsoleOutput $consoleOutput,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected SearchClientProviderInterface $clientProvider,
         protected IndexNameFetcher $indexNameFetcher,
         protected IndexOptionsBuilder $indexOptionsBuilder,
         protected SendStrategyResolver $sendStrategyResolver
@@ -74,72 +68,9 @@ class AlgoliaConnector
     /**
      * @throws AlgoliaException
      */
-    protected function createClient(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
-    {
-        if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
-            throw new AlgoliaException('Client initialization could not be performed because Algolia credentials were not provided.');
-        }
-
-        $config = SearchConfig::create(
-            $this->config->getApplicationID($storeId),
-            $this->config->getAPIKey($storeId)
-        );
-        $config->setConnectTimeout($this->getConnectionTimeout($storeId));
-        $config->setReadTimeout($this->getReadTimeout($storeId));
-        $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
-        $this->clients[$storeId] = SearchClient::createWithConfig($config);
-    }
-
-    /**
-     * Allow override by alternate connectors
-     */
-    protected function getConnectionTimeout(int $storeId): int
-    {
-        return $this->config->getConnectionTimeout($storeId);
-    }
-
-    /**
-     * Allow override by alternate connectors
-     */
-    protected function getReadTimeout(int $storeId): int
-    {
-        return $this->config->getReadTimeout($storeId);
-    }
-
-    /**
-     * @throws AlgoliaException
-     */
-    protected function addAlgoliaUserAgent(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
-    {
-        $clientName = $this->getClient($storeId)->getClientConfig()?->getClientName();
-
-        if ($clientName) {
-            AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento2 integration', $this->config->getExtensionVersion());
-            AlgoliaAgent::addAlgoliaAgent($clientName, 'PHP', phpversion());
-            AlgoliaAgent::addAlgoliaAgent($clientName, 'Magento', $this->config->getMagentoVersion());
-            AlgoliaAgent::addAlgoliaAgent($clientName, 'Edition', $this->config->getMagentoEdition());
-
-            $this->userAgentsAdded = true;
-        }
-    }
-
-    /**
-     * @throws AlgoliaException
-     */
     public function getClient(?int $storeId = self::ALGOLIA_DEFAULT_SCOPE): SearchClient
     {
-        if ($storeId === null) {
-            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
-        }
-
-        if (!isset($this->clients[$storeId])) {
-            $this->createClient($storeId);
-            if (!$this->userAgentsAdded) {
-                $this->addAlgoliaUserAgent($storeId);
-            }
-        }
-
-        return $this->clients[$storeId];
+        return $this->clientProvider->getClient($storeId);
     }
 
     /**

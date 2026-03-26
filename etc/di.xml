@@ -39,15 +39,13 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface" type="Algolia\AlgoliaSearch\Model\Data\SearchQuery" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface" type="Algolia\AlgoliaSearch\Model\Data\IndexOptions" />
 
+    <!-- Client provider -->
+    <preference for="Algolia\AlgoliaSearch\Api\SearchClientProviderInterface"
+                type="Algolia\AlgoliaSearch\Service\SearchClientProvider"/>
+
     <!-- Send strategy -->
     <preference for="Algolia\AlgoliaSearch\Api\SendStrategyInterface"
                 type="Algolia\AlgoliaSearch\Service\DirectSendStrategy"/>
-    <type name="Algolia\AlgoliaSearch\Service\DirectSendStrategy">
-        <arguments>
-            <!-- Temporary proxy to address circular dependency - TODO: Refactor this -->
-            <argument name="connector" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaConnector\Proxy</argument>
-        </arguments>
-    </type>
     <type name="Algolia\AlgoliaSearch\Service\SendStrategyResolver">
         <arguments>
             <argument name="defaultStrategy" xsi:type="object">Algolia\AlgoliaSearch\Service\DirectSendStrategy</argument>

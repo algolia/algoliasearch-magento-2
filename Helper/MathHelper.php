@@ -4,11 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 class MathHelper
 {
-    /**
-     * @param array $values
-     * @return float
-     */
-    static public function getAverage(array $values): float
+    public static function getAverage(array $values): float
     {
         if (empty($values)) {
             return 0.00;
@@ -17,11 +13,7 @@ class MathHelper
         return round(array_sum(array_values($values)) / count($values), 2);
     }
 
-    /**
-     * @param array $values
-     * @return float
-     */
-    static public function getSampleStandardDeviation(array $values): float
+    public static function getSampleStandardDeviation(array $values): float
     {
         if (count($values) <= 1) {
             return 0.0;

@@ -33,8 +33,10 @@ class MissingPriceIndexHandler
 
     /**
      * @param string[]|ProductCollection $products
-     * @return string[] Array of product IDs that were reindexed by this repair operation
+     *
      * @throws DiagnosticsException
+     *
+     * @return string[] Array of product IDs that were reindexed by this repair operation
      */
     public function refreshPriceIndex(array|ProductCollection $products): array
     {
@@ -42,21 +44,25 @@ class MissingPriceIndexHandler
         $reindexIds = $this->getProductIdsToReindex($products);
         if (empty($reindexIds)) {
             $this->diagnostics->stopProfiling(__METHOD__);
+
             return [];
         }
 
-        $this->diagnostics->log(__("Pricing records missing or invalid for %1 product(s)", count($reindexIds)));
-        $this->diagnostics->log(__("Reindexing product ID(s): %1", implode(', ', $reindexIds)));
+        $this->diagnostics->log(__('Pricing records missing or invalid for %1 product(s)', count($reindexIds)));
+        $this->diagnostics->log(__('Reindexing product ID(s): %1', implode(', ', $reindexIds)));
 
         $this->indexer->reindexList($reindexIds);
 
         $this->diagnostics->stopProfiling(__METHOD__);
+
         return $reindexIds;
     }
 
     /**
      * Analyzes a product collection and determines which (if any) records should have their prices reindexed
+     *
      * @param string[]|ProductCollection $products - either an explicit list of product ids or a product collection
+     *
      * @return string[] IDs of products that require price reindexing (will be empty if no indexing is required)
      */
     protected function getProductIdsToReindex(array|ProductCollection $products): array
@@ -117,16 +123,19 @@ class MissingPriceIndexHandler
 
     /**
      * Expand the query for product ids from the collection regardless of price index status
+     *
      * @return string[] An array of indices to be evaluated - array will be empty if no price index join found
      */
     protected function getProductIdsFromCollection(ProductCollection $collection): array
     {
 
         $select = clone $collection->getSelect();
+
         try {
             $joins = $select->getPart(Select::FROM);
         } catch (\Zend_Db_Select_Exception $e) {
-            $this->diagnostics->error("Unable to build query for missing product prices: " . $e->getMessage());
+            $this->diagnostics->error('Unable to build query for missing product prices: ' . $e->getMessage());
+
             return [];
         }
 
@@ -179,21 +188,20 @@ class MissingPriceIndexHandler
 
     /**
      * @param array<string, array> $joins
-     * @return string
      */
     protected function getPriceIndexJoinAlias(array $joins): string
     {
         if (isset($joins[self::PRICE_INDEX_TABLE_ALIAS])) {
             return self::PRICE_INDEX_TABLE_ALIAS;
         }
-        else {
+
             foreach ($joins as $alias => $joinData) {
                 if ($joinData['tableName'] === self::PRICE_INDEX_TABLE) {
                     return $alias;
                 }
             }
-        }
 
-        return "";
+
+        return '';
     }
 }

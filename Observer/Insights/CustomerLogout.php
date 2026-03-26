@@ -11,12 +11,8 @@ use Magento\Framework\Stdlib\CookieManagerInterface;
 
 class CustomerLogout implements ObserverInterface
 {
-    public const UNSET_AUTHENTICATION_USER_TOKEN_COOKIE_NAME = "unset_authentication_token";
+    public const UNSET_AUTHENTICATION_USER_TOKEN_COOKIE_NAME = 'unset_authentication_token';
 
-    /**
-     * @param CookieManagerInterface $cookieManager
-     * @param CookieMetadataFactory $cookieMetadataFactory
-     */
     public function __construct(
         private readonly CookieManagerInterface $cookieManager,
         private readonly CookieMetadataFactory  $cookieMetadataFactory,
@@ -28,8 +24,6 @@ class CustomerLogout implements ObserverInterface
     /**
      * Check and clear session data if persistent session expired
      *
-     * @param \Magento\Framework\Event\Observer $observer
-     * @return void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function execute(\Magento\Framework\Event\Observer $observer): void
@@ -43,12 +37,13 @@ class CustomerLogout implements ObserverInterface
                 ->setSecure(false);
             $metadata = $this->cookieMetadataFactory->createCookieMetadata();
             $metadata->setPath('/');
+
             try {
                 $this->cookieManager->setPublicCookie(self::UNSET_AUTHENTICATION_USER_TOKEN_COOKIE_NAME, 1, $metaDataUnset);
                 $this->cookieManager->deleteCookie(InsightsHelper::ALGOLIA_CUSTOMER_USER_TOKEN_COOKIE_NAME, $metadata);
                 $this->cookieManager->deleteCookie(InsightsHelper::ALGOLIA_ANON_USER_TOKEN_COOKIE_NAME, $metadata);
             } catch (LocalizedException $e) {
-                $this->logger->error("Error writing Algolia customer cookies: " . $e->getMessage());
+                $this->logger->error('Error writing Algolia customer cookies: ' . $e->getMessage());
             }
         }
     }

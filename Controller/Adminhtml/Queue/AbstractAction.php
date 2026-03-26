@@ -22,13 +22,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     /** @var IndexerFactory */
     protected $indexerFactory;
 
-    /**
-     * @param Context          $context
-     * @param SessionManagerInterface          $backendSession
-     * @param JobFactory       $jobFactory
-     * @param JobResourceModel $jobResourceModel
-     * @param IndexerFactory   $indexerFactory
-     */
     public function __construct(
         Context $context,
         SessionManagerInterface $backendSession,
@@ -44,13 +37,17 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $this->indexerFactory   = $indexerFactory;
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model\Job */
+    /**
+     * @return \Algolia\AlgoliaSearch\Model\Job
+     */
     protected function initJob()
     {
         $jobId = (int) $this->getRequest()->getParam('id');

@@ -21,12 +21,8 @@ class BackendSearch
     ){}
 
     /**
-     * @param string $query
-     * @param int $storeId
-     * @param array|null $searchParams
-     * @param string|null $targetedIndex
-     * @return array
      * @throws AlgoliaException|NoSuchEntityException
+     *
      * @internal This method is currently unstable and should not be used. It may be revisited or fixed in a future version.
      *
      */

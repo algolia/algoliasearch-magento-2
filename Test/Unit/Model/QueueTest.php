@@ -37,6 +37,7 @@ class QueueTest extends TestCase
 
     /**
      * Immediately process the valid method
+     *
      * @dataProvider authorizedHandlersProvider
      */
     public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueInactive(string $class, string $method, array $data): void
@@ -60,6 +61,7 @@ class QueueTest extends TestCase
 
     /**
      * Queue the valid method
+     *
      * @dataProvider authorizedHandlersProvider
      */
     public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueActive(string $class, string $method, array $data): void
@@ -73,6 +75,7 @@ class QueueTest extends TestCase
 
     /**
      * Unauthorized jobs should be rejected at execution time when queue is inactive
+     *
      * @dataProvider unauthorizedHandlersProvider
      */
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueInactive(string $class, string $method): void
@@ -87,6 +90,7 @@ class QueueTest extends TestCase
 
     /**
      * Unauthorized jobs should be rejected at queue time, not just at execution time
+     *
      * @dataProvider unauthorizedHandlersProvider
      */
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueActive(string $class, string $method): void
@@ -157,6 +161,7 @@ class QueueTest extends TestCase
 
     /**
      * Create Queue using reflection to bypass the generated CollectionFactory dependency
+     *
      * @throws \ReflectionException
      */
     private function createQueueMock(): Queue

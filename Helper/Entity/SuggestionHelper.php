@@ -16,9 +16,7 @@ class SuggestionHelper extends AbstractEntityHelper
     use EntityHelperTrait;
     public const INDEX_NAME_SUFFIX = '_suggestions';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public const POPULAR_QUERIES_CACHE_TAG = 'algoliasearch_popular_queries_cache_tag';
 
     public function __construct(
@@ -32,10 +30,6 @@ class SuggestionHelper extends AbstractEntityHelper
         parent::__construct($indexNameFetcher);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return array
-     */
     public function getIndexSettings(?int $storeId = null): array
     {
         $indexSettings = [
@@ -50,11 +44,11 @@ class SuggestionHelper extends AbstractEntityHelper
             'algolia_suggestions_index_before_set_settings',
             ['store_id' => $storeId, 'index_settings' => $transport]
         );
+
         return $transport->getData();
     }
 
     /**
-     * @param $storeId
      * @return array|bool|float|int|string|null
      */
     public function getPopularQueries($storeId = null)
@@ -97,10 +91,6 @@ class SuggestionHelper extends AbstractEntityHelper
         return $queries;
     }
 
-    /**
-     * @param int $storeId
-     * @return QueryCollection
-     */
     public function getSuggestionCollectionQuery(int $storeId): QueryCollection
     {
         $collection = $this->queryCollectionFactory->create()

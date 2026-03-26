@@ -24,7 +24,9 @@ $extensionRules = [
     'blank_line_before_statement' => true,
     'cast_spaces' => true,
     'combine_consecutive_unsets' => true,
-    'mb_str_functions' => true,
+    // This rule is disabled as it uses runtime PHP version to decide replacements, which is potentially risky
+    // e.g. running on PHP 8.4 converts trim() to mb_trim() which breaks compatiblity with PHP 8.2/8.3
+    'mb_str_functions' => false,
     'no_blank_lines_after_class_opening' => true,
     'no_empty_phpdoc' => true,
     'no_empty_statement' => true,

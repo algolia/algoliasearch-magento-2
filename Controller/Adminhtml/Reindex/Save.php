@@ -57,6 +57,7 @@ class Save extends \Magento\Backend\App\Action
 
         if (empty($skus)) {
             $this->messageManager->addErrorMessage(__('Please, enter at least one SKU.'));
+
             return $resultRedirect;
         }
 
@@ -67,6 +68,7 @@ class Save extends \Magento\Backend\App\Action
                     self::MAX_SKUS
                 )
             );
+
             return $resultRedirect;
         }
 
@@ -110,6 +112,7 @@ class Save extends \Magento\Backend\App\Action
                         $e->getMessage()
                     )
                 );
+
                 break;
             }
         }
@@ -118,11 +121,10 @@ class Save extends \Magento\Backend\App\Action
     }
 
     /**
-     * @param $product
-     * @param $stores
-     * @return void
      * @throws NoSuchEntityException
      * @throws LocalizedException
+     *
+     * @return void
      */
     protected function checkAndReindex($product, $stores)
     {

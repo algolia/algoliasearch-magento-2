@@ -49,11 +49,12 @@ class ProcessQueueCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->output = $output;
+
         try {
             $this->state->setAreaCode(Area::AREA_CRONTAB);
         } catch (LocalizedException $e) {
             // Area code is already set - nothing to do - but report regardless
-            $this->output->writeln("Unable to set area code due to the following error: " . $e->getMessage());
+            $this->output->writeln('Unable to set area code due to the following error: ' . $e->getMessage());
         }
 
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {

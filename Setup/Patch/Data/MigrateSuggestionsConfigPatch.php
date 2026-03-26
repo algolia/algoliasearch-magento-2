@@ -30,7 +30,6 @@ class MigrateSuggestionsConfigPatch implements DataPatchInterface
 
     /**
      * Migrate legacy configurations
-     * @return void
      */
     protected function moveIndexingSettings(): void
     {
@@ -54,7 +53,7 @@ class MigrateSuggestionsConfigPatch implements DataPatchInterface
                         'scope' => $item['scope'],
                         'scope_id' => $item['scope_id'],
                         'path' => AutocompleteHelper::SUGGESTIONS_MODE,
-                        'value' => Suggestions::SUGGESTIONS_MAGENTO
+                        'value' => Suggestions::SUGGESTIONS_MAGENTO,
                     ]
                 );
             }

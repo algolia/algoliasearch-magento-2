@@ -21,9 +21,7 @@ interface ReplicaManagerInterface
     /**
      * Configure replicas in Algolia based on the sorting configuration in Magento
      *
-     * @param int $storeId
      * @param array<string, mixed> $primaryIndexSettings
-     * @return void
      *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
@@ -33,9 +31,8 @@ interface ReplicaManagerInterface
 
     /**
      * Delete the replica indices on a store index
-     * @param int $storeId
+     *
      * @param bool $unused Defaults to false - if true identifies any straggler indices and deletes those, otherwise deletes the replicas it knows about
-     * @return void
      *
      * @throws LocalizedException
      * @throws AlgoliaException
@@ -45,26 +42,25 @@ interface ReplicaManagerInterface
     /**
      * For standard Magento front end (e.g. Luma) replicas will likely only be needed if InstantSearch is enabled
      * Headless implementations may wish to override this behavior via plugin
-     * @param int $storeId
-     * @return bool
      */
     public function isReplicaSyncEnabled(int $storeId): bool;
 
     /**
      * Return the number of virtual replicas permitted per index
+     *
      * @link https://www.algolia.com/doc/guides/managing-results/refine-results/sorting/in-depth/replicas/#differences
      *
-     * @return int
      */
     public function getMaxVirtualReplicasPerIndex() : int;
 
     /**
      * For a given store return replicas that do not appear to be managed by Magento
-     * @param int $storeId
-     * @return string[]
+     *
      * @throws NoSuchEntityException
      * @throws LocalizedException
      * @throws AlgoliaException
+     *
+     * @return string[]
      */
     public function getUnusedReplicaIndices(int $storeId): array;
 }

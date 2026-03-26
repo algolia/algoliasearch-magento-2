@@ -17,7 +17,7 @@ use Magento\Tax\Model\Config as TaxConfig;
 
 class EventProcessor implements EventProcessorInterface
 {
-    /** @var string  */
+    /** @var string */
     protected const NO_QUERY_ID_KEY = '__NO_QUERY_ID__';
 
     protected int $decimalPrecision;
@@ -42,29 +42,32 @@ class EventProcessor implements EventProcessorInterface
     public function setInsightsClient(InsightsClient $client): EventProcessorInterface
     {
         $this->client = $client;
+
         return $this;
     }
 
     public function setAnonymousUserToken(string $token): EventProcessorInterface
     {
         $this->userToken = $token;
+
         return $this;
     }
 
     public function setAuthenticatedUserToken(string $token): EventProcessorInterface
     {
         $this->authenticatedUserToken = $token;
+
         return $this;
     }
 
     public function setStoreManager(StoreManagerInterface $storeManager): EventProcessorInterface
     {
         $this->storeManager = $storeManager;
+
         return $this;
     }
 
     /**
-     * @return void
      * @throws AlgoliaException
      */
     private function checkDependencies(): void
@@ -74,7 +77,7 @@ class EventProcessor implements EventProcessorInterface
             || !$this->userToken
             || !$this->storeManager
         ) {
-            throw new AlgoliaException("Events model is missing necessary dependencies to function.");
+            throw new AlgoliaException('Events model is missing necessary dependencies to function.');
         }
     }
 
@@ -99,6 +102,7 @@ class EventProcessor implements EventProcessorInterface
     public function convertedObjectIDs(string $eventName, string $indexName, array $objectIDs, array $requestOptions = []): array
     {
         $this->checkDependencies();
+
         return $this->converted(['objectIDs' => $objectIDs], $eventName, $indexName, $requestOptions);
     }
 
@@ -126,13 +130,12 @@ class EventProcessor implements EventProcessorInterface
                 'eventType' => 'conversion',
                 'eventName' => $eventName,
                 'index'     => $indexName,
-                'userToken' => $this->userToken
+                'userToken' => $this->userToken,
             ]);
         }, $events);
     }
 
     /**
-     * @return string
      * @throws LocalizedException if unable to find store or currency
      */
     private function getCurrentCurrency(): string
@@ -156,10 +159,10 @@ class EventProcessor implements EventProcessorInterface
             self::EVENT_KEY_OBJECT_DATA => [[
                 'price'    => $price,
                 'discount' => $this->getQuoteItemDiscount($item),
-                'quantity' => $qty
+                'quantity' => $qty,
             ]],
             self::EVENT_KEY_CURRENCY    => $this->getCurrentCurrency(),
-            self::EVENT_KEY_VALUE       => $price * $qty
+            self::EVENT_KEY_VALUE       => $price * $qty,
         ];
 
         if ($queryID) {
@@ -183,7 +186,7 @@ class EventProcessor implements EventProcessorInterface
             self::EVENT_KEY_OBJECT_IDS  => $this->restrictMaxObjectsPerEvent($this->getObjectIdsForPurchase($items)),
             self::EVENT_KEY_OBJECT_DATA => $this->restrictMaxObjectsPerEvent($objectData),
             self::EVENT_KEY_CURRENCY    => $this->getCurrentCurrency(),
-            self::EVENT_KEY_VALUE       => $this->getTotalRevenueForEvent($objectData)
+            self::EVENT_KEY_VALUE       => $this->getTotalRevenueForEvent($objectData),
         ];
 
         if ($queryID) {
@@ -210,7 +213,7 @@ class EventProcessor implements EventProcessorInterface
                 self::EVENT_KEY_OBJECT_IDS  => $this->restrictMaxObjectsPerEvent($this->getObjectIdsForPurchase($items)),
                 self::EVENT_KEY_OBJECT_DATA => $this->restrictMaxObjectsPerEvent($objectData),
                 self::EVENT_KEY_CURRENCY    => $this->getCurrentCurrency(),
-                self::EVENT_KEY_VALUE       => $this->getTotalRevenueForEvent($objectData)
+                self::EVENT_KEY_VALUE       => $this->getTotalRevenueForEvent($objectData),
             ];
 
             if ($queryId !== self::NO_QUERY_ID_KEY) {
@@ -234,8 +237,6 @@ class EventProcessor implements EventProcessorInterface
      *
      * TODO: Implement chunking if exceeding the limit is a common use case
      *
-     * @param array $items
-     * @return array
      */
     protected function restrictMaxObjectsPerEvent(array $items): array
     {
@@ -247,6 +248,7 @@ class EventProcessor implements EventProcessorInterface
      * to ensure full revenue capture in the value argument.
      *
      * @param array<array<string, mixed>> $objectData
+     *
      * @return float Total revenue
      */
     protected function getTotalRevenueForEvent(array $objectData): float
@@ -255,6 +257,7 @@ class EventProcessor implements EventProcessorInterface
             $objectData,
             fn($carry, $item) => (float) $carry + (float) $item['quantity'] * (float) $item['price']
         );
+
         return $this->applyPrecision($total);
     }
 
@@ -262,55 +265,41 @@ class EventProcessor implements EventProcessorInterface
      * Price / final price does not return applied customer group pricing
      * so check base price first which returns the desired value.
      *
-     * @param Item $item
-     * @return float
      */
     protected function getQuoteItemSalePrice(Item $item): float
     {
         return $this->applyPrecision((float) ($item->getData('base_price') ?? $item->getPrice()));
     }
 
-    /**
-     * @param Item $item
-     * @return float
-     */
     protected function getQuoteItemDiscount(Item $item): float
     {
         return $this->applyPrecision($item->getProduct()->getPrice() - $this->getQuoteItemSalePrice($item));
     }
 
-    /**
-     * @param OrderItem $item
-     * @return float
-     */
     protected function getOrderItemSalePrice(OrderItem $item): float
     {
         $value = $this->taxConfig->priceIncludesTax($this->storeManager->getStore()->getId()) ?
-            (float) $item->getPriceInclTax() - $this->getOrderItemCartDiscount($item):
+            (float) $item->getPriceInclTax() - $this->getOrderItemCartDiscount($item) :
             (float) $item->getPrice() - $this->getOrderItemCartDiscount($item);
+
         return $this->applyPrecision($value);
     }
 
     /**
      * Get discount for line item for a single product (qty = 1) which is what Algolia uses
      * Line item discount retrieved from Magento for a cart rule is for all products (discount * qty) in the line item
-     * @param OrderItem $item
-     * @return float
      */
     protected function getOrderItemCartDiscount(OrderItem $item): float
     {
         return $this->applyPrecision((float) $item->getDiscountAmount() / (int) $item->getQtyOrdered());
     }
 
-    /**
-     * @param OrderItem $item
-     * @return float
-     */
     protected function getOrderItemDiscount(OrderItem $item): float
     {
         $itemDiscount = $this->taxConfig->priceIncludesTax($this->storeManager->getStore()->getId()) ?
             (float) $item->getOriginalPrice() - (float) $item->getPriceInclTax() :
             (float) $item->getOriginalPrice() - (float) $item->getPrice();
+
         return $this->applyPrecision($itemDiscount + $this->getOrderItemCartDiscount($item));
     }
 
@@ -320,6 +309,7 @@ class EventProcessor implements EventProcessorInterface
      * and different prices can result on variants for the same Algolia `objectID`
      *
      * @param OrderItem[] $items
+     *
      * @return array<array<string, mixed>>
      */
     protected function getObjectDataForPurchase(array $items): array
@@ -327,12 +317,13 @@ class EventProcessor implements EventProcessorInterface
         return array_map(fn($item) => [
             'price'    => $this->getOrderItemSalePrice($item),
             'discount' => max(0, $this->getOrderItemDiscount($item)),
-            'quantity' => (int) $item->getQtyOrdered()
+            'quantity' => (int) $item->getQtyOrdered(),
         ], $items);
     }
 
     /**
      * @param OrderItem[] $items
+     *
      * @return int[]
      */
     protected function getObjectIdsForPurchase(array $items): array
@@ -345,7 +336,7 @@ class EventProcessor implements EventProcessorInterface
      * For a given Magento Order return an array of Items grouped by query ID.
      * If no query ID is found group this under self::NO_QUERY_ID_KEY
      * (while `null` could be used this may lead to unexpected behavior)
-     * @param Order $order
+     *
      * @return array<string, array<OrderItem[]>
      * NOTE: Items are not deduplicated so that aggregate revenue can be calculated by events model as needed
      */

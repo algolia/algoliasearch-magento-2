@@ -16,7 +16,9 @@ class JobClasses implements \Magento\Framework\Data\OptionSourceInterface
         \Algolia\AlgoliaSearch\Helper\Data::class => 'Helper\Data',
     ];
 
-    /** @return array */
+    /**
+     * @return array
+     */
     public function toOptionArray()
     {
         $options = [];

@@ -20,7 +20,6 @@ class SaveSettings implements ObserverInterface
     ){}
 
     /**
-     * @param Observer $observer
      *
      * @throws AlgoliaException
      */

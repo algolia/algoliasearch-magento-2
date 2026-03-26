@@ -9,26 +9,15 @@ use Magento\Framework\Setup\Patch\DataPatchInterface;
 
 class UpdateMviewPatch implements DataPatchInterface
 {
-    /**
-     * @var SubscriptionFactory
-     */
+    /** @var SubscriptionFactory */
     protected $subscriptionFactory;
 
-    /**
-     * @var IndexerInterfaceFactory
-     */
+    /** @var IndexerInterfaceFactory */
     protected $indexerFactory;
 
-    /**
-     * @var ModuleDataSetupInterface
-     */
+    /** @var ModuleDataSetupInterface */
     protected $moduleDataSetup;
 
-    /**
-     * @param SubscriptionFactory $subscriptionFactory
-     * @param ModuleDataSetupInterface $moduleDataSetup
-     * @param IndexerInterfaceFactory $indexerFactory
-     */
     public function __construct(
         SubscriptionFactory $subscriptionFactory,
         ModuleDataSetupInterface $moduleDataSetup,

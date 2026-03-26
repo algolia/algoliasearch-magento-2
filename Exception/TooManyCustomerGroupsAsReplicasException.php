@@ -9,6 +9,7 @@ class TooManyCustomerGroupsAsReplicasException extends ReplicaLimitExceededExcep
     public function withPriceSortReplicaCount(int $priceSortReplicaCount): TooManyCustomerGroupsAsReplicasException
     {
         $this->priceSortReplicaCount = $priceSortReplicaCount;
+
         return $this;
     }
 

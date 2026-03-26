@@ -31,19 +31,19 @@ class IndexOptionsBuilder
             'data' => [
                 IndexOptionsInterface::STORE_ID     => $storeId,
                 IndexOptionsInterface::INDEX_SUFFIX => $indexSuffix,
-                IndexOptionsInterface::IS_TMP       => $isTmp
-            ]
+                IndexOptionsInterface::IS_TMP       => $isTmp,
+            ],
         ]);
 
         try {
             $indexOptions->setIndexName($this->computeIndexName($indexOptions));
         } catch (AlgoliaException $e) {
             // This should not happen with a valid suffix, but log it for debugging
-            $this->logger->error("Unexpected AlgoliaException in buildEntityIndexOptions.", [
+            $this->logger->error('Unexpected AlgoliaException in buildEntityIndexOptions.', [
                 'suffix' => $indexSuffix,
                 'storeId' => $storeId,
                 'isTmp' => $isTmp,
-                'exception' => $e->getMessage()
+                'exception' => $e->getMessage(),
             ]);
         }
 
@@ -58,8 +58,8 @@ class IndexOptionsBuilder
         return $this->indexOptionsInterfaceFactory->create([
             'data' => [
                 IndexOptionsInterface::INDEX_NAME => $indexName,
-                IndexOptionsInterface::STORE_ID   => $storeId
-            ]
+                IndexOptionsInterface::STORE_ID   => $storeId,
+            ],
         ]);
     }
 
@@ -76,14 +76,15 @@ class IndexOptionsBuilder
         }
 
         if ($indexOptions->getIndexSuffix() === null || $indexOptions->getIndexSuffix() === '') {
-            $msg = "Index name could not be computed due to missing suffix.";
+            $msg = 'Index name could not be computed due to missing suffix.';
             $this->logger->error(
                 $msg,
                 [
                     'storeId' => $indexOptions->getStoreId(),
-                    'isTmp' => $indexOptions->isTemporaryIndex()
+                    'isTmp' => $indexOptions->isTemporaryIndex(),
                 ]
             );
+
             throw new AlgoliaException($msg);
         }
 

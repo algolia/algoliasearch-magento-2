@@ -37,9 +37,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -50,10 +47,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException

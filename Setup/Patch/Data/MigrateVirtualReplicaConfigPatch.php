@@ -70,6 +70,7 @@ class MigrateVirtualReplicaConfigPatch implements DataPatchInterface
         // If not enabled - delete this old setting and move on...
         if (!$this->scopeConfig->isSetFlag(ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED, $scope, $scopeId)) {
             $this->deleteLegacyConfig($scope, $scopeId);
+
             return;
         }
 
@@ -94,7 +95,7 @@ class MigrateVirtualReplicaConfigPatch implements DataPatchInterface
             if (!$validator->isReplicaConfigurationValid($sortingIndices)) {
                 $storeName = $this->storeNameFetcher->getStoreName($storeId) . " (Store ID=$storeId)";
                 $prefix = "Error encountered while attempting to migrate your virtual replica configuration.\n";
-                $postfix = "\nPlease note that there can be no more than " . $this->replicaManager->getMaxVirtualReplicasPerIndex() . " virtual replicas per index.";
+                $postfix = "\nPlease note that there can be no more than " . $this->replicaManager->getMaxVirtualReplicasPerIndex() . ' virtual replicas per index.';
                 $postfix .= "\nYou can now configure virtual replicas by attribute under: Stores > Configuration > Algolia Search > InstantSearch Results Page > Sorting";
                 $postfix .= "\nRun the \"bin/magento algolia:replicas:disable-virtual-replicas\" before running \"setup:upgrade\" and configure your virtual replicas in the Magento admin.";
                 if ($validator->isTooManyCustomerGroups()) {
@@ -102,10 +103,10 @@ class MigrateVirtualReplicaConfigPatch implements DataPatchInterface
                         ->withReplicaCount($validator->getReplicaCount())
                         ->withPriceSortReplicaCount($validator->getPriceSortReplicaCount());
                 }
-                else {
+
                     throw (new ReplicaLimitExceededException(__("{$prefix}Replica limit exceeded for $storeName.$postfix")))
                         ->withReplicaCount($validator->getReplicaCount());
-                }
+
             }
 
             // If all is copacetic then save the new sorting config
@@ -135,9 +136,11 @@ class MigrateVirtualReplicaConfigPatch implements DataPatchInterface
     protected function simulateFullVirtualReplicas(string $scope, int $scopeId): array
     {
         $raw = $this->scopeConfig->getValue(ConfigHelper::SORTING_INDICES, $scope, $scopeId);
+
         return array_map(
             function($sort) {
                 $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA] = 1;
+
                 return $sort;
             },
             $this->serializer->unserialize($raw)

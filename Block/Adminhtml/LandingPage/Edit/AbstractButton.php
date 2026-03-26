@@ -20,9 +20,6 @@ abstract class AbstractButton
     /**
      * PHP Constructor
      *
-     * @param Context $context
-     * @param LandingPageFactory $landingPageFactory
-     * @param UrlBuilder $frontendUrlBuilder
      *
      * @return AbstractButton
      */

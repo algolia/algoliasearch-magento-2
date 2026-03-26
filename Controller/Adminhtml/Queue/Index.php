@@ -11,10 +11,6 @@ class Index extends \Magento\Backend\App\Action
     /** @var Algolia\AlgoliaSearch\Helper\ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @param Context       $context
-     * @param ConfigHelper  $configHelper
-     */
     public function __construct(
         Context $context,
         ConfigHelper $configHelper
@@ -23,7 +19,9 @@ class Index extends \Magento\Backend\App\Action
         $this->configHelper = $configHelper;
     }
 
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $breadMain = __('Algolia | Indexing Queue overview');

@@ -18,12 +18,11 @@ class Serializer
      * but the return type is flagged as either `bool|string`
      * This safely ensures the proper string type is always returned no matter what
      *
-     * @param array $value
-     * @return string
      */
     public function serialize(array $value): string
     {
         $result = $this->serializer->serialize($value);
+
         return is_string($result) ? $result : '';
     }
 
@@ -34,7 +33,6 @@ class Serializer
      * Note that if the argument value is falsey then it will return false
      * (This is legacy behavior)
      *
-     * @param $value
      * @return mixed Returns false if argument supplied is falsey - otherwise returns the deserialized object
      */
     public function unserialize($value): mixed
@@ -47,6 +45,7 @@ class Serializer
         if (json_last_error() === JSON_ERROR_NONE) {
             return $unserialized;
         }
+
         return $this->serializer->unserialize($value);
     }
 }

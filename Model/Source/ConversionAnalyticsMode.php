@@ -19,7 +19,7 @@ class ConversionAnalyticsMode implements OptionSourceInterface
     {
         return [
             ['value' => InsightsHelper::CONVERSION_ANALYTICS_MODE_ALL, 'label' => __('Yes')],
-            ['value' => InsightsHelper::CONVERSION_ANALYTICS_MODE_DISABLE, 'label' => __('No')]
+            ['value' => InsightsHelper::CONVERSION_ANALYTICS_MODE_DISABLE, 'label' => __('No')],
         ];
     }
 }

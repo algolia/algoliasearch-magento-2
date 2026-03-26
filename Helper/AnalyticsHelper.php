@@ -35,14 +35,10 @@ class AnalyticsHelper
 
     private $fetchError = false;
 
-    /**
-     * @var AnalyticsClient
-     */
+    /** @var AnalyticsClient */
     private $analyticsClient;
 
-    /**
-     * @var AnalyticsConfig
-     */
+    /** @var AnalyticsConfig */
     private $analyticsConfig;
 
     /**
@@ -52,12 +48,6 @@ class AnalyticsHelper
      */
     protected $region;
 
-    /**
-     * @param ConfigHelper $configHelper
-     * @param IndexEntityDataProvider $entityHelper
-     * @param DiagnosticsLogger $logger
-     * @param ResolverInterface $localeResolver
-     */
     public function __construct(
         private ConfigHelper            $configHelper,
         private IndexEntityDataProvider $entityHelper,
@@ -89,7 +79,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param $storeId
      *
      * @return array<string, string>
      */
@@ -105,7 +94,6 @@ class AnalyticsHelper
     /**
      * Search Analytics
      *
-     * @param array $params
      *
      * @return array<string, mixed>
      */
@@ -115,7 +103,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getCountOfSearches(array $params): array
@@ -127,10 +114,6 @@ class AnalyticsHelper
         return $this->searches;
     }
 
-    /**
-     * @param array $params
-     * @return int
-     */
     public function getTotalCountOfSearches(array $params): int
     {
         $searches = $this->getCountOfSearches($params);
@@ -146,7 +129,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getTopSearchesNoResults(array $params): array
@@ -155,7 +137,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getRateOfNoResults(array $params): array
@@ -184,7 +165,6 @@ class AnalyticsHelper
     /**
      * Hits Analytics
      *
-     * @param array $params
      *
      * @return array<string, mixed>
      */
@@ -194,8 +174,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param $search
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getTopHitsForSearch($search, array $params): array
@@ -206,7 +184,6 @@ class AnalyticsHelper
     /**
      * Get Count of Users
      *
-     * @param array $params
      *
      * @return array<string, mixed>
      */
@@ -219,10 +196,6 @@ class AnalyticsHelper
         return $this->users;
     }
 
-    /**
-     * @param array $params
-     * @return int
-     */
     public function getTotalUsersCount(array $params): int
     {
         $users = $this->getUsers($params);
@@ -240,7 +213,6 @@ class AnalyticsHelper
     /**
      * Filter Analytics
      *
-     * @param array $params
      *
      * @return array<string, mixed>
      */
@@ -250,8 +222,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param string $search
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getTopFiltersForANoResultsSearch(string $search, array $params): array
@@ -260,8 +230,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param string $search
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getTopFiltersForASearch(string $search, array $params): array
@@ -270,9 +238,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $attributes
-     * @param string $search
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getTopFiltersForAttributesAndSearch(array $attributes, string $search, array $params): array
@@ -282,8 +247,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param string $attribute
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getTopFiltersForAttribute(string $attribute, array $params): array
@@ -294,7 +257,6 @@ class AnalyticsHelper
     /**
      * Click Analytics
      *
-     * @param array $params
      *
      * @return array<string, mixed>
      */
@@ -319,7 +281,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string,mixed>
      */
     public function getClickThroughRate(array $params): array
@@ -343,7 +304,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getConversionRate(array $params): array
@@ -356,7 +316,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getConversionRateAddToCart(array $params): array
@@ -369,7 +328,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string, mixed>
      */
     public function getConversionRatePlaceOrder(array $params): array
@@ -382,7 +340,6 @@ class AnalyticsHelper
     }
 
     /**
-     * @param array $params
      * @return array<string, mixed>
      */
     private function getConversionRateCalc(array $params, $path = 'conversionRate'): array
@@ -414,8 +371,6 @@ class AnalyticsHelper
     /**
      * Pass through method for handling API Versions
      *
-     * @param string $path
-     * @param array $params
      *
      * @return array<string, mixed>|false
      */
@@ -450,13 +405,14 @@ class AnalyticsHelper
 
     /**
      * A failed request can return false - this provides a way to specify a default
-     * @param string $path
-     * @param array $params
+     *
      * @param array $default Optional default - if not supplied will return an empty array on failed request
+     *
      * @return array<string, mixed>
      */
     protected function safeFetch(string $path, array $params, array $default = []): array {
         $value = $this->fetch($path, $params);
+
         return $value !== false ? $value : $default;
     }
 
@@ -465,15 +421,12 @@ class AnalyticsHelper
         return $this->errors;
     }
 
-    /**
-     * @param string $timezone
-     * @return \IntlDateFormatter
-     */
     public function getAnalyticsDatePickerFormatter(string $timezone): \IntlDateFormatter
     {
         $locale = $this->localeResolver->getLocale();
         $dateFormatter = new \IntlDateFormatter($locale, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, $timezone);
         $dateFormatter->setPattern(self::DATE_FORMAT_PICKER);
+
         return $dateFormatter;
     }
 

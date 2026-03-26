@@ -15,16 +15,16 @@ use Magento\Framework\Indexer\IndexerRegistry;
 
 /**
  * @magentoDbIsolation disabled
+ *
  * @magentoAppIsolation enabled
  */
 class ProductsIndexingTest extends ProductsIndexingTestCase
 {
-
     protected ?IndexerRegistry $indexerRegistry;
 
     protected ?string $testProductId = null; // REST API requires objectID as string
 
-    const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
+    public const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
 
     public function testOnlyOnStockProducts()
     {

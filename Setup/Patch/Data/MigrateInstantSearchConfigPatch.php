@@ -31,7 +31,6 @@ class MigrateInstantSearchConfigPatch implements DataPatchInterface
 
     /**
      * Migrate old InstantSearch configurations to new groupings
-     * @return void
      */
     protected function moveInstantSearchSettings(): void
     {
@@ -45,7 +44,7 @@ class MigrateInstantSearchConfigPatch implements DataPatchInterface
             'algoliasearch_instant/instant/show_suggestions_on_no_result_page' => 'algoliasearch_instant/instant_options/show_suggestions_on_no_result_page',
             'algoliasearch_instant/instant/add_to_cart_enable'                 => 'algoliasearch_instant/instant_options/add_to_cart_enable',
             'algoliasearch_instant/instant/infinite_scroll_enable'             => 'algoliasearch_instant/instant_options/infinite_scroll_enable',
-            'algoliasearch_instant/instant/hide_pagination'                    => 'algoliasearch_instant/instant_options/hide_pagination'
+            'algoliasearch_instant/instant/hide_pagination'                    => 'algoliasearch_instant/instant_options/hide_pagination',
         ];
 
         $this->migrateConfig($movedConfig);

@@ -27,10 +27,6 @@ class PageHelper extends AbstractEntityHelper
         parent::__construct($indexNameFetcher);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return array
-     */
     public function getIndexSettings(?int $storeId = null): array
     {
         $indexSettings = [

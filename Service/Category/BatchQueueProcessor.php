@@ -24,9 +24,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     ){}
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @return void
      * @throws NoSuchEntityException|LocalizedException
      */
     public function processBatch(int $storeId, ?array $entityIds = null): void
@@ -52,11 +49,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         $this->processFullReindex($storeId, $categoriesPerPage);
     }
 
-    /**
-     * @param array $categoryIds
-     * @param int $categoriesPerPage
-     * @param int $storeId
-     */
     protected function processSpecificCategories(array $categoryIds, int $categoriesPerPage, int $storeId): void
     {
         foreach (array_chunk($categoryIds, $categoriesPerPage) as $chunk) {
@@ -74,8 +66,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     }
 
     /**
-     * @param int $storeId
-     * @param int $categoriesPerPage
      *
      * @throws NoSuchEntityException
      * @throws LocalizedException
@@ -96,7 +86,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
                 'options' => [
                     'page' => $i,
                     'pageSize' => $categoriesPerPage,
-                ]
+                ],
             ];
 
             /** @uses CategoryIndexBuilder::buildIndexFull() */

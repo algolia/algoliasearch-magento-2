@@ -24,10 +24,6 @@ class AdditionalSectionHelper extends AbstractEntityHelper
         parent::__construct($indexNameFetcher);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return array
-     */
     public function getIndexSettings(?int $storeId = null): array
     {
         $indexSettings = [
@@ -75,7 +71,7 @@ class AdditionalSectionHelper extends AbstractEntityHelper
             $dataObject = new DataObject([
                 'value' => $value,
                 'section' => $section,
-                'store_id' => $storeId
+                'store_id' => $storeId,
             ]);
 
             return $this->additionalSectionRecordBuilder->buildRecord($dataObject);

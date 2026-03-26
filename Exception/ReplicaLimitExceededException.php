@@ -11,6 +11,7 @@ class ReplicaLimitExceededException extends LocalizedException
     public function withReplicaCount(int $replicaCount): ReplicaLimitExceededException
     {
         $this->replicaCount = $replicaCount;
+
         return $this;
     }
 

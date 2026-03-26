@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Algolia\AlgoliaSearch\Observer;
@@ -18,24 +19,14 @@ use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 
 class RecommendSettings implements ObserverInterface
 {
-    const QUANTITY_AND_STOCK_STATUS = 'quantity_and_stock_status';
-    const STATUS = 'status';
-    const VISIBILITY = 'visibility';
+    public const QUANTITY_AND_STOCK_STATUS = 'quantity_and_stock_status';
+    public const STATUS = 'status';
+    public const VISIBILITY = 'visibility';
 
-    const ENFORCE_VALIDATION = 0;
+    public const ENFORCE_VALIDATION = 0;
 
-    /**
-     * @var string
-     */
     protected string $productId = '';
 
-    /**
-     * @param ConfigHelper $configHelper
-     * @param WriterInterface $configWriter
-     * @param ProductRepositoryInterface $productRepository
-     * @param RecommendManagementInterface $recommendManagement
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     */
     public function __construct(
         protected readonly ConfigHelper                 $configHelper,
         protected readonly WriterInterface              $configWriter,
@@ -48,7 +39,6 @@ class RecommendSettings implements ObserverInterface
     ){}
 
     /**
-     * @param Observer $observer
      * @throws LocalizedException
      */
     public function execute(Observer $observer): void
@@ -56,10 +46,10 @@ class RecommendSettings implements ObserverInterface
         foreach ($observer->getData('changed_paths') as $changedPath) {
             // Validate before enable FBT on PDP or on cart page
             if ((
-                    $changedPath == ConfigHelper::IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED
+                $changedPath == ConfigHelper::IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED
                     && $this->configHelper->isRecommendFrequentlyBroughtTogetherEnabled()
-                ) || (
-                    $changedPath == ConfigHelper::IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED_ON_CART_PAGE
+            ) || (
+                $changedPath == ConfigHelper::IS_RECOMMEND_FREQUENTLY_BOUGHT_TOGETHER_ENABLED_ON_CART_PAGE
                     && $this->configHelper->isRecommendFrequentlyBroughtTogetherEnabledOnCartPage()
             )) {
                 $this->validateFrequentlyBroughtTogether($changedPath);
@@ -67,10 +57,10 @@ class RecommendSettings implements ObserverInterface
 
             // Validate before enable related products on PDP or on cart page
             if ((
-                    $changedPath == ConfigHelper::IS_RECOMMEND_RELATED_PRODUCTS_ENABLED
+                $changedPath == ConfigHelper::IS_RECOMMEND_RELATED_PRODUCTS_ENABLED
                     && $this->configHelper->isRecommendRelatedProductsEnabled()
-                ) || (
-                    $changedPath == ConfigHelper::IS_RECOMMEND_RELATED_PRODUCTS_ENABLED_ON_CART_PAGE
+            ) || (
+                $changedPath == ConfigHelper::IS_RECOMMEND_RELATED_PRODUCTS_ENABLED_ON_CART_PAGE
                     && $this->configHelper->isRecommendRelatedProductsEnabledOnCartPage()
             )) {
                 $this->validateRelatedProducts($changedPath);
@@ -78,10 +68,10 @@ class RecommendSettings implements ObserverInterface
 
             // Validate before enable trending items on PDP or on cart page
             if ((
-                    $changedPath == ConfigHelper::IS_TREND_ITEMS_ENABLED_IN_PDP
+                $changedPath == ConfigHelper::IS_TREND_ITEMS_ENABLED_IN_PDP
                     && $this->configHelper->isTrendItemsEnabledInPDP()
-                ) || (
-                    $changedPath == ConfigHelper::IS_TREND_ITEMS_ENABLED_IN_SHOPPING_CART
+            ) || (
+                $changedPath == ConfigHelper::IS_TREND_ITEMS_ENABLED_IN_SHOPPING_CART
                     && $this->configHelper->isTrendItemsEnabledInShoppingCart()
             )) {
                 $this->validateTrendingItems($changedPath);
@@ -89,10 +79,10 @@ class RecommendSettings implements ObserverInterface
 
             // Validate before enable looking similar on PDP or on cart page
             if ((
-                    $changedPath == ConfigHelper::IS_LOOKING_SIMILAR_ENABLED_IN_PDP
+                $changedPath == ConfigHelper::IS_LOOKING_SIMILAR_ENABLED_IN_PDP
                     && $this->configHelper->isLookingSimilarEnabledInPDP()
-                ) || (
-                    $changedPath == ConfigHelper::IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART
+            ) || (
+                $changedPath == ConfigHelper::IS_LOOKING_SIMILAR_ENABLED_IN_SHOPPING_CART
                     && $this->configHelper->isLookingSimilarEnabledInShoppingCart()
             )) {
                 $this->validateLookingSimilar($changedPath);
@@ -101,8 +91,6 @@ class RecommendSettings implements ObserverInterface
     }
 
     /**
-     * @param string $changedPath
-     * @return void
      * @throws LocalizedException
      */
     protected function validateFrequentlyBroughtTogether(string $changedPath): void
@@ -111,8 +99,6 @@ class RecommendSettings implements ObserverInterface
     }
 
     /**
-     * @param string $changedPath
-     * @return void
      * @throws LocalizedException
      */
     protected function validateRelatedProducts(string $changedPath): void
@@ -121,8 +107,6 @@ class RecommendSettings implements ObserverInterface
     }
 
     /**
-     * @param string $changedPath
-     * @return void
      * @throws LocalizedException
      */
     protected function validateTrendingItems(string $changedPath): void
@@ -131,8 +115,6 @@ class RecommendSettings implements ObserverInterface
     }
 
     /**
-     * @param string $changedPath
-     * @return void
      * @throws LocalizedException
      */
     protected function validateLookingSimilar(string $changedPath): void
@@ -144,7 +126,7 @@ class RecommendSettings implements ObserverInterface
      * @param string $changedPath - config path to be reverted if validation failed
      * @param string $recommendationMethod - name of method to call to retrieve method from RecommendManagementInterface
      * @param string $modelName - user friendly name to refer to model in error messaging
-     * @return void
+     *
      * @throws LocalizedException
      */
     protected function validateRecommendation(string $changedPath, string $recommendationMethod, string $modelName): void
@@ -168,8 +150,8 @@ class RecommendSettings implements ObserverInterface
     {
         if (!array_key_exists('hits', $recommendResponse)) {
             $msg = __(
-                "It appears that there is no trained %1 model available for Algolia application ID %2. "
-                . "Please verify your configuration in the Algolia Dashboard before continuing.",
+                'It appears that there is no trained %1 model available for Algolia application ID %2. '
+                . 'Please verify your configuration in the Algolia Dashboard before continuing.',
                 $modelName,
                 $this->configHelper->getApplicationID()
             );
@@ -198,8 +180,10 @@ class RecommendSettings implements ObserverInterface
         $msg = $this->getUserFriendlyRecommendApiErrorMessage($e);
 
         if (self::ENFORCE_VALIDATION) {
-            $this->rollBack($changedPath, __(
-                    "Unable to save %1 Recommend configuration due to the following error: %2",
+            $this->rollBack(
+                $changedPath,
+                __(
+                    'Unable to save %1 Recommend configuration due to the following error: %2',
                     $modelName,
                     $msg
                 )
@@ -207,7 +191,7 @@ class RecommendSettings implements ObserverInterface
         }
 
         $msg = __(
-            "Error encountered while enabling %1 recommendations: %2",
+            'Error encountered while enabling %1 recommendations: %2',
             $modelName,
             $msg
         );
@@ -215,7 +199,8 @@ class RecommendSettings implements ObserverInterface
         if ($this->shouldDisplayWarning()) {
             $this->messageManager->addWarningMessage(
                 $msg
-                . ' Please verify your configuration in the Algolia Dashboard before continuing.');
+                . ' Please verify your configuration in the Algolia Dashboard before continuing.'
+            );
         }
         else {
             $this->logger->warning($msg);
@@ -228,11 +213,13 @@ class RecommendSettings implements ObserverInterface
     protected function rollBack(string $changedPath, \Magento\Framework\Phrase $message): void
     {
         $this->configWriter->save($changedPath, 0);
+
         throw new LocalizedException($message);
     }
 
     /**
      * Warnings should only be displayed within the admin panel
+     *
      * @throws LocalizedException
      */
     protected function shouldDisplayWarning(): bool
@@ -252,13 +239,14 @@ class RecommendSettings implements ObserverInterface
     {
         $msg = $e->getMessage();
         if ($e->getCode() === 404) {
-            if (!!preg_match('/index.*does not exist/i', $msg)) {
-                $msg = (string) __("A trained model could not be found.");
+            if ((bool) preg_match('/index.*does not exist/i', $msg)) {
+                $msg = (string) __('A trained model could not be found.');
             }
-            if (!!preg_match('/objectid does not exist/i', $msg)) {
-                $msg = (string) __("Could not find test product in trained model.");
+            if ((bool) preg_match('/objectid does not exist/i', $msg)) {
+                $msg = (string) __('Could not find test product in trained model.');
             }
         }
+
         return $msg;
     }
 
@@ -267,8 +255,9 @@ class RecommendSettings implements ObserverInterface
      *
      * TODO: Implement store scoping and independently address 404 where objectID is not found
      *
-     * @return string - Product ID string for use in API calls
      * @throws LocalizedException
+     *
+     * @return string - Product ID string for use in API calls
      */
     protected function getProductId(): string
     {
@@ -281,9 +270,10 @@ class RecommendSettings implements ObserverInterface
                     [
                         Visibility::VISIBILITY_IN_CATALOG,
                         Visibility::VISIBILITY_IN_SEARCH,
-                        Visibility::VISIBILITY_BOTH
+                        Visibility::VISIBILITY_BOTH,
                     ],
-                    'in')
+                    'in'
+                )
                 ->setPageSize(1)
                 ->create();
             $result = $this->productRepository->getList($searchCriteria);
@@ -292,7 +282,7 @@ class RecommendSettings implements ObserverInterface
             if ($firstProduct) {
                 $this->productId = (string) $firstProduct->getId();
             } else {
-                throw new LocalizedException(__("Unable to locate product to validate Recommend model."));
+                throw new LocalizedException(__('Unable to locate product to validate Recommend model.'));
             }
         }
 

@@ -20,9 +20,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     ){}
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @return void
      * @throws NoSuchEntityException
      */
     public function processBatch(int $storeId, ?array $entityIds = null): void
@@ -53,10 +50,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         }
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
     protected function isPagesInAdditionalSections($storeId): bool
     {
         $sections = $this->configHelper->getAutocompleteSections($storeId);

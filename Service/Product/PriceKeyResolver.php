@@ -10,7 +10,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class PriceKeyResolver
 {
-    const DEFAULT_PRICE_GROUP = 'default';
+    public const DEFAULT_PRICE_GROUP = 'default';
 
     /** @var array<string, string> */
     protected array $priceKeys = [];

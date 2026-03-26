@@ -12,20 +12,15 @@ class ReindexProductOnLastItemPurchaseIfMsiDisable implements ObserverInterface
 {
     protected $indexer;
 
-    /** @var ModuleManager  */
+    /** @var ModuleManager */
     protected $moduleManager;
 
-    /** @var ProductRepositoryInterface  */
+    /** @var ProductRepositoryInterface */
     protected $productRepository;
 
-    /** @var IndexerRegistry  */
+    /** @var IndexerRegistry */
     protected $indexerRegistry;
 
-    /**
-     * @param ModuleManager $moduleManager
-     * @param ProductRepositoryInterface $productRepository
-     * @param IndexerRegistry $indexerRegistry
-     */
     public function __construct(
         ModuleManager $moduleManager,
         ProductRepositoryInterface $productRepository,
@@ -37,9 +32,9 @@ class ReindexProductOnLastItemPurchaseIfMsiDisable implements ObserverInterface
     }
 
     /**
-     * @param Observer $observer
-     * @return void
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return void
      */
     public function execute(Observer $observer)
     {

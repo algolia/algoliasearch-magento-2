@@ -39,9 +39,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $options
-     * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws AlgoliaException
@@ -52,10 +49,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -66,10 +59,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -83,6 +72,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
         if ($entityIds !== null) {
             $this->rebuildEntityIds($storeId, $entityIds);
+
             return;
         }
 
@@ -93,9 +83,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param $storeId
-     * @param $categoryIds
-     * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws \Exception
@@ -133,6 +120,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             }
         } catch (\Exception $e) {
             $this->stopEmulation();
+
             throw $e;
         }
         $this->stopEmulation();
@@ -178,7 +166,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
      * @param Collection $collection
      * @param array|null $potentiallyDeletedCategoriesIds
      *
-     * @return array
      * @throws NoSuchEntityException|LocalizedException
      *
      */
@@ -213,6 +200,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                 $this->categoryHelper->canCategoryBeReindexed($category, $storeId);
             } catch (CategoryReindexingException) {
                 $categoriesToRemove[$categoryId] = $categoryId;
+
                 continue;
             }
 

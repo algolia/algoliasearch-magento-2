@@ -9,7 +9,7 @@ use Magento\Framework\App\CacheInterface;
 
 class IndexCollectionSize
 {
-    const NOT_FOUND = -1;
+    public const NOT_FOUND = -1;
 
     public function __construct(
         protected CacheInterface $cache,

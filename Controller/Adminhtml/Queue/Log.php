@@ -6,7 +6,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Log extends \Magento\Backend\App\Action
 {
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $breadMain = __('Algolia | Indexing Queue Logs');

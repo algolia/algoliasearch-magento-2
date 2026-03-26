@@ -37,10 +37,13 @@ class FacetBuilder
 
     /**
      * Return the configuration to be used for the store product index `attributesForFaceting`
+     *
      * @param int $storeId - The store ID for the index to be configured
-     * @return string[]
+     *
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return string[]
      */
     public function getAttributesForFaceting(int $storeId): array
     {
@@ -52,10 +55,13 @@ class FacetBuilder
 
     /**
      * Return the configuration to be used for the store product index `renderingContent`
+     *
      * @param int $storeId - The store ID for the index to be configured
-     * @return array<string, array>|null
+     *
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return array<string, array>|null
      */
     public function getRenderingContent(int $storeId): ?array
     {
@@ -64,12 +70,13 @@ class FacetBuilder
             return null;
         }
         $attributes = $this->getRenderingContentAttributes($this->extractFacetAttributeNames($facets));
+
         return [
             'facetOrdering' => [
                 'facets' => [
-                    'order' => $attributes
+                    'order' => $attributes,
                 ],
-                'values' => $this->getRenderingContentValues($attributes)
+                'values' => $this->getRenderingContentValues($attributes),
             ],
         ];
     }
@@ -78,6 +85,7 @@ class FacetBuilder
      * For an array of facet data, return an array of attribute names only
      *
      * @param array<array<string, mixed>> $facets
+     *
      * @return string[]
      */
     protected function extractFacetAttributeNames(array $facets): array
@@ -90,20 +98,24 @@ class FacetBuilder
 
     /**
      * Format the facet data to be : renderingContent > facetOrdering > values
+     *
      * @param string[] $attributes
+     *
      * @return array<string, array> - Array key is the attribute name and the value is an object containing a `sortRemainingBy` value
      */
     protected function getRenderingContentValues(array $attributes): array
     {
         return array_combine(
             $attributes,
-            array_fill(0, count($attributes), [ 'sortRemainingBy' => 'count' ])
+            array_fill(0, count($attributes), ['sortRemainingBy' => 'count'])
         );
     }
 
     /**
      * Take raw facet (common) attributes and convert to include attributes specifically needed for `renderingContent`
+     *
      * @param string[] $facets
+     *
      * @return string[]
      */
     protected function getRenderingContentAttributes(array $facets): array
@@ -113,6 +125,7 @@ class FacetBuilder
                 if ($attribute === self::FACET_ATTRIBUTE_CATEGORIES) {
                     $attribute = $this->getCategoryAttributeNameForRenderingContent();
                 }
+
                 return $attribute;
             },
             $facets
@@ -124,7 +137,6 @@ class FacetBuilder
      * Obtaining the root level of the category data will enable it to become selectable in the Algolia Dashboard
      * for "Facet Display" and "Order facets" within merchandising rules
      *
-     * @return string
      */
     protected function getCategoryAttributeNameForRenderingContent(): string
     {
@@ -134,8 +146,6 @@ class FacetBuilder
     /**
      * Return an associative array for an attribute that mimics the minimum structure used by the Magento configuration
      *
-     * @param string $attribute
-     * @param bool $searchable
      * @return array{attribute: string, searchable: string}
      */
     protected function getRawFacet(string $attribute, bool $searchable = false): array
@@ -149,9 +159,10 @@ class FacetBuilder
     /**
      * Generates common data to be used for both `attributesForFaceting` and `renderingContent`
      *
-     * @return array<array<string, mixed>>
      * @throws NoSuchEntityException
      * @throws LocalizedException
+     *
+     * @return array<array<string, mixed>>
      */
     protected function getRawFacets(int $storeId): array
     {
@@ -181,19 +192,18 @@ class FacetBuilder
      * Does a given array of facets include a category facet?
      *
      * @param array<array<string, mixed>> $facets
-     * @return bool
      */
     protected function hasCategoryFacet(array $facets): bool
     {
-        return !!array_filter($facets, fn($facet) => $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES);
+        return (bool) array_filter($facets, fn($facet) => $facet['attribute'] === self::FACET_ATTRIBUTE_CATEGORIES);
     }
 
     /**
      * Applies the category facet if not manually configured but necessary for category functionality
      * (The presence of the category facet drives logic for `attributesForFaceting` and `renderingContent`)
      *
-     * @param int $storeId
      * @param array<array<string, mixed>> $facets
+     *
      * @return array<array<string, mixed>>
      */
     protected function assertCategoryFacet(int $storeId, array $facets): array
@@ -210,8 +220,8 @@ class FacetBuilder
     /**
      * Add merchandising facets as needed for `attributesForFaceting`
      *
-     * @param int $storeId
      * @param array<array<string, mixed>> $facets
+     *
      * @return array|string[]
      */
     protected function addMerchandisingFacets(int $storeId, array $facets): array
@@ -234,10 +244,10 @@ class FacetBuilder
     /**
      * Get an array of pricing attribute names based on currency and customer group configuration
      *
-     * @param int $storeId
-     * @return string[]
      * @throws NoSuchEntityException
      * @throws LocalizedException
+     *
+     * @return string[]
      */
     protected function getPricingAttributes(int $storeId): array
     {
@@ -254,11 +264,10 @@ class FacetBuilder
     /**
      * Get an array of pricing attribute names based on customer group configuration
      *
-     * @param int $storeId
-     * @param string $currencyCode
-     * @return string[]
      * @throws NoSuchEntityException
      * @throws LocalizedException
+     *
+     * @return string[]
      */
     protected function getGroupPricingAttributes(int $storeId, string $currencyCode): array
     {
@@ -274,6 +283,7 @@ class FacetBuilder
                 $groupPricingAttributes[] = self::FACET_ATTRIBUTE_PRICE . '.' . $currencyCode . '.group_' . $groupId;
             }
         }
+
         return $groupPricingAttributes;
     }
 
@@ -281,8 +291,8 @@ class FacetBuilder
     /**
      * Format the `attributesForFaceting` values based on modifiers defined at:
      * https://www.algolia.com/doc/api-reference/api-parameters/attributesForFaceting/#modifiers
+     *
      * @param array<string, string|int> $facet
-     * @return string
      */
     protected function decorateAttributeForFaceting(array $facet): string
     {
@@ -294,6 +304,7 @@ class FacetBuilder
                 $attribute = 'filterOnly(' . $attribute . ')';
             }
         }
+
         return $attribute;
     }
 

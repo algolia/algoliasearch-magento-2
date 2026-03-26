@@ -7,7 +7,6 @@ use PHPUnit\Framework\TestCase;
 
 class MathHelperTest extends TestCase
 {
-
     /**
      * @dataProvider averageProvider
      */

@@ -16,7 +16,9 @@ use Magento\Store\Api\Data\StoreInterface;
 
 /**
  * @magentoDataFixture Magento/Store/_files/second_website_with_two_stores.php
+ *
  * @magentoDbIsolation disabled
+ *
  * @magentoAppIsolation enabled
  */
 class MultiStorePagesTest extends MultiStoreTestCase
@@ -24,13 +26,13 @@ class MultiStorePagesTest extends MultiStoreTestCase
     /** @var PageRepositoryInterface */
     protected $pageRepository;
 
-    /**  @var CollectionFactory */
+    /** @var CollectionFactory */
     private $pageCollectionFactory;
 
     /** @var PageBatchQueueProcessor */
     protected $pageBatchQueueProcessor;
 
-    const HOME_PAGE_ID = 2;
+    public const HOME_PAGE_ID = 2;
 
     public function setUp():void
     {
@@ -96,9 +98,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
     /**
      * Loads page by id.
      *
-     * @param int $pageId
      *
-     * @return PageInterface
      * @throws LocalizedException
      */
     private function loadPage(int $pageId): PageInterface
@@ -113,10 +113,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
     }
 
     /**
-     * @param StoreInterface $store
-     * @param bool $enableInstantSearch
      *
-     * @return void
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -125,7 +122,7 @@ class MultiStorePagesTest extends MultiStoreTestCase
     {
         // Exclude 2 pages on second store
         $excludedPages = $store->getCode() === 'fixture_second_store' ?
-            [['attribute' => 'no-route'], ['attribute' => 'enable-cookies']]:
+            [['attribute' => 'no-route'], ['attribute' => 'enable-cookies']] :
             [];
 
         $this->setConfig(

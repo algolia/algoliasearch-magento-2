@@ -4,11 +4,9 @@ namespace Algolia\AlgoliaSearch\Ui\Component\Listing\Column;
 
 class Data extends \Magento\Ui\Component\Listing\Columns\Column
 {
-
-    const MAX_DEPTH_DISPLAY = 3;
+    public const MAX_DEPTH_DISPLAY = 3;
 
     /**
-     * @param array $dataSource
      *
      * @return array
      *
@@ -26,7 +24,7 @@ class Data extends \Magento\Ui\Component\Listing\Columns\Column
 
         foreach ($dataSource['data']['items'] as &$item) {
             $data = json_decode((string) $item[$fieldName], true);
-            $item[$fieldName] = is_array($data) ? $this->formatData($data) : '';;
+            $item[$fieldName] = is_array($data) ? $this->formatData($data) : '';
         }
 
         return $dataSource;

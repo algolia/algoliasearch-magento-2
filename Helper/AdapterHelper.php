@@ -25,6 +25,7 @@ class AdapterHelper
      * Get search result from Algolia
      *
      * @return array
+     *
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
     public function getDocumentsFromAlgolia()
@@ -127,13 +128,17 @@ class AdapterHelper
             && $this->configHelper->makeSeoRequest($storeId);
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     public function isSearch()
     {
         return $this->filtersHelper->getRequest()->getFullActionName() === 'catalogsearch_result_index';
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     public function isLandingPage()
     {
         $storeId = $this->getStoreId();

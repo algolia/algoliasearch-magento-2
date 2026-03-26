@@ -7,15 +7,9 @@ use Magento\Customer\Model\Group;
 
 abstract class ProductWithChildren extends ProductWithoutChildren
 {
-
-    const PRICE_NOT_SET = -1;
+    public const PRICE_NOT_SET = -1;
 
     /**
-     * @param $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
-     * @param $field
      * @return void
      */
     protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode, $field)
@@ -36,10 +30,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     }
 
     /**
-     * @param Product $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
      * @return array
      */
     protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode)
@@ -86,26 +76,16 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return [$min, $max, $original, $originalMax];
     }
 
-    /**
-     * @param $min
-     * @param $max
-     * @param $currencyCode
-     * @return string
-     */
     protected function getDashedPriceFormat($min, $max, $currencyCode): string
     {
         if ($min === $max) {
             return '';
         }
+
         return $this->formatPrice($min, $currencyCode) . ' - ' . $this->formatPrice($max, $currencyCode);
     }
 
     /**
-     * @param $field
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
      * @return void
      */
     protected function handleNonEqualMinMaxPrices($field, $currencyCode, $min, $max, $dashedFormat)
@@ -137,10 +117,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     }
 
     /**
-     * @param $field
-     * @param $currencyCode
-     * @param $min
-     * @param $max
      * @return void
      */
     protected function handleZeroDefaultPrice($field, $currencyCode, $min, $max)
@@ -154,14 +130,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     }
 
     /**
-     * @param $field
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
-     * @param $product
-     * @param $subproducts
-     * @param $withTax
      * @return void
      */
     protected function setFinalGroupPrices($field, $currencyCode, $min, $max, $dashedFormat, $product, $subproducts, $withTax)
@@ -191,14 +159,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         }
     }
 
-    /**
-     * @param $product
-     * @param $subproducts
-     * @param $min
-     * @param $currencyCode
-     * @param $withTax
-     * @return array
-     */
     protected function formatMinArray($product, $subproducts, $min, $currencyCode, $withTax): array
     {
         $minArray = [];
@@ -216,14 +176,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $minArray;
     }
 
-    /**
-     * @param $product
-     * @param $subproducts
-     * @param $min
-     * @param $currencyCode
-     * @param $withTax
-     * @return array
-     */
     protected function getGroupPriceList($product, $subproducts, $min, $currencyCode, $withTax): array
     {
         $groupPriceList = [];
@@ -266,26 +218,18 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     }
 
     /**
-     * @param $min
-     * @param $max
-     * @param $currencyCode
      * @return mixed|string
      */
     public function formattedConfigPrice($min, $max, $currencyCode) {
         if ($min != $max) {
             return $this->getDashedPriceFormat($min, $max, $currencyCode);
-        } else {
-            return $this->formatPrice($min, $currencyCode);
         }
+
+            return $this->formatPrice($min, $currencyCode);
+
     }
 
     /**
-     * @param $field
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $minOriginal
-     * @param $maxOriginal
      * @return void
      */
     public function handleOriginalPrice($field, $currencyCode, $min, $max, $minOriginal, $maxOriginal)
@@ -320,16 +264,13 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     }
 
     /**
-     * @param $field
-     * @param $currencyCode
-     * @param $formatedPrice
      * @return void
      */
     public function handleGroupOrginalPriceformated($field, $currencyCode, $formatedPrice) {
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
-                $groupId = (int)$group->getData('customer_group_id');
+                $groupId = (int) $group->getData('customer_group_id');
                 $this->customData[$field][$currencyCode]['group_' . $groupId . '_original_formated'] =
                     $formatedPrice;
             }

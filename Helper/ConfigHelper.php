@@ -1118,7 +1118,7 @@ class ConfigHelper
         $constant = 'EXTRA_SETTINGS_' . mb_strtoupper((string) $section);
         $value = $this->configInterface->getValue(constant('self::' . $constant), ScopeInterface::SCOPE_STORE, $storeId);
 
-        return mb_trim((string) $value);
+        return trim((string) $value);
     }
 
     // --- Magento Core --- //

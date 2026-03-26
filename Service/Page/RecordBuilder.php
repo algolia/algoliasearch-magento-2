@@ -91,12 +91,12 @@ class RecordBuilder implements RecordBuilderInterface
 
         $s = html_entity_decode((string) $s, 0, 'UTF-8');
 
-        $s = mb_trim((string) preg_replace('/\s+/', ' ', $s));
+        $s = trim((string) preg_replace('/\s+/', ' ', $s));
         $s = preg_replace('/&nbsp;/', ' ', $s);
         $s = preg_replace('!\s+!', ' ', (string) $s);
         $s = preg_replace('/\{\{[^}]+\}\}/', ' ', (string) $s);
         $s = strip_tags((string) $s);
-        $s = mb_trim($s);
+        $s = trim($s);
 
         return $s;
     }

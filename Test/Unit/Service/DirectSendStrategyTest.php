@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
+use Algolia\AlgoliaSearch\Api\SearchClientProviderInterface;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\DirectSendStrategy;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -12,7 +13,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 class DirectSendStrategyTest extends TestCase
 {
     private null|(SearchClient&MockObject) $searchClient = null;
-    private null|(AlgoliaConnector&MockObject) $connector = null;
+    private null|(SearchClientProviderInterface&MockObject) $clientProvider = null;
     private ?DirectSendStrategy $strategy = null;
     private null|(IndexOptionsInterface&MockObject) $indexOptions = null;
 
@@ -23,10 +24,10 @@ class DirectSendStrategyTest extends TestCase
     protected function setUp(): void
     {
         $this->searchClient = $this->createMock(SearchClient::class);
-        $this->connector = $this->createMock(AlgoliaConnector::class);
-        $this->connector->method('getClient')->willReturn($this->searchClient);
+        $this->clientProvider = $this->createMock(SearchClientProviderInterface::class);
+        $this->clientProvider->method('getClient')->willReturn($this->searchClient);
 
-        $this->strategy = new DirectSendStrategy($this->connector);
+        $this->strategy = new DirectSendStrategy($this->clientProvider);
 
         $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
         $this->indexOptions->method('getStoreId')->willReturn(self::STORE_ID);
@@ -47,7 +48,7 @@ class DirectSendStrategyTest extends TestCase
             ['action' => 'addObject', 'body' => ['objectID' => '2', 'name' => 'Product B']],
         ];
 
-        $this->connector->expects($this->once())
+        $this->clientProvider->expects($this->once())
             ->method('getClient')
             ->with(self::STORE_ID)
             ->willReturn($this->searchClient);

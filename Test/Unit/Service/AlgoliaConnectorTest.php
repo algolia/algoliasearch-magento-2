@@ -3,10 +3,10 @@
 namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\SearchClientProviderInterface;
 use Algolia\AlgoliaSearch\Api\SendStrategyInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\SendStrategyResolver;
@@ -40,7 +40,7 @@ class AlgoliaConnectorTest extends TestCase
             $this->config,
             $this->createMock(ManagerInterface::class),
             $this->createMock(ConsoleOutput::class),
-            $this->createMock(AlgoliaCredentialsManager::class),
+            $this->createMock(SearchClientProviderInterface::class),
             $this->createMock(IndexNameFetcher::class),
             $this->createMock(IndexOptionsBuilder::class),
             $mockResolver

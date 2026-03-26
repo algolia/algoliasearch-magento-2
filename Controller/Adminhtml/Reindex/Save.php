@@ -73,7 +73,7 @@ class Save extends \Magento\Backend\App\Action
         }
 
         foreach ($skus as $sku) {
-            $sku = mb_trim($sku);
+            $sku = trim($sku);
 
             try {
 

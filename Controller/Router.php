@@ -50,7 +50,7 @@ class Router implements \Magento\Framework\App\RouterInterface
      */
     public function match(\Magento\Framework\App\RequestInterface $request)
     {
-        $identifier = mb_trim($request->getPathInfo(), '/');
+        $identifier = trim($request->getPathInfo(), '/');
 
         /** @var \Algolia\AlgoliaSearch\Model\LandingPage $landingPage */
         $landingPage = $this->landingPageFactory->create();

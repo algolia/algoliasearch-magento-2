@@ -12,7 +12,7 @@ class ExtraSettings extends Value
 {
     public function beforeSave()
     {
-        $value = mb_trim((string) $this->getData('value'));
+        $value = trim((string) $this->getData('value'));
 
         if (!$value) {
             return parent::beforeSave();

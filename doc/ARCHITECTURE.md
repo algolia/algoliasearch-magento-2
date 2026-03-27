@@ -330,8 +330,11 @@ in `Model/Backend/`.
   sub-directory with a consistent set of classes: IndexBuilder, RecordBuilder,
   BatchQueueProcessor. New entities should follow this pattern.
 
-- **Single API gateway.** All Algolia PHP client usage goes through `AlgoliaConnector`.
-  Other classes never instantiate the client directly.
+- **Single API gateway.** `SearchClient` instantiation is managed by `SearchClientProvider`
+  (via `SearchClientProviderInterface`). All index operations go through `AlgoliaConnector`,
+  which delegates client access to the provider. Other classes never instantiate `SearchClient`
+  directly or bypass the connector for index operations. Other Algolia API clients (e.g.,
+  `IngestionClient`) follow the same provider pattern with their own dedicated providers.
 
 - **Frontend config bridge.** Server-side config is serialized once in
   `Block/Configuration.php`. There is no REST API for frontend config - JS reads from
@@ -345,7 +348,9 @@ in `Model/Backend/`.
 
 These are properties the codebase maintains by convention.
 
-- No direct Algolia API client usage outside `AlgoliaConnector`.
+- No direct `SearchClient` instantiation outside `SearchClientProvider`. Each Algolia API
+  client type has its own dedicated provider.
+- No direct Algolia index operations outside `AlgoliaConnector`.
 - No direct `ScopeConfigInterface` reads outside `Helper/`.
 - No REST/GraphQL endpoints for indexing control - indexing is triggered only through
   Magento's indexer framework, CLI commands, or the admin UI.

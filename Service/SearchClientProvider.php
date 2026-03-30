@@ -24,10 +24,10 @@ class SearchClientProvider implements SearchClientProviderInterface
     /**
      * @throws AlgoliaException
      */
-    public function getClient(?int $storeId = AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE): SearchClient
+    public function getClient(?int $storeId = self::ALGOLIA_DEFAULT_SCOPE): SearchClient
     {
         if ($storeId === null) {
-            $storeId = AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE;
+            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
         }
 
         if (!isset($this->clients[$storeId])) {
@@ -43,7 +43,7 @@ class SearchClientProvider implements SearchClientProviderInterface
     /**
      * @throws AlgoliaException
      */
-    protected function createClient(int $storeId = AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE): void
+    protected function createClient(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
     {
         if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
             throw new AlgoliaException('Client initialization could not be performed because Algolia credentials were not provided.');
@@ -62,7 +62,7 @@ class SearchClientProvider implements SearchClientProviderInterface
     /**
      * @throws AlgoliaException
      */
-    protected function addAlgoliaUserAgent(int $storeId = AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE): void
+    protected function addAlgoliaUserAgent(int $storeId = self::ALGOLIA_DEFAULT_SCOPE): void
     {
         $clientName = $this->getClient($storeId)->getClientConfig()?->getClientName();
 

@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
-use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
@@ -182,7 +182,7 @@ class Data
     public function getIndexDataByStoreIds(): array
     {
         $indexNames = [];
-        $indexNames[AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE] = $this->buildIndexData();
+        $indexNames[ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE] = $this->buildIndexData();
         foreach ($this->storeManager->getStores() as $store) {
             $indexNames[$store->getId()] = $this->buildIndexData($store);
         }

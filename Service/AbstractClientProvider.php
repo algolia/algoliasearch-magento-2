@@ -10,6 +10,8 @@ abstract class AbstractClientProvider
 {
     protected bool $userAgentsAdded = false;
 
+    abstract protected function createClient(int $storeId = ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE): void;
+
     /**
      * @throws AlgoliaException
      */

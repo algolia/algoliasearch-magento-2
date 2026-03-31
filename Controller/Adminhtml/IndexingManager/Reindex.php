@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Backend\App\Action;
@@ -43,7 +43,7 @@ class Reindex extends Action
     public function execute()
     {
         $params = $this->getRequest()->getParams();
-        $storeIds = !isset($params['store_id']) || $params['store_id'] === (string) AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE ?
+        $storeIds = !isset($params['store_id']) || $params['store_id'] === (string) ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE ?
             array_keys($this->storeManager->getStores()) :
             [(int) $params['store_id']];
 

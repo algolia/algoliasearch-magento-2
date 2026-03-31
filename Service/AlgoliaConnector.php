@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
+use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
@@ -27,8 +28,11 @@ class AlgoliaConnector
     /** @var string */
     public const ALGOLIA_API_TASK_ID = 'taskID';
 
-    /** @var int */
-    public const ALGOLIA_DEFAULT_SCOPE = 0;
+    /**
+     * @deprecated Use ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE
+     * @var int
+     */
+    public const ALGOLIA_DEFAULT_SCOPE = ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE;
 
     /** @var int This value should be configured based on system/full_page_cache/ttl
      *           (which is by default 86400) and/or the configuration block TTL
@@ -68,7 +72,7 @@ class AlgoliaConnector
     /**
      * @throws AlgoliaException
      */
-    public function getClient(?int $storeId = self::ALGOLIA_DEFAULT_SCOPE): SearchClient
+    public function getClient(?int $storeId = ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE): SearchClient
     {
         return $this->clientProvider->getClient($storeId);
     }
@@ -545,7 +549,7 @@ class AlgoliaConnector
         }
 
         if ($storeId === null) {
-            $storeId = self::ALGOLIA_DEFAULT_SCOPE;
+            $storeId = ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE;
         }
 
         $this->getClient($storeId)->waitForTask($lastUsedIndexName, $lastTaskId);

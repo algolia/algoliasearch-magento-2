@@ -43,6 +43,22 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Get a private property of a class
+     *
+     * @param object $obj The object to get the property from
+     * @param string $prop The name of the property to get the value for
+     * @return mixed The value of the property
+     *
+     * @throws \ReflectionException
+     */
+    protected function getPrivateProperty(object $obj, string $prop): mixed
+    {
+        $reflection = new \ReflectionClass($obj);
+
+        return $reflection->getProperty($prop)->getValue($obj);
+    }
+
+    /**
      * Mock a private property of a class
      *
      * @param object $object The object to mock the property for

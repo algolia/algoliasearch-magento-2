@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Api\SearchClientProviderInterface;
 use Algolia\AlgoliaSearch\Api\SendStrategyInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -21,6 +22,8 @@ class AlgoliaConnectorTest extends TestCase
     private null|(SendStrategyInterface&MockObject) $mockStrategy = null;
     private null|(ConfigHelper&MockObject) $config = null;
     private null|(IndexOptionsInterface&MockObject) $indexOptions = null;
+    private null|(SearchClientProviderInterface&MockObject) $clientProvider = null;
+    private null|(SearchClient&MockObject) $client = null;
 
     private const STORE_ID = 1;
     private const INDEX_NAME = 'magento2_default_products';
@@ -36,11 +39,15 @@ class AlgoliaConnectorTest extends TestCase
         $this->config->method('getNonCastableAttributes')->willReturn([]);
         $this->config->method('getMaxRecordSizeLimit')->willReturn(10000);
 
+        $this->client = $this->createMock(SearchClient::class);
+        $this->clientProvider = $this->createMock(SearchClientProviderInterface::class);
+        $this->clientProvider->method('getClient')->willReturn($this->client);
+
         $this->connector = new AlgoliaConnector(
             $this->config,
             $this->createMock(ManagerInterface::class),
             $this->createMock(ConsoleOutput::class),
-            $this->createMock(SearchClientProviderInterface::class),
+            $this->clientProvider,
             $this->createMock(IndexNameFetcher::class),
             $this->createMock(IndexOptionsBuilder::class),
             $mockResolver
@@ -251,5 +258,145 @@ class AlgoliaConnectorTest extends TestCase
         ]);
 
         $this->assertEquals($expectedResponse, $result);
+    }
+
+    // ── getSettings() ──
+
+    public function testGetSettingsReturnsEmptyArrayWhenIndexDoesNotExist(): void
+    {
+        $this->client->method('getSettings')
+            ->willThrowException(new \Exception('Not Found', 404));
+
+        $this->assertSame([], $this->connector->getSettings($this->indexOptions));
+    }
+
+    public function testGetSettingsRethrowsNon404Exceptions(): void
+    {
+        $this->client->method('getSettings')
+            ->willThrowException(new \Exception('Internal Server Error', 500));
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionCode(500);
+
+        $this->connector->getSettings($this->indexOptions);
+    }
+
+    // ── setSettings() ──
+
+    public function testSetSettingsForwardsSettingsToClient(): void
+    {
+        $settings = ['searchableAttributes' => ['name', 'description']];
+
+        $this->client->expects($this->once())
+            ->method('setSettings')
+            ->with(self::INDEX_NAME, $settings, false)
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->setSettings($this->indexOptions, $settings);
+    }
+
+    // ── deleteIndex() ──
+
+    public function testDeleteIndexDelegatesToClient(): void
+    {
+        $this->client->expects($this->once())
+            ->method('deleteIndex')
+            ->with(self::INDEX_NAME)
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->deleteIndex($this->indexOptions);
+    }
+
+    // ── moveIndex() ──
+
+    public function testMoveIndexCallsOperationIndexWithMoveOperation(): void
+    {
+        $toIndexOptions = $this->createMock(IndexOptionsInterface::class);
+        $toIndexOptions->method('getIndexName')->willReturn('magento2_default_products_tmp');
+        $toIndexOptions->method('getStoreId')->willReturn(self::STORE_ID);
+
+        $this->client->expects($this->once())
+            ->method('operationIndex')
+            ->with(self::INDEX_NAME, [
+                'operation'   => 'move',
+                'destination' => 'magento2_default_products_tmp',
+            ])
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->moveIndex($this->indexOptions, $toIndexOptions);
+    }
+
+    // ── clearIndex() ──
+
+    public function testClearIndexCallsClearObjectsOnClient(): void
+    {
+        $this->client->expects($this->once())
+            ->method('clearObjects')
+            ->with(self::INDEX_NAME)
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->clearIndex($this->indexOptions);
+    }
+
+    // ── copySynonyms() / copyQueryRules() ──
+
+    public function testCopySynonymsUsesOperationIndexWithSynonymsScope(): void
+    {
+        $toIndexOptions = $this->createMock(IndexOptionsInterface::class);
+        $toIndexOptions->method('getIndexName')->willReturn('magento2_default_products_replica');
+        $toIndexOptions->method('getStoreId')->willReturn(self::STORE_ID);
+
+        $this->client->expects($this->once())
+            ->method('operationIndex')
+            ->with(self::INDEX_NAME, [
+                'operation'   => 'copy',
+                'destination' => 'magento2_default_products_replica',
+                'scope'       => ['synonyms'],
+            ])
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->copySynonyms($this->indexOptions, $toIndexOptions);
+    }
+
+    public function testCopyQueryRulesUsesOperationIndexWithRulesScope(): void
+    {
+        $toIndexOptions = $this->createMock(IndexOptionsInterface::class);
+        $toIndexOptions->method('getIndexName')->willReturn('magento2_default_products_replica');
+        $toIndexOptions->method('getStoreId')->willReturn(self::STORE_ID);
+
+        $this->client->expects($this->once())
+            ->method('operationIndex')
+            ->with(self::INDEX_NAME, [
+                'operation'   => 'copy',
+                'destination' => 'magento2_default_products_replica',
+                'scope'       => ['rules'],
+            ])
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->copyQueryRules($this->indexOptions, $toIndexOptions);
+    }
+
+    // ── saveRule() / deleteRule() ──
+
+    public function testSaveRuleDelegatesToClientWithCorrectArguments(): void
+    {
+        $rule = [AlgoliaConnector::ALGOLIA_API_OBJECT_ID => 'rule-1', 'condition' => []];
+
+        $this->client->expects($this->once())
+            ->method('saveRule')
+            ->with(self::INDEX_NAME, 'rule-1', $rule, false)
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->saveRule($rule, $this->indexOptions);
+    }
+
+    public function testDeleteRuleDelegatesToClientWithCorrectArguments(): void
+    {
+        $this->client->expects($this->once())
+            ->method('deleteRule')
+            ->with(self::INDEX_NAME, 'rule-1', false)
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->deleteRule($this->indexOptions, 'rule-1');
     }
 }

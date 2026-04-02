@@ -84,7 +84,8 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                     $storeId,
                     $collection,
                     $page,
-                    $this->configHelper->getNumberOfElementByPage($storeId)
+                    $this->configHelper->getNumberOfElementByPage($storeId),
+                    true
                 );
                 $page++;
             }
@@ -98,11 +99,12 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
      * @param QueryCollection $collectionDefault
      * @param int $page
      * @param int $pageSize
+     * @param bool $useTmpIndex
      * @return void
      * @throws NoSuchEntityException
      * @throws \Exception
      */
-    protected function rebuildStoreSuggestionIndexPage(int $storeId, QueryCollection $collectionDefault, int $page, int $pageSize): void
+    protected function rebuildStoreSuggestionIndexPage(int $storeId, QueryCollection $collectionDefault, int $page, int $pageSize, bool $useTmpIndex = true): void
     {
         if ($this->isIndexingEnabled($storeId) === false) {
             return;
@@ -111,7 +113,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $useTmpIndex);
         $indexData = [];
 
         /** @var Query $suggestion */

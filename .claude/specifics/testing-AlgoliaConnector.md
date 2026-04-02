@@ -6,7 +6,6 @@
 ## Specifics
 - As mentioned in the doc/ARCHITECTURE.md file : `AlgoliaConnector` is the single gateway to the Algolia PHP API client. All API calls
   flow through it.
-- As such, we can expect more than the expected limit of 10 tests.
 - Focus on the methods calling the client rather than utility methods
 
 ## Mistakes to avoid

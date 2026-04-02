@@ -44,10 +44,12 @@ Check if a test file already exists at that path. If it does, read it first to a
 ## Step 6 — Generate tests
 
 Rules:
-- **Maximum 10 tests** per file
+- **Generate at least one test per public method** with some exceptions such as `@deprecated` methods, or delegating methods — but only skip a delegating method when the delegation is trivial and involves no transformation, guard clause, or state change.
+- **Any additional tests per method should be driven by its cyclomatic complexity**
 - **Focus on user-observable behavior**: what the method returns, what exception it throws, which collaborator it calls with which arguments
 - **Do not test implementation details**: internal variable names, call counts on low-level helpers, private method logic
 - **Use `@dataProvider`** (or `#[DataProvider]` attribute) when testing the same behavior across multiple input variants
+- **Don't write any test that just return what we mock.**
 - Each test name must read as a plain-English sentence describing the behavior: `testReturnsEmptyArrayWhenProductIsDisabled`
 - Use the nullable property pattern from core rules: `protected null|(Foo&MockObject) $foo = null;`
 - For magic `@method` docblock methods, use `getMockBuilder` + `addMethods()`

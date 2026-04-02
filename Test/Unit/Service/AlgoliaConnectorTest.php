@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Api\SearchClientProviderInterface;
 use Algolia\AlgoliaSearch\Api\SendStrategyInterface;
@@ -398,5 +399,158 @@ class AlgoliaConnectorTest extends TestCase
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
         $this->connector->deleteRule($this->indexOptions, 'rule-1');
+    }
+
+    // ── query() ──
+
+    public function testQueryBuildsCorrectRequestStructureForClient(): void
+    {
+        $queryOptions = $this->createMock(IndexOptionsInterface::class);
+        $queryOptions->method('getIndexName')->willReturn(self::INDEX_NAME);
+        $queryOptions->method('getStoreId')->willReturn(self::STORE_ID);
+
+        $searchQuery = $this->createMock(SearchQueryInterface::class);
+        $searchQuery->method('getIndexOptions')->willReturn($queryOptions);
+        $searchQuery->method('getQuery')->willReturn('blue shirt');
+        $searchQuery->method('getParams')->willReturn(['hitsPerPage' => 10]);
+
+        $this->client->expects($this->once())
+            ->method('search')
+            ->with($this->callback(function (array $payload) {
+                $request = $payload['requests'][0];
+                $this->assertSame(self::INDEX_NAME, $request[AlgoliaConnector::ALGOLIA_API_INDEX_NAME]);
+                $this->assertSame('blue shirt', $request['query']);
+                $this->assertSame(10, $request['hitsPerPage']);
+                return true;
+            }))
+            ->willReturn(['hits' => []]);
+
+        $this->connector->query($searchQuery);
+    }
+
+    // ── getObjects() ──
+
+    public function testGetObjectsMapsObjectIdsToRequestFormatWithIndexName(): void
+    {
+        $this->client->expects($this->once())
+            ->method('getObjects')
+            ->with($this->callback(function (array $payload) {
+                $this->assertCount(2, $payload['requests']);
+                $this->assertSame(self::INDEX_NAME, $payload['requests'][0][AlgoliaConnector::ALGOLIA_API_INDEX_NAME]);
+                $this->assertSame('42', $payload['requests'][0][AlgoliaConnector::ALGOLIA_API_OBJECT_ID]);
+                $this->assertSame('99', $payload['requests'][1][AlgoliaConnector::ALGOLIA_API_OBJECT_ID]);
+                return true;
+            }))
+            ->willReturn(['results' => []]);
+
+        $this->connector->getObjects($this->indexOptions, ['42', '99']);
+    }
+
+    // ── setSettings() merge branch ──
+
+    public function testSetSettingsMergesLocalSettingsOnTopOfOnlineSettings(): void
+    {
+        $onlineSettings = ['ranking' => ['typo', 'geo'], 'attributesToIndex' => ['old_name']];
+        $localSettings  = ['searchableAttributes' => ['new_name']];
+
+        $this->client->method('getSettings')->willReturn($onlineSettings);
+        $this->client->expects($this->once())
+            ->method('setSettings')
+            ->with(
+                self::INDEX_NAME,
+                $this->callback(function (array $merged) {
+                    // attributesToIndex renamed + local override applied
+                    $this->assertSame(['new_name'], $merged['searchableAttributes']);
+                    // online-only keys preserved
+                    $this->assertArrayHasKey('ranking', $merged);
+                    // original attributesToIndex key removed
+                    $this->assertArrayNotHasKey('attributesToIndex', $merged);
+                    return true;
+                }),
+                false
+            )
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->setSettings($this->indexOptions, $localSettings, false, true);
+    }
+
+    // ── waitLastTask() ──
+
+    public function testWaitLastTaskReturnsEarlyWhenNoOperationHasBeenPerformed(): void
+    {
+        $this->client->expects($this->never())->method('waitForTask');
+
+        $this->connector->waitLastTask();
+    }
+
+    public function testWaitLastTaskCallsClientWithStoreSpecificStateAfterOperation(): void
+    {
+        $objects = [['objectID' => '1', 'name' => 'A']];
+        $this->mockStrategy->method('send')
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+        $this->connector->saveObjects($this->indexOptions, $objects);
+
+        $this->client->expects($this->once())
+            ->method('waitForTask')
+            ->with(self::INDEX_NAME, self::TASK_ID);
+
+        $this->connector->waitLastTask(self::STORE_ID);
+    }
+
+    // ── castProductObject() ──
+
+    public function testCastProductObjectConvertsNumericStringToInteger(): void
+    {
+        $data = ['qty' => '5'];
+        $this->connector->castProductObject($data);
+
+        $this->assertSame(5, $data['qty']);
+    }
+
+    public function testCastProductObjectLeavesNonCastableAttributesUntouched(): void
+    {
+        $data = ['sku' => '12345', 'name' => '100 Faces'];
+        $this->connector->castProductObject($data);
+
+        $this->assertSame('12345', $data['sku']);
+        $this->assertSame('100 Faces', $data['name']);
+    }
+
+    public function testCastProductObjectSplitsPipeSeparatedStringsIntoTypedArray(): void
+    {
+        $data = ['color_ids' => '1|2|3'];
+        $this->connector->castProductObject($data);
+
+        $this->assertSame([1, 2, 3], $data['color_ids']);
+    }
+
+    // ── isValidFloat() ──
+
+    public function testIsValidFloatReturnsFalseForValuesThatEvaluateToInfinity(): void
+    {
+        $this->assertFalse($this->connector->isValidFloat('1.8e308'));
+    }
+
+    public function testIsValidFloatReturnsTrueForRegularFloatingPointValues(): void
+    {
+        $this->assertTrue($this->connector->isValidFloat('3.14'));
+    }
+
+    // ── getLastTaskId() ──
+
+    public function testGetLastTaskIdReturnsNullWhenNoOperationHasBeenPerformed(): void
+    {
+        $this->assertNull($this->connector->getLastTaskId());
+    }
+
+    public function testGetLastTaskIdReturnsStoreSpecificTaskIdAfterOperation(): void
+    {
+        $objects = [['objectID' => '1', 'name' => 'A']];
+        $this->mockStrategy->method('send')
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->saveObjects($this->indexOptions, $objects);
+
+        $this->assertSame(self::TASK_ID, $this->connector->getLastTaskId(self::STORE_ID));
     }
 }

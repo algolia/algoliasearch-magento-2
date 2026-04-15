@@ -54,6 +54,18 @@ class IndexNameFetcher
     }
 
     /**
+     * If the index is a temporary index, return the original index name
+     * Otherwise, return the index name as is
+     */
+    public function getOriginalIndexName(string $indexName): string
+    {
+        if (!$this->isTempIndex($indexName)) {
+            return $indexName;
+        }
+        return substr($indexName, 0, -strlen(self::INDEX_TEMP_SUFFIX));
+    }
+
+    /**
      * This is the default index name format for query suggestions but it can be overridden
      * This is a temporary workaround for delete index operations
      * TODO: Revisit this approach when a QuerySuggestionsClient is implemented in algoliasearch-client-php

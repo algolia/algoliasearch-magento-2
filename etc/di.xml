@@ -301,12 +301,22 @@
     </type>
 
 
+    <virtualType name="Algolia\AlgoliaSearch\Logger\Processor\PsrLogMessageProcessorWithoutUsedContext"
+                 type="Monolog\Processor\PsrLogMessageProcessor">
+        <arguments>
+            <argument name="removeUsedContextFields" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+
     <type name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger">
         <arguments>
             <argument name="name" xsi:type="string">algolia</argument>
             <argument name="handlers" xsi:type="array">
                 <item name="system" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler</item>
                 <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler</item>
+            </argument>
+            <argument name="processors" xsi:type="array">
+                <item name="psr_log_message" xsi:type="object">Algolia\AlgoliaSearch\Logger\Processor\PsrLogMessageProcessorWithoutUsedContext</item>
             </argument>
         </arguments>
     </type>

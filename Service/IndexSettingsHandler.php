@@ -22,8 +22,9 @@ class IndexSettingsHandler
     ];
 
     public function __construct(
-        protected AlgoliaConnector $connector,
-        protected ConfigHelper     $config,
+        protected AlgoliaConnector         $connector,
+        protected ConfigHelper             $config,
+        protected IndexSettingsDiffChecker $indexSettingsDiffChecker,
     ) {}
 
     /**
@@ -36,6 +37,11 @@ class IndexSettingsHandler
         string $mergeSettingsFrom = ''
     ): void
     {
+        // Early return if Algolia settings are already the same
+        if (!$this->indexSettingsDiffChecker->isDifferentFromAlgolia($indexOptions, $indexSettings)) {
+            return;
+        }
+
         if (!$this->config->shouldForwardPrimaryIndexSettingsToReplicas($indexOptions->getStoreId())) {
             $this->connector->setSettings(
                 $indexOptions,

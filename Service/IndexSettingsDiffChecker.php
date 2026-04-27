@@ -16,7 +16,7 @@ class IndexSettingsDiffChecker
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      */
-    public function isDifferentFromAlgolia(IndexOptionsInterface $indexOptions, array $indexSettings): bool
+    public function matchAlgoliaSettings(IndexOptionsInterface $indexOptions, array $indexSettings): bool
     {
         $this->recursiveKSort($indexSettings);
 
@@ -24,7 +24,7 @@ class IndexSettingsDiffChecker
         $algoliaSettings = array_intersect_key($algoliaSettings, $indexSettings);
         $this->recursiveKSort($algoliaSettings);
 
-        if (hash('sha256', json_encode($indexSettings))!== hash('sha256', json_encode($algoliaSettings))) {
+        if (hash('sha256', json_encode($indexSettings)) === hash('sha256', json_encode($algoliaSettings))) {
             return true;
         }
 

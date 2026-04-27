@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexSettingsDiffChecker;
 use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -13,6 +14,7 @@ class IndexSettingsHandlerTest extends TestCase
     protected ?AlgoliaConnector $connector = null;
 
     protected ?ConfigHelper $config = null;
+    protected ?IndexSettingsDiffChecker $indexSettingsDiffChecker = null;
 
     protected ?IndexOptionsInterface $indexOptions = null;
 
@@ -28,12 +30,18 @@ class IndexSettingsHandlerTest extends TestCase
     {
         $this->connector = $this->createMock(AlgoliaConnector::class);
         $this->config = $this->createMock(ConfigHelper::class);
+        $this->indexSettingsDiffChecker = $this->createMock(IndexSettingsDiffChecker::class);
+        $this->indexSettingsDiffChecker->method('matchAlgoliaSettings')->willReturn(false);
         $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
 
         // Configure the mock to use our state machine
         $this->setupStateMachineMock();
 
-        $this->handler = new IndexSettingsHandlerTestable($this->connector, $this->config);
+        $this->handler = new IndexSettingsHandlerTestable(
+            $this->connector,
+            $this->config,
+            $this->indexSettingsDiffChecker
+        );
     }
 
     private function setupStateMachineMock(): void

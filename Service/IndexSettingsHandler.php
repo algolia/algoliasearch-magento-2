@@ -38,7 +38,7 @@ class IndexSettingsHandler
     ): void
     {
         // Early return if Algolia settings are already the same
-        if (!$this->indexSettingsDiffChecker->isDifferentFromAlgolia($indexOptions, $indexSettings)) {
+        if ($this->indexSettingsDiffChecker->matchAlgoliaSettings($indexOptions, $indexSettings)) {
             return;
         }
 

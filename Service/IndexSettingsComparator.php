@@ -38,7 +38,7 @@ class IndexSettingsComparator
         try {
             $jsonSettings = json_encode($settings, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
-            throw new AlgoliaException('Invalid JSON : ' . $e->getMessage());
+            throw new AlgoliaException('Invalid JSON: ' . $e->getMessage());
         }
 
         return hash('sha256', $jsonSettings);

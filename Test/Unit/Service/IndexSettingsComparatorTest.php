@@ -206,7 +206,7 @@ class IndexSettingsComparatorTest extends TestCase
         // Must be different
 
         $this->expectException(AlgoliaException::class);
-        $this->expectExceptionMessage("Invalid JSON : Inf and NaN cannot be JSON encoded");
+        $this->expectExceptionMessage("Invalid JSON: Inf and NaN cannot be JSON encoded");
         $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, [INF]));
     }
 }

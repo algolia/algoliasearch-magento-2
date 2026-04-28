@@ -5,6 +5,9 @@
 ### Bug Fixes
 - Fixed undefined property `indexerRegistry` exception on `CategoryObserver`
 
+### Updates
+- Removed the deprecated `beforecontent.phtml` template and its block declaration in `algolia_search_handle.xml` (deprecated in v3.16).
+
 ## 3.17.3
 
 ### Updates

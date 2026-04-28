@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -195,5 +196,17 @@ class IndexSettingsComparatorTest extends TestCase
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be different
         $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+    }
+
+    public function testInvalidJson(): void
+    {
+        $algoliaSettings = [INF];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        // Must be different
+
+        $this->expectException(AlgoliaException::class);
+        $this->expectExceptionMessage("Invalid JSON : Inf and NaN cannot be JSON encoded");
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, [INF]));
     }
 }

@@ -27,7 +27,7 @@
 - Added links leading to facets and sortings configurations in the InstantSearch section.
 - Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
 - Clean up some types in the `Model\ResourceModel` directory.
-- Updated Indexing Manager default values
+- Updated Indexing Manager default values for auto full indexing - full reindex must be explicitly invoked unless this setting is changed 
 - Updated admin CSS
 - Updated and refactored unit and integration tests.
 - Removed the deprecated `beforecontent.phtml` template and its block declaration in `algolia_search_handle.xml` (deprecated in v3.16).

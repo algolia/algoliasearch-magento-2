@@ -4,15 +4,15 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexSettingsDiffChecker;
+use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Test\TestCase;
 
-class IndexSettingsDiffCheckerTest extends TestCase
+class IndexSettingsComparatorTest extends TestCase
 {
     protected ?AlgoliaConnector $connector = null;
     protected ?IndexOptionsInterface $indexOptions = null;
 
-    protected IndexSettingsDiffChecker $indexSettingsDiffChecker;
+    protected IndexSettingsComparator $indexSettingsComparator;
 
     protected array $testSettings = [
         "searchableAttributes" => [
@@ -55,14 +55,14 @@ class IndexSettingsDiffCheckerTest extends TestCase
         $this->connector = $this->createMock(AlgoliaConnector::class);
         $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        $this->indexSettingsDiffChecker = new IndexSettingsDiffChecker($this->connector);
+        $this->indexSettingsComparator = new IndexSettingsComparator($this->connector);
     }
 
     public function testWithSameSettings(): void
     {
         $this->connector->expects($this->once())->method('getSettings')->willReturn($this->testSettings);
         // Must be the same
-        $this->assertTrue($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithSameSettingsButOrderedDifferently(): void
@@ -105,7 +105,7 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be the same (attributes are re-ordered by ksort)
-        $this->assertTrue($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithSameSettingsButWithMixedAssociativeArray(): void
@@ -119,7 +119,7 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be the same (associative arrays are re-ordered by recursive ksort)
-        $this->assertTrue($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithAdditionalSettingsComingFromAlgolia(): void
@@ -129,7 +129,7 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be the same (additional settings are ignored by array_intersect_key)
-        $this->assertTrue($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithChangedValue(): void
@@ -139,7 +139,7 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be different
-        $this->assertFalse($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithChangedTyping(): void
@@ -149,7 +149,7 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be different
-        $this->assertFalse($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithMissingValue(): void
@@ -159,7 +159,7 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be different
-        $this->assertFalse($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithRemovedOrderingAttribute(): void
@@ -176,7 +176,7 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be different
-        $this->assertFalse($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 
     public function testWithChangedOrdering(): void
@@ -194,6 +194,6 @@ class IndexSettingsDiffCheckerTest extends TestCase
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
         // Must be different
-        $this->assertFalse($this->indexSettingsDiffChecker->matchAlgoliaSettings($this->indexOptions, $this->testSettings));
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
     }
 }

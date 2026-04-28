@@ -23,10 +23,10 @@ class IndexSettingsHandler
     ];
 
     public function __construct(
-        protected AlgoliaConnector         $connector,
-        protected ConfigHelper             $config,
-        protected IndexSettingsDiffChecker $indexSettingsDiffChecker,
-        protected AlgoliaLogger            $logger
+        protected AlgoliaConnector        $connector,
+        protected ConfigHelper            $config,
+        protected IndexSettingsComparator $indexSettingsComparator,
+        protected AlgoliaLogger           $logger
     ) {}
 
     /**
@@ -37,10 +37,10 @@ class IndexSettingsHandler
         IndexOptionsInterface $indexOptions,
         array $indexSettings,
         string $mergeSettingsFrom = ''
-    ): void
+    ): bool
     {
         // Early return if Algolia settings are already the same
-        if ($this->indexSettingsDiffChecker->matchAlgoliaSettings($indexOptions, $indexSettings)) {
+        if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings)) {
             if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
                 $this->logger->info(
                     sprintf("Skipped setSettings (no diff with existing) for store ID: %d (index name: %s)",
@@ -49,7 +49,7 @@ class IndexSettingsHandler
                     )
                 );
             }
-            return;
+            return false;
         }
 
         if (!$this->config->shouldForwardPrimaryIndexSettingsToReplicas($indexOptions->getStoreId())) {
@@ -60,7 +60,7 @@ class IndexSettingsHandler
                 true,
                 $mergeSettingsFrom
             );
-            return;
+            return true;
         }
 
         [$forward, $noForward] = $this->splitSettings($indexSettings);
@@ -82,6 +82,8 @@ class IndexSettingsHandler
                 $mergeSettingsFrom
             );
         }
+
+        return true;
     }
 
     /**

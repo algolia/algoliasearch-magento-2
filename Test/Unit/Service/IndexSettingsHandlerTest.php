@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexSettingsDiffChecker;
+use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +15,7 @@ class IndexSettingsHandlerTest extends TestCase
     protected ?AlgoliaConnector $connector = null;
 
     protected ?ConfigHelper $config = null;
-    protected ?IndexSettingsDiffChecker $indexSettingsDiffChecker = null;
+    protected ?IndexSettingsComparator $indexSettingsComparator = null;
     protected ?AlgoliaLogger $logger = null;
 
     protected ?IndexOptionsInterface $indexOptions = null;
@@ -32,8 +32,8 @@ class IndexSettingsHandlerTest extends TestCase
     {
         $this->connector = $this->createMock(AlgoliaConnector::class);
         $this->config = $this->createMock(ConfigHelper::class);
-        $this->indexSettingsDiffChecker = $this->createMock(IndexSettingsDiffChecker::class);
-        $this->indexSettingsDiffChecker->method('matchAlgoliaSettings')->willReturn(false);
+        $this->indexSettingsComparator = $this->createMock(IndexSettingsComparator::class);
+        $this->indexSettingsComparator->method('matches')->willReturn(false);
         $this->logger = $this->createMock(AlgoliaLogger::class);
         $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
 
@@ -43,7 +43,7 @@ class IndexSettingsHandlerTest extends TestCase
         $this->handler = new IndexSettingsHandlerTestable(
             $this->connector,
             $this->config,
-            $this->indexSettingsDiffChecker,
+            $this->indexSettingsComparator,
             $this->logger,
         );
     }
@@ -125,7 +125,7 @@ class IndexSettingsHandlerTest extends TestCase
                 }
             });
 
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testSetSettingsWithForwardingEnabledOnlyExcludedSettings(): void
@@ -153,7 +153,7 @@ class IndexSettingsHandlerTest extends TestCase
                 ''
             );
 
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testSetSettingsWithForwardingEnabledOnlyForwardableSettings(): void
@@ -180,7 +180,7 @@ class IndexSettingsHandlerTest extends TestCase
                 false
             );
 
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testSetSettingsWithForwardingDisabled(): void
@@ -207,7 +207,7 @@ class IndexSettingsHandlerTest extends TestCase
                 ''
             );
 
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testForwardSettingsWithEmptyInput(): void
@@ -224,7 +224,7 @@ class IndexSettingsHandlerTest extends TestCase
         // Connector should not be called
         $this->connector->expects($this->never())->method('setSettings');
 
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
 
@@ -263,13 +263,13 @@ class IndexSettingsHandlerTest extends TestCase
             ->willReturn(false);
 
         // First call should succeed
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
 
         // Second call without wait should throw exception
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
 
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     /**
@@ -302,7 +302,7 @@ class IndexSettingsHandlerTest extends TestCase
         $this->connector->waitLastTask($storeId);
 
         // Second call after wait should succeed
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testDifferentStoreIdsDontInterfere(): void
@@ -326,8 +326,8 @@ class IndexSettingsHandlerTest extends TestCase
         $this->connector->expects($this->exactly(2))
             ->method('setSettings');
 
-        $this->handler->setSettings($indexOptions1, $settings);
-        $this->handler->setSettings($indexOptions2, $settings);
+        $this->assertTrue($this->handler->setSettings($indexOptions1, $settings));
+        $this->assertTrue($this->handler->setSettings($indexOptions2, $settings));
     }
 
     /**
@@ -361,6 +361,31 @@ class IndexSettingsHandlerTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
 
-        $this->handler->setSettings($this->indexOptions, $settings);
+        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
+    }
+
+    public function testSkippedSetSettings(): void
+    {
+        $this->resetOperationState();
+
+        $indexSettingsComparator = $this->createMock(IndexSettingsComparator::class);
+        $indexSettingsComparator->method('matches')->willReturn(true);
+
+        $this->handler = new IndexSettingsHandlerTestable(
+            $this->connector,
+            $this->config,
+            $indexSettingsComparator,
+            $this->logger,
+        );
+
+        $storeId = 1;
+        $settings = [
+            'customRanking' => ['desc(price)'],
+            'attributesToRetrieve' => ['name']
+        ];
+
+        $this->indexOptions->method('getStoreId')->willReturn($storeId);
+
+        $this->assertFalse($this->handler->setSettings($this->indexOptions, $settings));
     }
 }

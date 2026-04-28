@@ -1,6 +1,6 @@
 # CHANGE LOG
 
-## 3.18.0-beta.1
+## 3.18.0
 
 ### Features
 - Introduced **Algolia Query Suggestions** feature:
@@ -30,6 +30,7 @@
 - Updated Indexing Manager default values
 - Updated admin CSS
 - Updated and refactored unit and integration tests.
+- Removed the deprecated `beforecontent.phtml` template and its block declaration in `algolia_search_handle.xml` (deprecated in v3.16).
 
 ### Bug Fixes
 - Fixed product url indexing when URL rewrites are disabled

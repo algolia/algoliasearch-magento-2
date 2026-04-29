@@ -21,11 +21,7 @@ class IndexSettingsComparator
         $algoliaSettings = $this->connector->getSettings($indexOptions);
         $algoliaSettings = array_intersect_key($algoliaSettings, $indexSettings);
 
-        if ($this->getSettingsHash($indexSettings) === $this->getSettingsHash($algoliaSettings)) {
-            return true;
-        }
-
-        return false;
+        return $this->getSettingsHash($indexSettings) === $this->getSettingsHash($algoliaSettings);
     }
 
     /**

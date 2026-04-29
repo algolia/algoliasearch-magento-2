@@ -319,17 +319,51 @@ class ProductHelper extends AbstractEntityHelper
     ): void {
         $indexSettings = $this->getIndexSettings($storeId);
 
-        $this->indexSettingsHandler->setSettings($indexOptions, $indexSettings);
+        if ($this->indexSettingsHandler->setSettings($indexOptions, $indexSettings)) {
+            $logEventName = 'Pushing settings for products indices.';
+            $this->logger->start($logEventName, true);
+            $this->logger->log('Index name: ' . $indexOptions->getIndexName());
+            $this->logger->log('Settings: ' . json_encode($indexSettings));
+            $this->logger->stop($logEventName, true);
 
-        $this->logger->log('Settings: ' . json_encode($indexSettings));
-        if ($saveToTmpIndicesToo) {
-            $this->indexSettingsHandler->setSettings(
-                $indexTmpOptions,
-                $indexSettings,
-                $indexOptions->getIndexName()
-            );
+            $this->algoliaConnector->waitLastTask($storeId);
 
-            $this->logger->log('Pushing the same settings to TMP index as well');
+            if ($saveToTmpIndicesToo) {
+                $this->indexSettingsHandler->setSettings($indexTmpOptions, $indexSettings, $indexOptions->getIndexName());
+
+                $logEventName = 'Pushing the same settings to TMP index as well';
+                $this->logger->start($logEventName, true);
+                $this->logger->log('Index name: ' . $indexOptions->getIndexName());
+                $this->logger->log('TMP Index name: ' . $indexTmpOptions->getIndexName());
+                $this->logger->log('Settings: ' . json_encode($indexSettings));
+                $this->logger->stop($logEventName, true);
+
+                $this->algoliaConnector->waitLastTask($storeId);
+            }
+
+            if ($saveToTmpIndicesToo) {
+                try {
+                    $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
+                    $this->algoliaConnector->waitLastTask($storeId);
+                    $this->logger->log('
+                        Copying synonyms from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
+                    ');
+                } catch (AlgoliaException $e) {
+                    $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
+                }
+
+                try {
+                    $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
+                    $this->algoliaConnector->waitLastTask($storeId);
+                    $this->logger->log('
+                        Copying query rules from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
+                    ');
+                } catch (AlgoliaException $e) {
+                    if ($e->getCode() !== 404) {
+                        throw $e;
+                    }
+                }
+            }
         }
 
         $this->setFacetsQueryRules($indexOptions);
@@ -341,30 +375,6 @@ class ProductHelper extends AbstractEntityHelper
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
-
-        if ($saveToTmpIndicesToo) {
-            try {
-                $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
-                $this->algoliaConnector->waitLastTask($storeId);
-                $this->logger->log('
-                        Copying synonyms from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
-                    ');
-            } catch (AlgoliaException $e) {
-                $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
-            }
-
-            try {
-                $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
-                $this->algoliaConnector->waitLastTask($storeId);
-                $this->logger->log('
-                        Copying query rules from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
-                    ');
-            } catch (AlgoliaException $e) {
-                if ($e->getCode() !== 404) {
-                    throw $e;
-                }
-            }
-        }
     }
 
     /**

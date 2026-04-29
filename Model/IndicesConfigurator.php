@@ -181,18 +181,10 @@ class IndicesConfigurator
      */
     protected function setProductsSettings(int $storeId, bool $useTmpIndex): void
     {
-        $logEventName = 'Pushing settings for products indices.';
-        $this->logger->start($logEventName, true);
-
         $indexOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexTmpOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId, true);
 
-        $this->logger->log('Index name: ' . $indexOptions->getIndexName());
-        $this->logger->log('TMP Index name: ' . $indexTmpOptions->getIndexName());
-
         $this->productHelper->setSettings($indexOptions, $indexTmpOptions, $storeId, $useTmpIndex);
-
-        $this->logger->stop($logEventName, true);
     }
 
     /**

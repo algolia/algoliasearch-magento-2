@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Service;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -22,8 +23,10 @@ class IndexSettingsHandler
     ];
 
     public function __construct(
-        protected AlgoliaConnector $connector,
-        protected ConfigHelper     $config,
+        protected AlgoliaConnector        $connector,
+        protected ConfigHelper            $config,
+        protected IndexSettingsComparator $indexSettingsComparator,
+        protected AlgoliaLogger           $logger
     ) {}
 
     /**
@@ -34,8 +37,21 @@ class IndexSettingsHandler
         IndexOptionsInterface $indexOptions,
         array $indexSettings,
         string $mergeSettingsFrom = ''
-    ): void
+    ): bool
     {
+        // Early return if Algolia settings are already the same
+        if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings)) {
+            if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
+                $this->logger->info(
+                    sprintf("Skipped setSettings (no diff with existing) for store ID: %d (index name: %s)",
+                        $indexOptions->getStoreId(),
+                        $indexOptions->getIndexName(),
+                    )
+                );
+            }
+            return false;
+        }
+
         if (!$this->config->shouldForwardPrimaryIndexSettingsToReplicas($indexOptions->getStoreId())) {
             $this->connector->setSettings(
                 $indexOptions,
@@ -44,7 +60,7 @@ class IndexSettingsHandler
                 true,
                 $mergeSettingsFrom
             );
-            return;
+            return true;
         }
 
         [$forward, $noForward] = $this->splitSettings($indexSettings);
@@ -66,6 +82,8 @@ class IndexSettingsHandler
                 $mergeSettingsFrom
             );
         }
+
+        return true;
     }
 
     /**

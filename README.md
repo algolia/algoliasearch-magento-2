@@ -136,12 +136,12 @@ The extension does most of the heavy lifting when it comes to gathering and prep
 
 Depending on the extension version you are using, you could have a different PHP API client version powering the extension's backend functionality.
 
-| Extension Version | API Client Version                                                      |
-|-------------------|-------------------------------------------------------------------------|
-| v3.x              | [2.5.1](https://github.com/algolia/algoliasearch-client-php/tree/2.5.1) |
-| v3.6.x            | [3.2.0](https://github.com/algolia/algoliasearch-client-php/tree/3.2.0) |
-| v3.11.0          | [3.3.2](https://github.com/algolia/algoliasearch-client-php/tree/3.3.2) |          
-| >=v3.14.x         | [4.0.x](https://github.com/algolia/algoliasearch-client-php/tree/4.0.0-beta.12)                                                               |
+| Extension Version | API Client Version                                                       |
+|-------------------|--------------------------------------------------------------------------|
+| v3.x              | [2.5.1](https://github.com/algolia/algoliasearch-client-php/tree/2.5.1)  |
+| v3.6.x            | [3.2.0](https://github.com/algolia/algoliasearch-client-php/tree/3.2.0)  |
+| v3.11.0           | [3.3.2](https://github.com/algolia/algoliasearch-client-php/tree/3.3.2)  |
+| >=v3.14.x         | [4.x.x](https://github.com/algolia/algoliasearch-client-php)             |
 
 Refer to these docs when customising your Algolia Magento extension backend:
 - [Indexing](https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/)
@@ -161,7 +161,7 @@ Enables Algolia indexing compatibility with Magento's Multi-Source Inventory (MS
 composer require algolia/algoliasearch-inventory-magento-2
 ```
 
-Requires base extension `>=3.16.3`
+Requires base extension `>=3.17.3`
 
 #### Search adapter module
 

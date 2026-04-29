@@ -83,7 +83,7 @@ If you would like to stay on a minor version, please upgrade your composer to on
 The extension uses libraries to help assist with the frontend implementation for autocomplete, instantsearch, and insight features. It also uses the Algolia PHP client to leverage indexing and search methods from the backend. When you approach customisations for either, you have to understand that you are customising the implementation itself and not the components it is based on.
 
 These libraries are here to help add to your customisation but because the extension has already initialised these components, you should use hooks into the area between the extension and the libraries.
-Please check our [Custom Extension](https://github.com/algolia/algoliasearch-custom-algolia-magento-2) for refrence 
+Please check our [Custom Extension](https://github.com/algolia/algoliasearch-custom-algolia-magento-2) for reference.
 
 ### Frontend JavaScript libraries
 
@@ -147,10 +147,50 @@ Refer to these docs when customising your Algolia Magento extension backend:
 - [Indexing](https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/)
 - [Dispatched Backend Events](https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/)
 
+### Optional Modules
+
+The base extension can be paired with the following companion modules. Each is published as a separate Composer package and can be installed independently based on your store's needs.
+
+#### MSI compatibility module
+
+[`algolia/algoliasearch-inventory-magento-2`](https://github.com/algolia/algoliasearch-inventory-magento-2)
+
+Enables Algolia indexing compatibility with Magento's Multi-Source Inventory (MSI) system. Install this if your store uses MSI to manage stock across multiple sources (warehouses, physical stores, etc.) and you need Algolia records to reflect aggregated stock status and per-source quantities.
+
+```
+composer require algolia/algoliasearch-inventory-magento-2
+```
+
+Requires base extension `>=3.16.3`
+
+#### Search adapter module
+
+[`algolia/algoliasearch-adapter-magento-2`](https://github.com/algolia/algoliasearch-adapter-magento-2)
+
+Registers Algolia as a native Magento search engine backend, enabling server-side rendered category and search-results pages. Install this if you want SEO-friendly, crawler- and LLM-readable product listings, or if you need backend-only search without the InstantSearch JavaScript UI. Can run alongside InstantSearch for hybrid setups (crawlers see server-rendered HTML; shoppers see the client-rendered InstantSearch experience).
+
+```
+composer require algolia/algoliasearch-adapter-magento-2
+```
+
+Requires PHP 8.2+, Magento 2.4+, and base extension `^3.18`.
+
+#### Customization starter module
+
+[`algolia/algoliasearch-custom-algolia-magento-2`](https://github.com/algolia/algoliasearch-custom-algolia-magento-2)
+
+Boilerplate module that demonstrates how to extend the base integration with custom attributes, custom indexing logic, frontend InstantSearch tweaks, and event-driven customizations. Intended as a reference template to fork or copy patterns from rather than to install directly into production. See the [Customisation](#customisation) section above for the recommended approach to using this module.
+
+```
+composer require algolia/algoliasearch-custom-algolia-magento-2
+```
+
+Requires base extension `^3.15.0`.
+
 ## Support
 
-For feedback, bug reporting, or unresolved issues with the extension, please visit our [Support Center](https://support.algolia.com/hc/en-us/) where you can search the knowldge base and contact the Support team. Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
+For feedback, bug reporting, or unresolved issues with the extension, please visit our [Support Center](https://support.algolia.com/hc/en-us/) where you can search the knowledge base and contact the Support team. Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
 
 ## Contributing
 
-To start contributing to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).
+To start contributing to the extension follow the [contributing guidelines](.github/CONTRIBUTING.md).

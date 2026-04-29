@@ -2,6 +2,12 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="breadcrumbs" remove="true" />
+        <!--
+            DEPRECATED since 3.18, to be removed in 3.19 (MAGE-1579).
+            Dead code: algoliasearch_instant/instant/backend_rendering_enable can never be '1' because
+            the admin field was removed from system.xml. Backend rendering is now provided by the
+            optional Algolia_SearchAdapter module (https://github.com/algolia/algoliasearch-adapter-magento-2).
+        -->
         <referenceBlock name="catalogsearch.leftnav">
             <action ifconfig="algoliasearch_instant/instant/backend_rendering_enable" method="setTemplate">
                 <argument name="template" xsi:type="string">Algolia_AlgoliaSearch::layer/view.phtml</argument>

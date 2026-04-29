@@ -3,42 +3,51 @@
 ## 3.18.0
 
 ### Features
-- Introduced **Algolia Query Suggestions** feature:
+- Introduced **Algolia Query Suggestions** feature ([#1885](https://github.com/algolia/algoliasearch-magento-2/pull/1885), [#1863](https://github.com/algolia/algoliasearch-magento-2/pull/1863)):
   - Added possibility to switch between legacy Magento Search Queries and Algolia Query Suggestions.
   - Updated configuration in the Autocomplete menu section.
   - Implemented the feature on the frontend out of the box.
-- Introduced [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2)
+- Introduced [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2) ([#1846](https://github.com/algolia/algoliasearch-magento-2/pull/1846), [#1850](https://github.com/algolia/algoliasearch-magento-2/pull/1850), [#1844](https://github.com/algolia/algoliasearch-magento-2/pull/1844))
   - Registers Algolia as a native Magento 2 search engine.
   - Provides backend (server-side) rendering for category pages and search results.
   - Provides friendly indexable content for search-engine crawlers, LLM-based discovery tools, and any client that doesn't execute JavaScript.
-- Added configurable number of replicas limit.
-- Enhanced paging configuration which now takes into account Magento's configuration for grid mode and list mode in addition to the custom mode (value set by the user).
+- Added configurable number of replicas limit ([#1901](https://github.com/algolia/algoliasearch-magento-2/pull/1901)).
+- Enhanced paging configuration which now takes into account Magento's configuration for grid mode and list mode in addition to the custom mode (value set by the user) ([#1869](https://github.com/algolia/algoliasearch-magento-2/pull/1869), [#1873](https://github.com/algolia/algoliasearch-magento-2/pull/1873)).
 
 ### Updates
-- **Removed backend rendering management** (see "Breaking Changes section")
-- Refactored many portions of the codebase to expose extendable components to be used by the Algolia Adapter module.
-- Synchronized InstantSearch price, sorting and paging params with backend render by introducing `params-manager.js` object.
-- The unused legacy class `AlgoliaHelper` has been removed.
+- **Removed backend rendering management** (see "Breaking Changes section") ([#1900](https://github.com/algolia/algoliasearch-magento-2/pull/1900), [#1844](https://github.com/algolia/algoliasearch-magento-2/pull/1844),  [#1934](https://github.com/algolia/algoliasearch-magento-2/pull/1934)).
+- Refactored many portions of the codebase to expose extendable components to be used by the Algolia Adapter module ([#1862](https://github.com/algolia/algoliasearch-magento-2/pull/1862), [#1864](https://github.com/algolia/algoliasearch-magento-2/pull/1864), [#1860](https://github.com/algolia/algoliasearch-magento-2/pull/1860)).
+- Synchronized InstantSearch price, sorting and paging params with backend render by introducing `params-manager.js` object ([#1873](https://github.com/algolia/algoliasearch-magento-2/pull/1873), [#1889](https://github.com/algolia/algoliasearch-magento-2/pull/1889), [#1888](https://github.com/algolia/algoliasearch-magento-2/pull/1888)).
+- The unused legacy class `AlgoliaHelper` has been removed ([#1850](https://github.com/algolia/algoliasearch-magento-2/pull/1850)).
 - Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release.
-- `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix
-- Added `ProductRecordFieldsInterface` API contract for canonical visibility fields
-- Added `CategoryPathProvider`, `PriceKeyResolver` and `RenderingManager` services
-- Added `FrontendProductUrl` virtual type
-- Added links leading to facets and sortings configurations in the InstantSearch section.
-- Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
-- Clean up some types in the `Model\ResourceModel` directory.
-- Updated Indexing Manager default values
-- Updated admin CSS
-- Updated and refactored unit and integration tests.
-- Removed the deprecated `beforecontent.phtml` template and its block declaration in `algolia_search_handle.xml` (deprecated in v3.16).
+- `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix ([#1855](https://github.com/algolia/algoliasearch-magento-2/pull/1855), [#1856](https://github.com/algolia/algoliasearch-magento-2/pull/1856)).
+- Added `ProductRecordFieldsInterface` API contract for canonical visibility fields ([#1862](https://github.com/algolia/algoliasearch-magento-2/pull/1862)).
+- Added `CategoryPathProvider`, `PriceKeyResolver` and `RenderingManager` services ([#1887](https://github.com/algolia/algoliasearch-magento-2/pull/1887), [#1872](https://github.com/algolia/algoliasearch-magento-2/pull/1872), [#1900](https://github.com/algolia/algoliasearch-magento-2/pull/1900)).
+- Added `FrontendProductUrl` virtual type ([#1906](https://github.com/algolia/algoliasearch-magento-2/pull/1906), [#1870](https://github.com/algolia/algoliasearch-magento-2/pull/1870)).
+- Added links leading to facets and sortings configurations in the InstantSearch section ([#1896](https://github.com/algolia/algoliasearch-magento-2/pull/1896), [#1899](https://github.com/algolia/algoliasearch-magento-2/pull/1899)).
+- Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet ([#1898](https://github.com/algolia/algoliasearch-magento-2/pull/1898)).
+- Clean up some types in the `Model\ResourceModel` directory ([#1902](https://github.com/algolia/algoliasearch-magento-2/pull/1902)).
+- Updated Indexing Manager default values for auto full indexing - full reindex must be explicitly invoked unless this setting is changed ([#1854](https://github.com/algolia/algoliasearch-magento-2/pull/1854)).
+- Updated admin CSS.
+- Updated and refactored unit and integration tests ([#1903](https://github.com/algolia/algoliasearch-magento-2/pull/1903), [#1861](https://github.com/algolia/algoliasearch-magento-2/pull/1861)).
+- Removed the deprecated `beforecontent.phtml` template and its block declaration in `algolia_search_handle.xml` (deprecated in v3.16) ([#1936](https://github.com/algolia/algoliasearch-magento-2/pull/1936)).
 
 ### Bug Fixes
-- Fixed product url indexing when URL rewrites are disabled
-- Fixed some integration tests
-- Fixed undefined property `indexerRegistry` exception on `CategoryObserver`
+- Fixed product url indexing when URL rewrites are disabled ([#1906](https://github.com/algolia/algoliasearch-magento-2/pull/1906), [#1870](https://github.com/algolia/algoliasearch-magento-2/pull/1870)).
+- Fixed some integration tests ([#1903](https://github.com/algolia/algoliasearch-magento-2/pull/1903), [#1861](https://github.com/algolia/algoliasearch-magento-2/pull/1861)).
+- Fixed undefined property `indexerRegistry` exception on `CategoryObserver` ([#1917](https://github.com/algolia/algoliasearch-magento-2/pull/1917)).
 
 ### Breaking Changes
 - Backend rendering management is no longer supported in this module, please refer to the [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2).
+
+## 3.17.3
+
+### Updates
+- Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet
+
+### Bug Fixes
+- Fixed product url indexing when URL rewrites are disabled
+- Defaulted `scopeId` to `0` for config writer call in `InstantSearch::SetSorting` method to prevent integrity constraint violation in integration tests.
 
 ## 3.17.2
 
@@ -67,21 +76,34 @@
 - Updated default "Maximum number of records sent per indexing request" to 1000 (previously 300).
 - Updated `ConfigHelper` class, it now has more methods deprecated and ported to separate helper classes.
 - Updated Unit and Integration tests.
+- Removed all `is_null` occurrences
 
 ### Bug fixes
 - Fixed indexing queue templates escaping.
 - Fixed 3.17 setup:upgrade on PHP 8.4
+- Performed code sanitization for Codacy compliance
 - Fixed issue where missing pricing keys were not handled gracefully in the Autocomplete product template
 - Fixed issue where category was not properly checked in the configuration block - thank you @benjamin-volle
+- Fixed issue on duplicated product save
 
 ## 3.16.1
 
 ### Updates
+- Add checks on configuration migration processed on data patch
 - `EventProcessor` now calculates decimal precision on currency based on `Magento\Framework\Locale\FormatInterface`
+- Local InstantSearch widgets can now override facet sorting behavior in merchandising rules
+- Updated various unit/integration tests
 
-### Bug fixes 
+### Bug fixes
+- Fixed Indexing Queue display in backend templates.
+- Fixed Indexing Queue merging mechanism, it should now have way better performances with delta indexing (updates) jobs.
+- Fixed implicit nullable types for PHP 8.4
 - Ensure that only non-redirect URL rewrites are considered when generating product URLs - thank you @fasimana
 - Apply rounding to insight events revenue values to avoid floating point precision errors - thank you @PromInc
+- Fix issue where double conversion occurred during price indexing in case of multi currency stores - thank you @natedawg92
+- Fix issue where non-clickable links where rendered on InstantSearch - thank you @PromInc
+- Fixed issue where replica setting forwarding can abort if async operation fails to complete in time
+- Fixed some Codacy issues
 
 ## 3.16.0
 

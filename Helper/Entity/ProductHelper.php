@@ -355,11 +355,9 @@ class ProductHelper extends AbstractEntityHelper
         }
 
         $this->setFacetsQueryRules($indexOptions);
-        $this->algoliaConnector->waitLastTask($storeId);
 
         if ($saveToTmpIndicesToo) {
             $this->setFacetsQueryRules($indexTmpOptions);
-            $this->algoliaConnector->waitLastTask($storeId);
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
@@ -480,11 +478,12 @@ class ProductHelper extends AbstractEntityHelper
 
     /**
      * @param IndexOptionsInterface $indexOptions
+     * @param bool $waitLastTask
      * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions)
+    public function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $waitLastTask = false): void
     {
         $this->clearFacetsQueryRules($indexOptions);
 
@@ -522,6 +521,10 @@ class ProductHelper extends AbstractEntityHelper
             $this->logger->log('Setting facets query rules to "' . $indexOptions->getIndexName() . '" index: ' . json_encode($rules));
 
             $this->algoliaConnector->saveRules($indexOptions, $rules, true);
+
+            if ($waitLastTask) {
+                $this->algoliaConnector->waitLastTask($indexOptions->getStoreId());
+            }
         }
     }
 

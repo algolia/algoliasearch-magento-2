@@ -80,12 +80,10 @@ class IndicesConfigurator
         $this->logger->stop($logEventName, true);
     }
 
-    protected function logSettingsPush(string $logEventName, IndexOptionsInterface $indexOptions, array $settings): void
+    protected function logSettingsPush(IndexOptionsInterface $indexOptions, array $settings): void
     {
-        $this->logger->start($logEventName, true);
         $this->logger->log('Index name: ' . $indexOptions->getIndexName());
         $this->logger->log('Settings: ' . json_encode($settings));
-        $this->logger->stop($logEventName, true);
     }
 
     /**
@@ -95,13 +93,18 @@ class IndicesConfigurator
      */
     protected function setCategoriesSettings(int $storeId): void
     {
+        $logEventName = 'Pushing settings for categories indices.';
+        $this->logger->start($logEventName, true);
+
         $settings = $this->categoryHelper->getIndexSettings($storeId);
         $indexOptions = $this->categoryIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
-            $this->logSettingsPush('Pushing settings for categories indices.', $indexOptions, $settings);
+            $this->logSettingsPush($indexOptions, $settings);
             $this->algoliaConnector->waitLastTask($storeId);
         }
+
+        $this->logger->stop($logEventName, true);
     }
 
     /**
@@ -117,13 +120,18 @@ class IndicesConfigurator
             return;
         }
 
+        $logEventName = 'Pushing settings for CMS pages indices.';
+        $this->logger->start($logEventName, true);
+
         $settings = $this->pageHelper->getIndexSettings($storeId);
         $indexOptions = $this->pageIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
-            $this->logSettingsPush('Pushing settings for CMS pages indices.', $indexOptions, $settings);
+            $this->logSettingsPush($indexOptions, $settings);
             $this->algoliaConnector->waitLastTask($storeId);
         }
+
+        $this->logger->stop($logEventName, true);
     }
 
     /**
@@ -139,17 +147,18 @@ class IndicesConfigurator
             return;
         }
 
+        $logEventName = 'Pushing settings for query suggestions indices.';
+        $this->logger->start($logEventName, true);
+
         $settings = $this->suggestionHelper->getIndexSettings($storeId);
         $indexOptions = $this->suggestionIndexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
-            $this->logSettingsPush(
-                'Pushing settings for query suggestions indices.',
-                $indexOptions,
-                $settings
-            );
+            $this->logSettingsPush($indexOptions, $settings);
             $this->algoliaConnector->waitLastTask($storeId);
         }
+
+        $this->logger->stop($logEventName, true);
     }
 
     /**
@@ -159,6 +168,9 @@ class IndicesConfigurator
      */
     protected function setAdditionalSectionsSettings(int $storeId): void
     {
+        $logEventName = 'Pushing settings for query suggestions indices.';
+        $this->logger->start($logEventName, true);
+
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
         foreach ($this->configHelper->getAutocompleteSections() as $section) {
             if (in_array($section['name'], $protectedSections, true)) {
@@ -172,14 +184,12 @@ class IndicesConfigurator
             $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
             if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
-                $this->logSettingsPush(
-                    'Pushing settings for additional section "' . $section['name'] . '".',
-                    $indexOptions,
-                    $settings
-                );
+                $this->logSettingsPush($indexOptions, $settings);
                 $this->algoliaConnector->waitLastTask($storeId);
             }
         }
+
+        $this->logger->stop($logEventName, true);
     }
 
     /**
@@ -192,10 +202,15 @@ class IndicesConfigurator
      */
     protected function setProductsSettings(int $storeId, bool $useTmpIndex): void
     {
+        $logEventName = 'Pushing settings for products indices.';
+        $this->logger->start($logEventName, true);
+
         $indexOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId);
         $indexTmpOptions = $this->productIndexOptionsBuilder->buildEntityIndexOptions($storeId, true);
 
         $this->productHelper->setSettings($indexOptions, $indexTmpOptions, $storeId, $useTmpIndex);
+
+        $this->logger->stop($logEventName, true);
     }
 
     /**
@@ -207,6 +222,9 @@ class IndicesConfigurator
      */
     protected function setExtraSettings(int $storeId, bool $saveToTmpIndicesToo): void
     {
+        $logEventName = 'Pushing extra settings.';
+        $this->logger->start($logEventName, true);
+
         $sections = [
             'products',
             'categories',
@@ -225,11 +243,7 @@ class IndicesConfigurator
                     $indexOptions = $this->indexOptionsBuilder->buildWithComputedIndex('_' . $section, $storeId);
 
                     if ($this->indexSettingsHandler->setSettings($indexOptions, $extraSettings)) {
-                        $this->logSettingsPush(
-                            'Pushing extra settings',
-                            $indexOptions,
-                            $extraSettings
-                        );
+                        $this->logSettingsPush($indexOptions, $extraSettings);
                         $this->algoliaConnector->waitLastTask($storeId);
                     }
 
@@ -241,11 +255,7 @@ class IndicesConfigurator
                         );
 
                         if ($this->indexSettingsHandler->setSettings($indexTempOptions, $extraSettings)) {
-                            $this->logSettingsPush(
-                                'Pushing extra settings on product temporary index.',
-                                $indexTempOptions,
-                                $extraSettings
-                            );
+                            $this->logSettingsPush($indexTempOptions, $extraSettings);
                             $this->algoliaConnector->waitLastTask($storeId);
                         }
                     }
@@ -266,5 +276,7 @@ class IndicesConfigurator
         if ($error) {
             throw new AlgoliaException('<br>' . implode('<br> ', $error));
         }
+
+        $this->logger->stop($logEventName, true);
     }
 }

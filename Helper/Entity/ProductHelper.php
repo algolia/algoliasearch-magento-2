@@ -320,28 +320,16 @@ class ProductHelper extends AbstractEntityHelper
         $indexSettings = $this->getIndexSettings($storeId);
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $indexSettings)) {
-            $logEventName = 'Pushing settings for products indices.';
-            $this->logger->start($logEventName, true);
             $this->logger->log('Index name: ' . $indexOptions->getIndexName());
             $this->logger->log('Settings: ' . json_encode($indexSettings));
-            $this->logger->stop($logEventName, true);
 
             $this->algoliaConnector->waitLastTask($storeId);
 
             if ($saveToTmpIndicesToo) {
                 $this->indexSettingsHandler->setSettings($indexTmpOptions, $indexSettings, $indexOptions->getIndexName());
-
-                $logEventName = 'Pushing the same settings to TMP index as well';
-                $this->logger->start($logEventName, true);
-                $this->logger->log('Index name: ' . $indexOptions->getIndexName());
-                $this->logger->log('TMP Index name: ' . $indexTmpOptions->getIndexName());
-                $this->logger->log('Settings: ' . json_encode($indexSettings));
-                $this->logger->stop($logEventName, true);
-
+                $this->logger->log('Pushing the same settings to TMP index as well');
                 $this->algoliaConnector->waitLastTask($storeId);
-            }
 
-            if ($saveToTmpIndicesToo) {
                 try {
                     $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
                     $this->algoliaConnector->waitLastTask($storeId);

@@ -5,14 +5,10 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 use Algolia\AlgoliaSearch\Model\JobFactory;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Indexer\Model\IndexerFactory;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /** @var SessionManagerInterface */
-    protected $backendSession;
-
     /** @var \Algolia\AlgoliaSearch\Model\JobFactory */
     protected $jobFactory;
 
@@ -24,14 +20,12 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
 
     public function __construct(
         Context $context,
-        SessionManagerInterface $backendSession,
         JobFactory $jobFactory,
         JobResourceModel $jobResourceModel,
         IndexerFactory $indexerFactory
     ) {
         parent::__construct($context);
 
-        $this->backendSession   = $backendSession;
         $this->jobFactory       = $jobFactory;
         $this->jobResourceModel = $jobResourceModel;
         $this->indexerFactory   = $indexerFactory;
@@ -63,9 +57,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         if (!$model->getId()) {
             return null;
         }
-
-        // Register model to use later in blocks
-        $this->backendSession->setData('current_job', $model);
 
         return $model;
     }

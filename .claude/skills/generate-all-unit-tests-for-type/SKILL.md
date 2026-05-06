@@ -7,7 +7,7 @@ Generate unit tests for all PHP classes matching the type: $ARGUMENTS
 
 Follow these steps exactly:
 
-## Step 1 — Map the type to source directories
+## Step 1 — Map the type to source directories 
 
 Use the following mapping to resolve the type argument to one or more directories (paths are relative to the module root):
 

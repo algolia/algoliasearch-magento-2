@@ -58,7 +58,6 @@ class ConversionTest extends TestCase
         $this->order->method('getAllVisibleItems')->willReturn([$item]);
 
         $result = json_decode($this->block->getOrderItemsConversionJson());
-        $this->assertObjectHasProperty('42', $result);
         $this->assertEquals('abc123', $result->{'42'}->queryID);
     }
 

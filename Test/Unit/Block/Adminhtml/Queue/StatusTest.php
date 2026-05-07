@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Indexer\StateInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Indexer\Model\Indexer;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class StatusTest extends TestCase
@@ -38,7 +37,9 @@ class StatusTest extends TestCase
         $this->setPrivateProperty($this->block, 'dateTime', $this->dateTime);
     }
 
-    #[DataProvider('queueRunnerStatusDataProvider')]
+    /**
+     * @dataProvider queueRunnerStatusDataProvider
+     */
     public function testGetQueueRunnerStatusReturnsExpectedLabel(string $status, string $expected): void
     {
         $this->queueRunnerIndexer->method('getStatus')->willReturn($status);

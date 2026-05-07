@@ -13,7 +13,12 @@
 ### Test Strategy
 - Don't test Event Manager's dispatch methods
 - Use @dataProvider annotations when it's needed
+  - use /**
+        * @dataProvider myProvider
+        */
+  - not #[DataProvider('myProvider')]
 - Do not test methods coming from the parent classes (Magento core)
+- Do not use assertObjectHasProperty assertions
 
 ### Mocking Strategy
 - Instantiate the tested class in the setUp() method by mocking every object that needs to be passed in its constructor

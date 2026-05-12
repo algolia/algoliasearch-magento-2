@@ -33,11 +33,7 @@ class IndexSettingsHandler
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      */
-    public function setSettings(
-        IndexOptionsInterface $indexOptions,
-        array $indexSettings,
-        string $mergeSettingsFrom = ''
-    ): bool
+    public function setSettings(IndexOptionsInterface $indexOptions, array $indexSettings): bool
     {
         // Early return if Algolia settings are already the same
         if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings)) {
@@ -56,30 +52,31 @@ class IndexSettingsHandler
             $this->connector->setSettings(
                 $indexOptions,
                 $indexSettings,
-                false,
-                true,
-                $mergeSettingsFrom
+                false
             );
             return true;
         }
 
+        // If we should forward to replicas, we need to remove settings which we don't want to send
+        // such as customRanking and ranking (managed by each replica separately)
         [$forward, $noForward] = $this->splitSettings($indexSettings);
+
+        // FORWARDED: $settings without excluded attributes
         if ($forward) {
             $this->connector->setSettings(
                 $indexOptions,
                 $forward,
-                true,
-                false
+                true
             );
             $this->connector->waitLastTask($indexOptions->getStoreId());
         }
+
+        // NOT FORWARDED: array containing excluded attributes only
         if ($noForward) {
             $this->connector->setSettings(
                 $indexOptions,
                 $noForward,
-                false,
-                true,
-                $mergeSettingsFrom
+                false
             );
         }
 

@@ -326,7 +326,15 @@ class ProductHelper extends AbstractEntityHelper
             $this->algoliaConnector->waitLastTask($storeId);
 
             if ($saveToTmpIndicesToo) {
-                $this->indexSettingsHandler->setSettings($indexTmpOptions, $indexSettings, $indexOptions->getIndexName());
+                // For temp index, we need to call AlgoliaConnector::setSettings() directly with explicit settings merge
+                $this->algoliaConnector->setSettings(
+                    $indexTmpOptions,
+                    $indexSettings,
+                    false,
+                    true,
+                    $indexOptions->getIndexName()
+                );
+
                 $this->logger->log('Pushing the same settings to TMP index as well');
                 $this->algoliaConnector->waitLastTask($storeId);
 

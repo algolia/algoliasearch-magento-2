@@ -120,7 +120,7 @@ class IndexSettingsHandlerTest extends TestCase
                         case 2:
                             $this->assertEquals(['customRanking' => ['desc(price)']], $indexSettings);
                             $this->assertFalse($forwardToReplicas);
-                            $this->assertTrue($mergeSettings);
+                            $this->assertFalse($mergeSettings);
                             break;
                 }
             });
@@ -148,9 +148,7 @@ class IndexSettingsHandlerTest extends TestCase
             ->with(
                 $this->indexOptions,
                 $settings,
-                false,
-                true,
-                ''
+                false
             );
 
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
@@ -176,8 +174,7 @@ class IndexSettingsHandlerTest extends TestCase
             ->with(
                 $this->indexOptions,
                 $settings,
-                true,
-                false
+                true
             );
 
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
@@ -202,9 +199,7 @@ class IndexSettingsHandlerTest extends TestCase
             ->with(
                 $this->indexOptions,
                 $settings,
-                false,
-                true,
-                ''
+                false
             );
 
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));

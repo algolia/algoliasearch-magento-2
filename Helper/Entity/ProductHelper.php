@@ -319,52 +319,59 @@ class ProductHelper extends AbstractEntityHelper
     ): void {
         $indexSettings = $this->getIndexSettings($storeId);
 
-        $this->indexSettingsHandler->setSettings($indexOptions, $indexSettings);
+        if ($this->indexSettingsHandler->setSettings($indexOptions, $indexSettings)) {
+            $this->logger->log('Index name: ' . $indexOptions->getIndexName());
+            $this->logger->log('Settings: ' . json_encode($indexSettings));
 
-        $this->logger->log('Settings: ' . json_encode($indexSettings));
-        if ($saveToTmpIndicesToo) {
-            $this->indexSettingsHandler->setSettings(
-                $indexTmpOptions,
-                $indexSettings,
-                $indexOptions->getIndexName()
-            );
-
-            $this->logger->log('Pushing the same settings to TMP index as well');
-        }
-
-        $this->setFacetsQueryRules($indexOptions);
-        $this->algoliaConnector->waitLastTask($storeId);
-
-        if ($saveToTmpIndicesToo) {
-            $this->setFacetsQueryRules($indexTmpOptions);
             $this->algoliaConnector->waitLastTask($storeId);
-        }
 
-        $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
+            if ($saveToTmpIndicesToo) {
+                // For temp index, we need to call AlgoliaConnector::setSettings() directly with explicit settings merge
+                // Main reasons:
+                //  - Temp indices never have replicas associated
+                //  - Settings rely directly on prod index so performing a diff with temporary online settings is useless
+                $this->algoliaConnector->setSettings(
+                    $indexTmpOptions,
+                    $indexSettings,
+                    false,
+                    true,
+                    $indexOptions->getIndexName()
+                );
 
-        if ($saveToTmpIndicesToo) {
-            try {
-                $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
+                $this->logger->log('Pushing the same settings to TMP index as well');
                 $this->algoliaConnector->waitLastTask($storeId);
-                $this->logger->log('
+
+                try {
+                    $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
+                    $this->algoliaConnector->waitLastTask($storeId);
+                    $this->logger->log('
                         Copying synonyms from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
                     ');
-            } catch (AlgoliaException $e) {
-                $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
-            }
+                } catch (AlgoliaException $e) {
+                    $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
+                }
 
-            try {
-                $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
-                $this->algoliaConnector->waitLastTask($storeId);
-                $this->logger->log('
+                try {
+                    $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
+                    $this->algoliaConnector->waitLastTask($storeId);
+                    $this->logger->log('
                         Copying query rules from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
                     ');
-            } catch (AlgoliaException $e) {
-                if ($e->getCode() !== 404) {
-                    throw $e;
+                } catch (AlgoliaException $e) {
+                    if ($e->getCode() !== 404) {
+                        throw $e;
+                    }
                 }
             }
         }
+
+        $this->setFacetsQueryRules($indexOptions);
+
+        if ($saveToTmpIndicesToo) {
+            $this->setFacetsQueryRules($indexTmpOptions);
+        }
+
+        $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
     }
 
     /**
@@ -482,11 +489,12 @@ class ProductHelper extends AbstractEntityHelper
 
     /**
      * @param IndexOptionsInterface $indexOptions
+     * @param bool $waitLastTask
      * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions)
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $waitLastTask = false): void
     {
         $this->clearFacetsQueryRules($indexOptions);
 
@@ -524,6 +532,10 @@ class ProductHelper extends AbstractEntityHelper
             $this->logger->log('Setting facets query rules to "' . $indexOptions->getIndexName() . '" index: ' . json_encode($rules));
 
             $this->algoliaConnector->saveRules($indexOptions, $rules, true);
+
+            if ($waitLastTask) {
+                $this->algoliaConnector->waitLastTask($indexOptions->getStoreId());
+            }
         }
     }
 

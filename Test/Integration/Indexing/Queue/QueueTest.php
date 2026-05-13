@@ -111,6 +111,15 @@ class QueueTest extends TestCase
 
         $this->assertTrue($existsDefaultTmpIndex, 'Default products production index does not exists and it should');
 
+        $indexOptions = $this->getIndexOptions('products', 1);
+        $settings = $this->algoliaConnector->getSettings($indexOptions);
+
+        $indexOptionsTmp = $this->getIndexOptions('products', 1 , true);
+        $settingsTmp = $this->algoliaConnector->getSettings($indexOptionsTmp);
+
+        // Asserts that the prod settings have been copied successfully to tmp
+        $this->assertEquals($settings, $settingsTmp);
+
         // Run the last move - move
         $queue->runCron(2, true);
 

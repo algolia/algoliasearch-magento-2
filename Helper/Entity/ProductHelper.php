@@ -327,6 +327,9 @@ class ProductHelper extends AbstractEntityHelper
 
             if ($saveToTmpIndicesToo) {
                 // For temp index, we need to call AlgoliaConnector::setSettings() directly with explicit settings merge
+                // Main reasons:
+                //  - Temp indices never have replicas associated
+                //  - Settings rely directly on prod index so performing a diff with temporary online settings is useless
                 $this->algoliaConnector->setSettings(
                     $indexTmpOptions,
                     $indexSettings,
@@ -491,7 +494,7 @@ class ProductHelper extends AbstractEntityHelper
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    public function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $waitLastTask = false): void
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $waitLastTask = false): void
     {
         $this->clearFacetsQueryRules($indexOptions);
 

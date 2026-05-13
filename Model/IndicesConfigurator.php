@@ -239,10 +239,16 @@ class IndicesConfigurator
                             true
                         );
 
-                        if ($this->indexSettingsHandler->setSettings($indexTempOptions, $extraSettings)) {
-                            $this->logSettingsPush($indexTempOptions, $extraSettings);
-                            $this->algoliaConnector->waitLastTask($storeId);
-                        }
+                        // Direct call to AlgoliaConnector::setSettings() (see ProductHelper::setSettings())
+                        $this->algoliaConnector->setSettings(
+                            $indexTempOptions,
+                            $extraSettings,
+                            false,
+                            true,
+                            $indexOptions->getIndexName()
+                        );
+                        $this->logSettingsPush($indexTempOptions, $extraSettings);
+                        $this->algoliaConnector->waitLastTask($storeId);
                     }
                 }
             } catch (AlgoliaException $e) {

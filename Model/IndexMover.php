@@ -51,7 +51,7 @@ class IndexMover
             return;
         }
 
-        $this->indicesConfigurator->saveConfigurationToAlgolia($storeId, true);
+        $this->indicesConfigurator->saveConfigurationToAlgolia($storeId, true, ['products']);
         $this->moveIndex($tmpIndexName, $indexName, $storeId);
     }
 }

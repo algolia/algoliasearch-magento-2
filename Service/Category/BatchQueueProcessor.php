@@ -10,17 +10,20 @@ use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
+use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class BatchQueueProcessor implements BatchQueueProcessorInterface
 {
     public function __construct(
-        protected Data $dataHelper,
-        protected ConfigHelper $configHelper,
-        protected Queue $queue,
-        protected CategoryHelper $categoryHelper,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected Data                      $dataHelper,
+        protected ConfigHelper              $configHelper,
+        protected Queue                     $queue,
+        protected CategoryHelper            $categoryHelper,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected IndexOptionsBuilder       $indexOptionsBuilder,
+        protected IndexSettingsComparator   $indexSettingsComparator
     ){}
 
     /**
@@ -82,8 +85,21 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
      */
     protected function processFullReindex(int $storeId, int $categoriesPerPage): void
     {
-        /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
-        $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', ['storeId' => $storeId]);
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $categoriesSettings = $this->categoryHelper->getIndexSettings($storeId);
+
+        if (!$this->indexSettingsComparator->matches($indexOptions, $categoriesSettings)) {
+            /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
+            $this->queue->addToQueue(
+                IndicesConfigurator::class,
+                'saveConfigurationToAlgolia',
+                [
+                    'storeId' => $storeId,
+                    'useTmpIndex' => false,
+                    'filteredEntities' => ['categories']
+                ]
+            );
+        }
 
         $collection = $this->categoryHelper->getCategoryCollectionQuery($storeId);
         $size = $collection->getSize();

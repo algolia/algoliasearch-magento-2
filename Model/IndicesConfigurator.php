@@ -52,7 +52,11 @@ class IndicesConfigurator
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function saveConfigurationToAlgolia(int $storeId, bool $useTmpIndex = false): void
+    public function saveConfigurationToAlgolia(
+        int $storeId,
+        bool $useTmpIndex = false,
+        array $filteredEntities = [])
+    : void
     {
         $logEventName = 'Save configuration to Algolia for store: ' . $this->logger->getStoreName($storeId);
         $this->logger->start($logEventName, true);
@@ -70,14 +74,37 @@ class IndicesConfigurator
             return;
         }
 
+        if (count($filteredEntities) > 0) {
+            $this->logger->log('Filtered entities: ' . implode(',', $filteredEntities));
+
+            if (in_array('products', $filteredEntities)) {
+                $this->setProductsSettings($storeId, $useTmpIndex);
+            }
+            if (in_array('categories', $filteredEntities)) {
+                $this->setCategoriesSettings($storeId);
+            }
+        } else {
+            $this->setAllEntitiesSettings($storeId, $useTmpIndex);
+        }
+
+        $this->setExtraSettings($storeId, $useTmpIndex, $filteredEntities);
+
+        $this->logger->stop($logEventName, true);
+    }
+
+    /**
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     * @throws DiagnosticsException
+     * @throws AlgoliaException
+     */
+    protected function setAllEntitiesSettings(int $storeId, bool $useTmpIndex = false): void
+    {
         $this->setCategoriesSettings($storeId);
         $this->setPagesSettings($storeId);
         $this->setQuerySuggestionsSettings($storeId);
         $this->setAdditionalSectionsSettings($storeId);
         $this->setProductsSettings($storeId, $useTmpIndex);
-        $this->setExtraSettings($storeId, $useTmpIndex);
-
-        $this->logger->stop($logEventName, true);
     }
 
     protected function logSettingsPush(IndexOptionsInterface $indexOptions, array $settings): void
@@ -203,9 +230,9 @@ class IndicesConfigurator
     }
 
     /**
-     * @throws AlgoliaException|NoSuchEntityException
+     * @throws AlgoliaException|NoSuchEntityException|DiagnosticsException
      */
-    protected function setExtraSettings(int $storeId, bool $saveToTmpIndicesToo): void
+    protected function setExtraSettings(int $storeId, bool $saveToTmpIndicesToo, ?array $filteredEntities): void
     {
         $logEventName = 'Pushing extra settings.';
         $this->logger->start($logEventName, true);
@@ -217,6 +244,10 @@ class IndicesConfigurator
             'suggestions',
             'additional_sections'
         ];
+
+        if (count($filteredEntities) > 0) {
+            $sections = array_intersect($sections, $filteredEntities);
+        }
 
         $error = [];
         foreach ($sections as $section) {

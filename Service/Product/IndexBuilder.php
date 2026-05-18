@@ -7,11 +7,13 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Helper\ProductDataArray;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\App\Config\ScopeCodeResolver;
@@ -29,6 +31,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
     public function __construct(
         protected ConfigHelper             $configHelper,
+        protected QueueHelper              $queueHelper,
         protected DiagnosticsLogger        $logger,
         protected Emulation                $emulation,
         protected ScopeCodeResolver        $scopeCodeResolver,
@@ -39,6 +42,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         protected ResourceConnection       $resource,
         protected ManagerInterface         $eventManager,
         protected MissingPriceIndexHandler $missingPriceIndexHandler,
+        protected IndexSettingsHandler     $indexSettingsHandler,
         IndexerRegistry                    $indexerRegistry
     ){
         parent::__construct(
@@ -91,6 +95,11 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             return;
         }
 
+        // Before pushing the records, check settings and update them if needed (only when queue is active)
+        if ($this->queueHelper->isQueueActive($storeId)) {
+            $this->updateSettings($storeId);
+        }
+
         $this->startEmulation($storeId);
 
         $onlyVisible = !$this->configHelper->includeNonVisibleProductsInIndex($storeId);
@@ -106,6 +115,18 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         );
 
         $this->stopEmulation();
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     * @throws AlgoliaException
+     * @throws LocalizedException
+     */
+    protected function updateSettings(int $storeId): void
+    {
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $settings = $this->productHelper->getIndexSettings($storeId);
+        $this->indexSettingsHandler->setSettings($indexOptions, $settings);
     }
 
     /**

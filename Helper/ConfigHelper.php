@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
@@ -23,8 +24,6 @@ use Magento\Weee\Helper\Data as WeeeHelper;
 class ConfigHelper
 {
     // --- Credentials & Basic Setup --- //
-
-    public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
     public const LOGGING_ENABLED = 'algoliasearch_credentials/credentials/debug';
     public const APPLICATION_ID = 'algoliasearch_credentials/credentials/application_id';
     public const API_KEY = 'algoliasearch_credentials/credentials/api_key';
@@ -122,14 +121,10 @@ class ConfigHelper
     public const REMOVE_PUB_DIR_IN_URL = 'algoliasearch_advanced/advanced/remove_pub_dir_in_url';
     public const REMOVE_BRANDING = 'algoliasearch_advanced/advanced/remove_branding';
     public const IDX_PRODUCT_ON_CAT_PRODUCTS_UPD = 'algoliasearch_advanced/advanced/index_product_on_category_products_update';
-    public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
-    public const PREVENT_BACKEND_RENDERING_DISPLAY_MODE =
-        'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode';
-    public const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
-        'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
     public const NON_CASTABLE_ATTRIBUTES = 'algoliasearch_advanced/advanced/non_castable_attributes';
     public const NUMBER_OF_ELEMENT_BY_PAGE = 'algoliasearch_advanced/advanced/number_of_element_by_page';
     public const MAX_RECORD_SIZE_LIMIT = 'algoliasearch_advanced/advanced/max_record_size_limit';
+    public const MAX_REPLICAS_LIMIT = 'algoliasearch_advanced/advanced/max_replicas_limit';
     public const ANALYTICS_REGION = 'algoliasearch_advanced/advanced/analytics_region';
     public const CONNECTION_TIMEOUT = 'algoliasearch_advanced/advanced/connection_timeout';
     public const READ_TIMEOUT = 'algoliasearch_advanced/advanced/read_timeout';
@@ -193,49 +188,31 @@ class ConfigHelper
             $this->getSearchOnlyAPIKey($storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed'
-     */
-    public function getApplicationID($storeId = null)
+    public function getApplicationID(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::APPLICATION_ID, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::APPLICATION_ID, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getAPIKey($storeId = null)
+    public function getAPIKey(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getSearchOnlyAPIKey($storeId = null)
+    public function getSearchOnlyAPIKey(?int $storeId = null): string
     {
-        return $this->configInterface->getValue(self::SEARCH_ONLY_API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
+        return (string) $this->configInterface->getValue(self::SEARCH_ONLY_API_KEY, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return string
-     */
     public function getIndexPrefix(?int $storeId = null): string
     {
         return (string) $this->configInterface->getValue(self::INDEX_PREFIX, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    /**
-     * @param $storeId
-     * @return bool
-     */
-    public function isEnabledFrontEnd($storeId = null): bool
+    /** Is the Algolia search experience enabled on the frontend? */
+    public function isEnabledFrontEnd(?int $storeId = null): bool
     {
-        return $this->configInterface->isSetFlag(self::ENABLE_FRONTEND, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->instantSearchConfig->isEnabled($storeId)
+            || $this->autocompleteConfig->isEnabled($storeId);
     }
 
     /**
@@ -468,8 +445,8 @@ class ConfigHelper
             AlgoliaConnector::ALGOLIA_API_OBJECT_ID,
             'name',
             'url',
-            'visibility_search',
-            'visibility_catalog',
+            ProductRecordFieldsInterface::VISIBILITY_SEARCH,
+            ProductRecordFieldsInterface::VISIBILITY_CATALOG,
             'categories',
             'categories_without_path',
             'thumbnail_url',
@@ -514,7 +491,7 @@ class ConfigHelper
     public function useVirtualReplica(?int $storeId = null): bool
     {
         return (bool) count(array_filter(
-            $this->getSorting($storeId),
+            $this->instantSearchConfig->getSorting($storeId),
             fn($sort) => $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA]
         ));
     }
@@ -1227,60 +1204,6 @@ class ConfigHelper
         );
     }
 
-
-    /**
-     * @param $storeId
-     * @return bool
-     * @deprecated This feature is deprecated and will be replaced in an upcoming version
-     */
-    public function preventBackendRendering($storeId = null): bool
-    {
-        $preventBackendRendering = $this->configInterface->isSetFlag(
-            self::PREVENT_BACKEND_RENDERING,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-        if ($preventBackendRendering === false) {
-            return false;
-        }
-        if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-            return false;
-        }
-        $userAgent = mb_strtolower((string) filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_SANITIZE_SPECIAL_CHARS), 'utf-8');
-
-        $allowedUserAgents = $this->configInterface->getValue(
-            self::BACKEND_RENDERING_ALLOWED_USER_AGENTS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-        $allowedUserAgents = trim((string) $allowedUserAgents);
-        if ($allowedUserAgents === '') {
-            return true;
-        }
-        $allowedUserAgents = preg_split('/\n|\r\n?/', $allowedUserAgents);
-        $allowedUserAgents = array_filter($allowedUserAgents);
-        foreach ($allowedUserAgents as $allowedUserAgent) {
-            $allowedUserAgent = mb_strtolower($allowedUserAgent, 'utf-8');
-            if (mb_strpos($userAgent, $allowedUserAgent) !== false) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * @param $storeId
-     * @return mixed
-     */
-    public function getBackendRenderingDisplayMode($storeId = null)
-    {
-        return $this->configInterface->getValue(
-            self::PREVENT_BACKEND_RENDERING_DISPLAY_MODE,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
     /**
      * @param $storeId
      * @return array
@@ -1320,6 +1243,19 @@ class ConfigHelper
     {
         return (int) $this->configInterface->getValue(
             self::MAX_RECORD_SIZE_LIMIT,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    /**
+     * @param $storeId
+     * @return int
+     */
+    public function getMaxReplicasLimit($storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(
+            self::MAX_REPLICAS_LIMIT,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
@@ -1774,6 +1710,30 @@ class ConfigHelper
      */
     public const MAKE_SEO_REQUEST = 'algoliasearch_advanced/advanced/make_seo_request';
 
+    /**
+     * @deprecated This configuration is no longer being used and will be removed in a future release
+     */
+    public const PREVENT_BACKEND_RENDERING = 'algoliasearch_advanced/advanced/prevent_backend_rendering';
+
+    /**
+     * @deprecated This configuration is no longer being used and will be removed in a future release
+     */
+    public const PREVENT_BACKEND_RENDERING_DISPLAY_MODE =
+        'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode';
+
+    /**
+     * @deprecated This configuration is no longer being used and will be removed in a future release
+     */
+    public const BACKEND_RENDERING_ALLOWED_USER_AGENTS =
+        'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents';
+
+    // --- Miscellaneous --- //
+
+    /**
+     * @deprecated This configuration is no longer being used and will be removed in a future release
+     */
+    public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
+
     /*** METHODS ***/
 
     // --- Autocomplete --- //
@@ -2174,5 +2134,15 @@ class ConfigHelper
     public function makeSeoRequest($storeId = null)
     {
         return $this->configInterface->isSetFlag(self::MAKE_SEO_REQUEST, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @deprecated Do not use this method
+     *      This feature has been reintroduced as a separate adapter module
+     *      For details see https://github.com/algolia/algoliasearch-adapter-magento-2
+     */
+    public function preventBackendRendering(?int $storeId = null): bool
+    {
+        return true; // Disabled by default in core extension
     }
 }

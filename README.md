@@ -1,10 +1,10 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.17.3-green)
+![Latest version](https://img.shields.io/badge/latest-3.18.0-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.7+-orange)
 
-![PHP](https://img.shields.io/badge/PHP-8.2%2C8.3%2C8.4-blue)
+![PHP](https://img.shields.io/badge/PHP-8.1%2C8.2%2C8.3%2C8.4-blue)
 
 [![CircleCI](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/main.svg?style=svg)](https://circleci.com/gh/algolia/algoliasearch-magento-2/tree/main)
 
@@ -56,8 +56,9 @@ We support the 2 or 3 latest patch versions of Magento depending on releases ove
 | v3.13.x           | 4/9/2025    | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
 | v3.14.x           | 9/1/2025    | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
 | v3.15.x           | 12/1/2025   | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
-| v3.16.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| v3.16.x           | 5/15/2026   | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
 | v3.17.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| v3.18.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
 
 ## Documentation
 
@@ -75,14 +76,14 @@ The easiest way to install the extension is to use [Composer](https://getcompose
 
 If you would like to stay on a minor version, please upgrade your composer to only accept minor versions. The following example will keep you on the minor version and will update patches automatically.
 
-`"algolia/algoliasearch-magento-2": "~3.15.0"`
+`"algolia/algoliasearch-magento-2": "~3.18.0"`
 
 ### Customisation
 
 The extension uses libraries to help assist with the frontend implementation for autocomplete, instantsearch, and insight features. It also uses the Algolia PHP client to leverage indexing and search methods from the backend. When you approach customisations for either, you have to understand that you are customising the implementation itself and not the components it is based on.
 
 These libraries are here to help add to your customisation but because the extension has already initialised these components, you should use hooks into the area between the extension and the libraries.
-Please check our [Custom Extension](https://github.com/algolia/algoliasearch-custom-algolia-magento-2) for refrence 
+Please check our [Custom Extension](https://github.com/algolia/algoliasearch-custom-algolia-magento-2) for reference.
 
 ### Frontend JavaScript libraries
 
@@ -90,17 +91,16 @@ Please check our [Custom Extension](https://github.com/algolia/algoliasearch-cus
 
 Knowing the version of each Algolia JavaScript library will help you understand what is available for you to leverage in terms of customisation. This table will help you determine which documentation to reference when you start working on your customisation.
 
-| Extension Version | 	autocomplete.js                                                   | instantsearch.js                                                               | search-insights.js                                                   | recommend-js.js                                             |
-|-----------------|--------------------------------------------------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------|-------------------------------------------------------------|
-| v3.x            | [0.38.0](https://github.com/algolia/autocomplete.js/tree/v0.38.0)* | [4.15.0](https://github.com/algolia/instantsearch.js/tree/v4.15.0)*            | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | NA                                                          |
-| v3.9.1          | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*            | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.5.0](https://github.com/algolia/recommend/tree/v1.5.0)   |
-| v3.10.x         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*            | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
-| v3.11.0         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*            | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
-| v3.13.0         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)* | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
-| v3.14.x         | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)* | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.15.0](https://github.com/algolia/recommend/tree/v1.15.0) |
-| v3.15.x         | [1.17.9](https://github.com/algolia/autocomplete.js/tree/v1.17.9)  | [4.77.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.77.0) | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
-| >=v3.16.x       | [1.18.1](https://github.com/algolia/autocomplete.js/tree/v1.18.1)  | [4.78.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.78.0)  | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
-
+| Extension Version | 	autocomplete.js                                                   | instantsearch.js                                                                   | search-insights.js                                                   | recommend-js.js                                             |
+|------------------|--------------------------------------------------------------------|------------------------------------------------------------------------------------|----------------------------------------------------------------------|-------------------------------------------------------------|
+| v3.x             | [0.38.0](https://github.com/algolia/autocomplete.js/tree/v0.38.0)* | [4.15.0](https://github.com/algolia/instantsearch.js/tree/v4.15.0)*                | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | NA                                                          |
+| v3.9.1           | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.5.0](https://github.com/algolia/recommend/tree/v1.5.0)   |
+| v3.10.x          | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
+| v3.11.0          | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
+| v3.13.0          | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)* | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
+| v3.14.x          | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)* | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.15.0](https://github.com/algolia/recommend/tree/v1.15.0) |
+| v3.15.x          | [1.17.9](https://github.com/algolia/autocomplete.js/tree/v1.17.9)  | [4.77.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.77.0)  | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
+| >=v3.16.x        | [1.18.1](https://github.com/algolia/autocomplete.js/tree/v1.18.1)  | [4.78.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.78.0)  | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
 &ast; In earlier versions of the extension, the Autocomplete and InstantSearch libraries were accessible via the `algoliaBundle` global. This bundle was a prepackaged JavaScript file that contained dependencies for the frontend experience. What was included in this bundle can be seen here: https://github.com/algolia/algoliasearch-extensions-bundle/blob/ISv4/package.json
 
 Refer to these docs when customising your Algolia Magento extension frontend features:
@@ -136,21 +136,61 @@ The extension does most of the heavy lifting when it comes to gathering and prep
 
 Depending on the extension version you are using, you could have a different PHP API client version powering the extension's backend functionality.
 
-| Extension Version | API Client Version                                                      |
-|-------------------|-------------------------------------------------------------------------|
-| v3.x              | [2.5.1](https://github.com/algolia/algoliasearch-client-php/tree/2.5.1) |
-| v3.6.x            | [3.2.0](https://github.com/algolia/algoliasearch-client-php/tree/3.2.0) |
-| v3.11.0          | [3.3.2](https://github.com/algolia/algoliasearch-client-php/tree/3.3.2) |          
-| >=v3.14.x         | [4.0.x](https://github.com/algolia/algoliasearch-client-php/tree/4.0.0-beta.12)                                                               |
+| Extension Version | API Client Version                                                       |
+|-------------------|--------------------------------------------------------------------------|
+| v3.x              | [2.5.1](https://github.com/algolia/algoliasearch-client-php/tree/2.5.1)  |
+| v3.6.x            | [3.2.0](https://github.com/algolia/algoliasearch-client-php/tree/3.2.0)  |
+| v3.11.0           | [3.3.2](https://github.com/algolia/algoliasearch-client-php/tree/3.3.2)  |
+| >=v3.14.x         | [4.x.x](https://github.com/algolia/algoliasearch-client-php)             |
 
 Refer to these docs when customising your Algolia Magento extension backend:
 - [Indexing](https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/)
 - [Dispatched Backend Events](https://www.algolia.com/doc/integration/magento-2/customize/custom-back-end-events/)
 
+### Optional Modules
+
+The base extension can be paired with the following companion modules. Each is published as a separate Composer package and can be installed independently based on your store's needs.
+
+#### MSI compatibility module
+
+[`algolia/algoliasearch-inventory-magento-2`](https://github.com/algolia/algoliasearch-inventory-magento-2)
+
+Enables Algolia indexing compatibility with Magento's Multi-Source Inventory (MSI) system. Install this if your store uses MSI to manage stock across multiple sources (warehouses, physical stores, etc.) and you need Algolia records to reflect aggregated stock status and per-source quantities.
+
+```
+composer require algolia/algoliasearch-inventory-magento-2
+```
+
+Requires base extension `>=3.17.3`
+
+#### Search adapter module
+
+[`algolia/algoliasearch-adapter-magento-2`](https://github.com/algolia/algoliasearch-adapter-magento-2)
+
+Registers Algolia as a native Magento search engine backend, enabling server-side rendered category and search-results pages. Install this if you want SEO-friendly, crawler- and LLM-readable product listings, or if you need backend-only search without the InstantSearch JavaScript UI. Can run alongside InstantSearch for hybrid setups (crawlers see server-rendered HTML; shoppers see the client-rendered InstantSearch experience).
+
+```
+composer require algolia/algoliasearch-adapter-magento-2
+```
+
+Requires PHP 8.2+, Magento 2.4+, and base extension `^3.18`.
+
+#### Customization starter module
+
+[`algolia/algoliasearch-custom-algolia-magento-2`](https://github.com/algolia/algoliasearch-custom-algolia-magento-2)
+
+Boilerplate module that demonstrates how to extend the base integration with custom attributes, custom indexing logic, frontend InstantSearch tweaks, and event-driven customizations. Intended as a reference template to fork or copy patterns from rather than to install directly into production. See the [Customisation](#customisation) section above for the recommended approach to using this module.
+
+```
+composer require algolia/algoliasearch-custom-algolia-magento-2
+```
+
+Requires base extension `^3.15.0`.
+
 ## Support
 
-For feedback, bug reporting, or unresolved issues with the extension, please visit our [Support Center](https://support.algolia.com/hc/en-us/) where you can search the knowldge base and contact the Support team. Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
+For feedback, bug reporting, or unresolved issues with the extension, please visit our [Support Center](https://support.algolia.com/hc/en-us/) where you can search the knowledge base and contact the Support team. Please include your Magento version, extension version, application ID, and steps to reproducing your issue. Add additional information like screenshots, screencasts, and error messages to help our team better troubleshoot your issues.
 
 ## Contributing
 
-To start contributing to the extension follow the [contributing guildelines](.github/CONTRIBUTING.md).
+To start contributing to the extension follow the [contributing guidelines](.github/CONTRIBUTING.md).

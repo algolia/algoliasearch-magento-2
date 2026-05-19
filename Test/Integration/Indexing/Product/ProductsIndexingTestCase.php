@@ -13,6 +13,7 @@ class ProductsIndexingTestCase extends IndexingTestCase
 
     protected ?StockRegistry $stockRegistry = null;
     protected ?ProductBatchQueueProcessor $productBatchQueueProcessor = null;
+    protected ?IndexerRegistry $indexerRegistry = null;
 
     protected function setUp(): void
     {
@@ -20,11 +21,9 @@ class ProductsIndexingTestCase extends IndexingTestCase
 
         $this->productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
         $this->stockRegistry = $this->objectManager->get(StockRegistry::class);
+        $this->indexerRegistry = $this->objectManager->get(IndexerRegistry::class);
 
-        $this->objectManager
-            ->get(IndexerRegistry::class)
-            ->get('catalog_product_price')
-            ->reindexAll();
+        $this->indexerRegistry->get('catalog_product_price')->reindexAll();
     }
 
     /**

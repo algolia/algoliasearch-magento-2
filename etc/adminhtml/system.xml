@@ -53,16 +53,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="enable_frontend" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable Search</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            Do you want to use Algolia for search?<br>
-                            If not, Magento will perform all searches and not touch Algolia at all.
-                        ]]>
-                    </comment>
-                </field>
                 <field id="debug" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Logging</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -166,7 +156,19 @@
                         <field id="is_popup_enabled">1</field>
                     </depends>
                 </field>
-                <field id="nb_of_queries_suggestions" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="suggestions_mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Suggestions</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\Suggestions</source_model>
+                    <comment>
+                        <![CDATA[
+                            Choose if you want to use Magento Suggestions (populated by the <code>search_query</code> table) or the Algolia Suggestions from your Algolia dashboard.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_popup_enabled">1</field>
+                    </depends>
+                </field>
+                <field id="nb_of_queries_suggestions" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
                     <label>Number of queries</label>
                     <comment>
@@ -177,6 +179,7 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">1</field>
                     </depends>
                 </field>
                 <field id="min_popularity" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -189,6 +192,7 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">1</field>
                     </depends>
                 </field>
                 <field id="min_number_of_results" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -201,6 +205,36 @@
                     </comment>
                     <depends>
                         <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">1</field>
+                    </depends>
+                </field>
+                <field id="suggestions_index_name" translate="label comment" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Search suggestions index name</label>
+                    <backend_model>Algolia\AlgoliaSearch\Model\Backend\SuggestionsIndexName</backend_model>
+                    <comment>
+                        <![CDATA[
+                            Specify the index name you have configured in Algolia to use for search suggestions.<br/>
+                            By default, it is <code>%PRODUCT_INDEX_NAME%_query_suggestions</code><br/>
+                            For more information, check the <a target="_blank" href="https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/query-suggestions">Algolia official documentation</a><br/>
+                            If you just created it in the Algolia dashboard, this may takes some time for it to be available.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">2</field>
+                    </depends>
+                </field>
+                <field id="nb_of_algolia_suggestions" translate="label comment" type="text" sortOrder="47" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Number of Algolia Suggestions</label>
+                    <comment>
+                        <![CDATA[
+                            How many query Algolia Suggestions do you want to display ? (Must be higher than 0)
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_popup_enabled">1</field>
+                        <field id="suggestions_mode">2</field>
                     </depends>
                 </field>
                 <field id="sections" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -367,15 +401,24 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="pagination_mode" translate="label comment" type="select" sortOrder="4" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\PaginationMode</source_model>
+                    <label>Pagination</label>
+                    <comment>
+                        <model>Algolia\AlgoliaSearch\Model\Config\PaginationMode</model>
+                    </comment>
+                </field>
                 <field id="number_product_results" translate="label comment" type="text" sortOrder="5" showInDefault="1"
                        showInWebsite="1" showInStore="1">
                     <validate>validate-digits</validate>
-                    <label>Number of products per page</label>
+                    <label>Number of products per page (custom)</label>
                     <comment>
                         <![CDATA[
-                            The number of products displayed on the InstantSearch results page. Default value is 9.
+                            Default custom value is 9.
                         ]]>
                     </comment>
+                    <depends><field id="pagination_mode">2</field></depends>
                 </field>
                 <field id="replace_categories" translate="label comment" type="select" sortOrder="40" showInDefault="1"
                        showInWebsite="1" showInStore="1">
@@ -572,12 +615,7 @@
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\SortOrderProduct</frontend_model>
                     <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
                     <comment>
-                        <![CDATA[
-                            Specify a product's attributes your users can search on (searchable) and the ones required to display search results.
-                            The order of the searchable attributes matters: a query matching the first searchable attribute of a product will put this product before the others in the results.<br><br>
-                            Searchable attributes' documentation: <a target="_blank" href="https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/?utm_source=magento&utm_medium=extension&utm_campaign=magento_2&utm_term=shop-owner&utm_content=doc-link#searchable-attributes">Products' searchable attributes</a>
-                            <br><span class="algolia-config-warning">&#9888;</span> Do not forget to reindex the Algolia Search Products indexer after you've modified this panel.
-                        ]]>
+                        <model>Algolia\AlgoliaSearch\Model\Config\AttributesComment</model>
                     </comment>
                 </field>
                 <field id="custom_ranking_product_attributes" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -1114,9 +1152,9 @@
                 <attribute type="expanded">1</attribute>
                 <comment>
                     <![CDATA[
-                         <p><span class="algolia-config-warning">&#9888;</span> Since version 3.16.0, the following Magento indexers can be disabled for <strong>full indexing</strong>.
+                         <p><span class="algolia-config-warning">&#9888;</span> Since version 3.18.0, the following Magento indexers are disabled for <strong>full indexing</strong>.
                          The extension will continue to rely on them for reindexing specific entities with Magento materialized views or entity save events if you do so.</p>
-                         <p>If you want to perform full reindexing, we highly suggest to turn this configuration off and run the newly created CLI commands instead (this will become the default behavior in a future version).</p>
+                         <p>If you want to perform full reindexing, we highly suggest to keep this configuration <strong>disabled</strong> and run the newly created CLI commands instead.</p>
                     ]]>
                 </comment>
                 <field id="products" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -1487,37 +1525,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="prevent_backend_rendering" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Prevent default backend rendering</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            <span class="algolia-config-warning">&#9888;</span>
-                            Algolia injects its search results via InstantSearch in place of default search results. Enable this setting to hide default search results completely.
-                            By preventing your store from backend rendering you might break your SEO and accessibility of your store by search crawlers.
-                            <br/><br/>
-                            <em>This feature is deprecated and will be replaced in a future version.</em>
-                        ]]>
-                    </comment>
-                </field>
-                <field id="prevent_backend_rendering_display_mode" translate="label comment" type="select" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Prevent backend rendering for</label>
-                    <source_model>Algolia\AlgoliaSearch\Model\Source\BackendRenderingDisplayMode</source_model>
-                    <depends>
-                        <field id="prevent_backend_rendering">1</field>
-                    </depends>
-                </field>
-                <field id="backend_rendering_allowed_user_agents" translate="label comment" type="\Algolia\AlgoliaSearch\Model\Textarea" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Allow backend rendering for User Agents</label>
-                    <comment>
-                        <![CDATA[
-                            To specify multiple User-Agents, please put one User-Agent per line.
-                        ]]>
-                    </comment>
-                    <depends>
-                        <field id="prevent_backend_rendering">1</field>
-                    </depends>
-                </field>
                 <field id="non_castable_attributes" translate="label comment" type="text" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Product numeric textfield attributes</label>
                     <frontend_model>Algolia\AlgoliaSearch\Model\Source\ProductAttributes</frontend_model>
@@ -1545,7 +1552,15 @@
                             If your Algolia plan allows a higher record size limit, you can customize the record size limit.]]>
                     </comment>
                 </field>
-                <field id="analytics_region" translate="label comment" type="select" sortOrder="96" showInDefault="1">
+                <field id="max_replicas_limit" translate="label comment" type="text" sortOrder="97" showInDefault="1">
+                    <label>Maximum number of replicas per index</label>
+                    <comment>
+                        <![CDATA[
+                            By default, the Algolia extension allows the creation of 20 replicas per index.
+                            If your Algolia plan allows a higher number of replicas, you can increase it.]]>
+                    </comment>
+                </field>
+                <field id="analytics_region" translate="label comment" type="select" sortOrder="99" showInDefault="1">
                     <label>Analytics Region</label>
                     <source_model>Algolia\AlgoliaSearch\Model\Source\AnalyticsRegion</source_model>
                 </field>

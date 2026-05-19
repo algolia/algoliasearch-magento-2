@@ -131,7 +131,7 @@ $view = $block->getViewModel();
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/popular/" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?= $escaper->escapeHtml(__('See more searches')) ?></a>
+                    <a href="https://www.algolia.com/analytics/searches/<?= $escaper->escapeHtml($view->getIndexName()) ?>" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?= $escaper->escapeHtml(__('See more searches')) ?></a>
                 </div>
             </div>
             <div class="one-third section popular-results">
@@ -171,7 +171,7 @@ $view = $block->getViewModel();
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/popular/" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?= $escaper->escapeHtml(__('See more results')) ?></a>
+                    <a href="https://www.algolia.com/analytics/results/<?= $escaper->escapeHtml($view->getIndexName()) ?>" target="_blank" class="algoliasearch-admin-icon as-icon-new-window"><?= $escaper->escapeHtml(__('See more results')) ?></a>
                 </div>
             </div>
             <div class="one-third section no-result-searches">
@@ -203,7 +203,7 @@ $view = $block->getViewModel();
                     <?php endif ?>
                 </div>
                 <div class="analytics-footer">
-                    <a href="https://www.algolia.com/analytics/no-results/" class="algoliasearch-admin-icon as-icon-new-window" target="_blank"><?= $escaper->escapeHtml(__('See more no results searches')) ?></a>
+                    <a href="https://www.algolia.com/analytics/no-results/<?= $escaper->escapeHtml($view->getIndexName()) ?>" class="algoliasearch-admin-icon as-icon-new-window" target="_blank"><?= $escaper->escapeHtml(__('See more no results searches')) ?></a>
                 </div>
             </div>
         </div>

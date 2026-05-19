@@ -2,10 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 
-use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
-use Algolia\AlgoliaSearch\Service\Serializer;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
+use Algolia\AlgoliaSearch\Service\Serializer;
+use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Cookie\Helper\Cookie as CookieHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
@@ -19,11 +21,10 @@ use Magento\Framework\Locale\Currency;
 use Magento\Framework\Module\ResourceInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Weee\Helper\Data as WeeeHelper;
-use PHPUnit\Framework\TestCase;
 
 class ConfigHelperTest extends TestCase
 {
-    protected ?ConfigHelperTestable $configHelper;
+    protected ?ConfigHelper $configHelper;
     protected ?ScopeConfigInterface $configInterface;
     protected ?WriterInterface $configWriter;
     protected ?StoreManagerInterface $storeManager;
@@ -63,7 +64,7 @@ class ConfigHelperTest extends TestCase
         $this->queueHelper = $this->createMock(QueueHelper::class);
         $this->weeeHelper = $this->createMock(WeeeHelper::class);
 
-        $this->configHelper = new ConfigHelperTestable(
+        $this->configHelper = new ConfigHelper(
             $this->configInterface,
             $this->configWriter,
             $this->storeManager,
@@ -94,5 +95,47 @@ class ConfigHelperTest extends TestCase
     public function testGetIndexPrefixWhenNull() {
         $this->configInterface->method('getValue')->willReturn(null);
         $this->assertEquals('', $this->configHelper->getIndexPrefix());
+    }
+
+    /**
+     * @dataProvider isEnabledFrontEndProvider
+     */
+    public function testIsEnabledFrontEnd(
+        bool $isAutocompleteEnabled,
+        bool $isInstantSearchEnabled,
+        bool $expectedResult
+    ): void {
+        $storeId = 1;
+
+        $this->autocompleteHelper->method('isEnabled')->with($storeId)->willReturn($isAutocompleteEnabled);
+        $this->instantSearchHelper->method('isEnabled')->with($storeId)->willReturn($isInstantSearchEnabled);
+
+        $this->assertSame($expectedResult, $this->configHelper->isEnabledFrontEnd($storeId));
+    }
+
+    public static function isEnabledFrontEndProvider(): array
+    {
+        return [
+            'Both enabled' => [
+                'isAutocompleteEnabled' => true,
+                'isInstantSearchEnabled' => true,
+                'expectedResult' => true,
+            ],
+            'Only autocomplete enabled' => [
+                'isAutocompleteEnabled' => true,
+                'isInstantSearchEnabled' => false,
+                'expectedResult' => true,
+            ],
+            'Only instant search enabled' => [
+                'isAutocompleteEnabled' => false,
+                'isInstantSearchEnabled' => true,
+                'expectedResult' => true,
+            ],
+            'Neither enabled' => [
+                'isAutocompleteEnabled' => false,
+                'isInstantSearchEnabled' => false,
+                'expectedResult' => false,
+            ],
+        ];
     }
 }

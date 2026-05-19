@@ -1,10 +1,4 @@
 <?xml version="1.0"?>
-<!--
-/**
- * Copyright © Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
- */
--->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <!-- Credentials and Basic Setup -->
@@ -27,9 +21,11 @@
                 <autocomplete_selector>.algolia-search-input</autocomplete_selector>
                 <nb_of_products_suggestions>6</nb_of_products_suggestions>
                 <nb_of_categories_suggestions>2</nb_of_categories_suggestions>
+                <suggestions_mode>0</suggestions_mode>
                 <nb_of_queries_suggestions>0</nb_of_queries_suggestions>
                 <min_popularity>1000</min_popularity>
                 <min_number_of_results>2</min_number_of_results>
+                <nb_of_algolia_suggestions>2</nb_of_algolia_suggestions>
                 <sections><![CDATA[{"_1600351750374_374":{"name":"pages","label":"Pages","hitsPerPage":"2"}}]]></sections>
                 <excluded_pages><![CDATA[{"_1600351757831_831":{"attribute":"no-route"}}]]></excluded_pages>
                 <render_template_directives>1</render_template_directives>
@@ -49,6 +45,7 @@
             <instant>
                 <is_instant_enabled>0</is_instant_enabled>
                 <instant_selector>.columns</instant_selector>
+                <pagination_mode>0</pagination_mode>
                 <number_product_results>9</number_product_results>
                 <replace_categories>0</replace_categories>
             </instant>
@@ -141,13 +138,13 @@
                 <enable_pages_index>1</enable_pages_index>
             </algolia_indexing>
             <full_indexing>
-                <products>1</products>
-                <categories>1</categories>
-                <pages>1</pages>
-                <suggestions>1</suggestions>
-                <additional_sections>1</additional_sections>
-                <delete_products>1</delete_products>
-                <queue>1</queue>
+                <products>0</products>
+                <categories>0</categories>
+                <pages>0</pages>
+                <suggestions>0</suggestions>
+                <additional_sections>0</additional_sections>
+                <delete_products>0</delete_products>
+                <queue>0</queue>
             </full_indexing>
         </algoliasearch_indexing_manager>
         <!-- Click & Conversion Analytics -->
@@ -189,11 +186,9 @@
                 <remove_pub_dir_in_url>0</remove_pub_dir_in_url>
                 <remove_branding>0</remove_branding>
                 <index_product_on_category_products_update>1</index_product_on_category_products_update>
-                <prevent_backend_rendering>0</prevent_backend_rendering>
-                <prevent_backend_rendering_display_mode>all</prevent_backend_rendering_display_mode>
-                <backend_rendering_allowed_user_agents>Googlebot\nBingbot</backend_rendering_allowed_user_agents>
                 <number_of_element_by_page>1000</number_of_element_by_page>
                 <max_record_size_limit>10000</max_record_size_limit>
+                <max_replicas_limit>20</max_replicas_limit>
                 <analytics_region>us</analytics_region>
                 <connection_timeout>2</connection_timeout>
                 <read_timeout>30</read_timeout>

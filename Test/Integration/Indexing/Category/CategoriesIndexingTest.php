@@ -30,7 +30,7 @@ class CategoriesIndexingTest extends IndexingTestCase
         $categoryBatchQueueProcessor->processBatch(1, [3]);
         $this->algoliaConnector->waitLastTask();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_categories');
+        $indexOptions = $this->getIndexOptions('categories');
         $results = $this->algoliaConnector->getObjects($indexOptions, ['3']);
         $hit = reset($results['results']);
 

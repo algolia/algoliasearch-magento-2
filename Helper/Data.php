@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
-use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;
 use Magento\Framework\Exception\LocalizedException;
@@ -30,7 +29,6 @@ class Data
         protected AdditionalSectionIndexBuilder $additionalSectionIndexBuilder,
         protected PageIndexBuilder              $pageIndexBuilder,
         protected SuggestionIndexBuilder        $suggestionIndexBuilder,
-        protected BackendSearch                 $backendSearch
     ){}
 
     /**
@@ -163,23 +161,6 @@ class Data
     public function deleteInactiveProducts($storeId): void
     {
         $this->productIndexBuilder->deleteInactiveProducts($storeId);
-    }
-
-    /**
-     * @param string $query
-     * @param int $storeId
-     * @param array|null $searchParams
-     * @param string|null $targetedIndex
-     * @return array
-     * @throws AlgoliaException|NoSuchEntityException
-     * @internal This method is currently unstable and should not be used. It may be revisited or fixed in a future version.
-     *
-     * @deprecated
-     * Use Algolia\AlgoliaSearch\Service\Product\BackendSearch::getSearchResult() instead
-     */
-    public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
-    {
-        return $this->backendSearch->getSearchResult($query, $storeId, $searchParams, $targetedIndex);
     }
 
     /**

@@ -88,7 +88,11 @@ class MultiStoreConfigTest extends MultiStoreTestCase
             scopeCode: $fixtureSecondStore->getCode()
         );
 
-        $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
+        $this->indicesConfigurator->saveConfigurationToAlgolia(
+            $fixtureSecondStore->getId(),
+            false,
+            ['products', 'categories']
+        );
 
         $defaultIndexOptions = $this->getIndexOptions('products', $defaultStore->getId());
         $fixtureIndexOptions = $this->getIndexOptions('products', $fixtureSecondStore->getId());

@@ -1,6 +1,6 @@
 composer.lock
 vendor/
-.php-cs-fixer.cache
+.php_cs.cache
 
 node_modules/
 
@@ -10,3 +10,4 @@ node_modules/
 .github/instructions/codacy.instructions.md
 dev/bin/auth.json
 .claude/settings.local.json
+.php-cs-fixer.cache

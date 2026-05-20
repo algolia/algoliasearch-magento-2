@@ -13,7 +13,7 @@ use Magento\TestFramework\Helper\Bootstrap;
  * Provides a way to clean up indices after individual tests or an entire test suite
  * Can be invoked from either tearDown or tearDownAfterClass
  */
-final class IndexCleaner
+class IndexCleaner
 {
     /**
      * @throws NoSuchEntityException|AlgoliaException

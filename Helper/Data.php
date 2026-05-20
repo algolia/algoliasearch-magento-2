@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
-use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;
 use Magento\Framework\Exception\LocalizedException;
@@ -30,7 +29,6 @@ class Data
         protected AdditionalSectionIndexBuilder $additionalSectionIndexBuilder,
         protected PageIndexBuilder              $pageIndexBuilder,
         protected SuggestionIndexBuilder        $suggestionIndexBuilder,
-        protected BackendSearch                 $backendSearch
     ){}
 
     /**

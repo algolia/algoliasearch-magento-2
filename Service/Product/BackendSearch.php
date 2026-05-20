@@ -23,8 +23,7 @@ class BackendSearch
     /**
      * @throws AlgoliaException|NoSuchEntityException
      *
-     * @internal This method is currently unstable and should not be used. It may be revisited or fixed in a future version.
-     *
+     * @internal This method is intended primarily for integration testing and not for the search experience
      */
     public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
     {

@@ -2,20 +2,19 @@ parameters:
     level: 1
     reportUnmatchedIgnoredErrors: false
     paths:
-        - vendor/algolia/algoliasearch-magento-2/Adapter
-        - vendor/algolia/algoliasearch-magento-2/Api
-        - vendor/algolia/algoliasearch-magento-2/Block
-        - vendor/algolia/algoliasearch-magento-2/Controller
-        - vendor/algolia/algoliasearch-magento-2/DataProvider
-        - vendor/algolia/algoliasearch-magento-2/Exception
-        - vendor/algolia/algoliasearch-magento-2/Factory
-        - vendor/algolia/algoliasearch-magento-2/Helper
-        - vendor/algolia/algoliasearch-magento-2/Model
-        - vendor/algolia/algoliasearch-magento-2/Plugin
-        - vendor/algolia/algoliasearch-magento-2/Setup
-        - vendor/algolia/algoliasearch-magento-2/Test
-        - vendor/algolia/algoliasearch-magento-2/Ui
-        - vendor/algolia/algoliasearch-magento-2/ViewModel
-        - vendor/algolia/algoliasearch-magento-2/registration.php
+        - Api
+        - Block
+        - Controller
+        - DataProvider
+        - Exception
+        - Factory
+        - Helper
+        - Model
+        - Plugin
+        - Setup
+        - Test
+        - Ui
+        - ViewModel
+        - registration.php
     ignoreErrors:
         - '#Call to static method getObjectManager\(\) on an unknown class Magento\\TestFramework\\Helper\\Bootstrap.#'

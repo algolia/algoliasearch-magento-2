@@ -3,12 +3,12 @@
 namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface;
 use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\IndexOptions;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Model\Search\SettingsResponse;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
@@ -103,10 +103,22 @@ class AlgoliaConnector
             $this->config->getApplicationID($storeId),
             $this->config->getAPIKey($storeId)
         );
-        $config->setConnectTimeout($this->config->getConnectionTimeout($storeId));
-        $config->setReadTimeout($this->config->getReadTimeout($storeId));
+        $config->setConnectTimeout($this->getConnectionTimeout($storeId));
+        $config->setReadTimeout($this->getReadTimeout($storeId));
         $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
         $this->clients[$storeId] = SearchClient::createWithConfig($config);
+    }
+
+    /** Allow override by alternate connectors */
+    protected function getConnectionTimeout(int $storeId): int
+    {
+        return $this->config->getConnectionTimeout($storeId);
+    }
+
+    /** Allow override by alternate connectors */
+    protected function getReadTimeout(int $storeId): int
+    {
+        return $this->config->getReadTimeout($storeId);
     }
 
     /**
@@ -159,6 +171,18 @@ class AlgoliaConnector
     }
 
     /**
+     * @param string $indexName
+     * @param int|null $storeId
+     * @return bool
+     * @throws AlgoliaException
+     * @throws \Throwable
+     */
+    public function indexExists(string $indexName, ?int $storeId = null): bool
+    {
+        return $this->getClient($storeId)->indexExists($indexName);
+    }
+
+    /**
      * @param IndexOptionsInterface $indexOptions
      * @param string $q
      * @param array $params
@@ -166,21 +190,21 @@ class AlgoliaConnector
      * @throws AlgoliaException|NoSuchEntityException
      * @internal This method is currently unstable and should not be used. It may be revisited ar fixed in a future version.
      */
-    public function query(IndexOptionsInterface $indexOptions, string $q, array $params): array
+    public function query(SearchQueryInterface $query): array
     {
         // TODO: Revisit - not compatible with PHP v4
         // if (isset($params['disjunctiveFacets'])) {
         //    return $this->searchWithDisjunctiveFaceting($indexName, $q, $params);
         //}
 
-        $indexName = $indexOptions->getIndexName();
+        $indexOptions = $query->getIndexOptions();
 
         $params = array_merge(
             [
-                self::ALGOLIA_API_INDEX_NAME => $indexName,
-                'query' => $q
+                self::ALGOLIA_API_INDEX_NAME => $indexOptions->getIndexName(),
+                'query' => $query->getQuery()
             ],
-            $params
+            $query->getParams()
         );
 
         // TODO: Validate return value for integration tests
@@ -191,7 +215,7 @@ class AlgoliaConnector
 
     /**
      * @param IndexOptionsInterface $indexOptions
-     * @param array $objectIds
+     * @param string[] $objectIds REST API requires objectID sent as type string
      * @return array<string, mixed>
      * @throws AlgoliaException
      */

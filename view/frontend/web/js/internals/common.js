@@ -1,4 +1,4 @@
-define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache/js/form-key-provider'], function ($, instantsearch, algoliaBase64) {
+define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSearch/js/internals/params-manager', 'Magento_PageCache/js/form-key-provider'], function ($, instantsearch, algoliaBase64, algoliaParamsManager) {
     const USE_GLOBALS = true;
 
     // Character maps supplied for more performant Regex ops
@@ -150,21 +150,20 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                         }
                         // Handle categories
                         if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-                            routeParameters[currentFacet.attribute] = (uiStateProductIndex.hierarchicalMenu &&
-                                uiStateProductIndex.hierarchicalMenu[currentFacet.attribute + '.level0'] &&
-                                uiStateProductIndex.hierarchicalMenu[currentFacet.attribute + '.level0'].join('~'));
+                            routeParameters[algoliaParamsManager.getCategoryParam()] =
+                                uiStateProductIndex.hierarchicalMenu?.[currentFacet.attribute + '.level0']?.join('~');
                         }
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
-                            routeParameters[currentFacet.attribute] = (uiStateProductIndex.range &&
-                                uiStateProductIndex.range[currentFacet.attribute] &&
-                                uiStateProductIndex.range[currentFacet.attribute]);
+                            // InstantSearch always updates the original routing parameter (ex: price.USD.default)
+                            routeParameters[currentFacet.attribute] = uiStateProductIndex?.range?.[currentFacet.attribute];
                         }
                     }
-
                 }
-                routeParameters['sortBy'] = uiStateProductIndex.sortBy;
-                routeParameters['page'] = uiStateProductIndex.page;
+
+                routeParameters[algoliaParamsManager.getSortingParam()] = algoliaParamsManager.getSortingValueFromUiState(uiStateProductIndex);
+                routeParameters[algoliaParamsManager.getPagingParam()] = uiStateProductIndex.page;
+
                 return routeParameters;
             },
             routeToState: function (routeParameters) {
@@ -197,7 +196,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                         }
                         // Handle categories facet
                         if (currentFacet.attribute == 'categories' && !algoliaConfig.isCategoryPage) {
-                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters['categories'] && routeParameters['categories'].split('~');
+                            uiStateProductIndex['hierarchicalMenu']['categories.level0'] = routeParameters[algoliaParamsManager.getCategoryParam()]?.split(algoliaConfig.routing.categoryRouteDelimiter);
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['hierarchicalMenu']['categories.level0'] === 'undefined' &&
                                 'categories.level0' in landingPageConfig) {
@@ -210,7 +209,16 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                         // Handle sliders
                         if (currentFacet.type == 'slider' || currentFacet.type == 'priceRanges') {
                             var currentFacetAttribute = currentFacet.attribute;
-                            uiStateProductIndex['range'][currentFacetAttribute] = routeParameters[currentFacetAttribute] && routeParameters[currentFacetAttribute];
+
+                            // Guard against prototype pollution
+                            if (Object.hasOwn(Object.prototype, currentFacetAttribute)) {
+                                continue;
+                            }
+
+                            // eslint-disable-next-line security/detect-object-injection
+                            uiStateProductIndex['range'][currentFacetAttribute] =
+                                algoliaParamsManager.getPriceParamValue(currentFacetAttribute, routeParameters);
+
                             if (algoliaConfig.isLandingPage &&
                                 typeof uiStateProductIndex['range'][currentFacetAttribute] === 'undefined' &&
                                 currentFacetAttribute in landingPageConfig) {
@@ -219,7 +227,7 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                                 if (typeof landingPageConfig[currentFacetAttribute]['>='] !== "undefined") {
                                     facetValue = landingPageConfig[currentFacetAttribute]['>='][0];
                                 }
-                                facetValue += ':';
+                                facetValue += algoliaParamsManager.getPriceSeparator();
                                 if (typeof landingPageConfig[currentFacetAttribute]['<='] !== "undefined") {
                                     facetValue += landingPageConfig[currentFacetAttribute]['<='][0];
                                 }
@@ -229,8 +237,9 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
                     }
 
                 }
-                uiStateProductIndex['sortBy'] = routeParameters.sortBy;
-                uiStateProductIndex['page'] = routeParameters.page;
+
+                uiStateProductIndex['sortBy'] = algoliaParamsManager.getSortingFromRoute(routeParameters);
+                uiStateProductIndex['page'] = routeParameters[algoliaParamsManager.getPagingParam()];
 
                 var uiState = {};
                 uiState[productIndexName] = uiStateProductIndex;
@@ -247,7 +256,8 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Magento_PageCache
 
         isTouchDevice: () => {
             return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        }
+        },
+
     };
 
     const legacyGlobalFunctions = {

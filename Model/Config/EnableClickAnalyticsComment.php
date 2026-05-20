@@ -2,28 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Model\Config;
 
-use Magento\Config\Model\Config\CommentInterface;
-use Magento\Framework\UrlInterface;
-
-class EnableClickAnalyticsComment implements CommentInterface
+class EnableClickAnalyticsComment extends AbstractConfigComment
 {
-    public function __construct(
-        protected UrlInterface $urlInterface
-    ) { }
-
-    private function getLink(string $section, string $fragment = ""): string
+    public function getCommentText($elementValue): string
     {
-        $url = $this->urlInterface->getUrl("adminhtml/system_config/edit/section/$section");
-        if ($fragment) {
-            $url .= "#$fragment";
-        }
-        return $url;
-    }
-
-    public function getCommentText($elementValue)
-    {
-        $magentoCookieConfigLink = $this->getLink('web', 'web_cookie-link');
-        $algoliaCookieConfigLink = $this->getLink( 'algoliasearch_credentials', 'algoliasearch_credentials_algolia_cookie_configuration-link');
+        $magentoCookieConfigLink = $this->getConfigLink('web', 'web_cookie-link');
+        $algoliaCookieConfigLink = $this->getConfigLink( 'algoliasearch_credentials', 'algoliasearch_credentials_algolia_cookie_configuration-link');
 
         // return 'If your Magento cookie settings, specifically <b>General > Web > Default Cookie Settings > Cookie Restriction Mode</b> is set to "No," we will consider it as Implicit Cookie Consent. In this case, <code>useCookie</code> will be set to True by default for all insight events. Conversely, if <b>Cookie Restriction Mode is set to "Yes"</b>, Insight events will not be allowed without explicit cookie consent.';
         return <<<COMMENT

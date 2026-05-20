@@ -19,7 +19,7 @@ $isConfig = [
         'getRankingInfo' => true,
         'ruleContexts' => [
             '',
-            'magento-query-' . $queryId,
+            \Algolia\AlgoliaSearch\Api\Product\RuleContextInterface::MERCH_RULE_QUERY_PREFIX . $queryId,
         ],
     ],
 ];

@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
+use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -11,10 +13,11 @@ use Magento\Framework\Exception\NoSuchEntityException;
 class BackendSearch
 {
     public function __construct(
-        protected ConfigHelper  $configHelper,
-        protected ProductHelper $productHelper,
-        protected AlgoliaConnector $algoliaConnector,
-        protected IndexOptionsBuilder $indexOptionsBuilder,
+        protected ConfigHelper                $configHelper,
+        protected ProductHelper               $productHelper,
+        protected AlgoliaConnector            $algoliaConnector,
+        protected IndexOptionsBuilder         $indexOptionsBuilder,
+        protected SearchQueryInterfaceFactory $searchQueryFactory,
     ){}
 
     /**
@@ -24,8 +27,7 @@ class BackendSearch
      * @param string|null $targetedIndex
      * @return array
      * @throws AlgoliaException|NoSuchEntityException
-     * @internal This method is currently unstable and should not be used. It may be revisited or fixed in a future version.
-     *
+     * @internal This method is intended primarily for integration testing and not for the search experience
      */
     public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array
     {
@@ -48,7 +50,7 @@ class BackendSearch
             'attributesToRetrieve'   => AlgoliaConnector::ALGOLIA_API_OBJECT_ID,
             'attributesToHighlight'  => '',
             'attributesToSnippet'    => '',
-            'numericFilters'         => ['visibility_search=1'],
+            'numericFilters'         => [sprintf('%s=1', ProductRecordFieldsInterface::VISIBILITY_SEARCH)],
             'removeWordsIfNoResults' => $this->configHelper->getRemoveWordsIfNoResult($storeId),
             'analyticsTags'          => 'backend-search',
             'facets'                 => $facetsToRetrieve,
@@ -59,7 +61,11 @@ class BackendSearch
             $params = array_merge($params, $searchParams);
         }
 
-        $response = $this->algoliaConnector->query($indexOptions, $query, $params);
+        $response = $this->algoliaConnector->query($this->searchQueryFactory->create([
+            'indexOptions' => $indexOptions,
+            'query' => $query,
+            'params' => $params,
+        ]));
         $answer = reset($response['results']);
 
         $data = [];

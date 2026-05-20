@@ -1,5 +1,45 @@
 # CHANGE LOG
 
+## 3.18.0
+
+### Features
+- Introduced **Algolia Query Suggestions** feature ([#1885](https://github.com/algolia/algoliasearch-magento-2/pull/1885), [#1863](https://github.com/algolia/algoliasearch-magento-2/pull/1863)):
+  - Added possibility to switch between legacy Magento Search Queries and Algolia Query Suggestions.
+  - Updated configuration in the Autocomplete menu section.
+  - Implemented the feature on the frontend out of the box.
+- Introduced [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2) ([#1846](https://github.com/algolia/algoliasearch-magento-2/pull/1846), [#1850](https://github.com/algolia/algoliasearch-magento-2/pull/1850), [#1844](https://github.com/algolia/algoliasearch-magento-2/pull/1844))
+  - Registers Algolia as a native Magento 2 search engine.
+  - Provides backend (server-side) rendering for category pages and search results.
+  - Provides friendly indexable content for search-engine crawlers, LLM-based discovery tools, and any client that doesn't execute JavaScript.
+- Added configurable number of replicas limit ([#1901](https://github.com/algolia/algoliasearch-magento-2/pull/1901)).
+- Enhanced paging configuration which now takes into account Magento's configuration for grid mode and list mode in addition to the custom mode (value set by the user) ([#1869](https://github.com/algolia/algoliasearch-magento-2/pull/1869), [#1873](https://github.com/algolia/algoliasearch-magento-2/pull/1873)).
+
+### Updates
+- **Removed backend rendering management** (see "Breaking Changes section") ([#1900](https://github.com/algolia/algoliasearch-magento-2/pull/1900), [#1844](https://github.com/algolia/algoliasearch-magento-2/pull/1844),  [#1934](https://github.com/algolia/algoliasearch-magento-2/pull/1934)).
+- Refactored many portions of the codebase to expose extendable components to be used by the Algolia Adapter module ([#1862](https://github.com/algolia/algoliasearch-magento-2/pull/1862), [#1864](https://github.com/algolia/algoliasearch-magento-2/pull/1864), [#1860](https://github.com/algolia/algoliasearch-magento-2/pull/1860)).
+- Synchronized InstantSearch price, sorting and paging params with backend render by introducing `params-manager.js` object ([#1873](https://github.com/algolia/algoliasearch-magento-2/pull/1873), [#1889](https://github.com/algolia/algoliasearch-magento-2/pull/1889), [#1888](https://github.com/algolia/algoliasearch-magento-2/pull/1888)).
+- The unused legacy class `AlgoliaHelper` has been removed ([#1850](https://github.com/algolia/algoliasearch-magento-2/pull/1850)).
+- Monolog v2 deprecation observed but maintaining compatibility with Magento 2.4.7 until v2.4.9 release.
+- `IndexOptionsBuilder::buildWithComputedIndex` now requires an index suffix ([#1855](https://github.com/algolia/algoliasearch-magento-2/pull/1855), [#1856](https://github.com/algolia/algoliasearch-magento-2/pull/1856)).
+- Added `ProductRecordFieldsInterface` API contract for canonical visibility fields ([#1862](https://github.com/algolia/algoliasearch-magento-2/pull/1862)).
+- Added `CategoryPathProvider`, `PriceKeyResolver` and `RenderingManager` services ([#1887](https://github.com/algolia/algoliasearch-magento-2/pull/1887), [#1872](https://github.com/algolia/algoliasearch-magento-2/pull/1872), [#1900](https://github.com/algolia/algoliasearch-magento-2/pull/1900)).
+- Added `FrontendProductUrl` virtual type ([#1906](https://github.com/algolia/algoliasearch-magento-2/pull/1906), [#1870](https://github.com/algolia/algoliasearch-magento-2/pull/1870)).
+- Added links leading to facets and sortings configurations in the InstantSearch section ([#1896](https://github.com/algolia/algoliasearch-magento-2/pull/1896), [#1899](https://github.com/algolia/algoliasearch-magento-2/pull/1899)).
+- Fix PHP 8.4 deprecated warning by making $resource parameter explicitly nullable - thank you @mohaelmrabet ([#1898](https://github.com/algolia/algoliasearch-magento-2/pull/1898)).
+- Clean up some types in the `Model\ResourceModel` directory ([#1902](https://github.com/algolia/algoliasearch-magento-2/pull/1902)).
+- Updated Indexing Manager default values for auto full indexing - full reindex must be explicitly invoked unless this setting is changed ([#1854](https://github.com/algolia/algoliasearch-magento-2/pull/1854)).
+- Updated admin CSS.
+- Updated and refactored unit and integration tests ([#1903](https://github.com/algolia/algoliasearch-magento-2/pull/1903), [#1861](https://github.com/algolia/algoliasearch-magento-2/pull/1861)).
+- Removed the deprecated `beforecontent.phtml` template and its block declaration in `algolia_search_handle.xml` (deprecated in v3.16) ([#1936](https://github.com/algolia/algoliasearch-magento-2/pull/1936)).
+
+### Bug Fixes
+- Fixed product url indexing when URL rewrites are disabled ([#1906](https://github.com/algolia/algoliasearch-magento-2/pull/1906), [#1870](https://github.com/algolia/algoliasearch-magento-2/pull/1870)).
+- Fixed some integration tests ([#1903](https://github.com/algolia/algoliasearch-magento-2/pull/1903), [#1861](https://github.com/algolia/algoliasearch-magento-2/pull/1861)).
+- Fixed undefined property `indexerRegistry` exception on `CategoryObserver` ([#1917](https://github.com/algolia/algoliasearch-magento-2/pull/1917)).
+
+### Breaking Changes
+- Backend rendering management is no longer supported in this module, please refer to the [Algolia Adapter module](https://github.com/algolia/algoliasearch-adapter-magento-2).
+
 ## 3.17.3
 
 ### Updates

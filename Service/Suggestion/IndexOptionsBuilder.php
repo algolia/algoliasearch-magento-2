@@ -4,7 +4,6 @@ namespace Algolia\AlgoliaSearch\Service\Suggestion;
 
 use Algolia\AlgoliaSearch\Api\Builder\EntityIndexOptionsBuilderInterface;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
 use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder as BaseIndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -13,7 +12,6 @@ class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndex
 {
     /**
      * @throws NoSuchEntityException
-     * @throws AlgoliaException
      */
     public function buildEntityIndexOptions(int $storeId, ?bool $isTmp = false): IndexOptionsInterface
     {

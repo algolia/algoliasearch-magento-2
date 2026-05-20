@@ -1,4 +1,14 @@
-<?php /** @var \Magento\Framework\Escaper $escaper */ ?>
+<?php
+/**
+ * @deprecated since 3.18, to be removed in 3.19. (See MAGE-1579.)
+ *             Part of the legacy backend-facet-rendering subsystem.
+ *             Referenced only by CategoryRenderer, which is itself unreachable.
+ *             Backend rendering is now provided by the optional Algolia_SearchAdapter module.
+ * @see https://github.com/algolia/algoliasearch-adapter-magento-2
+ *
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
 <ol class="items">
     <?php foreach ($filterItems as $filterItem): ?>
         <li class="item">

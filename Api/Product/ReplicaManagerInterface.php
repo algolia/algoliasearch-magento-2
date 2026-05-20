@@ -13,6 +13,9 @@ interface ReplicaManagerInterface
 
     public const SORT_KEY_ATTRIBUTE_NAME = 'attribute';
     public const SORT_KEY_VIRTUAL_REPLICA = 'virtualReplica';
+    public const SORT_KEY_DIRECTION = 'sort';
+    public const SORT_KEY_INDEX_NAME = 'name';
+
     public const MAX_VIRTUAL_REPLICA_LIMIT = 20;
 
     /**

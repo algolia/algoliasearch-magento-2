@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Model;
+namespace Algolia\AlgoliaSearch\Model\Data;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Magento\Framework\DataObject;

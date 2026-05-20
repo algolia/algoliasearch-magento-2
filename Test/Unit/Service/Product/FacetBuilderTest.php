@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Algolia\AlgoliaSearch\Test\Unit\Service\Product;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Model\QuerySuggestions\Facet;
 use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
@@ -18,6 +19,7 @@ class FacetBuilderTest extends TestCase
 {
     protected ?FacetBuilder $facetBuilder;
     protected ?ConfigHelper $configHelper;
+    protected ?InstantSearchHelper $instantSearchHelper;
     protected ?StoreManagerInterface $storeManager;
     protected ?GroupCollection $groupCollection;
     protected ?GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
@@ -25,12 +27,14 @@ class FacetBuilderTest extends TestCase
     protected function setUp(): void
     {
         $this->configHelper = $this->createMock(ConfigHelper::class);
+        $this->instantSearchHelper = $this->createMock(InstantSearchHelper::class);
         $this->storeManager = $this->createMock(StoreManagerInterface::class);
         $this->groupCollection = $this->createMock(GroupCollection::class);
         $this->groupExcludedWebsiteRepository = $this->createMock(GroupExcludedWebsiteRepositoryInterface::class);
 
         $this->facetBuilder = new FacetBuilderTestable(
             $this->configHelper,
+            $this->instantSearchHelper,
             $this->storeManager,
             $this->groupCollection,
             $this->groupExcludedWebsiteRepository
@@ -220,7 +224,7 @@ class FacetBuilderTest extends TestCase
     {
         $storeId = 1;
         $websiteId = 2;
-        $this->configHelper
+        $this->instantSearchHelper
             ->method('getFacets')
             ->willReturn([
                 [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color'],
@@ -271,7 +275,7 @@ class FacetBuilderTest extends TestCase
         $storeId = 1;
         $websiteId = 2;
 
-        $this->configHelper
+        $this->instantSearchHelper
             ->method('getFacets')
             ->willReturn([
                 [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size'],
@@ -324,7 +328,7 @@ class FacetBuilderTest extends TestCase
 
     protected function mockFacets(): void
     {
-        $this->configHelper
+        $this->instantSearchHelper
             ->method('getFacets')
             ->willReturn([
                 [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'brand', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_NOT_SEARCHABLE],
@@ -346,8 +350,8 @@ class FacetBuilderTest extends TestCase
 
     protected function mockCategoryConfig(int $storeId): void
     {
-        $this->configHelper
-            ->method('replaceCategories')
+        $this->instantSearchHelper
+            ->method('shouldReplaceCategories')
             ->with($storeId)
             ->willReturn(true);
     }

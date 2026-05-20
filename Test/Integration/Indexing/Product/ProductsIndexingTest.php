@@ -2,10 +2,12 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
+use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Console\Command\Indexer\IndexProductsCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Model\Indexer\Product as ProductIndexer;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -18,10 +20,9 @@ use Magento\Framework\Indexer\IndexerRegistry;
 class ProductsIndexingTest extends ProductsIndexingTestCase
 {
 
-    /*** @var IndexerRegistry */
-    protected $indexerRegistry;
+    protected ?IndexerRegistry $indexerRegistry;
 
-    protected $testProductId;
+    protected ?string $testProductId = null; // REST API requires objectID as string
 
     const OUT_OF_STOCK_PRODUCT_SKU = '24-MB01';
 
@@ -48,14 +49,14 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $empty = $this->getSerializer()->serialize([]);
 
         $this->setConfig(ConfigHelper::PRODUCT_ATTRIBUTES, $empty);
-        $this->setConfig(ConfigHelper::FACETS, $empty);
-        $this->setConfig(ConfigHelper::SORTING_INDICES, $empty);
+        $this->setConfig(InstantSearchHelper::FACETS, $empty);
+        $this->setConfig(InstantSearchHelper::SORTING_INDICES, $empty);
         $this->setConfig(ConfigHelper::PRODUCT_CUSTOM_RANKING, $empty);
 
         $this->productBatchQueueProcessor->processBatch(1, [$this->getValidTestProduct()]);
         $this->algoliaConnector->waitLastTask();
 
-        $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($this->indexPrefix . 'default_products');
+        $indexOptions = $this->getIndexOptions('products');
         $results = $this->algoliaConnector->getObjects($indexOptions, [$this->getValidTestProduct()]);
         $hit = reset($results['results']);
 
@@ -63,8 +64,8 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
             'objectID',
             'name',
             'url',
-            'visibility_search',
-            'visibility_catalog',
+            ProductRecordFieldsInterface::VISIBILITY_SEARCH,
+            ProductRecordFieldsInterface::VISIBILITY_CATALOG,
             'categories',
             'categories_without_path',
             'thumbnail_url',
@@ -123,12 +124,12 @@ class ProductsIndexingTest extends ProductsIndexingTestCase
         $this->processOldIndexerTest($productsIndexer, 'products', $this->assertValues->productsOnStockCount);
     }
 
-    private function getValidTestProduct()
+    private function getValidTestProduct(): string
     {
         if (!$this->testProductId) {
             /** @var Product $product */
             $product = $this->getObjectManager()->get(Product::class);
-            $this->testProductId = $product->getIdBySku('MSH09');
+            $this->testProductId = (string) $product->getIdBySku('MSH09');
         }
 
         return $this->testProductId;

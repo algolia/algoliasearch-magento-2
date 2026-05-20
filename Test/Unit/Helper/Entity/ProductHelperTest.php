@@ -140,58 +140,23 @@ class ProductHelperTest extends TestCase
         $this->indexSettingsHandler->method('setSettings')->willReturn(true);
 
         $this->algoliaConnector->expects($this->once())
-            ->method('setSettings')
+            ->method('copyIndexConfig')
             ->with(
-                $this->indexTmpOptions,
-                $this->defaultSettings,
-                false,
-                true,
-                'prod_index'
+                $this->indexOptions,
+                $this->indexTmpOptions
             );
 
         $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, true);
     }
 
-    public function testCopiesSynonymsAndQueryRulesFromProdToTmpIndex(): void
+    public function testNoPushSettingsToTmpIndexWithMergeParametersWhenFlagIsFalse(): void
     {
         $this->indexSettingsHandler->method('setSettings')->willReturn(true);
 
-        $this->algoliaConnector->expects($this->once())
-            ->method('copySynonyms')
-            ->with($this->indexOptions, $this->indexTmpOptions);
+        $this->algoliaConnector->expects($this->never())
+            ->method('copyIndexConfig');
 
-        $this->algoliaConnector->expects($this->once())
-            ->method('copyQueryRules')
-            ->with($this->indexOptions, $this->indexTmpOptions);
-
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, true);
-    }
-
-    public function testLogsSynonymCopyErrorAndContinuesWhenCopySynonymsFails(): void
-    {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(true);
-
-        $this->algoliaConnector->method('copySynonyms')
-            ->willThrowException(new AlgoliaException('Synonyms API error'));
-
-        $this->logger->expects($this->atLeastOnce())->method('error');
-
-        // copyQueryRules must still be reached after the synonym failure
-        $this->algoliaConnector->expects($this->once())->method('copyQueryRules');
-
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, true);
-    }
-
-    public function testRethrowsNon404ExceptionFromCopyQueryRules(): void
-    {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(true);
-
-        $this->algoliaConnector->method('copyQueryRules')
-            ->willThrowException(new AlgoliaException('Internal error', 500));
-
-        $this->expectException(AlgoliaException::class);
-
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, true);
+        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, false);
     }
 
     public function testAlwaysCallsSetFacetsQueryRulesForMainIndexEvenWhenSettingsUnchanged(): void

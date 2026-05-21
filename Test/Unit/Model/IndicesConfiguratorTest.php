@@ -90,7 +90,16 @@ class IndicesConfiguratorTest extends TestCase
                 $this->indexSettingsHandler,
                 $this->logger,
             ])
-            ->onlyMethods(['setAllEntitiesSettings', 'setProductsSettings', 'setCategoriesSettings', 'setExtraSettings'])
+            ->onlyMethods(
+                [
+                    'setAllEntitiesSettings',
+                    'setProductsSettings',
+                    'setCategoriesSettings',
+                    'setPagesSettings',
+                    'setQuerySuggestionsSettings',
+                    'setExtraSettings'
+                ]
+            )
             ->getMock();
 
         $this->logger->method('getStoreName')->willReturn('Default Store');
@@ -197,13 +206,17 @@ class IndicesConfiguratorTest extends TestCase
     {
         $this->allowPassingGuards();
 
-        // 'pages' and 'suggestions' have no dedicated dispatch in the filter branch;
-        // they are handled exclusively through setExtraSettings
+        $this->configurator->expects($this->once())->method('setPagesSettings');
+        $this->configurator->expects($this->once())->method('setQuerySuggestionsSettings');
         $this->configurator->expects($this->never())->method('setProductsSettings');
         $this->configurator->expects($this->never())->method('setCategoriesSettings');
         $this->configurator->expects($this->never())->method('setAllEntitiesSettings');
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId, false, ['pages', 'suggestions']);
+        $this->configurator->saveConfigurationToAlgolia(
+            $this->storeId,
+            false,
+            ['pages', 'suggestions', 'foo', 'bar']
+        );
     }
 
     public function testForwardsAllParametersToSetExtraSettings(): void

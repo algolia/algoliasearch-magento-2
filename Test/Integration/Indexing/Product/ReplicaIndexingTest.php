@@ -65,7 +65,7 @@ class ReplicaIndexingTest extends TestCase
         $sortDir = 'desc';
         $this->assertSortingAttribute($sortAttr, $sortDir);
 
-        $this->indicesConfigurator->saveConfigurationToAlgolia(1);
+        $this->indicesConfigurator->saveConfigurationToAlgolia(1, false, ['products']);
         $this->algoliaConnector->waitLastTask();
 
         // Assert replica config created
@@ -121,7 +121,7 @@ class ReplicaIndexingTest extends TestCase
         // Cannot use config fixture because we have disabled db isolation
         $this->setConfig(InstantSearchHelper::IS_ENABLED, 1);
 
-        $this->indicesConfigurator->saveConfigurationToAlgolia(1);
+        $this->indicesConfigurator->saveConfigurationToAlgolia(1,false, ['products']);
         $this->algoliaConnector->waitLastTask();
 
         // Assert replica config created

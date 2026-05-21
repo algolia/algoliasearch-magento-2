@@ -13,8 +13,10 @@ use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder;
+use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +33,8 @@ class BatchQueueProcessorTest extends TestCase
     protected ?IndexBuilder $indexBuilder;
     protected ?IndexCollectionSize $indexCollectionSizeCache;
     protected ?BatchQueueProcessor $processor;
+    protected ?IndexOptionsBuilder $indexOptionsBuilder;
+    protected IndexSettingsComparator $indexSettingsComparator;
 
     protected function setUp(): void
     {
@@ -43,6 +47,8 @@ class BatchQueueProcessorTest extends TestCase
         $this->indexBuilder = $this->createMock(IndexBuilder::class);
         $this->indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
         $this->queueHelper = $this->createMock(QueueHelper::class);
+        $this->indexOptionsBuilder = $this->createMock(IndexOptionsBuilder::class);
+        $this->indexSettingsComparator = $this->createMock(IndexSettingsComparator::class);
 
         $this->processor = new BatchQueueProcessor(
             $this->dataHelper,
@@ -53,7 +59,9 @@ class BatchQueueProcessorTest extends TestCase
             $this->diag,
             $this->algoliaCredentialsManager,
             $this->indexBuilder,
-            $this->indexCollectionSizeCache
+            $this->indexCollectionSizeCache,
+            $this->indexOptionsBuilder,
+            $this->indexSettingsComparator
         );
     }
 

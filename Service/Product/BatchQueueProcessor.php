@@ -91,6 +91,10 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $useTmpIndex);
         $productSettings = $this->productHelper->getIndexSettings($storeId);
 
+        // $useTmpIndex needs to be checked here because we need to ensure proper creation of the tmp index at this point
+        // (tmp index needs to be initialized in the setSettings operation even if the settings are matching ALgolia dashboard)
+        // => If no setSettings is performed before the first batch, this will result in the creation
+        // of a tmp index without any settings, rules or synonyms.
         if (!$useTmpIndex && $this->indexSettingsComparator->matches($indexOptions, $productSettings)) {
             return;
         }

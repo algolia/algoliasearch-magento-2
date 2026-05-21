@@ -326,7 +326,7 @@ class ProductHelper extends AbstractEntityHelper
             $this->algoliaConnector->waitLastTask($storeId);
         }
 
-        if ($saveToTmpIndicesToo && !$this->algoliaConnector->indexExists($indexTmpOptions->getIndexName(), $storeId)) {
+        if ($saveToTmpIndicesToo) {
             $this->algoliaConnector->copyIndexConfig($indexOptions, $indexTmpOptions);
             $this->logger->log('Copying the settings, synonyms and rules from production to "' . $indexTmpOptions->getIndexName() . '" index.');
             $this->algoliaConnector->waitLastTask($storeId);

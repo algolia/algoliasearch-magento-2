@@ -83,6 +83,15 @@ class IndicesConfigurator
             if (in_array('categories', $filteredEntities)) {
                 $this->setCategoriesSettings($storeId);
             }
+            if (in_array('pages', $filteredEntities)) {
+                $this->setPagesSettings($storeId);
+            }
+            if (in_array('suggestions', $filteredEntities)) {
+                $this->setQuerySuggestionsSettings($storeId);
+            }
+            if (in_array('additional_sections', $filteredEntities)) {
+                $this->setAdditionalSectionsSettings($storeId);
+            }
         } else {
             $this->setAllEntitiesSettings($storeId, $useTmpIndex);
         }
@@ -232,7 +241,7 @@ class IndicesConfigurator
     /**
      * @throws AlgoliaException|NoSuchEntityException|DiagnosticsException
      */
-    protected function setExtraSettings(int $storeId, bool $saveToTmpIndicesToo, ?array $filteredEntities): void
+    protected function setExtraSettings(int $storeId, bool $saveToTmpIndicesToo, ?array $filteredEntities = []): void
     {
         $logEventName = 'Pushing extra settings.';
         $this->logger->start($logEventName, true);

@@ -125,7 +125,7 @@ To learn more about good commenting you can read:
 ## Static analysis
 
 For static analysis check the extension uses [Magento Extension Quality Program Coding Standard](https://github.com/magento/marketplace-eqp/) library.
-It is a set of rules and sniffs for [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer).
+It is a set of rules and sniffs for [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer).
 
 It allows automatically check your code against some of the common Magento and PHP coding issues, like:
 - raw SQL queries

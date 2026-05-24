@@ -13,13 +13,19 @@ Read `.claude/testing-core.md`. These rules are non-negotiable and apply to ever
 ## Step 2 — Load the type-specific guide
 Determine which category the target file belongs to based on its path and class name:
 
-| If the path contains…          | Read this guide                              |
-|---------------------------------|----------------------------------------------|
-| `Observer/`                     | `.claude/types/testing-observers.md`         |
-| `Service/`                      | `.claude/types/testing-services.md`          |
-| `Helper/`                       | `.claude/types/testing-helpers.md`           |
-| `Model/Indexer/` or `Indexer/`  | `.claude/types/testing-indexers.md`          |
-| anything else                   | skip — use core rules only                   |
+| If the path contains…                    | Read this guide                              |
+|------------------------------------------|----------------------------------------------|
+| `Observer/`                              | `.claude/types/testing-observers.md`         |
+| `Service/`                               | `.claude/types/testing-services.md`          |
+| `Helper/`                                | `.claude/types/testing-helpers.md`           |
+| `Model/Indexer/` or `Indexer/`           | `.claude/types/testing-models.md`            |
+| `Model/Backend/` or `Model/Source/`      | `.claude/types/testing-models.md`            |
+| `Plugin/`                                | `.claude/types/testing-plugins.md`           |
+| `Controller/`                            | `.claude/types/testing-controllers.md`       |
+| `ViewModel/`                             | `.claude/types/testing-view-models.md`       |
+| `Block/`                                 | `.claude/types/testing-blocks.md`            |
+| `Console/` or `Validator/`               | `.claude/types/testing-others.md`            |
+| anything else                            | skip — use core rules only                   |
 
 Read the matching guide before generating any test code.
 

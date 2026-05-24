@@ -38,8 +38,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function setPrivateProperty(object $obj, string $prop, mixed $value): void
     {
         $ref = new \ReflectionClass($obj);
-        $p = $ref->getProperty($prop);
-        $p->setValue($obj, $value);
+        while ($ref !== false) {
+            try {
+                $ref->getProperty($prop)->setValue($obj, $value);
+                return;
+            } catch (\ReflectionException) {
+                $ref = $ref->getParentClass();
+            }
+        }
+        throw new \ReflectionException("Property {$prop} does not exist in class hierarchy of " . get_class($obj));
     }
 
     /**
@@ -53,9 +60,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected function getPrivateProperty(object $obj, string $prop): mixed
     {
-        $reflection = new \ReflectionClass($obj);
-
-        return $reflection->getProperty($prop)->getValue($obj);
+        $ref = new \ReflectionClass($obj);
+        while ($ref !== false) {
+            try {
+                return $ref->getProperty($prop)->getValue($obj);
+            } catch (\ReflectionException) {
+                $ref = $ref->getParentClass();
+            }
+        }
+        throw new \ReflectionException("Property {$prop} does not exist in class hierarchy of " . get_class($obj));
     }
 
     /**
@@ -70,8 +83,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
     {
         $mock = $this->createMock($propertyClass);
-        $reflection = new \ReflectionClass($object);
-        $property = $reflection->getProperty($propertyName);
-        $property->setValue($object, $mock);
+        $this->setPrivateProperty($object, $propertyName, $mock);
     }
 }

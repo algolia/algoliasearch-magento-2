@@ -10,6 +10,7 @@ use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
+use Algolia\AlgoliaSearch\Service\Page\IndexOptionsBuilder as PageIndexOptionsBuilder;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
@@ -17,13 +18,14 @@ use Magento\Store\Model\App\Emulation;
 class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 {
     public function __construct(
-        protected ConfigHelper        $configHelper,
-        protected DiagnosticsLogger   $logger,
-        protected Emulation           $emulation,
-        protected ScopeCodeResolver   $scopeCodeResolver,
-        protected AlgoliaConnector    $algoliaConnector,
-        protected IndexOptionsBuilder $indexOptionsBuilder,
-        protected PageHelper          $pageHelper
+        protected ConfigHelper            $configHelper,
+        protected DiagnosticsLogger       $logger,
+        protected Emulation               $emulation,
+        protected ScopeCodeResolver       $scopeCodeResolver,
+        protected AlgoliaConnector        $algoliaConnector,
+        protected PageIndexOptionsBuilder $pageIndexOptionsBuilder,
+        protected IndexOptionsBuilder     $indexOptionsBuilder,
+        protected PageHelper              $pageHelper
     ){
         parent::__construct(
             $configHelper,
@@ -32,6 +34,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             $scopeCodeResolver,
             $algoliaConnector
         );
+        $this->pageIndexOptionsBuilder = $pageIndexOptionsBuilder;
     }
 
     /**
@@ -106,8 +109,12 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if ($isFullReindex) {
             $tempIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
+            $indexOptions = $this->pageIndexOptionsBuilder->buildEntityIndexOptions($storeId);
+            $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
 
+            $this->algoliaConnector->setSettings($indexOptions, $indexSettings);
             $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
+            $this->algoliaConnector->copySynonyms($indexName, $tempIndexName, $storeId);
             $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
         }
         $this->algoliaConnector->setSettings(

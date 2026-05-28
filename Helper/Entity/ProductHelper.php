@@ -323,13 +323,13 @@ class ProductHelper extends AbstractEntityHelper
         if ($this->indexSettingsHandler->setSettings($indexOptions, $indexSettings)) {
             $this->logger->log('Index name: ' . $indexOptions->getIndexName());
             $this->logger->log('Settings: ' . json_encode($indexSettings));
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         if ($saveToTmpIndicesToo) {
             $this->algoliaConnector->copyIndexConfig($indexOptions, $indexTmpOptions);
             $this->logger->log('Copying the settings, synonyms and rules from production to "' . $indexTmpOptions->getIndexName() . '" index.');
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexTmpOptions);
         }
 
         $this->setFacetsQueryRules($indexOptions);
@@ -501,7 +501,7 @@ class ProductHelper extends AbstractEntityHelper
             $this->algoliaConnector->saveRules($indexOptions, $rules, true);
 
             if ($waitLastTask) {
-                $this->algoliaConnector->waitLastTask($indexOptions->getStoreId());
+                $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
             }
         }
     }

@@ -73,6 +73,8 @@ class AlgoliaConnector
      */
     protected ?array $lastTaskInfoByStore = null;
 
+    protected array $taskIdsToWaitFor = [];
+
     public function __construct(
         protected ConfigHelper $config,
         protected ManagerInterface $messageManager,
@@ -697,6 +699,26 @@ class AlgoliaConnector
         }
 
         $this->getClient($storeId)->waitForTask($lastUsedIndexName, $lastTaskId);
+    }
+
+    public function collectTaskIdToWaitFor(IndexOptionsInterface $indexOptions): void
+    {
+        $this->taskIdsToWaitFor[$indexOptions->getIndexName()][] = $this->getLastTaskId($indexOptions->getStoreId());
+    }
+
+    public function waitForAllCollectedTaskIds(int $storeId): void
+    {
+        if (empty($this->taskIdsToWaitFor)) {
+            return;
+        }
+
+        foreach ($this->taskIdsToWaitFor as $indexName => $taskIds) {
+            foreach($taskIds as $taskId) {
+                $this->waitLastTask($storeId, $indexName, $taskId);
+            }
+        }
+
+        $this->taskIdsToWaitFor = [];
     }
 
     /**

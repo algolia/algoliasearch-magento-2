@@ -98,6 +98,8 @@ class IndicesConfigurator
 
         $this->setExtraSettings($storeId, $useTmpIndex, $filteredEntities);
 
+        $this->algoliaConnector->waitForAllCollectedTaskIds($storeId);
+
         $this->logger->stop($logEventName, true);
     }
 
@@ -137,7 +139,7 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -164,7 +166,7 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -191,7 +193,7 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -221,7 +223,7 @@ class IndicesConfigurator
 
             if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
                 $this->logSettingsPush($indexOptions, $settings);
-                $this->algoliaConnector->waitLastTask($storeId);
+                $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
             }
         }
 
@@ -284,7 +286,7 @@ class IndicesConfigurator
 
                     if ($this->indexSettingsHandler->setSettings($indexOptions, $extraSettings)) {
                         $this->logSettingsPush($indexOptions, $extraSettings);
-                        $this->algoliaConnector->waitLastTask($storeId);
+                        $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
                     }
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {
@@ -303,7 +305,7 @@ class IndicesConfigurator
                             $indexOptions->getIndexName()
                         );
                         $this->logSettingsPush($indexTempOptions, $extraSettings);
-                        $this->algoliaConnector->waitLastTask($storeId);
+                        $this->algoliaConnector->collectTaskIdToWaitFor($indexTempOptions);
                     }
                 }
             } catch (AlgoliaException $e) {

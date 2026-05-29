@@ -703,22 +703,23 @@ class AlgoliaConnector
 
     public function collectTaskIdToWaitFor(IndexOptionsInterface $indexOptions): void
     {
-        $this->taskIdsToWaitFor[$indexOptions->getIndexName()][] = $this->getLastTaskId($indexOptions->getStoreId());
+        $this->taskIdsToWaitFor[$indexOptions->getStoreId()][$indexOptions->getIndexName()][] =
+            $this->getLastTaskId($indexOptions->getStoreId());
     }
 
     public function waitForAllCollectedTaskIds(int $storeId): void
     {
-        if (empty($this->taskIdsToWaitFor)) {
+        if (empty($this->taskIdsToWaitFor) || !isset($this->taskIdsToWaitFor[$storeId])) {
             return;
         }
 
-        foreach ($this->taskIdsToWaitFor as $indexName => $taskIds) {
+        foreach ($this->taskIdsToWaitFor[$storeId] as $indexName => $taskIds) {
             foreach($taskIds as $taskId) {
                 $this->waitLastTask($storeId, $indexName, $taskId);
             }
         }
 
-        $this->taskIdsToWaitFor = [];
+        unset($this->taskIdsToWaitFor[$storeId]);
     }
 
     /**

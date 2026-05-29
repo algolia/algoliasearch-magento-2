@@ -328,7 +328,7 @@ class ProductHelper extends AbstractEntityHelper
         if ($saveToTmpIndicesToo) {
             $this->algoliaConnector->copyIndexConfig($indexOptions, $indexTmpOptions);
             $this->logger->log('Copying the settings, synonyms and rules from production to "' . $indexTmpOptions->getIndexName() . '" index.');
-            $this->algoliaConnector->collectTaskIdToWaitFor($indexTmpOptions);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->setFacetsQueryRules($indexOptions);
@@ -455,12 +455,12 @@ class ProductHelper extends AbstractEntityHelper
 
     /**
      * @param IndexOptionsInterface $indexOptions
-     * @param bool $waitLastTask
+     * @param bool $collectTaskId
      * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $waitLastTask = false): void
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $collectTaskId = false): void
     {
         $this->clearFacetsQueryRules($indexOptions);
 
@@ -499,7 +499,7 @@ class ProductHelper extends AbstractEntityHelper
 
             $this->algoliaConnector->saveRules($indexOptions, $rules, true);
 
-            if ($waitLastTask) {
+            if ($collectTaskId) {
                 $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
             }
         }

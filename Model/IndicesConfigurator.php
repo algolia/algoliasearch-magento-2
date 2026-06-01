@@ -210,15 +210,19 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
-        foreach ($this->configHelper->getAutocompleteSections() as $section) {
+        $configSections = $this->configHelper->getAutocompleteSections();
+
+        $settings = count($configSections) > 0 ?
+            $this->additionalSectionHelper->getIndexSettings($storeId) :
+            [];
+
+        foreach ($configSections as $section) {
             if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }
 
             $indexName = $this->additionalSectionHelper->getIndexName($storeId);
             $indexName = $indexName . '_' . $section['name'];
-
-            $settings = $this->additionalSectionHelper->getIndexSettings($storeId);
             $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
             if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {

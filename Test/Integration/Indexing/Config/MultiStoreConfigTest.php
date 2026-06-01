@@ -98,10 +98,10 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $fixtureIndexOptions = $this->getIndexOptions('products', $fixtureSecondStore->getId());
 
         $productHelper = $this->objectManager->get(ProductHelper::class);
-        $this->invokeMethod($productHelper, 'setFacetsQueryRules', [$defaultIndexOptions, true]);
+        $this->invokeMethod($productHelper, 'setFacetsQueryRules', [$defaultIndexOptions]);
         $this->algoliaConnector->waitForAllCollectedTaskIds($defaultIndexOptions->getStoreId());
 
-        $this->invokeMethod($productHelper, 'setFacetsQueryRules', [$fixtureIndexOptions, true]);
+        $this->invokeMethod($productHelper, 'setFacetsQueryRules', [$fixtureIndexOptions]);
         $this->algoliaConnector->collectTaskIdToWaitFor($fixtureIndexOptions);
         $this->algoliaConnector->waitForAllCollectedTaskIds($fixtureIndexOptions->getStoreId());
 

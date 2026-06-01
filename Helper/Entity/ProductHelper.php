@@ -455,12 +455,11 @@ class ProductHelper extends AbstractEntityHelper
 
     /**
      * @param IndexOptionsInterface $indexOptions
-     * @param bool $collectTaskId
      * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $collectTaskId = false): void
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions): void
     {
         $this->clearFacetsQueryRules($indexOptions);
 
@@ -498,10 +497,6 @@ class ProductHelper extends AbstractEntityHelper
             $this->logger->log('Setting facets query rules to "' . $indexOptions->getIndexName() . '" index: ' . json_encode($rules));
 
             $this->algoliaConnector->saveRules($indexOptions, $rules, true);
-
-            if ($collectTaskId) {
-                $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
-            }
         }
     }
 

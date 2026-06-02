@@ -59,18 +59,18 @@ class IndicesConfigurator
     : void
     {
         $logEventName = 'Save configuration to Algolia for store: ' . $this->logger->getStoreName($storeId);
-        $this->logger->start($logEventName, true);
+        $this->logger->start($logEventName, true, true);
 
         if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
             $this->logger->log('Algolia credentials are not filled.');
-            $this->logger->stop($logEventName, true);
+            $this->logger->stop($logEventName, true, true);
 
             return;
         }
 
         if ($this->baseHelper->isIndexingEnabled($storeId) === false) {
             $this->logger->log('Indexing is not enabled for the store.');
-            $this->logger->stop($logEventName, true);
+            $this->logger->stop($logEventName, true, true);
             return;
         }
 
@@ -100,7 +100,7 @@ class IndicesConfigurator
 
         $this->algoliaConnector->waitForAllCollectedTaskIds($storeId);
 
-        $this->logger->stop($logEventName, true);
+        $this->logger->stop($logEventName, true, true);
     }
 
     /**

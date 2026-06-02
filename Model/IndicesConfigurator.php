@@ -98,6 +98,8 @@ class IndicesConfigurator
 
         $this->setExtraSettings($storeId, $useTmpIndex, $filteredEntities);
 
+        $this->algoliaConnector->waitForAllCollectedTaskIds($storeId);
+
         $this->logger->stop($logEventName, true);
     }
 
@@ -135,7 +137,7 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -160,7 +162,7 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -185,7 +187,7 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -200,20 +202,24 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
-        foreach ($this->autocompleteHelper->getAdditionalSections($storeId) as $section) {
+        $configSections = $this->autocompleteHelper->getAdditionalSections($storeId);
+
+        $settings = count($configSections) > 0 ?
+            $this->additionalSectionHelper->getIndexSettings($storeId) :
+            [];
+
+        foreach ($configSections as $section) {
             if (in_array($section['name'], $protectedSections, true)) {
                 continue;
             }
 
             $indexName = $this->additionalSectionHelper->getIndexName($storeId);
             $indexName = $indexName . '_' . $section['name'];
-
-            $settings = $this->additionalSectionHelper->getIndexSettings($storeId);
             $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
             if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
                 $this->logSettingsPush($indexOptions, $settings);
-                $this->algoliaConnector->waitLastTask($storeId);
+                $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
             }
         }
 
@@ -269,7 +275,7 @@ class IndicesConfigurator
 
                     if ($this->indexSettingsHandler->setSettings($indexOptions, $extraSettings)) {
                         $this->logSettingsPush($indexOptions, $extraSettings);
-                        $this->algoliaConnector->waitLastTask($storeId);
+                        $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
                     }
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {
@@ -288,7 +294,7 @@ class IndicesConfigurator
                             $indexOptions->getIndexName()
                         );
                         $this->logSettingsPush($indexTempOptions, $extraSettings);
-                        $this->algoliaConnector->waitLastTask($storeId);
+                        $this->algoliaConnector->collectTaskIdToWaitFor($indexTempOptions);
                     }
                 }
             } catch (AlgoliaException $e) {

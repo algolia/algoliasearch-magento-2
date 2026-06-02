@@ -323,13 +323,13 @@ class ProductHelper extends AbstractEntityHelper
         if ($this->indexSettingsHandler->setSettings($indexOptions, $indexSettings)) {
             $this->logger->log('Index name: ' . $indexOptions->getIndexName());
             $this->logger->log('Settings: ' . json_encode($indexSettings));
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         if ($saveToTmpIndicesToo) {
             $this->algoliaConnector->copyIndexConfig($indexOptions, $indexTmpOptions);
             $this->logger->log('Copying the settings, synonyms and rules from production to "' . $indexTmpOptions->getIndexName() . '" index.');
-            $this->algoliaConnector->waitLastTask($storeId);
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->setFacetsQueryRules($indexOptions);
@@ -456,12 +456,11 @@ class ProductHelper extends AbstractEntityHelper
 
     /**
      * @param IndexOptionsInterface $indexOptions
-     * @param bool $waitLastTask
      * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions, bool $waitLastTask = false): void
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions): void
     {
         $this->clearFacetsQueryRules($indexOptions);
 
@@ -499,10 +498,6 @@ class ProductHelper extends AbstractEntityHelper
             $this->logger->log('Setting facets query rules to "' . $indexOptions->getIndexName() . '" index: ' . json_encode($rules));
 
             $this->algoliaConnector->saveRules($indexOptions, $rules, true);
-
-            if ($waitLastTask) {
-                $this->algoliaConnector->waitLastTask($indexOptions->getStoreId());
-            }
         }
     }
 

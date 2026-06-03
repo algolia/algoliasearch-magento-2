@@ -23,9 +23,9 @@ class SaveSettings implements ObserverInterface
 
     public function __construct(
         protected StoreManagerInterface $storeManager,
-        protected IndicesConfigurator $indicesConfigurator,
-        protected Data $helper,
-        protected ProductHelper $productHelper
+        protected IndicesConfigurator   $indicesConfigurator,
+        protected Data                  $helper,
+        protected ProductHelper         $productHelper
     ){}
 
     /**
@@ -42,6 +42,10 @@ class SaveSettings implements ObserverInterface
          try {
             $storeIds = array_keys($this->storeManager->getStores());
             foreach ($storeIds as $storeId) {
+                if (!$this->helper->isIndexingEnabled($storeId)) {
+                    continue;
+                }
+
                 $this->indicesConfigurator->saveConfigurationToAlgolia($storeId, false, $filteredEntities);
             }
         } catch (\Exception $e) {

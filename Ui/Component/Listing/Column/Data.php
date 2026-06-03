@@ -42,7 +42,7 @@ class Data extends \Magento\Ui\Component\Listing\Columns\Column
             $stringKey = '- <strong>' . $key . '</strong>';
 
             if (is_array($value)) {
-                if ($key === 'entityIds') {
+                if ($key === 'entityIds' || $key === 'filteredEntities') {
                     $formattedData .=
                         str_repeat('&nbsp;&nbsp;&nbsp;', $depth ) . $stringKey . ' : '  . implode(', ', $value) . '<br>';
                 } else {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Algolia\AlgoliaSearch\Test\Unit\Model;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
@@ -37,7 +36,6 @@ class IndicesConfiguratorTest extends TestCase
     private null|(SuggestionIndexOptionsBuilder&MockObject) $suggestionIndexOptionsBuilder = null;
     private null|(AlgoliaConnector&MockObject) $algoliaConnector = null;
     private null|(ConfigHelper&MockObject) $configHelper = null;
-    private null|(AutocompleteHelper&MockObject) $autocompleteHelper = null;
     private null|(ProductHelper&MockObject) $productHelper = null;
     private null|(CategoryHelper&MockObject) $categoryHelper = null;
     private null|(PageHelper&MockObject) $pageHelper = null;
@@ -58,7 +56,6 @@ class IndicesConfiguratorTest extends TestCase
         $this->suggestionIndexOptionsBuilder = $this->createMock(SuggestionIndexOptionsBuilder::class);
         $this->algoliaConnector = $this->createMock(AlgoliaConnector::class);
         $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->autocompleteHelper = $this->createMock(AutocompleteHelper::class);
         $this->productHelper = $this->createMock(ProductHelper::class);
         $this->categoryHelper = $this->createMock(CategoryHelper::class);
         $this->pageHelper = $this->createMock(PageHelper::class);
@@ -80,7 +77,6 @@ class IndicesConfiguratorTest extends TestCase
                 $this->suggestionIndexOptionsBuilder,
                 $this->algoliaConnector,
                 $this->configHelper,
-                $this->autocompleteHelper,
                 $this->productHelper,
                 $this->categoryHelper,
                 $this->pageHelper,

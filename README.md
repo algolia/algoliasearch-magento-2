@@ -1,7 +1,7 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.17.3-green)
+![Latest version](https://img.shields.io/badge/latest-3.17.4-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.7+-orange)
 
 ![PHP](https://img.shields.io/badge/PHP-8.2%2C8.3%2C8.4-blue)
@@ -18,7 +18,7 @@ This extension replaces the default search of Magento with a typo-tolerant, fast
 
 - **Autocompletion menu:** Provide your entire catalog to End-Users instantly via the dropdown menu, regardless of the number of categories or attributes it contains.
 
-- **Instantsearch results page:** Have your search results page, navigation and pagination updated in realtime, after each keystroke.
+- **Instantsearch results page:** Have your search results pageÒ, navigation and pagination updated in realtime, after each keystroke.
 
 - **Recommend:** Algolia Recommend lets you display recommendations such as "Frequently Bought Together" and "Related Products" features on the product detail page.
 

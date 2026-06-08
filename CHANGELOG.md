@@ -2,11 +2,17 @@
 
 ## 3.17.4
 
-### Bug Fixes
-- Fixed undefined property `indexerRegistry` exception on `CategoryObserver`
-
 ### Updates
 - Removed the deprecated `beforecontent.phtml` template and its block declaration in `algolia_search_handle.xml` (deprecated in v3.16).
+- Added improvements on `setSettings` operations sent during indexing and configuration saving:
+  - Introduced `IndexSettingsComparator` service to compare settings with the Algolia Dashboard.
+  - Added diff check for both configuration save and batch processing.
+  - Added collect of all task IDs during `SaveSettings` and wait only once for all operations to complete at the end.
+  - Added store filtering during `SaveSettings`. 
+  - Updated Unit and Integration tests to reflect those changes.
+
+### Bug Fixes
+- Fixed undefined property `indexerRegistry` exception on `CategoryObserver`
 
 ## 3.17.3
 

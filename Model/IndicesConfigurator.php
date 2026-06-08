@@ -210,7 +210,7 @@ class IndicesConfigurator
         $this->logger->start($logEventName, true);
 
         $protectedSections = ['products', 'categories', 'pages', 'suggestions'];
-        $configSections = $this->configHelper->getAutocompleteSections();
+        $configSections = $this->configHelper->getAutocompleteSections($storeId);
 
         $settings = count($configSections) > 0 ?
             $this->additionalSectionHelper->getIndexSettings($storeId) :

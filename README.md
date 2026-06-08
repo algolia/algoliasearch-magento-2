@@ -18,7 +18,7 @@ This extension replaces the default search of Magento with a typo-tolerant, fast
 
 - **Autocompletion menu:** Provide your entire catalog to End-Users instantly via the dropdown menu, regardless of the number of categories or attributes it contains.
 
-- **Instantsearch results page:** Have your search results pageÒ, navigation and pagination updated in realtime, after each keystroke.
+- **Instantsearch results page:** Have your search results page, navigation and pagination updated in realtime, after each keystroke.
 
 - **Recommend:** Algolia Recommend lets you display recommendations such as "Frequently Bought Together" and "Related Products" features on the product detail page.
 

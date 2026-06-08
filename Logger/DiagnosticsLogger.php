@@ -17,6 +17,7 @@ class DiagnosticsLogger
     /** @var array */
     protected const ALGOLIA_TAGS = ['group' => 'algolia'];
     protected const PROFILE_LOG_MESSAGES_DEFAULT = false;
+    protected const SEPARATOR_DEFAULT = false;
     protected const DEFAULT_NAMESPACE_DEPTH = 2;
 
     protected bool $isLoggerEnabled = false;
@@ -53,10 +54,13 @@ class DiagnosticsLogger
         return $storeId . ' (' . $this->storeNameFetcher->getStoreName($storeId) . ')';
     }
 
-    public function start(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES_DEFAULT): void
-    {
+    public function start(
+        string $action,
+        bool $profileMethod = self::PROFILE_LOG_MESSAGES_DEFAULT,
+        bool $separator = self::SEPARATOR_DEFAULT
+    ): void {
         if ($this->isLoggerEnabled) {
-            $this->logger->start($action);
+            $this->logger->start($action, $separator);
         }
 
         if ($this->isProfilerEnabled && $profileMethod) {
@@ -71,10 +75,13 @@ class DiagnosticsLogger
     /**
      * @throws DiagnosticsException
      */
-    public function stop(string $action, bool $profileMethod = self::PROFILE_LOG_MESSAGES_DEFAULT): void
-    {
+    public function stop(
+        string $action,
+        bool $profileMethod = self::PROFILE_LOG_MESSAGES_DEFAULT,
+        bool $separator = self::SEPARATOR_DEFAULT
+    ): void {
         if ($this->isLoggerEnabled) {
-            $this->logger->stop($action);
+            $this->logger->stop($action, $separator);
         }
 
         if ($this->isProfilerEnabled && $profileMethod) {

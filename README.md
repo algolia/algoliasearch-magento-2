@@ -1,7 +1,7 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.17.3-green)
+![Latest version](https://img.shields.io/badge/latest-3.17.4-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.7+-orange)
 
 ![PHP](https://img.shields.io/badge/PHP-8.2%2C8.3%2C8.4-blue)
@@ -56,8 +56,9 @@ We support the 2 or 3 latest patch versions of Magento depending on releases ove
 | v3.13.x           | 4/9/2025    | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
 | v3.14.x           | 9/1/2025    | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
 | v3.15.x           | 12/1/2025   | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
-| v3.16.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| v3.16.x           | 5/15/2026   | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
 | v3.17.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| v3.18.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
 
 ## Documentation
 

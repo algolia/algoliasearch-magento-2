@@ -41,7 +41,7 @@ class SuggestionHelper extends AbstractEntityHelper
         $indexSettings = [
             'searchableAttributes' => ['query'],
             'customRanking'        => ['desc(popularity)', 'desc(number_of_results)', 'asc(date)'],
-            'typoTolerance'        => false,
+            'typoTolerance'        => 'false',
             'attributesToRetrieve' => ['query'],
         ];
 

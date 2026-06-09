@@ -73,6 +73,8 @@ class AlgoliaConnector
      */
     protected ?array $lastTaskInfoByStore = null;
 
+    protected array $taskIdsToWaitFor = [];
+
     public function __construct(
         protected ConfigHelper $config,
         protected ManagerInterface $messageManager,
@@ -546,16 +548,11 @@ class AlgoliaConnector
         $this->setLastOperationInfo($indexOptions, $res);
     }
 
-    /**
-     * Warning: This method can't be performed across two different applications
-     *
-     * @param IndexOptionsInterface $fromIndexOptions
-     * @param IndexOptionsInterface $toIndexOptions
-     * @return void
-     * @throws AlgoliaException
-     * @throws NoSuchEntityException
-     */
-    public function copySynonyms(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
+    protected function copyIndexScopes(
+        IndexOptionsInterface $fromIndexOptions,
+        IndexOptionsInterface $toIndexOptions,
+        ?array $scopes = []
+    ): void
     {
         $fromIndexName = $fromIndexOptions->getIndexName();
         $toIndexName = $toIndexOptions->getIndexName();
@@ -565,10 +562,22 @@ class AlgoliaConnector
             [
                 'operation'   => 'copy',
                 'destination' => $toIndexName,
-                'scope'       => ['synonyms']
+                'scope'       => $scopes
             ]
         );
         $this->setLastOperationInfo($fromIndexOptions, $response);
+    }
+
+    /**
+     * Warning: This method can't be performed across two different applications
+     *
+     * @param IndexOptionsInterface $fromIndexOptions
+     * @param IndexOptionsInterface $toIndexOptions
+     * @return void
+     */
+    public function copySynonyms(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
+    {
+        $this->copyIndexScopes($fromIndexOptions, $toIndexOptions, ['synonyms']);
     }
 
     /**
@@ -585,23 +594,22 @@ class AlgoliaConnector
      * @param IndexOptionsInterface $fromIndexOptions
      * @param IndexOptionsInterface $toIndexOptions
      * @return void
-     * @throws AlgoliaException
-     * @throws NoSuchEntityException
      */
     public function copyQueryRules(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
     {
-        $fromIndexName = $fromIndexOptions->getIndexName();
-        $toIndexName = $toIndexOptions->getIndexName();
+        $this->copyIndexScopes($fromIndexOptions, $toIndexOptions, ['rules']);
+    }
 
-        $response = $this->getClient($fromIndexOptions->getStoreId())->operationIndex(
-            $fromIndexName,
-            [
-                'operation'   => 'copy',
-                'destination' => $toIndexName,
-                'scope'       => ['rules']
-            ]
-        );
-        $this->setLastOperationInfo($fromIndexOptions, $response);
+    /**
+     * Warning: This method can't be performed across two different applications
+     *
+     * @param IndexOptionsInterface $fromIndexOptions
+     * @param IndexOptionsInterface $toIndexOptions
+     * @return void
+     */
+    public function copyIndexConfig(IndexOptionsInterface $fromIndexOptions, IndexOptionsInterface $toIndexOptions): void
+    {
+        $this->copyIndexScopes($fromIndexOptions, $toIndexOptions, ['settings', 'synonyms', 'rules']);
     }
 
     /**
@@ -667,6 +675,27 @@ class AlgoliaConnector
         }
 
         $this->getClient($storeId)->waitForTask($lastUsedIndexName, $lastTaskId);
+    }
+
+    public function collectTaskIdToWaitFor(IndexOptionsInterface $indexOptions): void
+    {
+        $this->taskIdsToWaitFor[$indexOptions->getStoreId()][$indexOptions->getIndexName()][] =
+            $this->getLastTaskId($indexOptions->getStoreId());
+    }
+
+    public function waitForAllCollectedTaskIds(int $storeId): void
+    {
+        if (empty($this->taskIdsToWaitFor) || !isset($this->taskIdsToWaitFor[$storeId])) {
+            return;
+        }
+
+        foreach ($this->taskIdsToWaitFor[$storeId] as $indexName => $taskIds) {
+            foreach($taskIds as $taskId) {
+                $this->waitLastTask($storeId, $indexName, $taskId);
+            }
+        }
+
+        unset($this->taskIdsToWaitFor[$storeId]);
     }
 
     /**

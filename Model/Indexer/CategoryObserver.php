@@ -20,7 +20,7 @@ class CategoryObserver
     private $indexer;
 
     public function __construct(
-        IndexerRegistry $indexerRegistry,
+        protected IndexerRegistry $indexerRegistry,
         protected StoreManagerInterface $storeManager,
         protected ResourceConnection $resource,
         protected ProductBatchQueueProcessor $productBatchQueueProcessor,

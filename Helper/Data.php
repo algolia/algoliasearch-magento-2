@@ -190,7 +190,7 @@ class Data
     public function isIndexingEnabled($storeId = null): bool
     {
         if ($this->configHelper->isIndexingEnabled($storeId) === false) {
-            $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
+            $this->logger->log('INDEXING IS DISABLED FOR STORE ' . $this->logger->getStoreName($storeId));
             return false;
         }
         return true;
@@ -240,7 +240,7 @@ class Data
     protected function buildIndexData(?StoreInterface $store = null): array
     {
         $storeId = $store?->getStoreId();
-        $currencyCode = 
+        $currencyCode =
             $store?->getCurrentCurrencyCode($storeId) ??
             $this->configHelper->getCurrencyCode();
 

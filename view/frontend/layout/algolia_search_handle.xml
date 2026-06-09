@@ -12,10 +12,6 @@
             <block class="Algolia\AlgoliaSearch\Block\Configuration" name="algolia.internals.configuration" template="Algolia_AlgoliaSearch::internals/configuration.phtml"/>
         </referenceBlock>
 
-        <referenceContainer name="main.content">
-            <block class="Magento\Framework\View\Element\Template" before="-" name="algolia.beforecontent" template="Algolia_AlgoliaSearch::internals/beforecontent.phtml"/>
-        </referenceContainer>
-
         <referenceContainer name="before.body.end">
             <!-- Instant search results page templates -->
             <block class="Algolia\AlgoliaSearch\Block\Instant\Wrapper" name="algolia.instant.wrapper" template="Algolia_AlgoliaSearch::instant/wrapper.phtml"/>

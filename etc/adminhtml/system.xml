@@ -669,7 +669,9 @@
                     <label>Include non visible products in index</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
-                        Include non visible products in index. Default value is <strong>No</strong>
+                        <![CDATA[
+                            Include non visible products in index. Default value is <strong>No</strong>
+                        ]]>
                     </comment>
                 </field>
             </group>

@@ -3,6 +3,7 @@
 ## 3.18.1
 
 ### Updates
+- Ensured compatibility of the extension with Magento 2.4.9 and PHP 8.5
 - Added improvements on `setSettings` operations sent during indexing and configuration saving:
   - Introduced `IndexSettingsComparator` service to compare settings with the Algolia Dashboard.
   - Added diff check for both configuration save and batch processing.

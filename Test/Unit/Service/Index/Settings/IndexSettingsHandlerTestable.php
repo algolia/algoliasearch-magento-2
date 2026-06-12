@@ -1,8 +1,8 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Service;
+namespace Algolia\AlgoliaSearch\Test\Unit\Service\Index\Settings;
 
-use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsHandler;
 
 class IndexSettingsHandlerTestable extends IndexSettingsHandler
 {

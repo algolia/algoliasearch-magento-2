@@ -1,11 +1,12 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service;
+namespace Algolia\AlgoliaSearch\Service\Index\Settings;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -37,12 +38,14 @@ class IndexSettingsHandler
         if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings)) {
             if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
                 $this->logger->info(
-                    sprintf("Skipped setSettings (no diff with existing) for store ID: %d (index name: %s)",
+                    sprintf(
+                        'Skipped setSettings (no diff with existing) for store ID: %d (index name: %s)',
                         $indexOptions->getStoreId(),
                         $indexOptions->getIndexName(),
                     )
                 );
             }
+
             return false;
         }
 
@@ -52,6 +55,7 @@ class IndexSettingsHandler
                 $indexSettings,
                 false
             );
+
             return true;
         }
 

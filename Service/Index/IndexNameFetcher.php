@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service;
+namespace Algolia\AlgoliaSearch\Service\Index;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -62,6 +62,7 @@ class IndexNameFetcher
         if (!$this->isTempIndex($indexName)) {
             return $indexName;
         }
+
         return substr($indexName, 0, -strlen(self::INDEX_TEMP_SUFFIX));
     }
 

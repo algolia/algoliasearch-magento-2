@@ -2,13 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
-use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;

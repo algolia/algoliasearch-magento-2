@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service;
+namespace Algolia\AlgoliaSearch\Service\Index;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterfaceFactory;

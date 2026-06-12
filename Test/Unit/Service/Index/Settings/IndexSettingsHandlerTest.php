@@ -1,13 +1,13 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Service;
+namespace Algolia\AlgoliaSearch\Test\Unit\Service\Index\Settings;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
-use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsHandler;
 use PHPUnit\Framework\TestCase;
 
 class IndexSettingsHandlerTest extends TestCase

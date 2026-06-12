@@ -1,9 +1,10 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service;
+namespace Algolia\AlgoliaSearch\Service\Index\Settings;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndexSettingsComparator

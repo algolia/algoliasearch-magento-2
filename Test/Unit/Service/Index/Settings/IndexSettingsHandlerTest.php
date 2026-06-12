@@ -8,7 +8,7 @@ use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsHandler;
-use PHPUnit\Framework\TestCase;
+use Algolia\AlgoliaSearch\Test\TestCase;
 
 class IndexSettingsHandlerTest extends TestCase
 {
@@ -40,7 +40,7 @@ class IndexSettingsHandlerTest extends TestCase
         // Configure the mock to use our state machine
         $this->setupStateMachineMock();
 
-        $this->handler = new IndexSettingsHandlerTestable(
+        $this->handler = new IndexSettingsHandler(
             $this->connector,
             $this->config,
             $this->indexSettingsComparator,
@@ -122,6 +122,7 @@ class IndexSettingsHandlerTest extends TestCase
                             $this->assertEquals(['customRanking' => ['desc(price)']], $indexSettings);
                             $this->assertFalse($forwardToReplicas);
                             $this->assertFalse($mergeSettings);
+
                             break;
                 }
             }
@@ -233,7 +234,7 @@ class IndexSettingsHandlerTest extends TestCase
             'attributesToRetrieve' => ['name'],
         ];
 
-        [$forward, $noForward] = $this->handler->splitSettings($settings);
+        [$forward, $noForward] = $this->invokeMethod($this->handler, 'splitSettings', [$settings]);
 
         $this->assertEquals(['attributesToRetrieve' => ['name']], $forward);
         $this->assertEquals([
@@ -368,7 +369,7 @@ class IndexSettingsHandlerTest extends TestCase
         $indexSettingsComparator = $this->createMock(IndexSettingsComparator::class);
         $indexSettingsComparator->method('matches')->willReturn(true);
 
-        $this->handler = new IndexSettingsHandlerTestable(
+        $this->handler = new IndexSettingsHandler(
             $this->connector,
             $this->config,
             $indexSettingsComparator,
@@ -378,7 +379,7 @@ class IndexSettingsHandlerTest extends TestCase
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
-            'attributesToRetrieve' => ['name']
+            'attributesToRetrieve' => ['name'],
         ];
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);

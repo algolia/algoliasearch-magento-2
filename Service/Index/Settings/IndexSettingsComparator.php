@@ -14,12 +14,20 @@ class IndexSettingsComparator
     ) {}
 
     /**
+     * @param array|null $algoliaSettings pre-fetched remote settings; when null they are fetched from the connector
+     *
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      */
-    public function matches(IndexOptionsInterface $indexOptions, array $indexSettings): bool
-    {
-        $algoliaSettings = $this->connector->getSettings($indexOptions);
+    public function matches(
+        IndexOptionsInterface $indexOptions,
+        array $indexSettings,
+        ?array $algoliaSettings = null
+    ): bool {
+        if ($algoliaSettings === null) {
+            $algoliaSettings = $this->connector->getSettings($indexOptions);
+        }
+
         $algoliaSettings = array_intersect_key($algoliaSettings, $indexSettings);
 
         return $this->getSettingsHash($indexSettings) === $this->getSettingsHash($algoliaSettings);

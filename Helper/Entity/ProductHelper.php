@@ -310,6 +310,7 @@ class ProductHelper extends AbstractEntityHelper
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     * @throws \Throwable
      */
     public function setSettings(
         IndexOptionsInterface $indexOptions,
@@ -319,52 +320,25 @@ class ProductHelper extends AbstractEntityHelper
     ): void {
         $indexSettings = $this->getIndexSettings($storeId);
 
-        $this->indexSettingsHandler->setSettings($indexOptions, $indexSettings);
+        if ($this->indexSettingsHandler->setSettings($indexOptions, $indexSettings)) {
+            $this->logger->log('Index name: ' . $indexOptions->getIndexName());
+            $this->logger->log('Settings: ' . json_encode($indexSettings));
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
+        }
 
-        $this->logger->log('Settings: ' . json_encode($indexSettings));
         if ($saveToTmpIndicesToo) {
-            $this->indexSettingsHandler->setSettings(
-                $indexTmpOptions,
-                $indexSettings,
-                $indexOptions->getIndexName()
-            );
-
-            $this->logger->log('Pushing the same settings to TMP index as well');
+            $this->algoliaConnector->copyIndexConfig($indexOptions, $indexTmpOptions);
+            $this->logger->log('Copying the settings, synonyms and rules from production to "' . $indexTmpOptions->getIndexName() . '" index.');
+            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->setFacetsQueryRules($indexOptions);
-        $this->algoliaConnector->waitLastTask($storeId);
 
         if ($saveToTmpIndicesToo) {
             $this->setFacetsQueryRules($indexTmpOptions);
-            $this->algoliaConnector->waitLastTask($storeId);
         }
 
         $this->replicaManager->syncReplicasToAlgolia($storeId, $indexSettings);
-
-        if ($saveToTmpIndicesToo) {
-            try {
-                $this->algoliaConnector->copySynonyms($indexOptions, $indexTmpOptions);
-                $this->algoliaConnector->waitLastTask($storeId);
-                $this->logger->log('
-                        Copying synonyms from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
-                    ');
-            } catch (AlgoliaException $e) {
-                $this->logger->error('Error encountered while copying synonyms: ' . $e->getMessage());
-            }
-
-            try {
-                $this->algoliaConnector->copyQueryRules($indexOptions, $indexTmpOptions);
-                $this->algoliaConnector->waitLastTask($storeId);
-                $this->logger->log('
-                        Copying query rules from production index to "' . $indexTmpOptions->getIndexName() . '" to not erase them with the index move.
-                    ');
-            } catch (AlgoliaException $e) {
-                if ($e->getCode() !== 404) {
-                    throw $e;
-                }
-            }
-        }
     }
 
     /**
@@ -486,7 +460,7 @@ class ProductHelper extends AbstractEntityHelper
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
-    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions)
+    protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions): void
     {
         $this->clearFacetsQueryRules($indexOptions);
 

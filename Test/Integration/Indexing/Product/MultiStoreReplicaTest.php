@@ -230,7 +230,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         );
 
         $this->assertSortingAttribute($attr, $dir);
-        $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId());
+        $this->indicesConfigurator->saveConfigurationToAlgolia($store->getId(), false, ['products']);
         $this->algoliaConnector->waitLastTask($store->getId());
     }
 

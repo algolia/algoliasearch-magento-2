@@ -16,10 +16,13 @@ class TimedLogger
     )
     {}
 
-    public function start($action): void
+    public function start(string $action, bool $separator): void
     {
-        $this->log('');
-        $this->log('');
+        if ($separator) {
+            $this->log('');
+            $this->log('');
+        }
+
         $this->log('>>>>> BEGIN ' . $action);
         $this->timers[$action] = microtime(true);
     }
@@ -27,13 +30,18 @@ class TimedLogger
     /**
      * @throws DiagnosticsException
      */
-    public function stop($action): void
+    public function stop(string $action, bool $separator): void
     {
         if (false === isset($this->timers[$action])) {
             throw new DiagnosticsException(__('Algolia Logger => non existing action'));
         }
 
         $this->log('<<<<< END ' . $action . ' (' . $this->formatTime($this->timers[$action], microtime(true)) . ')');
+
+        if ($separator) {
+            $this->log('');
+            $this->log('');
+        }
     }
 
     /**

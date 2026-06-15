@@ -49,8 +49,8 @@ class IndexSettingsHandlerTest extends TestCase
             $this->connector,
             $this->config,
             $this->indexSettingsComparator,
-            $this->logger,
             $this->indexSettingsPreserver,
+            $this->logger,
         );
     }
 
@@ -379,8 +379,8 @@ class IndexSettingsHandlerTest extends TestCase
             $this->connector,
             $this->config,
             $indexSettingsComparator,
-            $this->logger,
             $this->indexSettingsPreserver,
+            $this->logger,
         );
 
         $storeId = 1;
@@ -410,7 +410,7 @@ class IndexSettingsHandlerTest extends TestCase
         $config = $this->createMock(ConfigHelper::class);
         $config->method('shouldForwardPrimaryIndexSettingsToReplicas')->willReturn(false);
 
-        $handler = new IndexSettingsHandler($connector, $config, $comparator, $this->logger, $preserver);
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $preserver, $this->logger);
         $this->indexOptions->method('getStoreId')->willReturn(1);
 
         $this->assertTrue($handler->setSettings($this->indexOptions, ['attributesForFaceting' => ['categories']]));
@@ -444,7 +444,7 @@ class IndexSettingsHandlerTest extends TestCase
         $config = $this->createMock(ConfigHelper::class);
         $config->method('isLoggingEnabled')->willReturn(false);
 
-        $handler = new IndexSettingsHandler($connector, $config, $comparator, $this->logger, $preserver);
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $preserver, $this->logger);
         $this->indexOptions->method('getStoreId')->willReturn(1);
 
         $handler->setSettings($this->indexOptions, ['attributesForFaceting' => ['categories']]);
@@ -471,7 +471,7 @@ class IndexSettingsHandlerTest extends TestCase
         $config = $this->createMock(ConfigHelper::class);
         $config->method('isLoggingEnabled')->willReturn(false);
 
-        $handler = new IndexSettingsHandler($connector, $config, $comparator, $this->logger, $preserver);
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $preserver, $this->logger);
         $this->indexOptions->method('getStoreId')->willReturn(1);
 
         $this->assertFalse($handler->setSettings($this->indexOptions, ['attributesForFaceting' => ['categories']]));
@@ -496,7 +496,7 @@ class IndexSettingsHandlerTest extends TestCase
         $config = $this->createMock(ConfigHelper::class);
         $config->method('isLoggingEnabled')->willReturn(false);
 
-        $handler = new IndexSettingsHandler($connector, $config, $comparator, $this->logger, $preserver);
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $preserver, $this->logger);
         $this->indexOptions->method('getStoreId')->willReturn(1);
 
         $this->assertFalse($handler->setSettings($this->indexOptions, $proposed));

@@ -25,8 +25,8 @@ class IndexSettingsHandler
         protected AlgoliaConnector        $connector,
         protected ConfigHelper            $config,
         protected IndexSettingsComparator $indexSettingsComparator,
+        protected IndexSettingsPreserver  $indexSettingsPreserver,
         protected AlgoliaLogger           $logger,
-        protected IndexSettingsPreserver  $indexSettingsPreserver
     ) {}
 
     /**

@@ -37,16 +37,8 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected function setPrivateProperty(object $obj, string $prop, mixed $value): void
     {
-        $ref = new \ReflectionClass($obj);
-        while ($ref !== false) {
-            try {
-                $ref->getProperty($prop)->setValue($obj, $value);
-                return;
-            } catch (\ReflectionException) {
-                $ref = $ref->getParentClass();
-            }
-        }
-        throw new \ReflectionException("Property {$prop} does not exist in class hierarchy of " . get_class($obj));
+        $refProperty = $this->getReflectionClass($obj, $prop);
+        $refProperty->setValue($obj, $value);
     }
 
     /**
@@ -60,14 +52,21 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected function getPrivateProperty(object $obj, string $prop): mixed
     {
+        $refProperty = $this->getReflectionClass($obj, $prop);
+        return $refProperty->getValue($obj);
+    }
+
+    protected function getReflectionClass(object $obj, string $prop): \ReflectionProperty
+    {
         $ref = new \ReflectionClass($obj);
         while ($ref !== false) {
             try {
-                return $ref->getProperty($prop)->getValue($obj);
+                return $ref->getProperty($prop);
             } catch (\ReflectionException) {
                 $ref = $ref->getParentClass();
             }
         }
+
         throw new \ReflectionException("Property {$prop} does not exist in class hierarchy of " . get_class($obj));
     }
 

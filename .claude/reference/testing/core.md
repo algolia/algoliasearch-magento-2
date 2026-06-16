@@ -20,6 +20,7 @@
 - Do not test methods coming from the parent classes (Magento core)
 - Do not use assertObjectHasProperty assertions
 - We use PHPUnit 12, make sure there is nothing outdated from earlier versions like `addMethods` or `setMethods`.
+- Extend `\Algolia\AlgoliaSearch\Test\TestCase` (not PHPUnit's TestCase directly) so inherited helpers like `invokeMethod()`, `setPrivateProperty()`, and `getPrivateProperty()` are available
 
 ### Mocking Strategy
 - Instantiate the tested class in the setUp() method by mocking every object that needs to be passed in its constructor

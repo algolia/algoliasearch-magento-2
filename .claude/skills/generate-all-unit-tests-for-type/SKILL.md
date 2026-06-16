@@ -104,7 +104,6 @@ Process files one at a time, in order. For each file:
    - Use the nullable property pattern: `protected null|(Foo&MockObject) $foo = null;`
    - For `addCommitCallback` patterns, capture and invoke the closure inline.
 5. **Write the test file** to the output path. It must:
-   - Extend `\Algolia\AlgoliaSearch\Test\TestCase`
    - Declare `strict_types=1`
    - Use the correct namespace (e.g. `Algolia\AlgoliaSearch\Test\Unit\Block\Adminhtml\Queue`)
    - Import all used classes at the top

@@ -62,7 +62,6 @@ Rules:
 
 ## Step 7 — Write the file
 Write the generated test class to the output path determined in Step 5. The file must:
-- Extend `\Algolia\AlgoliaSearch\Test\TestCase` (not PHPUnit's TestCase directly) so inherited helpers like `invokeMethod()`, `setPrivateProperty()`, and `getPrivateProperty()` are available
 - Declare strict types
 - Use the same namespace structure as the module (e.g. `Algolia\AlgoliaSearch\Test\Unit\Model\Indexer`)
 - Import all used classes at the top

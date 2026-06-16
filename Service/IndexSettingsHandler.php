@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Service;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -20,51 +21,64 @@ class IndexSettingsHandler
     ];
 
     public function __construct(
-        protected AlgoliaConnector $connector,
-        protected ConfigHelper     $config,
+        protected AlgoliaConnector        $connector,
+        protected ConfigHelper            $config,
+        protected IndexSettingsComparator $indexSettingsComparator,
+        protected AlgoliaLogger           $logger
     ) {}
 
     /**
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      */
-    public function setSettings(
-        IndexOptionsInterface $indexOptions,
-        array $indexSettings,
-        string $mergeSettingsFrom = ''
-    ): void
+    public function setSettings(IndexOptionsInterface $indexOptions, array $indexSettings): bool
     {
+        // Early return if Algolia settings are already the same
+        if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings)) {
+            if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
+                $this->logger->info(
+                    sprintf("Skipped setSettings (no diff with existing) for store ID: %d (index name: %s)",
+                        $indexOptions->getStoreId(),
+                        $indexOptions->getIndexName(),
+                    )
+                );
+            }
+            return false;
+        }
+
         if (!$this->config->shouldForwardPrimaryIndexSettingsToReplicas($indexOptions->getStoreId())) {
             $this->connector->setSettings(
                 $indexOptions,
                 $indexSettings,
-                false,
-                true,
-                $mergeSettingsFrom
+                false
             );
-
-            return;
+            return true;
         }
 
+        // If we should forward to replicas, we need to remove settings which we don't want to send
+        // such as customRanking and ranking (managed by each replica separately)
         [$forward, $noForward] = $this->splitSettings($indexSettings);
+
+        // FORWARDED: $settings without excluded attributes
         if ($forward) {
             $this->connector->setSettings(
                 $indexOptions,
                 $forward,
-                true,
-                false
+                true
             );
             $this->connector->waitLastTask($indexOptions->getStoreId());
         }
+
+        // NOT FORWARDED: array containing excluded attributes only
         if ($noForward) {
             $this->connector->setSettings(
                 $indexOptions,
                 $noForward,
-                false,
-                true,
-                $mergeSettingsFrom
+                false
             );
         }
+
+        return true;
     }
 
     /**

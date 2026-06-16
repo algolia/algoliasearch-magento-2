@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Config;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
+use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\Config\Traits\ConfigAssertionsTrait;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\MultiStoreTestCase;
 
@@ -90,7 +91,22 @@ class MultiStoreConfigTest extends MultiStoreTestCase
             scopeCode: $fixtureSecondStore->getCode()
         );
 
-        $this->indicesConfigurator->saveConfigurationToAlgolia($fixtureSecondStore->getId());
+        $this->indicesConfigurator->saveConfigurationToAlgolia(
+            $fixtureSecondStore->getId(),
+            false,
+            ['products', 'categories']
+        );
+
+        $defaultIndexOptions = $this->getIndexOptions('products', $defaultStore->getId());
+        $fixtureIndexOptions = $this->getIndexOptions('products', $fixtureSecondStore->getId());
+
+        $productHelper = $this->objectManager->get(ProductHelper::class);
+        $this->invokeMethod($productHelper, 'setFacetsQueryRules', [$defaultIndexOptions]);
+        $this->algoliaConnector->waitForAllCollectedTaskIds($defaultIndexOptions->getStoreId());
+
+        $this->invokeMethod($productHelper, 'setFacetsQueryRules', [$fixtureIndexOptions]);
+        $this->algoliaConnector->collectTaskIdToWaitFor($fixtureIndexOptions);
+        $this->algoliaConnector->waitForAllCollectedTaskIds($fixtureIndexOptions->getStoreId());
 
         $defaultCategoryIndexOptions = $this->getIndexOptions('categories', $defaultStore->getId());
         $defaultCategoryIndexSettings = $this->algoliaConnector->getSettings($defaultCategoryIndexOptions);
@@ -106,10 +122,7 @@ class MultiStoreConfigTest extends MultiStoreTestCase
         $this->assertNotContains($rankingFromConfig, $defaultCategoryIndexSettings['customRanking']);
         $this->assertContains($rankingFromConfig, $fixtureCategoryIndexSettings['customRanking']);
 
-        $defaultIndexOptions = $this->getIndexOptions('products', $defaultStore->getId());
         $defaultProductIndexRules = $this->algoliaConnector->searchRules($defaultIndexOptions);
-
-        $fixtureIndexOptions = $this->getIndexOptions('products', $fixtureSecondStore->getId());
         $fixtureProductIndexRules = $this->algoliaConnector->searchRules($fixtureIndexOptions);
 
         // Check that the Rule has only been created for the fixture store

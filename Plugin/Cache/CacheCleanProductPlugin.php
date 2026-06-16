@@ -29,6 +29,12 @@ class CacheCleanProductPlugin
     public function afterSave(ProductResource $subject, ProductResource $result, Product $product): ProductResource
     {
         $original = $this->originalData[$product->getSku()] ?? [];
+
+        // In case of a product duplication
+        if (empty($original)) {
+            return $result;
+        }
+
         $storeId = $product->getStoreId();
 
         $shouldClearCache =
@@ -105,6 +111,11 @@ class CacheCleanProductPlugin
         $key = 'quantity_and_stock_status';
         $oldStock = $orig[$key];
         $newStock = $new[$key];
+
+        // In case of a product duplication on second save (for some reason, Magento returns a different data structure in that case).
+        if (!is_array($newStock)) {
+            $newStock = ['is_in_stock' => $newStock];
+        }
 
         return $this->canCompareValues($oldStock, $newStock, 'is_in_stock')
             && (bool) $oldStock['is_in_stock'] !== (bool) $newStock['is_in_stock']

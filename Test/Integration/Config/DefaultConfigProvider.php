@@ -64,9 +64,6 @@ class DefaultConfigProvider
         'algoliasearch_advanced/advanced/remove_branding' => '0',
         'algoliasearch_autocomplete/autocomplete/autocomplete_selector' => '.algolia-search-input',
         'algoliasearch_advanced/advanced/index_product_on_category_products_update' => '1',
-        'algoliasearch_advanced/advanced/prevent_backend_rendering' => '0',
-        'algoliasearch_advanced/advanced/prevent_backend_rendering_display_mode' => 'all',
-        'algoliasearch_advanced/advanced/backend_rendering_allowed_user_agents' => "Googlebot\nBingbot",
         'algoliasearch_advanced/queue/archive_clear_limit' => '30',
     ];
 

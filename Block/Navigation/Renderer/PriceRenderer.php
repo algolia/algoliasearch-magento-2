@@ -5,6 +5,14 @@ namespace Algolia\AlgoliaSearch\Block\Navigation\Renderer;
 use Magento\Catalog\Model\Layer\Filter\DataProvider\Price as PriceDataProvider;
 use Magento\Store\Model\ScopeInterface;
 
+/**
+ * @deprecated since 3.18, to be removed in 3.19. (See MAGE-1579.)
+ *             Part of the legacy backend-facet-rendering subsystem.
+ *             The algoliasearch_instant/instant/backend_rendering_enable config flag
+ *             was removed from system.xml, making this class unreachable.
+ *             Backend rendering is now provided by the optional Algolia_SearchAdapter module.
+ * @see https://github.com/algolia/algoliasearch-adapter-magento-2
+ */
 class PriceRenderer extends SliderRenderer
 {
     /** @var string */

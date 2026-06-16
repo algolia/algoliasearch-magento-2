@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
 use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
-use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;
 use Magento\Framework\Exception\LocalizedException;
@@ -30,7 +29,6 @@ class Data
         protected AdditionalSectionIndexBuilder $additionalSectionIndexBuilder,
         protected PageIndexBuilder              $pageIndexBuilder,
         protected SuggestionIndexBuilder        $suggestionIndexBuilder,
-        protected BackendSearch                 $backendSearch
     ){}
 
     /**
@@ -150,8 +148,7 @@ class Data
     public function isIndexingEnabled($storeId = null): bool
     {
         if ($this->configHelper->isIndexingEnabled($storeId) === false) {
-            $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
-
+            $this->logger->log('INDEXING IS DISABLED FOR STORE ' . $this->logger->getStoreName($storeId));
             return false;
         }
 
@@ -196,7 +193,7 @@ class Data
     protected function buildIndexData(?StoreInterface $store = null): array
     {
         $storeId = $store?->getStoreId();
-        $currencyCode = 
+        $currencyCode =
             $store?->getCurrentCurrencyCode($storeId) ??
             $this->configHelper->getCurrencyCode();
 

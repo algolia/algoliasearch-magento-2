@@ -1,5 +1,14 @@
 <?php
-/** @var \Magento\Framework\Escaper $escaper */
+/**
+ * @deprecated since 3.18, to be removed in 3.19. (See MAGE-1579.)
+ *             Part of the legacy backend-facet-rendering subsystem.
+ *             Loaded only when algoliasearch_instant/instant/backend_rendering_enable is '1', which is
+ *             unreachable since the admin field was removed from system.xml and can never be set.
+ *             Backend rendering is now provided by the optional Algolia_SearchAdapter module.
+ * @see https://github.com/algolia/algoliasearch-adapter-magento-2
+ *
+ * @var \Magento\Framework\Escaper $escaper
+ */
 
 if ($block->canShowBlock()): ?>
     <div class="block filter algolia-filter-list" id="layered-filter-block" data-mage-init='{"collapsible":{"openedState": "active", "collapsible": true, "active": false, "collateral": { "openedState": "filter-active", "element": "body" } }}'>

@@ -9,6 +9,14 @@ use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\LayeredNavigation\Block\Navigation\FilterRendererInterface;
 
+/**
+ * @deprecated since 3.18, to be removed in 3.19. (See MAGE-1579.)
+ *             Part of the legacy backend-facet-rendering subsystem.
+ *             The algoliasearch_instant/instant/backend_rendering_enable config flag
+ *             was removed from system.xml, making this class unreachable.
+ *             Backend rendering is now provided by the optional Algolia_SearchAdapter module.
+ * @see https://github.com/algolia/algoliasearch-adapter-magento-2
+ */
 class SliderRenderer extends Template implements FilterRendererInterface
 {
     /** @var string */

@@ -159,7 +159,7 @@ jobs:
           working_directory: ~/Sites
           command: |
             bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
-  
+
   notify:
     docker:
       - image: cimg/base:current
@@ -181,8 +181,8 @@ workflows:
       - magento-build:
           matrix:
             parameters:
-              php-version: ["8.2"]
-              magento-version: ["2.4.6-p11", "2.4.7-p6"]
+              php-version: ["8.3"]
+              magento-version: ["2.4.7-p6"]
       - notify:
           context: mage-slack
 #  magento-integration-test-workflow:

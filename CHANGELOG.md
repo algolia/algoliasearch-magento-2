@@ -4,6 +4,7 @@
 
 ### Updates
 - Update Algolia PHP Client to version 4.40.0.
+- Ensured compatibility of the extension with Magento 2.4.9 and PHP 8.5
 
 ## 3.18.0
 

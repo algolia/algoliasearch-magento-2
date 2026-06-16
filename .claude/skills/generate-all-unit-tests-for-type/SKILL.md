@@ -98,7 +98,7 @@ Process files one at a time, in order. For each file:
    - Additional tests per method are driven by cyclomatic complexity.
    - Focus on user-observable behavior: return values, thrown exceptions, which collaborator is called with which arguments.
    - Do not test implementation details.
-   - Use `@dataProvider` (or `#[DataProvider]`) for multiple input variants of the same behavior.
+   - Use `#[DataProvider]` for multiple input variants of the same behavior.
    - Never write a test that just returns what is mocked.
    - Test names read as plain-English sentences: `testReturnsEmptyArrayWhenProductIsDisabled`.
    - Use the nullable property pattern: `protected null|(Foo&MockObject) $foo = null;`

@@ -59,18 +59,22 @@ Often extend a custom Algolia base class rather than `Template` directly. May ha
 ## Key patterns
 
 ### Partial mock for blocks with inherited infrastructure
-For frontend/adminhtml blocks that call `getRequest()`, `getCurrentCategory()`, or similar inherited Magento methods, override only those methods while keeping the logic under test intact:
+For frontend/adminhtml blocks that call `getRequest()`, `getCurrentCategory()`, or similar inherited Magento methods, use `createPartialMock` to stub only those inherited methods, then inject the dependencies the method under test actually reads via `setPrivateProperty`:
 
 ```php
-$block = $this->getMockBuilder(Configuration::class)
-    ->setConstructorArgs([...all mocked deps...])
-    ->onlyMethods(['getRequest'])
-    ->getMock();
+$block = $this->createPartialMock(
+    Configuration::class,
+    ['getRequest', 'getCurrentCategory']
+);
+// Inject only the properties the method under test reads
+$this->setPrivateProperty($block, 'instantSearchConfig', $this->instantSearchConfig);
 
-$request = $this->createMock(\Magento\Framework\App\Request\Http::class);
+$request = $this->createStub(\Magento\Framework\App\Request\Http::class);
 $request->method('getFullActionName')->willReturn('catalogsearch_result_index');
 $block->method('getRequest')->willReturn($request);
 ```
+
+This works because all `Algolia` block dependencies are `protected` promoted constructor properties — they can be set individually after creation without running the constructor. Only inject what the method under test actually reads; there is no need to list all constructor args.
 
 ### Asserting specific keys in large config arrays
 For methods like `getConfiguration()` that return a large nested array, assert on individual keys rather than the full structure:

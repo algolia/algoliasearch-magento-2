@@ -54,11 +54,10 @@ Rules:
 - **Any additional tests per method should be driven by its cyclomatic complexity**
 - **Focus on user-observable behavior**: what the method returns, what exception it throws, which collaborator it calls with which arguments
 - **Do not test implementation details**: internal variable names, call counts on low-level helpers, private method logic
-- **Use `@dataProvider`** (or `#[DataProvider]` attribute) when testing the same behavior across multiple input variants
+- **Use `#[DataProvider]` attribute when testing the same behavior across multiple input variants
 - **Don't write any test that just return what we mock.**
 - Each test name must read as a plain-English sentence describing the behavior: `testReturnsEmptyArrayWhenProductIsDisabled`
 - Use the nullable property pattern from core rules: `protected null|(Foo&MockObject) $foo = null;`
-- For magic `@method` docblock methods, use `getMockBuilder` + `addMethods()`
 - For `addCommitCallback` patterns, capture and invoke the closure inline
 
 ## Step 7 — Write the file

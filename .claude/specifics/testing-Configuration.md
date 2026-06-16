@@ -15,14 +15,18 @@
 
 ### Methods that require a partial mock
 
-For methods that call `$this->getRequest()`, `$this->getCurrentCategory()`, etc., use `getMockBuilder` with `setMethods()` to override only the inherited methods, leaving the logic under test intact:
+For methods that call `$this->getRequest()`, `$this->getCurrentCategory()`, etc., use `createPartialMock` to override only the inherited methods, leaving the logic under test intact:
 
 ```php
-$block = $this->getMockBuilder(Configuration::class)
-    ->setConstructorArgs([...all mocked deps...])
-    ->onlyMethods(['getRequest', 'instantSearchConfig'])
-    ->getMock();
+$block = $this->createPartialMock(
+    Configuration::class,
+    ['getRequest', 'getCurrentCategory', 'isLandingPage']
+);
+// Inject only the dependencies actually accessed by the method under test
+$this->setPrivateProperty($block, 'instantSearchConfig', $this->instantSearchConfig);
 ```
+
+`createPartialMock` skips the constructor, but that is fine here: all `Algolia` block dependencies are `protected` promoted constructor properties, so they can be injected individually with `setPrivateProperty` after creation. Only inject the properties the method under test actually reads — no need to list all 24 constructor args.
 
 - **`isSearchPage()`** — Test the three branches:
   1. InstantSearch disabled → always false

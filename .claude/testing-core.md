@@ -6,19 +6,20 @@
 - Follow the same structure as in the module (ex: tests for the Service/Product/RecordBuilder.php should be located in the Test/Unit/Service/Product directory)
 
 ## Tech Stack
-- Use PHPUnit 10
-- PHP 8.3
-- Magento 2.4.8
+- Use PHPUnit 12
+- PHP 8.5
+- Magento 2.4.9
 
 ### Test Strategy
 - Don't test Event Manager's dispatch methods
 - Use @dataProvider annotations when it's needed
-  - use /**
+  - use #[DataProvider('myProvider')]
+  - not /**
         * @dataProvider myProvider
         */
-  - not #[DataProvider('myProvider')]
 - Do not test methods coming from the parent classes (Magento core)
 - Do not use assertObjectHasProperty assertions
+- We use PHPUnit 12, make sure there is nothing outdated from earlier versions like `addMethods` or `setMethods`.
 
 ### Mocking Strategy
 - Instantiate the tested class in the setUp() method by mocking every object that needs to be passed in its constructor
@@ -26,6 +27,7 @@
     - protected ?ConfigHelper $configHelper;
       or
     - protected null|(CategoryResourceModel&MockObject) $categoryResource = null;
+- Prefer usage of `createStub` over `createMock`.
 
 **DO Mock:**
 - Every object that needs to be passed in the constructor of the tested class

@@ -68,21 +68,21 @@ Do not generate any test code until the user confirms.
 
 ## Step 5 — Load the foundation rules and type guide
 
-Read `.claude/testing-core.md`.
+Read `.claude/reference/testing/core.md`.
 
 Then read the type-specific guide:
 
-| Type                                  | Guide                                         |
-|---------------------------------------|-----------------------------------------------|
-| `block`                               | `.claude/types/testing-blocks.md`             |
-| `controller`                          | `.claude/types/testing-controllers.md`        |
-| `helper`                              | `.claude/types/testing-helpers.md`            |
-| `service`                             | `.claude/types/testing-services.md`           |
-| `observer`                            | `.claude/types/testing-observers.md`          |
-| `plugin`                              | `.claude/types/testing-plugins.md`            |
-| `model` / `indexer`                   | `.claude/types/testing-models.md`             |
-| `viewmodel` / `view-model`            | `.claude/types/testing-view-models.md`        |
-| `command` / `console` / `validator` / `other` | `.claude/types/testing-others.md`   |
+| Type                                  | Guide                                                              |
+|---------------------------------------|--------------------------------------------------------------------|
+| `block`                               | `.claude/reference/testing/types/testing-blocks.md`               |
+| `controller`                          | `.claude/reference/testing/types/testing-controllers.md`          |
+| `helper`                              | `.claude/reference/testing/types/testing-helpers.md`              |
+| `service`                             | `.claude/reference/testing/types/testing-services.md`             |
+| `observer`                            | `.claude/reference/testing/types/testing-observers.md`            |
+| `plugin`                              | `.claude/reference/testing/types/testing-plugins.md`              |
+| `model` / `indexer`                   | `.claude/reference/testing/types/testing-models.md`               |
+| `viewmodel` / `view-model`            | `.claude/reference/testing/types/testing-view-models.md`          |
+| `command` / `console` / `validator` / `other` | `.claude/reference/testing/types/testing-others.md`     |
 
 Read both files **once** before processing any individual file. These rules apply to every file in the batch.
 
@@ -90,7 +90,7 @@ Read both files **once** before processing any individual file. These rules appl
 
 Process files one at a time, in order. For each file:
 
-1. **Check for class-specific rules**: extract the class name (e.g. `Configuration` from `Block/Configuration.php`) and check whether `.claude/specifics/testing-<ClassName>.md` exists. If it does, read it — its rules override the type guide for this file only.
+1. **Check for class-specific rules**: extract the class name (e.g. `Configuration` from `Block/Configuration.php`) and check whether `.claude/reference/testing/specifics/testing-<ClassName>.md` exists. If it does, read it — its rules override the type guide for this file only.
 2. **Read the source file**: understand constructor dependencies, public methods, guard clauses, and any use of `addCommitCallback` or external service calls.
 3. **Check for an existing test file**: if one exists, read it first to avoid duplicating tests that are already written.
 4. **Apply the generation rules** from Step 5 (core + type guide + any class-specific guide):

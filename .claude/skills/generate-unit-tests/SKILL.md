@@ -8,29 +8,29 @@ Generate focused PHPUnit unit tests for the file: $ARGUMENTS
 Follow these steps exactly:
 
 ## Step 1 — Load foundation rules
-Read `.claude/testing-core.md`. These rules are non-negotiable and apply to every test you generate.
+Read `.claude/reference/testing/core.md`. These rules are non-negotiable and apply to every test you generate.
 
 ## Step 2 — Load the type-specific guide
 Determine which category the target file belongs to based on its path and class name:
 
-| If the path contains…                    | Read this guide                              |
-|------------------------------------------|----------------------------------------------|
-| `Observer/`                              | `.claude/types/testing-observers.md`         |
-| `Service/`                               | `.claude/types/testing-services.md`          |
-| `Helper/`                                | `.claude/types/testing-helpers.md`           |
-| `Model/Indexer/` or `Indexer/`           | `.claude/types/testing-models.md`            |
-| `Model/Backend/` or `Model/Source/`      | `.claude/types/testing-models.md`            |
-| `Plugin/`                                | `.claude/types/testing-plugins.md`           |
-| `Controller/`                            | `.claude/types/testing-controllers.md`       |
-| `ViewModel/`                             | `.claude/types/testing-view-models.md`       |
-| `Block/`                                 | `.claude/types/testing-blocks.md`            |
-| `Console/` or `Validator/`               | `.claude/types/testing-others.md`            |
-| anything else                            | skip — use core rules only                   |
+| If the path contains…                    | Read this guide                                              |
+|------------------------------------------|--------------------------------------------------------------|
+| `Observer/`                              | `.claude/reference/testing/types/testing-observers.md`       |
+| `Service/`                               | `.claude/reference/testing/types/testing-services.md`        |
+| `Helper/`                                | `.claude/reference/testing/types/testing-helpers.md`         |
+| `Model/Indexer/` or `Indexer/`           | `.claude/reference/testing/types/testing-models.md`          |
+| `Model/Backend/` or `Model/Source/`      | `.claude/reference/testing/types/testing-models.md`          |
+| `Plugin/`                                | `.claude/reference/testing/types/testing-plugins.md`         |
+| `Controller/`                            | `.claude/reference/testing/types/testing-controllers.md`     |
+| `ViewModel/`                             | `.claude/reference/testing/types/testing-view-models.md`     |
+| `Block/`                                 | `.claude/reference/testing/types/testing-blocks.md`          |
+| `Console/` or `Validator/`               | `.claude/reference/testing/types/testing-others.md`          |
+| anything else                            | skip — use core rules only                                   |
 
 Read the matching guide before generating any test code.
 
 ## Step 3 — Check for class-specific rules
-Extract the class name from the file path (e.g. `AlgoliaConnector` from `Service/AlgoliaConnector.php`) and check whether `.claude/specifics/testing-<ClassName>.md` exists. If it does, read it — its rules take precedence over the type guide for this class.
+Extract the class name from the file path (e.g. `AlgoliaConnector` from `Service/AlgoliaConnector.php`) and check whether `.claude/reference/testing/specifics/testing-<ClassName>.md` exists. If it does, read it — its rules take precedence over the type guide for this class.
 
 ## Step 4 — Read the target file
 Read the full source file at the path provided in $ARGUMENTS. Understand:

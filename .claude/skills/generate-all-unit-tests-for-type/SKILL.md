@@ -93,7 +93,8 @@ Process files one at a time, in order. For each file:
 1. **Check for class-specific rules**: extract the class name (e.g. `Configuration` from `Block/Configuration.php`) and check whether `.claude/reference/testing/specifics/testing-<ClassName>.md` exists. If it does, read it — its rules override the type guide for this file only.
 2. **Read the source file**: understand constructor dependencies, public methods, guard clauses, and any use of `addCommitCallback` or external service calls.
 3. **Check for an existing test file**: if one exists, read it first to avoid duplicating tests that are already written.
-4. **Apply the generation rules** from Step 5 (core + type guide + any class-specific guide):
+4. **Don't check helpers logic in the class itself** If several classes call the same helper classes in their dependencies, the helper's behavior should be verified in the helper's own test, not re-verified through each wrapper.
+5. **Apply the generation rules** from Step 5 (core + type guide + any class-specific guide):
    - Generate at least one test per public method, except `@deprecated` methods and trivial delegating methods with no transformation, guard clause, or state change.
    - Additional tests per method are driven by cyclomatic complexity.
    - Focus on user-observable behavior: return values, thrown exceptions, which collaborator is called with which arguments.
@@ -103,11 +104,11 @@ Process files one at a time, in order. For each file:
    - Test names read as plain-English sentences: `testReturnsEmptyArrayWhenProductIsDisabled`.
    - Use the nullable property pattern: `protected null|(Foo&MockObject) $foo = null;`
    - For `addCommitCallback` patterns, capture and invoke the closure inline.
-5. **Write the test file** to the output path. It must:
+6. **Write the test file** to the output path. It must:
    - Declare `strict_types=1`
    - Use the correct namespace (e.g. `Algolia\AlgoliaSearch\Test\Unit\Block\Adminhtml\Queue`)
    - Import all used classes at the top
-6. **Report progress**: after each file, output one line — `✓ <TestFilePath> (<N> tests)`.
+7. **Report progress**: after each file, output one line — `✓ <TestFilePath> (<N> tests)`.
 
 If a source file should be skipped entirely per the type guide (e.g. button blocks, source models, route-only controllers), output: `— Skipped <SourceFilePath> (<reason>)` and move on.
 
@@ -125,3 +126,5 @@ Where `<TypeTestDir>` mirrors the source directory (e.g. `Block/` for blocks, `P
 For types that span multiple directories (e.g. `model` covers `Model/Indexer/`, `Model/Backend/`, `Model/Source/`), run a single phpunit invocation passing all test directories.
 
 Report the full test output. If tests fail, list each failing test with its error message. Do **not** automatically fix failing tests — report them to the user and stop.
+
+Some parts of the codebase are very old and cannot be blindly considered as valid, don't blindly assert they are right, when the behavior looks unclear or possibly unintended, flag it both at the test level and the final summary.

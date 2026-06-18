@@ -16,6 +16,8 @@ commands:
     parameters:
       php-version:
         type: string
+      phpunit-version:
+        type: string
       magento-version:
         type: string
     steps:

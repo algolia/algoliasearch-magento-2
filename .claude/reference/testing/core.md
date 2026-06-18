@@ -20,6 +20,7 @@
 - Do not test methods coming from the parent classes (Magento core)
 - Do not use assertObjectHasProperty assertions
 - We use PHPUnit 12, make sure there is nothing outdated from earlier versions like `addMethods` or `setMethods`.
+- We still want to be backward compatible with PHPUnit 10 and PHPUnit 11. Do not use any classes that are not available for these versions.
 - Extend `\Algolia\AlgoliaSearch\Test\TestCase` (not PHPUnit's TestCase directly) so inherited helpers like `invokeMethod()`, `setPrivateProperty()`, and `getPrivateProperty()` are available
 
 ### Mocking Strategy
@@ -29,6 +30,7 @@
       or
     - protected null|(CategoryResourceModel&MockObject) $categoryResource = null;
 - Prefer usage of `createStub` over `createMock`.
+- Prefer usage of `$this->callback('is_callable')` over `$this->callable()`
 
 **DO Mock:**
 - Every object that needs to be passed in the constructor of the tested class

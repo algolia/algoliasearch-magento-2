@@ -43,7 +43,7 @@ class StockItemObserverTest extends TestCase
 
         $this->stockItemResource->expects($this->once())
             ->method('addCommitCallback')
-            ->with($this->isCallable())
+            ->with($this->callback('is_callable'))
             ->willReturnCallback(fn(callable $cb) => $cb());
 
         $this->indexer->method('isScheduled')->willReturn(false);
@@ -78,7 +78,7 @@ class StockItemObserverTest extends TestCase
 
         $this->stockItemResource->expects($this->once())
             ->method('addCommitCallback')
-            ->with($this->isCallable())
+            ->with($this->callback('is_callable'))
             ->willReturnCallback(fn(callable $cb) => $cb());
 
         $this->indexer->method('isScheduled')->willReturn(false);

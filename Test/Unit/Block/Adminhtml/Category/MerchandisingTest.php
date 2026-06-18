@@ -12,7 +12,9 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class MerchandisingTest extends TestCase
 {
     protected null|(Merchandising&MockObject) $block = null;

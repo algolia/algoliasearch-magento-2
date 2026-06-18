@@ -12,7 +12,9 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Indexer\Model\Indexer;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class StatusTest extends TestCase
 {
     protected null|(Status&MockObject) $block = null;

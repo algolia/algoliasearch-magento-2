@@ -14,7 +14,9 @@ use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Registry;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class JobTest extends TestCase
 {
     private null|(Context&MockObject) $context = null;

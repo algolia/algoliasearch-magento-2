@@ -18,7 +18,9 @@ use Magento\Tax\Model\Config as TaxConfig;
 use PHPUnit\Framework\TestCase;
 use Magento\Framework\Locale\FormatInterface as LocaleFormatInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class EventProcessorTest extends TestCase
 {
     protected ?TaxConfig $taxConfig = null;

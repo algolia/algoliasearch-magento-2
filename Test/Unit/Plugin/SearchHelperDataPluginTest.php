@@ -8,7 +8,9 @@ use Algolia\AlgoliaSearch\Plugin\SearchHelperDataPlugin;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Search\Helper\Data;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class SearchHelperDataPluginTest extends TestCase
 {
     protected ?SearchHelperDataPlugin $plugin = null;

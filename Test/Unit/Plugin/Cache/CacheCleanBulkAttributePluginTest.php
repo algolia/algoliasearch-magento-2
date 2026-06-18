@@ -12,7 +12,9 @@ use Magento\Catalog\Helper\Product\Edit\Action\Attribute;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Redirect;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CacheCleanBulkAttributePluginTest extends TestCase
 {
     protected null|(Attribute&MockObject) $attributeHelper = null;

@@ -7,7 +7,9 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Test\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class IndexSettingsComparatorTest extends TestCase
 {
     protected ?AlgoliaConnector $connector = null;

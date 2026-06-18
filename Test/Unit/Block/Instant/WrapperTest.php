@@ -8,7 +8,9 @@ use Algolia\AlgoliaSearch\Block\Instant\Wrapper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class WrapperTest extends TestCase
 {
     protected null|(Wrapper&MockObject) $block = null;

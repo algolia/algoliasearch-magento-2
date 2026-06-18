@@ -22,7 +22,9 @@ use Magento\Framework\Module\ResourceInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Weee\Helper\Data as WeeeHelper;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ConfigHelperTest extends TestCase
 {
     protected ?ConfigHelper $configHelper;

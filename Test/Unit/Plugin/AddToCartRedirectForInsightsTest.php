@@ -17,7 +17,9 @@ use Magento\Framework\Event\ManagerInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AddToCartRedirectForInsightsTest extends TestCase
 {
     protected null|(StoreManagerInterface&MockObject) $storeManager = null;

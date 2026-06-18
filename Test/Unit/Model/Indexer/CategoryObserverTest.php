@@ -18,7 +18,9 @@ use Magento\Framework\Mview\ViewInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CategoryObserverTest extends TestCase
 {
     protected null|(IndexerInterface&MockObject) $categoryIndexer = null;

@@ -9,7 +9,9 @@ use Algolia\AlgoliaSearch\Plugin\RemovePdpProductsBlock;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\View\Element\AbstractBlock;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class RemovePdpProductsBlockTest extends TestCase
 {
     protected null|(ConfigHelper&MockObject) $configHelper = null;

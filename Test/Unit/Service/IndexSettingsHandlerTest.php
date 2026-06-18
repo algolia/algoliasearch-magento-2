@@ -9,7 +9,9 @@ use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class IndexSettingsHandlerTest extends TestCase
 {
     protected ?AlgoliaConnector $connector = null;

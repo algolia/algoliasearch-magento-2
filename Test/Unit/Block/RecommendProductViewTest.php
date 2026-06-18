@@ -10,7 +10,9 @@ use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class RecommendProductViewTest extends TestCase
 {
     protected null|(RecommendProductView&MockObject) $block = null;

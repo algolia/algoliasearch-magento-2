@@ -10,7 +10,9 @@ use Magento\Catalog\Model\Category;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Url;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CategoryUrlPluginTest extends TestCase
 {
     protected null|(ObjectManagerInterface&MockObject) $objectManager = null;

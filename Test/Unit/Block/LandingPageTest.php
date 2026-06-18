@@ -8,7 +8,9 @@ use Algolia\AlgoliaSearch\Block\LandingPage;
 use Algolia\AlgoliaSearch\Model\LandingPage as LandingPageModel;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class LandingPageTest extends TestCase
 {
     protected null|(LandingPage&MockObject) $block = null;

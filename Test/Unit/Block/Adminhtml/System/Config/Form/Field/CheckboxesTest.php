@@ -6,8 +6,10 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Block\Adminhtml\System\Config\Form\Fie
 
 use Algolia\AlgoliaSearch\Block\Adminhtml\System\Config\Form\Field\Checkboxes;
 use Algolia\AlgoliaSearch\Test\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 
+#[AllowMockObjectsWithoutExpectations]
 class CheckboxesTest extends TestCase
 {
     protected null|(Checkboxes&MockObject) $field = null;

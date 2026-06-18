@@ -8,7 +8,9 @@ use Algolia\AlgoliaSearch\Block\Navigation\Renderer\SliderRenderer;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Layer\Filter\FilterInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class SliderRendererTest extends TestCase
 {
     protected null|(SliderRenderer&MockObject) $block = null;

@@ -31,7 +31,9 @@ use Magento\Framework\View\Element\Template\Context;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ConfigurationTest extends TestCase
 {
     protected ?ConfigurationBlock $configurationBlock;

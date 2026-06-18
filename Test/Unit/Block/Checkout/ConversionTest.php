@@ -12,7 +12,9 @@ use Magento\Checkout\Model\Session;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ConversionTest extends TestCase
 {
     protected null|(Conversion&MockObject) $block = null;

@@ -10,7 +10,9 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Backend\Block\Widget\Context;
 use Magento\Framework\UrlInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AbstractReindexAllButtonTest extends TestCase
 {
     protected null|(ConfigHelper&MockObject) $configHelper = null;

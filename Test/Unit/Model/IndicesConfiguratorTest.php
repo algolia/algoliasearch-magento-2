@@ -24,7 +24,9 @@ use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOpt
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexOptionsBuilder as SuggestionIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class IndicesConfiguratorTest extends TestCase
 {
     private int $storeId = 1;

@@ -42,11 +42,11 @@ class CategoryUrlPluginTest extends TestCase
 
         $urlInstance = $this->getMockBuilder(Url::class)
             ->disableOriginalConstructor()
-            ->addMethods(['setStoreId'])
+            ->onlyMethods(['__call'])
             ->getMock();
         $urlInstance->expects($this->once())
-            ->method('setStoreId')
-            ->with(3)
+            ->method('__call')
+            ->with('setStoreId', [3])
             ->willReturnSelf();
 
         $this->objectManager->expects($this->once())

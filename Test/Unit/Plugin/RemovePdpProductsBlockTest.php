@@ -19,10 +19,7 @@ class RemovePdpProductsBlockTest extends TestCase
     protected function setUp(): void
     {
         $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->subject = $this->getMockBuilder(AbstractBlock::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getNameInLayout'])
-            ->getMockForAbstractClass();
+        $this->subject = $this->createMock(AbstractBlock::class);
         $this->plugin = new RemovePdpProductsBlock($this->configHelper);
     }
 

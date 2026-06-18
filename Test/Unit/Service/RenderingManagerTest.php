@@ -11,6 +11,7 @@ use Magento\Framework\View\Layout;
 use Magento\Framework\View\Layout\ProcessorInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RenderingManagerTest extends TestCase
 {
@@ -36,9 +37,7 @@ class RenderingManagerTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider backendValuesProvider
-     */
+    #[DataProvider('backendValuesProvider')]
     public function testBackendRendering($actionName, $isLayoutUpdated): void
     {
         $this->autocompleteConfigHelper->method('isEnabled')->willReturn(true);
@@ -60,9 +59,7 @@ class RenderingManagerTest extends TestCase
         $this->renderingManager->handleBackendRendering($layout, $actionName, 0);
     }
 
-    /**
-     * @dataProvider shouldPreventBackendRenderingProvider
-     */
+    #[DataProvider('shouldPreventBackendRenderingProvider')]
     public function testShouldPreventBackendRendering(
         string $actionName,
         bool $isInstantSearchEnabled,

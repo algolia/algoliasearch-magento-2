@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Block\Widget\LookingSimilar;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class LookingSimilarTest extends TestCase
 {
@@ -26,9 +27,7 @@ class LookingSimilarTest extends TestCase
         $this->setPrivateProperty($this->block, 'configHelper', $this->configHelper);
     }
 
-    /**
-     * @dataProvider productIdsDataProvider
-     */
+    #[DataProvider('productIdsDataProvider')]
     public function testGetProductIdsReturnsJsonEncodedArray(string $input, string $expected): void
     {
         $this->block->setData('productIds', $input);

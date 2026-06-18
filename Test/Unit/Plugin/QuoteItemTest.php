@@ -28,10 +28,7 @@ class QuoteItemTest extends TestCase
         $product = $this->createMock(Product::class);
         $product->method('getStoreId')->willReturn(1);
 
-        $this->item = $this->getMockBuilder(AbstractItem::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getProduct', 'getData'])
-            ->getMockForAbstractClass();
+        $this->item = $this->createMock(AbstractItem::class);
         $this->item->method('getProduct')->willReturn($product);
         $this->item->method('getData')
             ->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)

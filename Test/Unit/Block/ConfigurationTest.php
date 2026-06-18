@@ -30,6 +30,7 @@ use Magento\Framework\Url\Helper\Data as UrlHelper;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ConfigurationTest extends TestCase
 {
@@ -118,9 +119,7 @@ class ConfigurationTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider searchPageDataProvider
-     */
+    #[DataProvider('searchPageDataProvider')]
     public function testIsSearchPage($action, $categoryId, $categoryDisplayMode, $expectedResult): void
     {
         $this->instantSearchConfig->method('isEnabled')->willReturn(true);

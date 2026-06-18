@@ -11,6 +11,7 @@ use Magento\Framework\Indexer\StateInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Indexer\Model\Indexer;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class StatusTest extends TestCase
 {
@@ -37,9 +38,7 @@ class StatusTest extends TestCase
         $this->setPrivateProperty($this->block, 'dateTime', $this->dateTime);
     }
 
-    /**
-     * @dataProvider queueRunnerStatusDataProvider
-     */
+    #[DataProvider('queueRunnerStatusDataProvider')]
     public function testGetQueueRunnerStatusReturnsExpectedLabel(string $status, string $expected): void
     {
         $this->queueRunnerIndexer->method('getStatus')->willReturn($status);

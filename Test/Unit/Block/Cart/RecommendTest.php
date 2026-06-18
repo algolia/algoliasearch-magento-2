@@ -46,15 +46,17 @@ class RecommendTest extends TestCase
     {
         $item1 = $this->getMockBuilder(Item::class)
             ->disableOriginalConstructor()
-            ->addMethods(['getProductId'])
+            ->onlyMethods(['__call'])
             ->getMock();
-        $item1->method('getProductId')->willReturn(10);
+        $item1->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 10 : null);
 
         $item2 = $this->getMockBuilder(Item::class)
             ->disableOriginalConstructor()
-            ->addMethods(['getProductId'])
+            ->onlyMethods(['__call'])
             ->getMock();
-        $item2->method('getProductId')->willReturn(20);
+        $item2->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 20 : null);
 
         $this->quote->method('getAllVisibleItems')->willReturn([$item1, $item2]);
 
@@ -65,15 +67,17 @@ class RecommendTest extends TestCase
     {
         $item1 = $this->getMockBuilder(Item::class)
             ->disableOriginalConstructor()
-            ->addMethods(['getProductId'])
+            ->onlyMethods(['__call'])
             ->getMock();
-        $item1->method('getProductId')->willReturn(10);
+        $item1->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 10 : null);
 
         $item2 = $this->getMockBuilder(Item::class)
             ->disableOriginalConstructor()
-            ->addMethods(['getProductId'])
+            ->onlyMethods(['__call'])
             ->getMock();
-        $item2->method('getProductId')->willReturn(10);
+        $item2->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 10 : null);
 
         $this->quote->method('getAllVisibleItems')->willReturn([$item1, $item2]);
 

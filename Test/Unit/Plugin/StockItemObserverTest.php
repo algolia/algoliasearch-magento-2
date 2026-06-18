@@ -34,13 +34,14 @@ class StockItemObserverTest extends TestCase
     {
         $stockItem = $this->getMockBuilder(AbstractModel::class)
             ->disableOriginalConstructor()
-            ->addMethods(['getProductId'])
+            ->onlyMethods(['__call'])
             ->getMock();
-        $stockItem->method('getProductId')->willReturn(42);
+        $stockItem->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 42 : null);
 
         $this->stockItemResource->expects($this->once())
             ->method('addCommitCallback')
-            ->with($this->isType('callable'))
+            ->with($this->isCallable())
             ->willReturnCallback(fn(callable $cb) => $cb());
 
         $this->indexer->method('isScheduled')->willReturn(false);
@@ -53,7 +54,7 @@ class StockItemObserverTest extends TestCase
     {
         $stockItem = $this->getMockBuilder(AbstractModel::class)
             ->disableOriginalConstructor()
-            ->addMethods(['getProductId'])
+            ->onlyMethods(['__call'])
             ->getMock();
 
         $this->stockItemResource->expects($this->once())
@@ -75,7 +76,7 @@ class StockItemObserverTest extends TestCase
 
         $this->stockItemResource->expects($this->once())
             ->method('addCommitCallback')
-            ->with($this->isType('callable'))
+            ->with($this->isCallable())
             ->willReturnCallback(fn(callable $cb) => $cb());
 
         $this->indexer->method('isScheduled')->willReturn(false);

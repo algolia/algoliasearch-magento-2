@@ -13,6 +13,7 @@ use Magento\Framework\Model\Context;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Registry;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class JobTest extends TestCase
 {
@@ -41,9 +42,7 @@ class JobTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider authorizedHandlersProvider
-     */
+    #[DataProvider('authorizedHandlersProvider')]
     public function testExecuteSucceedsForAuthorizedHandler(string $class, string $method, array $methodArgs): void
     {
         $this->job->setClass($class);
@@ -72,9 +71,7 @@ class JobTest extends TestCase
         $this->assertEquals(1, $this->job->getData('retries'));
     }
 
-    /**
-     * @dataProvider unauthorizedHandlersProvider
-     */
+    #[DataProvider('unauthorizedHandlersProvider')]
     public function testExecuteThrowsForUnauthorizedHandlers(string $class, string $method): void
     {
         $this->job->setClass($class);

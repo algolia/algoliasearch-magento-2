@@ -186,9 +186,9 @@ workflows:
       - magento-build:
           matrix:
             parameters:
-              php-version: ["8.5"]
-              phpunit-version: ["12.0"]
-              magento-version: ["2.4.9"]
+              php-version: ["8.4"]
+              phpunit-version: ["10.5"]
+              magento-version: ["2.4.8-p5"]
       - notify:
           context: mage-slack
 #  magento-integration-test-workflow:

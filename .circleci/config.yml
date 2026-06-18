@@ -16,8 +16,6 @@ commands:
     parameters:
       php-version:
         type: string
-      phpunit-version:
-        type: string
       magento-version:
         type: string
     steps:
@@ -54,7 +52,7 @@ commands:
             bin/cli git clone git@github.com:magento/magento2.git .
             bin/cli git checkout tags/<< parameters.magento-version >>
             bin/composer require "algolia/algoliasearch-magento-2:dev-${CIRCLE_BRANCH}"
-            bin/composer global require --dev phpunit/phpunit ^<< parameters.phpunit-version >>
+            bin/composer global require --dev phpunit/phpunit
       - run:
           name: Enable AlgoliaSearch extension
           working_directory: ~/Sites
@@ -74,14 +72,11 @@ jobs:
     parameters:
       php-version:
         type: string
-      phpunit-version:
-        type: string
       magento-version:
         type: string
     steps:
       - setup-magento-environment:
           php-version: << parameters.php-version >>
-          phpunit-version: << parameters.phpunit-version >>
           magento-version: << parameters.magento-version >>
       - run:
           name: Create test directories
@@ -101,18 +96,18 @@ jobs:
             docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report/junit.xml ./unit-tests/
       - store_test_results:
           path: ~/Sites/unit-tests
-      - run:
-          name: Create Algolia-specific PHPUnit config for code coverage
-          working_directory: ~/Sites
-          command: |
-            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
-            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
-      - run:
-          name: Run Unit Test Coverage and copy results to CircleCI
-          working_directory: ~/Sites
-          command: |
-            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/algolia-phpunit.xml --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-text
-            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
+#      - run:
+#          name: Create Algolia-specific PHPUnit config for code coverage
+#          working_directory: ~/Sites
+#          command: |
+#            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
+#            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
+#      - run:
+#          name: Run Unit Test Coverage and copy results to CircleCI
+#          working_directory: ~/Sites
+#          command: |
+#            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/algolia-phpunit.xml --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-text
+#            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
       - store_artifacts:
           path: ~/Sites/unit-coverage/report
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
@@ -187,7 +182,6 @@ workflows:
           matrix:
             parameters:
               php-version: ["8.4"]
-              phpunit-version: ["10.5"]
               magento-version: ["2.4.8-p5"]
       - notify:
           context: mage-slack

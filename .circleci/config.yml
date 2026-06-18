@@ -79,6 +79,7 @@ jobs:
     steps:
       - setup-magento-environment:
           php-version: << parameters.php-version >>
+          phpunit-version: << parameters.phpunit-version >>
           magento-version: << parameters.magento-version >>
       - run:
           name: Create test directories

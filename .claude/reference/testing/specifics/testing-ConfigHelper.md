@@ -16,9 +16,6 @@ All methods that only call `$this->configInterface->getValue(...)` and return th
 
 ## What to test
 
-### `isEnabledFrontEnd()`
-Combines `instantSearchConfig->isEnabled()` OR `autocompleteConfig->isEnabled()`. Test all four combinations (both false, first true, second true, both true).
-
 ### `getAttributesToFilter($groupId)`
 Dispatches an event then reads from a `DataObject` transport. Per core rules, do not assert on the dispatch call itself. Test the result transformation:
 - When the transport object returns empty data → returns `[]`

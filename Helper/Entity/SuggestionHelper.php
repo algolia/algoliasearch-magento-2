@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Magento\Framework\App\Cache\Type\Config as ConfigCache;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;

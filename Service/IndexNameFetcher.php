@@ -2,78 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Model\StoreManagerInterface;
-
-class IndexNameFetcher
+/**
+ * @deprecated since 3.19, use \Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher instead.
+ * Will be removed in 3.20.
+ */
+class IndexNameFetcher extends \Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher
 {
-    public function __construct(
-        protected ConfigHelper          $configHelper,
-        protected StoreManagerInterface $storeManager
-    )
-    {}
-
-    /** @var string */
-    public const INDEX_TEMP_SUFFIX = '_tmp';
-
-    public const INDEX_QUERY_SUGGESTIONS_SUFFIX = '_query_suggestions';
-
-    /**
-     * Ex: magento2_default_products
-     *
-     * @throws NoSuchEntityException
-     */
-    public function getIndexName(string $indexSuffix, ?int $storeId = null, bool $tmp = false): string
-    {
-        return $this->getBaseIndexName($storeId) . $indexSuffix . ($tmp ? self::INDEX_TEMP_SUFFIX : '');
-    }
-
-    /**
-     * Ex: magento2_default
-     *
-     * @throws NoSuchEntityException
-     */
-    public function getBaseIndexName(?int $storeId = null): string
-    {
-        return $this->configHelper->getIndexPrefix($storeId) . $this->storeManager->getStore($storeId)->getCode();
-    }
-
-    /**
-     * @throws NoSuchEntityException
-     */
-    public function getProductIndexName(int $storeId, bool $tmp = false): string
-    {
-        return $this->getIndexName(ProductHelper::INDEX_NAME_SUFFIX, $storeId, $tmp);
-    }
-
-    public function isTempIndex($indexName): bool
-    {
-        return str_ends_with((string) $indexName, self::INDEX_TEMP_SUFFIX);
-    }
-
-    /**
-     * If the index is a temporary index, return the original index name
-     * Otherwise, return the index name as is
-     */
-    public function getOriginalIndexName(string $indexName): string
-    {
-        if (!$this->isTempIndex($indexName)) {
-            return $indexName;
-        }
-        return substr($indexName, 0, -strlen(self::INDEX_TEMP_SUFFIX));
-    }
-
-    /**
-     * This is the default index name format for query suggestions but it can be overridden
-     * This is a temporary workaround for delete index operations
-     * TODO: Revisit this approach when a QuerySuggestionsClient is implemented in algoliasearch-client-php
-     *
-     */
-    public function isQuerySuggestionsIndex($indexName): bool
-    {
-        return str_ends_with((string) $indexName, self::INDEX_QUERY_SUGGESTIONS_SUFFIX);
-    }
-
 }

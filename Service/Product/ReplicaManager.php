@@ -14,7 +14,7 @@ use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Validator\VirtualReplicaValidatorFactory;
 use Magento\Framework\Exception\LocalizedException;

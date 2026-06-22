@@ -7,7 +7,7 @@ use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;

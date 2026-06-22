@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Exception\CategoryEmptyException;
 use Algolia\AlgoliaSearch\Exception\CategoryNotActiveException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\Category\RecordBuilder as CategoryRecordBuilder;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;

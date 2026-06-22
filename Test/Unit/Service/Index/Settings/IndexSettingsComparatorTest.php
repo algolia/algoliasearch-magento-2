@@ -1,11 +1,11 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Service;
+namespace Algolia\AlgoliaSearch\Test\Unit\Service\Index\Settings;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Test\TestCase;
 
 class IndexSettingsComparatorTest extends TestCase

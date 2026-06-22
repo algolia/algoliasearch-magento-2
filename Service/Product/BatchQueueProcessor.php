@@ -15,7 +15,7 @@ use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\Exception\NoSuchEntityException;

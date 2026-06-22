@@ -8,12 +8,12 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Model\QuerySuggestions\Facet;
 use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
+use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\TestCase;
 
 class FacetBuilderTest extends TestCase
 {
@@ -32,7 +32,7 @@ class FacetBuilderTest extends TestCase
         $this->groupCollection = $this->createMock(GroupCollection::class);
         $this->groupExcludedWebsiteRepository = $this->createMock(GroupExcludedWebsiteRepositoryInterface::class);
 
-        $this->facetBuilder = new FacetBuilderTestable(
+        $this->facetBuilder = new FacetBuilder(
             $this->configHelper,
             $this->instantSearchHelper,
             $this->storeManager,
@@ -284,7 +284,7 @@ class FacetBuilderTest extends TestCase
 
         $this->mockStoreConfig($storeId, $websiteId);
 
-        $result = $this->facetBuilder->getRawFacets($storeId);
+        $result = $this->invokeMethod($this->facetBuilder, 'getRawFacets', [$storeId]);
         $this->assertIsArray($result);
         $this->assertNotEmpty($result);
         $this->assertEquals('size', $result[0][FacetBuilder::FACET_KEY_ATTRIBUTE_NAME]);
@@ -301,7 +301,7 @@ class FacetBuilderTest extends TestCase
 
         $this->mockStoreConfig($storeId, $websiteId);
 
-        $result = $this->facetBuilder->getPricingAttributes($storeId);
+        $result = $this->invokeMethod($this->facetBuilder, 'getPricingAttributes', [$storeId]);
         $this->assertContains('price.USD.default', $result);
         $this->assertContains('price.EUR.default', $result);
     }
@@ -312,7 +312,7 @@ class FacetBuilderTest extends TestCase
             FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'brand',
             FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_SEARCHABLE,
         ];
-        $result = $this->facetBuilder->decorateAttributeForFaceting($facet);
+        $result = $this->invokeMethod($this->facetBuilder, 'decorateAttributeForFaceting', [$facet]);
         $this->assertEquals('searchable(brand)', $result);
     }
 
@@ -322,7 +322,7 @@ class FacetBuilderTest extends TestCase
             FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size',
             FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_FILTER_ONLY,
         ];
-        $result = $this->facetBuilder->decorateAttributeForFaceting($facet);
+        $result = $this->invokeMethod($this->facetBuilder, 'decorateAttributeForFaceting', [$facet]);
         $this->assertEquals('filterOnly(size)', $result);
     }
 

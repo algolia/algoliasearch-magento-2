@@ -2,20 +2,20 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\IndexingManager;
 
+use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
+use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\Redirect;
 use Magento\Framework\Controller\ResultFactory;
-use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
-use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
-use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;

@@ -85,13 +85,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                 $this->saveObjects($chunk, $tempIndexOptions);
             }
 
-            $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
-            $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
-
-            $this->algoliaConnector->setSettings(
-                $indexOptions,
-                $this->additionalSectionHelper->getIndexSettings($storeId)
-            );
+            $this->moveTemporaryIndex($indexOptions, $tempIndexOptions);
         }
     }
 }

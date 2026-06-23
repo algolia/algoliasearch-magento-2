@@ -90,6 +90,9 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                     continue;
                 }
             }
+            if ($isFullReindex) {
+                $this->moveTemporaryIndex($indexOptions, $toIndexOptions);
+            }
         }
 
         if (!$isFullReindex && isset($pages['toRemove']) && count($pages['toRemove'])) {
@@ -103,16 +106,5 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                 }
             }
         }
-
-        if ($isFullReindex) {
-            $tempIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
-
-            $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
-            $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
-        }
-        $this->algoliaConnector->setSettings(
-            $indexOptions,
-            $this->pageHelper->getIndexSettings($storeId)
-        );
     }
 }

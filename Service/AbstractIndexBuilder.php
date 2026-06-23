@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Framework\App\Area;
@@ -104,5 +105,20 @@ abstract class AbstractIndexBuilder
             }
         }
         return $toRealRemove;
+    }
+
+    /**
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     * @throws ExceededRetriesException
+     */
+    protected function moveTemporaryIndex(
+        IndexOptionsInterface $indexOptions,
+        IndexOptionsInterface $tmpIndexOptions
+    ): void
+    {
+        // Copy settings, rules and synonyms all at once
+        $this->algoliaConnector->copyIndexConfig($indexOptions, $tmpIndexOptions);
+        $this->algoliaConnector->moveIndex($tmpIndexOptions, $indexOptions);
     }
 }

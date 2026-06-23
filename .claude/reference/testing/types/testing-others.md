@@ -37,7 +37,7 @@ $this->command->execute($this->input, $this->output);
 Pure logic classes — take input, validate, return result or throw exception.
 
 **What to test:**
-- All distinct valid/invalid states (use `@dataProvider` when there are multiple variants of invalid input).
+- All distinct valid/invalid states (use `#[DataProvider]` when there are multiple variants of invalid input).
 - State accumulation — if the validator collects errors across multiple calls before returning, test the accumulation.
 - Threshold/limit checks (e.g. max replica count).
 

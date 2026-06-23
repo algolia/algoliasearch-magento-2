@@ -10,7 +10,7 @@
 
 ### Methods with pure logic (directly testable)
 
-- **`areCategoriesInFacets(array $facets)`** — Pure: checks if `'categories'` is in the `'attribute'` column. Use a `@dataProvider`.
+- **`areCategoriesInFacets(array $facets)`** — Pure: checks if `'categories'` is in the `'attribute'` column. Use a `#[DataProvider]`.
 - **`getUrlTrackedParameters()`** — Has one branch: appends `'page'` only when infinite scroll is disabled. Two test cases.
 
 ### Methods that require a partial mock

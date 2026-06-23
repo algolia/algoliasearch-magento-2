@@ -30,7 +30,7 @@ Three branches based on `taxHelper->getPriceDisplayType()`:
 - `DISPLAY_TYPE_INCLUDING_TAX` → returns `['price' => true]`
 - Any other value → returns `['price' => false, 'price_with_tax' => true]`
 
-Use `@dataProvider` for the three cases.
+Use `#[DataProvider]` for the three cases.
 
 ### `addSpecialPrices($specialPrice, $field, $currencyCode)` (protected, use `invokeMethod()`)
 Two top-level paths based on `areCustomersGroupsEnabled`:

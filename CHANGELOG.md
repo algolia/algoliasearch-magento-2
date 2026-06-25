@@ -1,5 +1,14 @@
 # CHANGE LOG
 
+## 3.18.2
+
+### Updates
+- Unified way to manage temporary index management for suggestions, pages and additional sections
+
+### Bug Fixes
+- Fixed pages indexing issue where settings and synonyms added on the Algolia dashboard were wiped during the process - thank you @PromInc
+- Fixed suggestions indexing issue where the index could be completely emptied during the process - thank you @its-leoeff511
+
 ## 3.18.1
 
 ### Updates

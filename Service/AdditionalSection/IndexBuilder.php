@@ -79,6 +79,10 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             }
 
             $this->moveTemporaryIndex($indexOptions, $tempIndexOptions);
+            $this->algoliaConnector->setSettings(
+                $indexOptions,
+                $this->additionalSectionHelper->getIndexSettings($storeId)
+            );
         }
     }
 }

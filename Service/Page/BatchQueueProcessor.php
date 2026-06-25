@@ -53,7 +53,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
                 'saveConfigurationToAlgolia',
                 [
                     'storeId' => $storeId,
-                    'useTmpIndex' => true,
+                    'useTmpIndex' => (!$entityIds),
                     'filteredEntities' => ['pages']
                 ]
             );

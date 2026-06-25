@@ -10,8 +10,9 @@ use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AbstractIndexBuilder;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
-use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use Magento\Framework\App\Config\ScopeCodeResolver;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\App\Emulation;
@@ -26,6 +27,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         protected AlgoliaConnector        $algoliaConnector,
         protected IndexOptionsBuilder     $indexOptionsBuilder,
         protected AdditionalSectionHelper $additionalSectionHelper,
+        protected IndexSettingsHandler    $indexSettingsHandler,
     ){
         parent::__construct(
             $configHelper,
@@ -78,10 +80,8 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                 $this->saveObjects($chunk, $tempIndexOptions);
             }
 
-            $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
-            $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
-
-            $this->algoliaConnector->setSettings(
+            $this->moveTemporaryIndex($indexOptions, $tempIndexOptions);
+            $this->indexSettingsHandler->setSettings(
                 $indexOptions,
                 $this->additionalSectionHelper->getIndexSettings($storeId)
             );

@@ -78,6 +78,7 @@ class PagesIndexingTest extends IndexingTestCase
             'content',
             'algoliaLastUpdateAtCET',
             '_highlightResult',
+            '_snippetResult',
         ];
 
         foreach ($defaultAttributes as $attribute) {

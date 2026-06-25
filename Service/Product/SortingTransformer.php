@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Service\Product;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Framework\Exception\LocalizedException;

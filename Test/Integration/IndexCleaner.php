@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\TestFramework\Helper\Bootstrap;
 

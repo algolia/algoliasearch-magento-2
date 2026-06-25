@@ -2,23 +2,24 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Controller\Adminhtml\IndexingManager;
 
+use Algolia\AlgoliaSearch\Controller\Adminhtml\IndexingManager\Reindex;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
+use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\View\Result\Redirect;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\TestCase;
 
 class ReindexTest extends TestCase
 {
-    protected ?ReindexTestable $reindexController = null;
+    protected ?Reindex $reindexController = null;
 
     protected ?Context $context = null;
     protected ?RequestInterface $request = null;
@@ -61,7 +62,7 @@ class ReindexTest extends TestCase
         $this->categoryBatchQueueProcessor = $this->createMock(CategoryBatchQueueProcessor::class);
         $this->pageBatchQueueProcessor = $this->createMock(PageBatchQueueProcessor::class);
 
-        $this->reindexController = new ReindexTestable(
+        $this->reindexController = new Reindex(
             $this->context,
             $this->storeManager,
             $this->storeNameFetcher,
@@ -182,7 +183,7 @@ class ReindexTest extends TestCase
      */
     public function testEntityToIndex($params, $result)
     {
-        $this->assertEquals($result, $this->reindexController->defineEntitiesToIndex($params));
+        $this->assertEquals($result, $this->invokeMethod($this->reindexController, 'defineEntitiesToIndex', [$params]));
     }
 
     public static function entityParamsProvider(): array
@@ -216,7 +217,7 @@ class ReindexTest extends TestCase
      */
     public function testRedirectPath($params, $result)
     {
-        $this->assertEquals($result, $this->reindexController->defineRedirectPath($params));
+        $this->assertEquals($result, $this->invokeMethod($this->reindexController, 'defineRedirectPath', [$params]));
     }
 
     public static function redirectParamsProvider(): array

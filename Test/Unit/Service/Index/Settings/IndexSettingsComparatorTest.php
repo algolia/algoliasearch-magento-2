@@ -16,39 +16,39 @@ class IndexSettingsComparatorTest extends TestCase
     protected IndexSettingsComparator $indexSettingsComparator;
 
     protected array $testSettings = [
-        "searchableAttributes" => [
-            "unordered(name)",
-            "unordered(sku)",
-            "unordered(manufacturer)",
-            "unordered(categories)",
-            "unordered(categories_without_path)",
-            "unordered(color)"
+        'searchableAttributes' => [
+            'unordered(name)',
+            'unordered(sku)',
+            'unordered(manufacturer)',
+            'unordered(categories)',
+            'unordered(categories_without_path)',
+            'unordered(color)',
         ],
-        "customRanking" => [
-            "desc(in_stock)",
-            "desc(ordered_qty)",
-            "desc(created_at)",
+        'customRanking' => [
+            'desc(in_stock)',
+            'desc(ordered_qty)',
+            'desc(created_at)',
         ],
-        "unretrievableAttributes" => [
-            "in_stock",
-            "ordered_qty",
+        'unretrievableAttributes' => [
+            'in_stock',
+            'ordered_qty',
         ],
-        "attributesForFaceting" => [
-            "price.USD.default",
-            "categories",
-            "searchable(color)",
-            "searchable(activity)",
-            "categories.level0",
-            "categoryIds",
+        'attributesForFaceting' => [
+            'price.USD.default',
+            'categories',
+            'searchable(color)',
+            'searchable(activity)',
+            'categories.level0',
+            'categoryIds',
         ],
-        "maxValuesPerFacet" => 5,
-        "removeWordsIfNoResults" => "allOptional",
-        "typoTolerance" => "false",
-        "dummyAttribute" => [
-            "foo" => "bar",
-            "bar" => "foo",
-            "baz" => "foo",
-        ]
+        'maxValuesPerFacet' => 5,
+        'removeWordsIfNoResults' => 'allOptional',
+        'typoTolerance' => 'false',
+        'dummyAttribute' => [
+            'foo' => 'bar',
+            'bar' => 'foo',
+            'baz' => 'foo',
+        ],
     ];
 
     protected function setUp(): void
@@ -69,38 +69,38 @@ class IndexSettingsComparatorTest extends TestCase
     public function testWithSameSettingsButOrderedDifferently(): void
     {
         $algoliaSettings = [
-            "maxValuesPerFacet" => 5,
-            "removeWordsIfNoResults" => "allOptional",
-            "typoTolerance" => "false",
-            "dummyAttribute" => [
-                "foo" => "bar",
-                "bar" => "foo",
-                "baz" => "foo",
+            'maxValuesPerFacet' => 5,
+            'removeWordsIfNoResults' => 'allOptional',
+            'typoTolerance' => 'false',
+            'dummyAttribute' => [
+                'foo' => 'bar',
+                'bar' => 'foo',
+                'baz' => 'foo',
             ],
-            "searchableAttributes" => [
-                "unordered(name)",
-                "unordered(sku)",
-                "unordered(manufacturer)",
-                "unordered(categories)",
-                "unordered(categories_without_path)",
-                "unordered(color)"
+            'searchableAttributes' => [
+                'unordered(name)',
+                'unordered(sku)',
+                'unordered(manufacturer)',
+                'unordered(categories)',
+                'unordered(categories_without_path)',
+                'unordered(color)',
             ],
-            "unretrievableAttributes" => [
-                "in_stock",
-                "ordered_qty",
+            'unretrievableAttributes' => [
+                'in_stock',
+                'ordered_qty',
             ],
-            "attributesForFaceting" => [
-                "price.USD.default",
-                "categories",
-                "searchable(color)",
-                "searchable(activity)",
-                "categories.level0",
-                "categoryIds",
+            'attributesForFaceting' => [
+                'price.USD.default',
+                'categories',
+                'searchable(color)',
+                'searchable(activity)',
+                'categories.level0',
+                'categoryIds',
             ],
-            "customRanking" => [
-                "desc(in_stock)",
-                "desc(ordered_qty)",
-                "desc(created_at)",
+            'customRanking' => [
+                'desc(in_stock)',
+                'desc(ordered_qty)',
+                'desc(created_at)',
             ],
         ];
 
@@ -113,9 +113,9 @@ class IndexSettingsComparatorTest extends TestCase
     {
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['dummyAttribute'] = [
-            "baz" => "foo",
-            "foo" => "bar",
-            "bar" => "foo",
+            'baz' => 'foo',
+            'foo' => 'bar',
+            'bar' => 'foo',
         ];
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
@@ -167,11 +167,11 @@ class IndexSettingsComparatorTest extends TestCase
     {
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['searchableAttributes'] = [
-            "unordered(name)",
-            "unordered(sku)",
-            "unordered(manufacturer)",
-            "unordered(categories)",
-            "unordered(categories_without_path)"
+            'unordered(name)',
+            'unordered(sku)',
+            'unordered(manufacturer)',
+            'unordered(categories)',
+            'unordered(categories_without_path)',
             // removed color
         ];
 
@@ -184,13 +184,13 @@ class IndexSettingsComparatorTest extends TestCase
     {
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['searchableAttributes'] = [
-            "unordered(name)",
-            "unordered(name)",
-            "unordered(sku)",
-            "unordered(color)", // moved color
-            "unordered(manufacturer)",
-            "unordered(categories)",
-            "unordered(categories_without_path)"
+            'unordered(name)',
+            'unordered(name)',
+            'unordered(sku)',
+            'unordered(color)', // moved color
+            'unordered(manufacturer)',
+            'unordered(categories)',
+            'unordered(categories_without_path)',
         ];
 
         $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
@@ -208,5 +208,22 @@ class IndexSettingsComparatorTest extends TestCase
         $this->expectExceptionMessageMatches('/Invalid JSON/');
         // Must be different
         $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, [INF]));
+    }
+
+    public function testUsesProvidedRemoteSettingsWhenPassed(): void
+    {
+        // When remote settings are supplied, the connector must not be queried.
+        $this->connector->expects($this->never())->method('getSettings');
+
+        $this->assertTrue(
+            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $this->testSettings)
+        );
+
+        $changedRemote = $this->testSettings;
+        $changedRemote['maxValuesPerFacet'] = 10;
+
+        $this->assertFalse(
+            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $changedRemote)
+        );
     }
 }

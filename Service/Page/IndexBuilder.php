@@ -69,6 +69,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
 
+
         $this->startEmulation($storeId);
 
         $pages = $this->pageHelper->getPages($storeId, $entityIds);
@@ -78,9 +79,10 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         // if there are pageIds defined, do not index to _tmp
         $isFullReindex = (!$entityIds);
 
+        $toIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $isFullReindex);
+
         if (isset($pages['toIndex']) && count($pages['toIndex'])) {
             $pagesToIndex = $pages['toIndex'];
-            $toIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $isFullReindex);
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
@@ -105,14 +107,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         }
 
         if ($isFullReindex) {
-            $tempIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
-
-            $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
-            $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
+            $this->moveTemporaryIndex($indexOptions, $toIndexOptions);
         }
-        $this->algoliaConnector->setSettings(
-            $indexOptions,
-            $this->pageHelper->getIndexSettings($storeId)
-        );
     }
 }

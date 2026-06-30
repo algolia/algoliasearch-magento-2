@@ -177,6 +177,18 @@ composer require algolia/algoliasearch-adapter-magento-2
 
 Requires PHP 8.2+, Magento 2.4+, and base extension `^3.18`.
 
+#### Ingestion module
+
+[`algolia/algoliasearch-ingestion-magento-2`](https://github.com/algolia/algoliasearch-ingestion-magento-2)
+
+Routes Algolia product indexing through the Algolia Ingestion API instead of writing directly to indices. Install this if you need dashboard-managed, pre-indexing JavaScript transformations, low-latency Collections support, or improved observability of indexing operations through Ingestion runs and events.
+
+```
+composer require algolia/algoliasearch-ingestion-magento-2
+```
+
+Requires PHP 8.3+, Magento 2.4+, and base extension `^3.19.0`.
+
 #### Customization starter module
 
 [`algolia/algoliasearch-custom-algolia-magento-2`](https://github.com/algolia/algoliasearch-custom-algolia-magento-2)

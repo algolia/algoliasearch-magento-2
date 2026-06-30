@@ -13,14 +13,12 @@
 ### Updates
 - Unified temporary index management across entities so the move-to-production step is consistent for products, categories, pages, suggestions, and additional sections; page indexing now supports delta updates ([#1960](https://github.com/algolia/algoliasearch-magento-2/pull/1960)).
 - Added `IndexSettingsPreserver` to retain ingestion-owned index settings across a full reindex, and reorganized the `Service/Index*` class family into `Service/Index/` and `Service/Index/Settings/` (no behavior change) ([#1961](https://github.com/algolia/algoliasearch-magento-2/pull/1961), [#1956](https://github.com/algolia/algoliasearch-magento-2/pull/1956)).
-- Ensured compatibility of the extension with Magento 2.4.9 and PHP 8.5 ([#1959](https://github.com/algolia/algoliasearch-magento-2/pull/1959)).
 - Updated the Algolia PHP API Client to version 4.40.0 ([#1922](https://github.com/algolia/algoliasearch-magento-2/pull/1922)).
 - Centralized the default store scope constant and added a reflection utility in preparation for the Ingestion task service ([#1927](https://github.com/algolia/algoliasearch-magento-2/pull/1927)).
 - Added an `AlgoliaLogger` virtual type for PSR-3 substitution and a helper for resolving the original (production) name of a temporary index.
 - Retired the `*Testable` subclass test pattern in favor of direct unit testing, and introduced reusable Claude testing guides alongside a regenerated `AlgoliaConnector` unit suite ([#1929](https://github.com/algolia/algoliasearch-magento-2/pull/1929)).
 - Applied the updated `magento2-tools` PHPCS-Fixer linting baseline across the module for a consistent contribution standard, retaining PHP 8.2 backward compatibility ([#1923](https://github.com/algolia/algoliasearch-magento-2/pull/1923)).
 - Refactored `ConfigHelper` and many block, controller, observer, and service classes to align with the new linting baseline and tighten type declarations.
-- Optimized `setSettings` behavior during indexing ([#1948](https://github.com/algolia/algoliasearch-magento-2/pull/1948)).
 - Hoisted CLI command unit tests to the `AbstractStoreCommand` scope ([#1942](https://github.com/algolia/algoliasearch-magento-2/pull/1942)).
 - Added an architecture context document and adopted the open `AGENTS.md` standard for contributor and agent guidance ([#1921](https://github.com/algolia/algoliasearch-magento-2/pull/1921)).
 - Updated unit and integration tests.

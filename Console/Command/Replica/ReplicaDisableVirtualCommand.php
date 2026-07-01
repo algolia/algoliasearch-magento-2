@@ -84,7 +84,6 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
 
     /**
      * @param int[] $storeIds
-     * @return void
      */
     protected function disableVirtualReplicas(array $storeIds = []): void
     {
@@ -114,7 +113,8 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
         if ($this->configChecker->isSettingAppliedForScopeAndCode(
             ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED,
             ScopeInterface::SCOPE_STORES,
-            $storeId)
+            $storeId
+        )
         ) {
             $isStoreScoped = true;
             $this->removeLegacyVirtualReplicaConfig(ScopeInterface::SCOPE_STORES, $storeId);
@@ -123,7 +123,8 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
         if ($this->configChecker->isSettingAppliedForScopeAndCode(
             ConfigHelper::SORTING_INDICES,
             ScopeInterface::SCOPE_STORES,
-            $storeId)
+            $storeId
+        )
         ) {
             $isStoreScoped = true;
             $this->disableVirtualReplicaSortConfig(ScopeInterface::SCOPE_STORES, $storeId);
@@ -131,6 +132,7 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
 
         if (!$isStoreScoped) {
             $this->output->writeln("<info>Virtual replicas are not configured at the store level for $storeName. You will need to re-run this command for all stores.</info>");
+
             return false;
         }
 
@@ -154,7 +156,7 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
         if ($value === null) {
             return;
         }
-        $this->output->writeln("<info>Removing legacy configuration " . ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED . " for $scope scope" . ($scope != ScopeConfigInterface::SCOPE_TYPE_DEFAULT ? " (ID=$scopeId)" : "") . "</info>");
+        $this->output->writeln('<info>Removing legacy configuration ' . ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED . " for $scope scope" . ($scope != ScopeConfigInterface::SCOPE_TYPE_DEFAULT ? " (ID=$scopeId)" : '') . '</info>');
         $this->configWriter->delete(ConfigHelper::LEGACY_USE_VIRTUAL_REPLICA_ENABLED, $scope, $scopeId);
     }
 
@@ -167,11 +169,12 @@ class ReplicaDisableVirtualCommand extends AbstractReplicaCommand implements Rep
         $sorting = array_map(
             function($sort) {
                 $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA] = 0;
+
                 return $sort;
             },
             $this->serializer->unserialize($raw)
         );
-        $this->output->writeln("<info>Disabling all virtual replicas in " . ConfigHelper::SORTING_INDICES . " for $scope scope" . ($scope != ScopeConfigInterface::SCOPE_TYPE_DEFAULT ? " (ID=$scopeId)" : "") . "</info>");
+        $this->output->writeln('<info>Disabling all virtual replicas in ' . ConfigHelper::SORTING_INDICES . " for $scope scope" . ($scope != ScopeConfigInterface::SCOPE_TYPE_DEFAULT ? " (ID=$scopeId)" : '') . '</info>');
         $this->configHelper->setSorting($sorting, $scope, $scopeId);
     }
 

@@ -17,25 +17,16 @@ abstract class AbstractReindexAllButton implements ButtonProviderInterface
         protected ConfigHelper $configHelper
     ) {}
 
-    /**
-     * @return string
-     */
     protected function getEntity(): string
     {
         return $this->entity;
     }
 
-    /**
-     * @return string
-     */
     protected function getRedirectPath(): string
     {
         return $this->redirectPath;
     }
 
-    /**
-     * @return array
-     */
     public function getButtonData(): array
     {
         $entity = $this->getEntity();

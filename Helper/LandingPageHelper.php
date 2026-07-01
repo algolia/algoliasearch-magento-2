@@ -34,12 +34,6 @@ class LandingPageHelper extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Constructor
      *
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param LandingPage $landingPage
-     * @param LandingPageFactory $landingPageFactory
-     * @param Registry $registry
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -75,7 +69,6 @@ class LandingPageHelper extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Return result Landing page
      *
-     * @param Action $action
      * @param int $pageId
      *
      * @return \Magento\Framework\View\Result\Page|bool

@@ -27,7 +27,7 @@ class SystemLoggerHandlerTest extends AbstractHandlerTestCase
         );
 
         $errorRecord = $this->makeLogRecord(
-             \Monolog\Logger::ERROR,
+            \Monolog\Logger::ERROR,
             'Should log'
         );
 

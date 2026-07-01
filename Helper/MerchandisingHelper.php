@@ -17,21 +17,16 @@ class MerchandisingHelper
     ) {}
 
     /**
-     * @param int $storeId
-     * @param int $entityId
-     * @param array $rawPositions
-     * @param string $entityType
-     * @param string|null $query
-     * @param string|null $banner
-     * @return void
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function saveQueryRule(int    $storeId,
-                                  int    $entityId,
-                                  array  $rawPositions,
-                                  string $entityType,
-                                  ?string $query = null,
-                                  ?string $banner = null): void
+    public function saveQueryRule(
+        int    $storeId,
+        int    $entityId,
+        array  $rawPositions,
+        string $entityType,
+        ?string $query = null,
+        ?string $banner = null
+    ): void
     {
         if ($this->coreHelper->isIndexingEnabled($storeId) === false) {
             return;
@@ -78,10 +73,6 @@ class MerchandisingHelper
     }
 
     /**
-     * @param int $storeId
-     * @param int $entityId
-     * @param string $entityType
-     * @return void
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function deleteQueryRule(int $storeId, int $entityId, string $entityType): void
@@ -98,10 +89,6 @@ class MerchandisingHelper
         $this->algoliaConnector->deleteRule($indexOptions, $ruleId);
     }
 
-    /**
-     * @param array $positions
-     * @return array
-     */
     private function transformPositions(array $positions): array
     {
         $transformedPositions = [];
@@ -117,11 +104,6 @@ class MerchandisingHelper
     }
 
     /**
-     * @param int $storeId
-     * @param int $entityIdFrom
-     * @param int $entityIdTo
-     * @param string $entityType
-     * @return void
      * @throws AlgoliaException|\Magento\Framework\Exception\NoSuchEntityException
      */
     public function copyQueryRules(int $storeId, int $entityIdFrom, int $entityIdTo, string $entityType): void
@@ -178,11 +160,6 @@ class MerchandisingHelper
         }
     }
 
-    /**
-     * @param int $entityId
-     * @param string $entityType
-     * @return string
-     */
     private function getQueryRuleId(int $entityId, string $entityType): string
     {
         return 'magento-' . $entityType . '-' . $entityId;

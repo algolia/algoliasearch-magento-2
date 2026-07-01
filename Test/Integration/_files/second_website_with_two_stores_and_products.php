@@ -99,9 +99,9 @@ $configManager->setValue('web/secure/base_link_url', 'http://fixture_second_stor
 $configManager->setValue('web/unsecure/base_link_url', 'http://fixture_second_store.test/', 'store', 'fixture_second_store');
 
 $configManager->setValue('web/secure/base_url', 'http://fixture_third_store.test/', 'store', 'fixture_third_store');
-$configManager->setValue('web/unsecure/base_url','http://fixture_third_store.test/', 'store', 'fixture_third_store');
+$configManager->setValue('web/unsecure/base_url', 'http://fixture_third_store.test/', 'store', 'fixture_third_store');
 $configManager->setValue('web/secure/base_link_url', 'http://fixture_third_store.test/', 'store', 'fixture_third_store');
-$configManager->setValue('web/unsecure/base_link_url','http://fixture_third_store.test/', 'store', 'fixture_third_store');
+$configManager->setValue('web/unsecure/base_link_url', 'http://fixture_third_store.test/', 'store', 'fixture_third_store');
 
 /* Refresh CatalogSearch index */
 /** @var IndexerRegistry $indexerRegistry */

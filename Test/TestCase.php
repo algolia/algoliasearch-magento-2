@@ -22,6 +22,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function invokeMethod(object $object, string $methodName, array $parameters = []): mixed
     {
         $reflection = new \ReflectionClass($object::class);
+
         return $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 
@@ -39,6 +40,22 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         $ref = new \ReflectionClass($obj);
         $p = $ref->getProperty($prop);
         $p->setValue($obj, $value);
+    }
+
+    /**
+     * Get a private property of a class
+     *
+     * @param object $obj The object to get the property from
+     * @param string $prop The name of the property to get the value for
+     * @return mixed The value of the property
+     *
+     * @throws \ReflectionException
+     */
+    protected function getPrivateProperty(object $obj, string $prop): mixed
+    {
+        $reflection = new \ReflectionClass($obj);
+
+        return $reflection->getProperty($prop)->getValue($obj);
     }
 
     /**

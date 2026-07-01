@@ -32,7 +32,6 @@ class Form implements \Magento\Framework\View\Element\Block\ArgumentInterface
 
     /**
      *
-     * @param $key
      *
      * @return string
      */
@@ -43,22 +42,16 @@ class Form implements \Magento\Framework\View\Element\Block\ArgumentInterface
         return ($formData && isset($formData[$key])) ? $formData[$key] : '';
     }
 
-    /**
-     * @return array
-     */
     public function getEntities(): array
     {
         return [
             'all' => 'All',
             'products' => 'Products',
             'categories' => 'Categories',
-            'pages' => 'Pages'
+            'pages' => 'Pages',
         ];
     }
 
-    /**
-     * @return string
-     */
     public function getConfirmMessage(): string
     {
         $message = 'You\'re about to perform an entity full reindexing to Algolia.\n';
@@ -73,9 +66,6 @@ class Form implements \Magento\Framework\View\Element\Block\ArgumentInterface
         return $message;
     }
 
-    /**
-     * @return array
-     */
     public function getStores(): array
     {
         $stores = [];

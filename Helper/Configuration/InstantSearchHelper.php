@@ -91,15 +91,13 @@ class InstantSearchHelper
     public function getNumberOfProductResults(?int $storeId = null): int
     {
         return match ($this->getPaginationMode($storeId)) {
-            PaginationMode::PAGINATION_MAGENTO_GRID =>
-                $this->getMagentoGridProductsPerPage(ScopeInterface::SCOPE_STORE, $storeId),
-            PaginationMode::PAGINATION_MAGENTO_LIST =>
-                $this->getMagentoListProductsPerPage(ScopeInterface::SCOPE_STORE, $storeId),
-            default =>
-                (int) $this->configInterface->getValue(
-                    self::NUMBER_OF_PRODUCT_RESULTS,
-                    ScopeInterface::SCOPE_STORE,
-                    $storeId),
+            PaginationMode::PAGINATION_MAGENTO_GRID => $this->getMagentoGridProductsPerPage(ScopeInterface::SCOPE_STORE, $storeId),
+            PaginationMode::PAGINATION_MAGENTO_LIST => $this->getMagentoListProductsPerPage(ScopeInterface::SCOPE_STORE, $storeId),
+            default => (int) $this->configInterface->getValue(
+                self::NUMBER_OF_PRODUCT_RESULTS,
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            ),
         };
     }
 
@@ -125,6 +123,7 @@ class InstantSearchHelper
                 return array_values($attrs);
             }
         }
+
         return [];
     }
     public function getMaxValuesPerFacet(?int $storeId = null): int
@@ -206,7 +205,8 @@ class InstantSearchHelper
             && $this->configInterface->isSetFlag(
                 self::IS_INFINITE_SCROLL_ENABLED,
                 ScopeInterface::SCOPE_STORE,
-                $storeId);
+                $storeId
+            );
     }
 
     public function shouldHidePagination(?int $storeId = null): bool
@@ -223,6 +223,7 @@ class InstantSearchHelper
     public function getInstantRedirectOptions(?int $storeId = null): array
     {
         $value = $this->configInterface->getValue(self::REDIRECT_OPTIONS, ScopeInterface::SCOPE_STORE, $storeId);
+
         return empty($value) ? [] : explode(',', (string) $value);
     }
 }

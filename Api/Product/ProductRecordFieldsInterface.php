@@ -10,13 +10,9 @@ namespace Algolia\AlgoliaSearch\Api\Product;
  */
 interface ProductRecordFieldsInterface
 {
-    /**
-     * @var string Product visibie is search results
-     */
+    /** @var string Product visibie is search results */
     public const VISIBILITY_SEARCH = 'visibility_search';
 
-    /**
-     * @var string Product visibility in catalog
-     */
+    /** @var string Product visibility in catalog */
     public const VISIBILITY_CATALOG = 'visibility_catalog';
 }

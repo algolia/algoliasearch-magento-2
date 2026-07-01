@@ -39,12 +39,14 @@ class Sorts extends ArraySerialized
             $resource,
             $resourceCollection,
             $data,
-            $serializer);
+            $serializer
+        );
     }
 
     /**
-     * @return $this
      * @throws NoSuchEntityException
+     *
+     * @return $this
      */
     public function afterSave(): \Magento\Framework\App\Config\Value
     {

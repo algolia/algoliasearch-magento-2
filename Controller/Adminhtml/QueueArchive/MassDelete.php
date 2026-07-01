@@ -1,4 +1,5 @@
 <?php
+
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\QueueArchive;
 
 use Exception;
@@ -12,27 +13,15 @@ use RuntimeException;
 
 class MassDelete extends Action
 {
-    /**
-     * @var QueueArchiveRepositoryInterface
-     */
+    /** @var QueueArchiveRepositoryInterface */
     protected $queueArchiveRepository;
 
-    /**
-     * @var Filter
-     */
+    /** @var Filter */
     protected $filter;
 
-    /**
-     * @var ColectionFactory
-     */
+    /** @var ColectionFactory */
     protected $collectionFactory;
 
-    /**
-     * @param Action\Context $context
-     * @param Filter $filter
-     * @param QueueArchiveRepositoryInterface $queueArchiveRepository
-     * @param CollectionFactory $collectionFactory
-     */
     public function __construct(
         Action\Context $context,
         Filter $filter,
@@ -47,14 +36,17 @@ class MassDelete extends Action
 
     /**
      * Delete Action
-     * @return ResultInterface
+     *
      * @throws LocalizedException
+     *
+     * @return ResultInterface
      */
     public function execute()
     {
         $resultRedirect = $this->resultRedirectFactory->create();
         $dataDeleted = 0;
         $collection = $this->filter->getCollection($this->collectionFactory->create());
+
         try {
             foreach ($collection as $item) {
                 $this->queueArchiveRepository->deleteById($item->getArchiveId());
@@ -66,6 +58,7 @@ class MassDelete extends Action
         } catch (Exception $e) {
             $this->messageManager->addException($e, __('Something went wrong'));
         }
+
         return $resultRedirect->setPath('*/*/');
     }
 }

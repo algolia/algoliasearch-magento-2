@@ -37,7 +37,7 @@ class RebuildReplicasPatch implements DataPatchInterface
     public static function getDependencies(): array
     {
         return [
-            MigrateVirtualReplicaConfigPatch::class
+            MigrateVirtualReplicaConfigPatch::class,
         ];
     }
 
@@ -55,6 +55,7 @@ class RebuildReplicasPatch implements DataPatchInterface
     public function apply(): PatchInterface
     {
         $this->moduleDataSetup->getConnection()->startSetup();
+
         try {
             $this->appState->setAreaCode(Area::AREA_ADMINHTML);
         } catch (LocalizedException) {
@@ -74,7 +75,7 @@ class RebuildReplicasPatch implements DataPatchInterface
             }
         } catch (AlgoliaException) {
             // Log the error but do not prevent setup:update
-            $this->logger->error("Could not rebuild replicas - a full reindex may be required.");
+            $this->logger->error('Could not rebuild replicas - a full reindex may be required.');
         }
 
         $this->moduleDataSetup->getConnection()->endSetup();
@@ -90,8 +91,10 @@ class RebuildReplicasPatch implements DataPatchInterface
                 if (!$this->replicaManager->isReplicaSyncEnabled($storeId)) return false;
                 if (!$this->algoliaCredentialsManager->checkCredentials($storeId)) {
                     $this->logger->warning("Algolia credentials are not configured for store $storeId. Skipping auto replica rebuild for this store. If you need to rebuild your replicas run `bin/magento algolia:replicas:rebuild`");
+
                     return false;
                 }
+
                 return true;
             }
         );
@@ -102,12 +105,14 @@ class RebuildReplicasPatch implements DataPatchInterface
         for ($tries = $maxRetries - 1; $tries >= 0; $tries--) {
             try {
                 $this->replicaManager->deleteReplicasFromAlgolia($storeId);
+
                 return;
             } catch (AlgoliaException $e) {
-                $this->logger->warning(__("Unable to delete replicas, %1 tries remaining: %2", $tries, $e->getMessage()));
+                $this->logger->warning(__('Unable to delete replicas, %1 tries remaining: %2', $tries, $e->getMessage()));
                 sleep($interval);
             }
         }
+
         throw new ExceededRetriesException('Unable to delete old replica indices after $maxRetries retries.');
     }
 }

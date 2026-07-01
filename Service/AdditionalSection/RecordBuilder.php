@@ -16,8 +16,6 @@ class RecordBuilder implements RecordBuilderInterface
     /**
      * Builds a Section record
      *
-     * @param DataObject $entity
-     * @return array
      */
     public function buildRecord(DataObject $entity): array
     {
@@ -34,7 +32,7 @@ class RecordBuilder implements RecordBuilderInterface
             [
                 'section' => $entity->getData('section'),
                 'record' => $transport,
-                'store_id' => $entity->getData('store_id')
+                'store_id' => $entity->getData('store_id'),
             ]
         );
 

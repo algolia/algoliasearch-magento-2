@@ -12,11 +12,6 @@ class View extends Template
     /** @var SessionManagerInterface */
     protected $backendSession;
 
-    /**
-     * @param Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param array $data
-     */
     public function __construct(
         Context          $context,
         SessionManagerInterface   $backendSession,
@@ -27,7 +22,9 @@ class View extends Template
         $this->backendSession = $backendSession;
     }
 
-    /** @inheritdoc */
+    /**
+     * @inheritdoc
+     */
     protected function _prepareLayout()
     {
         /** @var Button $button */
@@ -45,13 +42,17 @@ class View extends Template
         return parent::_prepareLayout();
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model\QueueArchive */
+    /**
+     * @return \Algolia\AlgoliaSearch\Model\QueueArchive
+     */
     public function getCurrentJob()
     {
         return $this->backendSession->getData('current_job');
     }
 
-    /**  @return string */
+    /**
+     * @return string
+     */
     public function getBackUrl()
     {
         return $this->getUrl('*/*/index');

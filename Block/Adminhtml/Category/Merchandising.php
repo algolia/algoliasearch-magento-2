@@ -25,13 +25,6 @@ class Merchandising extends \Magento\Backend\Block\Template
     /** @var \Magento\Store\Model\StoreManagerInterface */
     private $storeManager;
 
-    /**
-     * @param Context $context
-     * @param CurrentCategory $currentCategory
-     * @param ConfigHelper $configHelper
-     * @param Data $coreHelper
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         CurrentCategory $currentCategory,
@@ -47,13 +40,17 @@ class Merchandising extends \Magento\Backend\Block\Template
         parent::__construct($context, $data);
     }
 
-    /** @return Category | null */
+    /**
+     * @return Category | null
+     */
     public function getCategory()
     {
         return $this->currentCategory->get();
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     public function isRootCategory()
     {
         $category = $this->getCategory();
@@ -72,13 +69,17 @@ class Merchandising extends \Magento\Backend\Block\Template
         return false;
     }
 
-    /** @return ConfigHelper */
+    /**
+     * @return ConfigHelper
+     */
     public function getConfigHelper()
     {
         return $this->configHelper;
     }
 
-    /** @return Data */
+    /**
+     * @return Data
+     */
     public function getCoreHelper()
     {
         return $this->coreHelper;

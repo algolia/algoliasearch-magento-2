@@ -59,7 +59,7 @@ class CategoriesIndexingTest extends IndexingTestCase
     public function testIndexingCategoriesCommand()
     {
         $indexCategoriesCmd = $this->objectManager->get(IndexCategoriesCommand::class);
-        $this->processCommandTest($indexCategoriesCmd,'categories', $this->assertValues->expectedCategory);
+        $this->processCommandTest($indexCategoriesCmd, 'categories', $this->assertValues->expectedCategory);
     }
 
     /**

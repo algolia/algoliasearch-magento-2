@@ -12,7 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 class InstantSearchHelperTest extends TestCase
 {
-
     public const MAGENTO_GRID_PRODUCTS_NB = 9;
     public const MAGENTO_LIST_PRODUCTS_NB = 15;
 

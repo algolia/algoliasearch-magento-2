@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -19,9 +19,6 @@ class IndexMover
     ){}
 
     /**
-     * @param string $tmpIndexName
-     * @param string $indexName
-     * @param int $storeId
      * @throws NoSuchEntityException|AlgoliaException
      */
     public function moveIndex(string $tmpIndexName, string $indexName, int $storeId): void
@@ -37,9 +34,6 @@ class IndexMover
     }
 
     /**
-     * @param string $tmpIndexName
-     * @param string $indexName
-     * @param int $storeId
      *
      * @throws AlgoliaException
      * @throws NoSuchEntityException

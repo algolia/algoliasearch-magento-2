@@ -6,7 +6,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class View extends AbstractAction
 {
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $job = $this->initJob();

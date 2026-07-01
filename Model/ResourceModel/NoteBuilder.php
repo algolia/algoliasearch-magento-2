@@ -34,12 +34,6 @@ class NoteBuilder
     /** @var string */
     private $modulesTable;
 
-    /**
-     * @param JobResourceModel $jobResourceModel
-     * @param ConfigHelper $configHelper
-     * @param ResourceConnection $resourceConnection
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
         JobResourceModel $jobResourceModel,
         ConfigHelper $configHelper,

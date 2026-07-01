@@ -18,9 +18,9 @@ The development team will review all issues and contributions submitted by the c
 	* Integration test coverage
 	* Proposed [documentation](https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/) update
 6. All automated tests are passed successfully:
-	* CircleCI Magento 2.3
-	* CircleCI Magento 2.4 
-	* CircleCI [Quality Tools](https://github.com/algolia/magento2-tools) (phpcs and php compatibility)
+	* CircleCI Magento 2.4 unit tests
+
+> **Note:** Automated PHPCS and PHP compatibility checks are planned to be re-enabled in CI. Until then, run them locally before submitting a PR. See [Static analysis](#static-analysis) and [Quality Tools](#quality-tools).
 
 # Contribution process
 
@@ -71,9 +71,9 @@ $ ../../../vendor/bin/phpunit ../../../vendor/algolia/algoliasearch-magento-2/Te
 
 To check the coding style the extension uses [PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer).
 
-The fixer follow Magento 2 default rules and in addition some extra rules defined by the extension's development team. The concrete rules can be found here:
-- Magento's default rules - can be found in the root directory of Magento 2 installation in `.php_cs.dist` file
-- [Extension's rules](https://github.com/algolia/algoliasearch-magento-2/blob/master/.php_cs)
+The fixer follows Magento 2 default rules and extra rules defined by the extension's development team. The concrete rules can be found here:
+- Magento's default rules - can be found in the root directory of Magento 2 installation in `.php-cs-fixer.dist.php` file
+- [Extension's rules](https://github.com/algolia/algoliasearch-magento-2/blob/master/.php-cs-fixer.php)
 
 Definitions of each rule can be found in [the documentation of PHP-CS-Fixer](https://github.com/FriendsOfPHP/PHP-CS-Fixer#usage). 
 
@@ -82,13 +82,13 @@ Definitions of each rule can be found in [the documentation of PHP-CS-Fixer](htt
 **Check:**
 ```bash
 $ cd [[magento_root_dir]]
-$ php vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes --dry-run
+$ php vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --config=vendor/algolia/algoliasearch-magento-2/.php-cs-fixer.php -v --using-cache=no --allow-risky=yes --dry-run
 ```
 
 **Fix:**
 ```bash
 $ cd [[magento_root_dir]]
-$ php vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --config=vendor/algolia/algoliasearch-magento-2/.php_cs -v --using-cache=no --allow-risky=yes
+$ php vendor/bin/php-cs-fixer fix vendor/algolia/algoliasearch-magento-2 --config=vendor/algolia/algoliasearch-magento-2/.php-cs-fixer.php -v --using-cache=no --allow-risky=yes
 ```
 
 ### Comments (not annotations)
@@ -124,40 +124,54 @@ To learn more about good commenting you can read:
 
 ## Static analysis
 
-For static analysis check the extension uses [Magento Extension Quality Program Coding Standard](https://github.com/magento/marketplace-eqp/) library.
-It is a set of rules and sniffs for [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer).
+The extension uses the [`Magento2` coding standard](https://github.com/magento/magento-coding-standard) provided by `magento/magento-coding-standard` - a set of PHP_CodeSniffer rules that enforce Magento 2 marketplace and coding requirements.
 
-It allows automatically check your code against some of the common Magento and PHP coding issues, like:
-- raw SQL queries
-- SQL queries inside a loop
-- direct class instantiation
-- unnecessary collection loading
-- excessive code complexity
-- use of dangerous functions
-- use of PHP superglobals'
+It automatically detects common issues including:
+- Raw SQL queries and SQL queries inside loops
+- Direct class instantiation (bypassing dependency injection)
+- Unnecessary collection loading
+- Excessive code complexity
+- Use of dangerous functions
+- Use of PHP superglobals
 
-This tool is used on official Magento Marketplace and automatically checks the extension during upload.
-
-The tool let the **WARNING**s go, but rejects the extension when **ERROR** appears.
-
-Try to avoid both, warnings and errors, but only **ERROR** prevents a pull request from being merged for now.
-This policy may change in a future.
+**ERRORs block pull requests from being merged. WARNINGs should be avoided but do not block merges.**
 
 ### Setup
 
-Install the tool via [Composer](https://getcomposer.org) next to your Magento instance:
+`magento/magento-coding-standard` is included as a dev dependency in standard Magento 2.4.x installations, so **no additional setup is required** if you are already running a Magento development environment.
+
+To verify the standard is registered, run from your Magento root:
 ```bash
-$ composer create-project --repository=https://repo.magento.com magento/marketplace-eqp magento-coding-standard
+$ vendor/bin/phpcs -i
+```
+The output should include `Magento2` in the list of installed standards.
+
+If it is missing, install it:
+```bash
+$ composer require --dev magento/magento-coding-standard
 ```
 
 ### Run
 
+Run from your Magento root directory:
 ```bash
-[[magento-coding-standard_dir]]/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit true --ignore=dev,Test [[magento_root_dir]]/vendor/algolia/algoliasearch-magento-2 --standard=MEQP2 --extensions=php,phtml
+$ vendor/bin/phpcs --standard=Magento2 --extensions=php,phtml -n --error-severity=10 \
+  --ignore-annotations \
+  --ignore=*/dev/*,.circleci/* \
+  vendor/algolia/algoliasearch-magento-2
+```
+
+To generate a JSON report:
+```bash
+$ vendor/bin/phpcs --standard=Magento2 --extensions=php,phtml -n --error-severity=10 \
+  --ignore-annotations \
+  --ignore=*/dev/*,.circleci/* \
+  --report=json --report-file=report.json \
+  vendor/algolia/algoliasearch-magento-2
 ```
 
 ## Quality Tools
-As an alternative to testing Code Styling and Static Analysis individually, you can use our [Quality Tools](https://github.com/algolia/magento2-tools) tool that our CircleCI integration check against, to lint and test your changes. 
+As an alternative to testing Code Styling and Static Analysis individually, you can use our [Quality Tools](https://github.com/algolia/magento2-tools) tool that our CircleCI integration check against, to lint and test your changes.
 
 You can install the tool via composer:
 ```bash
@@ -168,16 +182,18 @@ Make sure to place Composer's system-wide vendor bin directory in your `$PATH` s
 
 Finally, you can launch the quality tools with:
 ```bash
-{command} path/to/magento/extension
+{command} path/to/magento/extension [vendor/bin/path/]
 ```
+
+The second argument is optional. If omitted, the scripts will attempt to auto-resolve the vendor bin directory by checking for a local `vendor/bin/` install (e.g. after running `composer install` in the package directory) and then falling back to the global Composer vendor bin. If neither is found, the tools are expected to be on your `$PATH`.
 
 Here is the list of available commands:
 
-- **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php_cs`.
+- **`magento2-lint`**: Runs the linter and fixes the found issues - configuration file under `algoliasearch-magento-2/.php-cs-fixer.php`.
 
-- **`magento2-types`**: Runs the type checker and displays the found issues - configuration file under `algoliasearch-magento-2/phpstan.neon`.
+- **`magento2-analyse`**: Runs PHPStan static analysis. Uses `phpstan.neon` or `phpstan.neon.dist` from the extension directory if present; otherwise runs at level 1 with sensible defaults. Requires the extension to be installed within a Magento project (detects Magento root automatically).
 
-- **`magento2-php-compatibility`**: Checks if your code is compatibility between multiple all php versions supported by magento.
+- **`magento2-php-compatibility`**: Checks if your code is compatible across all PHP versions supported by Magento.
 
-- **`magento2-test`**: Runs all previous commands in `--dry-run` mode.
+- **`magento2-test`**: Runs all previous commands in `--dry-run` / read-only mode (coding style, PHP compatibility, and PHPStan analysis).
 

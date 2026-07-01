@@ -10,7 +10,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-
     /** @var SessionManagerInterface */
     protected $backendSession;
 
@@ -23,13 +22,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     /** @var StoreManagerInterface */
     protected $storeManager;
 
-    /**
-     * @param Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param LandingPageFactory $landingPageFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
         Context $context,
         SessionManagerInterface $backendSession,
@@ -45,13 +37,17 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $this->storeManager = $storeManager;
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model\LandingPage */
+    /**
+     * @return \Algolia\AlgoliaSearch\Model\LandingPage
+     */
     protected function initLandingPage()
     {
         $landingPageId = (int) $this->getRequest()->getParam('id');

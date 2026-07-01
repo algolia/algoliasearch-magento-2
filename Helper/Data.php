@@ -2,13 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
+use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder as AdditionalSectionIndexBuilder;
-use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\IndexBuilder as PageIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder as SuggestionIndexBuilder;
@@ -32,8 +32,6 @@ class Data
     ){}
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -48,9 +46,6 @@ class Data
     }
 
     /**
-     * @param $storeId
-     * @param array|null $pageIds
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      *
@@ -63,9 +58,8 @@ class Data
     }
 
     /**
-     * @param $storeId
      * @param null $categoryIds
-     * @return void
+     *
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -79,8 +73,6 @@ class Data
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -94,9 +86,8 @@ class Data
     }
 
     /**
-     * @param int $storeId
      * @param string[] $productIds
-     * @return void
+     *
      * @throws \Exception
      *
      * @deprecated
@@ -108,12 +99,6 @@ class Data
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $productIds
-     * @param int $page
-     * @param int $pageSize
-     * @param bool $useTmpIndex
-     * @return void
      * @throws \Exception
      *
      * @deprecated
@@ -127,16 +112,12 @@ class Data
                 'entityIds' => $productIds,
                 'page' => $page,
                 'pageSize' => $pageSize,
-                'useTmpIndex' => $useTmpIndex
+                'useTmpIndex' => $useTmpIndex,
             ]
         );
     }
 
     /**
-     * @param int $storeId
-     * @param int $page
-     * @param int $pageSize
-     * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws \Exception
@@ -150,8 +131,6 @@ class Data
     }
 
     /**
-     * @param $storeId
-     * @return void
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      *
@@ -164,8 +143,6 @@ class Data
     }
 
     /**
-     * @param $storeId
-     * @return bool
      * @throws NoSuchEntityException
      */
     public function isIndexingEnabled($storeId = null): bool
@@ -174,14 +151,11 @@ class Data
             $this->logger->log('INDEXING IS DISABLED FOR STORE ' . $this->logger->getStoreName($storeId));
             return false;
         }
+
         return true;
     }
 
     /**
-     * @param string $indexSuffix
-     * @param int|null $storeId
-     * @param bool $tmp
-     * @return string
      * @throws NoSuchEntityException
      */
     public function getIndexName(string $indexSuffix, ?int $storeId = null, bool $tmp = false): string
@@ -190,8 +164,6 @@ class Data
     }
 
     /**
-     * @param int|null $storeId
-     * @return string
      * @throws NoSuchEntityException
      */
     public function getBaseIndexName(?int $storeId = null): string
@@ -200,22 +172,22 @@ class Data
     }
 
     /**
-     * @return array<int, array<string, mixed>>
      * @throws NoSuchEntityException
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function getIndexDataByStoreIds(): array
     {
         $indexNames = [];
-        $indexNames[AlgoliaConnector::ALGOLIA_DEFAULT_SCOPE] = $this->buildIndexData();
+        $indexNames[ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE] = $this->buildIndexData();
         foreach ($this->storeManager->getStores() as $store) {
             $indexNames[$store->getId()] = $this->buildIndexData($store);
         }
+
         return $indexNames;
     }
 
     /**
-     * @param StoreInterface|null $store
-     * @return array
      * @throws NoSuchEntityException
      */
     protected function buildIndexData(?StoreInterface $store = null): array

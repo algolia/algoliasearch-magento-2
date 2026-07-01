@@ -37,8 +37,6 @@ class RecordBuilder implements RecordBuilderInterface
     /**
      * Builds a Category record
      *
-     * @param DataObject $entity
-     * @return array
      * @throws AlgoliaException
      * @throws LocalizedException
      */
@@ -132,7 +130,6 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param MagentoCategory $category
      * @return array|string|string[]
      */
     protected function getUrl(Category $category)
@@ -223,8 +220,6 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param $categoryId
-     * @param $storeId
      * @return mixed|null
      */
     protected function getCategoryKeyId($categoryId, $storeId = null)
@@ -233,6 +228,7 @@ class RecordBuilder implements RecordBuilderInterface
 
         if ($this->getCorrectIdColumn() === 'row_id') {
             $category = $this->getCategoryById($categoryId, $storeId);
+
             return $category ? $category->getRowId() : null;
         }
 
@@ -240,10 +236,9 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param $categoryId
-     * @param $storeId
-     * @return mixed|null
      * @throws LocalizedException
+     *
+     * @return mixed|null
      */
     protected function getCategoryById($categoryId, $storeId = null)
     {
@@ -253,10 +248,9 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param $filterNotIncludedCategories
-     * @param $storeId
-     * @return array
      * @throws LocalizedException
+     *
+     * @return array
      */
     public function getCoreCategories($filterNotIncludedCategories = true, $storeId = null)
     {

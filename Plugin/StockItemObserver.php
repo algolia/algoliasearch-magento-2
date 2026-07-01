@@ -7,22 +7,15 @@ use Magento\Framework\Model\AbstractModel as StockItem;
 
 class StockItemObserver
 {
-    /**
-     * @var IndexerRegistry
-     */
+    /** @var IndexerRegistry */
     protected $indexer;
 
-    /**
-     * @param IndexerRegistry $indexerRegistry
-     */
     public function __construct(IndexerRegistry $indexerRegistry)
     {
         $this->indexer = $indexerRegistry->get('algolia_products');
     }
 
     /**
-     * @param \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $stockItemModel
-     * @param StockItem $stockItem
      * @return void
      */
     public function beforeSave(
@@ -37,9 +30,6 @@ class StockItemObserver
     }
 
     /**
-     * @param \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $stockItemResource
-     * @param \Magento\CatalogInventory\Model\ResourceModel\Stock\Item $result
-     * @param \Magento\CatalogInventory\Api\Data\StockItemInterface $stockItem
      * @return \Magento\CatalogInventory\Model\ResourceModel\Stock\Item
      */
     public function afterDelete(

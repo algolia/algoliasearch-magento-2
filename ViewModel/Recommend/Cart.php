@@ -12,32 +12,18 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Cart implements ArgumentInterface
 {
-    /**
-     * @var StoreManagerInterface
-     */
+    /** @var StoreManagerInterface */
     protected $storeManager;
 
-    /**
-     * @var Session
-     */
+    /** @var Session */
     protected $checkoutSession;
 
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @var ProductHelper
-     */
+    /** @var ProductHelper */
     protected $productHelper;
 
-    /**
-     * @param StoreManagerInterface $storeManager
-     * @param Session $checkoutSession
-     * @param ConfigHelper $configHelper
-     * @param ProductHelper $productHelper
-     */
     public function __construct(
         StoreManagerInterface $storeManager,
         Session $checkoutSession,
@@ -51,9 +37,10 @@ class Cart implements ArgumentInterface
     }
 
     /**
-     * @return array
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return array
      */
     public function getAllCartItems()
     {
@@ -71,6 +58,7 @@ class Cart implements ArgumentInterface
                 $visibleCartItem[] = $product->getId();
             }
         }
+
         return $visibleCartItem;
     }
 
@@ -83,7 +71,7 @@ class Cart implements ArgumentInterface
             'enabledFBTInCart' => $this->configHelper->isRecommendFrequentlyBroughtTogetherEnabledOnCartPage(),
             'enabledRelatedInCart' => $this->configHelper->isRecommendRelatedProductsEnabledOnCartPage(),
             'isTrendItemsEnabledInCartPage' => $this->configHelper->isTrendItemsEnabledInShoppingCart(),
-            'isLookingSimilarEnabledInCartPage' => $this->configHelper->isLookingSimilarEnabledInShoppingCart()
+            'isLookingSimilarEnabledInCartPage' => $this->configHelper->isLookingSimilarEnabledInShoppingCart(),
         ];
     }
 }

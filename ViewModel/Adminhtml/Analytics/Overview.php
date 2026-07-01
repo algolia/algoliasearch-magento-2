@@ -20,11 +20,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     /** @var array */
     private $analyticsParams = [];
 
-    /**
-     * @param BackendView $backendView
-     * @param AnalyticsHelper $analyticsHelper
-     * @param IndexEntityDataProvider $indexEntityDataProvider
-     */
     public function __construct(
         protected BackendView             $backendView,
         protected AnalyticsHelper         $analyticsHelper,
@@ -40,7 +35,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     }
 
     /**
-     * @return string
      * @throws NoSuchEntityException
      */
     public function getTimeZone(): string
@@ -54,7 +48,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     /**
      * @throws NoSuchEntityException
      *
-     * @return mixed
      */
     public function getIndexName()
     {
@@ -64,11 +57,9 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     }
 
     /**
-     * @param array $additional
      *
      * @throws NoSuchEntityException
      *
-     * @return array
      */
     public function getAnalyticsParams(array $additional = []): array
     {
@@ -90,21 +81,17 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     }
 
     /**
-     * @param string $dateString
-     * @return string
      * @throws NoSuchEntityException
      */
     protected function formatFormSubmittedDate(string $dateString): string
     {
         $timezone = $this->getTimeZone();
         $dateTime = $this->parseFormSubmittedDate($dateString, $timezone);
+
         return $dateTime->format(AnalyticsHelper::DATE_FORMAT_API);
     }
 
     /**
-     * @param string|null $dateString
-     * @param string|null $timezone
-     * @return \DateTime
      * @throws NoSuchEntityException
      */
     protected function parseFormSubmittedDate(?string $dateString = null, ?string $timezone = null): \DateTime
@@ -119,6 +106,7 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
 
         $dateFormatter = $this->analyticsHelper->getAnalyticsDatePickerFormatter($timezone);
         $parsedDate = $dateFormatter->parse($dateString);
+
         return (new \DateTime('now', new \DateTimeZone($timezone)))->setTimestamp($parsedDate);
     }
 
@@ -157,7 +145,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
      *
      * @throws NoSuchEntityException
      *
-     * @return mixed
      */
     public function getClickThroughRate()
     {
@@ -236,9 +223,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     }
 
     /**
-     * @param $array
-     * @param $date
-     * @param $valueKey
      *
      * @return string
      */
@@ -332,7 +316,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     /**
      * @throws NoSuchEntityException
      *
-     * @return bool
      */
     public function checkIsValidDateRange(): bool
     {
@@ -388,7 +371,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     }
 
     /**
-     * @param $search
      *
      * @return array
      */
@@ -439,7 +421,6 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     }
 
     /**
-     * @param $message
      *
      * @return string
      */

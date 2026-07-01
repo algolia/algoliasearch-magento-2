@@ -10,19 +10,11 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
 class TrendsItem extends Template implements BlockInterface
 {
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
     protected $_template = 'recommend/widget/trends-item.phtml';
 
-    /**
-     * @param Context $context
-     * @param ConfigHelper $configHelper
-     * @param Random $mathRandom
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         ConfigHelper $configHelper,
@@ -38,8 +30,9 @@ class TrendsItem extends Template implements BlockInterface
     }
 
     /**
-     * @return string
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return string
      */
     public function generateUniqueToken()
     {

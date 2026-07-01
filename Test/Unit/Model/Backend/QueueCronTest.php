@@ -47,7 +47,7 @@ class QueueCronTest extends TestCase
 
             $msg = $canReplay
                 ? "Cron expression \"$value\" is not valid."
-                : "Cron expression is invalid.";
+                : 'Cron expression is invalid.';
             $this->assertEquals(
                 $msg,
                 $exception->getMessage()
@@ -60,49 +60,49 @@ class QueueCronTest extends TestCase
         return [
             [
                 'value' => '',
-                'isValid' => false
+                'isValid' => false,
             ],
             [
                 'value' => 'foo',
-                'isValid' => false
+                'isValid' => false,
             ],
             [
                 'value' => '*/5 * * * *',
-                'isValid' => true
+                'isValid' => true,
             ],
             [
                 'value' => '*/10 * * * *',
-                'isValid' => true
+                'isValid' => true,
             ],
             [
                 'value' => '0 0 1 1 *',
-                'isValid' => true
+                'isValid' => true,
             ],
             [
                 'value' => '0 0 * * 5',
-                'isValid' => true
+                'isValid' => true,
             ],
             [
                 'value' => '*/10 * * *', // One less property
-                'isValid' => false
+                'isValid' => false,
             ],
             [
                 'value' => '*/10 * * * * *', // One more property
-                'isValid' => false
+                'isValid' => false,
             ],
             [
                 'value' => '@daily', // Working alias
-                'isValid' => true
+                'isValid' => true,
             ],
             [
                 'value' => '@foo', // Not working alias
-                'isValid' => false
+                'isValid' => false,
             ],
             [
                 'value' => '"><script>alert(\'XSS\')</script>',
                 'isValid' => false,
-                'canReplay' => false
-            ]
+                'canReplay' => false,
+            ],
         ];
     }
 

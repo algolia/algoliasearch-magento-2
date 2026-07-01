@@ -9,27 +9,24 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * @magentoDbIsolation disabled
+ *
  * @magentoAppIsolation enabled
  */
 class PricingTest extends ProductsIndexingTestCase
 {
-    /**
-     * @var int
-     */
+    /** @var int */
     protected const PRODUCT_ID_SIMPLE_STANDARD_PRICE = 1;
     protected const PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE = 62;
 
     protected const PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE = 1903;
 
-    const SPECIAL_PRICE_TEST_PRODUCT_ID = 9;
+    public const SPECIAL_PRICE_TEST_PRODUCT_ID = 9;
 
-    /**
-     * @var array<int, float>
-     */
+    /** @var array<int, float> */
     protected const ASSERT_PRODUCT_PRICES = [
         self::PRODUCT_ID_SIMPLE_STANDARD_PRICE           => 34,
         self::PRODUCT_ID_CONFIGURABLE_STANDARD_PRICE     => 52,
-        self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE => 39.2
+        self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE => 39.2,
     ];
 
     protected function setUp(): void
@@ -44,7 +41,7 @@ class PricingTest extends ProductsIndexingTestCase
 
     /**
      * @param int|int[] $productIds
-     * @return void
+     *
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      * @throws ExceededRetriesException
@@ -65,18 +62,20 @@ class PricingTest extends ProductsIndexingTestCase
             $indexOptions,
             [(string) $productId]
         );
+
         return reset($res['results']);
     }
 
     protected function assertAlgoliaPrice(int $productId): void
     {
         $algoliaProduct = $this->getAlgoliaObjectById($productId);
-        $this->assertNotNull($algoliaProduct, "Algolia product index was not successful.");
+        $this->assertNotNull($algoliaProduct, 'Algolia product index was not successful.');
         $this->assertEquals(self::ASSERT_PRODUCT_PRICES[$productId], $algoliaProduct['price']['USD']['default']);
     }
 
     /**
      * @depends testMagentoProductData
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -90,6 +89,7 @@ class PricingTest extends ProductsIndexingTestCase
 
     /**
      * @depends testMagentoProductData
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -103,6 +103,7 @@ class PricingTest extends ProductsIndexingTestCase
 
     /**
      * @depends testMagentoProductData
+     *
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -123,10 +124,10 @@ class PricingTest extends ProductsIndexingTestCase
          * @var Product $product
          */
         $product = $this->objectManager->get(\Magento\Catalog\Model\ProductRepository::class)->getById($productId);
-        $this->assertTrue($product->isInStock(), "Product is not in stock");
-        $this->assertTrue($product->getIsSalable(), "Product is not salable");
+        $this->assertTrue($product->isInStock(), 'Product is not in stock');
+        $this->assertTrue($product->getIsSalable(), 'Product is not salable');
         $actualPrice = $product->getFinalPrice();
-        $this->assertEquals($actualPrice, $expectedPrice, "Product price does not match expectation");
+        $this->assertEquals($actualPrice, $expectedPrice, 'Product price does not match expectation');
     }
 
     public static function productProvider(): array
@@ -186,7 +187,7 @@ class PricingTest extends ProductsIndexingTestCase
         $algoliaProduct = reset($res['results']);
 
         $this->assertEquals($specialPrice, $algoliaProduct['price']['USD']['default']);
-        $this->assertEquals("$32.00", $algoliaProduct['price']['USD']['default_original_formated']);
+        $this->assertEquals('$32.00', $algoliaProduct['price']['USD']['default_original_formated']);
     }
 
     protected function tearDown(): void

@@ -12,20 +12,15 @@ use Magento\Catalog\Api\Data\ProductInterfaceFactory;
  */
 class CurrentProduct
 {
-    /**
-     * @var ProductInterface
-     */
+    /** @var ProductInterface */
     private $product;
 
-    /**
-     * @var ProductInterfaceFactory
-     */
+    /** @var ProductInterfaceFactory */
     private $productFactory;
 
     /**
      * CurrentProduct constructor.
      *
-     * @param ProductInterfaceFactory $productFactory
      */
     public function __construct(
         ProductInterfaceFactory $productFactory
@@ -37,7 +32,6 @@ class CurrentProduct
     /**
      * Setter
      *
-     * @param ProductInterface $product
      */
     public function set(ProductInterface $product): void
     {
@@ -47,7 +41,6 @@ class CurrentProduct
     /**
      * Getter
      *
-     * @return ProductInterface
      */
     public function get(): ProductInterface
     {
@@ -57,7 +50,6 @@ class CurrentProduct
     /**
      * Product factory
      *
-     * @return ProductInterface
      */
     private function createProduct(): ProductInterface
     {

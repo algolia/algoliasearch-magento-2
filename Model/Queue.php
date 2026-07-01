@@ -50,7 +50,6 @@ class Queue
     /** @var array */
     protected $logRecord;
 
-    /** @var array */
     protected array $storeMaxBatchSizes;
 
     public function __construct(
@@ -67,13 +66,6 @@ class Queue
         $this->db = $objectManager->create(ResourceConnection::class)->getConnection('core_write');
     }
 
-    /**
-     * @param string $className
-     * @param string $method
-     * @param array $data
-     * @param int $dataSize
-     * @param bool $isFullReindex
-     */
     public function addToQueue(string $className, string $method, array $data, int $dataSize = 1, bool $isFullReindex = false): void
     {
         if (is_object($className)) {
@@ -95,7 +87,7 @@ class Queue
                 'pid'       => null,
                 'max_retries' => $this->configHelper->getRetryLimit(),
                 'is_full_reindex' => $isFullReindex ? 1 : 0,
-                'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled() ? (new \Exception)->getTraceAsString() : null
+                'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled() ? (new \Exception)->getTraceAsString() : null,
             ]);
         } else {
             $object = $this->objectManager->get($className);
@@ -110,7 +102,6 @@ class Queue
      *
      * @throws Zend_Db_Statement_Exception
      *
-     * @return float|null
      */
     public function getAverageProcessingTime(): ?float
     {
@@ -126,8 +117,6 @@ class Queue
     }
 
     /**
-     * @param int|null $nbJobs
-     * @param bool $force
      *
      * @throws Exception
      */
@@ -176,17 +165,13 @@ class Queue
      * e.g. alternative to something like...
      * ['job_id IN (?)' => $job->getMergedIds()]
      *
-     * @param Job $job
-     * @return string
      */
     protected function jobToWhereClause(Job $job): string
     {
-        return sprintf('job_id IN (%s)',implode(',', $job->getMergedIds()));
+        return sprintf('job_id IN (%s)', implode(',', $job->getMergedIds()));
     }
 
     /**
-     * @param Job $job
-     * @return void
      * @throws \Exception
      */
     protected function processJob(Job $job): void
@@ -205,11 +190,6 @@ class Queue
         $this->logRecord['processed_jobs'] += count($job->getMergedIds());
     }
 
-    /**
-     * @param Job $job
-     * @param Exception $e
-     * @return void
-     */
     protected function handleFailedJob(Job $job, Exception $e): void
     {
         $this->noOfFailedJobs++;
@@ -249,7 +229,6 @@ class Queue
     }
 
     /**
-     * @param int $maxJobs
      *
      * @throws Exception
      */
@@ -292,10 +271,6 @@ class Queue
     /**
      * Archive jobs based on desired columns and where clause filter criteria
      *
-     * @param array $sourceColumns
-     * @param array $targetColumns
-     * @param string $whereClause
-     * @return void
      */
     protected function archiveJobs(array $sourceColumns, array $targetColumns, string $whereClause): void {
         $select = $this->db->select()
@@ -313,8 +288,8 @@ class Queue
 
     /**
      * Archive failed jobs - should be same criteria as jobs deleted when performing cleanup
+     *
      * @see clearOldFailingJobs
-     * @return void
      */
     protected function archiveFailedJobs(string $whereClause = self::FAILED_JOB_ARCHIVE_CRITERIA) : void
     {
@@ -323,14 +298,13 @@ class Queue
         $this->archiveJobs(
             $sourceColumns,
             $targetColumns,
-            $whereClause);
+            $whereClause
+        );
     }
 
     /**
      * Archive a successful job - based on supplied where clause criteria
      *
-     * @param string $whereClause
-     * @return void
      */
     protected function archiveSuccessfulJobs(string $whereClause): void {
         $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'CONVERT(\'\', CHAR)', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'];
@@ -338,15 +312,16 @@ class Queue
         $this->archiveJobs(
             $sourceColumns,
             $targetColumns,
-            $whereClause);
+            $whereClause
+        );
     }
 
     /**
-     * @param int $maxJobs
      *
-     * @return Job[]
      *
      * @throws Exception
+     *
+     * @return Job[]
      *
      */
     protected function getJobs(int $maxJobs): array
@@ -395,9 +370,6 @@ class Queue
     }
 
     /**
-     * @param int $jobsLimit
-     * @param bool $fetchFullReindexJobs
-     * @param int|null $lastJobId
      *
      * @return Job[]
      */
@@ -471,7 +443,6 @@ class Queue
 
     /**
      * @param Job[] $jobs
-     * @return int
      */
     protected function calculateMaxBatchSize(array $jobs): int
     {
@@ -484,10 +455,6 @@ class Queue
         return round($maxBatchSize / count($jobs));
     }
 
-    /**
-     * @param int $storeId
-     * @return int
-     */
     protected function getStoreMaxBatchSize(int $storeId): int
     {
         if (!isset($this->storeMaxBatchSizes[$storeId])) {
@@ -572,9 +539,7 @@ class Queue
     /**
      * @param Job[] $sortedJobs
      * @param Job[] $tempSortableJobs
-     * @param Job|null $job
      *
-     * @return array
      */
     protected function stackSortedJobs(array $sortedJobs, array $tempSortableJobs, ?Job $job = null): array
     {
@@ -601,9 +566,6 @@ class Queue
         return $sortedJobs;
     }
 
-    /**
-     * @return array
-     */
     protected function jobSort(): array
     {
         $args = func_get_args();
@@ -672,9 +634,6 @@ class Queue
         return $jobsIds;
     }
 
-    /**
-     * @return void
-     */
     protected function clearOldFailingJobs(): void
     {
         // Enhanced archive will have already logged this failure
@@ -703,9 +662,6 @@ class Queue
         }
     }
 
-    /**
-     * @return void
-     */
     protected function clearOldArchiveRecords(): void
     {
         $archiveLogClearLimit = $this->configHelper->getArchiveLogClearLimit();
@@ -720,9 +676,6 @@ class Queue
         );
     }
 
-    /**
-     * @return void
-     */
     protected function unlockStackedJobs(): void
     {
         $this->db->update($this->table, [
@@ -731,9 +684,6 @@ class Queue
         ], ['locked_at < (NOW() - INTERVAL ' . self::UNLOCK_STACKED_JOBS_AFTER_MINUTES . ' MINUTE)']);
     }
 
-    /**
-     * @return bool
-     */
     protected function shouldEmptyQueue(): bool
     {
         if (getenv('PROCESS_FULL_QUEUE') && getenv('PROCESS_FULL_QUEUE') === '1') {

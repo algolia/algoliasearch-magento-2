@@ -9,9 +9,6 @@ class Suggestions implements \Magento\Framework\View\Element\Block\ArgumentInter
     /** @var QueryCollectionFactory */
     private $queryCollectionFactory;
 
-    /**
-     * @param QueryCollectionFactory $queryCollectionFactory
-     */
     public function __construct(QueryCollectionFactory $queryCollectionFactory)
     {
         $this->queryCollectionFactory = $queryCollectionFactory;

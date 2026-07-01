@@ -10,7 +10,6 @@ class IndexOptions extends DataObject implements IndexOptionsInterface
     /**
      * Return the current store_id; if the method returns null, the Magento default store will be used
      *
-     * @return int|null
      */
     public function getStoreId(): ?int
     {
@@ -22,7 +21,6 @@ class IndexOptions extends DataObject implements IndexOptionsInterface
     /**
      * Suffix usually refers to the entity to index (_products, _categories, _pages, ...)
      *
-     * @return string|null
      */
     public function getIndexSuffix(): ?string
     {
@@ -34,7 +32,6 @@ class IndexOptions extends DataObject implements IndexOptionsInterface
     /**
      * Temporary indices can be used in case of full reindexing
      *
-     * @return bool
      */
     public function isTemporaryIndex(): bool
     {
@@ -45,18 +42,12 @@ class IndexOptions extends DataObject implements IndexOptionsInterface
     /**
      * Returns the final index name computed by the IndexNameFetcher
      *
-     * @return string|null
      */
     public function getIndexName(): ?string
     {
         return $this->getData(IndexOptionsInterface::INDEX_NAME);
     }
 
-    /**
-     * @param string $indexName
-     *
-     * @return void
-     */
     public function setIndexName(string $indexName): void
     {
         $this->setData(IndexOptionsInterface::INDEX_NAME, $indexName);

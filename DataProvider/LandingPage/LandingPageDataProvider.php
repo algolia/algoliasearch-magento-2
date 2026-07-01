@@ -9,14 +9,10 @@ class LandingPageDataProvider extends \Magento\Ui\DataProvider\AbstractDataProvi
 {
     protected $collection;
 
-    /**
-     * @var DataPersistorInterface
-     */
+    /** @var DataPersistorInterface */
     protected $dataPersistor;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $loadedData;
 
     /**
@@ -25,10 +21,6 @@ class LandingPageDataProvider extends \Magento\Ui\DataProvider\AbstractDataProvi
      * @param string $name
      * @param string $primaryFieldName
      * @param string $requestFieldName
-     * @param CollectionFactory $collectionFactory
-     * @param DataPersistorInterface $dataPersistor
-     * @param array $meta
-     * @param array $data
      */
     public function __construct(
         $name,

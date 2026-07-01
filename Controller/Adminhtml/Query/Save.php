@@ -14,37 +14,21 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Save extends AbstractAction
 {
-    /**
-     * @var DataPersistorInterface
-     */
+    /** @var DataPersistorInterface */
     protected $dataPersistor;
 
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @var ImageUploader
-     */
+    /** @var ImageUploader */
     protected $imageUploader;
 
-    /**
-     * @var SessionManagerInterface
-     */
-    protected  $backendSession;
+    /** @var SessionManagerInterface */
+    protected $backendSession;
 
     /**
      * PHP Constructor
      *
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param QueryFactory $queryFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     * @param DataPersistorInterface $dataPersistor
-     * @param ConfigHelper $configHelper
-     * @param ImageUploader $imageUploader
      *
      * @return Save
      */
@@ -150,9 +134,8 @@ class Save extends AbstractAction
     }
 
     /**
-     * @param int $queryId
      * @param array<string, mixed> $data
-     * @return void
+     *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     private function manageQueryRules(int $queryId, array $data): void

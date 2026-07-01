@@ -22,13 +22,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     /** @var StoreManagerInterface */
     protected $storeManager;
 
-    /**
-     * @param Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param QueryFactory $queryFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
         Context $context,
         SessionManagerInterface $backendSession,
@@ -44,13 +37,17 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $this->storeManager = $storeManager;
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model\Query */
+    /**
+     * @return \Algolia\AlgoliaSearch\Model\Query
+     */
     protected function initQuery()
     {
         $queryId = (int) $this->getRequest()->getParam('id');
@@ -70,7 +67,9 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         return $query;
     }
 
-    /** @return array */
+    /**
+     * @return array
+     */
     protected function getActiveStores()
     {
         $stores = [];

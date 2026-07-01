@@ -24,6 +24,7 @@ class Hit extends Template
     public function getPriceKey(): string
     {
         $store = $this->_storeManager->getStore();
+
         return $this->priceKeyResolver->getPriceKey($store->getId());
     }
 
@@ -34,6 +35,7 @@ class Hit extends Template
     {
         /** @var \Magento\Store\Model\Store $store */
         $store = $this->_storeManager->getStore();
+
         return $store->getCurrentCurrencyCode();
     }
 }

@@ -4,10 +4,6 @@ namespace Algolia\AlgoliaSearch\Setup\Patch;
 
 trait DataMigrationTrait
 {
-    /**
-     * @param array $configurations
-     * @return void
-     */
     public function migrateConfig(array $configurations): void
     {
         $connection = $this->moduleDataSetup->getConnection();

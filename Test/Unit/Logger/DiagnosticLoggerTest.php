@@ -30,7 +30,7 @@ class DiagnosticLoggerTest extends TestCase
     }
 
     public function testLog(): void {
-        $msg = "Adding a log message";
+        $msg = 'Adding a log message';
         $this->timedLogger->expects($this->once())
             ->method('log')
             ->with($msg, \Monolog\Logger::INFO);

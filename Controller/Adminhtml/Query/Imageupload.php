@@ -7,16 +7,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Imageupload extends \Magento\Backend\App\Action
 {
-    /**
-     * @var ImageUploader
-     */
+    /** @var ImageUploader */
     protected $imageUploader;
 
-    /**
-     *
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param ImageUploader $imageUploader
-     */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         ImageUploader $imageUploader

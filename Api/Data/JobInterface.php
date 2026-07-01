@@ -30,49 +30,33 @@ interface JobInterface
     public const FIELD_ERROR_LOG = 'error_log';
     public const FIELD_DATA_SIZE = 'data_size';
 
-    /**
-     * @return string
-     */
     public function getClass(): string;
 
     /**
-     * @param string $class
      *
      * @return $this
      */
     public function setClass(string $class): self;
 
-    /**
-     * @return string
-     */
     public function getMethod(): string;
 
     /**
-     * @param string $method
      *
      * @return $this
      */
     public function setMethod(string $method): self;
 
-    /**
-     * @return string
-     */
     public function getBody(): string;
 
     /**
-     * @param string $data
      *
      * @return $this
      */
     public function setBody(string $data): self;
 
-    /**
-     * @return int
-     */
     public function getBodySize(): int;
 
     /**
-     * @param int $size
      *
      * @return $this
      */

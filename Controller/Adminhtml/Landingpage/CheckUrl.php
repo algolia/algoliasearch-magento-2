@@ -11,10 +11,6 @@ class CheckUrl extends \Magento\Backend\App\Action
     /** @var LandingPageResourceModel */
     protected $landingPageResourceModel;
 
-    /**
-     * @param Context       $context
-     * @param LandingPageResourceModel  $landingPageResourceModel
-     */
     public function __construct(
         Context $context,
         LandingPageResourceModel $landingPageResourceModel
@@ -23,7 +19,9 @@ class CheckUrl extends \Magento\Backend\App\Action
         $this->landingPageResourceModel = $landingPageResourceModel;
     }
 
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $storeId = (int) $this->getRequest()->getParam('store_id');

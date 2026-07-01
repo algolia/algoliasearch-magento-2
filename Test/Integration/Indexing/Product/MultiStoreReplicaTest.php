@@ -25,10 +25,10 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
     use ReplicaAssertionsTrait;
     use ConfigAssertionsTrait;
 
-    const COLOR_ATTR = 'color';
-    const CREATED_AT_ATTR = 'created_at';
-    const ASC_DIR = 'asc';
-    const DESC_DIR = 'desc';
+    public const COLOR_ATTR = 'color';
+    public const CREATED_AT_ATTR = 'created_at';
+    public const ASC_DIR = 'asc';
+    public const DESC_DIR = 'desc';
 
     protected ?ReplicaManagerInterface $replicaManager = null;
 
@@ -61,7 +61,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
 
         // add color asc sorting (virtual on a single store)
         $this->addSortingByStore($defaultStore, self::COLOR_ATTR, self::ASC_DIR);
-        $this->addSortingByStore($fixtureSecondStore, self::COLOR_ATTR, self::ASC_DIR,true);
+        $this->addSortingByStore($fixtureSecondStore, self::COLOR_ATTR, self::ASC_DIR, true);
 
         // Check replica config for color asc
         $this->checkReplicaIsStandard($defaultStore, self::COLOR_ATTR, self::ASC_DIR);
@@ -137,7 +137,7 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
             'execute',
             [
                 $this->createMock(InputInterface::class),
-                $this->createMock(OutputInterface::class)
+                $this->createMock(OutputInterface::class),
             ]
         );
         $this->algoliaConnector->waitLastTask($defaultStore->getId());
@@ -204,11 +204,11 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
         $replicaSettings = $this->assertReplicaIndexExists($indexName, $replicaIndexName, $store->getId());
 
         $type === 'virtual' ?
-            $this->assertVirtualReplicaRanking($replicaSettings, "$sortDir($sortAttr)"):
+            $this->assertVirtualReplicaRanking($replicaSettings, "$sortDir($sortAttr)") :
             $this->assertStandardReplicaRanking($replicaSettings, "$sortDir($sortAttr)");
     }
 
-    protected function addSortingByStore(StoreInterface $store, $attr, $dir,  $isVirtual = false)
+    protected function addSortingByStore(StoreInterface $store, $attr, $dir, $isVirtual = false)
     {
         $sorting = $this->configHelper->getSorting($store->getId());
         $newSorting = [
@@ -245,18 +245,18 @@ class MultiStoreReplicaTest extends MultiStoreTestCase
                     [
                         'attribute' => 'price',
                         'sort' => 'asc',
-                        'sortLabel' => 'Lowest Price'
+                        'sortLabel' => 'Lowest Price',
                     ],
                     [
                         'attribute' => 'price',
                         'sort' => 'desc',
-                        'sortLabel' => 'Highest Price'
+                        'sortLabel' => 'Highest Price',
                     ],
                     [
                         'attribute' => 'created_at',
                         'sort' => 'desc',
-                        'sortLabel' => 'Newest first'
-                    ]
+                        'sortLabel' => 'Newest first',
+                    ],
                 ]),
                 scopeCode: $store->getCode()
             );

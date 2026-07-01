@@ -81,70 +81,70 @@ class PriceKeyResolverTest extends TestCase
                 'customerGroupId' => 0,
                 'isCustomerGroupsEnabled' => false,
                 'currencyCode' => 'USD',
-                'expectedPriceKey' => '.USD.default'
+                'expectedPriceKey' => '.USD.default',
             ],
             [
                 'storeId' => 1,
                 'customerGroupId' => 1,
                 'isCustomerGroupsEnabled' => true,
                 'currencyCode' => 'USD',
-                'expectedPriceKey' => '.USD.group_1'
+                'expectedPriceKey' => '.USD.group_1',
             ],
             [
                 'storeId' => 1,
                 'customerGroupId' => 2,
                 'isCustomerGroupsEnabled' => true,
                 'currencyCode' => 'USD',
-                'expectedPriceKey' => '.USD.group_2'
+                'expectedPriceKey' => '.USD.group_2',
             ],
             [
                 'storeId' => 2,
                 'customerGroupId' => 0,
                 'isCustomerGroupsEnabled' => false,
                 'currencyCode' => 'EUR',
-                'expectedPriceKey' => '.EUR.default'
+                'expectedPriceKey' => '.EUR.default',
             ],
             [
                 'storeId' => 2,
                 'customerGroupId' => 3,
                 'isCustomerGroupsEnabled' => true,
                 'currencyCode' => 'EUR',
-                'expectedPriceKey' => '.EUR.group_3'
+                'expectedPriceKey' => '.EUR.group_3',
             ],
             [
                 'storeId' => 3,
                 'customerGroupId' => 1,
                 'isCustomerGroupsEnabled' => false,
                 'currencyCode' => 'GBP',
-                'expectedPriceKey' => '.GBP.default'
+                'expectedPriceKey' => '.GBP.default',
             ],
             [
                 'storeId' => 3,
                 'customerGroupId' => 4,
                 'isCustomerGroupsEnabled' => true,
                 'currencyCode' => 'GBP',
-                'expectedPriceKey' => '.GBP.group_4'
+                'expectedPriceKey' => '.GBP.group_4',
             ],
             [
                 'storeId' => 5,
                 'customerGroupId' => 0,
                 'isCustomerGroupsEnabled' => true,
                 'currencyCode' => 'USD',
-                'expectedPriceKey' => '.USD.group_0'
+                'expectedPriceKey' => '.USD.group_0',
             ],
             [
                 'storeId' => 10,
                 'customerGroupId' => 10,
                 'isCustomerGroupsEnabled' => true,
                 'currencyCode' => 'JPY',
-                'expectedPriceKey' => '.JPY.group_10'
+                'expectedPriceKey' => '.JPY.group_10',
             ],
             [
                 'storeId' => 7,
                 'customerGroupId' => 5,
                 'isCustomerGroupsEnabled' => false,
                 'currencyCode' => 'CAD',
-                'expectedPriceKey' => '.CAD.default'
+                'expectedPriceKey' => '.CAD.default',
             ],
         ];
     }

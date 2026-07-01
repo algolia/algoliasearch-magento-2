@@ -8,8 +8,6 @@ use Magento\Store\Api\Data\StoreInterface;
 trait ConfigAssertionsTrait
 {
     /**
-     * @param StoreInterface|null $store
-     * @return int
      * @throws AlgoliaException
      */
     protected function countStoreIndices(?StoreInterface $store = null): int

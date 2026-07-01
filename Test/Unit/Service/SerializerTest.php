@@ -20,7 +20,6 @@ class SerializerTest extends TestCase
 
     /**
      * Add data provider?
-     * @return void
      */
     public function testSerializeReturnsString(): void
     {

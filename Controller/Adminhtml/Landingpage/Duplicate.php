@@ -9,7 +9,9 @@ use Magento\Framework\Exception\LocalizedException;
 
 class Duplicate extends AbstractAction
 {
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
@@ -55,10 +57,6 @@ class Duplicate extends AbstractAction
         return $resultRedirect->setPath('*/*/');
     }
 
-    /**
-     * @param LandingPage $landingPage
-     * @return LandingPage
-     */
     private function duplicateLandingPage(LandingPage $landingPage): LandingPage
     {
         /** @var LandingPage $newLandingPage */
@@ -72,9 +70,6 @@ class Duplicate extends AbstractAction
     }
 
     /**
-     * @param int $landingPageFromId
-     * @param int $landingPageToId
-     * @return void
      * @throws AlgoliaException|\Magento\Framework\Exception\NoSuchEntityException
      */
     private function copyQueryRules(int $landingPageFromId, int $landingPageToId): void

@@ -28,13 +28,6 @@ class LandingPage extends Result
      * Construct
      *
      * @param Magento\Framework\View\Element\Template\Context $context
-     * @param LayerResolver $layerResolver
-     * @param Data $catalogSearchData
-     * @param QueryFactory $queryFactory
-     * @param FilterProvider $filterProvider
-     * @param LandingPageModel $landingPage
-     * @param LandingPageFactory $landingPageFactory
-     * @param array $data
      */
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,

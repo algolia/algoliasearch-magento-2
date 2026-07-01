@@ -12,7 +12,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 class ConfigTest extends TestCase
 {
-
     /**
      * @throws NoSuchEntityException
      * @throws ExceededRetriesException
@@ -45,9 +44,9 @@ class ConfigTest extends TestCase
         $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
 
         $renderingContent = $indexSettings['renderingContent']['facetOrdering']['values'] ?? null;
-        $this->assertNotNull($renderingContent, "Rendering content not found in product index");
-        $this->assertEqualsCanonicalizing(['categories.level0', 'color', 'price.EUR.default', 'price.USD.default'], array_keys($renderingContent), "Expected facets not found in renderingContent");
-        $this->assertEquals('count', $renderingContent['color']['sortRemainingBy'], "Default sort not set to count");
+        $this->assertNotNull($renderingContent, 'Rendering content not found in product index');
+        $this->assertEqualsCanonicalizing(['categories.level0', 'color', 'price.EUR.default', 'price.USD.default'], array_keys($renderingContent), 'Expected facets not found in renderingContent');
+        $this->assertEquals('count', $renderingContent['color']['sortRemainingBy'], 'Default sort not set to count');
     }
 
     /**

@@ -21,7 +21,9 @@ class JobMethods implements \Magento\Framework\Data\OptionSourceInterface
         'rebuildStorePageIndex' => 'Page Reindex (deprecated)',
     ];
 
-    /** @return array */
+    /**
+     * @return array
+     */
     public function toOptionArray()
     {
         $options = [];

@@ -147,32 +147,32 @@ class ConfigurationTest extends TestCase
                 'action' => 'catalog_category_view',
                 'categoryId' => 1,
                 'categoryDisplayMode' => 'PRODUCT',
-                'expectedResult' => true
+                'expectedResult' => true,
             ],
             [ // false if category has no ID
                 'action' => 'catalog_category_view',
                 'categoryId' => null,
                 'categoryDisplayMode' => 'PRODUCT',
-                'expectedResult' => false
+                'expectedResult' => false,
             ],
             [ // false if category has a PAGE as display mode
                 'action' => 'catalog_category_view',
                 'categoryId' => 1,
                 'categoryDisplayMode' => 'PAGE',
-                'expectedResult' => false
+                'expectedResult' => false,
             ],
             [ // true if catalogsearch
                 'action' => 'catalogsearch_result_index',
                 'categoryId' => null,
                 'categoryDisplayMode' => 'FOO',
-                'expectedResult' => true
+                'expectedResult' => true,
             ],
             [ // true if landing page
                 'action' => 'algolia_landingpage_view',
                 'categoryId' => null,
                 'categoryDisplayMode' => 'FOO',
-                'expectedResult' => true
-            ]
+                'expectedResult' => true,
+            ],
         ];
     }
 }

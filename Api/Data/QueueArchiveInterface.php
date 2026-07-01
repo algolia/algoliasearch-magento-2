@@ -4,23 +4,24 @@ namespace Algolia\AlgoliaSearch\Api\Data;
 
 /**
  * Interface QueueArchiveInterface
+ *
  * @package Algolia\AlgoliaSearch\Api\Data
  */
 interface QueueArchiveInterface
 {
-    const ARCHIVE_ID = 'archive_id';
-    const PID = 'pid';
-    const CLASS_NAME = 'class';
-    const METHOD_NAME = 'method';
-    const DATA = 'data';
-    const RETRIES = 'retries';
-    const ERROR_LOG = 'error_log';
-    const DATA_SIZE = 'data_size';
-    const IS_FULL_REINDEX = 'is_full_reindex';
-    const CREATED_AT = 'created_at';
-    const PROCESSED_AT = 'processed_at';
-    const SUCCESS = 'success';
-    const DEBUG = 'debug';
+    public const ARCHIVE_ID = 'archive_id';
+    public const PID = 'pid';
+    public const CLASS_NAME = 'class';
+    public const METHOD_NAME = 'method';
+    public const DATA = 'data';
+    public const RETRIES = 'retries';
+    public const ERROR_LOG = 'error_log';
+    public const DATA_SIZE = 'data_size';
+    public const IS_FULL_REINDEX = 'is_full_reindex';
+    public const CREATED_AT = 'created_at';
+    public const PROCESSED_AT = 'processed_at';
+    public const SUCCESS = 'success';
+    public const DEBUG = 'debug';
 
     /**
      * Get archive ID
@@ -33,6 +34,7 @@ interface QueueArchiveInterface
      * Set archive ID
      *
      * @param int $id
+     *
      * @return $this
      */
     public function setArchiveId($id);
@@ -48,6 +50,7 @@ interface QueueArchiveInterface
      * Set PID
      *
      * @param int $pid
+     *
      * @return $this
      */
     public function setPid($pid);
@@ -63,6 +66,7 @@ interface QueueArchiveInterface
      * Set class name
      *
      * @param string $className
+     *
      * @return $this
      */
     public function setClassName($className);
@@ -78,6 +82,7 @@ interface QueueArchiveInterface
      * Set method name
      *
      * @param string $methodName
+     *
      * @return $this
      */
     public function setMethodName($methodName);
@@ -93,6 +98,7 @@ interface QueueArchiveInterface
      * Set data field
      *
      * @param string $dataField
+     *
      * @return $this
      */
     public function setDataField($dataField);
@@ -108,6 +114,7 @@ interface QueueArchiveInterface
      * Set retries
      *
      * @param int $retries
+     *
      * @return $this
      */
     public function setRetries($retries);
@@ -123,6 +130,7 @@ interface QueueArchiveInterface
      * Set error log
      *
      * @param string $errorLog
+     *
      * @return $this
      */
     public function setErrorLog($errorLog);
@@ -138,6 +146,7 @@ interface QueueArchiveInterface
      * Set data size
      *
      * @param int $dataSize
+     *
      * @return $this
      */
     public function setDataSize($dataSize);
@@ -153,6 +162,7 @@ interface QueueArchiveInterface
      * Set whether the job is part of a full reindex
      *
      * @param bool $isFullReindex
+     *
      * @return $this
      */
     public function setIsFullReindex($isFullReindex);
@@ -168,6 +178,7 @@ interface QueueArchiveInterface
      * Set creation date and time
      *
      * @param string $createdAt
+     *
      * @return $this
      */
     public function setCreatedAt($createdAt);
@@ -183,6 +194,7 @@ interface QueueArchiveInterface
      * Set processing date and time
      *
      * @param string $processedAt
+     *
      * @return $this
      */
     public function setProcessedAt($processedAt);
@@ -198,6 +210,7 @@ interface QueueArchiveInterface
      * Set whether the job was successful
      *
      * @param bool $success
+     *
      * @return $this
      */
     public function setSuccess($success);
@@ -213,6 +226,7 @@ interface QueueArchiveInterface
      * Set debug info
      *
      * @param string $debug
+     *
      * @return $this
      */
     public function setDebug($debug);

@@ -70,5 +70,3 @@ Write the generated test class to the output path determined in Step 5. The file
 After writing the file, report:
 - The output file path
 - A one-line description of each test and what behavior it covers
-
-Some parts of the codebase are very old and cannot be blindly considered as valid. When behavior looks unclear or possibly unintended, flag it both in the test (as a comment) and in the final summary.

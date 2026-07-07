@@ -16,7 +16,7 @@ define([
 
     'algoliaInsights',
     'algoliaHooks',
-], function (Component, $, algoliasearch, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
+], function (Component, $, {algoliasearch}, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
 
     return Component.extend({
 

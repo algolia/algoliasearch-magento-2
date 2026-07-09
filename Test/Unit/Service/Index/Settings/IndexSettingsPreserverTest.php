@@ -5,7 +5,9 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service\Index\Settings;
 use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsPreserver;
 use Algolia\AlgoliaSearch\Test\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class IndexSettingsPreserverTest extends TestCase
 {
     protected ?AlgoliaLogger $logger = null;

@@ -11,7 +11,9 @@ use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class IndexOptionsBuilderTest extends TestCase
 {
     private IndexOptionsBuilder|MockObject $indexOptionsBuilder;

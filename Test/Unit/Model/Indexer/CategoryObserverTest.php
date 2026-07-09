@@ -18,7 +18,9 @@ use Magento\Framework\Mview\ViewInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CategoryObserverTest extends TestCase
 {
     protected null|(IndexerInterface&MockObject) $categoryIndexer = null;
@@ -60,11 +62,10 @@ class CategoryObserverTest extends TestCase
         $this->categoryResource = $this->createMock(CategoryResourceModel::class);
         $this->result = $this->createMock(CategoryResourceModel::class);
         // getChangedProductIds() is a @method docblock annotation (magic method), not a real PHP method.
-        // addMethods() is required so PHPUnit 10 allows it to be configured alongside real methods.
+        // __call is included in onlyMethods so magic method calls can be configured in PHPUnit 12.
         $this->category = $this->getMockBuilder(CategoryModel::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['getId', 'getOrigData', 'getData', 'getProductCollection', 'getProductsPosition'])
-            ->addMethods(['getChangedProductIds'])
+            ->onlyMethods(['getId', 'getOrigData', 'getData', 'getProductCollection', 'getProductsPosition', '__call'])
             ->getMock();
     }
 
@@ -98,7 +99,8 @@ class CategoryObserverTest extends TestCase
         $categoryId = 42;
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn($categoryId);
-        $this->category->method('getChangedProductIds')->willReturn(null);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? null : null);
         $this->category->method('getOrigData')->willReturn('same');
         $this->category->method('getData')->willReturn('same');
         $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection([]));
@@ -113,7 +115,8 @@ class CategoryObserverTest extends TestCase
     {
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn(1);
-        $this->category->method('getChangedProductIds')->willReturn([]);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
         // origData === getData for all watched keys → no collectionIds
         $this->category->method('getOrigData')->willReturn('same');
         $this->category->method('getData')->willReturn('same');
@@ -133,7 +136,8 @@ class CategoryObserverTest extends TestCase
 
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn(1);
-        $this->category->method('getChangedProductIds')->willReturn([]);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
         $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($productIds));
         $this->categoryIndexer->method('isScheduled')->willReturn(false);
 
@@ -160,7 +164,8 @@ class CategoryObserverTest extends TestCase
 
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn(1);
-        $this->category->method('getChangedProductIds')->willReturn($changedProductIds);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? $changedProductIds : null);
         $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
         $this->categoryIndexer->method('isScheduled')->willReturn(false);
 
@@ -185,7 +190,8 @@ class CategoryObserverTest extends TestCase
 
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn(1);
-        $this->category->method('getChangedProductIds')->willReturn([]);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
         $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
         $this->categoryIndexer->method('isScheduled')->willReturn(true);
 
@@ -222,7 +228,8 @@ class CategoryObserverTest extends TestCase
 
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn(1);
-        $this->category->method('getChangedProductIds')->willReturn([]);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
         $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
         $this->categoryIndexer->method('isScheduled')->willReturn(true);
 
@@ -242,7 +249,8 @@ class CategoryObserverTest extends TestCase
 
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn(1);
-        $this->category->method('getChangedProductIds')->willReturn([]);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
         $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
         $this->categoryIndexer->method('isScheduled')->willReturn(true);
 
@@ -271,7 +279,8 @@ class CategoryObserverTest extends TestCase
     {
         $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
         $this->category->method('getId')->willReturn(1);
-        $this->category->method('getChangedProductIds')->willReturn([10, 20]);
+        $this->category->method('__call')
+            ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [10, 20] : null);
         // No attribute changes, so collectionIds stays empty
         $this->category->method('getOrigData')->willReturn('same');
         $this->category->method('getData')->willReturn('same');

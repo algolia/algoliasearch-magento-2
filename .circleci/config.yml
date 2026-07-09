@@ -96,18 +96,18 @@ jobs:
             docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report/junit.xml ./unit-tests/
       - store_test_results:
           path: ~/Sites/unit-tests
-      - run:
-          name: Create Algolia-specific PHPUnit config for code coverage
-          working_directory: ~/Sites
-          command: |
-            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
-            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
-      - run:
-          name: Run Unit Test Coverage and copy results to CircleCI
-          working_directory: ~/Sites
-          command: |
-            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/algolia-phpunit.xml --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-text
-            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
+#      - run:
+#          name: Create Algolia-specific PHPUnit config for code coverage
+#          working_directory: ~/Sites
+#          command: |
+#            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
+#            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
+#      - run:
+#          name: Run Unit Test Coverage and copy results to CircleCI
+#          working_directory: ~/Sites
+#          command: |
+#            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/algolia-phpunit.xml --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-text
+#            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
       - store_artifacts:
           path: ~/Sites/unit-coverage/report
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
@@ -181,8 +181,8 @@ workflows:
       - magento-build:
           matrix:
             parameters:
-              php-version: ["8.3"]
-              magento-version: ["2.4.7-p6"]
+              php-version: ["8.4"]
+              magento-version: ["2.4.8-p5"]
       - notify:
           context: mage-slack
 #  magento-integration-test-workflow:

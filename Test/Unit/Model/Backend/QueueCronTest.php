@@ -10,7 +10,10 @@ use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Registry;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class QueueCronTest extends TestCase
 {
     protected ?QueueCron $queueCronModel;
@@ -28,9 +31,7 @@ class QueueCronTest extends TestCase
         $this->queueCronModel = new QueueCron($context, $registry, $config, $cacheTypeList);
     }
 
-    /**
-     * @dataProvider valuesProvider
-     */
+    #[DataProvider('valuesProvider')]
     public function testInput($value, $isValid, $canReplay = true): void
     {
         $this->queueCronModel->setValue($value);

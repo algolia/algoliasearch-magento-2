@@ -26,7 +26,9 @@ use Magento\Eav\Model\Config;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ProductHelperTest extends TestCase
 {
     private array $defaultSettings = ['searchableAttributes' => [], 'customRanking' => []];

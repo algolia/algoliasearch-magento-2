@@ -28,7 +28,7 @@ $this->expectException(ProductReindexingException::class);
 $this->service->canProductBeReindexed($disabledProduct, $storeId);
 ```
 
-### Using @dataProvider for variants
+### Using DataProvider for variants
 When the same logic runs differently based on input type (e.g. simple vs configurable product):
 
 ```php

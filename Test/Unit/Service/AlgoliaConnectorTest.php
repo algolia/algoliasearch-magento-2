@@ -16,7 +16,9 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Message\ManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AlgoliaConnectorTest extends TestCase
 {
     private ?AlgoliaConnector $connector = null;

@@ -12,6 +12,8 @@ use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Search\ListIndicesResponse;
 use Algolia\AlgoliaSearch\Model\Search\SettingsResponse;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
 use Exception;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;

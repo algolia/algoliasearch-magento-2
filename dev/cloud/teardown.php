@@ -8,12 +8,12 @@ $bootstrap = Bootstrap::create(BP, $_SERVER);
 $objectManager = $bootstrap->getObjectManager();
 
 $algoliaConnector = $objectManager->get(\Algolia\AlgoliaSearch\Service\AlgoliaConnector::class);
-$indexOptionsBuilder = $objectManager->get(\Algolia\AlgoliaSearch\Service\IndexOptionsBuilder::class);
+$indexOptionsBuilder = $objectManager->get(\Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder::class);
 $indexNamePrefix = getenv('MAGENTO_CLOUD_ENVIRONMENT');
 
 /**
  * @param $algoliaConnector Algolia\AlgoliaSearch\Service\AlgoliaConnector
- * @param $indexOptionsBuilder Algolia\AlgoliaSearch\Service\IndexOptionsBuilder
+ * @param $indexOptionsBuilder Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder
  */
 function deleteIndexes($algoliaConnector, $indexOptionsBuilder, array $indices, $indexNamePrefix)
 {

@@ -7,7 +7,7 @@ use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Test\TestCase;

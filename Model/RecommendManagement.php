@@ -7,7 +7,7 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Api\RecommendClient;
 use Algolia\AlgoliaSearch\Api\RecommendManagementInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class RecommendManagement implements RecommendManagementInterface

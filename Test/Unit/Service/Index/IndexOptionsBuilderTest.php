@@ -1,13 +1,13 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Service;
+namespace Algolia\AlgoliaSearch\Test\Unit\Service\Index;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterfaceFactory;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\MockObject\MockObject;

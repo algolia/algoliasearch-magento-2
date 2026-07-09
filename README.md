@@ -1,7 +1,7 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.18.0-green)
+![Latest version](https://img.shields.io/badge/latest-3.18.1-green)
 ![Magento 2](https://img.shields.io/badge/Magento-2.4.7+-orange)
 
 ![PHP](https://img.shields.io/badge/PHP-8.3%2C8.4%2C8.5-blue)
@@ -58,7 +58,7 @@ We support the 2 or 3 latest patch versions of Magento depending on releases ove
 | v3.15.x           | 12/1/2025   | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
 | v3.16.x           | 5/15/2026   | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
 | v3.17.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
-| v3.18.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| v3.18.0           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
 | >=v3.18.1         | N/A         | `~2.4.7\|\|~2.4.8\|\|~2.4.9` | `~8.2.0\|\|~8.3.0\|\|~8.4.0\|\|~8.5.0` |
 | v3.19.x           | N/A         | `~2.4.7\|\|~2.4.8\|\|~2.4.9` | `~8.3.0\|\|~8.4.0\|\|~8.5.0`           |
 
@@ -176,6 +176,18 @@ composer require algolia/algoliasearch-adapter-magento-2
 ```
 
 Requires PHP 8.2+, Magento 2.4+, and base extension `^3.18`.
+
+#### Ingestion module
+
+[`algolia/algoliasearch-ingestion-magento-2`](https://github.com/algolia/algoliasearch-ingestion-magento-2)
+
+Routes Algolia product indexing through the Algolia Ingestion API instead of writing directly to indices. Install this if you need dashboard-managed, pre-indexing JavaScript transformations, low-latency Collections support, or improved observability of indexing operations through Ingestion runs and events.
+
+```
+composer require algolia/algoliasearch-ingestion-magento-2
+```
+
+Requires PHP 8.3+, Magento 2.4+, and base extension `^3.19.0`.
 
 #### Customization starter module
 

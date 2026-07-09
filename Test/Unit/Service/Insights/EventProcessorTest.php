@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Api\InsightsClient;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Algolia\AlgoliaSearch\Service\Insights\EventProcessor;
+use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
 use Magento\Directory\Model\Currency;
 use Magento\Quote\Model\Quote\Item;
@@ -15,7 +16,6 @@ use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Tax\Model\Config as TaxConfig;
-use PHPUnit\Framework\TestCase;
 use Magento\Framework\Locale\FormatInterface as LocaleFormatInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -39,7 +39,7 @@ class EventProcessorTest extends TestCase
         $this->localeFormat = $this->createMock(LocaleFormatInterface::class);
         $this->currency = $this->createMock(Currency::class);
         $this->insightsClient = $this->createMock(InsightsClient::class);
-        $this->eventProcessor = new EventProcessorTestable($this->taxConfig, $this->storeManager, $this->localeFormat);
+        $this->eventProcessor = new EventProcessor($this->taxConfig, $this->storeManager, $this->localeFormat);
     }
 
     // Test dependency validation and setup methods
@@ -620,10 +620,10 @@ class EventProcessorTest extends TestCase
             $orderItems[] = $orderItem;
         }
 
-        $object = $this->eventProcessor->getObjectDataForPurchase($orderItems);
+        $object = $this->invokeMethod($this->eventProcessor, 'getObjectDataForPurchase', [$orderItems]);
         $this->assertEquals($expectedResult, $object);
 
-        $totalRevenue = $this->eventProcessor->getTotalRevenueForEvent($object);
+        $totalRevenue = $this->invokeMethod($this->eventProcessor, 'getTotalRevenueForEvent', [$object]);
         $this->assertEquals($expectedTotalRevenue, $totalRevenue);
     }
 
@@ -766,7 +766,7 @@ class EventProcessorTest extends TestCase
         $this->localeFormat->method('getPriceFormat')->willReturn([
             'requiredPrecision' => $decimalPrecision,
         ]);
-        $this->eventProcessor->initDecimalPrecision();
+        $this->invokeMethod($this->eventProcessor, 'initDecimalPrecision');
     }
 
     protected function createMockProduct(string $id, float $price): Product

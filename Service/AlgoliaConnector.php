@@ -330,7 +330,7 @@ class AlgoliaConnector
      */
     protected function getSettingsToRemove(array $onlineSettings): array
     {
-        $removals = ['slaves', 'replicas', 'decompoundedAttributes'];
+        $removals = ['slaves', 'replicas', 'decompoundedAttributes', 'semanticSearch'];
 
         if (isset($onlineSettings['mode']) && $onlineSettings['mode'] == 'neuralSearch') {
             $removals[] = 'mode';

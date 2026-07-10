@@ -8,6 +8,7 @@
 ### Bug Fixes
 - Fixed pages indexing issue where settings and synonyms added on the Algolia dashboard were wiped during the process - thank you @PromInc
 - Fixed suggestions indexing issue where the index could be completely emptied during the process - thank you @its-leoeff511
+- Prevented semanticSearch echo back to Algolia when extra settings are enabled 
 
 ## 3.18.1
 

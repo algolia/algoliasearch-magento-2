@@ -13,6 +13,9 @@ class LookingSimilar extends Template implements BlockInterface
     /** @var ConfigHelper */
     protected $configHelper;
 
+    /** @var Random */
+    protected $mathRandom;
+
     protected $_template = 'recommend/widget/looking-similar.phtml';
 
     public function __construct(

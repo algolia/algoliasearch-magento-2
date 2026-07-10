@@ -4,11 +4,24 @@ namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 
 abstract class AbstractClientProvider
 {
     protected bool $userAgentsAdded = false;
+
+    public function __construct(
+        protected ConfigHelper $config,
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+    ) {}
+
+    /**
+     * The concrete client type is implementation-specific (e.g. SearchClient, IngestionClient),
+     * and those clients share no common interface, so no return type is declared here; each
+     * subclass declares its own.
+     */
+    abstract public function getClient(?int $storeId = ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE);
 
     abstract protected function createClient(int $storeId = ClientProviderInterface::ALGOLIA_DEFAULT_SCOPE): void;
 

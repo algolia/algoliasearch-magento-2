@@ -53,6 +53,7 @@ class ReindexProductOnLastItemPurchase implements ObserverInterface
             $isSingleMode = $this->objectManager->create(\Magento\InventoryCatalogApi\Model\IsSingleSourceModeInterface::class);
             $defaultSourceProvider = $this->objectManager->create(\Magento\InventoryCatalogApi\Api\DefaultSourceProviderInterface::class);
 
+            $sourceCode = null;
             if (!empty($shipment->getExtensionAttributes())
                 && !empty($shipment->getExtensionAttributes()->getSourceCode())) {
                 $sourceCode = $shipment->getExtensionAttributes()->getSourceCode();

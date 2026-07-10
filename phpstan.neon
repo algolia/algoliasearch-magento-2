@@ -7,3 +7,6 @@ parameters:
         - dev
     ignoreErrors:
         - '#Call to static method getObjectManager\(\) on an unknown class Magento\\TestFramework\\Helper\\Bootstrap.#'
+        # Temporary: attribute exists only in PHPUnit 12, which the extension supports but is not yet
+        # the analysis/CI runtime. Remove once the PHPUnit 12 upgrade lands (tracked separately).
+        - '#Attribute class PHPUnit\\Framework\\Attributes\\AllowMockObjectsWithoutExpectations does not exist.#'

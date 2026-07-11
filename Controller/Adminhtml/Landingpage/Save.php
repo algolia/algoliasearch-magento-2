@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Landingpage;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage as LandingPageResource;
 use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Controller\ResultFactory;
@@ -39,7 +40,8 @@ class Save extends AbstractAction
         StoreManagerInterface $storeManager,
         DataPersistorInterface $dataPersistor,
         CollectionFactory $customerGroupCollectionFactory,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        LandingPageResource $landingPageResource
     ) {
         $this->dataPersistor = $dataPersistor;
         $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
@@ -49,7 +51,8 @@ class Save extends AbstractAction
             $backendSession,
             $landingPageFactory,
             $merchandisingHelper,
-            $storeManager
+            $storeManager,
+            $landingPageResource
         );
     }
 
@@ -75,7 +78,7 @@ class Save extends AbstractAction
             $landingPage = $this->landingPageFactory->create();
 
             if ($landingPageId) {
-                $landingPage->getResource()->load($landingPage, $landingPageId);
+                $this->landingPageResource->load($landingPage, $landingPageId);
 
                 if (!$landingPage->getId()) {
                     $this->messageManager->addErrorMessage(__('This landing page does not exist.'));
@@ -109,7 +112,7 @@ class Save extends AbstractAction
             $landingPage->setData($data);
 
             try {
-                $landingPage->getResource()->save($landingPage);
+                $this->landingPageResource->save($landingPage);
 
                 if (isset($data['algolia_merchandising_positions']) && $data['algolia_merchandising_positions'] != '') {
                     $this->manageQueryRules($landingPage->getId(), $data);

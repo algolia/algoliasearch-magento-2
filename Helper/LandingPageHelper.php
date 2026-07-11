@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Helper;
 
 use Algolia\AlgoliaSearch\Model\LandingPage;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage as LandingPageResource;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\Registry;
 
@@ -31,6 +32,9 @@ class LandingPageHelper extends \Magento\Framework\App\Helper\AbstractHelper
     /** @var Registry */
     private $registry;
 
+    /** @var LandingPageResource */
+    protected $landingPageResource;
+
     /**
      * Constructor
      *
@@ -43,13 +47,15 @@ class LandingPageHelper extends \Magento\Framework\App\Helper\AbstractHelper
         LandingPageFactory $landingPageFactory,
         Registry $registry,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
+        LandingPageResource $landingPageResource
     ) {
         $this->landingPage = $landingPage;
         $this->landingPageFactory = $landingPageFactory;
         $this->registry = $registry;
         $this->storeManager = $storeManager;
         $this->resultPageFactory = $resultPageFactory;
+        $this->landingPageResource = $landingPageResource;
         parent::__construct($context);
     }
 
@@ -57,7 +63,7 @@ class LandingPageHelper extends \Magento\Framework\App\Helper\AbstractHelper
     {
         if ($pageId !== null && $pageId !== $this->landingPage->getId()) {
             $this->landingPage->setStoreId($this->storeManager->getStore()->getId());
-            if (!$this->landingPage->load($pageId)) {
+            if (!$this->landingPageResource->load($this->landingPage, $pageId)) {
                 return false;
             }
             $this->registry->register('current_landing_page', $this->landingPage);

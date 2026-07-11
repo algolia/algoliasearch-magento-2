@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Edit;
 
 use Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Renderer\UrlBuilder;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage as LandingPageResource;
 use Magento\Backend\Block\Widget\Context;
 
 abstract class AbstractButton
@@ -17,6 +18,9 @@ abstract class AbstractButton
     /** @var UrlBuilder */
     protected $frontendUrlBuilder;
 
+    /** @var LandingPageResource */
+    protected $landingPageResource;
+
     /**
      * PHP Constructor
      *
@@ -26,11 +30,13 @@ abstract class AbstractButton
     public function __construct(
         Context $context,
         LandingPageFactory $landingPageFactory,
-        UrlBuilder $frontendUrlBuilder
+        UrlBuilder $frontendUrlBuilder,
+        LandingPageResource $landingPageResource
     ) {
         $this->context = $context;
         $this->landingPageFactory = $landingPageFactory;
         $this->frontendUrlBuilder = $frontendUrlBuilder;
+        $this->landingPageResource = $landingPageResource;
     }
 
     /**
@@ -46,7 +52,7 @@ abstract class AbstractButton
             $modelId = $this->context->getRequest()->getParam('id');
             /** @var \Algolia\AlgoliaSearch\Model\LandingPage $landingPage */
             $landingPage = $this->landingPageFactory->create();
-            $landingPage->getResource()->load($landingPage, $modelId);
+            $this->landingPageResource->load($landingPage, $modelId);
 
             return $landingPage;
         } catch (\Magento\Framework\Exception\NoSuchEntityException) {

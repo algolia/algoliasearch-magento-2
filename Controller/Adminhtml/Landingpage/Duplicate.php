@@ -26,7 +26,7 @@ class Duplicate extends AbstractAction
 
         /** @var LandingPage $landingPage */
         $landingPage = $this->landingPageFactory->create();
-        $landingPage->getResource()->load($landingPage, $landingPageId);
+        $this->landingPageResource->load($landingPage, $landingPageId);
 
         if ($landingPage === null) {
             $this->messageManager->addErrorMessage(__('This landing page does not exists.'));
@@ -37,7 +37,7 @@ class Duplicate extends AbstractAction
         $newLandingPage = $this->duplicateLandingPage($landingPage);
 
         try {
-            $newLandingPage->getResource()->save($newLandingPage);
+            $this->landingPageResource->save($newLandingPage);
             $this->copyQueryRules($landingPage->getId(), $newLandingPage->getId());
             $this->backendSession->setData('algoliasearch_landing_page', $newLandingPage);
             $this->messageManager->addSuccessMessage(__('The duplicated landing page has been saved.'));

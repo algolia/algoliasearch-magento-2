@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Landingpage;
 
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage as LandingPageResource;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -22,12 +23,16 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     /** @var StoreManagerInterface */
     protected $storeManager;
 
+    /** @var LandingPageResource */
+    protected $landingPageResource;
+
     public function __construct(
         Context $context,
         SessionManagerInterface $backendSession,
         LandingPageFactory $landingPageFactory,
         MerchandisingHelper $merchandisingHelper,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        LandingPageResource $landingPageResource
     ) {
         parent::__construct($context);
 
@@ -35,6 +40,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $this->landingPageFactory = $landingPageFactory;
         $this->merchandisingHelper = $merchandisingHelper;
         $this->storeManager = $storeManager;
+        $this->landingPageResource = $landingPageResource;
     }
 
     /**
@@ -56,7 +62,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $landingPage = $this->landingPageFactory->create();
 
         if ($landingPageId) {
-            $landingPage->getResource()->load($landingPage, $landingPageId);
+            $this->landingPageResource->load($landingPage, $landingPageId);
             if (!$landingPage->getId()) {
                 return null;
             }

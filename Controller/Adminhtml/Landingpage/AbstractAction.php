@@ -11,36 +11,15 @@ use Magento\Store\Model\StoreManagerInterface;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /** @var SessionManagerInterface */
-    protected $backendSession;
-
-    /** @var LandingPageFactory */
-    protected $landingPageFactory;
-
-    /** @var MerchandisingHelper */
-    protected $merchandisingHelper;
-
-    /** @var StoreManagerInterface */
-    protected $storeManager;
-
-    /** @var LandingPageResource */
-    protected $landingPageResource;
-
     public function __construct(
-        Context $context,
-        SessionManagerInterface $backendSession,
-        LandingPageFactory $landingPageFactory,
-        MerchandisingHelper $merchandisingHelper,
-        StoreManagerInterface $storeManager,
-        LandingPageResource $landingPageResource
+        Context                           $context,
+        protected SessionManagerInterface $backendSession,
+        protected LandingPageFactory      $landingPageFactory,
+        protected MerchandisingHelper     $merchandisingHelper,
+        protected StoreManagerInterface   $storeManager,
+        protected LandingPageResource     $landingPageResource
     ) {
         parent::__construct($context);
-
-        $this->backendSession = $backendSession;
-        $this->landingPageFactory = $landingPageFactory;
-        $this->merchandisingHelper = $merchandisingHelper;
-        $this->storeManager = $storeManager;
-        $this->landingPageResource = $landingPageResource;
     }
 
     /**

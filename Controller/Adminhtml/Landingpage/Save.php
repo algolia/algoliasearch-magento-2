@@ -15,37 +15,17 @@ use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 
 class Save extends AbstractAction
 {
-    /** @var DataPersistorInterface */
-    protected $dataPersistor;
-
-    /** @var CollectionFactory */
-    protected $customerGroupCollectionFactory;
-
-    /** @var ConfigHelper */
-    protected $configHelper;
-
-    /** @var SessionManagerInterface */
-    protected $backendSession;
-
-    /**
-     * PHP Constructor
-     *
-     * @return Save
-     */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
-        SessionManagerInterface $backendSession,
-        LandingPageFactory $landingPageFactory,
-        MerchandisingHelper $merchandisingHelper,
-        StoreManagerInterface $storeManager,
-        DataPersistorInterface $dataPersistor,
-        CollectionFactory $customerGroupCollectionFactory,
-        ConfigHelper $configHelper,
-        LandingPageResource $landingPageResource
+        SessionManagerInterface             $backendSession,
+        LandingPageFactory                  $landingPageFactory,
+        MerchandisingHelper                 $merchandisingHelper,
+        StoreManagerInterface               $storeManager,
+        LandingPageResource                 $landingPageResource,
+        protected DataPersistorInterface    $dataPersistor,
+        protected CollectionFactory         $customerGroupCollectionFactory,
+        protected ConfigHelper              $configHelper
     ) {
-        $this->dataPersistor = $dataPersistor;
-        $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
-        $this->configHelper = $configHelper;
         parent::__construct(
             $context,
             $backendSession,

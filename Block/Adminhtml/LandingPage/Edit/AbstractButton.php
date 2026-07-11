@@ -9,34 +9,12 @@ use Magento\Backend\Block\Widget\Context;
 
 abstract class AbstractButton
 {
-    /** @var Context */
-    protected $context;
-
-    /** @var LandingPageFactory */
-    protected $landingPageFactory;
-
-    /** @var UrlBuilder */
-    protected $frontendUrlBuilder;
-
-    /** @var LandingPageResource */
-    protected $landingPageResource;
-
-    /**
-     * PHP Constructor
-     *
-     *
-     * @return AbstractButton
-     */
     public function __construct(
-        Context $context,
-        LandingPageFactory $landingPageFactory,
-        UrlBuilder $frontendUrlBuilder,
-        LandingPageResource $landingPageResource
+        protected Context             $context,
+        protected LandingPageFactory  $landingPageFactory,
+        protected UrlBuilder          $frontendUrlBuilder,
+        protected LandingPageResource $landingPageResource
     ) {
-        $this->context = $context;
-        $this->landingPageFactory = $landingPageFactory;
-        $this->frontendUrlBuilder = $frontendUrlBuilder;
-        $this->landingPageResource = $landingPageResource;
     }
 
     /**

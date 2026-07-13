@@ -4,8 +4,8 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -21,7 +21,7 @@ class PricingTest extends ProductsIndexingTestCase
 
     protected const PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE = 1903;
 
-    public const SPECIAL_PRICE_TEST_PRODUCT_ID = 9;
+    protected const PRODUCT_ID_SPECIAL_PRICE = 9;
 
     /** @var array<int, float> */
     protected const ASSERT_PRODUCT_PRICES = [
@@ -30,13 +30,13 @@ class PricingTest extends ProductsIndexingTestCase
         self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE => 39.2,
     ];
 
-    protected ProductResource $productResource;
+    protected ProductRepositoryInterface $productRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->productResource = $this->objectManager->get(ProductResource::class);
+        $this->productRepository = $this->objectManager->get(ProductRepositoryInterface::class);
 
         $this->indexerRegistry->get('catalogrule_product')->reindexAll();
         $this->indexerRegistry->get('catalogrule_rule')->reindexAll();
@@ -146,70 +146,77 @@ class PricingTest extends ProductsIndexingTestCase
 
     public function testSpecialPrice(): void
     {
-        $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
-        $this->algoliaConnector->waitLastTask();
+        $date = new \DateTimeImmutable();
+        // For special price to apply, it must be within current date range
+        $specialPriceTestData = [
+            'special_price'     => 29.00,
+            'special_from_date' => $date->modify('-2 day')->getTimestamp(),
+            'special_to_date'   => $date->modify('+2 day')->getTimestamp()
+        ];
+        $regularPrice = 32.00;
 
         $indexOptions = $this->getIndexOptions('products');
 
+        // First index with default
+        $this->productBatchQueueProcessor->processBatch(1, [self::PRODUCT_ID_SPECIAL_PRICE]);
+        $this->algoliaConnector->waitLastTask();
+
         $res = $this->algoliaConnector->getObjects(
             $indexOptions,
-            [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
+            [(string) self::PRODUCT_ID_SPECIAL_PRICE]
         );
         $algoliaProduct = reset($res['results']);
 
         if (!$algoliaProduct || !array_key_exists('price', $algoliaProduct)) {
-            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assetions.');
+            $this->markTestIncomplete('Hit was not returned correctly from Algolia. No Hit to run assertions.');
         }
 
-        $this->assertEquals(32, $algoliaProduct['price']['USD']['default']);
-        $this->assertEquals('', $algoliaProduct['price']['USD']['special_from_date']);
-        $this->assertEquals('', $algoliaProduct['price']['USD']['special_to_date']);
-
-        $specialPrice = 29;
-        $fromDatetime = new \DateTime();
-        $toDatetime = new \DateTime();
-        $priceFrom = $fromDatetime->modify('-2 day')->format('Y-m-d H:i:s');
-        $priceTo = $toDatetime->modify('+2 day')->format('Y-m-d H:i:s');
-
-        $product = $this->objectManager->create(Product::class);
-        $this->productResource->load($product, self::SPECIAL_PRICE_TEST_PRODUCT_ID);
-
-        $product->setCustomAttributes([
-            'special_price' => $specialPrice,
-            'special_from_date' => date($priceFrom),
-            'special_to_date' => date($priceTo),
-        ]);
-        $this->productResource->save($product);
-
-        $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
-        $this->algoliaConnector->waitLastTask();
-
-        $indexOptions = $this->getIndexOptions('products');
-        $res = $this->algoliaConnector->getObjects(
-            $indexOptions,
-            [(string) self::SPECIAL_PRICE_TEST_PRODUCT_ID]
+        $this->assertEquals($regularPrice, $algoliaProduct['price']['USD']['default']);
+        $this->assertNotEquals(
+            $specialPriceTestData['special_from_date'],
+            $algoliaProduct['price']['USD']['special_from_date']
         );
-        $algoliaProduct = reset($res['results']);
+        $this->assertNotEquals(
+            $specialPriceTestData['special_to_date'],
+            $algoliaProduct['price']['USD']['special_to_date']
+        );
 
-        $this->assertEquals($specialPrice, $algoliaProduct['price']['USD']['default']);
-        $this->assertEquals('$32.00', $algoliaProduct['price']['USD']['default_original_formated']);
-    }
+        // Modify with test data
+        $product = $this->productRepository->getById(self::PRODUCT_ID_SPECIAL_PRICE);
+        $originalAttributes = [
+            'special_price' => $product->getData('special_price'),
+            'special_from_date' => $product->getData('special_from_date'),
+            'special_to_date' => $product->getData('special_to_date'),
+        ];
 
-    protected function tearDown(): void
-    {
-        /** @var Product $product */
-        $product = $this->objectManager->create(Product::class);
-        $this->productResource->load($product, self::SPECIAL_PRICE_TEST_PRODUCT_ID);
+        try {
+            $product->setCustomAttributes($specialPriceTestData);
+            $this->productRepository->save($product);
 
-        $product->setCustomAttributes([
-            'special_price' => null,
-            'special_from_date' => null,
-            'special_to_date' => null,
-        ]);
-        $this->productResource->saveAttribute($product, 'special_price');
-        $this->productResource->save($product);
+            $this->productBatchQueueProcessor->processBatch(1, [self::PRODUCT_ID_SPECIAL_PRICE]);
+            $this->algoliaConnector->waitLastTask();
 
-        parent::tearDown();
+            $res = $this->algoliaConnector->getObjects(
+                $indexOptions,
+                [(string) self::PRODUCT_ID_SPECIAL_PRICE]
+            );
+            $algoliaProduct = reset($res['results']);
+
+            $this->assertEquals($specialPriceTestData['special_price'], $algoliaProduct['price']['USD']['default']);
+            $this->assertEquals('$32.00', $algoliaProduct['price']['USD']['default_original_formated']);
+            $this->assertEquals(
+                $specialPriceTestData['special_from_date'],
+                $algoliaProduct['price']['USD']['special_from_date']
+            );
+            $this->assertEquals(
+                $specialPriceTestData['special_to_date'],
+                $algoliaProduct['price']['USD']['special_to_date']
+            );
+        } finally {
+            $product = $this->productRepository->getById(self::PRODUCT_ID_SPECIAL_PRICE, false, null, true);
+            $product->setCustomAttributes($originalAttributes);
+            $this->productRepository->save($product);
+        }
     }
 
 }

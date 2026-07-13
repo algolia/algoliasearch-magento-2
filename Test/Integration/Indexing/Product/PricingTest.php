@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Product;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -29,9 +30,13 @@ class PricingTest extends ProductsIndexingTestCase
         self::PRODUCT_ID_CONFIGURABLE_CATALOG_PRICE_RULE => 39.2,
     ];
 
+    protected ProductResource $productResource;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->productResource = $this->objectManager->get(ProductResource::class);
 
         $this->indexerRegistry->get('catalogrule_product')->reindexAll();
         $this->indexerRegistry->get('catalogrule_rule')->reindexAll();
@@ -167,14 +172,14 @@ class PricingTest extends ProductsIndexingTestCase
         $priceTo = $toDatetime->modify('+2 day')->format('Y-m-d H:i:s');
 
         $product = $this->objectManager->create(Product::class);
-        $product->load(self::SPECIAL_PRICE_TEST_PRODUCT_ID);
+        $this->productResource->load($product, self::SPECIAL_PRICE_TEST_PRODUCT_ID);
 
         $product->setCustomAttributes([
             'special_price' => $specialPrice,
             'special_from_date' => date($priceFrom),
             'special_to_date' => date($priceTo),
         ]);
-        $product->save();
+        $this->productResource->save($product);
 
         $this->productBatchQueueProcessor->processBatch(1, [self::SPECIAL_PRICE_TEST_PRODUCT_ID]);
         $this->algoliaConnector->waitLastTask();
@@ -194,15 +199,15 @@ class PricingTest extends ProductsIndexingTestCase
     {
         /** @var Product $product */
         $product = $this->objectManager->create(Product::class);
-        $product->load(self::SPECIAL_PRICE_TEST_PRODUCT_ID);
+        $this->productResource->load($product, self::SPECIAL_PRICE_TEST_PRODUCT_ID);
 
         $product->setCustomAttributes([
             'special_price' => null,
             'special_from_date' => null,
             'special_to_date' => null,
         ]);
-        $product->getResource()->saveAttribute($product, 'special_price');
-        $product->save();
+        $this->productResource->saveAttribute($product, 'special_price');
+        $this->productResource->save($product);
 
         parent::tearDown();
     }

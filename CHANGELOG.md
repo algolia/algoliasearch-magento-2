@@ -10,6 +10,7 @@
 - Replaced the deprecated product reload in the bundle and downloadable price managers with `ProductRepositoryInterface::getById()`.
 - Replaced the deprecated `media_gallery` attribute reload in `Service\Product\RecordBuilder` with the catalog gallery `ReadHandler`, and resolved product and category attributes through injected resource models.
 - Removed the unused `Model\Job::saveError()` method. The one remaining `Model\Job::save()` deprecation is temporarily suppressed via a scoped, documented `phpstan.neon` entry pending a dedicated JobProcessor refactor.
+- `Logger\Handler\AlgoliaLoggerHandler` now accepts the log level and file name as constructor arguments, allowing developers to tune `var/log/algolia.log` verbosity via `di.xml` (defaults to `INFO`, previously hard-coded to `DEBUG`).
 
 ### Breaking Changes
 - Several constructor signatures changed. Any class extending these must update its `parent::__construct()` call:

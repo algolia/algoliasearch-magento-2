@@ -20,7 +20,9 @@ use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class BatchQueueProcessorTest extends TestCase
 {
     protected ?Data $dataHelper;

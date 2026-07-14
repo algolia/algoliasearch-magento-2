@@ -101,9 +101,12 @@ class BackendView
     public function getTooltipHtml($message)
     {
         /** @var Template $block */
-        $block = $this->getLayout()->createBlock(Template::class);
+        $block = $this->getLayout()->createBlock(
+            Template::class,
+            '',
+            ['data' => ['template' => 'Algolia_AlgoliaSearch::ui/tooltip.phtml']]
+        );
 
-        $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml');
         $block->setData('message', $message);
 
         return $block->toHtml();

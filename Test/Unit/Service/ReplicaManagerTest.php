@@ -16,7 +16,9 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Algolia\AlgoliaSearch\Validator\VirtualReplicaValidatorFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use ReflectionException;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ReplicaManagerTest extends TestCase
 {
     protected ?ConfigHelper $configHelper;

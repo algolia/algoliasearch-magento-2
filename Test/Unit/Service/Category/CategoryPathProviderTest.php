@@ -12,7 +12,9 @@ use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollectio
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class CategoryPathProviderTest extends TestCase
 {
     private CategoryPathProvider $categoryPathProvider;

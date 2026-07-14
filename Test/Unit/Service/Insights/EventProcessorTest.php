@@ -17,7 +17,10 @@ use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Tax\Model\Config as TaxConfig;
 use Magento\Framework\Locale\FormatInterface as LocaleFormatInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class EventProcessorTest extends TestCase
 {
     protected ?TaxConfig $taxConfig = null;
@@ -596,9 +599,7 @@ class EventProcessorTest extends TestCase
 
     // Test protected methods
 
-    /**
-     * @dataProvider orderItemsProvider
-     */
+    #[DataProvider('orderItemsProvider')]
     public function testObjectDataForPurchase($priceIncludesTax, $orderItemsData, $expectedResult, $expectedTotalRevenue): void
     {
         $this->setupFullyConfiguredEventProcessor();

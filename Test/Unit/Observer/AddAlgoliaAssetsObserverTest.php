@@ -12,7 +12,10 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\View\Layout;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AddAlgoliaAssetsObserverTest extends TestCase
 {
     protected ?AddAlgoliaAssetsObserver $observer;
@@ -69,9 +72,7 @@ class AddAlgoliaAssetsObserverTest extends TestCase
         $this->observer->execute($this->createMockObserver());
     }
 
-    /**
-     * @dataProvider executeConditionsProvider
-     */
+    #[DataProvider('executeConditionsProvider')]
     public function testExecuteConditions(
         bool $isFrontendEnabled,
         bool $areCredentialsValid,

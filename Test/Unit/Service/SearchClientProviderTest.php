@@ -8,7 +8,9 @@ use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\SearchClientProvider;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class SearchClientProviderTest extends TestCase
 {
     private null|(ConfigHelper&MockObject) $config = null;

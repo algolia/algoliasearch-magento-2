@@ -4,7 +4,9 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Logger\Handler;
 
 use Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler;
 use Magento\Framework\Filesystem\DriverInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AlgoliaLoggerHandlerTest extends AbstractHandlerTestCase
 {
     protected function setUp(): void
@@ -31,7 +33,7 @@ class AlgoliaLoggerHandlerTest extends AbstractHandlerTestCase
             'Should log'
         );
 
-        $this->assertTrue($this->handler->isHandling($debugRecord), 'DEBUG should be handled');
+        $this->assertFalse($this->handler->isHandling($debugRecord), 'DEBUG should not be handled unless overridden by DI');
         $this->assertTrue($this->handler->isHandling($infoRecord), 'INFO should be handled');
         $this->assertTrue($this->handler->isHandling($errorRecord), 'ERROR should be handled');
     }

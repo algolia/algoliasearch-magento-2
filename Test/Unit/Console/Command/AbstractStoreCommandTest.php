@@ -10,7 +10,9 @@ use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Output\BufferedOutput;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AbstractStoreCommandTest extends TestCase
 {
     private null|(State&MockObject) $state = null;

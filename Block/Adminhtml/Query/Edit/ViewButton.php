@@ -16,6 +16,8 @@ class ViewButton extends AbstractButton implements ButtonProviderInterface
                 'sort_order' => 50,
             ];
         }
+
+        return [];
     }
 
     /**

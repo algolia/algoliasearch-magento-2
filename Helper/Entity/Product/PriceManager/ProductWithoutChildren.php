@@ -5,10 +5,10 @@ namespace Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use DateTime;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Api\ScopedProductTierPriceManagementInterface;
 use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ProductFactory;
 use Magento\CatalogRule\Model\ResourceModel\Rule;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
@@ -21,32 +21,6 @@ use Magento\Tax\Model\Config as TaxConfig;
 
 abstract class ProductWithoutChildren
 {
-    /** @var ConfigHelper */
-    protected $configHelper;
-    /** @var CollectionFactory */
-    protected $customerGroupCollectionFactory;
-    /** @var PriceCurrencyInterface */
-    protected $priceCurrency;
-    /** @var CatalogHelper */
-    protected $catalogHelper;
-    /** @var TaxHelper */
-    protected $taxHelper;
-    /** @var WeeeTax */
-    protected $weeeTax;
-    /** @var Rule */
-    protected $rule;
-    /** @var ProductFactory */
-    protected $productloader;
-
-    /** @var GroupExcludedWebsiteRepositoryInterface */
-    protected $groupExcludedWebsiteRepository;
-
-    /** @var ScopedProductTierPriceManagementInterface */
-    private $productTierPrice;
-
-    /** @var DiagnosticsLogger */
-    protected $logger;
-
     protected $store;
     protected $baseCurrencyCode;
     protected $groups;
@@ -54,29 +28,18 @@ abstract class ProductWithoutChildren
     protected $customData = [];
 
     public function __construct(
-        ConfigHelper $configHelper,
-        CollectionFactory $customerGroupCollectionFactory,
-        GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
-        PriceCurrencyInterface $priceCurrency,
-        CatalogHelper $catalogHelper,
-        TaxHelper $taxHelper,
-        WeeeTax $weeeTax,
-        Rule $rule,
-        ProductFactory $productloader,
-        ScopedProductTierPriceManagementInterface $productTierPrice,
-        DiagnosticsLogger $logger
+        protected ConfigHelper                              $configHelper,
+        protected CollectionFactory                         $customerGroupCollectionFactory,
+        protected GroupExcludedWebsiteRepositoryInterface   $groupExcludedWebsiteRepository,
+        protected PriceCurrencyInterface                    $priceCurrency,
+        protected CatalogHelper                             $catalogHelper,
+        protected TaxHelper                                 $taxHelper,
+        protected WeeeTax                                   $weeeTax,
+        protected Rule                                      $rule,
+        protected ProductRepositoryInterface                $productRepository,
+        protected ScopedProductTierPriceManagementInterface $productTierPrice,
+        protected DiagnosticsLogger                         $logger
     ) {
-        $this->configHelper = $configHelper;
-        $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
-        $this->groupExcludedWebsiteRepository = $groupExcludedWebsiteRepository;
-        $this->priceCurrency = $priceCurrency;
-        $this->catalogHelper = $catalogHelper;
-        $this->taxHelper = $taxHelper;
-        $this->weeeTax = $weeeTax;
-        $this->rule = $rule;
-        $this->productloader = $productloader;
-        $this->productTierPrice = $productTierPrice;
-        $this->logger = $logger;
     }
 
     /**

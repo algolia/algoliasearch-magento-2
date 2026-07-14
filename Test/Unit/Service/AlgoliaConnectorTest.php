@@ -16,7 +16,9 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Message\ManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class AlgoliaConnectorTest extends TestCase
 {
     private ?AlgoliaConnector $connector = null;
@@ -472,6 +474,69 @@ class AlgoliaConnectorTest extends TestCase
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
         $this->connector->setSettings($this->indexOptions, $localSettings, false, true);
+    }
+
+    /**
+     * Online settings containing `semanticSearch` must not appear in
+     * the payload passed to the client's setSettings() during the temp-index
+     * merge. An empty `semanticSearch` object round-trips through PHP as an
+     * empty array and re-encodes as a JSON array, which the API rejects.
+     */
+    public function testSetSettingsStripsSemanticSearchFromMergedOnlineSettings(): void
+    {
+        $onlineSettings = [
+            'searchableAttributes' => ['name', 'description'],
+            'customRanking'        => ['desc(popularity)'],
+            'semanticSearch'       => [], // empty object as returned by getSettings; the offending value
+        ];
+        $localSettings = ['attributesToSnippet' => ['description:10']];
+
+        // Merge source: the live production index.
+        $this->client->method('getSettings')
+            ->with('magento2_default_products')
+            ->willReturn($onlineSettings);
+
+        $this->client->expects($this->once())
+            ->method('setSettings')
+            ->with(
+                self::INDEX_NAME,
+                $this->callback(function (array $merged) {
+                    $this->assertArrayNotHasKey(
+                        'semanticSearch',
+                        $merged,
+                        'semanticSearch must be stripped before the temp-index settings write'
+                    );
+                    // Other online settings and the local override still pass through.
+                    $this->assertArrayHasKey('searchableAttributes', $merged);
+                    $this->assertArrayHasKey('customRanking', $merged);
+                    $this->assertArrayHasKey('attributesToSnippet', $merged);
+
+                    return true;
+                }),
+                false
+            )
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $this->connector->setSettings(
+            $this->indexOptions,
+            $localSettings,
+            false,
+            true,
+            'magento2_default_products'
+        );
+    }
+
+    /**
+     * Pins the strip list directly so the regression cannot be reintroduced by
+     * an edit to getSettingsToRemove() that drops the semanticSearch entry.
+     *
+     * @throws \ReflectionException
+     */
+    public function testGetSettingsToRemoveIncludesSemanticSearch(): void
+    {
+        $removals = $this->invokeMethod($this->connector, 'getSettingsToRemove', [[]]);
+
+        $this->assertContains('semanticSearch', $removals);
     }
 
     // ── waitLastTask() ──

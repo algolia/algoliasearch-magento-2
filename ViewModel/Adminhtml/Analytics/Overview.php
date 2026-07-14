@@ -413,8 +413,11 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
      */
     public function getDailyChartHtml()
     {
-        $block = $this->getBackendView()->getLayout()->createBlock(\Magento\Backend\Block\Template::class);
-        $block->setTemplate('Algolia_AlgoliaSearch::analytics/graph.phtml');
+        $block = $this->getBackendView()->getLayout()->createBlock(
+            \Magento\Backend\Block\Template::class,
+            '',
+            ['data' => ['template' => 'Algolia_AlgoliaSearch::analytics/graph.phtml']]
+        );
         $block->setData('analytics', $this->getDailySearchData());
 
         return $block->toHtml();

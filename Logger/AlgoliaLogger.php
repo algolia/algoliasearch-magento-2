@@ -3,6 +3,6 @@
 namespace Algolia\AlgoliaSearch\Logger;
 
 use Algolia\AlgoliaSearch\Api\LoggerInterface;
-use Monolog\Logger;
+use Magento\Framework\Logger\Monolog;
 
-class AlgoliaLogger extends Logger implements LoggerInterface {}
+class AlgoliaLogger extends Monolog implements LoggerInterface {}

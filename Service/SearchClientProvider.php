@@ -6,17 +6,11 @@ use Algolia\AlgoliaSearch\Api\SearchClient;
 use Algolia\AlgoliaSearch\Api\SearchClientProviderInterface;
 use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
 class SearchClientProvider extends AbstractClientProvider implements SearchClientProviderInterface
 {
     /** @var SearchClient[] */
     protected array $clients = [];
-
-    public function __construct(
-        protected ConfigHelper $config,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
-    ) {}
 
     /**
      * @throws AlgoliaException

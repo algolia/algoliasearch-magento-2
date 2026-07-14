@@ -16,7 +16,10 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
 
+#[AllowMockObjectsWithoutExpectations]
 class ReindexTest extends TestCase
 {
     protected ?Reindex $reindexController = null;
@@ -178,9 +181,7 @@ class ReindexTest extends TestCase
         $this->reindexController->execute();
     }
 
-    /**
-     * @dataProvider entityParamsProvider
-     */
+    #[DataProvider('entityParamsProvider')]
     public function testEntityToIndex($params, $result)
     {
         $this->assertEquals($result, $this->invokeMethod($this->reindexController, 'defineEntitiesToIndex', [$params]));
@@ -212,9 +213,7 @@ class ReindexTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider redirectParamsProvider
-     */
+    #[DataProvider('redirectParamsProvider')]
     public function testRedirectPath($params, $result)
     {
         $this->assertEquals($result, $this->invokeMethod($this->reindexController, 'defineRedirectPath', [$params]));

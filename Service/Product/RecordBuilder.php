@@ -22,9 +22,11 @@ use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Gallery\ReadHandler as GalleryReadHandler;
 use Magento\Catalog\Model\Product\Url as ProductUrl;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\DataObject;
@@ -55,6 +57,8 @@ class RecordBuilder implements RecordBuilderInterface
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
         protected ProductUrl             $productUrl,
+        protected ProductResource        $productResource,
+        protected GalleryReadHandler     $galleryReadHandler,
     ){}
 
     /**
@@ -233,7 +237,7 @@ class RecordBuilder implements RecordBuilderInterface
             $customData['image_url'] = $this->imageHelper->getUrl();
 
             if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
-                $product->load($product->getId(), 'media_gallery');
+                $this->galleryReadHandler->execute($product);
 
                 $customData['media_gallery'] = [];
 
@@ -287,11 +291,8 @@ class RecordBuilder implements RecordBuilderInterface
                 continue;
             }
 
-            /** @var \Magento\Catalog\Model\ResourceModel\Product $resource */
-            $resource = $product->getResource();
-
             /** @var AttributeResource $attributeResource */
-            $attributeResource = $resource->getAttribute($attributeName);
+            $attributeResource = $this->productResource->getAttribute($attributeName);
             if (!$attributeResource) {
                 continue;
             }

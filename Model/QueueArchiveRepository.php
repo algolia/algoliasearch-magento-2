@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface;
 use Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface;
 use Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive as QueueArchiveResource;
 use Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\CollectionFactory;
+use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Api\SearchResultsInterface;
 use Magento\Framework\Api\SearchResultsInterfaceFactory;
@@ -27,17 +28,22 @@ class QueueArchiveRepository implements QueueArchiveRepositoryInterface
     /** @var SearchResultsInterfaceFactory */
     private $searchResultsFactory;
 
+    /** @var CollectionProcessorInterface */
+    private $collectionProcessor;
+
     public function __construct(
         QueueArchiveResource          $resource,
         QueueArchiveFactory           $queueArchiveFactory,
         CollectionFactory             $collectionFactory,
-        SearchResultsInterfaceFactory $searchResultsFactory
+        SearchResultsInterfaceFactory $searchResultsFactory,
+        CollectionProcessorInterface  $collectionProcessor
     )
     {
         $this->resource = $resource;
         $this->queueArchiveFactory = $queueArchiveFactory;
         $this->collectionFactory = $collectionFactory;
         $this->searchResultsFactory = $searchResultsFactory;
+        $this->collectionProcessor = $collectionProcessor;
     }
 
     /**

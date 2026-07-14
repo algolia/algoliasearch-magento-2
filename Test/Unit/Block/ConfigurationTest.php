@@ -29,8 +29,11 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Url\Helper\Data as UrlHelper;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
-use PHPUnit\Framework\TestCase;
+use Algolia\AlgoliaSearch\Test\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ConfigurationTest extends TestCase
 {
     protected ?ConfigurationBlock $configurationBlock;
@@ -118,9 +121,7 @@ class ConfigurationTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider searchPageDataProvider
-     */
+    #[DataProvider('searchPageDataProvider')]
     public function testIsSearchPage($action, $categoryId, $categoryDisplayMode, $expectedResult): void
     {
         $this->instantSearchConfig->method('isEnabled')->willReturn(true);
@@ -138,6 +139,60 @@ class ConfigurationTest extends TestCase
         $this->currentCategory->method('get')->willReturn($category);
 
         $this->assertEquals($expectedResult, $this->configurationBlock->isSearchPage());
+    }
+
+    public function testAreCategoriesInFacetsReturnsTrueWhenCategoriesAttributePresent(): void
+    {
+        $facets = [
+            ['attribute' => 'color'],
+            ['attribute' => 'categories'],
+        ];
+
+        $this->assertTrue($this->invokeMethod($this->configurationBlock, 'areCategoriesInFacets', [$facets]));
+    }
+
+    public function testAreCategoriesInFacetsReturnsFalseWhenCategoriesAttributeAbsent(): void
+    {
+        $facets = [
+            ['attribute' => 'color'],
+            ['attribute' => 'size'],
+        ];
+
+        $this->assertFalse($this->invokeMethod($this->configurationBlock, 'areCategoriesInFacets', [$facets]));
+    }
+
+    public function testAreCategoriesInFacetsReturnsFalseWhenFacetsIsEmpty(): void
+    {
+        $this->assertFalse($this->invokeMethod($this->configurationBlock, 'areCategoriesInFacets', [[]]));
+    }
+
+    public function testGetUrlTrackedParametersIncludesPageWhenInfiniteScrollDisabled(): void
+    {
+        $this->instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(false);
+
+        $params = $this->invokeMethod($this->configurationBlock, 'getUrlTrackedParameters');
+
+        $this->assertContains('page', $params);
+    }
+
+    public function testGetUrlTrackedParametersExcludesPageWhenInfiniteScrollEnabled(): void
+    {
+        $this->instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(true);
+
+        $params = $this->invokeMethod($this->configurationBlock, 'getUrlTrackedParameters');
+
+        $this->assertNotContains('page', $params);
+    }
+
+    public function testGetUrlTrackedParametersAlwaysIncludesBaseParams(): void
+    {
+        $this->instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(true);
+
+        $params = $this->invokeMethod($this->configurationBlock, 'getUrlTrackedParameters');
+
+        $this->assertContains('query', $params);
+        $this->assertContains('attribute:*', $params);
+        $this->assertContains('index', $params);
     }
 
     public static function searchPageDataProvider(): array

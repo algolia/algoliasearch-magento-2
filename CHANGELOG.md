@@ -1,5 +1,27 @@
 # CHANGE LOG
 
+## 3.19.0
+
+### Updates
+- Completed a PHPStan (`magento2-analyse`) static-analysis cleanup so analyzer reports zero file errors.
+- `AlgoliaLogger` now extends `Magento\Framework\Logger\Monolog` instead of `Monolog\Logger` directly, resolving the "extends @final class" violation introduced by Monolog 3.x, with no behavior change.
+- Replaced deprecated `getResource()` / `_getResource()` usage in the LandingPage and Query merchandising admin controllers and blocks by injecting the resource models directly.
+- `Controller\Router` now resolves the landing page identifier through `ResourceModel\LandingPage` directly; the `Model\LandingPage::checkIdentifier()` passthrough was removed.
+- Replaced the deprecated product reload in the bundle and downloadable price managers with `ProductRepositoryInterface::getById()`.
+- Replaced the deprecated `media_gallery` attribute reload in `Service\Product\RecordBuilder` with the catalog gallery `ReadHandler`, and resolved product and category attributes through injected resource models.
+- Removed the unused `Model\Job::saveError()` method. The one remaining `Model\Job::save()` deprecation is temporarily suppressed via a scoped, documented `phpstan.neon` entry pending a dedicated JobProcessor refactor.
+- `Logger\Handler\AlgoliaLoggerHandler` now accepts the log level and file name as constructor arguments, allowing developers to tune `var/log/algolia.log` verbosity via `di.xml` (defaults to `INFO`, previously hard-coded to `DEBUG`).
+
+### Breaking Changes
+- Several constructor signatures changed. Any class extending these must update its `parent::__construct()` call:
+  - `Service\Product\RecordBuilder` now requires `Magento\Catalog\Model\ResourceModel\Product` and `Magento\Catalog\Model\Product\Gallery\ReadHandler` (12 to 14 arguments).
+  - `Helper\Entity\Product\PriceManager\ProductWithoutChildren` now requires `Magento\Catalog\Api\ProductRepositoryInterface` in place of `Magento\Catalog\Model\ProductFactory`.
+  - The LandingPage and Query admin controllers and edit blocks, and `Controller\Router`, gained resource-model constructor dependencies.
+- The MSI compatibility module `algolia/algoliasearch-inventory-magento-2` extends `Service\Product\RecordBuilder`, so it requires the coordinated 1.5.0 release to stay compatible with 3.19.0. Install `algolia/algoliasearch-inventory-magento-2:^1.5.0` alongside this version.
+
+### Bug fixes
+- Injected the missing `CollectionProcessorInterface` into `Model\QueueArchiveRepository`, fixing a latent runtime fatal in `getList()`.
+
 ## 3.19.0-beta.1
 
 ### Security

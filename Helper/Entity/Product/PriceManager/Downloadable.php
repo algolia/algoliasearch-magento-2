@@ -15,7 +15,7 @@ class Downloadable extends ProductWithoutChildren
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
-            $product = $this->productloader->create()->load($product->getId());
+            $product = $this->productRepository->getById($product->getId(), false, $product->getStoreId(), true);
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();

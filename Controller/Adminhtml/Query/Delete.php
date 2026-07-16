@@ -20,8 +20,8 @@ class Delete extends AbstractAction
             try {
                 /** @var Query $query */
                 $query = $this->queryFactory->create();
-                $query->getResource()->load($query, $queryId);
-                $query->getResource()->delete($query);
+                $this->queryResource->load($query, $queryId);
+                $this->queryResource->delete($query);
                 $this->deleteQueryRules($query);
 
                 $this->messageManager->addSuccessMessage(__('The query has been deleted.'));

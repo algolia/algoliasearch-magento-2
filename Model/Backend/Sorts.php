@@ -17,6 +17,8 @@ use Magento\Framework\Serialize\Serializer\Json;
 
 class Sorts extends ArraySerialized
 {
+    protected Json $serializer;
+
     public function __construct(
         Context                 $context,
         Registry                $registry,

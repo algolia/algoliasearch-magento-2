@@ -308,6 +308,12 @@
         </arguments>
     </virtualType>
 
+    <type name="Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler">
+        <arguments>
+            <argument name="loggerType" xsi:type="const">Monolog\Logger::INFO</argument>
+        </arguments>
+    </type>
+
     <type name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger">
         <arguments>
             <argument name="name" xsi:type="string">algolia</argument>

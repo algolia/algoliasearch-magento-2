@@ -116,7 +116,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
                     );
                     $page++;
                 }
-                unset($indexData);
             }
         } catch (\Exception $e) {
             $this->stopEmulation();

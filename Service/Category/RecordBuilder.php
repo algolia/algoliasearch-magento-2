@@ -101,10 +101,7 @@ class RecordBuilder implements RecordBuilderInterface
         foreach ($this->configHelper->getCategoryAdditionalAttributes($storeId) as $attribute) {
             $value = $category->getData($attribute['attribute']);
 
-            /** @var CategoryResource $resource */
-            $resource = $category->getResource();
-
-            $attributeResource = $resource->getAttribute($attribute['attribute']);
+            $attributeResource = $this->categoryResource->getAttribute($attribute['attribute']);
             if ($attributeResource) {
                 $value = $attributeResource->getFrontend()->getValue($category);
             }

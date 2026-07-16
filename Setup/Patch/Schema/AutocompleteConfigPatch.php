@@ -38,6 +38,8 @@ class AutocompleteConfigPatch implements SchemaPatchInterface
             }
         }
         $this->moduleDataSetup->getConnection()->endSetup();
+
+        return $this;
     }
 
     /**

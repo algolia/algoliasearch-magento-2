@@ -136,9 +136,12 @@ class DiagnosticsLogger
      */
     public function error(string $message, array $context = []): void
     {
-        if ($this->isLoggerEnabled) {
-            $this->logger->log($message, Logger::ERROR, $context);
-        }
+        $this->logger->log($message, Logger::ERROR, $context);
+    }
+
+    public function debug(string $message, array $context = []): void
+    {
+        $this->logger->log($message, Logger::DEBUG, $context);
     }
 
     /**

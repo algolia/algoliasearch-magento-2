@@ -33,7 +33,7 @@ class AlgoliaLoggerHandlerTest extends AbstractHandlerTestCase
             'Should log'
         );
 
-        $this->assertTrue($this->handler->isHandling($debugRecord), 'DEBUG should be handled');
+        $this->assertFalse($this->handler->isHandling($debugRecord), 'DEBUG should not be handled unless overridden by DI');
         $this->assertTrue($this->handler->isHandling($infoRecord), 'INFO should be handled');
         $this->assertTrue($this->handler->isHandling($errorRecord), 'ERROR should be handled');
     }

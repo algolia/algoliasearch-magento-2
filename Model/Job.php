@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\ObjectManagerInterface;
@@ -228,19 +227,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         }
 
         return $status;
-    }
-
-    /**
-     *
-     * @throws AlreadyExistsException
-     *
-     */
-    public function saveError(\Exception $e): Job
-    {
-        $this->setErrorLog($e->getMessage());
-        $this->getResource()->save($this);
-
-        return $this;
     }
 
     /**

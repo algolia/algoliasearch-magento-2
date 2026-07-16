@@ -9,7 +9,6 @@ use Algolia\AlgoliaSearch\Service\RenderingManager;
 use Magento\Catalog\Model\Category;
 use Magento\Framework\View\Layout;
 use Magento\Framework\View\Layout\ProcessorInterface;
-use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -20,7 +19,6 @@ class RenderingManagerTest extends TestCase
     protected ?AutocompleteHelper $autocompleteConfigHelper;
     protected ?InstantSearchHelper $instantSearchConfigHelper;
     protected ?CurrentCategory $category;
-    protected ?StoreManagerInterface $storeManager;
 
     protected ?RenderingManager $renderingManager;
 
@@ -29,13 +27,11 @@ class RenderingManagerTest extends TestCase
         $this->autocompleteConfigHelper = $this->createMock(AutocompleteHelper::class);
         $this->instantSearchConfigHelper = $this->createMock(InstantSearchHelper::class);
         $this->category = $this->createMock(CurrentCategory::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
 
         $this->renderingManager = new RenderingManager(
             $this->autocompleteConfigHelper,
             $this->instantSearchConfigHelper,
-            $this->category,
-            $this->storeManager
+            $this->category
         );
     }
 

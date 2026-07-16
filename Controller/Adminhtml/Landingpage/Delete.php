@@ -20,8 +20,8 @@ class Delete extends AbstractAction
             try {
                 /** @var LandingPage $landingPage */
                 $landingPage = $this->landingPageFactory->create();
-                $landingPage->getResource()->load($landingPage, $landingPageId);
-                $landingPage->getResource()->delete($landingPage);
+                $this->landingPageResource->load($landingPage, $landingPageId);
+                $this->landingPageResource->delete($landingPage);
                 $this->deleteQueryRules($landingPage);
 
                 $this->messageManager->addSuccessMessage(__('The landing page has been deleted.'));

@@ -25,7 +25,7 @@ define([
 ], function (
     Component,
     $,
-    {algoliasearch},
+    {liteClient: algoliasearch},
     autocomplete,
     querySuggestionsPlugin,
     redirectUrlPlugin,

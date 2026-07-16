@@ -16,7 +16,7 @@ class ProcessQueue
 
     public function execute()
     {
-        if (!$this->configHelper->isQueueIndexerEnabled() || !$this->configHelper->useBuiltInCron()) {
+        if (!$this->configHelper->isQueueActive() || !$this->configHelper->useBuiltInCron()) {
             return;
         }
 

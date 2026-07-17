@@ -47,20 +47,20 @@ We support the 2 or 3 latest patch versions of Magento depending on releases ove
 
 | Extension Version | End of Life | Magento                      | PHP                                    |
 |-------------------|-------------|------------------------------|----------------------------------------|
-| v3.7.x            | 10/10/2023  | `~2.3.7\|\|~2.4.5\|\|~2.4.6` | `~7.3.0\|\|~7.4.0\|\|~8.1.0\|\|~8.2.0` |
-| v3.8.x            | 3/8/2023    | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
-| v3.9.x            | 10/13/2023  | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
-| v3.10.x           | 12/12/2023  | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
-| v3.11.x           | 1/26/2024   | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
-| v3.12.x           | 8/2/2024    | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
-| v3.13.x           | 4/9/2025    | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
-| v3.14.x           | 9/1/2025    | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
-| v3.15.x           | 12/1/2025   | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
-| v3.16.x           | 5/15/2026   | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
-| v3.17.x           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
-| v3.18.0           | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
-| >=v3.18.1         | N/A         | `~2.4.7\|\|~2.4.8\|\|~2.4.9` | `~8.2.0\|\|~8.3.0\|\|~8.4.0\|\|~8.5.0` |
-| v3.19.x           | N/A         | `~2.4.7\|\|~2.4.8\|\|~2.4.9` | `~8.3.0\|\|~8.4.0\|\|~8.5.0`           |
+| ~3.7.0            | 10/10/2023  | `~2.3.7\|\|~2.4.5\|\|~2.4.6` | `~7.3.0\|\|~7.4.0\|\|~8.1.0\|\|~8.2.0` |
+| ~3.8.0            | 3/8/2023    | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
+| ~3.9.0            | 10/13/2023  | `~2.4.5\|\|~2.4.6`           | `~7.4.0\|\|~8.1.0\|\|~8.2.0`           |
+| ~3.10.0           | 12/12/2023  | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| ~3.11.0           | 1/26/2024   | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| ~3.12.0           | 8/2/2024    | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| ~3.13.0           | 4/9/2025    | `~2.4.6`                     | `~8.1.0\|\|~8.2.0`                     |
+| ~3.14.0           | 9/1/2025    | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
+| ~3.15.0           | 12/1/2025   | `~2.4.6\|\|~2.4.7`           | `~8.1.0\|\|~8.2.0\|\|~8.3.0`           |
+| ~3.16.0           | 5/15/2026   | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| ~3.17.0           | 9/1/2026    | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| 3.18.0            | N/A         | `~2.4.7\|\|~2.4.8`           | `~8.2.0\|\|~8.3.0\|\|~8.4.0`           |
+| ~3.18.1           | N/A         | `~2.4.7\|\|~2.4.8\|\|~2.4.9` | `~8.2.0\|\|~8.3.0\|\|~8.4.0\|\|~8.5.0` |
+| ~3.19.0           | N/A         | `~2.4.8\|\|~2.4.9`           | `~8.3.0\|\|~8.4.0\|\|~8.5.0`           |
 
 ## Documentation
 
@@ -89,21 +89,21 @@ Please check our [Custom Extension](https://github.com/algolia/algoliasearch-cus
 
 ### Frontend JavaScript libraries
 
-> As of v3.15.x the JavaScript bundle `algoliaBundle` has been removed as a hard dependency for the Magento extension and will be removed entirely in the next minor release. Libraries can now be swapped independently and loaded via RequireJS.  
+> As of 3.15.x the JavaScript bundle `algoliaBundle` has been removed as a hard dependency for the Magento extension and will be removed entirely in the next minor release. Libraries can now be swapped independently and loaded via RequireJS.  
 
 Knowing the version of each Algolia JavaScript library will help you understand what is available for you to leverage in terms of customisation. This table will help you determine which documentation to reference when you start working on your customisation.
 
 | Extension Version | 	autocomplete.js                                                   | instantsearch.js                                                                    | search-insights.js                                                   | recommend-js.js                                             |
 |-------------------|--------------------------------------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------------------------------|-------------------------------------------------------------|
-| v3.x              | [0.38.0](https://github.com/algolia/autocomplete.js/tree/v0.38.0)* | [4.15.0](https://github.com/algolia/instantsearch.js/tree/v4.15.0)*                 | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | NA                                                          |
-| v3.9.1            | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                 | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.5.0](https://github.com/algolia/recommend/tree/v1.5.0)   |
-| v3.10.x           | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                 | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
-| v3.11.0           | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                 | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
-| v3.13.0           | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)*  | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
-| v3.14.x           | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)*  | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.15.0](https://github.com/algolia/recommend/tree/v1.15.0) |
-| v3.15.x           | [1.17.9](https://github.com/algolia/autocomplete.js/tree/v1.17.9)  | [4.77.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.77.0)   | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
-| v3.16.x           | [1.18.1](https://github.com/algolia/autocomplete.js/tree/v1.18.1)  | [4.78.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.78.0)   | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
-| >=v3.19.x         | [1.18.1](https://github.com/algolia/autocomplete.js/tree/v1.18.1)  | [4.106.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.106.0) | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
+| 3.x               | [0.38.0](https://github.com/algolia/autocomplete.js/tree/v0.38.0)* | [4.15.0](https://github.com/algolia/instantsearch.js/tree/v4.15.0)*                 | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | NA                                                          |
+| 3.9.1             | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                 | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.5.0](https://github.com/algolia/recommend/tree/v1.5.0)   |
+| 3.10.x            | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                 | [1.7.1](https://github.com/algolia/search-insights.js/tree/v1.7.1)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
+| 3.11.0            | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.41.0](https://github.com/algolia/instantsearch.js/tree/v4.41.0)*                 | [2.6.0](https://github.com/algolia/search-insights.js/tree/v2.6.0)   | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
+| 3.13.0            | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)*  | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.8.0](https://github.com/algolia/recommend/tree/v1.8.0)   |
+| 3.14.x            | [1.6.3](https://github.com/algolia/autocomplete.js/tree/v1.6.3)*   | [4.63.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.63.0)*  | [2.11.0](https://github.com/algolia/search-insights.js/tree/v2.11.0) | [1.15.0](https://github.com/algolia/recommend/tree/v1.15.0) |
+| 3.15.x            | [1.17.9](https://github.com/algolia/autocomplete.js/tree/v1.17.9)  | [4.77.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.77.0)   | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
+| 3.16.x            | [1.18.1](https://github.com/algolia/autocomplete.js/tree/v1.18.1)  | [4.78.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.78.0)   | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
+| >=3.19.x          | [1.18.1](https://github.com/algolia/autocomplete.js/tree/v1.18.1)  | [4.106.0](https://github.com/algolia/instantsearch/tree/instantsearch.js%404.106.0) | [2.17.3](https://github.com/algolia/search-insights.js/tree/v2.17.3) | [1.16.0](https://github.com/algolia/recommend/tree/v1.16.0) |
 &ast; In earlier versions of the extension, the Autocomplete and InstantSearch libraries were accessible via the `algoliaBundle` global. This bundle was a prepackaged JavaScript file that contained dependencies for the frontend experience. What was included in this bundle can be seen here: https://github.com/algolia/algoliasearch-extensions-bundle/blob/ISv4/package.json
 
 Refer to these docs when customising your Algolia Magento extension frontend features:
@@ -141,10 +141,10 @@ Depending on the extension version you are using, you could have a different PHP
 
 | Extension Version | API Client Version                                                       |
 |-------------------|--------------------------------------------------------------------------|
-| v3.x              | [2.5.1](https://github.com/algolia/algoliasearch-client-php/tree/2.5.1)  |
-| v3.6.x            | [3.2.0](https://github.com/algolia/algoliasearch-client-php/tree/3.2.0)  |
-| v3.11.0           | [3.3.2](https://github.com/algolia/algoliasearch-client-php/tree/3.3.2)  |
-| >=v3.14.x         | [4.x.x](https://github.com/algolia/algoliasearch-client-php)             |
+| 3.x               | [2.5.1](https://github.com/algolia/algoliasearch-client-php/tree/2.5.1)  |
+| 3.6.x             | [3.2.0](https://github.com/algolia/algoliasearch-client-php/tree/3.2.0)  |
+| 3.11.0            | [3.3.2](https://github.com/algolia/algoliasearch-client-php/tree/3.3.2)  |
+| >=3.14.x          | [4.x.x](https://github.com/algolia/algoliasearch-client-php)             |
 
 Refer to these docs when customising your Algolia Magento extension backend:
 - [Indexing](https://www.algolia.com/doc/integration/magento-2/how-it-works/indexing/)

@@ -11,6 +11,8 @@
 - Replaced the deprecated `media_gallery` attribute reload in `Service\Product\RecordBuilder` with the catalog gallery `ReadHandler`, and resolved product and category attributes through injected resource models.
 - Removed the unused `Model\Job::saveError()` method. The one remaining `Model\Job::save()` deprecation is temporarily suppressed via a scoped, documented `phpstan.neon` entry pending a dedicated JobProcessor refactor.
 - `Logger\Handler\AlgoliaLoggerHandler` now accepts the log level and file name as constructor arguments, allowing developers to tune `var/log/algolia.log` verbosity via `di.xml` (defaults to `INFO`, previously hard-coded to `DEBUG`).
+- Upgraded the bundled `algoliasearch` JavaScript client from v4.24.0 to the v5.56.0 "lite" build ahead of the v4 August 2026 deprecation.
+- Bumped InstantSearch.js to 4.106.0 and Autocomplete.js to 1.19.9 for optimal v5 peer compatibility.
 
 ### Breaking Changes
 - Several constructor signatures changed. Any class extending these must update its `parent::__construct()` call:

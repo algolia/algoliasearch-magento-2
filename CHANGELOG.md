@@ -13,6 +13,7 @@
 - `Logger\Handler\AlgoliaLoggerHandler` now accepts the log level and file name as constructor arguments, allowing developers to tune `var/log/algolia.log` verbosity via `di.xml` (defaults to `INFO`, previously hard-coded to `DEBUG`).
 - Upgraded the bundled `algoliasearch` JavaScript client from v4.24.0 to the v5.56.0 "lite" build ahead of the v4 August 2026 deprecation.
 - Bumped InstantSearch.js to 4.106.0 and Autocomplete.js to 1.19.9 for optimal v5 peer compatibility.
+- Migrated the frontend Recommend surfaces (Frequently Bought Together, Related Products, Trending Items, Looking Similar) from the standalone `@algolia/recommend` and `@algolia/recommend-js` v4 bundles to the InstantSearch.js recommend widgets running on the v5 lite client. Widgets are lazy-loaded via `IntersectionObserver` so their weight stays off the PDP and cart critical path.
 
 ### Breaking Changes
 - Several constructor signatures changed. Any class extending these must update its `parent::__construct()` call:

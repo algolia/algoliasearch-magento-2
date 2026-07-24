@@ -15,7 +15,8 @@
     "ext-dom": "*"
   },
   "conflict": {
-    "algolia/algoliasearch-adapter-magento-2": "<0.10.0"
+    "algolia/algoliasearch-adapter-magento-2": "<0.10.0",
+    "algolia/algoliasearch-inventory-magento-2": "<1.5.0"
   },
   "suggest": {
       "algolia/algoliasearch-inventory-magento-2": "Algolia Search Inventory module for Magento 2.3.x,2.4.x and Algolia Search 1.12+ extension"

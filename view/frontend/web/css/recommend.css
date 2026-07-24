@@ -1,7 +1,7 @@
 #algoliaRecommend .recommend-item .product-img {
     width: 180px;
 }
-#algoliaRecommend .auc-Recommend-list {
+#algoliaRecommend [class^="ais-"][class$="-list"] {
     display: flex;
     justify-content: space-evenly;
     list-style: none;
@@ -15,10 +15,10 @@
     margin-bottom: 80px;
 }
 
-#algoliaRecommend #relatedProducts .auc-Recommend-list,
-#algoliaRecommend #frequentlyBoughtTogether .auc-Recommend-list,
-#algoliaRecommend #lookingSimilar .auc-Recommend-list,
-#algoliaRecommend .trendsItem  .auc-Recommend-list {
+#algoliaRecommend #relatedProducts [class^="ais-"][class$="-list"],
+#algoliaRecommend #frequentlyBoughtTogether [class^="ais-"][class$="-list"],
+#algoliaRecommend #lookingSimilar [class^="ais-"][class$="-list"],
+#algoliaRecommend .trendsItem [class^="ais-"][class$="-list"] {
     flex-wrap: wrap;
     justify-content: flex-start;
 }
@@ -60,10 +60,10 @@
 #algoliaRecommend .trendsItem a:hover{
     color:#333;
 }
-#algoliaRecommend .auc-Recommend-item .product-details {
+#algoliaRecommend [class^="ais-"][class$="-item"] .product-details {
     text-align: center;
 }
-#algoliaRecommend #trendItems .auc-Recommend-list{
+#algoliaRecommend #trendItems [class^="ais-"][class$="-list"]{
     flex-wrap: wrap;
     justify-content: flex-start;
 }

@@ -1,64 +1,131 @@
 define([
     'jquery',
-    'algoliaRecommendLib',
-    'algoliaRecommendJsLib',
+    'algoliaSearchLib',
+    'algoliaInstantSearchLib',
     'recommendProductsHtml',
     'domReady!',
-], function ($, recommend, recommendJs, recommendProductsHtml) {
-    'use strict';
-
+], function ($, { liteClient: algoliasearch }, instantsearch, recommendProductsHtml) {
     if (typeof algoliaConfig === 'undefined') {
         return;
     }
 
+    const {
+        frequentlyBoughtTogether,
+        relatedProducts,
+        trendingItems,
+        lookingSimilar,
+    } = instantsearch.widgets;
+
+    const transformItems = function (items) {
+        return items.map((item, index) => ({
+            ...item,
+            position: index + 1,
+        }));
+    };
+
+    const buildTemplates = function (title, addToCart) {
+        return {
+            header(data, { html }) {
+                return recommendProductsHtml.getHeaderHtml({ html, title });
+            },
+            item(item, { html }) {
+                return recommendProductsHtml.getItemHtml({ item, html, addToCart });
+            },
+            empty(results, { html }) {
+                return recommendProductsHtml.getNoResultHtml({ html });
+            },
+        };
+    };
+
+    // trendingItems needs both facetName and facetValue together; otherwise it
+    // fetches global trends. Omitting the keys reproduces the previous behavior
+    // where an empty facet string meant "no facet".
+    const facetParams = function (facetName, facetValue) {
+        if (facetName && facetValue) {
+            return { facetName, facetValue };
+        }
+        return {};
+    };
+
+    // Defer building the InstantSearch instance (and its getRecommendations
+    // requests) until one of the widget containers nears the viewport. Falls
+    // back to requestIdleCallback / immediate build when IntersectionObserver
+    // is unavailable. Builds exactly once.
+    const deferBuild = function (containers, build) {
+        let built = false;
+        const run = function () {
+            if (built) {
+                return;
+            }
+            built = true;
+            build();
+        };
+
+        if (typeof IntersectionObserver === 'undefined') {
+            if (typeof window.requestIdleCallback === 'function') {
+                window.requestIdleCallback(run);
+            } else {
+                run();
+            }
+            return;
+        }
+
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    observer.disconnect();
+                    run();
+                }
+            });
+        }, { rootMargin: '200px' });
+
+        containers.forEach(function (container) {
+            observer.observe(container);
+        });
+    };
+
     return function (config, element) {
         $(function ($) {
-            this.defaultIndexName = algoliaConfig.indexName + '_products';
+            const indexName = algoliaConfig.indexName + '_products';
             const appId = algoliaConfig.applicationId;
             const apiKey = algoliaConfig.apiKey;
-            const recommendClient = recommend(appId, apiKey);
-            const indexName = this.defaultIndexName;
+            const searchClient = algoliasearch(appId, apiKey);
             const objectIDs = config.objectIDs;
+
+            const widgets = [];
+            const containers = [];
+
+            const register = function (selector, createWidget) {
+                const container = document.querySelector(selector);
+                if (!container) {
+                    return;
+                }
+                widgets.push(createWidget(container));
+                containers.push(container);
+            };
+
             if (
                 $('body').hasClass('catalog-product-view') ||
                 $('body').hasClass('checkout-cart-index')
             ) {
-                // --- Add the current product objectID here ---
                 if (
                     (algoliaConfig.recommend.enabledFBT &&
                         $('body').hasClass('catalog-product-view')) ||
                     (algoliaConfig.recommend.enabledFBTInCart &&
                         $('body').hasClass('checkout-cart-index'))
                 ) {
-                    recommendJs.frequentlyBoughtTogether({
-                        container         : '#frequentlyBoughtTogether',
-                        recommendClient,
-                        indexName,
-                        objectIDs,
-                        maxRecommendations: algoliaConfig.recommend.limitFBTProducts,
-                        transformItems    : function (items) {
-                            return items.map((item, index) => ({
-                                ...item,
-                                position: index + 1,
-                            }));
-                        },
-                        headerComponent({html, recommendations}) {
-                            if (!recommendations.length) {
-                                return '';
-                            }
-                            return recommendProductsHtml.getHeaderHtml(
-                                html,
-                                algoliaConfig.recommend.FBTTitle
-                            );
-                        },
-                        itemComponent({item, html}) {
-                            return recommendProductsHtml.getItemHtml(
-                                item,
-                                html,
+                    register('#frequentlyBoughtTogether', (container) =>
+                        frequentlyBoughtTogether({
+                            container,
+                            objectIDs,
+                            limit             : algoliaConfig.recommend.limitFBTProducts,
+                            transformItems,
+                            templates         : buildTemplates(
+                                algoliaConfig.recommend.FBTTitle,
                                 algoliaConfig.recommend.isAddToCartEnabledInFBT
-                            );
-                        },
-                    });
+                            ),
+                        })
+                    );
                 }
                 if (
                     (algoliaConfig.recommend.enabledRelated &&
@@ -66,35 +133,18 @@ define([
                     (algoliaConfig.recommend.enabledRelatedInCart &&
                         $('body').hasClass('checkout-cart-index'))
                 ) {
-                    recommendJs.relatedProducts({
-                        container         : '#relatedProducts',
-                        recommendClient,
-                        indexName,
-                        objectIDs,
-                        maxRecommendations: algoliaConfig.recommend.limitRelatedProducts,
-                        transformItems    : function (items) {
-                            return items.map((item, index) => ({
-                                ...item,
-                                position: index + 1,
-                            }));
-                        },
-                        headerComponent({html, recommendations}) {
-                            if (!recommendations.length) {
-                                return '';
-                            }
-                            return recommendProductsHtml.getHeaderHtml(
-                                html,
-                                algoliaConfig.recommend.relatedProductsTitle
-                            );
-                        },
-                        itemComponent({item, html}) {
-                            return recommendProductsHtml.getItemHtml(
-                                item,
-                                html,
+                    register('#relatedProducts', (container) =>
+                        relatedProducts({
+                            container,
+                            objectIDs,
+                            limit             : algoliaConfig.recommend.limitRelatedProducts,
+                            transformItems,
+                            templates         : buildTemplates(
+                                algoliaConfig.recommend.relatedProductsTitle,
                                 algoliaConfig.recommend.isAddToCartEnabledInRelatedProduct
-                            );
-                        },
-                    });
+                            ),
+                        })
+                    );
                 }
             }
 
@@ -104,74 +154,39 @@ define([
                 (algoliaConfig.recommend.isTrendItemsEnabledInCartPage &&
                     $('body').hasClass('checkout-cart-index'))
             ) {
-                recommendJs.trendingItems({
-                    container         : '#trendItems',
-                    facetName         : algoliaConfig.recommend.trendItemFacetName
-                        ? algoliaConfig.recommend.trendItemFacetName
-                        : '',
-                    facetValue        : algoliaConfig.recommend.trendItemFacetValue
-                        ? algoliaConfig.recommend.trendItemFacetValue
-                        : '',
-                    recommendClient,
-                    indexName,
-                    maxRecommendations: algoliaConfig.recommend.limitTrendingItems,
-                    transformItems    : function (items) {
-                        return items.map((item, index) => ({
-                            ...item,
-                            position: index + 1,
-                        }));
-                    },
-                    headerComponent({html, recommendations}) {
-                        if (!recommendations.length) {
-                            return '';
-                        }
-                        return recommendProductsHtml.getHeaderHtml(
-                            html,
-                            algoliaConfig.recommend.trendingItemsTitle
-                        );
-                    },
-                    itemComponent({item, html}) {
-                        return recommendProductsHtml.getItemHtml(
-                            item,
-                            html,
+                register('#trendItems', (container) =>
+                    trendingItems({
+                        container,
+                        ...facetParams(
+                            algoliaConfig.recommend.trendItemFacetName,
+                            algoliaConfig.recommend.trendItemFacetValue
+                        ),
+                        limit             : algoliaConfig.recommend.limitTrendingItems,
+                        transformItems,
+                        templates         : buildTemplates(
+                            algoliaConfig.recommend.trendingItemsTitle,
                             algoliaConfig.recommend.isAddToCartEnabledInTrendsItem
-                        );
-                    },
-                });
+                        ),
+                    })
+                );
             } else if (
                 algoliaConfig.recommend.enabledTrendItems &&
                 typeof config.recommendTrendContainer !== 'undefined'
             ) {
-                let containerValue = '#' + config.recommendTrendContainer;
-                recommendJs.trendingItems({
-                    container         : containerValue,
-                    facetName         : config.facetName ? config.facetName : '',
-                    facetValue        : config.facetValue ? config.facetValue : '',
-                    recommendClient,
-                    indexName,
-                    maxRecommendations: config.numOfTrendsItem
-                        ? parseInt(config.numOfTrendsItem)
-                        : algoliaConfig.recommend.limitTrendingItems,
-                    transformItems    : function (items) {
-                        return items.map((item, index) => ({
-                            ...item,
-                            position: index + 1,
-                        }));
-                    },
-                    headerComponent({html}) {
-                        return recommendProductsHtml.getHeaderHtml(
-                            html,
-                            algoliaConfig.recommend.trendingItemsTitle
-                        );
-                    },
-                    itemComponent({item, html}) {
-                        return recommendProductsHtml.getItemHtml(
-                            item,
-                            html,
+                register('#' + config.recommendTrendContainer, (container) =>
+                    trendingItems({
+                        container,
+                        ...facetParams(config.facetName, config.facetValue),
+                        limit             : config.numOfTrendsItem
+                            ? parseInt(config.numOfTrendsItem)
+                            : algoliaConfig.recommend.limitTrendingItems,
+                        transformItems,
+                        templates         : buildTemplates(
+                            algoliaConfig.recommend.trendingItemsTitle,
                             algoliaConfig.recommend.isAddToCartEnabledInTrendsItem
-                        );
-                    },
-                });
+                        ),
+                    })
+                );
             }
 
             if (
@@ -180,67 +195,51 @@ define([
                 (algoliaConfig.recommend.isLookingSimilarEnabledInCartPage &&
                     $('body').hasClass('checkout-cart-index'))
             ) {
-                recommendJs.lookingSimilar({
-                    container: '#lookingSimilar',
-                    recommendClient,
-                    indexName,
-                    objectIDs,
-                    maxRecommendations: algoliaConfig.recommend.limitLookingSimilar,
-                    transformItems: function (items) {
-                        return items.map((item, index) => ({
-                            ...item,
-                            position: index + 1,
-                        }));
-                    },
-                    headerComponent({html}) {
-                        return recommendProductsHtml.getHeaderHtml(
-                            html,
-                            algoliaConfig.recommend.lookingSimilarTitle
-                        );
-                    },
-                    itemComponent({item, html}) {
-                        return recommendProductsHtml.getItemHtml(
-                            item,
-                            html,
+                register('#lookingSimilar', (container) =>
+                    lookingSimilar({
+                        container,
+                        objectIDs,
+                        limit             : algoliaConfig.recommend.limitLookingSimilar,
+                        transformItems,
+                        templates         : buildTemplates(
+                            algoliaConfig.recommend.lookingSimilarTitle,
                             algoliaConfig.recommend.isAddToCartEnabledInLookingSimilar
-                        );
-                    }
-                });
+                        ),
+                    })
+                );
             } else if (
                 algoliaConfig.recommend.enabledLookingSimilar &&
                 objectIDs &&
                 typeof config.recommendLSContainer !== 'undefined'
-            ){
-                let containerValue = '#' + config.recommendLSContainer;
-                recommendJs.lookingSimilar({
-                    container: containerValue,
-                    recommendClient,
-                    indexName,
-                    objectIDs,
-                    maxRecommendations: config.numOfLookingSimilarItem
-                        ? parseInt(config.numOfLookingSimilarItem)
-                        : algoliaConfig.recommend.limitLookingSimilar,
-                    transformItems    : function (items) {
-                        return items.map((item, index) => ({
-                            ...item,
-                            position: index + 1,
-                        }));
-                    },
-                    headerComponent({html}) {
-                        return recommendProductsHtml.getHeaderHtml(
-                            html,
-                            algoliaConfig.recommend.lookingSimilarTitle
-                        );
-                    },
-                    itemComponent({item, html}) {
-                        return recommendProductsHtml.getItemHtml(
-                            item,
-                            html,
+            ) {
+                register('#' + config.recommendLSContainer, (container) =>
+                    lookingSimilar({
+                        container,
+                        objectIDs,
+                        limit             : config.numOfLookingSimilarItem
+                            ? parseInt(config.numOfLookingSimilarItem)
+                            : algoliaConfig.recommend.limitLookingSimilar,
+                        transformItems,
+                        templates         : buildTemplates(
+                            algoliaConfig.recommend.lookingSimilarTitle,
                             algoliaConfig.recommend.isAddToCartEnabledInLookingSimilar
-                        );
-                    },
-                });
+                        ),
+                    })
+                );
             }
+
+            if (!widgets.length) {
+                return;
+            }
+
+            deferBuild(containers, function () {
+                const search = instantsearch({
+                    indexName,
+                    searchClient,
+                });
+                search.addWidgets(widgets);
+                search.start();
+            });
         });
     };
 });

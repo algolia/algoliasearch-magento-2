@@ -47,7 +47,10 @@ class LookingSimilar extends Template implements BlockInterface
      */
     public function getProductIds()
     {
-        return json_encode(explode(',', (string) $this->getData('productIds')));
+        return json_encode(
+            explode(',', (string) $this->getData('productIds')),
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+        );
     }
 
     /**

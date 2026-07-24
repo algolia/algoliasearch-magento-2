@@ -26,13 +26,13 @@ define([
     const buildTemplates = function (title, addToCart) {
         return {
             header(data, { html }) {
-                return recommendProductsHtml.getHeaderHtml(html, title);
+                return recommendProductsHtml.getHeaderHtml({ html, title });
             },
             item(item, { html }) {
-                return recommendProductsHtml.getItemHtml(item, html, addToCart);
+                return recommendProductsHtml.getItemHtml({ item, html, addToCart });
             },
-            empty() {
-                return '';
+            empty(results, { html }) {
+                return recommendProductsHtml.getNoResultHtml({ html });
             },
         };
     };

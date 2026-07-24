@@ -14,6 +14,7 @@
 - Upgraded the bundled `algoliasearch` JavaScript client from v4.24.0 to the v5.56.0 "lite" build ahead of the v4 August 2026 deprecation.
 - Bumped InstantSearch.js to 4.106.0 and Autocomplete.js to 1.19.9 for optimal v5 peer compatibility.
 - Migrated the frontend Recommend surfaces (Frequently Bought Together, Related Products, Trending Items, Looking Similar) from the standalone `@algolia/recommend` and `@algolia/recommend-js` v4 bundles to the InstantSearch.js recommend widgets running on the v5 lite client. Widgets are lazy-loaded via `IntersectionObserver` so their weight stays off the PDP and cart critical path.
+- The Recommend product template (`view/frontend/web/js/template/recommend/products.js`) received a new `getNoResultHtml({html})` method so integrators can customize it via the same mixin mechanism.
 
 ### Breaking Changes
 - Several constructor signatures changed. Any class extending these must update its `parent::__construct()` call:
@@ -21,6 +22,7 @@
   - `Helper\Entity\Product\PriceManager\ProductWithoutChildren` now requires `Magento\Catalog\Api\ProductRepositoryInterface` in place of `Magento\Catalog\Model\ProductFactory`.
   - The LandingPage and Query admin controllers and edit blocks, and `Controller\Router`, gained resource-model constructor dependencies.
 - The MSI compatibility module `algolia/algoliasearch-inventory-magento-2` extends `Service\Product\RecordBuilder`, so it requires the coordinated 1.5.0 release to stay compatible with 3.19.0. Install `algolia/algoliasearch-inventory-magento-2:^1.5.0` alongside this version.
+- The Recommend product template (`view/frontend/web/js/template/recommend/products.js`) now passes a single destructured options object to its methods instead of positional arguments, aligning it with the autocomplete product template. Any RequireJS mixin overriding these methods must be updated. 
 
 ### Bug fixes
 - Injected the missing `CollectionProcessorInterface` into `Model\QueueArchiveRepository`, fixing a latent runtime fatal in `getList()`.

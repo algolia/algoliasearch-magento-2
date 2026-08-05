@@ -2,21 +2,21 @@
 
 namespace Algolia\AlgoliaSearch\Cron;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 
 class ProcessQueue
 {
     public function __construct(
-        protected ConfigHelper $configHelper,
+        protected QueueHelper $queueHelper,
         protected Queue $queue,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager
     ) {}
 
     public function execute()
     {
-        if (!$this->configHelper->isQueueIndexerEnabled() || !$this->configHelper->useBuiltInCron()) {
+        if (!$this->queueHelper->isQueueActive() || !$this->queueHelper->useBuiltInCron()) {
             return;
         }
 

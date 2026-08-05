@@ -21,12 +21,17 @@
   - `Service\Product\RecordBuilder` now requires `Magento\Catalog\Model\ResourceModel\Product` and `Magento\Catalog\Model\Product\Gallery\ReadHandler` (12 to 14 arguments).
   - `Helper\Entity\Product\PriceManager\ProductWithoutChildren` now requires `Magento\Catalog\Api\ProductRepositoryInterface` in place of `Magento\Catalog\Model\ProductFactory`.
   - The LandingPage and Query admin controllers and edit blocks, and `Controller\Router`, gained resource-model constructor dependencies.
+  - `Controller\Adminhtml\Queue\AbstractAction` and `Controller\Adminhtml\QueueArchive\AbstractAction` no longer accept `Magento\Framework\Session\SessionManagerInterface`.
+  - `Block\Adminhtml\Job\View` now requires `Model\JobFactory` and `Model\ResourceModel\Job` in place of the session manager.
+  - `Block\Adminhtml\QueueArchive\View` now requires `Api\QueueArchiveRepositoryInterface` in place of the session manager.
 - The MSI compatibility module `algolia/algoliasearch-inventory-magento-2` extends `Service\Product\RecordBuilder`, so it requires the coordinated 1.5.0 release to stay compatible with 3.19.0. Install `algolia/algoliasearch-inventory-magento-2:^1.5.0` alongside this version.
 - `Helper\Entity\ProductHelper::addStockFilter()` now declares `ProductCollection $products` and `int $storeId`. A subclass overriding this protected method with a narrower or incompatible signature will fatal on class load; untyped or wider overrides remain valid.
 - The Recommend product template (`view/frontend/web/js/template/recommend/products.js`) now passes a single destructured options object to its methods instead of positional arguments, aligning it with the autocomplete product template. Any RequireJS mixin overriding these methods must be updated. 
 
 ### Bug fixes
 - Injected the missing `CollectionProcessorInterface` into `Model\QueueArchiveRepository`, fixing a latent runtime fatal in `getList()`.
+- Fixed `Uncaught Exception: Serialization of 'Closure' is not allowed` on the Indexing Queue and Queue Archive job view pages, caused by storing the fully hydrated model in the backend session. (thanks @angelvilaplana, [#1939](https://github.com/algolia/algoliasearch-magento-2/pull/1939))
+- Fixed a getter typo in the Queue Archive view template that left the Processed At field blank on the Queue Archive view page.
 
 ## 3.19.0-beta.1
 

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Job;
 
+use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\JobFactory;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResource;
 use Magento\Backend\Block\Widget\Button;
@@ -10,21 +11,15 @@ use Magento\Framework\View\Element\Template\Context;
 
 class View extends Template
 {
-    /** @var JobResource */
-    protected $jobResource;
-
-    /** @var JobFactory */
-    protected $jobFactory;
+    protected ?Job $currentJob = null;
 
     public function __construct(
-        Context       $context,
-        JobResource   $jobResource,
-        JobFactory    $jobFactory,
-        array $data = []
+        Context               $context,
+        protected JobFactory  $jobFactory,
+        protected JobResource $jobResource,
+        array                 $data = []
     ) {
         parent::__construct($context, $data);
-        $this->jobResource = $jobResource;
-        $this->jobFactory = $jobFactory;
     }
 
     /**
@@ -47,17 +42,18 @@ class View extends Template
         return parent::_prepareLayout();
     }
 
-    /**
-     * @return \Algolia\AlgoliaSearch\Model\Job
-     */
-    public function getCurrentJob()
+    public function getCurrentJob(): Job
     {
-        $currentJobId = $this->_request->getParam('id');
+        if ($this->currentJob !== null) {
+            return $this->currentJob;
+        }
 
         $job = $this->jobFactory->create();
-        $this->jobResource->load($job, $currentJobId);
+        $this->jobResource->load($job, (int) $this->getRequest()->getParam('id'));
 
-        return $job;
+        $this->currentJob = $job;
+
+        return $this->currentJob;
     }
 
     /**

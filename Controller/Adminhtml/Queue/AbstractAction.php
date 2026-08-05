@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
+use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\JobFactory;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
 use Magento\Backend\App\Action\Context;
@@ -9,26 +10,13 @@ use Magento\Indexer\Model\IndexerFactory;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /** @var \Algolia\AlgoliaSearch\Model\JobFactory */
-    protected $jobFactory;
-
-    /** @var JobResourceModel */
-    protected $jobResourceModel;
-
-    /** @var IndexerFactory */
-    protected $indexerFactory;
-
     public function __construct(
-        Context $context,
-        JobFactory $jobFactory,
-        JobResourceModel $jobResourceModel,
-        IndexerFactory $indexerFactory
+        Context                    $context,
+        protected JobFactory       $jobFactory,
+        protected JobResourceModel $jobResourceModel,
+        protected IndexerFactory   $indexerFactory
     ) {
         parent::__construct($context);
-
-        $this->jobFactory       = $jobFactory;
-        $this->jobResourceModel = $jobResourceModel;
-        $this->indexerFactory   = $indexerFactory;
     }
 
     /**
@@ -39,10 +27,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /**
-     * @return \Algolia\AlgoliaSearch\Model\Job
-     */
-    protected function initJob()
+    protected function initJob(): ?Job
     {
         $jobId = (int) $this->getRequest()->getParam('id');
 
@@ -51,7 +36,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
             return null;
         }
 
-        /** @var \Algolia\AlgoliaSearch\Model\Job $model */
+        /** @var Job $model */
         $model = $this->jobFactory->create();
         $this->jobResourceModel->load($model, $jobId);
         if (!$model->getId()) {

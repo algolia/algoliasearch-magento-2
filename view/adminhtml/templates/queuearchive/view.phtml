@@ -1,7 +1,7 @@
 <?php
 
 /* @var \Algolia\AlgoliaSearch\Block\Adminhtml\QueueArchive\View $block */
-/* @var \Algolia\AlgoliaSearch\Model\Queue $queue */
+/* @var \Algolia\AlgoliaSearch\Model\QueueArchive $queue */
 $queue = $block->getCurrentJob();
 ?>
 
@@ -97,7 +97,7 @@ $queue = $block->getCurrentJob();
                 <label class="admin__field-label"><span><?= $escaper->escapeHtml(__('Processed At')) ?></span></label>
                 <div class="admin__field-control">
                     <div class="admin__field admin__field-option">
-                        <?= $escaper->escapeHtml($queue->getProcssedAt()) ?>
+                        <?= $escaper->escapeHtml($queue->getProcessedAt()) ?>
                     </div>
                 </div>
             </div>

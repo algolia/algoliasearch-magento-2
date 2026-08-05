@@ -22,6 +22,7 @@
   - `Helper\Entity\Product\PriceManager\ProductWithoutChildren` now requires `Magento\Catalog\Api\ProductRepositoryInterface` in place of `Magento\Catalog\Model\ProductFactory`.
   - The LandingPage and Query admin controllers and edit blocks, and `Controller\Router`, gained resource-model constructor dependencies.
 - The MSI compatibility module `algolia/algoliasearch-inventory-magento-2` extends `Service\Product\RecordBuilder`, so it requires the coordinated 1.5.0 release to stay compatible with 3.19.0. Install `algolia/algoliasearch-inventory-magento-2:^1.5.0` alongside this version.
+- `Helper\Entity\ProductHelper::addStockFilter()` now declares `ProductCollection $products` and `int $storeId`. A subclass overriding this protected method with a narrower or incompatible signature will fatal on class load; untyped or wider overrides remain valid.
 - The Recommend product template (`view/frontend/web/js/template/recommend/products.js`) now passes a single destructured options object to its methods instead of positional arguments, aligning it with the autocomplete product template. Any RequireJS mixin overriding these methods must be updated. 
 
 ### Bug fixes

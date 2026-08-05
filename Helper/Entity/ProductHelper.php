@@ -205,8 +205,10 @@ class ProductHelper extends AbstractEntityHelper
         return $products;
     }
 
-    protected function addStockFilter($products, $storeId): void
-    {
+    protected function addStockFilter(
+        ProductCollection $products,
+        int               $storeId
+    ): void {
         if ($this->configHelper->getShowOutOfStock($storeId) === false) {
             $this->stockHelper->addInStockFilterToCollection($products);
         }

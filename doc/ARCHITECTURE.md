@@ -356,6 +356,8 @@ These are properties the codebase maintains by convention.
   Magento's indexer framework, CLI commands, or the admin UI.
 - No server-side rendering of search results - all search rendering is client-side JS.
 - No cross-store index sharing - each store gets its own set of indices.
+- No Magento model instance is stored in the backend session - persist a scalar id (or a plain
+  array) and reload the entity where it's needed.
 
 ## Cross-Cutting Concerns
 
@@ -410,3 +412,6 @@ rejected at execution time.
 - Reading config via `ScopeConfigInterface` - use `ConfigHelper` or a sub-helper.
 - Hardcoding store IDs or assuming single-store operation.
 - Bypassing the queue for indexing operations.
+- Storing a Magento model instance in the backend session. `Model\Job` carries an injected
+  `ObjectManagerInterface` for its handler dispatch, so serializing it at `session_write_close()`
+  fatals with "Serialization of 'Closure' is not allowed."

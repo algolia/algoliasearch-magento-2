@@ -1,6 +1,6 @@
 #Core Testing Guidelines
 
-## Informations
+## Information
 - The files we are testing are located in a Magento2 module
 - The test files are located in the Test/Unit directory, create all the tests in this parent's directory
 - Follow the same structure as in the module (ex: tests for the Service/Product/RecordBuilder.php should be located in the Test/Unit/Service/Product directory)

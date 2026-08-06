@@ -2,24 +2,23 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\QueueArchive;
 
+use Algolia\AlgoliaSearch\Api\Data\QueueArchiveInterface;
+use Algolia\AlgoliaSearch\Api\QueueArchiveRepositoryInterface;
 use Magento\Backend\Block\Widget\Button;
-use Magento\Framework\Session\SessionManagerInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 
 class View extends Template
 {
-    /** @var SessionManagerInterface */
-    protected $backendSession;
+    protected ?QueueArchiveInterface $currentJob = null;
 
     public function __construct(
-        Context          $context,
-        SessionManagerInterface   $backendSession,
-        array $data = []
+        Context                                   $context,
+        protected QueueArchiveRepositoryInterface $queueArchiveRepository,
+        array                                      $data = []
     ) {
         parent::__construct($context, $data);
-
-        $this->backendSession = $backendSession;
     }
 
     /**
@@ -43,11 +42,13 @@ class View extends Template
     }
 
     /**
-     * @return \Algolia\AlgoliaSearch\Model\QueueArchive
+     * @throws NoSuchEntityException
      */
-    public function getCurrentJob()
+    public function getCurrentJob(): QueueArchiveInterface
     {
-        return $this->backendSession->getData('current_job');
+        return $this->currentJob ??= $this->queueArchiveRepository->getById(
+            (int) $this->getRequest()->getParam('id')
+        );
     }
 
     /**

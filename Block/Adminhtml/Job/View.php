@@ -2,23 +2,24 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Job;
 
+use Algolia\AlgoliaSearch\Model\Job;
+use Algolia\AlgoliaSearch\Model\JobFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResource;
 use Magento\Backend\Block\Widget\Button;
-use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 
 class View extends Template
 {
-    /** @var SessionManagerInterface */
-    protected $backendSession;
+    protected ?Job $currentJob = null;
 
     public function __construct(
-        Context          $context,
-        SessionManagerInterface   $backendSession,
-        array $data = []
+        Context               $context,
+        protected JobFactory  $jobFactory,
+        protected JobResource $jobResource,
+        array                 $data = []
     ) {
         parent::__construct($context, $data);
-        $this->backendSession = $backendSession;
     }
 
     /**
@@ -41,12 +42,18 @@ class View extends Template
         return parent::_prepareLayout();
     }
 
-    /**
-     * @return \Algolia\AlgoliaSearch\Model\Job
-     */
-    public function getCurrentJob()
+    public function getCurrentJob(): Job
     {
-        return $this->backendSession->getData('current_job');
+        if ($this->currentJob !== null) {
+            return $this->currentJob;
+        }
+
+        $job = $this->jobFactory->create();
+        $this->jobResource->load($job, (int) $this->getRequest()->getParam('id'));
+
+        $this->currentJob = $job;
+
+        return $this->currentJob;
     }
 
     /**

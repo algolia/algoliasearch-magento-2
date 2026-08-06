@@ -124,7 +124,7 @@ To learn more about good commenting you can read:
 
 ## Static analysis
 
-The extension uses the [`Magento2` coding standard](https://github.com/magento/magento-coding-standard) provided by `magento/magento-coding-standard` - a set of PHP_CodeSniffer rules that enforce Magento 2 marketplace and coding requirements.
+The extension uses the [`Magento2` coding standard](https://github.com/magento/magento-coding-standard) provided by `magento/magento-coding-standard` - a set of [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer) rules that enforce Magento 2 marketplace and coding requirements.
 
 It automatically detects common issues including:
 - Raw SQL queries and SQL queries inside loops

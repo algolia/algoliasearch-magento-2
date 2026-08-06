@@ -15,6 +15,7 @@
 - Bumped InstantSearch.js to 4.106.0 and Autocomplete.js to 1.19.9 for optimal v5 peer compatibility.
 - Migrated the frontend Recommend surfaces (Frequently Bought Together, Related Products, Trending Items, Looking Similar) from the standalone `@algolia/recommend` and `@algolia/recommend-js` v4 bundles to the InstantSearch.js recommend widgets running on the v5 lite client. Widgets are lazy-loaded via `IntersectionObserver` so their weight stays off the PDP and cart critical path.
 - The Recommend product template (`view/frontend/web/js/template/recommend/products.js`) received a new `getNoResultHtml({html})` method so integrators can customize it via the same mixin mechanism.
+- Upgraded guzzlehttp/guzzle to ^7.15.2 to remediate [CVE-2026-69246](https://github.com/advisories/GHSA-v5mv-p594-2x33)
 
 ### Breaking Changes
 - Several constructor signatures changed. Any class extending these must update its `parent::__construct()` call:

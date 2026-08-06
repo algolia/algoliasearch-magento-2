@@ -94,4 +94,18 @@ class SendStrategyResolverTest extends TestCase
         $resolver = new SendStrategyResolver($this->defaultStrategy);
         $resolver->resolve(self::STORE_ID);
     }
+
+    public function testResolveIsPerStoreForTheSameStrategy(): void
+    {
+        $storeSpecific = $this->createMock(SendStrategyInterface::class);
+        $storeSpecific->method('isApplicable')->willReturnMap([
+            [self::STORE_ID, true],
+            [self::STORE_ID + 1, false],
+        ]);
+
+        $resolver = new SendStrategyResolver($this->defaultStrategy, [$storeSpecific]);
+
+        $this->assertSame($storeSpecific, $resolver->resolve(self::STORE_ID));
+        $this->assertSame($this->defaultStrategy, $resolver->resolve(self::STORE_ID + 1));
+    }
 }

@@ -1,8 +1,8 @@
 Algolia Search & Discovery extension for Magento 2
 ==================================================
 
-![Latest version](https://img.shields.io/badge/latest-3.18.1-green)
-![Magento 2](https://img.shields.io/badge/Magento-2.4.7+-orange)
+![Latest version](https://img.shields.io/badge/latest-3.19.0-green)
+![Magento 2](https://img.shields.io/badge/Magento-2.4.8+-orange)
 
 ![PHP](https://img.shields.io/badge/PHP-8.3%2C8.4%2C8.5-blue)
 
@@ -78,7 +78,7 @@ The easiest way to install the extension is to use [Composer](https://getcompose
 
 If you would like to stay on a minor version, please upgrade your composer to only accept minor versions. The following example will keep you on the minor version and will update patches automatically.
 
-`"algolia/algoliasearch-magento-2": "~3.18.0"`
+`"algolia/algoliasearch-magento-2": "~3.19.0"`
 
 ### Customisation
 
@@ -167,7 +167,7 @@ Enables Algolia indexing compatibility with Magento's Multi-Source Inventory (MS
 composer require algolia/algoliasearch-inventory-magento-2
 ```
 
-Requires base extension `>=3.17.3`
+Requires base extension `>=3.17.3`. With base extension `>=3.19.0`, MSI module `^1.5.0` is required (earlier MSI versions are blocked by a Composer conflict declaration).
 
 #### Search adapter module
 
@@ -179,7 +179,7 @@ Registers Algolia as a native Magento search engine backend, enabling server-sid
 composer require algolia/algoliasearch-adapter-magento-2
 ```
 
-Requires PHP 8.2+, Magento 2.4+, and base extension `^3.18`.
+Requires PHP 8.2+, Magento 2.4+, and base extension `^3.18`. With base extension `>=3.19.0`, adapter module `>=0.10.0` is required (earlier adapter versions are blocked by a Composer conflict declaration).
 
 #### Ingestion module
 

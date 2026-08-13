@@ -7,7 +7,7 @@ use Algolia\AlgoliaSearch\Model\Cache\Product\IndexCollectionSize as Cache;
 
 class CacheHelper
 {
-    const ATTRIBUTES_TO_OBSERVE = ['status', 'visibility'];
+    public const ATTRIBUTES_TO_OBSERVE = ['status', 'visibility'];
 
     public function __construct(
         protected Cache $cache,
@@ -18,7 +18,7 @@ class CacheHelper
     {
         if ($productIds
             && array_intersect(array_keys($attributes), self::ATTRIBUTES_TO_OBSERVE)) {
-            $this->logger->info(sprintf("Clearing product index collection cache on store ID %d for attributes: %s", $storeId, join(',', array_keys($attributes))));
+            $this->logger->info(sprintf('Clearing product index collection cache on store ID %d for attributes: %s', $storeId, join(',', array_keys($attributes))));
             $this->cache->clear($storeId ?: null);
         }
     }

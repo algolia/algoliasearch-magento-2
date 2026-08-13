@@ -56,7 +56,7 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
                 '-' . self::UNUSED_OPTION_SHORTCUT,
                 InputOption::VALUE_NONE,
                 'Delete unused replicas only'
-            )
+            ),
         ];
     }
 
@@ -79,6 +79,7 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
             $unusedReplicas = $this->getUnusedReplicas($storeIds);
             if (!$unusedReplicas) {
                 $output->writeln('<comment>No unused replicas found.</comment>');
+
                 return Cli::RETURN_SUCCESS;
             }
             if (!$this->confirmDeleteUnused($unusedReplicas)) {
@@ -93,6 +94,7 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
         } catch (BadRequestException $e) {
             $this->output->writeln("<error>Error encountered while attempting to delete replica: {$e->getMessage()}</error>");
             $this->output->writeln('<comment>It is likely that the Magento integration does not manage the index. You should review your application configuration in Algolia.</comment>');
+
             return CLI::RETURN_FAILURE;
         }
 
@@ -101,6 +103,7 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
 
     /**
      * @param int[] $storeIds
+     *
      * @return string[]
      */
     protected function getUnusedReplicas(array $storeIds): array
@@ -109,11 +112,13 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
             $storeIds,
             function ($allUnused, $storeId) {
                 $unused = [];
+
                 try {
                     $unused = $this->replicaManager->getUnusedReplicaIndices($storeId);
                 } catch (\Exception $e) {
                     $this->output->writeln("<error>Unable to retrieve unused replicas for $storeId: {$e->getMessage()}</error>");
                 }
+
                 return array_unique(array_merge($allUnused, $unused));
             },
             []
@@ -125,7 +130,6 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
      * Verify with the end user first!
      *
      * @param string[] $unusedReplicas
-     * @return bool
      */
     protected function confirmDeleteUnused(array $unusedReplicas): bool
     {
@@ -138,14 +142,17 @@ class ReplicaDeleteCommand extends AbstractReplicaCommand implements ReplicaDele
 
         if (!$helper->ask($this->input, $this->output, $question)) {
             $this->output->writeln('<comment>Operation cancelled.</comment>');
+
             return false;
         }
+
         return true;
     }
 
     protected function confirmDelete(): bool
     {
         $okMsg = 'Please note that you can restore these deleted replicas by running "algolia:replicas:sync".';
+
         return $this->confirmOperation($okMsg);
     }
 

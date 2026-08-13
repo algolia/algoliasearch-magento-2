@@ -16,8 +16,6 @@ class RecordBuilder implements RecordBuilderInterface
     /**
      * Builds a Suggestion record
      *
-     * @param DataObject $entity
-     * @return array
      */
     public function buildRecord(DataObject $entity): array
     {

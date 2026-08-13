@@ -12,7 +12,6 @@ use Magento\Wishlist\Model\Item;
 
 class WishlistProductAddAfter implements ObserverInterface
 {
-
     public function __construct(
         protected ProductHelper         $productHelper,
         protected PersonalizationHelper $personalisationHelper,

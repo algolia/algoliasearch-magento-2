@@ -4,21 +4,17 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 
 use Algolia\AlgoliaSearch\Helper\MathHelper;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MathHelperTest extends TestCase
 {
-
-    /**
-     * @dataProvider averageProvider
-     */
+    #[DataProvider('averageProvider')]
     public function testAverage($values, $expectedResult)
     {
         $this->assertEquals($expectedResult, MathHelper::getAverage($values));
     }
 
-    /**
-     * @dataProvider standardDeviationProvider
-     */
+    #[DataProvider('standardDeviationProvider')]
     public function testStandardDeviation($values, $expectedResult)
     {
         $this->assertEquals($expectedResult, MathHelper::getSampleStandardDeviation($values));

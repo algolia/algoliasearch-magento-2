@@ -15,7 +15,7 @@ use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -37,9 +37,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     ){}
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @return void
      * @throws NoSuchEntityException
      * @throws DiagnosticsException
      */
@@ -51,6 +48,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
 
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
+
             return;
         }
 
@@ -58,6 +56,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
 
         if (!empty($entityIds)) {
             $this->handleDeltaIndex($entityIds, $storeId, $productsPerPage);
+
             return;
         }
 
@@ -83,6 +82,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
             $this->indexCollectionSizeCache->set($storeId, $size);
         }
         $this->diag->stopProfiling(__METHOD__);
+
         return $size;
     }
 
@@ -134,7 +134,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
                     'options'   => [
                         'page'        => $i + 1,
                         'pageSize'    => $productsPerPage,
-                    ]
+                    ],
                 ],
                 count($chunk)
             );
@@ -156,7 +156,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
                     'page'        => $i,
                     'pageSize'    => $productsPerPage,
                     'useTmpIndex' => $useTmpIndex,
-                ]
+                ],
             ];
 
             /** @uses ProductIndexBuilder::buildIndexFull() */
@@ -171,8 +171,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      */

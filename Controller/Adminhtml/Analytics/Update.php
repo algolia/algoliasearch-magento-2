@@ -18,9 +18,12 @@ class Update extends AbstractAction
         $layout = $this->layoutFactory->create();
 
         $block = $layout
-            ->createBlock(Template::class)
+            ->createBlock(
+                Template::class,
+                '',
+                ['data' => ['template' => 'Algolia_AlgoliaSearch::analytics/overview.phtml']]
+            )
             ->setData('view_model', $this->_objectManager->create(Overview::class))
-            ->setTemplate('Algolia_AlgoliaSearch::analytics/overview.phtml')
             ->toHtml();
 
         $response->setData(['html_content' => $block]);

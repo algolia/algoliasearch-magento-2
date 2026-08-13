@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,27 +15,15 @@ use Magento\Framework\View\Element\Template\Context;
 
 class RecommendProductView extends Template
 {
-    /**
-     * @var Product
-     */
+    /** @var Product */
     protected $product = null;
 
-    /**
-     * @var CurrentProduct
-     */
+    /** @var CurrentProduct */
     protected $currentProduct;
 
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @param Context $context
-     * @param CurrentProduct $currentProduct
-     * @param ConfigHelper $configHelper
-     * @param array $data
-     */
     public function __construct(
         Context      $context,
         CurrentProduct     $currentProduct,
@@ -56,6 +45,7 @@ class RecommendProductView extends Template
         if (!$this->product) {
             $this->product = $this->currentProduct->get();
         }
+
         return $this->product;
     }
 
@@ -67,7 +57,7 @@ class RecommendProductView extends Template
         return [
             'enabledFBT' => $this->configHelper->isRecommendFrequentlyBroughtTogetherEnabled(),
             'enabledRelated' => $this->configHelper->isRecommendRelatedProductsEnabled(),
-            'isTrendItemsEnabledInPDP' => $this->configHelper->isTrendItemsEnabledInPDP()
+            'isTrendItemsEnabledInPDP' => $this->configHelper->isTrendItemsEnabledInPDP(),
         ];
     }
 }

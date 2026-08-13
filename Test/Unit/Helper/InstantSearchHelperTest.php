@@ -9,10 +9,12 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Store\Model\ScopeInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class InstantSearchHelperTest extends TestCase
 {
-
     public const MAGENTO_GRID_PRODUCTS_NB = 9;
     public const MAGENTO_LIST_PRODUCTS_NB = 15;
 
@@ -35,9 +37,7 @@ class InstantSearchHelperTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider conficProvider
-     */
+    #[DataProvider('conficProvider')]
     public function testGetNumberOfProductResults($paginationMode, $customNbOfProducts, $expectedResult): void
     {
         $this->configInterface

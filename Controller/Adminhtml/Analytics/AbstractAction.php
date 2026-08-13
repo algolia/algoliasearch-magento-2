@@ -18,11 +18,6 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
     /** @var LayoutFactory */
     protected $layoutFactory;
 
-    /**
-     * @param Context $context
-     * @param JsonFactory $resultJsonFactory
-     * @param LayoutFactory $layoutFactory
-     */
     public function __construct(Context $context, JsonFactory $resultJsonFactory, LayoutFactory $layoutFactory)
     {
         parent::__construct($context);

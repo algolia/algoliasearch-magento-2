@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Algolia\AlgoliaSearch\Observer;
@@ -12,32 +13,18 @@ use Magento\Framework\ObjectManagerInterface;
 
 class ReindexProductOnLastItemPurchase implements ObserverInterface
 {
-    /**
-     * @var \Magento\Framework\Indexer\IndexerInterface
-     */
+    /** @var \Magento\Framework\Indexer\IndexerInterface */
     protected $indexer;
 
-    /**
-     * @var ObjectManagerInterface
-     */
+    /** @var ObjectManagerInterface */
     protected $objectManager;
 
-    /**
-     * @var ModuleManager
-     */
+    /** @var ModuleManager */
     protected $moduleManager;
 
-    /**
-     * @var ProductRepositoryInterface
-     */
+    /** @var ProductRepositoryInterface */
     protected $productRepository;
 
-    /**
-     * @param IndexerRegistry $indexerRegistry
-     * @param ObjectManagerInterface $objectManager
-     * @param ModuleManager $moduleManager
-     * @param ProductRepositoryInterface $productRepository
-     */
     public function __construct(
         ObjectManagerInterface $objectManager,
         ModuleManager $moduleManager,
@@ -51,7 +38,6 @@ class ReindexProductOnLastItemPurchase implements ObserverInterface
     }
 
     /**
-     * @param EventObserver $observer
      * @return void
      */
     public function execute(EventObserver $observer)
@@ -67,6 +53,7 @@ class ReindexProductOnLastItemPurchase implements ObserverInterface
             $isSingleMode = $this->objectManager->create(\Magento\InventoryCatalogApi\Model\IsSingleSourceModeInterface::class);
             $defaultSourceProvider = $this->objectManager->create(\Magento\InventoryCatalogApi\Api\DefaultSourceProviderInterface::class);
 
+            $sourceCode = null;
             if (!empty($shipment->getExtensionAttributes())
                 && !empty($shipment->getExtensionAttributes()->getSourceCode())) {
                 $sourceCode = $shipment->getExtensionAttributes()->getSourceCode();

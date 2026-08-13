@@ -4,36 +4,17 @@ namespace Algolia\AlgoliaSearch\Block\Adminhtml\Query\Edit;
 
 use Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Renderer\UrlBuilder;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Query as QueryResource;
 use Magento\Backend\Block\Widget\Context;
 
 abstract class AbstractButton
 {
-    /** @var Context */
-    protected $context;
-
-    /** @var QueryFactory */
-    protected $queryFactory;
-
-    /** @var UrlBuilder */
-    protected $frontendUrlBuilder;
-
-    /**
-     * PHP Constructor
-     *
-     * @param Context $context
-     * @param QueryFactory $queryFactory
-     * @param UrlBuilder $frontendUrlBuilder
-     *
-     * @return AbstractButton
-     */
     public function __construct(
-        Context $context,
-        QueryFactory $queryFactory,
-        UrlBuilder $frontendUrlBuilder
+        protected Context       $context,
+        protected QueryFactory  $queryFactory,
+        protected UrlBuilder    $frontendUrlBuilder,
+        protected QueryResource $queryResource
     ) {
-        $this->context = $context;
-        $this->queryFactory = $queryFactory;
-        $this->frontendUrlBuilder = $frontendUrlBuilder;
     }
 
     /**
@@ -49,7 +30,7 @@ abstract class AbstractButton
             $modelId = $this->context->getRequest()->getParam('id');
             /** @var \Algolia\AlgoliaSearch\Model\Query $query */
             $query = $this->queryFactory->create();
-            $query->getResource()->load($query, $modelId);
+            $this->queryResource->load($query, $modelId);
 
             return $query;
         } catch (\Magento\Framework\Exception\NoSuchEntityException) {

@@ -5,7 +5,9 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 use Algolia\AlgoliaSearch\Service\Serializer;
 use Magento\Framework\Serialize\SerializerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class SerializerTest extends TestCase
 {
     private ?SerializerInterface $serializerMock = null;
@@ -20,7 +22,6 @@ class SerializerTest extends TestCase
 
     /**
      * Add data provider?
-     * @return void
      */
     public function testSerializeReturnsString(): void
     {

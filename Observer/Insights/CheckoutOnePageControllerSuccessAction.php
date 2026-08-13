@@ -15,7 +15,7 @@ use Magento\Sales\Model\OrderFactory;
 
 class CheckoutOnePageControllerSuccessAction implements ObserverInterface
 {
-    /** @var string  */
+    /** @var string */
     public const PLACE_ORDER_EVENT_NAME = 'Placed order';
 
     public function __construct(
@@ -26,11 +26,6 @@ class CheckoutOnePageControllerSuccessAction implements ObserverInterface
     )
     {}
 
-    /**
-     * @param Observer $observer
-     *
-     * @return void
-     */
     public function execute(Observer $observer): void
     {
         /** @var Order $order */
@@ -45,11 +40,13 @@ class CheckoutOnePageControllerSuccessAction implements ObserverInterface
             return;
         }
 
-        $indexName = "";
+        $indexName = '';
+
         try {
             $indexName = $this->productHelper->getIndexName($order->getStoreId());
         } catch (NoSuchEntityException $e) {
-            $this->logger->error("No store found for order: " . $e->getMessage());
+            $this->logger->error('No store found for order: ' . $e->getMessage());
+
             return;
         }
 
@@ -62,9 +59,9 @@ class CheckoutOnePageControllerSuccessAction implements ObserverInterface
                 $order
             );
         } catch (AlgoliaException $e) {
-            $this->logger->critical("Unable to send purchase events due to Algolia events model misconfiguration: " . $e->getMessage());
+            $this->logger->critical('Unable to send purchase events due to Algolia events model misconfiguration: ' . $e->getMessage());
         } catch (LocalizedException $e) {
-            $this->logger->error("Failed sending purchase events: " . $e->getMessage());
+            $this->logger->error('Failed sending purchase events: ' . $e->getMessage());
         }
     }
 

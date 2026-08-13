@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Controller;
 
-use Algolia\AlgoliaSearch\Model\LandingPageFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage as LandingPageResource;
 use Magento\Framework\App\ActionFactory;
 use Magento\Framework\Stdlib\DateTime;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
@@ -13,46 +13,18 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class Router implements \Magento\Framework\App\RouterInterface
 {
-    /** @var ActionFactory */
-    protected $actionFactory;
-
-    /** @var StoreManagerInterface */
-    protected $storeManager;
-
-    /** @var TimezoneInterface */
-    protected $localeDate;
-
-    /** @var DateTime */
-    protected $dateTime;
-
-    /** @var LandingPageFactory */
-    protected $landingPageFactory;
-
-    /**
-     * @param ActionFactory $actionFactory
-     * @param LandingPageFactory $landingPageFactory
-     * @param TimezoneInterface $localeDate
-     * @param DateTime $dateTime
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
-        ActionFactory $actionFactory,
-        LandingPageFactory $landingPageFactory,
-        TimezoneInterface $localeDate,
-        DateTime $dateTime,
-        StoreManagerInterface $storeManager
+        protected ActionFactory         $actionFactory,
+        protected LandingPageResource   $landingPageResource,
+        protected TimezoneInterface     $localeDate,
+        protected DateTime              $dateTime,
+        protected StoreManagerInterface $storeManager
     ) {
-        $this->actionFactory = $actionFactory;
-        $this->landingPageFactory = $landingPageFactory;
-        $this->localeDate = $localeDate;
-        $this->dateTime = $dateTime;
-        $this->storeManager = $storeManager;
     }
 
     /**
      * Validate and match landing pages from Algolia and modify request
      *
-     * @param \Magento\Framework\App\RequestInterface $request
      *
      * @return \Magento\Framework\App\ActionInterface|null
      */
@@ -60,11 +32,9 @@ class Router implements \Magento\Framework\App\RouterInterface
     {
         $identifier = trim($request->getPathInfo(), '/');
 
-        /** @var \Algolia\AlgoliaSearch\Model\LandingPage $landingPage */
-        $landingPage = $this->landingPageFactory->create();
         $storeId = $this->storeManager->getStore()->getId();
         $date = $this->dateTime->formatDate($this->localeDate->scopeTimeStamp($storeId), false);
-        $pageId = $landingPage->checkIdentifier($identifier, $storeId, $date);
+        $pageId = $this->landingPageResource->checkIdentifier($identifier, $storeId, $date);
 
         if (!$pageId) {
             return null;

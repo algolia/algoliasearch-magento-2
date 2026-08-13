@@ -10,7 +10,9 @@ class AutocompleteRedirectMode implements OptionSourceInterface
     public const SELECTABLE_REDIRECT = 1;
     public const REDIRECT_WITH_HITS = 2;
 
-    /** @return array */
+    /**
+     * @return array
+     */
     public function toOptionArray()
     {
         return [
@@ -25,7 +27,7 @@ class AutocompleteRedirectMode implements OptionSourceInterface
             [
                 'value' => self::REDIRECT_WITH_HITS,
                 'label' => __('Display both search hits and a selectable redirect'),
-            ]
+            ],
         ];
     }
 }

@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Magento\Framework\Data\Collection\AbstractDb;
-use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\ObjectManagerInterface;
@@ -42,13 +41,13 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
             'saveConfigurationToAlgolia',
         ],
         'Algolia\AlgoliaSearch\Model\IndexMover' => [
-            'moveIndexWithSetSettings'
+            'moveIndexWithSetSettings',
         ],
         'Algolia\AlgoliaSearch\Service\Product\IndexBuilder' => [
             self::METHOD_BUILD_INDEX,
             self::METHOD_BUILD_INDEX_FULL,
             self::METHOD_BUILD_INDEX_LIST,
-            'deleteInactiveProducts'
+            'deleteInactiveProducts',
         ],
         'Algolia\AlgoliaSearch\Service\Category\IndexBuilder' => [
             self::METHOD_BUILD_INDEX,
@@ -94,7 +93,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     /**
      * Magento Constructor
      *
-     * @return void
      */
     protected function _construct(): void
     {
@@ -102,8 +100,9 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
     }
 
     /**
-     * @return $this
      * @throws AlgoliaException
+     *
+     * @return $this
      */
     public function execute(): Job
     {
@@ -148,12 +147,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         return $this;
     }
 
-    /**
-     * @param Job $job
-     * @param $maxJobDataSize
-     *
-     * @return bool
-     */
     public function canMerge(Job $job, $maxJobDataSize): bool
     {
         if ($this->getClass() !== $job->getClass()) {
@@ -187,11 +180,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         return true;
     }
 
-    /**
-     * @param Job $mergedJob
-     *
-     * @return Job
-     */
     public function merge(Job $mergedJob): Job
     {
         $mergedIds = $this->getMergedIds();
@@ -219,9 +207,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function getDefaultValues(): array
     {
         $values = [];
@@ -229,9 +214,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         return $values;
     }
 
-    /**
-     * @return string
-     */
     public function getStatus(): string
     {
         $status = JobInterface::STATUS_PROCESSING;
@@ -245,21 +227,6 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         }
 
         return $status;
-    }
-
-    /**
-     * @param \Exception $e
-     *
-     * @throws AlreadyExistsException
-     *
-     * @return Job
-     */
-    public function saveError(\Exception $e): Job
-    {
-        $this->setErrorLog($e->getMessage());
-        $this->getResource()->save($this);
-
-        return $this;
     }
 
     /**

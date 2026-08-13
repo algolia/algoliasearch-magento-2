@@ -46,53 +46,67 @@ class BackendView
         $this->url = $url;
     }
 
-    /** @return RequestInterface */
+    /**
+     * @return RequestInterface
+     */
     public function getRequest()
     {
         return $this->request;
     }
 
-    /** @return LayoutInterface */
+    /**
+     * @return LayoutInterface
+     */
     public function getLayout()
     {
         return $this->layout;
     }
 
-    /** @return StoreManagerInterface */
+    /**
+     * @return StoreManagerInterface
+     */
     public function getStoreManager()
     {
         return $this->storeManager;
     }
 
-    /** @return TimezoneInterface */
+    /**
+     * @return TimezoneInterface
+     */
     public function getDateTime()
     {
         return $this->dateTime;
     }
 
-    /** @return Session */
+    /**
+     * @return Session
+     */
     public function getBackendSession()
     {
         return $this->session;
     }
 
-    /** @return UrlInterface */
+    /**
+     * @return UrlInterface
+     */
     public function getUrlInterface()
     {
         return $this->url;
     }
 
     /**
-     * @param $message
      *
      * @return string
      */
     public function getTooltipHtml($message)
     {
         /** @var Template $block */
-        $block = $this->getLayout()->createBlock(Template::class);
+        $block = $this->getLayout()->createBlock(
+            Template::class,
+            '',
+            ['data' => ['template' => 'Algolia_AlgoliaSearch::ui/tooltip.phtml']]
+        );
 
-        $block->setTemplate('Algolia_AlgoliaSearch::ui/tooltip.phtml');
         $block->setData('message', $message);
 
         return $block->toHtml();

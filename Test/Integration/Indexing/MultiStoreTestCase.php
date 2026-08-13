@@ -54,11 +54,6 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * @param string $storeCode
-     * @param string $entity
-     * @param int $expectedNumber
-     * @param int|null $storeId
-     * @return void
      * @throws AlgoliaException
      */
     protected function assertNbOfRecordsPerStore(
@@ -81,10 +76,7 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * @param StoreInterface $store
-     * @param bool $enableInstantSearch
      *
-     * @return void
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -132,11 +124,6 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     /**
      * Fetch an entity from an index and check its base url
      *
-     * @param string $entity
-     * @param string $entityId
-     * @param StoreInterface $store
-     * @param string $baseUrl
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -147,9 +134,6 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * @param string $entityId
-     * @param StoreInterface $store
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -162,10 +146,6 @@ abstract class MultiStoreTestCase extends IndexingTestCase
     }
 
     /**
-     * @param string $entity
-     * @param string $entityId
-     * @param StoreInterface $store
-     * @return array
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */

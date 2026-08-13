@@ -11,10 +11,6 @@ class CheckQuery extends \Magento\Backend\App\Action
     /** @var QueryResourceModel */
     protected $queryResourceModel;
 
-    /**
-     * @param Context $context
-     * @param QueryResourceModel  $queryResourceModel
-     */
     public function __construct(
         Context $context,
         QueryResourceModel $queryResourceModel
@@ -23,7 +19,9 @@ class CheckQuery extends \Magento\Backend\App\Action
         $this->queryResourceModel = $queryResourceModel;
     }
 
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         $storeId = (int) $this->getRequest()->getParam('store_id');

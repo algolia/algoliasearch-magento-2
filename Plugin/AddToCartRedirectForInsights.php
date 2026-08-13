@@ -17,9 +17,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class AddToCartRedirectForInsights
 {
-    /**
-     * @var RequestInfoFilterInterface
-     */
+    /** @var RequestInfoFilterInterface */
     private $requestInfoFilter;
 
     public function __construct(
@@ -32,14 +30,12 @@ class AddToCartRedirectForInsights
     ) {}
 
     /**
-     * @param Cart $cartModel
-     * @param int|Product $productInfo
-     * @param array|int|DataObject|null $requestInfo
      *
-     * @return null
      *
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return null
      */
     public function beforeAddProduct(Cart $cartModel, int|Product $productInfo, array|int|DataObject|null $requestInfo)
     {
@@ -81,8 +77,8 @@ class AddToCartRedirectForInsights
                         '_query' => [
                             'objectID' => $product->getId(),
                             'queryID' => $requestInfo['queryID'],
-                            'indexName' => $requestInfo['indexName']
-                        ]
+                            'indexName' => $requestInfo['indexName'],
+                        ],
                     ]
                 );
 
@@ -90,15 +86,14 @@ class AddToCartRedirectForInsights
                 if ($this->checkoutSession->getUseNotice() === null) {
                     $this->checkoutSession->setUseNotice(true);
                 }
+
                 throw new LocalizedException(__($result));
             }
         }
     }
 
     /**
-     * @param $productInfo
      *
-     * @return Product
      *
      * @throws NoSuchEntityException
      * @throws LocalizedException
@@ -115,6 +110,7 @@ class AddToCartRedirectForInsights
             }
         } elseif (is_int($productInfo) || is_string($productInfo)) {
             $storeId = $this->storeManager->getStore()->getId();
+
             try {
                 $product = $this->productRepository->getById($productInfo, false, $storeId);
             } catch (NoSuchEntityException $e) {
@@ -134,6 +130,7 @@ class AddToCartRedirectForInsights
                 __("The product wasn't found. Verify the product and try again.")
             );
         }
+
         return $product;
     }
 
@@ -142,6 +139,7 @@ class AddToCartRedirectForInsights
      *
      * @param Product $product
      * @param DataObject|int|array $request
+     *
      * @return int|DataObject
      */
     protected function getQtyRequest($product, $request = 0)
@@ -164,8 +162,10 @@ class AddToCartRedirectForInsights
      * Get request for product add to cart procedure
      *
      * @param DataObject|int|array $requestInfo
-     * @return DataObject
+     *
      * @throws LocalizedException
+     *
+     * @return DataObject
      */
     protected function getProductRequest($requestInfo)
     {
@@ -196,6 +196,7 @@ class AddToCartRedirectForInsights
             $this->requestInfoFilter = \Magento\Framework\App\ObjectManager::getInstance()
                 ->get(RequestInfoFilterInterface::class);
         }
+
         return $this->requestInfoFilter;
     }
 }

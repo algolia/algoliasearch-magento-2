@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Frontend\Search;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Test\Integration\IndexCleaner;
-use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\ProductsIndexingTest;
 use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\ProductsIndexingTestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -28,7 +27,7 @@ class SearchTestCase extends ProductsIndexingTestCase
      * Simulates a class level operation in a non-static context
      *
      * @param string $key - a unique key for the operation
-     * @return void
+     *
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws NoSuchEntityException
@@ -55,6 +54,7 @@ class SearchTestCase extends ProductsIndexingTestCase
     /**
      * Removes timestamp from index prefix for index reuse.
      * For expected format see:
+     *
      * @see \Algolia\AlgoliaSearch\Test\Integration\TestCase::bootstrap
      */
     protected function setupTestSuiteIndexPrefix(): void
@@ -71,6 +71,7 @@ class SearchTestCase extends ProductsIndexingTestCase
     {
         $parts = explode('_', $this->indexPrefix);
         unset($parts[2]); // kill the timestamp
+
         return implode('_', array_values($parts));
     }
 

@@ -22,6 +22,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function invokeMethod(object $object, string $methodName, array $parameters = []): mixed
     {
         $reflection = new \ReflectionClass($object::class);
+
         return $reflection->getMethod($methodName)->invokeArgs($object, $parameters);
     }
 
@@ -36,9 +37,37 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected function setPrivateProperty(object $obj, string $prop, mixed $value): void
     {
+        $refProperty = $this->getReflectionClass($obj, $prop);
+        $refProperty->setValue($obj, $value);
+    }
+
+    /**
+     * Get a private property of a class
+     *
+     * @param object $obj The object to get the property from
+     * @param string $prop The name of the property to get the value for
+     * @return mixed The value of the property
+     *
+     * @throws \ReflectionException
+     */
+    protected function getPrivateProperty(object $obj, string $prop): mixed
+    {
+        $refProperty = $this->getReflectionClass($obj, $prop);
+        return $refProperty->getValue($obj);
+    }
+
+    protected function getReflectionClass(object $obj, string $prop): \ReflectionProperty
+    {
         $ref = new \ReflectionClass($obj);
-        $p = $ref->getProperty($prop);
-        $p->setValue($obj, $value);
+        while ($ref !== false) {
+            try {
+                return $ref->getProperty($prop);
+            } catch (\ReflectionException) {
+                $ref = $ref->getParentClass();
+            }
+        }
+
+        throw new \ReflectionException("Property {$prop} does not exist in class hierarchy of " . get_class($obj));
     }
 
     /**
@@ -53,8 +82,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
     {
         $mock = $this->createMock($propertyClass);
-        $reflection = new \ReflectionClass($object);
-        $property = $reflection->getProperty($propertyName);
-        $property->setValue($object, $mock);
+        $this->setPrivateProperty($object, $propertyName, $mock);
     }
 }

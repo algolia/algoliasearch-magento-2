@@ -2,19 +2,16 @@ parameters:
     level: 1
     reportUnmatchedIgnoredErrors: false
     paths:
-        - Api
-        - Block
-        - Controller
-        - DataProvider
-        - Exception
-        - Factory
-        - Helper
-        - Model
-        - Plugin
-        - Setup
-        - Test
-        - Ui
-        - ViewModel
-        - registration.php
+        - %currentWorkingDirectory%
+    excludePaths:
+        - dev
     ignoreErrors:
         - '#Call to static method getObjectManager\(\) on an unknown class Magento\\TestFramework\\Helper\\Bootstrap.#'
+        # Temporary: attribute exists only in PHPUnit 12, which the extension supports but is not yet
+        # the analysis/CI runtime. Remove once the PHPUnit 12 upgrade lands (tracked separately).
+        - '#Attribute class PHPUnit\\Framework\\Attributes\\AllowMockObjectsWithoutExpectations does not exist.#'
+        # Model\Job self-persists via the deprecated save() inside its own execute(). 
+        # This violates SRP as the entity also drives job processing so the fix is to extract a
+        # JobProcessor from the persistence layer rather than inject a resource model into the model.
+        # That refactor is deferred to a future release (see MAGE-1589 notes). Remove this then.
+        - '#Use service contracts to persist entities in favour of \$this\(Algolia\\AlgoliaSearch\\Model\\Job\)::save\(\) method#'

@@ -32,6 +32,7 @@ class VirtualReplicaValidator
                 $this->tooManyCustomerGroups = $this->priceSortReplicaCount > $maxReplicas;
             }
         }
+
         return !$this->replicaLimitExceeded;
     }
 

@@ -10,6 +10,7 @@ class Checkboxes extends \Magento\Framework\App\Config\Value
         if (is_array($value)) {
             $this->setValue(implode(',', $value));
         }
+
         return parent::beforeSave();
     }
 }

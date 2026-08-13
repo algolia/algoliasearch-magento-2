@@ -22,9 +22,11 @@ use Magento\Bundle\Model\Product\Type as BundleProductType;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Gallery\ReadHandler as GalleryReadHandler;
 use Magento\Catalog\Model\Product\Url as ProductUrl;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Eav\Attribute as AttributeResource;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\DataObject;
@@ -36,9 +38,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class RecordBuilder implements RecordBuilderInterface
 {
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected array $attributesToIndexAsArray = [
         'sku',
         'color',
@@ -57,13 +57,13 @@ class RecordBuilder implements RecordBuilderInterface
         protected StockRegistryInterface $stockRegistry,
         protected PriceManager           $priceManager,
         protected ProductUrl             $productUrl,
+        protected ProductResource        $productResource,
+        protected GalleryReadHandler     $galleryReadHandler,
     ){}
 
     /**
      * Builds a Product record
      *
-     * @param DataObject $entity
-     * @return array
      *
      * @throws AlgoliaException
      * @throws LocalizedException
@@ -116,7 +116,7 @@ class RecordBuilder implements RecordBuilderInterface
         $customData = $this->addImageData($customData, $product, $additionalAttributes);
         $customData = $this->addInStock($defaultData, $customData, $product);
         $customData = $this->addStockQty($defaultData, $customData, $additionalAttributes, $product);
-        if ($product->getTypeId() == "bundle") {
+        if ($product->getTypeId() == 'bundle') {
             $customData = $this->addBundleProductDefaultOptions($customData, $product);
         }
         $subProducts = $this->getSubProducts($product);
@@ -132,7 +132,7 @@ class RecordBuilder implements RecordBuilderInterface
             [
                 'custom_data'   => $transport,
                 'sub_products'  => $subProducts,
-                'productObject' => $product
+                'productObject' => $product,
             ]
         );
         $customData = $transport->getData();
@@ -144,7 +144,7 @@ class RecordBuilder implements RecordBuilderInterface
             [
                 'custom_data'   => $transport,
                 'sub_products'  => $subProducts,
-                'productObject' => $product
+                'productObject' => $product,
             ]
         );
         $customData = $transport->getData();
@@ -157,29 +157,18 @@ class RecordBuilder implements RecordBuilderInterface
     public function addVisibilityAttributes(array $customData, Product $product): array
     {
         $visibility = $product->getVisibility();
+
         return array_merge($customData, [
             ProductRecordFieldsInterface::VISIBILITY_SEARCH  => (int) (in_array($visibility, $this->visibility->getVisibleInSearchIds())),
             ProductRecordFieldsInterface::VISIBILITY_CATALOG => (int) (in_array($visibility, $this->visibility->getVisibleInCatalogIds())),
         ]);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return array
-     */
     public function getAdditionalAttributes(?int $storeId = null): array
     {
         return $this->configHelper->getProductAdditionalAttributes($storeId);
     }
 
-    /**
-     * @param $attribute
-     * @param $defaultData
-     * @param $customData
-     * @param $additionalAttributes
-     * @param Product $product
-     * @return mixed
-     */
     protected function addAttribute($attribute, $defaultData, $customData, $additionalAttributes, Product $product)
     {
         if (isset($defaultData[$attribute]) === false
@@ -190,20 +179,11 @@ class RecordBuilder implements RecordBuilderInterface
         return $customData;
     }
 
-    /**
-     * @param $additionalAttributes
-     * @param $attributeName
-     * @return bool
-     */
     public function isAttributeEnabled($additionalAttributes, $attributeName): bool
     {
         return $this->configHelper->isAttributeInList($additionalAttributes, $attributeName);
     }
 
-    /**
-     * @param array $additionalAttributes
-     * @return bool
-     */
     protected function isPriceIndexingEnabled(array $additionalAttributes): bool
     {
         return $this->configHelper->isAttributeInList($additionalAttributes, 'price');
@@ -211,10 +191,11 @@ class RecordBuilder implements RecordBuilderInterface
 
     /**
      * @param array $algoliaData Data for product object to be serialized to Algolia index
-     * @param Product $product
-     * @return mixed
+     *
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return mixed
      */
     protected function addCategoryData(array $algoliaData, Product $product): array
     {
@@ -233,13 +214,11 @@ class RecordBuilder implements RecordBuilderInterface
         }
 
         $this->logger->stopProfiling(__METHOD__);
+
         return $algoliaData;
     }
 
     /**
-     * @param array $customData
-     * @param Product $product
-     * @param $additionalAttributes
      * @return array
      */
     protected function addImageData(array $customData, Product $product, $additionalAttributes)
@@ -258,7 +237,7 @@ class RecordBuilder implements RecordBuilderInterface
             $customData['image_url'] = $this->imageHelper->getUrl();
 
             if ($this->isAttributeEnabled($additionalAttributes, 'media_gallery')) {
-                $product->load($product->getId(), 'media_gallery');
+                $this->galleryReadHandler->execute($product);
 
                 $customData['media_gallery'] = [];
 
@@ -274,12 +253,6 @@ class RecordBuilder implements RecordBuilderInterface
         return $customData;
     }
 
-    /**
-     * @param $defaultData
-     * @param $customData
-     * @param Product $product
-     * @return mixed
-     */
     public function addInStock($defaultData, $customData, Product $product)
     {
         if (isset($defaultData['in_stock']) === false) {
@@ -290,13 +263,6 @@ class RecordBuilder implements RecordBuilderInterface
         return $customData;
     }
 
-    /**
-     * @param $defaultData
-     * @param $customData
-     * @param $additionalAttributes
-     * @param Product $product
-     * @return mixed
-     */
     protected function addStockQty($defaultData, $customData, $additionalAttributes, Product $product)
     {
         if (isset($defaultData['stock_qty']) === false
@@ -305,7 +271,7 @@ class RecordBuilder implements RecordBuilderInterface
 
             $stockItem = $this->stockRegistry->getStockItem($product->getId());
             if ($stockItem) {
-                $customData['stock_qty'] = (int)$stockItem->getQty();
+                $customData['stock_qty'] = (int) $stockItem->getQty();
             }
         }
 
@@ -313,11 +279,6 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param $customData
-     * @param $additionalAttributes
-     * @param Product $product
-     * @param $subProducts
-     * @return mixed
      * @throws LocalizedException
      */
     protected function addAdditionalAttributes($customData, $additionalAttributes, Product $product, $subProducts)
@@ -330,11 +291,8 @@ class RecordBuilder implements RecordBuilderInterface
                 continue;
             }
 
-            /** @var \Magento\Catalog\Model\ResourceModel\Product $resource */
-            $resource = $product->getResource();
-
             /** @var AttributeResource $attributeResource */
-            $attributeResource = $resource->getAttribute($attributeName);
+            $attributeResource = $this->productResource->getAttribute($attributeName);
             if (!$attributeResource) {
                 continue;
             }
@@ -366,10 +324,10 @@ class RecordBuilder implements RecordBuilderInterface
     /**
      * For a given product extract category data including category names, parent paths and all category tree IDs
      *
-     * @param Product $product
-     * @return array|array[]
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return array|array[]
      */
     protected function buildCategoryData(Product $product): array
     {
@@ -422,9 +380,6 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param $categoryIds
-     * @param $storeId
-     * @return array
      * @throws LocalizedException
      */
     public function getAllCategories($categoryIds, $storeId): array
@@ -445,10 +400,6 @@ class RecordBuilder implements RecordBuilderInterface
     /**
      * A category should only be indexed if in the path of the current store and has a valid name.
      *
-     * @param $category
-     * @param $rootCat
-     * @param $storeId
-     * @return string|null
      */
     protected function getValidCategoryName($category, $rootCat, $storeId): ?string
     {
@@ -463,8 +414,6 @@ class RecordBuilder implements RecordBuilderInterface
     /**
      * Filter out non unique category path entries.
      *
-     * @param $paths
-     * @return array
      */
     protected function dedupePaths($paths): array
     {
@@ -476,11 +425,6 @@ class RecordBuilder implements RecordBuilderInterface
         );
     }
 
-    /**
-     * @param array $categoriesWithPath
-     * @param int $storeId
-     * @return array
-     */
     protected function getHierarchicalCategories(array $categoriesWithPath, int $storeId): array
     {
         $hierarchicalCategories = [];
@@ -517,24 +461,23 @@ class RecordBuilder implements RecordBuilderInterface
      * without explicit category assignment.
      *
      * This mimics legacy indexing behavior with `categoryIds`
+     *
      * @see \Algolia\AlgoliaSearch\Service\Product\RecordBuilder::buildCategoryData
      *
      */
     protected function autoAnchorParentCategories(array $paths): array {
         foreach ($paths as $path) {
             for ($i = count($path) - 1; $i > 0; $i--) {
-                $paths[] = array_slice($path,0, $i);
+                $paths[] = array_slice($path, 0, $i);
             }
         }
+
         return $this->dedupePaths($paths);
     }
 
     /**
      * Flatten non-hierarchical paths for merchandising
      *
-     * @param array $paths
-     * @param int $storeId
-     * @return array
      */
     protected function flattenCategoryPaths(array $paths, int $storeId): array
     {
@@ -545,9 +488,6 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param $customData
-     * @param Product $product
-     * @return mixed
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -555,7 +495,7 @@ class RecordBuilder implements RecordBuilderInterface
         $optionsCollection = $product->getTypeInstance()->getOptionsCollection($product);
         $optionDetails = [];
         foreach ($optionsCollection as $option){
-            $selections = $product->getTypeInstance()->getSelectionsCollection($option->getOptionId(),$product);
+            $selections = $product->getTypeInstance()->getSelectionsCollection($option->getOptionId(), $product);
             //selection details by optionids
             foreach ($selections as $selection) {
                 if($selection->getIsDefault()){
@@ -569,7 +509,6 @@ class RecordBuilder implements RecordBuilderInterface
     }
 
     /**
-     * @param Product $product
      * @return array|ProductInterface[]|DataObject[]
      */
     protected function getSubProducts(Product $product): array
@@ -606,6 +545,7 @@ class RecordBuilder implements RecordBuilderInterface
         }
 
         $this->logger->stopProfiling(__METHOD__);
+
         return $subProducts;
     }
 
@@ -656,14 +596,6 @@ class RecordBuilder implements RecordBuilderInterface
         return true;
     }
 
-    /**
-     * @param $customData
-     * @param $value
-     * @param Product $product
-     * @param $attribute
-     * @param AttributeResource $attributeResource
-     * @return mixed
-     */
     protected function addNonNullValue(
         $customData,
         $value,
@@ -692,13 +624,6 @@ class RecordBuilder implements RecordBuilderInterface
         return $customData;
     }
 
-    /**
-     * @param $customData
-     * @param $subProducts
-     * @param $attribute
-     * @param AttributeResource $attributeResource
-     * @return mixed
-     */
     protected function addNullValue($customData, $subProducts, $attribute, AttributeResource $attributeResource)
     {
         $attributeName = $attribute['attribute'];
@@ -744,7 +669,6 @@ class RecordBuilder implements RecordBuilderInterface
      * @param string|array $valueText - bit of a misnomer - essentially the retrieved values to be indexed for a given product's attribute
      * @param Product $subProduct - the simple product to index
      * @param AttributeResource $attributeResource - the attribute being indexed
-     * @return array
      */
     protected function getValues($valueText, Product $subProduct, AttributeResource $attributeResource): array
     {
@@ -765,13 +689,6 @@ class RecordBuilder implements RecordBuilderInterface
         return $values;
     }
 
-    /**
-     * @param $subProductImages
-     * @param $attribute
-     * @param $subProduct
-     * @param $valueText
-     * @return mixed
-     */
     protected function addSubProductImage($subProductImages, $attribute, $subProduct, $valueText)
     {
         if (mb_strtolower((string) $attribute['attribute'], 'utf-8') !== 'color') {
@@ -807,9 +724,6 @@ class RecordBuilder implements RecordBuilderInterface
      * Overridable via Preference to allow implementer to enforce their own uniqueness rules while leveraging existing indexing code.
      * e.g. $values = (in_array($attributeName, self::NON_UNIQUE_ATTRIBUTES)) ? $values : array_unique($values);
      *
-     * @param array $values
-     * @param string $attributeName
-     * @return array
      */
     protected function getSanitizedArrayValues(array $values, string $attributeName): array
     {
@@ -822,7 +736,6 @@ class RecordBuilder implements RecordBuilderInterface
      * @param Product $product
      * @param int $storeId
      *
-     * @return bool
      */
     public function productIsInStock($product, $storeId): bool
     {

@@ -10,7 +10,7 @@ use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
-use Algolia\AlgoliaSearch\Service\IndexSettingsComparator;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -27,9 +27,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     ){}
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @return void
      * @throws NoSuchEntityException|LocalizedException
      */
     public function processBatch(int $storeId, ?array $entityIds = null): void
@@ -55,11 +52,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         $this->processFullReindex($storeId, $categoriesPerPage);
     }
 
-    /**
-     * @param array $categoryIds
-     * @param int $categoriesPerPage
-     * @param int $storeId
-     */
     protected function processSpecificCategories(array $categoryIds, int $categoriesPerPage, int $storeId): void
     {
         foreach (array_chunk($categoryIds, $categoriesPerPage) as $chunk) {
@@ -77,8 +69,6 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     }
 
     /**
-     * @param int $storeId
-     * @param int $categoriesPerPage
      *
      * @throws NoSuchEntityException
      * @throws LocalizedException
@@ -112,7 +102,7 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
                 'options' => [
                     'page' => $i,
                     'pageSize' => $categoriesPerPage,
-                ]
+                ],
             ];
 
             /** @uses CategoryIndexBuilder::buildIndexFull() */

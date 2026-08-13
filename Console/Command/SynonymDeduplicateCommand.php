@@ -71,6 +71,7 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
             $this->dedupeSynonyms($storeIds);
         } catch (\Exception $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+
             return CLI::RETURN_FAILURE;
         }
 
@@ -82,11 +83,11 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
      * and will be removed completely
      * Verify with the end user first!
      *
-     * @return bool
      */
     protected function confirmDedupeOperation(): bool
     {
         $this->output->writeln('<fg=red>WARNING:</fg=red> This deduplicate process cannot handle one way synonyms and will remove them altogether!');
+
         return $this->confirmOperation();
     }
 
@@ -143,7 +144,6 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
     /**
      * @param string[] $settingNames
      * @param array<string, array> $settings
-     * @return array
      */
     protected function dedupeSpecificSettings(array $settingNames, array $settings): array
     {
@@ -164,8 +164,6 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
     /**
      * Find and remove the duplicates in an array of indexed arrays
      * Does not work with associative arrays
-     * @param array $data
-     * @return array
      */
     protected function dedupeArrayOfArrays(array $data): array {
         $encoded = array_map('json_encode', $data);
@@ -174,6 +172,7 @@ class SynonymDeduplicateCommand extends AbstractStoreCommand
             fn($item) => json_decode((string) $item, true),
             $unique
         );
+
         return $decoded;
     }
 }

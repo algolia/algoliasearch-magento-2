@@ -53,6 +53,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             }
             $path .= $this->getCategoryHelper()->getCategoryName($treeCategoryId, $this->getStoreId());
         }
+
         return $path;
     }
 
@@ -71,6 +72,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             $arr[$key]['url'] = $child->getUrl();
             $arr = array_merge($arr, $this->getChildCategoryUrls($child, $key, $arr));
         }
+
         return $arr;
     }
 
@@ -88,7 +90,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $persoHelper = $this->getPersonalizationHelper();
 
-        $baseUrl = rtrim($this->getBaseUrl(), '/');
+        $baseUrl = mb_rtrim($this->getBaseUrl(), '/');
 
         $priceFormat = $this->getPriceFormat();
 
@@ -181,7 +183,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'addToCartParams' => $addToCartParams,
                 'isLookingSimilarEnabledInPDP' => $config->isLookingSimilarEnabledInPDP(),
                 'isLookingSimilarEnabledInCartPage' => $config->isLookingSimilarEnabledInShoppingCart(),
-                'lookingSimilarTitle' => __($config->getLookingSimilarTitle())
+                'lookingSimilarTitle' => __($config->getLookingSimilarTitle()),
             ],
             'extensionVersion' => $config->getExtensionVersion(),
             'applicationId' => $config->getApplicationID(),
@@ -217,7 +219,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'autofocus' => true,
             'resultPageUrl' => $this->getCatalogSearchHelper()->getResultUrl(),
             'request' => [
-                'query' => htmlspecialchars(html_entity_decode((string)$query)),
+                'query' => htmlspecialchars(html_entity_decode((string) $query)),
                 'refinementKey' => $refinementKey,
                 'refinementValue' => $refinementValue,
                 'categoryId' => $categoryConfig['categoryId'],
@@ -231,7 +233,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                     'facetFilters' => RuleContextInterface::FACET_FILTERS_CONTEXT,
                     'merchCategoryPrefix' => RuleContextInterface::MERCH_RULE_CATEGORY_PREFIX,
                     'merchQueryPrefix' => RuleContextInterface::MERCH_RULE_QUERY_PREFIX,
-                    'landingPagePrefix' => RuleContextInterface::LANDING_PAGE_PREFIX
+                    'landingPagePrefix' => RuleContextInterface::LANDING_PAGE_PREFIX,
                 ],
             ],
             'showCatsNotIncludedInNavigation' => $config->showCatsNotIncludedInNavigation(),
@@ -247,7 +249,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'consentCookieName' => $config->getDefaultConsentCookieName(),
                 'cookieAllowButtonSelector' => $config->getAllowCookieButtonSelector(),
                 'cookieRestrictionModeEnabled' => $config->isCookieRestrictionModeEnabled(),
-                'cookieDuration' => $config->getAlgoliaCookieDuration()
+                'cookieDuration' => $config->getAlgoliaCookieDuration(),
             ],
             'ccAnalytics' => [
                 'enabled' => $config->isClickConversionAnalyticsEnabled(),
@@ -316,7 +318,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'products' => __('Products'),
                 'suggestions' => __('Suggestions'),
                 'searchBy' => __('Search by'),
-                'redirectSearchPrompt' => __("Continue search for"),
+                'redirectSearchPrompt' => __('Continue search for'),
                 'searchForFacetValuesPlaceholder' => __('Search for other ...'),
                 'showMore' => __('Show more products'),
                 'searchTitle' => __('Search results for'),
@@ -327,12 +329,14 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $transport = new DataObject($algoliaJsConfig);
         $this->_eventManager->dispatch('algolia_after_create_configuration', ['configuration' => $transport]);
+
         return $transport->getData();
     }
 
     protected function getAutocompleteConfiguration(): array
     {
         $config = $this->autocompleteConfig;
+
         return [
             'enabled'                   => $config->isEnabled(),
             'selector'                  => $config->getDomSelector(),
@@ -358,8 +362,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'enabled'                => $config->isRedirectEnabled(),
                 'showSelectableRedirect' => $config->getRedirectMode() !== AutocompleteRedirectMode::SUBMIT_ONLY,
                 'showHitsWithRedirect'   => $config->getRedirectMode() !== AutocompleteRedirectMode::SELECTABLE_REDIRECT,
-                'openInNewWindow'        => $config->isRedirectInNewWindowEnabled()
-            ]
+                'openInNewWindow'        => $config->isRedirectInNewWindowEnabled(),
+            ],
         ];
     }
 
@@ -388,8 +392,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
                 'onPageLoad'             => in_array(InstantSearchRedirectOptions::REDIRECT_ON_PAGE_LOAD, $redirectOptions),
                 'onSearchAsYouType'      => in_array(InstantSearchRedirectOptions::REDIRECT_ON_SEARCH_AS_YOU_TYPE, $redirectOptions),
                 'showSelectableRedirect' => in_array(InstantSearchRedirectOptions::SELECTABLE_REDIRECT, $redirectOptions),
-                'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $redirectOptions)
-            ]
+                'openInNewWindow'        => in_array(InstantSearchRedirectOptions::OPEN_IN_NEW_WINDOW, $redirectOptions),
+            ],
         ];
     }
 
@@ -430,7 +434,7 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
                 $categoryId = $category->getId();
 
-                list($path, $level, $parentCategory) = array_values(
+                [$path, $level, $parentCategory] = array_values(
                     $this->categoryPathProvider->getCategoryPathDetails(
                         $category,
                         $this->getStoreId()
@@ -454,7 +458,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
         return in_array('categories', array_column($facets, 'attribute'));
     }
 
-    /** TODO: Determine whether these parameters are still useful  */
+    /**
+     * TODO: Determine whether these parameters are still useful
+     */
     protected function getUrlTrackedParameters()
     {
         $urlTrackedParameters = ['query', 'attribute:*', 'index'];

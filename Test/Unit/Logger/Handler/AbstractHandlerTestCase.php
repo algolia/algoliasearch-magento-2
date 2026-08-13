@@ -18,6 +18,7 @@ abstract class AbstractHandlerTestCase extends TestCase
         if (class_exists(\Monolog\LogRecord::class)) {
             // Monolog v3
             $levelEnum = $this->convertLevelToEnum($level);
+
             return new \Monolog\LogRecord(
                 new \DateTimeImmutable(),
                 'test',
@@ -29,7 +30,7 @@ abstract class AbstractHandlerTestCase extends TestCase
         // Monolog v2
         return [
             'message' => $message,
-            'level' => $level
+            'level' => $level,
         ];
     }
 

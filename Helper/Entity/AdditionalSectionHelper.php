@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Service\AdditionalSection\RecordBuilder as AdditionalSectionRecordBuilder;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\Eav\Model\Config;
 use Magento\Framework\DataObject;
@@ -24,10 +24,6 @@ class AdditionalSectionHelper extends AbstractEntityHelper
         parent::__construct($indexNameFetcher);
     }
 
-    /**
-     * @param int|null $storeId
-     * @return array
-     */
     public function getIndexSettings(?int $storeId = null): array
     {
         $indexSettings = [
@@ -75,7 +71,7 @@ class AdditionalSectionHelper extends AbstractEntityHelper
             $dataObject = new DataObject([
                 'value' => $value,
                 'section' => $section,
-                'store_id' => $storeId
+                'store_id' => $storeId,
             ]);
 
             return $this->additionalSectionRecordBuilder->buildRecord($dataObject);

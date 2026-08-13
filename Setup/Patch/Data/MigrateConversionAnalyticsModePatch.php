@@ -49,9 +49,6 @@ class MigrateConversionAnalyticsModePatch implements DataPatchInterface
 
     /**
      * Pass as a callback to ConfigChecker to ensure that all scopes are checked
-     * @param string $scope
-     * @param int $scopeId
-     * @return void
      */
     public function migrateSetting(string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, int $scopeId = 0): void
     {
@@ -60,14 +57,15 @@ class MigrateConversionAnalyticsModePatch implements DataPatchInterface
             $value,
             [
                 InsightsHelper::CONVERSION_ANALYTICS_MODE_CART,
-                InsightsHelper::CONVERSION_ANALYTICS_MODE_PURCHASE
+                InsightsHelper::CONVERSION_ANALYTICS_MODE_PURCHASE,
             ]
         )) {
             $this->configWriter->save(
                 ConfigHelper::CC_CONVERSION_ANALYTICS_MODE,
                 InsightsHelper::CONVERSION_ANALYTICS_MODE_ALL,
                 $scope,
-                $scopeId);
+                $scopeId
+            );
         }
     }
 

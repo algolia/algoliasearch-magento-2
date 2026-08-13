@@ -17,6 +17,7 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 
 /**
  * @magentoDbIsolation disabled
+ *
  * @magentoAppIsolation enabled
  */
 class QueueTest extends TestCase
@@ -164,7 +165,7 @@ class QueueTest extends TestCase
                 'retries' => 0,
                 'error_log' => '',
                 'data_size' => 2,
-            ]
+            ],
         ];
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
@@ -194,7 +195,7 @@ class QueueTest extends TestCase
                 'retries' => 0,
                 'error_log' => '',
                 'data_size' => 2,
-            ]
+            ],
         ];
 
         $this->connection->insertMultiple('algoliasearch_queue', $data);
@@ -254,7 +255,7 @@ class QueueTest extends TestCase
             ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE,
             ConfigHelper::FACETS,
             QueueHelper::USE_TMP_INDEX,
-            ConfigHelper::PRODUCT_ATTRIBUTES
+            ConfigHelper::PRODUCT_ATTRIBUTES,
         ]);
 
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');

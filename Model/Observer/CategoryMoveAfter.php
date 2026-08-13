@@ -20,11 +20,6 @@ class CategoryMoveAfter implements ObserverInterface
     /** @var ResourceConnection */
     protected $resource;
 
-    /**
-     * @param IndexerRegistry $indexerRegistry
-     * @param ConfigHelper $configHelper
-     * @param ResourceConnection $resource
-     */
     public function __construct(
         IndexerRegistry $indexerRegistry,
         ConfigHelper $configHelper,
@@ -39,7 +34,6 @@ class CategoryMoveAfter implements ObserverInterface
      * Category::move() does not run save so the plugin observing the save method
      * is not able to process the products that need updating.
      *
-     * @param Observer $observer
      *
      * @return bool|void
      */

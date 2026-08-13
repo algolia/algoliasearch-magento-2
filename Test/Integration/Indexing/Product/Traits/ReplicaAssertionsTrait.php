@@ -42,6 +42,7 @@ trait ReplicaAssertionsTrait
         $replicaSettings = $this->algoliaConnector->getSettings($replicaIndexOptions);
         $this->assertArrayHasKey('primary', $replicaSettings);
         $this->assertEquals($primaryIndexName, $replicaSettings['primary']);
+
         return $replicaSettings;
     }
 
@@ -49,7 +50,7 @@ trait ReplicaAssertionsTrait
     {
         $indexOptions = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
         $indexSettings = $this->algoliaConnector->getSettings($indexOptions);
-        $this->assertCount(0, $indexSettings, "Settings found for index that should not exist");
+        $this->assertCount(0, $indexSettings, 'Settings found for index that should not exist');
     }
 
     protected function assertReplicaRanking(array $replicaSettings, string $rankingKey, string $sort): void
@@ -82,8 +83,6 @@ trait ReplicaAssertionsTrait
 
     /**
      * @param string[] $replicaSetting
-     * @param string $replicaIndexName
-     * @return bool
      */
     protected function isVirtualReplica(array $replicaSetting, string $replicaIndexName): bool
     {
@@ -99,6 +98,7 @@ trait ReplicaAssertionsTrait
             $replicaSetting,
             function ($replica) use ($replicaIndexName) {
                 $regex = '/^' . preg_quote($replicaIndexName) . '$/';
+
                 return preg_match($regex, $replica);
             }
         );
@@ -107,6 +107,7 @@ trait ReplicaAssertionsTrait
     protected function hasSortingAttribute($sortAttr, $sortDir): bool
     {
         $sorting = $this->configHelper->getSorting();
+
         return (bool) array_filter(
             $sorting,
             fn($sort) => $sort['attribute'] == $sortAttr
@@ -142,7 +143,7 @@ trait ReplicaAssertionsTrait
                 [
                     'attribute' => $sortAttr,
                     'sort'       => $sortDir,
-                    'sortLabel'  => $sortAttr
+                    'sortLabel'  => $sortAttr,
                 ],
                 $attr
             );

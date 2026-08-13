@@ -21,7 +21,10 @@ use Magento\Framework\Locale\Currency;
 use Magento\Framework\Module\ResourceInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Weee\Helper\Data as WeeeHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ConfigHelperTest extends TestCase
 {
     protected ?ConfigHelper $configHelper;
@@ -97,9 +100,7 @@ class ConfigHelperTest extends TestCase
         $this->assertEquals('', $this->configHelper->getIndexPrefix());
     }
 
-    /**
-     * @dataProvider isEnabledFrontEndProvider
-     */
+    #[DataProvider('isEnabledFrontEndProvider')]
     public function testIsEnabledFrontEnd(
         bool $isAutocompleteEnabled,
         bool $isInstantSearchEnabled,

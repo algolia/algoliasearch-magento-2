@@ -11,22 +11,12 @@ use Magento\Sales\Model\Order\Item;
 
 class Conversion extends Template
 {
-    /**
-     * @var Session
-     */
+    /** @var Session */
     protected $checkoutSession;
 
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @param Context $context
-     * @param Session $checkoutSession
-     * @param ConfigHelper $configHelper
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         Session $checkoutSession,

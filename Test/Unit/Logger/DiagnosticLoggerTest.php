@@ -7,7 +7,9 @@ use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Logger\TimedLogger;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class DiagnosticLoggerTest extends TestCase
 {
     protected ?ConfigHelper $configHelper;
@@ -30,7 +32,7 @@ class DiagnosticLoggerTest extends TestCase
     }
 
     public function testLog(): void {
-        $msg = "Adding a log message";
+        $msg = 'Adding a log message';
         $this->timedLogger->expects($this->once())
             ->method('log')
             ->with($msg, \Monolog\Logger::INFO);

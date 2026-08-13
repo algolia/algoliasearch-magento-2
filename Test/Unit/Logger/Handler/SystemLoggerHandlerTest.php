@@ -5,7 +5,9 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Logger\Handler;
 use Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler;
 use Magento\Framework\Filesystem\DriverInterface;
 use Magento\Framework\Logger\Handler\Exception as ExceptionHandler;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class SystemLoggerHandlerTest extends AbstractHandlerTestCase
 {
     /**
@@ -27,7 +29,7 @@ class SystemLoggerHandlerTest extends AbstractHandlerTestCase
         );
 
         $errorRecord = $this->makeLogRecord(
-             \Monolog\Logger::ERROR,
+            \Monolog\Logger::ERROR,
             'Should log'
         );
 

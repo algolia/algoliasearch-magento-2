@@ -39,14 +39,10 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected const DEFAULT_MARGIN = 0.25;
 
-    /**
-     * Min value for safety margin
-     */
+    /** Min value for safety margin */
     protected const MIN_MARGIN = 0;
 
-    /**
-     * Max value for safety margin
-     */
+    /** Max value for safety margin */
     protected const MAX_MARGIN = 3;
 
     /**
@@ -55,9 +51,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      */
     protected const DEFAULT_SAMPLE_SIZE = 20;
 
-    /**
-     * Max Sample size
-     */
+    /** Max Sample size */
     protected const MAX_SAMPLE_SIZE = 1000;
 
     protected const OPTION_SAMPLE_SIZE = 'sample-size';
@@ -66,28 +60,21 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     protected const OPTION_MARGIN = 'margin';
     protected const OPTION_MARGIN_SHORTCUT = 'm';
 
-    /**
-     * Simple product types (should generate smaller product records)
-     */
+    /** Simple product types (should generate smaller product records) */
     protected const PRODUCTS_SIMPLE_TYPES = [
         'simple',
         'downloadable',
         'virtual',
-        'giftcard'
+        'giftcard',
     ];
 
-    /**
-     * Complex product types (should generate bigger product records)
-     */
+    /** Complex product types (should generate bigger product records) */
     protected const PRODUCTS_COMPLEX_TYPES = [
         'configurable',
         'grouped',
-        'bundle'
+        'bundle',
     ];
 
-    /**
-     * @var array|null
-     */
     protected ?array $storeCounts = [];
 
     public function __construct(
@@ -117,7 +104,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return "Performs catalog analysis and provides recommendation regarding optimal batching size for product indexing.";
+        return 'Performs catalog analysis and provides recommendation regarding optimal batching size for product indexing.';
     }
 
     protected function getStoreArgumentDescription(): string
@@ -139,7 +126,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
                 '-' . self::OPTION_MARGIN_SHORTCUT,
                 InputOption::VALUE_REQUIRED,
                 'Safety margin - DEFAULT: ' . self::DEFAULT_MARGIN . ' - FROM ' . self::MIN_MARGIN . ' TO ' . self::MAX_MARGIN,
-            )
+            ),
         ];
     }
 
@@ -159,6 +146,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             $this->scanProductRecords($storeIds);
         } catch (\Exception $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+
             return CLI::RETURN_FAILURE;
         }
 
@@ -168,7 +156,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     /**
      * Ensures sample size and margin options are valid
      *
-     * @return void
      * @throws AlgoliaException
      */
     protected function validateOptions(): void
@@ -180,7 +167,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
                 || (int) $this->input->getOption(self::OPTION_SAMPLE_SIZE) > self::MAX_SAMPLE_SIZE
             )
         ) {
-            throw new AlgoliaException("Sample size option should be an integer (maximum 1000)" );
+            throw new AlgoliaException('Sample size option should be an integer (maximum 1000)' );
         }
 
         if (
@@ -191,13 +178,11 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
                 || (float) $this->input->getOption(self::OPTION_MARGIN) < self::MIN_MARGIN
             )
         ) {
-            throw new AlgoliaException("Margin option should be a  decimal value (between 0 and 3)" );
+            throw new AlgoliaException('Margin option should be a  decimal value (between 0 and 3)' );
         }
     }
 
     /**
-     * @param array $storeIds
-     * @return void
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws LocalizedException
@@ -215,7 +200,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
-     * @return void
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws LocalizedException
@@ -231,8 +215,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws LocalizedException
@@ -244,6 +226,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
 
         if (!$this->configHelper->isIndexingEnabled($storeId)) {
             $this->output->writeln('<info>Indexing is disabled for store ' . $storeName . '</info>');
+
             return;
         }
 
@@ -293,7 +276,8 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
         $this->output->writeln('<fg=red>Important:</fg=red> Those numbers are estimates only. Indexing activity should be monitored after making changes to ensure batches are not exceeding the recommended size of 10 MB.');
         $this->output->writeln('<info> ============ </info>');
         $this->output->writeln(
-            'This will override your "Maximum number of records sent per indexing request" configuration to <info>' . $recommendedBatchCount . '</info> for store "' . $storeName . '".');
+            'This will override your "Maximum number of records sent per indexing request" configuration to <info>' . $recommendedBatchCount . '</info> for store "' . $storeName . '".'
+        );
         $this->output->writeln(' ');
 
         if ($this->confirmOperation('Applying optimized batching configuration', 'Batching optimization cancelled - settings were NOT changed', true)) {
@@ -307,8 +291,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws LocalizedException
@@ -321,7 +303,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
 
         $this->storeCounts[$storeId] = [
             'simple' => $this->getRawCount($simpleProducts),
-            'complex' => $this->getRawCount($complexProducts)
+            'complex' => $this->getRawCount($complexProducts),
         ];
 
         $this->storeCounts[$storeId]['total'] =
@@ -332,13 +314,13 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             0;
 
         $this->storeCounts[$storeId]['complex_percentage'] = $this->storeCounts[$storeId]['total'] > 0 ?
-            ($this->storeCounts[$storeId]['complex'] * 100) / $this->storeCounts[$storeId]['total']:
+            ($this->storeCounts[$storeId]['complex'] * 100) / $this->storeCounts[$storeId]['total'] :
             0;
 
 
         $sampleSize = $this->input->getOption(self::OPTION_SAMPLE_SIZE) ?? self::DEFAULT_SAMPLE_SIZE;
-        $simpleSampleSize = (int)round($sampleSize * ($this->storeCounts[$storeId]['simple_percentage'] / 100));
-        $complexSampleSize = (int)round($sampleSize * ($this->storeCounts[$storeId]['complex_percentage'] / 100));
+        $simpleSampleSize = (int) round($sampleSize * ($this->storeCounts[$storeId]['simple_percentage'] / 100));
+        $complexSampleSize = (int) round($sampleSize * ($this->storeCounts[$storeId]['complex_percentage'] / 100));
 
         $this->storeCounts[$storeId]['simple_sample_size'] = $simpleSampleSize;
         $this->storeCounts[$storeId]['complex_sample_size'] = $complexSampleSize;
@@ -355,9 +337,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     /**
      * Generates a product collection with the same helper as the product indexer to get the exact amount of expected products in the Algolia index
      *
-     * @param int $storeId
-     * @param array $productTypes
-     * @return Collection
      */
     protected function getProductsCollectionForStore(int $storeId, array $productTypes = []): Collection
     {
@@ -377,8 +356,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      * Relying on Collection count method will unnecessarily hydrate the collection and consume memory
      * This method will return the count of the collection without hydrating it
      *
-     * @param Collection $collection
-     * @return int
      */
     protected function getRawCount(Collection $collection): int
     {
@@ -392,9 +369,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     }
 
     /**
-     * @param Collection $products
-     * @param int $sampleSize
-     * @return array
      * @throws LocalizedException
      * @throws NoSuchEntityException
      * @throws DiagnosticsException
@@ -416,7 +390,7 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
             if (function_exists('mb_strlen')) {
                 $size = mb_strlen($serializedRecord, '8bit');
             } else {
-                $size = strlen($serializedRecord);
+                $size = mb_strlen($serializedRecord);
             }
 
             $stats[$product->getSku()] = $size;
@@ -428,8 +402,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
     /**
      * Determines the maximum estimated batch count which will be considered as the upper boundary
      *
-     * @param int $averageSize
-     * @return int
      */
     protected function getEstimatedMaxBatchCount(int $averageSize): int
     {
@@ -443,10 +415,6 @@ class BatchingOptimizeCommand extends AbstractStoreCommand
      *  - an arbitrary safety margin (1 to 10) to allow the user to alter the strictness of the recommendation
      *    (the lower the margin is, the closer it will be from the maximum batch count)
      *
-     * @param int $averageSize
-     * @param float $standardDeviation
-     * @param float $margin
-     * @return int
      */
     protected function getRecommendedBatchCount(int $averageSize, float $standardDeviation, float $margin = self::DEFAULT_MARGIN): int
     {

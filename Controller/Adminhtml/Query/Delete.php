@@ -7,7 +7,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Delete extends AbstractAction
 {
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
@@ -18,8 +20,8 @@ class Delete extends AbstractAction
             try {
                 /** @var Query $query */
                 $query = $this->queryFactory->create();
-                $query->getResource()->load($query, $queryId);
-                $query->getResource()->delete($query);
+                $this->queryResource->load($query, $queryId);
+                $this->queryResource->delete($query);
                 $this->deleteQueryRules($query);
 
                 $this->messageManager->addSuccessMessage(__('The query has been deleted.'));
@@ -37,8 +39,6 @@ class Delete extends AbstractAction
     }
 
     /**
-     * @param Query $query
-     * @return void
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     private function deleteQueryRules(Query $query): void

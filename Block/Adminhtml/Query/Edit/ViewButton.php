@@ -16,6 +16,8 @@ class ViewButton extends AbstractButton implements ButtonProviderInterface
                 'sort_order' => 50,
             ];
         }
+
+        return [];
     }
 
     /**
@@ -33,7 +35,7 @@ class ViewButton extends AbstractButton implements ButtonProviderInterface
         }
 
         $href = $this->frontendUrlBuilder->getUrl('catalogsearch/result/?q=' . $this->getObjectQueryText());
-        $href = rtrim($href, '/');
+        $href = mb_rtrim($href, '/');
 
         return $href;
     }

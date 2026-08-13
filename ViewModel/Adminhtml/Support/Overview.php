@@ -14,17 +14,15 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     /** @var SupportHelper */
     private $supportHelper;
 
-    /**
-     * @param BackendView $backendView
-     * @param SupportHelper $supportHelper
-     */
     public function __construct(BackendView $backendView, SupportHelper $supportHelper)
     {
         $this->backendView = $backendView;
         $this->supportHelper = $supportHelper;
     }
 
-    /** @return string */
+    /**
+     * @return string
+     */
     public function getApplicationId()
     {
         return $this->supportHelper->getApplicationId();
@@ -36,9 +34,12 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
     public function getLegacyVersionHtml()
     {
         /** @var Template $block */
-        $block = $this->backendView->getLayout()->createBlock(Template::class);
+        $block = $this->backendView->getLayout()->createBlock(
+            Template::class,
+            '',
+            ['data' => ['template' => 'Algolia_AlgoliaSearch::support/components/legacy-version.phtml']]
+        );
 
-        $block->setTemplate('Algolia_AlgoliaSearch::support/components/legacy-version.phtml');
         $block->setData('extension_version', $this->supportHelper->getExtensionVersion());
 
         return $block->toHtml();

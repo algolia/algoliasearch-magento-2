@@ -13,7 +13,10 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\ObjectManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class QueueTest extends TestCase
 {
     private null|(ConfigHelper&MockObject) $configHelper = null;
@@ -35,10 +38,7 @@ class QueueTest extends TestCase
         $this->queue = $this->createQueueMock();
     }
 
-    /**
-     * Immediately process the valid method
-     * @dataProvider authorizedHandlersProvider
-     */
+    #[DataProvider('authorizedHandlersProvider')]
     public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueInactive(string $class, string $method, array $data): void
     {
         $this->configHelper->method('isQueueActive')->willReturn(false);
@@ -58,10 +58,7 @@ class QueueTest extends TestCase
         $this->queue->addToQueue($class, $method, $data);
     }
 
-    /**
-     * Queue the valid method
-     * @dataProvider authorizedHandlersProvider
-     */
+    #[DataProvider('authorizedHandlersProvider')]
     public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueActive(string $class, string $method, array $data): void
     {
         $this->configHelper->method('isQueueActive')->willReturn(true);
@@ -71,10 +68,7 @@ class QueueTest extends TestCase
         $this->queue->addToQueue($class, $method, $data);
     }
 
-    /**
-     * Unauthorized jobs should be rejected at execution time when queue is inactive
-     * @dataProvider unauthorizedHandlersProvider
-     */
+    #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueInactive(string $class, string $method): void
     {
         $this->configHelper->method('isQueueActive')->willReturn(false);
@@ -85,10 +79,7 @@ class QueueTest extends TestCase
         $this->queue->addToQueue($class, $method, []);
     }
 
-    /**
-     * Unauthorized jobs should be rejected at queue time, not just at execution time
-     * @dataProvider unauthorizedHandlersProvider
-     */
+    #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueActive(string $class, string $method): void
     {
         $this->configHelper->method('isQueueActive')->willReturn(true);
@@ -157,6 +148,7 @@ class QueueTest extends TestCase
 
     /**
      * Create Queue using reflection to bypass the generated CollectionFactory dependency
+     *
      * @throws \ReflectionException
      */
     private function createQueueMock(): Queue

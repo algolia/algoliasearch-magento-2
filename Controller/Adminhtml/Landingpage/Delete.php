@@ -7,7 +7,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Delete extends AbstractAction
 {
-    /** @return \Magento\Framework\View\Result\Page */
+    /**
+     * @return \Magento\Framework\View\Result\Page
+     */
     public function execute()
     {
         /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
@@ -18,8 +20,8 @@ class Delete extends AbstractAction
             try {
                 /** @var LandingPage $landingPage */
                 $landingPage = $this->landingPageFactory->create();
-                $landingPage->getResource()->load($landingPage, $landingPageId);
-                $landingPage->getResource()->delete($landingPage);
+                $this->landingPageResource->load($landingPage, $landingPageId);
+                $this->landingPageResource->delete($landingPage);
                 $this->deleteQueryRules($landingPage);
 
                 $this->messageManager->addSuccessMessage(__('The landing page has been deleted.'));
@@ -37,8 +39,6 @@ class Delete extends AbstractAction
     }
 
     /**
-     * @param LandingPage $landingPage
-     * @return void
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     private function deleteQueryRules(LandingPage $landingPage): void

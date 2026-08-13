@@ -22,10 +22,6 @@ class ProductDataArray extends DataObject
         $this->setData('items', $items);
     }
 
-    /**
-     * @param $productId
-     * @param array $keyValuePairs
-     */
     public function addProductData($productId, array $keyValuePairs)
     {
         $items = $this->getItems();

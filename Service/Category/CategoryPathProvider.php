@@ -26,12 +26,13 @@ class CategoryPathProvider
     /**
      * Returns category path details useful for faceting / filtering.
      *
+     * @throws LocalizedException
+     *
      * @return array{
      *   path: string,            // Full category path delimited by the category separator
      *   level: int,              // Depth in category tree (root = 0)
      *   parentCategory: string   // Display name of the parent category
      * }
-     * @throws LocalizedException
      */
     public function getCategoryPathDetails(Category $category, ?int $storeId = null, ?string $altSeparator = null): array
     {
@@ -77,9 +78,10 @@ class CategoryPathProvider
      * Returns a map of category IDs to category names
      * Maintains an internal cache of category names for each store.
      *
+     * @throws LocalizedException
+     *
      * @return array<string, string> A map of entity ID to category name
      *     e.g.[ "11" => "Men", "12" => "Tops", "15" => 'Hoodies & Sweatshirts" ]
-     * @throws LocalizedException
      */
     public function getCategoryNameMap(array $categoryIds, ?int $storeId = null): array
     {

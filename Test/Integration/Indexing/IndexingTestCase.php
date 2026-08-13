@@ -2,20 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Test\Integration\Indexing;
 
-use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Console\Command\Indexer\AbstractIndexerCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Indexer\ActionInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class IndexingTestCase extends TestCase
 {
-
     protected ?SearchQueryInterfaceFactory $searchQueryFactory = null;
 
     protected function setUp(): void
@@ -69,7 +66,7 @@ abstract class IndexingTestCase extends TestCase
             'execute',
             [
                 $this->createMock(InputInterface::class),
-                $this->createMock(OutputInterface::class)
+                $this->createMock(OutputInterface::class),
             ]
         );
         $this->algoliaConnector->waitLastTask();
@@ -91,11 +88,6 @@ abstract class IndexingTestCase extends TestCase
     }
 
     /**
-     * @param string $indexName
-     * @param string $recordId
-     * @param array $expectedValues
-     * @param int|null $storeId
-     * @return void
      * @throws AlgoliaException
      */
     public function assertAlgoliaRecordValues(

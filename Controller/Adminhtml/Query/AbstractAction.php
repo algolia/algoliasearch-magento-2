@@ -4,53 +4,35 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Query;
 
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Query as QueryResource;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /** @var SessionManagerInterface */
-    protected $backendSession;
-
-    /** @var QueryFactory */
-    protected $queryFactory;
-
-    /** @var MerchandisingHelper */
-    protected $merchandisingHelper;
-
-    /** @var StoreManagerInterface */
-    protected $storeManager;
-
-    /**
-     * @param Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param QueryFactory $queryFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
-        Context $context,
-        SessionManagerInterface $backendSession,
-        QueryFactory $queryFactory,
-        MerchandisingHelper $merchandisingHelper,
-        StoreManagerInterface $storeManager
+        Context                           $context,
+        protected SessionManagerInterface $backendSession,
+        protected QueryFactory            $queryFactory,
+        protected MerchandisingHelper     $merchandisingHelper,
+        protected StoreManagerInterface   $storeManager,
+        protected QueryResource           $queryResource
     ) {
         parent::__construct($context);
-
-        $this->backendSession = $backendSession;
-        $this->queryFactory = $queryFactory;
-        $this->merchandisingHelper = $merchandisingHelper;
-        $this->storeManager = $storeManager;
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model\Query */
+    /**
+     * @return \Algolia\AlgoliaSearch\Model\Query
+     */
     protected function initQuery()
     {
         $queryId = (int) $this->getRequest()->getParam('id');
@@ -59,7 +41,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $query = $this->queryFactory->create();
 
         if ($queryId) {
-            $query->getResource()->load($query, $queryId);
+            $this->queryResource->load($query, $queryId);
             if (!$query->getId()) {
                 return null;
             }
@@ -70,7 +52,9 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         return $query;
     }
 
-    /** @return array */
+    /**
+     * @return array
+     */
     protected function getActiveStores()
     {
         $stores = [];

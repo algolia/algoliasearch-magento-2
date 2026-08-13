@@ -7,14 +7,10 @@ use Magento\UrlRewrite\Service\V1\Data\UrlRewriteFactory;
 
 class LandingPageUrlRewriteGenerator
 {
-    /**
-     * Entity type code
-     */
+    /** Entity type code */
     public const ENTITY_TYPE = 'landing-page';
 
-    /**
-     * @var \Magento\UrlRewrite\Service\V1\Data\UrlRewriteFactory
-     */
+    /** @var \Magento\UrlRewrite\Service\V1\Data\UrlRewriteFactory */
     protected $urlRewriteFactory;
 
     /**
@@ -24,15 +20,9 @@ class LandingPageUrlRewriteGenerator
      */
     protected $storeManager;
 
-    /**
-     * @var \Algolia\AlgoliaSearch\Model\LandingPage
-     */
+    /** @var \Algolia\AlgoliaSearch\Model\LandingPage */
     protected $landingPage;
 
-    /**
-     * @param \Magento\UrlRewrite\Service\V1\Data\UrlRewriteFactory $urlRewriteFactory
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
         UrlRewriteFactory $urlRewriteFactory,
         StoreManagerInterface $storeManager

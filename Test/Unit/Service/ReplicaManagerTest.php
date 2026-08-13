@@ -7,7 +7,7 @@ use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Registry\ReplicaState;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\ReplicaManager;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
@@ -16,7 +16,9 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Algolia\AlgoliaSearch\Validator\VirtualReplicaValidatorFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use ReflectionException;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ReplicaManagerTest extends TestCase
 {
     protected ?ConfigHelper $configHelper;
@@ -59,7 +61,7 @@ class ReplicaManagerTest extends TestCase
         $replicaSetting = [
             'virtual(replica1)',
             'virtual(replica2)',
-            'virtual(replica3)'
+            'virtual(replica3)',
         ];
         $replicaToRemove = 'replica2';
 
@@ -82,7 +84,7 @@ class ReplicaManagerTest extends TestCase
         $replicaSetting = [
             'replica1',
             'replica2',
-            'replica3'
+            'replica3',
         ];
         $replicaToRemove = 'replica2';
 

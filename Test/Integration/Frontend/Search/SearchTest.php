@@ -3,10 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Integration\Frontend\Search;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Model\Indexer\Product;
 use Algolia\AlgoliaSearch\Service\Product\BackendSearch;
-use Algolia\AlgoliaSearch\Test\Integration\Indexing\Product\ProductsIndexingTestCase;
-use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -16,7 +13,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
  */
 class SearchTest extends SearchTestCase
 {
-    const BAGS_CATEGORY_ID = 4;
+    public const BAGS_CATEGORY_ID = 4;
 
     protected ?BackendSearch $backendSearch = null;
 
@@ -46,12 +43,12 @@ class SearchTest extends SearchTestCase
         // Result exists in DB
         $this->assertNotEmpty($product->getName(), "Query result item couldn't find in the DB");
         // Query word exists title
-        $this->assertStringContainsString($query, strtolower((string) $product->getName()), "Query word doesn't exist in product name");
+        $this->assertStringContainsString($query, mb_strtolower((string) $product->getName()), "Query word doesn't exist in product name");
     }
 
     public function testSearchBySku()
     {
-        $sku = "24-MB01";
+        $sku = '24-MB01';
         $results = $this->search($sku);
         $result = $this->getFirstResult($results);
         // Search by SKU returns result
@@ -69,7 +66,7 @@ class SearchTest extends SearchTestCase
     {
         // Get products by categoryId
         [$results, $totalHits, $facetsFromAlgolia] = $this->search('', 1, [
-            'facetFilters' => ['categoryIds:' . self::BAGS_CATEGORY_ID]
+            'facetFilters' => ['categoryIds:' . self::BAGS_CATEGORY_ID],
         ]);
         // Category filter returns result
         $this->assertNotEmpty($results, "Category filter didn't return result");
@@ -77,21 +74,18 @@ class SearchTest extends SearchTestCase
         $collection = $this->objectManager->create(\Magento\Catalog\Model\ResourceModel\Product\Collection::class);
         $collection
             ->addAttributeToSelect('*')
-            ->addAttributeToFilter('status',\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)
+            ->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)
             ->addAttributeToFilter('visibility', \Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH)
-            ->addCategoriesFilter(["in" => self::BAGS_CATEGORY_ID])
+            ->addCategoriesFilter(['in' => self::BAGS_CATEGORY_ID])
             ->setStore(1);
         // Products in category count matches
         $this->assertEquals(count($results), $collection->count(), "Indexed number of products in a category doesn't match with DB");
     }
 
-    /**
-     * @param array $results
-     * @return array
-     */
     protected function getFirstResult(array $results): array
     {
         [$results, $totalHits, $facetsFromAlgolia] = $results;
+
         return array_shift($results);
     }
 

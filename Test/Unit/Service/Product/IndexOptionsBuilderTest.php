@@ -7,7 +7,7 @@ use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Product\SortingTransformer;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -16,7 +16,9 @@ use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class IndexOptionsBuilderTest extends TestCase
 {
     private IndexOptionsBuilder $indexOptionsBuilder;
@@ -60,7 +62,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -116,7 +118,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => $isTmp,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -171,7 +173,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -249,7 +251,7 @@ class IndexOptionsBuilderTest extends TestCase
                 'data' => [
                     IndexOptionsInterface::INDEX_NAME => $replicaIndexName,
                     IndexOptionsInterface::STORE_ID => $storeId,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -295,7 +297,7 @@ class IndexOptionsBuilderTest extends TestCase
                 'data' => [
                     IndexOptionsInterface::INDEX_NAME => $replicaIndexName,
                     IndexOptionsInterface::STORE_ID => $storeId,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -342,7 +344,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 
@@ -412,7 +414,7 @@ class IndexOptionsBuilderTest extends TestCase
                     IndexOptionsInterface::STORE_ID => $storeId,
                     IndexOptionsInterface::INDEX_SUFFIX => ProductHelper::INDEX_NAME_SUFFIX,
                     IndexOptionsInterface::IS_TMP => false,
-                ]
+                ],
             ])
             ->willReturn($indexOptions);
 

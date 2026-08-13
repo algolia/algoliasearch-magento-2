@@ -10,7 +10,6 @@ use Magento\Framework\Indexer\IndexerRegistry;
 
 class ProductsIndexingTestCase extends IndexingTestCase
 {
-
     protected ?StockRegistry $stockRegistry = null;
     protected ?ProductBatchQueueProcessor $productBatchQueueProcessor = null;
     protected ?IndexerRegistry $indexerRegistry = null;

@@ -35,9 +35,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -48,10 +45,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -64,10 +57,12 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if (!$this->configHelper->isPagesIndexEnabled($storeId)) {
             $this->logger->log('Pages Indexing is not enabled for the store.');
+
             return;
         }
 
         $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+
 
         $this->startEmulation($storeId);
 
@@ -78,15 +73,17 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         // if there are pageIds defined, do not index to _tmp
         $isFullReindex = (!$entityIds);
 
+        $toIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $isFullReindex);
+
         if (isset($pages['toIndex']) && count($pages['toIndex'])) {
             $pagesToIndex = $pages['toIndex'];
-            $toIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $isFullReindex);
 
             foreach (array_chunk($pagesToIndex, 100) as $chunk) {
                 try {
                     $this->saveObjects($chunk, $toIndexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
+
                     continue;
                 }
             }
@@ -99,20 +96,14 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                     $this->algoliaConnector->deleteObjects($chunk, $indexOptions);
                 } catch (\Exception $e) {
                     $this->logger->log($e->getMessage());
+
                     continue;
                 }
             }
         }
 
         if ($isFullReindex) {
-            $tempIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
-
-            $this->algoliaConnector->copyQueryRules($indexOptions, $tempIndexOptions);
-            $this->algoliaConnector->moveIndex($tempIndexOptions, $indexOptions);
+            $this->moveTemporaryIndex($indexOptions, $toIndexOptions);
         }
-        $this->algoliaConnector->setSettings(
-            $indexOptions,
-            $this->pageHelper->getIndexSettings($storeId)
-        );
     }
 }

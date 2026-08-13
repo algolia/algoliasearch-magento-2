@@ -1,15 +1,75 @@
 # CHANGE LOG
 
+## 3.19.0
+
+### Security
+- Raised the `guzzlehttp/guzzle` floor to `^7.15.2` and dropped the EOL `^6.3.3` branch, remediating three CVEs: dot-only cookie domains matching all hosts, silent HTTPS-proxy downgrade to cleartext, and [CVE-2026-69246](https://github.com/advisories/GHSA-v5mv-p594-2x33) ([#1964](https://github.com/algolia/algoliasearch-magento-2/pull/1964), [#1981](https://github.com/algolia/algoliasearch-magento-2/pull/1981), [#1984](https://github.com/algolia/algoliasearch-magento-2/pull/1984)).
+
+### Features
+- Added support for the new Algolia Ingestion module ([algolia/algoliasearch-ingestion-magento-2](https://github.com/algolia/algoliasearch-ingestion-magento-2)), which routes product indexing through the Algolia Ingestion API to unlock pre-indexing JavaScript transformations, low-latency Collections, and per-operation observability. This release ships in lockstep with Ingestion module 0.2.0 ([#1919](https://github.com/algolia/algoliasearch-magento-2/pull/1919), [#1967](https://github.com/algolia/algoliasearch-magento-2/pull/1967)).
+- Introduced a per-store `SendStrategy` resolver on `AlgoliaConnector`, enabling alternative indexing backends to be selected at the store scope while direct indexing remains the default ([#1924](https://github.com/algolia/algoliasearch-magento-2/pull/1924), [#1923](https://github.com/algolia/algoliasearch-magento-2/pull/1923)).
+- Added `SearchClientProvider` and `AbstractClientProvider`, extracting Algolia client construction behind `ClientProviderInterface` / `SearchClientProviderInterface` so satellite modules can supply their own clients ([#1926](https://github.com/algolia/algoliasearch-magento-2/pull/1926), [#1928](https://github.com/algolia/algoliasearch-magento-2/pull/1928)).
+
+### Updates
+- Unified temporary index management across entities so the move-to-production step is consistent for products, categories, pages, suggestions, and additional sections; page indexing now supports delta updates ([#1960](https://github.com/algolia/algoliasearch-magento-2/pull/1960)).
+- Added `IndexSettingsPreserver` to retain ingestion-owned index settings across a full reindex, and reorganized the `Service/Index*` class family into `Service/Index/` and `Service/Index/Settings/` (no behavior change) ([#1961](https://github.com/algolia/algoliasearch-magento-2/pull/1961), [#1956](https://github.com/algolia/algoliasearch-magento-2/pull/1956)).
+- Updated the Algolia PHP API Client to version 4.40.0 ([#1922](https://github.com/algolia/algoliasearch-magento-2/pull/1922)).
+- Centralized the default store scope constant and added a reflection utility in preparation for the Ingestion task service ([#1927](https://github.com/algolia/algoliasearch-magento-2/pull/1927)).
+- Added an `AlgoliaLogger` virtual type for PSR-3 substitution and a helper for resolving the original (production) name of a temporary index ([#1932](https://github.com/algolia/algoliasearch-magento-2/pull/1932)).
+- Completed a PHPStan (`magento2-analyse`) static-analysis cleanup so analyzer reports zero file errors ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- `AlgoliaLogger` now extends `Magento\Framework\Logger\Monolog` instead of `Monolog\Logger` directly, resolving the "extends @final class" violation introduced by Monolog 3.x, with no behavior change ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- Replaced deprecated `getResource()` / `_getResource()` usage in the LandingPage and Query merchandising admin controllers and blocks by injecting the resource models directly ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- `Controller\Router` now resolves the landing page identifier through `ResourceModel\LandingPage` directly; the `Model\LandingPage::checkIdentifier()` passthrough was removed ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- Replaced the deprecated product reload in the bundle and downloadable price managers with `ProductRepositoryInterface::getById()` ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- Replaced the deprecated `media_gallery` attribute reload in `Service\Product\RecordBuilder` with the catalog gallery `ReadHandler`, and resolved product and category attributes through injected resource models ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- Removed the unused `Model\Job::saveError()` method. The one remaining `Model\Job::save()` deprecation is temporarily suppressed via a scoped, documented `phpstan.neon` entry pending a dedicated JobProcessor refactor ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- `Logger\Handler\AlgoliaLoggerHandler` now accepts the log level and file name as constructor arguments, allowing developers to tune `var/log/algolia.log` verbosity via `di.xml` (defaults to `INFO`, previously hard-coded to `DEBUG`) ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- Upgraded the bundled `algoliasearch` JavaScript client from v4.24.0 to the v5.56.0 "lite" build ahead of the v4 August 2026 deprecation ([#1970](https://github.com/algolia/algoliasearch-magento-2/pull/1970)).
+- Bumped InstantSearch.js to 4.106.0 and Autocomplete.js to 1.19.9 for optimal v5 peer compatibility ([#1970](https://github.com/algolia/algoliasearch-magento-2/pull/1970)).
+- Migrated the frontend Recommend surfaces (Frequently Bought Together, Related Products, Trending Items, Looking Similar) from the standalone `@algolia/recommend` and `@algolia/recommend-js` v4 bundles to the InstantSearch.js recommend widgets running on the v5 lite client. Widgets are lazy-loaded via `IntersectionObserver` so their weight stays off the PDP and cart critical path ([#1975](https://github.com/algolia/algoliasearch-magento-2/pull/1975)).
+- The Recommend product template (`view/frontend/web/js/template/recommend/products.js`) received a new `getNoResultHtml({html})` method so integrators can customize it via the same mixin mechanism ([#1975](https://github.com/algolia/algoliasearch-magento-2/pull/1975)).
+- `Cron\ProcessQueue` now resolves the queue-active and built-in-cron conditions through `Helper\Configuration\QueueHelper` instead of the deprecated `ConfigHelper` equivalents. The evaluated configuration paths are unchanged ([#1977](https://github.com/algolia/algoliasearch-magento-2/pull/1977)).
+- Retired the `*Testable` subclass test pattern in favor of direct unit testing, and introduced reusable Claude testing guides alongside a regenerated `AlgoliaConnector` unit suite ([#1929](https://github.com/algolia/algoliasearch-magento-2/pull/1929)).
+- Added a standardized unit-test generation workflow covering blocks, controllers, helpers, models, observers, plugins, services, and view models, and removed the remaining `@dataProvider` annotations in favor of PHPUnit attributes ([#1940](https://github.com/algolia/algoliasearch-magento-2/pull/1940)).
+- Applied the updated `magento2-tools` PHPCS-Fixer linting baseline across the module for a consistent contribution standard, retaining PHP 8.2 backward compatibility ([#1923](https://github.com/algolia/algoliasearch-magento-2/pull/1923)).
+- Refactored `ConfigHelper` and many block, controller, observer, and service classes to align with the new linting baseline and tighten type declarations.
+- Hoisted CLI command unit tests to the `AbstractStoreCommand` scope ([#1942](https://github.com/algolia/algoliasearch-magento-2/pull/1942)).
+- Added an architecture context document and adopted the open `AGENTS.md` standard for contributor and agent guidance ([#1921](https://github.com/algolia/algoliasearch-magento-2/pull/1921)).
+- Updated unit and integration tests ([#1932](https://github.com/algolia/algoliasearch-magento-2/pull/1932), [#1980](https://github.com/algolia/algoliasearch-magento-2/pull/1980)).
+
+### Bug fixes
+- Injected the missing `CollectionProcessorInterface` into `Model\QueueArchiveRepository`, fixing a latent runtime fatal in `getList()` ([#1973](https://github.com/algolia/algoliasearch-magento-2/pull/1973)).
+- Fixed `Uncaught Exception: Serialization of 'Closure' is not allowed` on the Indexing Queue and Queue Archive job view pages, caused by storing the fully hydrated model in the backend session. (thanks @angelvilaplana, [#1939](https://github.com/algolia/algoliasearch-magento-2/pull/1939), [#1978](https://github.com/algolia/algoliasearch-magento-2/pull/1978))
+- Fixed a getter typo in the Queue Archive view template that left the Processed At field blank on the Queue Archive view page ([#1978](https://github.com/algolia/algoliasearch-magento-2/pull/1978)).
+- Stripped `semanticSearch` from the settings merged onto a temporary index. An empty `semanticSearch` object returned by `getSettings` round-trips through PHP as an empty array and re-encodes as a JSON array, which the API rejects ([#1972](https://github.com/algolia/algoliasearch-magento-2/pull/1972)).
+- Fixed incorrect escaping of object IDs passed to the Recommend widgets, and fixed the standalone Looking Similar widget failing to render on the cart page ([#1975](https://github.com/algolia/algoliasearch-magento-2/pull/1975)).
+- Added a missing CDATA tag in `system.xml`.
+
+### Breaking Changes
+- Raised the minimum requirements to PHP 8.3 and Magento 2.4.8. Supported targets are now Magento `~2.4.8||~2.4.9` on PHP `~8.3||~8.4||~8.5`; PHP 8.2 and Magento 2.4.7 are no longer supported ([#1959](https://github.com/algolia/algoliasearch-magento-2/pull/1959)).
+- Several constructor signatures changed. Any class extending these must update its `parent::__construct()` call:
+  - `Service\Product\RecordBuilder` now requires `Magento\Catalog\Model\ResourceModel\Product` and `Magento\Catalog\Model\Product\Gallery\ReadHandler` (12 to 14 arguments).
+  - `Helper\Entity\Product\PriceManager\ProductWithoutChildren` now requires `Magento\Catalog\Api\ProductRepositoryInterface` in place of `Magento\Catalog\Model\ProductFactory`.
+  - The LandingPage and Query admin controllers and edit blocks, and `Controller\Router`, gained resource-model constructor dependencies.
+  - `Controller\Adminhtml\Queue\AbstractAction` and `Controller\Adminhtml\QueueArchive\AbstractAction` no longer accept `Magento\Framework\Session\SessionManagerInterface`.
+  - `Block\Adminhtml\Job\View` now requires `Model\JobFactory` and `Model\ResourceModel\Job` in place of the session manager.
+  - `Block\Adminhtml\QueueArchive\View` now requires `Api\QueueArchiveRepositoryInterface` in place of the session manager.
+  - `Cron\ProcessQueue` now requires `Helper\Configuration\QueueHelper` in place of `Helper\ConfigHelper`.
+- `composer.json` now declares conflicts with the companion modules it can no longer work with: `algolia/algoliasearch-inventory-magento-2:<1.5.0` and `algolia/algoliasearch-adapter-magento-2:<0.10.0` ([#1976](https://github.com/algolia/algoliasearch-magento-2/pull/1976), [#1975](https://github.com/algolia/algoliasearch-magento-2/pull/1975)).
+- The MSI compatibility module `algolia/algoliasearch-inventory-magento-2` extends `Service\Product\RecordBuilder`, so it requires the coordinated 1.5.0 release to stay compatible with 3.19.0. Install `algolia/algoliasearch-inventory-magento-2:^1.5.0` alongside this version ([#1976](https://github.com/algolia/algoliasearch-magento-2/pull/1976)).
+- `Helper\Entity\ProductHelper::addStockFilter()` now declares `ProductCollection $products` and `int $storeId`. A subclass overriding this protected method with a narrower or incompatible signature will fatal on class load; untyped or wider overrides remain valid ([#1976](https://github.com/algolia/algoliasearch-magento-2/pull/1976)).
+- The Recommend product template (`view/frontend/web/js/template/recommend/products.js`) now passes a single destructured options object to its methods instead of positional arguments, aligning it with the autocomplete product template. Any RequireJS mixin overriding these methods must be updated ([#1975](https://github.com/algolia/algoliasearch-magento-2/pull/1975)).
+
 ## 3.18.1
 
 ### Updates
 - Ensured compatibility of the extension with Magento 2.4.9 and PHP 8.5
 - Added improvements on `setSettings` operations sent during indexing and configuration saving:
-  - Introduced `IndexSettingsComparator` service to compare settings with the Algolia Dashboard.
-  - Added diff check for both configuration save and batch processing.
-  - Added collect of all task IDs during `SaveSettings` and wait only once for all operations to complete at the end.
-  - Added store filtering during `SaveSettings`.
-  - Updated Unit and Integration tests to reflect those changes.
+    - Introduced `IndexSettingsComparator` service to compare settings with the Algolia Dashboard.
+    - Added diff check for both configuration save and batch processing.
+    - Added collect of all task IDs during `SaveSettings` and wait only once for all operations to complete at the end.
+    - Added store filtering during `SaveSettings`.
+    - Updated Unit and Integration tests to reflect those changes.
 
 ## 3.18.0
 

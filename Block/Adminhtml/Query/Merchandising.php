@@ -25,13 +25,6 @@ class Merchandising extends \Magento\Backend\Block\Template
     /** @var \Magento\Store\Model\StoreManagerInterface */
     private $storeManager;
 
-    /**
-     * @param Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param ConfigHelper $configHelper
-     * @param Data $coreHelper
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         SessionManagerInterface $backendSession,
@@ -47,19 +40,25 @@ class Merchandising extends \Magento\Backend\Block\Template
         parent::__construct($context, $data);
     }
 
-    /** @return Query | null */
+    /**
+     * @return Query | null
+     */
     public function getCurrentQuery()
     {
         return $this->backendSession->getData('algoliasearch_query');
     }
 
-    /** @return ConfigHelper */
+    /**
+     * @return ConfigHelper
+     */
     public function getConfigHelper()
     {
         return $this->configHelper;
     }
 
-    /** @return Data */
+    /**
+     * @return Data
+     */
     public function getCoreHelper()
     {
         return $this->coreHelper;

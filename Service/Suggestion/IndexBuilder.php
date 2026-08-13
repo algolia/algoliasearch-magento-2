@@ -39,9 +39,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -52,10 +49,6 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws AlgoliaException
      * @throws ExceededRetriesException
      * @throws NoSuchEntityException
@@ -68,6 +61,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
 
         if (!$this->configHelper->isQuerySuggestionsIndexEnabled($storeId)) {
             $this->logger->log('Query Suggestions Indexing is not enabled for the store.');
+
             return;
         }
 
@@ -88,17 +82,15 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
                 );
                 $page++;
             }
-            unset($indexData);
         }
-        $this->moveStoreSuggestionIndex($storeId);
+
+        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $tmpIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
+
+        $this->moveTemporaryIndex($indexOptions, $tmpIndexOptions);
     }
 
     /**
-     * @param int $storeId
-     * @param QueryCollection $collectionDefault
-     * @param int $page
-     * @param int $pageSize
-     * @return void
      * @throws NoSuchEntityException
      * @throws \Exception
      */
@@ -111,7 +103,7 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
         $collection = clone $collectionDefault;
         $collection->setCurPage($page)->setPageSize($pageSize);
         $collection->load();
-        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $tmpIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
         $indexData = [];
 
         /** @var Query $suggestion */
@@ -123,32 +115,12 @@ class IndexBuilder extends AbstractIndexBuilder implements IndexBuilderInterface
             }
         }
         if (count($indexData) > 0) {
-            $this->saveObjects($indexData, $indexOptions);
+            $this->saveObjects($indexData, $tmpIndexOptions);
         }
 
         unset($indexData);
         $collection->walk('clearInstance');
         $collection->clear();
         unset($collection);
-    }
-
-    /**
-     * @param int $storeId
-     * @return void
-     * @throws AlgoliaException
-     * @throws NoSuchEntityException
-     * @throws ExceededRetriesException
-     */
-    protected function moveStoreSuggestionIndex(int $storeId): void
-    {
-        if ($this->isIndexingEnabled($storeId) === false) {
-            return;
-        }
-
-        $tmpIndexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, true);
-        $indexOptions = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
-
-        $this->algoliaConnector->copyQueryRules($indexOptions, $tmpIndexOptions);
-        $this->algoliaConnector->moveIndex($tmpIndexOptions, $indexOptions);
     }
 }

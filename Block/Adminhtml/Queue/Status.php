@@ -33,14 +33,6 @@ class Status extends Template
     /** @var Indexer */
     private $queueRunnerIndexer;
 
-    /**
-     * @param Context        $context
-     * @param IndexerFactory $indexerFactory
-     * @param DateTime       $dateTime
-     * @param ConfigHelper   $configHelper
-     * @param Queue          $queue
-     * @param array          $data
-     */
     public function __construct(
         Context $context,
         IndexerFactory $indexerFactory,
@@ -161,13 +153,17 @@ class Status extends Template
         return $averageProcessingTime !== null && $averageProcessingTime < self::QUEUE_FAST_LIMIT;
     }
 
-    /** @return int */
+    /**
+     * @return int
+     */
     private function getIndexerLastUpdateTimestamp()
     {
         return $this->dateTime->gmtTimestamp($this->queueRunnerIndexer->getLatestUpdated());
     }
 
-    /** @return int */
+    /**
+     * @return int
+     */
     private function getTimeSinceLastIndexerUpdate()
     {
         return $this->dateTime->gmtTimestamp('now') - $this->getIndexerLastUpdateTimestamp();

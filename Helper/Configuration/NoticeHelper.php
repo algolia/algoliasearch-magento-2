@@ -140,7 +140,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
         $notice = [
             'selector' => '.entry-edit',
-            'method' => 'before'
+            'method' => 'before',
         ];
 
         if ($newVersion) {
@@ -318,7 +318,9 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         return true;
     }
 
-    /** @return array|null */
+    /**
+     * @return array|null
+     */
     public function getNewVersionNotification()
     {
         return $this->extensionNotification->checkVersion();
@@ -326,6 +328,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Function created for adding the Algolia Dashboard link in the Magento recommend system configuration
+     *
      * @return void
      */
     protected function getRecommendNotice()
@@ -348,7 +351,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
     * Displays a warning when multiple application IDs are configured
-    * @return void
     */
     protected function getMultiApplicationIDsNotice(): void
     {
@@ -370,7 +372,6 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * This notice serves as a warning when user removes the price attribute from the attributes list but it's still present either in the sortings or in the facets
-     * @return void
      */
     protected function getPriceIndexingNotice(): void
     {

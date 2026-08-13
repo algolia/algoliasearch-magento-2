@@ -34,12 +34,6 @@ class ExtensionNotification
 
     private $repoData = null;
 
-    /**
-     * @param CacheInterface $cacheManager
-     * @param ConfigHelper $configHelper
-     * @param LoggerInterface $logger
-     * @param SerializerInterface $serializer
-     */
     public function __construct(
         CacheInterface $cacheManager,
         ConfigHelper $configHelper,

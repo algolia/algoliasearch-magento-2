@@ -13,12 +13,13 @@ abstract class AbstractConfigComment implements CommentInterface
         protected UrlInterface     $urlInterface
     ) {}
 
-    protected function getConfigLink(string $section, string $fragment = "", bool $scoped = false): string
+    protected function getConfigLink(string $section, string $fragment = '', bool $scoped = false): string
     {
         $url = $this->urlInterface->getUrl("adminhtml/system_config/edit/section/$section", $scoped ? $this->getScopeParams() : []);
         if ($fragment) {
             $url .= "#$fragment";
         }
+
         return $url;
     }
 
@@ -31,6 +32,7 @@ abstract class AbstractConfigComment implements CommentInterface
         elseif ($store = $this->request->getParam('store')) {
             $params['store'] = $store;
         }
+
         return $params;
     }
 

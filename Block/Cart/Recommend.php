@@ -9,22 +9,12 @@ use Magento\Framework\View\Element\Template\Context;
 
 class Recommend extends Template
 {
-    /**
-     * @var Session
-     */
+    /** @var Session */
     protected $checkoutSession;
 
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @param Context $context
-     * @param Session $checkoutSession
-     * @param ConfigHelper $configHelper
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         Session $checkoutSession,
@@ -37,9 +27,10 @@ class Recommend extends Template
     }
 
     /**
-     * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return array
      */
     public function getAllCartItems()
     {
@@ -48,6 +39,7 @@ class Recommend extends Template
         foreach ($itemCollection as $item) {
             $cartItems[] = $item->getProductId();
         }
+
         return array_unique($cartItems);
     }
 
@@ -59,7 +51,7 @@ class Recommend extends Template
         return [
             'enabledFBTInCart' => $this->configHelper->isRecommendFrequentlyBroughtTogetherEnabledOnCartPage(),
             'enabledRelatedInCart' => $this->configHelper->isRecommendRelatedProductsEnabledOnCartPage(),
-            'isTrendItemsEnabledInCartPage' => $this->configHelper->isTrendItemsEnabledInShoppingCart()
+            'isTrendItemsEnabledInCartPage' => $this->configHelper->isTrendItemsEnabledInShoppingCart(),
              ];
     }
 }

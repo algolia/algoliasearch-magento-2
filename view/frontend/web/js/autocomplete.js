@@ -25,7 +25,7 @@ define([
 ], function (
     Component,
     $,
-    algoliasearch,
+    {liteClient: algoliasearch},
     autocomplete,
     querySuggestionsPlugin,
     redirectUrlPlugin,
@@ -220,9 +220,12 @@ define([
                             searchClient,
                             queries: [
                                 {
-                                    query,
                                     indexName: data.indexName,
-                                    params   : data.options,
+                                    params   :
+                                    {
+                                        ...data.options,
+                                        query
+                                    },
                                 },
                             ],
                             // only set transformResponse if defined (necessary check for custom sources)

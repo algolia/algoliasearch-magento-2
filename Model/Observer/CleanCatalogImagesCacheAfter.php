@@ -15,10 +15,6 @@ class CleanCatalogImagesCacheAfter implements ObserverInterface
     /** @var ManagerInterface */
     private $messageManager;
 
-    /**
-     * @param ConfigHelper $configHelper
-     * @param ManagerInterface $messageManager
-     */
     public function __construct(
         ConfigHelper $configHelper,
         ManagerInterface $messageManager
@@ -30,7 +26,6 @@ class CleanCatalogImagesCacheAfter implements ObserverInterface
     /**
      * Add Notice for Product Reindexing after image flush
      *
-     * @param Observer $observer
      */
     public function execute(Observer $observer)
     {

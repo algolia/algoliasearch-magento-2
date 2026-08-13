@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Magento\Framework\App\Area;
@@ -24,22 +25,20 @@ abstract class AbstractIndexBuilder
     ){}
 
     /**
-     * @param $storeId
-     * @return bool
      * @throws NoSuchEntityException
      */
     protected function isIndexingEnabled($storeId = null): bool
     {
         if ($this->configHelper->isIndexingEnabled($storeId) === false) {
             $this->logger->log('INDEXING IS DISABLED FOR ' . $this->logger->getStoreName($storeId));
+
             return false;
         }
+
         return true;
     }
 
     /**
-     * @param int $storeId
-     * @return void
      * @throws \Exception
      */
     protected function startEmulation(int $storeId): void
@@ -56,7 +55,6 @@ abstract class AbstractIndexBuilder
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     protected function stopEmulation(): void
@@ -68,10 +66,6 @@ abstract class AbstractIndexBuilder
     }
 
     /**
-     * @param array $objects
-     * @param IndexOptionsInterface $indexOptions
-     * @param int|null $storeId
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -81,11 +75,9 @@ abstract class AbstractIndexBuilder
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param array $idsToRemove
-     * @param int|null $storeId
-     * @return array
      * @throws AlgoliaException
+     *
+     * @return array
      */
     protected function getIdsToRealRemove(IndexOptionsInterface $indexOptions, array $idsToRemove, ?int $storeId = null)
     {
@@ -103,6 +95,22 @@ abstract class AbstractIndexBuilder
                 }
             }
         }
+
         return $toRealRemove;
+    }
+
+    /**
+     * @throws AlgoliaException
+     * @throws NoSuchEntityException
+     * @throws ExceededRetriesException
+     */
+    protected function moveTemporaryIndex(
+        IndexOptionsInterface $indexOptions,
+        IndexOptionsInterface $tmpIndexOptions
+    ): void
+    {
+        // Copy settings, rules and synonyms all at once
+        $this->algoliaConnector->copyIndexConfig($indexOptions, $tmpIndexOptions);
+        $this->algoliaConnector->moveIndex($tmpIndexOptions, $indexOptions);
     }
 }

@@ -30,9 +30,6 @@ class CategoryObserver
     }
 
     /**
-     * @param CategoryResourceModel $categoryResource
-     * @param CategoryResourceModel $result
-     * @param CategoryModel $category
      *
      * @return CategoryResourceModel
      */
@@ -72,9 +69,6 @@ class CategoryObserver
     }
 
     /**
-     * @param CategoryResourceModel $categoryResource
-     * @param CategoryResourceModel $result
-     * @param CategoryModel $category
      *
      * @return CategoryResourceModel
      */
@@ -97,8 +91,6 @@ class CategoryObserver
     }
 
     /**
-     * @param array $affectedProductIds
-     * @return void
      * @throws DiagnosticsException
      * @throws NoSuchEntityException
      */
@@ -111,9 +103,6 @@ class CategoryObserver
         }
     }
 
-    /**
-     * @param array $productIds
-     */
     private function updateCategoryProducts(array $productIds)
     {
         $productIndexer = $this->indexerRegistry->get('algolia_products');

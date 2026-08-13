@@ -2,56 +2,32 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\QueueArchive;
 
+use Algolia\AlgoliaSearch\Model\QueueArchive;
 use Algolia\AlgoliaSearch\Model\QueueArchiveFactory;
 use Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive as QueueArchiveResourceModel;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Indexer\Model\IndexerFactory;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-    /** @var SessionManagerInterface */
-    protected $backendSession;
-
-    /** @var \Algolia\AlgoliaSearch\Model\QueueArchiveFactory */
-    protected $queueArchiveFactory;
-
-    /** @var QueueArchiveResourceModel */
-    protected $queueArchiveResourceModel;
-
-    /** @var IndexerFactory */
-    protected $indexerFactory;
-
-    /**
-     * @param Context          $context
-     * @param SessionManagerInterface          $backendSession
-     * @param QueueArchiveFactory       $queueArchiveFactory
-     * @param QueueArchiveResourceModel $queueArchiveResourceModel
-     * @param IndexerFactory   $indexerFactory
-     */
     public function __construct(
-        Context $context,
-        SessionManagerInterface $backendSession,
-        QueueArchiveFactory $queueArchiveFactory,
-        QueueArchiveResourceModel $queueArchiveResourceModel,
-        IndexerFactory $indexerFactory
+        Context                             $context,
+        protected QueueArchiveFactory        $queueArchiveFactory,
+        protected QueueArchiveResourceModel  $queueArchiveResourceModel,
+        protected IndexerFactory             $indexerFactory
     ) {
         parent::__construct($context);
-
-        $this->backendSession     = $backendSession;
-        $this->queueArchiveFactory       = $queueArchiveFactory;
-        $this->queueArchiveResourceModel = $queueArchiveResourceModel;
-        $this->indexerFactory   = $indexerFactory;
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model\QueueArchive */
-    protected function initJob()
+    protected function initJob(): ?QueueArchive
     {
         $jobId = (int) $this->getRequest()->getParam('id');
 
@@ -60,15 +36,12 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
             return null;
         }
 
-        /** @var \Algolia\AlgoliaSearch\Model\QueueArchive $model */
+        /** @var QueueArchive $model */
         $model = $this->queueArchiveFactory->create();
         $this->queueArchiveResourceModel->load($model, $jobId);
         if (!$model->getId()) {
             return null;
         }
-
-        // Register model to use later in blocks
-        $this->backendSession->setData('current_job', $model);
 
         return $model;
     }

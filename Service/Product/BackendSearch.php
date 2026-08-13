@@ -21,12 +21,8 @@ class BackendSearch
     ){}
 
     /**
-     * @param string $query
-     * @param int $storeId
-     * @param array|null $searchParams
-     * @param string|null $targetedIndex
-     * @return array
      * @throws AlgoliaException|NoSuchEntityException
+     *
      * @internal This method is intended primarily for integration testing and not for the search experience
      */
     public function getSearchResult(string $query, int $storeId, ?array $searchParams = null, ?string $targetedIndex = null): array

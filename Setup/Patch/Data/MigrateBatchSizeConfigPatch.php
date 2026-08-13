@@ -32,7 +32,6 @@ class MigrateBatchSizeConfigPatch implements DataPatchInterface
 
     /**
      * Migrate old Indexing configurations
-     * @return void
      */
     protected function moveIndexingSettings(): void
     {

@@ -53,9 +53,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $options
-     * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -65,10 +62,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
@@ -78,10 +71,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param int $storeId
-     * @param array|null $entityIds
-     * @param array|null $options
-     * @return void
      * @throws NoSuchEntityException
      * @throws \Exception
      */
@@ -109,8 +98,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param $storeId
-     * @return void
      * @throws NoSuchEntityException
      * @throws AlgoliaException
      */
@@ -140,13 +127,9 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param int $storeId
      * @param Collection $collection - collection to be paged
-     * @param int $page
-     * @param int $pageSize
      * @param array|null $productIds - pre-batched product ids - if specified no paging will be applied
-     * @param bool|null $useTmpIndex
-     * @return void
+     *
      * @throws AlgoliaException
      * @throws DiagnosticsException
      * @throws NoSuchEntityException
@@ -189,7 +172,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             'algolia_before_products_collection_load',
             [
                 'collection' => $collection,
-                'store'      => $storeId
+                'store'      => $storeId,
             ]
         );
 
@@ -226,10 +209,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
     }
 
     /**
-     * @param $storeId
-     * @param $collection
-     * @param $potentiallyDeletedProductsIds
-     * @return array
      * @throws \Exception
      */
     protected function getProductsRecords($storeId, $collection, $potentiallyDeletedProductsIds = null): array
@@ -255,7 +234,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             [
                 'collection'      => $collection,
                 'store_id'        => $storeId,
-                'additional_data' => $transport
+                'additional_data' => $transport,
             ]
         );
 
@@ -275,13 +254,14 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             }
 
             try {
-                $this->logger->startProfiling("canProductBeReindexed");
+                $this->logger->startProfiling('canProductBeReindexed');
                 $this->productRecordBuilder->canProductBeReindexed($product, $storeId);
             } catch (ProductReindexingException) {
                 $productsToRemove[$productId] = $productId;
+
                 continue;
             } finally {
-                $this->logger->stopProfiling("canProductBeReindexed");
+                $this->logger->stopProfiling('canProductBeReindexed');
             }
 
             if (isset($salesData[$productId])) {
@@ -303,17 +283,13 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         }
 
         $this->logger->stop($logEventName, true);
+
         return [
             'toIndex' => $productsToIndex,
             'toRemove' => array_unique($productsToRemove),
         ];
     }
 
-    /**
-     * @param $storeId
-     * @param Collection $collection
-     * @return array
-     */
     protected function getSalesData($storeId, Collection $collection): array
     {
         $this->logger->startProfiling(__METHOD__);
@@ -327,6 +303,7 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
         $ids = $collection->getColumnValues('entity_id');
         if (count($ids)) {
             $ordersTableName = $this->resource->getTableName('sales_order_item');
+
             try {
                 $salesConnection = $this->resource->getConnectionByName('sales');
             } catch (\DomainException) {
@@ -342,14 +319,11 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
             $salesData = $salesConnection->fetchAll($select, [], \PDO::FETCH_GROUP | \PDO::FETCH_ASSOC | \PDO::FETCH_UNIQUE);
         }
         $this->logger->stopProfiling(__METHOD__);
+
         return $salesData;
     }
 
     /**
-     * @param $storeId
-     * @param $objectIds
-     * @param $indexOptions
-     * @return void
      * @throws AlgoliaException
      */
     protected function deleteInactiveIds($storeId, $objectIds, $indexOptions): void
@@ -364,8 +338,6 @@ class IndexBuilder extends AbstractIndexBuilder implements UpdatableIndexBuilder
 
     /**
      * If the price index is stale
-     * @param array $productIds
-     * @return void
      */
     protected function checkPriceIndex(array $productIds): void
     {

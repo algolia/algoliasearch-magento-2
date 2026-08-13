@@ -8,20 +8,12 @@ use Magento\Framework\Setup\Patch\SchemaPatchInterface;
 
 class RecommendConfigPatch implements SchemaPatchInterface
 {
-    /**
-     * @var ConfigInterface
-     */
+    /** @var ConfigInterface */
     private $config;
 
-    /**
-     * @var ModuleDataSetupInterface
-     */
+    /** @var ModuleDataSetupInterface */
     private $moduleDataSetup;
 
-    /**
-     * @param ConfigInterface $config
-     * @param ModuleDataSetupInterface $moduleDataSetup
-     */
     public function __construct(
         ConfigInterface $config,
         ModuleDataSetupInterface $moduleDataSetup
@@ -57,7 +49,7 @@ class RecommendConfigPatch implements SchemaPatchInterface
             'algoliasearch_recommend/recommend/num_of_frequently_bought_together_products' => 'algoliasearch_recommend/recommend/frequently_bought_together/num_of_frequently_bought_together_products',
             'algoliasearch_recommend/recommend/num_of_related_products' => 'algoliasearch_recommend/recommend/related_product/num_of_related_products',
             'algoliasearch_recommend/recommend/is_remove_core_related_products_block' => 'algoliasearch_recommend/recommend/related_product/is_remove_core_related_products_block',
-            'algoliasearch_recommend/recommend/is_remove_core_upsell_products_block' => 'algoliasearch_recommend/recommend/frequently_bought_together/is_remove_core_upsell_products_block'
+            'algoliasearch_recommend/recommend/is_remove_core_upsell_products_block' => 'algoliasearch_recommend/recommend/frequently_bought_together/is_remove_core_upsell_products_block',
         ];
 
         $this->moduleDataSetup->getConnection()->startSetup();

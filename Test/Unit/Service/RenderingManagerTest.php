@@ -9,15 +9,16 @@ use Algolia\AlgoliaSearch\Service\RenderingManager;
 use Magento\Catalog\Model\Category;
 use Magento\Framework\View\Layout;
 use Magento\Framework\View\Layout\ProcessorInterface;
-use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class RenderingManagerTest extends TestCase
 {
     protected ?AutocompleteHelper $autocompleteConfigHelper;
     protected ?InstantSearchHelper $instantSearchConfigHelper;
     protected ?CurrentCategory $category;
-    protected ?StoreManagerInterface $storeManager;
 
     protected ?RenderingManager $renderingManager;
 
@@ -26,19 +27,15 @@ class RenderingManagerTest extends TestCase
         $this->autocompleteConfigHelper = $this->createMock(AutocompleteHelper::class);
         $this->instantSearchConfigHelper = $this->createMock(InstantSearchHelper::class);
         $this->category = $this->createMock(CurrentCategory::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
 
         $this->renderingManager = new RenderingManager(
             $this->autocompleteConfigHelper,
             $this->instantSearchConfigHelper,
-            $this->category,
-            $this->storeManager
+            $this->category
         );
     }
 
-    /**
-     * @dataProvider backendValuesProvider
-     */
+    #[DataProvider('backendValuesProvider')]
     public function testBackendRendering($actionName, $isLayoutUpdated): void
     {
         $this->autocompleteConfigHelper->method('isEnabled')->willReturn(true);
@@ -60,9 +57,7 @@ class RenderingManagerTest extends TestCase
         $this->renderingManager->handleBackendRendering($layout, $actionName, 0);
     }
 
-    /**
-     * @dataProvider shouldPreventBackendRenderingProvider
-     */
+    #[DataProvider('shouldPreventBackendRenderingProvider')]
     public function testShouldPreventBackendRendering(
         string $actionName,
         bool $isInstantSearchEnabled,
@@ -149,7 +144,7 @@ class RenderingManagerTest extends TestCase
         return [
             ['actionName' => 'catalog_category_view', 'isLayoutUpdated' => true],
             ['actionName' => 'catalogsearch_result_index', 'isLayoutUpdated' => true],
-            ['actionName' => 'foo_bar', 'isLayoutUpdated' => false]
+            ['actionName' => 'foo_bar', 'isLayoutUpdated' => false],
         ];
     }
 }

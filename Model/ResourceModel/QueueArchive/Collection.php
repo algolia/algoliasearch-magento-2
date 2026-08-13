@@ -6,13 +6,12 @@ use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
  * Class Collection
+ *
  * @package Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive
  */
 class Collection extends AbstractCollection
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $_idFieldName = 'archive_id';
 
     /**

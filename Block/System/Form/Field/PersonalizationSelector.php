@@ -7,7 +7,6 @@ class PersonalizationSelector extends \Magento\Config\Block\System\Config\Form\F
     /**
      * Retrieve label for the inheritance checkbox
      *
-     * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
      *
      * @return string
      */

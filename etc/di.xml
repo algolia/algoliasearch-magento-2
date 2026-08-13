@@ -39,6 +39,20 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\SearchQueryInterface" type="Algolia\AlgoliaSearch\Model\Data\SearchQuery" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface" type="Algolia\AlgoliaSearch\Model\Data\IndexOptions" />
 
+    <!-- Client provider -->
+    <preference for="Algolia\AlgoliaSearch\Api\SearchClientProviderInterface"
+                type="Algolia\AlgoliaSearch\Service\SearchClientProvider"/>
+
+    <!-- Send strategy -->
+    <preference for="Algolia\AlgoliaSearch\Api\SendStrategyInterface"
+                type="Algolia\AlgoliaSearch\Service\DirectSendStrategy"/>
+    <type name="Algolia\AlgoliaSearch\Service\SendStrategyResolver">
+        <arguments>
+            <argument name="defaultStrategy" xsi:type="object">Algolia\AlgoliaSearch\Service\DirectSendStrategy</argument>
+            <argument name="strategies" xsi:type="array"/>
+        </arguments>
+    </type>
+
     <!-- Algolia services -->
     <preference for="Algolia\AlgoliaSearch\Api\Insights\EventProcessorInterface" type="Algolia\AlgoliaSearch\Service\Insights\EventProcessor"/>
     <preference for="Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface" type="Algolia\AlgoliaSearch\Service\Product\ReplicaManager"/>
@@ -287,12 +301,28 @@
     </type>
 
 
+    <virtualType name="Algolia\AlgoliaSearch\Logger\Processor\PsrLogMessageProcessorWithoutUsedContext"
+                 type="Monolog\Processor\PsrLogMessageProcessor">
+        <arguments>
+            <argument name="removeUsedContextFields" xsi:type="boolean">true</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler">
+        <arguments>
+            <argument name="loggerType" xsi:type="const">Monolog\Logger::INFO</argument>
+        </arguments>
+    </type>
+
     <type name="Algolia\AlgoliaSearch\Logger\AlgoliaLogger">
         <arguments>
             <argument name="name" xsi:type="string">algolia</argument>
             <argument name="handlers" xsi:type="array">
                 <item name="system" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler</item>
                 <item name="custom" xsi:type="object">Algolia\AlgoliaSearch\Logger\Handler\AlgoliaLoggerHandler</item>
+            </argument>
+            <argument name="processors" xsi:type="array">
+                <item name="psr_log_message" xsi:type="object">Algolia\AlgoliaSearch\Logger\Processor\PsrLogMessageProcessorWithoutUsedContext</item>
             </argument>
         </arguments>
     </type>

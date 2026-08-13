@@ -17,6 +17,8 @@ use Magento\Framework\Serialize\Serializer\Json;
 
 class Sorts extends ArraySerialized
 {
+    protected Json $serializer;
+
     public function __construct(
         Context                 $context,
         Registry                $registry,
@@ -39,12 +41,14 @@ class Sorts extends ArraySerialized
             $resource,
             $resourceCollection,
             $data,
-            $serializer);
+            $serializer
+        );
     }
 
     /**
-     * @return $this
      * @throws NoSuchEntityException
+     *
+     * @return $this
      */
     public function afterSave(): \Magento\Framework\App\Config\Value
     {

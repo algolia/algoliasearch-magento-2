@@ -68,7 +68,7 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
                 'title' => 'Release Notes',
                 'url' => 'https://github.com/algolia/algoliasearch-magento-2/releases',
                 'icon' => 'iconDocs',
-            ]
+            ],
         ],
         'algoliasearch_autocomplete' => [
             [
@@ -194,7 +194,9 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
 
-    /** @return array|void */
+    /**
+     * @return array|void
+     */
     protected function getVideoConfig($section, $configNotSet)
     {
         $config = null;
@@ -211,7 +213,9 @@ class AssetHelper extends \Magento\Framework\App\Helper\AbstractHelper
         return $config;
     }
 
-    /** @return array|void */
+    /**
+     * @return array|void
+     */
     protected function getLinksConfig($section)
     {
         $config = null;

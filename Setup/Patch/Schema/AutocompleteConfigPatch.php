@@ -8,20 +8,12 @@ use Magento\Framework\Setup\Patch\SchemaPatchInterface;
 
 class AutocompleteConfigPatch implements SchemaPatchInterface
 {
-    /**
-     * @var ConfigInterface
-     */
+    /** @var ConfigInterface */
     private $config;
 
-    /**
-     * @var ModuleDataSetupInterface
-     */
+    /** @var ModuleDataSetupInterface */
     private $moduleDataSetup;
 
-    /**
-     * @param ConfigInterface $config
-     * @param ModuleDataSetupInterface $moduleDataSetup
-     */
     public function __construct(
         ConfigInterface $config,
         ModuleDataSetupInterface $moduleDataSetup
@@ -46,6 +38,8 @@ class AutocompleteConfigPatch implements SchemaPatchInterface
             }
         }
         $this->moduleDataSetup->getConnection()->endSetup();
+
+        return $this;
     }
 
     /**

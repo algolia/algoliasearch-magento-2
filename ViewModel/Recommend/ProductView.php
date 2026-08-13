@@ -9,25 +9,15 @@ use Magento\Framework\View\Element\Block\ArgumentInterface;
 
 class ProductView implements ArgumentInterface
 {
-    /**
-     * @var Product
-     */
+    /** @var Product */
     protected $product = null;
 
-    /**
-     * @var CurrentProduct
-     */
+    /** @var CurrentProduct */
     protected $currentProduct;
 
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
 
-    /**
-     * @param CurrentProduct $currentProduct
-     * @param ConfigHelper $configHelper
-     */
     public function __construct(
         CurrentProduct $currentProduct,
         ConfigHelper $configHelper
@@ -45,14 +35,16 @@ class ProductView implements ArgumentInterface
         if (!$this->product) {
             $this->product = $this->getCurrentProduct();
         }
+
         return $this->product;
     }
 
     /**
      * Get product
      *
-     * @return array
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     *
+     * @return array
      */
     public function getCurrentProduct()
     {
@@ -68,7 +60,7 @@ class ProductView implements ArgumentInterface
             'enabledFBT' => $this->configHelper->isRecommendFrequentlyBroughtTogetherEnabled(),
             'enabledRelated' => $this->configHelper->isRecommendRelatedProductsEnabled(),
             'isTrendItemsEnabledInPDP' => $this->configHelper->isTrendItemsEnabledInPDP(),
-            'isLookingSimilarEnabledInPDP' => $this->configHelper->isLookingSimilarEnabledInPDP()
+            'isLookingSimilarEnabledInPDP' => $this->configHelper->isLookingSimilarEnabledInPDP(),
         ];
     }
 }

@@ -7,14 +7,9 @@ namespace Algolia\AlgoliaSearch\Block\Adminhtml\LandingPage\Renderer;
  */
 class UrlBuilder
 {
-    /**
-     * @var \Magento\Framework\UrlInterface
-     */
+    /** @var \Magento\Framework\UrlInterface */
     protected $frontendUrlBuilder;
 
-    /**
-     * @param \Magento\Framework\UrlInterface $frontendUrlBuilder
-     */
     public function __construct(\Magento\Framework\UrlInterface $frontendUrlBuilder)
     {
         $this->frontendUrlBuilder = $frontendUrlBuilder;
@@ -37,8 +32,6 @@ class UrlBuilder
      * Get action url
      *
      * @param string $routePath
-     * @param string $scope
-     * @param string $store
      *
      * @return string
      */

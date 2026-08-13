@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Service\AdditionalSection;
 use Algolia\AlgoliaSearch\Api\Builder\EntityIndexOptionsBuilderInterface;
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Helper\Entity\AdditionalSectionHelper;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder as BaseIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder as BaseIndexOptionsBuilder;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndexOptionsBuilderInterface

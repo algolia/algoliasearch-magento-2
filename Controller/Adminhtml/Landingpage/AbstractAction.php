@@ -4,54 +4,35 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Landingpage;
 
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage as LandingPageResource;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 abstract class AbstractAction extends \Magento\Backend\App\Action
 {
-
-    /** @var SessionManagerInterface */
-    protected $backendSession;
-
-    /** @var LandingPageFactory */
-    protected $landingPageFactory;
-
-    /** @var MerchandisingHelper */
-    protected $merchandisingHelper;
-
-    /** @var StoreManagerInterface */
-    protected $storeManager;
-
-    /**
-     * @param Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param LandingPageFactory $landingPageFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     */
     public function __construct(
-        Context $context,
-        SessionManagerInterface $backendSession,
-        LandingPageFactory $landingPageFactory,
-        MerchandisingHelper $merchandisingHelper,
-        StoreManagerInterface $storeManager
+        Context                           $context,
+        protected SessionManagerInterface $backendSession,
+        protected LandingPageFactory      $landingPageFactory,
+        protected MerchandisingHelper     $merchandisingHelper,
+        protected StoreManagerInterface   $storeManager,
+        protected LandingPageResource     $landingPageResource
     ) {
         parent::__construct($context);
-
-        $this->backendSession = $backendSession;
-        $this->landingPageFactory = $landingPageFactory;
-        $this->merchandisingHelper = $merchandisingHelper;
-        $this->storeManager = $storeManager;
     }
 
-    /** @return bool */
+    /**
+     * @return bool
+     */
     protected function _isAllowed()
     {
         return $this->_authorization->isAllowed('Algolia_AlgoliaSearch::manage');
     }
 
-    /** @return \Algolia\AlgoliaSearch\Model\LandingPage */
+    /**
+     * @return \Algolia\AlgoliaSearch\Model\LandingPage
+     */
     protected function initLandingPage()
     {
         $landingPageId = (int) $this->getRequest()->getParam('id');
@@ -60,7 +41,7 @@ abstract class AbstractAction extends \Magento\Backend\App\Action
         $landingPage = $this->landingPageFactory->create();
 
         if ($landingPageId) {
-            $landingPage->getResource()->load($landingPage, $landingPageId);
+            $this->landingPageResource->load($landingPage, $landingPageId);
             if (!$landingPage->getId()) {
                 return null;
             }

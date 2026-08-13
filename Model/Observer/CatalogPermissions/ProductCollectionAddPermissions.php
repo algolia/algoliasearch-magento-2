@@ -48,8 +48,6 @@ class ProductCollectionAddPermissions implements ObserverInterface
 
     /**
      * @param $additionalData \Algolia\AlgoliaSearch\Helper\ProductDataArray
-     * @param $productIds
-     * @param $storeId
      */
     protected function addProductPermissionsData($additionalData, $productIds, $storeId)
     {
@@ -79,7 +77,6 @@ class ProductCollectionAddPermissions implements ObserverInterface
 
     /**
      * @param $additionalData \Algolia\AlgoliaSearch\Helper\ProductDataArray
-     * @param $productIds
      */
     protected function addSharedCatalogData($additionalData, $productIds)
     {

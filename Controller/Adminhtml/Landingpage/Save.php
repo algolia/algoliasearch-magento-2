@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Landingpage;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Model\LandingPageFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\LandingPage as LandingPageResource;
 use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Controller\ResultFactory;
@@ -14,57 +15,24 @@ use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 
 class Save extends AbstractAction
 {
-    /**
-     * @var DataPersistorInterface
-     */
-    protected $dataPersistor;
-
-    /**
-     * @var CollectionFactory
-     */
-    protected $customerGroupCollectionFactory;
-
-    /**
-     * @var ConfigHelper
-     */
-    protected $configHelper;
-
-    /**
-     * @var SessionManagerInterface
-     */
-    protected $backendSession;
-
-    /**
-     * PHP Constructor
-     *
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param LandingPageFactory $landingPageFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     * @param DataPersistorInterface $dataPersistor
-     * @param CollectionFactory $customerGroupCollectionFactory
-     * @return Save
-     */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
-        SessionManagerInterface $backendSession,
-        LandingPageFactory $landingPageFactory,
-        MerchandisingHelper $merchandisingHelper,
-        StoreManagerInterface $storeManager,
-        DataPersistorInterface $dataPersistor,
-        CollectionFactory $customerGroupCollectionFactory,
-        ConfigHelper $configHelper
+        SessionManagerInterface             $backendSession,
+        LandingPageFactory                  $landingPageFactory,
+        MerchandisingHelper                 $merchandisingHelper,
+        StoreManagerInterface               $storeManager,
+        LandingPageResource                 $landingPageResource,
+        protected DataPersistorInterface    $dataPersistor,
+        protected CollectionFactory         $customerGroupCollectionFactory,
+        protected ConfigHelper              $configHelper
     ) {
-        $this->dataPersistor = $dataPersistor;
-        $this->customerGroupCollectionFactory = $customerGroupCollectionFactory;
-        $this->configHelper = $configHelper;
         parent::__construct(
             $context,
             $backendSession,
             $landingPageFactory,
             $merchandisingHelper,
-            $storeManager
+            $storeManager,
+            $landingPageResource
         );
     }
 
@@ -90,7 +58,7 @@ class Save extends AbstractAction
             $landingPage = $this->landingPageFactory->create();
 
             if ($landingPageId) {
-                $landingPage->getResource()->load($landingPage, $landingPageId);
+                $this->landingPageResource->load($landingPage, $landingPageId);
 
                 if (!$landingPage->getId()) {
                     $this->messageManager->addErrorMessage(__('This landing page does not exist.'));
@@ -124,7 +92,7 @@ class Save extends AbstractAction
             $landingPage->setData($data);
 
             try {
-                $landingPage->getResource()->save($landingPage);
+                $this->landingPageResource->save($landingPage);
 
                 if (isset($data['algolia_merchandising_positions']) && $data['algolia_merchandising_positions'] != '') {
                     $this->manageQueryRules($landingPage->getId(), $data);
@@ -156,9 +124,8 @@ class Save extends AbstractAction
     }
 
     /**
-     * @param int $landingPageId
      * @param array<string, mixed> $data
-     * @return void
+     *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     protected function manageQueryRules(int $landingPageId, array $data): void

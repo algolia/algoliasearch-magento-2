@@ -8,7 +8,9 @@ use Magento\Framework\Controller\ResultFactory;
 
 class View extends AbstractAction
 {
-    /** @return Page */
+    /**
+     * @return Page
+     */
     public function execute()
     {
         $job = $this->initJob();

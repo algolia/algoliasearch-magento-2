@@ -11,9 +11,9 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
-use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsHandler;
 use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -26,7 +26,9 @@ use Magento\Eav\Model\Config;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
+#[AllowMockObjectsWithoutExpectations]
 class ProductHelperTest extends TestCase
 {
     private array $defaultSettings = ['searchableAttributes' => [], 'customRanking' => []];

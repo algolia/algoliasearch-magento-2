@@ -9,11 +9,11 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsHandler;
 use Algolia\AlgoliaSearch\Service\Product\FacetBuilder;
 use Algolia\AlgoliaSearch\Service\Product\RecordBuilder as ProductRecordBuilder;
-use Algolia\AlgoliaSearch\Service\IndexSettingsHandler;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -34,19 +34,13 @@ class ProductHelper extends AbstractEntityHelper
 {
     use EntityHelperTrait;
     public const INDEX_NAME_SUFFIX = '_products';
-    /**
-     * @var AbstractType[]
-     */
+    /** @var AbstractType[] */
     protected ?array $compositeTypes = null;
 
-    /**
-     * @var array<string, string>
-     */
+    /** @var array<string, string> */
     protected array $productAttributes;
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected array $predefinedProductAttributes = [
         'name',
         'url_key',
@@ -56,9 +50,7 @@ class ProductHelper extends AbstractEntityHelper
         'msrp_enabled', // Needed to handle MSRP behavior
     ];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     protected array $createdAttributes = [
         'path',
         'categories',
@@ -96,8 +88,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param bool $addEmptyRow
-     * @return array
      * @throws LocalizedException
      */
     public function getAllAttributes(bool $addEmptyRow = false): array
@@ -151,11 +141,7 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param int $storeId
      * @param string[]|null $productIds
-     * @param bool $onlyVisible
-     * @param bool $includeNotVisibleIndividually
-     * @return ProductCollection
      */
     public function getProductCollectionQuery(
         int $storeId,
@@ -215,16 +201,14 @@ class ProductHelper extends AbstractEntityHelper
         );
 
         $this->logger->stopProfiling(__METHOD__);
+
         return $products;
     }
 
-    /**
-     * @param $products
-     * @param $storeId
-     * @return void
-     */
-    protected function addStockFilter($products, $storeId): void
-    {
+    protected function addStockFilter(
+        ProductCollection $products,
+        int               $storeId
+    ): void {
         if ($this->configHelper->getShowOutOfStock($storeId) === false) {
             $this->stockHelper->addInStockFilterToCollection($products);
         }
@@ -237,8 +221,6 @@ class ProductHelper extends AbstractEntityHelper
      *            Otherwise, the resulting inner join will filter out products
      *            without a price. These removed products will initiate a `deleteObject`
      *            operation against the underlying product index in Algolia.
-     * @param ProductCollection $products
-     * @return void
      */
     protected function addMandatoryAttributes(ProductCollection $products): void
     {
@@ -250,21 +232,16 @@ class ProductHelper extends AbstractEntityHelper
             ->addAttributeToSelect('status');
     }
 
-    /**
-     * @param int|null $storeId
-     * @return array
-     *
-     */
     protected function getAdditionalAttributes(?int $storeId = null): array
     {
         return $this->productRecordBuilder->getAdditionalAttributes($storeId);
     }
 
     /**
-     * @param int|null $storeId
-     * @return array<string, mixed>
      * @throws LocalizedException
      * @throws NoSuchEntityException
+     *
+     * @return array<string, mixed>
      */
     public function getIndexSettings(?int $storeId = null): array
     {
@@ -302,11 +279,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @param IndexOptionsInterface $indexTmpOptions
-     * @param int $storeId
-     * @param bool $saveToTmpIndicesToo
-     * @return void
      * @throws AlgoliaException
      * @throws LocalizedException
      * @throws NoSuchEntityException
@@ -344,9 +316,7 @@ class ProductHelper extends AbstractEntityHelper
     /**
      * Returns all parent product IDs, e.g. when simple product is part of configurable or bundle
      *
-     * @param array $productIds
      *
-     * @return array
      */
     public function getParentProductIds(array $productIds): array
     {
@@ -357,6 +327,7 @@ class ProductHelper extends AbstractEntityHelper
         }
 
         $this->logger->stopProfiling(__METHOD__);
+
         return $parentIds;
     }
 
@@ -381,10 +352,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $defaultData
-     * @param $customData
-     * @param Product $product
-     * @return mixed
      *
      * @deprecated (will be removed in once MSI compatibility module will be added to this module)
      */
@@ -394,7 +361,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $storeId
      * @return array
      */
     protected function getSearchableAttributes($storeId = null)
@@ -421,10 +387,6 @@ class ProductHelper extends AbstractEntityHelper
         return $searchableAttributes;
     }
 
-    /**
-     * @param $storeId
-     * @return array
-     */
     protected function getCustomRanking($storeId): array
     {
         $customRanking = [];
@@ -438,7 +400,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $storeId
      * @return array
      */
     protected function getUnretrieveableAttributes($storeId = null)
@@ -455,10 +416,10 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
+     *
+     * @return void
      */
     protected function setFacetsQueryRules(IndexOptionsInterface $indexOptions): void
     {
@@ -502,8 +463,6 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param IndexOptionsInterface $indexOptions
-     * @return void
      * @throws AlgoliaException
      * @throws NoSuchEntityException
      */
@@ -549,8 +508,6 @@ class ProductHelper extends AbstractEntityHelper
      * @param Product $product
      * @param int $storeId
      *
-     * @return bool
-     *
      * @deprecated (will be remove in a future version)
      */
     public function productIsInStock($product, $storeId): bool
@@ -559,27 +516,30 @@ class ProductHelper extends AbstractEntityHelper
     }
 
     /**
-     * @param $replicas
-     * @return array
      * @throws AlgoliaException
+     *
      * @deprecated This method has been superseded by `decorateReplicasSetting` and should no longer be used
      */
     public function handleVirtualReplica($replicas): array
     {
-        throw new AlgoliaException("This method is no longer supported.");
+        throw new AlgoliaException('This method is no longer supported.');
     }
 
     /**
      * Return a formatted Algolia `replicas` configuration for the provided sorting indices
+     *
      * @param array $sortingIndices Array of sorting index objects
+     *
      * @return string[]
+     *
      * @deprecated This method should no longer used
      */
     protected function decorateReplicasSetting(array $sortingIndices): array {
         return array_map(
             function($sort) {
                 $replica = $sort['name'];
-                return !! $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA]
+
+                return (bool) $sort[ReplicaManagerInterface::SORT_KEY_VIRTUAL_REPLICA]
                     ? "virtual($replica)"
                     : $replica;
             },

@@ -19,7 +19,6 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
     ) {}
 
     /**
-     * @param $ids
      * @return void
      */
     public function execute($ids)
@@ -42,7 +41,6 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
     }
 
     /**
-     * @param array $ids
      * @return void
      */
     public function executeList(array $ids)
@@ -51,7 +49,6 @@ class Page implements \Magento\Framework\Indexer\ActionInterface, \Magento\Frame
     }
 
     /**
-     * @param $id
      * @return void
      */
     public function executeRow($id)

@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\MerchandisingHelper;
 use Algolia\AlgoliaSearch\Model\ImageUploader;
 use Algolia\AlgoliaSearch\Model\QueryFactory;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Query as QueryResource;
 use Magento\Framework\Session\SessionManagerInterface;
 use Magento\Framework\App\Request\DataPersistorInterface;
 use Magento\Framework\Controller\ResultFactory;
@@ -14,60 +15,24 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Save extends AbstractAction
 {
-    /**
-     * @var DataPersistorInterface
-     */
-    protected $dataPersistor;
-
-    /**
-     * @var ConfigHelper
-     */
-    protected $configHelper;
-
-    /**
-     * @var ImageUploader
-     */
-    protected $imageUploader;
-
-    /**
-     * @var SessionManagerInterface
-     */
-    protected  $backendSession;
-
-    /**
-     * PHP Constructor
-     *
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param SessionManagerInterface $backendSession
-     * @param QueryFactory $queryFactory
-     * @param MerchandisingHelper $merchandisingHelper
-     * @param StoreManagerInterface $storeManager
-     * @param DataPersistorInterface $dataPersistor
-     * @param ConfigHelper $configHelper
-     * @param ImageUploader $imageUploader
-     *
-     * @return Save
-     */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
-        SessionManagerInterface $backendSession,
-        QueryFactory $queryFactory,
-        MerchandisingHelper $merchandisingHelper,
-        StoreManagerInterface $storeManager,
-        DataPersistorInterface $dataPersistor,
-        ConfigHelper $configHelper,
-        ImageUploader $imageUploader
+        SessionManagerInterface             $backendSession,
+        QueryFactory                        $queryFactory,
+        MerchandisingHelper                 $merchandisingHelper,
+        StoreManagerInterface               $storeManager,
+        QueryResource                       $queryResource,
+        protected DataPersistorInterface    $dataPersistor,
+        protected ConfigHelper              $configHelper,
+        protected ImageUploader             $imageUploader
     ) {
-        $this->dataPersistor = $dataPersistor;
-        $this->configHelper = $configHelper;
-        $this->imageUploader = $imageUploader;
-
         parent::__construct(
             $context,
             $backendSession,
             $queryFactory,
             $merchandisingHelper,
-            $storeManager
+            $storeManager,
+            $queryResource
         );
     }
 
@@ -93,7 +58,7 @@ class Save extends AbstractAction
             $query = $this->queryFactory->create();
 
             if ($queryId) {
-                $query->getResource()->load($query, $queryId);
+                $this->queryResource->load($query, $queryId);
 
                 if (!$query->getId()) {
                     $this->messageManager->addErrorMessage(__('This query does not exist.'));
@@ -117,7 +82,7 @@ class Save extends AbstractAction
             $storeId = isset($data['store_id']) && $data['store_id'] != 0 ? $data['store_id'] : null;
 
             try {
-                $query->getResource()->save($query);
+                $this->queryResource->save($query);
 
                 if (isset($data['algolia_merchandising_positions']) && $data['algolia_merchandising_positions'] != ''
                     || $data['banner_image'] !== null) {
@@ -150,9 +115,8 @@ class Save extends AbstractAction
     }
 
     /**
-     * @param int $queryId
      * @param array<string, mixed> $data
-     * @return void
+     *
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     private function manageQueryRules(int $queryId, array $data): void

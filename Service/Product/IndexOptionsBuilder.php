@@ -8,8 +8,8 @@ use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
-use Algolia\AlgoliaSearch\Service\IndexNameFetcher;
-use Algolia\AlgoliaSearch\Service\IndexOptionsBuilder as BaseIndexOptionsBuilder;
+use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
+use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder as BaseIndexOptionsBuilder;
 use Magento\Customer\Model\Context as CustomerContext;
 use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\Exception\LocalizedException;
@@ -42,9 +42,11 @@ class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndex
     public function buildReplicaIndexOptions(
         int $storeId,
         string $sortField,
-        string $sortDirection) : IndexOptionsInterface
+        string $sortDirection
+    ) : IndexOptionsInterface
     {
         $replicaIndexName = $this->getReplicaIndexName($storeId, $sortField, $sortDirection);
+
         return $replicaIndexName
             ? $this->buildWithEnforcedIndex($replicaIndexName, $storeId)
             : $this->buildEntityIndexOptions($storeId);
@@ -58,6 +60,7 @@ class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndex
     {
         $availableSorts = $this->sortingTransformer->getSortingIndices($storeId, $this->getCustomerGroupId());
         $sort = $this->findMatchingSort($availableSorts, $sortField, $sortDirection);
+
         return $sort[ReplicaManagerInterface::SORT_KEY_INDEX_NAME] ?? null;
     }
 
@@ -69,6 +72,7 @@ class IndexOptionsBuilder extends BaseIndexOptionsBuilder implements EntityIndex
                 return $sort;
             }
         }
+
         return null;
     }
 

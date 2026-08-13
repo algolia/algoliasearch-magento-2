@@ -51,7 +51,7 @@ commands:
             bin/setup-composer-auth
             bin/cli git clone git@github.com:magento/magento2.git .
             bin/cli git checkout tags/<< parameters.magento-version >>
-            bin/composer require "algolia/algoliasearch-magento-2:dev-${CIRCLE_BRANCH}"
+            bin/composer require --with-all-dependencies "algolia/algoliasearch-magento-2:dev-${CIRCLE_BRANCH}"
             bin/composer global require --dev phpunit/phpunit
       - run:
           name: Enable AlgoliaSearch extension
@@ -96,18 +96,18 @@ jobs:
             docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report/junit.xml ./unit-tests/
       - store_test_results:
           path: ~/Sites/unit-tests
-      - run:
-          name: Create Algolia-specific PHPUnit config for code coverage
-          working_directory: ~/Sites
-          command: |
-            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
-            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
-      - run:
-          name: Run Unit Test Coverage and copy results to CircleCI
-          working_directory: ~/Sites
-          command: |
-            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/algolia-phpunit.xml --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-text
-            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
+#      - run:
+#          name: Create Algolia-specific PHPUnit config for code coverage
+#          working_directory: ~/Sites
+#          command: |
+#            cp ~/project/.circleci/algolia-phpunit-code-coverage.xml algolia-phpunit.xml
+#            docker cp algolia-phpunit.xml $(docker compose ps -q phpfpm):/var/www/html/algolia-phpunit.xml
+#      - run:
+#          name: Run Unit Test Coverage and copy results to CircleCI
+#          working_directory: ~/Sites
+#          command: |
+#            bin/cli php -d xdebug.mode=coverage vendor/bin/phpunit -c /var/www/html/algolia-phpunit.xml --log-junit /var/www/html/dev/tests/unit/report/junit.xml --coverage-html /var/www/html/dev/tests/unit/report --coverage-text
+#            docker cp $(docker compose ps -q phpfpm):/var/www/html/dev/tests/unit/report ./unit-coverage/
       - store_artifacts:
           path: ~/Sites/unit-coverage/report
           destination: test-results/magento-<< parameters.magento-version >>-php-<< parameters.php-version >>
@@ -159,7 +159,7 @@ jobs:
           working_directory: ~/Sites
           command: |
             bin/cli bash -c "cd ./dev/tests/integration && export $(cat .env | xargs) && ../../../vendor/bin/phpunit --debug --exclude-group problematic ../../../vendor/algolia/algoliasearch-magento-2/Test/Integration/"
-  
+
   notify:
     docker:
       - image: cimg/base:current
@@ -181,8 +181,8 @@ workflows:
       - magento-build:
           matrix:
             parameters:
-              php-version: ["8.2"]
-              magento-version: ["2.4.6-p11", "2.4.7-p6"]
+              php-version: ["8.4"]
+              magento-version: ["2.4.8-p5"]
       - notify:
           context: mage-slack
 #  magento-integration-test-workflow:

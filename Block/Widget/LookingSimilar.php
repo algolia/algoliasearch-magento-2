@@ -10,19 +10,14 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 
 class LookingSimilar extends Template implements BlockInterface
 {
-    /**
-     * @var ConfigHelper
-     */
+    /** @var ConfigHelper */
     protected $configHelper;
+
+    /** @var Random */
+    protected $mathRandom;
 
     protected $_template = 'recommend/widget/looking-similar.phtml';
 
-    /**
-     * @param Context $context
-     * @param ConfigHelper $configHelper
-     * @param Random $mathRandom
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         ConfigHelper $configHelper,
@@ -38,8 +33,9 @@ class LookingSimilar extends Template implements BlockInterface
     }
 
     /**
-     * @return string
      * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @return string
      */
     public function generateUniqueToken()
     {
@@ -51,7 +47,10 @@ class LookingSimilar extends Template implements BlockInterface
      */
     public function getProductIds()
     {
-        return json_encode(explode(",", (string) $this->getData('productIds')));
+        return json_encode(
+            explode(',', (string) $this->getData('productIds')),
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+        );
     }
 
     /**

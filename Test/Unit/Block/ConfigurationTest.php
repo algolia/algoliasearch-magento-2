@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Algolia\AlgoliaSearch\Test\Unit\Block;
 
 use Algolia\AlgoliaSearch\Block\Configuration as ConfigurationBlock;
@@ -31,114 +33,94 @@ use Magento\Framework\View\Element\Template\Context;
 use Magento\Search\Helper\Data as CatalogSearchHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class ConfigurationTest extends TestCase
 {
-    protected ?ConfigurationBlock $configurationBlock;
+    protected function createObjectToTest(
+        ?ConfigHelper $config = null,
+        ?AutocompleteHelper $autocompleteConfig = null,
+        ?InstantSearchHelper $instantSearchConfig = null,
+        ?PersonalizationHelper $personalizationHelper = null,
+        ?CatalogSearchHelper $catalogSearchHelper = null,
+        ?ProductHelper $productHelper = null,
+        ?Currency $currency = null,
+        ?Format $format = null,
+        ?CurrentProduct $currentProduct = null,
+        ?AlgoliaConnector $algoliaConnector = null,
+        ?UrlHelper $urlHelper = null,
+        ?FormKey $formKey = null,
+        ?HttpContext $httpContext = null,
+        ?CoreHelper $coreHelper = null,
+        ?CategoryHelper $categoryHelper = null,
+        ?SuggestionHelper $suggestionHelper = null,
+        ?LandingPageHelper $landingPageHelper = null,
+        ?CheckoutSession $checkoutSession = null,
+        ?DateTime $date = null,
+        ?CurrentCategory $currentCategory = null,
+        ?SortingTransformer $sortingTransformer = null,
+        ?PriceKeyResolver $priceKeyResolver = null,
+        ?CategoryPathProvider $categoryPathProvider = null,
+        ?Http $request = null,
+    ): ConfigurationBlock {
+        $context = $this->createStub(Context::class);
+        $context->method('getRequest')->willReturn($request ?? $this->createStub(Http::class));
 
-    protected ?ConfigHelper $config;
-    protected ?AutocompleteHelper $autocompleteConfig;
-    protected ?InstantSearchHelper $instantSearchConfig;
-    protected ?PersonalizationHelper $personalizationHelper;
-    protected ?CatalogSearchHelper $catalogSearchHelper;
-    protected ?ProductHelper $productHelper;
-    protected ?Currency $currency;
-    protected ?Format $format;
-    protected ?CurrentProduct $currentProduct;
-    protected ?AlgoliaConnector $algoliaConnector;
-    protected ?UrlHelper $urlHelper;
-    protected ?FormKey $formKey;
-    protected ?HttpContext $httpContext;
-    protected ?CoreHelper $coreHelper;
-    protected ?CategoryHelper $categoryHelper;
-    protected ?SuggestionHelper $suggestionHelper;
-    protected ?LandingPageHelper $landingPageHelper;
-    protected ?CheckoutSession $checkoutSession;
-    protected ?DateTime $date;
-    protected ?CurrentCategory $currentCategory;
-    protected ?SortingTransformer $sortingTransformer;
-    protected ?PriceKeyResolver $priceKeyResolver;
-    protected ?CategoryPathProvider $categoryPathProvider;
-    protected ?Context $context;
-    protected ?Http $request;
-
-    protected function setUp(): void
-    {
-        $this->config = $this->createMock(ConfigHelper::class);
-        $this->autocompleteConfig = $this->createMock(AutocompleteHelper::class);
-        $this->instantSearchConfig = $this->createMock(InstantSearchHelper::class);
-        $this->personalizationHelper = $this->createMock(PersonalizationHelper::class);
-        $this->catalogSearchHelper = $this->createMock(CatalogSearchHelper::class);
-        $this->productHelper = $this->createMock(ProductHelper::class);
-        $this->currency = $this->createMock(Currency::class);
-        $this->format = $this->createMock(Format::class);
-        $this->currentProduct = $this->createMock(CurrentProduct::class);
-        $this->algoliaConnector = $this->createMock(AlgoliaConnector::class);
-        $this->urlHelper = $this->createMock(UrlHelper::class);
-        $this->formKey = $this->createMock(FormKey::class);
-        $this->httpContext = $this->createMock(HttpContext::class);
-        $this->coreHelper = $this->createMock(CoreHelper::class);
-        $this->categoryHelper = $this->createMock(CategoryHelper::class);
-        $this->suggestionHelper = $this->createMock(SuggestionHelper::class);
-        $this->landingPageHelper = $this->createMock(LandingPageHelper::class);
-        $this->checkoutSession = $this->createMock(CheckoutSession::class);
-        $this->date = $this->createMock(DateTime::class);
-        $this->currentCategory = $this->createMock(CurrentCategory::class);
-        $this->sortingTransformer = $this->createMock(SortingTransformer::class);
-        $this->priceKeyResolver = $this->createMock(PriceKeyResolver::class);
-        $this->categoryPathProvider = $this->createMock(CategoryPathProvider::class);
-        $this->context = $this->createMock(Context::class);
-        $this->request = $this->createMock(Http::class);
-        $this->context->method('getRequest')->willReturn($this->request);
-
-        $this->configurationBlock = new ConfigurationBlock(
-            $this->config,
-            $this->autocompleteConfig,
-            $this->instantSearchConfig,
-            $this->personalizationHelper,
-            $this->catalogSearchHelper,
-            $this->productHelper,
-            $this->currency,
-            $this->format,
-            $this->currentProduct,
-            $this->algoliaConnector,
-            $this->urlHelper,
-            $this->formKey,
-            $this->httpContext,
-            $this->coreHelper,
-            $this->categoryHelper,
-            $this->suggestionHelper,
-            $this->landingPageHelper,
-            $this->checkoutSession,
-            $this->date,
-            $this->currentCategory,
-            $this->sortingTransformer,
-            $this->priceKeyResolver,
-            $this->categoryPathProvider,
-            $this->context,
+        return new ConfigurationBlock(
+            $config ?? $this->createStub(ConfigHelper::class),
+            $autocompleteConfig ?? $this->createStub(AutocompleteHelper::class),
+            $instantSearchConfig ?? $this->createStub(InstantSearchHelper::class),
+            $personalizationHelper ?? $this->createStub(PersonalizationHelper::class),
+            $catalogSearchHelper ?? $this->createStub(CatalogSearchHelper::class),
+            $productHelper ?? $this->createStub(ProductHelper::class),
+            $currency ?? $this->createStub(Currency::class),
+            $format ?? $this->createStub(Format::class),
+            $currentProduct ?? $this->createStub(CurrentProduct::class),
+            $algoliaConnector ?? $this->createStub(AlgoliaConnector::class),
+            $urlHelper ?? $this->createStub(UrlHelper::class),
+            $formKey ?? $this->createStub(FormKey::class),
+            $httpContext ?? $this->createStub(HttpContext::class),
+            $coreHelper ?? $this->createStub(CoreHelper::class),
+            $categoryHelper ?? $this->createStub(CategoryHelper::class),
+            $suggestionHelper ?? $this->createStub(SuggestionHelper::class),
+            $landingPageHelper ?? $this->createStub(LandingPageHelper::class),
+            $checkoutSession ?? $this->createStub(CheckoutSession::class),
+            $date ?? $this->createStub(DateTime::class),
+            $currentCategory ?? $this->createStub(CurrentCategory::class),
+            $sortingTransformer ?? $this->createStub(SortingTransformer::class),
+            $priceKeyResolver ?? $this->createStub(PriceKeyResolver::class),
+            $categoryPathProvider ?? $this->createStub(CategoryPathProvider::class),
+            $context,
         );
     }
 
     #[DataProvider('searchPageDataProvider')]
     public function testIsSearchPage($action, $categoryId, $categoryDisplayMode, $expectedResult): void
     {
-        $this->instantSearchConfig->method('isEnabled')->willReturn(true);
-        $this->request->method('getFullActionName')->willReturn($action);
+        $instantSearchConfig = $this->createStub(InstantSearchHelper::class);
+        $instantSearchConfig->method('isEnabled')->willReturn(true);
+        $instantSearchConfig->method('shouldReplaceCategories')->willReturn(true);
+
+        $request = $this->createStub(Http::class);
+        $request->method('getFullActionName')->willReturn($action);
 
         $controller = explode('_', $action);
         $controller = $controller[1];
+        $request->method('getControllerName')->willReturn($controller);
 
-        $this->request->method('getControllerName')->willReturn($controller);
-        $this->instantSearchConfig->method('shouldReplaceCategories')->willReturn(true);
-
-        $category = $this->createMock(Category::class);
+        $category = $this->createStub(Category::class);
         $category->method('getId')->willReturn($categoryId);
         $category->method('getDisplayMode')->willReturn($categoryDisplayMode);
-        $this->currentCategory->method('get')->willReturn($category);
 
-        $this->assertEquals($expectedResult, $this->configurationBlock->isSearchPage());
+        $currentCategory = $this->createStub(CurrentCategory::class);
+        $currentCategory->method('get')->willReturn($category);
+
+        $configurationBlock = $this->createObjectToTest(
+            instantSearchConfig: $instantSearchConfig,
+            currentCategory: $currentCategory,
+            request: $request,
+        );
+
+        $this->assertEquals($expectedResult, $configurationBlock->isSearchPage());
     }
 
     public function testAreCategoriesInFacetsReturnsTrueWhenCategoriesAttributePresent(): void
@@ -148,7 +130,9 @@ class ConfigurationTest extends TestCase
             ['attribute' => 'categories'],
         ];
 
-        $this->assertTrue($this->invokeMethod($this->configurationBlock, 'areCategoriesInFacets', [$facets]));
+        $configurationBlock = $this->createObjectToTest();
+
+        $this->assertTrue($this->invokeMethod($configurationBlock, 'areCategoriesInFacets', [$facets]));
     }
 
     public function testAreCategoriesInFacetsReturnsFalseWhenCategoriesAttributeAbsent(): void
@@ -158,37 +142,50 @@ class ConfigurationTest extends TestCase
             ['attribute' => 'size'],
         ];
 
-        $this->assertFalse($this->invokeMethod($this->configurationBlock, 'areCategoriesInFacets', [$facets]));
+        $configurationBlock = $this->createObjectToTest();
+
+        $this->assertFalse($this->invokeMethod($configurationBlock, 'areCategoriesInFacets', [$facets]));
     }
 
     public function testAreCategoriesInFacetsReturnsFalseWhenFacetsIsEmpty(): void
     {
-        $this->assertFalse($this->invokeMethod($this->configurationBlock, 'areCategoriesInFacets', [[]]));
+        $configurationBlock = $this->createObjectToTest();
+
+        $this->assertFalse($this->invokeMethod($configurationBlock, 'areCategoriesInFacets', [[]]));
     }
 
     public function testGetUrlTrackedParametersIncludesPageWhenInfiniteScrollDisabled(): void
     {
-        $this->instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(false);
+        $instantSearchConfig = $this->createStub(InstantSearchHelper::class);
+        $instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(false);
 
-        $params = $this->invokeMethod($this->configurationBlock, 'getUrlTrackedParameters');
+        $configurationBlock = $this->createObjectToTest(instantSearchConfig: $instantSearchConfig);
+
+        $params = $this->invokeMethod($configurationBlock, 'getUrlTrackedParameters');
 
         $this->assertContains('page', $params);
     }
 
     public function testGetUrlTrackedParametersExcludesPageWhenInfiniteScrollEnabled(): void
     {
-        $this->instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(true);
+        $instantSearchConfig = $this->createStub(InstantSearchHelper::class);
+        $instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(true);
 
-        $params = $this->invokeMethod($this->configurationBlock, 'getUrlTrackedParameters');
+        $configurationBlock = $this->createObjectToTest(instantSearchConfig: $instantSearchConfig);
+
+        $params = $this->invokeMethod($configurationBlock, 'getUrlTrackedParameters');
 
         $this->assertNotContains('page', $params);
     }
 
     public function testGetUrlTrackedParametersAlwaysIncludesBaseParams(): void
     {
-        $this->instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(true);
+        $instantSearchConfig = $this->createStub(InstantSearchHelper::class);
+        $instantSearchConfig->method('isInfiniteScrollEnabled')->willReturn(true);
 
-        $params = $this->invokeMethod($this->configurationBlock, 'getUrlTrackedParameters');
+        $configurationBlock = $this->createObjectToTest(instantSearchConfig: $instantSearchConfig);
+
+        $params = $this->invokeMethod($configurationBlock, 'getUrlTrackedParameters');
 
         $this->assertContains('query', $params);
         $this->assertContains('attribute:*', $params);

@@ -12,78 +12,68 @@ use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Model\Context;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Registry;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class JobTest extends TestCase
 {
-    private null|(Context&MockObject) $context = null;
-    private null|(Registry&MockObject) $registry = null;
-    private null|(ObjectManagerInterface&MockObject) $objectManager = null;
-    private null|(JobResourceModel&MockObject) $resourceModel = null;
+    protected function createObjectToTest(
+        ?ObjectManagerInterface $objectManager = null,
+        ?JobResourceModel $resourceModel = null,
+    ): Job {
+        $context = $this->createStub(Context::class);
+        $context->method('getEventDispatcher')->willReturn($this->createStub(ManagerInterface::class));
 
-    private ?Job $job = null;
-
-    protected function setUp(): void
-    {
-        $this->context = $this->createMock(Context::class);
-        $eventDispatcher = $this->createMock(ManagerInterface::class);
-        $this->context->method('getEventDispatcher')->willReturn($eventDispatcher);
-
-        $this->registry = $this->createMock(Registry::class);
-        $this->objectManager = $this->createMock(ObjectManagerInterface::class);
-        $this->resourceModel = $this->createMock(JobResourceModel::class);
-
-        $this->job = new Job(
-            $this->context,
-            $this->registry,
-            $this->objectManager,
-            $this->resourceModel
+        return new Job(
+            $context,
+            $this->createStub(Registry::class),
+            $objectManager ?? $this->createStub(ObjectManagerInterface::class),
+            $resourceModel ?? $this->createStub(JobResourceModel::class),
         );
     }
 
     #[DataProvider('authorizedHandlersProvider')]
     public function testExecuteSucceedsForAuthorizedHandler(string $class, string $method, array $methodArgs): void
     {
-        $this->job->setClass($class);
-        $this->job->setMethod($method);
-        $this->job->setData('decoded_data', $methodArgs);
-        $this->job->setData('retries', 0);
-
         $mockHandler = $this->getMockBuilder($class)
             ->disableOriginalConstructor()
             ->onlyMethods([$method])
             ->getMock();
 
-        $mockHandler->expects($this->once())
-            ->method($method);
+        $mockHandler->expects($this->once())->method($method);
 
-        $this->objectManager->expects($this->once())
+        $objectManager = $this->createMock(ObjectManagerInterface::class);
+        $objectManager->expects($this->once())
             ->method('get')
             ->with($class)
             ->willReturn($mockHandler);
 
-        $this->resourceModel->method('save')->willReturnSelf();
+        $resourceModel = $this->createStub(JobResourceModel::class);
+        $resourceModel->method('save')->willReturnSelf();
 
-        $result = $this->job->execute();
+        $job = $this->createObjectToTest(objectManager: $objectManager, resourceModel: $resourceModel);
+        $job->setClass($class);
+        $job->setMethod($method);
+        $job->setData('decoded_data', $methodArgs);
+        $job->setData('retries', 0);
 
-        $this->assertSame($this->job, $result);
-        $this->assertEquals(1, $this->job->getData('retries'));
+        $result = $job->execute();
+
+        $this->assertSame($job, $result);
+        $this->assertEquals(1, $job->getData('retries'));
     }
 
     #[DataProvider('unauthorizedHandlersProvider')]
     public function testExecuteThrowsForUnauthorizedHandlers(string $class, string $method): void
     {
-        $this->job->setClass($class);
-        $this->job->setMethod($method);
-        $this->job->setData('decoded_data', []);
+        $job = $this->createObjectToTest();
+        $job->setClass($class);
+        $job->setMethod($method);
+        $job->setData('decoded_data', []);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
 
-        $this->job->execute();
+        $job->execute();
     }
 
     public static function authorizedHandlersProvider(): array
@@ -178,4 +168,3 @@ class JobTest extends TestCase
         ];
     }
 }
-

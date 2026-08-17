@@ -10,27 +10,18 @@ use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class IndexOptionsBuilderTest extends TestCase
 {
-    private IndexOptionsBuilder|MockObject $indexOptionsBuilder;
-    private IndexNameFetcher|MockObject $indexNameFetcher;
-    private IndexOptionsInterfaceFactory|MockObject $indexOptionsInterfaceFactory;
-    private DiagnosticsLogger|MockObject $logger;
-
-    protected function setUp(): void
-    {
-        $this->indexNameFetcher = $this->createMock(IndexNameFetcher::class);
-        $this->indexOptionsInterfaceFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
-        $this->logger = $this->createMock(DiagnosticsLogger::class);
-
-        $this->indexOptionsBuilder = new IndexOptionsBuilder(
-            $this->indexNameFetcher,
-            $this->indexOptionsInterfaceFactory,
-            $this->logger
+    protected function createObjectToTest(
+        ?IndexNameFetcher $indexNameFetcher = null,
+        ?IndexOptionsInterfaceFactory $indexOptionsInterfaceFactory = null,
+        ?DiagnosticsLogger $logger = null,
+    ): IndexOptionsBuilder {
+        return new IndexOptionsBuilder(
+            $indexNameFetcher ?? $this->createStub(IndexNameFetcher::class),
+            $indexOptionsInterfaceFactory ?? $this->createStub(IndexOptionsInterfaceFactory::class),
+            $logger ?? $this->createStub(DiagnosticsLogger::class),
         );
     }
 
@@ -51,12 +42,11 @@ class IndexOptionsBuilderTest extends TestCase
         ]);
     }
 
-    private function configureIndexOptionsFactoryMock(
+    private function createIndexOptionsFactoryMock(
         IndexOptionsInterface $indexOptions,
         array $expectedData
-    ): IndexOptionsInterfaceFactory
-    {
-        $factory = $this->indexOptionsInterfaceFactory;
+    ): IndexOptionsInterfaceFactory {
+        $factory = $this->createMock(IndexOptionsInterfaceFactory::class);
         $factory->expects($this->once())
             ->method('create')
             ->with(['data' => $expectedData])
@@ -73,19 +63,21 @@ class IndexOptionsBuilderTest extends TestCase
         $computedIndexName = 'magento2_default_products_tmp';
 
         $indexOptions = $this->createIndexOptionsMock(null, $storeId, $indexSuffix, $isTmp);
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::STORE_ID => $storeId,
             IndexOptionsInterface::INDEX_SUFFIX => $indexSuffix,
             IndexOptionsInterface::IS_TMP => $isTmp,
         ]);
 
-        $this->indexNameFetcher
-            ->expects($this->once())
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher->expects($this->once())
             ->method('getIndexName')
             ->with($indexSuffix, $storeId, $isTmp)
             ->willReturn($computedIndexName);
 
-        $result = $this->indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
+        $indexOptionsBuilder = $this->createObjectToTest($indexNameFetcher, $factory);
+
+        $result = $indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
 
         $this->assertEquals($computedIndexName, $result->getIndexName());
     }
@@ -95,14 +87,18 @@ class IndexOptionsBuilderTest extends TestCase
      */
     public function testBuildWithComputedIndexWithNullParameters(): void
     {
-        $this->indexOptionsInterfaceFactory->expects($this->never())->method('create');
+        $factory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $factory->expects($this->never())->method('create');
 
-        $this->logger->expects($this->never())->method('error');
+        $logger = $this->createMock(DiagnosticsLogger::class);
+        $logger->expects($this->never())->method('error');
+
+        $indexOptionsBuilder = $this->createObjectToTest(indexOptionsInterfaceFactory: $factory, logger: $logger);
 
         $this->expectException(\ArgumentCountError::class);
         $this->expectExceptionMessageMatches('/^Too few arguments to function/');
 
-        $this->indexOptionsBuilder->buildWithComputedIndex();
+        $indexOptionsBuilder->buildWithComputedIndex();
     }
 
     public function testBuildWithComputedIndexWithIndexNameFetcherException(): void
@@ -113,21 +109,23 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock(null, $storeId, $indexSuffix, $isTmp);
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::STORE_ID => $storeId,
             IndexOptionsInterface::INDEX_SUFFIX => $indexSuffix,
             IndexOptionsInterface::IS_TMP => $isTmp,
         ]);
 
-        $this->indexNameFetcher
-            ->expects($this->once())
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher->expects($this->once())
             ->method('getIndexName')
             ->with($indexSuffix, $storeId, $isTmp)
             ->willThrowException(new NoSuchEntityException(__('Store not found')));
 
+        $indexOptionsBuilder = $this->createObjectToTest($indexNameFetcher, $factory);
+
         $this->expectException(NoSuchEntityException::class);
 
-        $this->indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
+        $indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
     }
 
     public function testBuildWithEnforcedIndexWithAllParameters(): void
@@ -137,12 +135,14 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock($indexName, $storeId);
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::INDEX_NAME => $indexName,
             IndexOptionsInterface::STORE_ID => $storeId,
         ]);
 
-        $result = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptionsBuilder = $this->createObjectToTest(indexOptionsInterfaceFactory: $factory);
+
+        $result = $indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
         $this->assertEquals($indexName, $result->getIndexName());
     }
@@ -151,12 +151,14 @@ class IndexOptionsBuilderTest extends TestCase
     {
         $indexOptions = $this->createIndexOptionsMock(null, null);
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::INDEX_NAME => null,
             IndexOptionsInterface::STORE_ID => null,
         ]);
 
-        $result = $this->indexOptionsBuilder->buildWithEnforcedIndex();
+        $indexOptionsBuilder = $this->createObjectToTest(indexOptionsInterfaceFactory: $factory);
+
+        $result = $indexOptionsBuilder->buildWithEnforcedIndex();
 
         $this->assertEquals('', $result->getIndexName()); // Should this throw an exception?
     }
@@ -166,8 +168,10 @@ class IndexOptionsBuilderTest extends TestCase
         $enforcedIndexName = 'enforced_index_name';
         $indexOptions = $this->createIndexOptionsMock($enforcedIndexName);
 
+        $indexOptionsBuilder = $this->createObjectToTest();
+
         $result = $this->invokeMethod(
-            $this->indexOptionsBuilder,
+            $indexOptionsBuilder,
             'computeIndexName',
             [$indexOptions]
         );
@@ -184,14 +188,16 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock(null, $storeId, $indexSuffix, $isTmp);
 
-        $this->indexNameFetcher
-            ->expects($this->once())
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher->expects($this->once())
             ->method('getIndexName')
             ->with($indexSuffix, $storeId, $isTmp)
             ->willReturn($computedIndexName);
 
+        $indexOptionsBuilder = $this->createObjectToTest($indexNameFetcher);
+
         $result = $this->invokeMethod(
-            $this->indexOptionsBuilder,
+            $indexOptionsBuilder,
             'computeIndexName',
             [$indexOptions]
         );
@@ -205,8 +211,8 @@ class IndexOptionsBuilderTest extends TestCase
         $isTmp = false;
         $indexOptions = $this->createIndexOptionsMock(null, $storeId, null, $isTmp);
 
-        $this->logger
-            ->expects($this->once())
+        $logger = $this->createMock(DiagnosticsLogger::class);
+        $logger->expects($this->once())
             ->method('error')
             ->with(
                 'Index name could not be computed due to missing suffix.',
@@ -216,11 +222,13 @@ class IndexOptionsBuilderTest extends TestCase
                 ]
             );
 
+        $indexOptionsBuilder = $this->createObjectToTest(logger: $logger);
+
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Index name could not be computed due to missing suffix.');
 
         $this->invokeMethod(
-            $this->indexOptionsBuilder,
+            $indexOptionsBuilder,
             'computeIndexName',
             [$indexOptions]
         );
@@ -234,16 +242,18 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock(null, $storeId, $indexSuffix, $isTmp);
 
-        $this->indexNameFetcher
-            ->expects($this->once())
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher->expects($this->once())
             ->method('getIndexName')
             ->with($indexSuffix, $storeId, $isTmp)
             ->willThrowException(new NoSuchEntityException(__('Store not found')));
 
+        $indexOptionsBuilder = $this->createObjectToTest($indexNameFetcher);
+
         $this->expectException(NoSuchEntityException::class);
 
         $this->invokeMethod(
-            $this->indexOptionsBuilder,
+            $indexOptionsBuilder,
             'computeIndexName',
             [$indexOptions]
         );
@@ -258,19 +268,21 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock(null, $storeId, $indexSuffix, $isTmp);
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::STORE_ID => $storeId,
             IndexOptionsInterface::INDEX_SUFFIX => $indexSuffix,
             IndexOptionsInterface::IS_TMP => $isTmp,
         ]);
 
-        $this->indexNameFetcher
-            ->expects($this->once())
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher->expects($this->once())
             ->method('getIndexName')
             ->with($indexSuffix, $storeId, $isTmp)
             ->willReturn($computedIndexName);
 
-        $result = $this->indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
+        $indexOptionsBuilder = $this->createObjectToTest($indexNameFetcher, $factory);
+
+        $result = $indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
 
         $this->assertEquals($computedIndexName, $result->getIndexName());
     }
@@ -284,19 +296,21 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock(null, $storeId, $indexSuffix, $isTmp);
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::STORE_ID => $storeId,
             IndexOptionsInterface::INDEX_SUFFIX => $indexSuffix,
             IndexOptionsInterface::IS_TMP => $isTmp,
         ]);
 
-        $this->indexNameFetcher
-            ->expects($this->once())
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher->expects($this->once())
             ->method('getIndexName')
             ->with($indexSuffix, $storeId, $isTmp)
             ->willReturn($computedIndexName);
 
-        $result = $this->indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
+        $indexOptionsBuilder = $this->createObjectToTest($indexNameFetcher, $factory);
+
+        $result = $indexOptionsBuilder->buildWithComputedIndex($indexSuffix, $storeId, $isTmp);
 
         $this->assertEquals($computedIndexName, $result->getIndexName());
     }
@@ -307,12 +321,14 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock($indexName);
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::INDEX_NAME => $indexName,
             IndexOptionsInterface::STORE_ID => null,
         ]);
 
-        $result = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName);
+        $indexOptionsBuilder = $this->createObjectToTest(indexOptionsInterfaceFactory: $factory);
+
+        $result = $indexOptionsBuilder->buildWithEnforcedIndex($indexName);
 
         $this->assertEquals($indexName, $result->getIndexName());
     }
@@ -324,12 +340,14 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createIndexOptionsMock($indexName, $storeId);
 
-        $this->configureIndexOptionsFactoryMock($indexOptions, [
+        $factory = $this->createIndexOptionsFactoryMock($indexOptions, [
             IndexOptionsInterface::INDEX_NAME => $indexName,
             IndexOptionsInterface::STORE_ID => $storeId,
         ]);
 
-        $result = $this->indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
+        $indexOptionsBuilder = $this->createObjectToTest(indexOptionsInterfaceFactory: $factory);
+
+        $result = $indexOptionsBuilder->buildWithEnforcedIndex($indexName, $storeId);
 
         $this->assertEquals($indexName, $result->getIndexName()); // Should this throw an exception?
     }

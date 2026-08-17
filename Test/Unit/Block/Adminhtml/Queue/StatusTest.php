@@ -5,47 +5,56 @@ declare(strict_types=1);
 namespace Algolia\AlgoliaSearch\Test\Unit\Block\Adminhtml\Queue;
 
 use Algolia\AlgoliaSearch\Block\Adminhtml\Queue\Status;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Indexer\StateInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\UrlInterface;
+use Magento\Framework\View\Element\Template\Context;
 use Magento\Indexer\Model\Indexer;
-use PHPUnit\Framework\MockObject\MockObject;
+use Magento\Indexer\Model\IndexerFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class StatusTest extends TestCase
 {
-    protected null|(Status&MockObject) $block = null;
-    protected null|(Indexer&MockObject) $queueRunnerIndexer = null;
-    protected null|(Queue&MockObject) $queue = null;
-    protected null|(DateTime&MockObject) $dateTime = null;
+    protected function createObjectToTest(
+        ?Indexer $queueRunnerIndexer = null,
+        ?Queue $queue = null,
+        ?DateTime $dateTime = null,
+    ): Status {
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(true);
 
-    protected function setUp(): void
-    {
-        $this->queueRunnerIndexer = $this->createMock(Indexer::class);
-        $this->queue = $this->createMock(Queue::class);
-        $this->dateTime = $this->createMock(DateTime::class);
+        $indexerFactory = $this->createStub(IndexerFactory::class);
+        $indexerFactory->method('create')->willReturn(
+            $queueRunnerIndexer ?? $this->createStub(Indexer::class)
+        );
 
-        $this->block = $this->getMockBuilder(Status::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getUrl'])
-            ->getMock();
+        $urlBuilder = $this->createStub(UrlInterface::class);
+        $urlBuilder->method('getUrl')->willReturn('http://example.com/reset');
 
-        $this->block->method('getUrl')->willReturn('http://example.com/reset');
+        $context = $this->createStub(Context::class);
+        $context->method('getUrlBuilder')->willReturn($urlBuilder);
 
-        $this->setPrivateProperty($this->block, 'queueRunnerIndexer', $this->queueRunnerIndexer);
-        $this->setPrivateProperty($this->block, 'queue', $this->queue);
-        $this->setPrivateProperty($this->block, 'dateTime', $this->dateTime);
+        return new Status(
+            $context,
+            $indexerFactory,
+            $dateTime ?? $this->createStub(DateTime::class),
+            $configHelper,
+            $queue ?? $this->createStub(Queue::class),
+        );
     }
 
     #[DataProvider('queueRunnerStatusDataProvider')]
     public function testGetQueueRunnerStatusReturnsExpectedLabel(string $status, string $expected): void
     {
-        $this->queueRunnerIndexer->method('getStatus')->willReturn($status);
+        $queueRunnerIndexer = $this->createStub(Indexer::class);
+        $queueRunnerIndexer->method('getStatus')->willReturn($status);
 
-        $this->assertSame($expected, $this->block->getQueueRunnerStatus());
+        $block = $this->createObjectToTest(queueRunnerIndexer: $queueRunnerIndexer);
+
+        $this->assertSame($expected, $block->getQueueRunnerStatus());
     }
 
     public static function queueRunnerStatusDataProvider(): array
@@ -60,23 +69,35 @@ class StatusTest extends TestCase
 
     public function testGetNoticesReturnsEmptyArrayWhenNoConditionsMet(): void
     {
-        $this->queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_VALID);
-        $this->dateTime->method('gmtTimestamp')
-            ->willReturnCallback(fn($arg) => $arg === 'now' ? 100 : 0);
-        $this->queue->method('getAverageProcessingTime')->willReturn(null);
+        $queueRunnerIndexer = $this->createStub(Indexer::class);
+        $queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_VALID);
 
-        $this->assertSame([], $this->block->getNotices());
+        $dateTime = $this->createStub(DateTime::class);
+        $dateTime->method('gmtTimestamp')->willReturnCallback(fn($arg) => $arg === 'now' ? 100 : 0);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('getAverageProcessingTime')->willReturn(null);
+
+        $block = $this->createObjectToTest(queueRunnerIndexer: $queueRunnerIndexer, queue: $queue, dateTime: $dateTime);
+
+        $this->assertSame([], $block->getNotices());
     }
 
     public function testGetNoticesIncludesResetLinkWhenQueueIsStuck(): void
     {
         // Status != VALID and delta > CRON_QUEUE_FREQUENCY (330) but < QUEUE_NOT_PROCESSED_LIMIT (3600)
-        $this->queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_INVALID);
-        $this->dateTime->method('gmtTimestamp')
-            ->willReturnCallback(fn($arg) => $arg === 'now' ? 500 : 0);
-        $this->queue->method('getAverageProcessingTime')->willReturn(null);
+        $queueRunnerIndexer = $this->createStub(Indexer::class);
+        $queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_INVALID);
 
-        $notices = $this->block->getNotices();
+        $dateTime = $this->createStub(DateTime::class);
+        $dateTime->method('gmtTimestamp')->willReturnCallback(fn($arg) => $arg === 'now' ? 500 : 0);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('getAverageProcessingTime')->willReturn(null);
+
+        $block = $this->createObjectToTest(queueRunnerIndexer: $queueRunnerIndexer, queue: $queue, dateTime: $dateTime);
+
+        $notices = $block->getNotices();
 
         $this->assertCount(1, $notices);
         $this->assertStringContainsString('Reset queue', $notices[0]);
@@ -85,12 +106,18 @@ class StatusTest extends TestCase
     public function testGetNoticesIncludesNotProcessedWarningWhenQueueIsStale(): void
     {
         // VALID status so not stuck, but delta > QUEUE_NOT_PROCESSED_LIMIT (3600)
-        $this->queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_VALID);
-        $this->dateTime->method('gmtTimestamp')
-            ->willReturnCallback(fn($arg) => $arg === 'now' ? 5000 : 0);
-        $this->queue->method('getAverageProcessingTime')->willReturn(null);
+        $queueRunnerIndexer = $this->createStub(Indexer::class);
+        $queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_VALID);
 
-        $notices = $this->block->getNotices();
+        $dateTime = $this->createStub(DateTime::class);
+        $dateTime->method('gmtTimestamp')->willReturnCallback(fn($arg) => $arg === 'now' ? 5000 : 0);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('getAverageProcessingTime')->willReturn(null);
+
+        $block = $this->createObjectToTest(queueRunnerIndexer: $queueRunnerIndexer, queue: $queue, dateTime: $dateTime);
+
+        $notices = $block->getNotices();
 
         $this->assertCount(2, $notices);
         $this->assertStringContainsString('Queue has not been processed', (string) $notices[0]);
@@ -99,12 +126,18 @@ class StatusTest extends TestCase
     public function testGetNoticesIncludesPerformanceSuggestionWhenQueueIsFast(): void
     {
         // delta < CRON_QUEUE_FREQUENCY so not stuck, avg < QUEUE_FAST_LIMIT (220)
-        $this->queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_VALID);
-        $this->dateTime->method('gmtTimestamp')
-            ->willReturnCallback(fn($arg) => $arg === 'now' ? 100 : 0);
-        $this->queue->method('getAverageProcessingTime')->willReturn(100.0);
+        $queueRunnerIndexer = $this->createStub(Indexer::class);
+        $queueRunnerIndexer->method('getStatus')->willReturn(StateInterface::STATUS_VALID);
 
-        $notices = $this->block->getNotices();
+        $dateTime = $this->createStub(DateTime::class);
+        $dateTime->method('gmtTimestamp')->willReturnCallback(fn($arg) => $arg === 'now' ? 100 : 0);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('getAverageProcessingTime')->willReturn(100.0);
+
+        $block = $this->createObjectToTest(queueRunnerIndexer: $queueRunnerIndexer, queue: $queue, dateTime: $dateTime);
+
+        $notices = $block->getNotices();
 
         $this->assertCount(2, $notices);
         $this->assertStringContainsString('average processing time', (string) $notices[0]);

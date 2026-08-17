@@ -13,58 +13,66 @@ use Magento\Catalog\Controller\Adminhtml\Category\Edit as EditController;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\View\Result\Page;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class SetAdminCurrentCategoryTest extends TestCase
 {
-    protected null|(CurrentCategory&MockObject) $currentCategory = null;
-    protected null|(CategoryRepositoryInterface&MockObject) $categoryRepository = null;
-    protected null|(EditController&MockObject) $subject = null;
-    protected null|(RequestInterface&MockObject) $request = null;
-    protected ?SetAdminCurrentCategory $plugin = null;
+    protected function createObjectToTest(
+        ?CurrentCategory $currentCategory = null,
+        ?CategoryRepositoryInterface $categoryRepository = null,
+    ): SetAdminCurrentCategory {
+        return new SetAdminCurrentCategory(
+            $currentCategory ?? $this->createStub(CurrentCategory::class),
+            $categoryRepository ?? $this->createStub(CategoryRepositoryInterface::class),
+        );
+    }
 
-    protected function setUp(): void
+    private function createSubjectStub(RequestInterface $request): EditController&\PHPUnit\Framework\MockObject\MockObject
     {
-        $this->currentCategory = $this->createMock(CurrentCategory::class);
-        $this->categoryRepository = $this->createMock(CategoryRepositoryInterface::class);
-        $this->request = $this->createMock(RequestInterface::class);
-
-        $this->subject = $this->getMockBuilder(EditController::class)
+        $subject = $this->getMockBuilder(EditController::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getRequest'])
             ->getMock();
-        $this->subject->method('getRequest')->willReturn($this->request);
+        // getRequest() is unconditionally called exactly once by afterExecute().
+        $subject->expects($this->once())->method('getRequest')->willReturn($request);
 
-        $this->plugin = new SetAdminCurrentCategory($this->currentCategory, $this->categoryRepository);
+        return $subject;
     }
 
     public function testAfterExecuteSetsCurrentCategoryAndReturnsResult(): void
     {
-        $this->request->method('getParam')->with('id')->willReturn(42);
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(42);
 
-        $category = $this->createMock(CategoryInterface::class);
-        $this->categoryRepository->method('get')->with(42)->willReturn($category);
+        $category = $this->createStub(CategoryInterface::class);
 
-        $this->currentCategory->expects($this->once())->method('set')->with($category);
+        $categoryRepository = $this->createStub(CategoryRepositoryInterface::class);
+        $categoryRepository->method('get')->willReturn($category);
 
-        $page = $this->createMock(Page::class);
-        $result = $this->plugin->afterExecute($this->subject, $page);
+        $currentCategory = $this->createMock(CurrentCategory::class);
+        $currentCategory->expects($this->once())->method('set')->with($category);
+
+        $plugin = $this->createObjectToTest($currentCategory, $categoryRepository);
+
+        $page = $this->createStub(Page::class);
+        $result = $plugin->afterExecute($this->createSubjectStub($request), $page);
 
         $this->assertSame($page, $result);
     }
 
     public function testAfterExecuteReturnsNullWhenCategoryNotFound(): void
     {
-        $this->request->method('getParam')->with('id')->willReturn(999);
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(999);
 
-        $this->categoryRepository->method('get')
-            ->willThrowException(new NoSuchEntityException());
+        $categoryRepository = $this->createStub(CategoryRepositoryInterface::class);
+        $categoryRepository->method('get')->willThrowException(new NoSuchEntityException());
 
-        $this->currentCategory->expects($this->never())->method('set');
+        $currentCategory = $this->createMock(CurrentCategory::class);
+        $currentCategory->expects($this->never())->method('set');
 
-        $result = $this->plugin->afterExecute($this->subject, $this->createMock(Page::class));
+        $plugin = $this->createObjectToTest($currentCategory, $categoryRepository);
+
+        $result = $plugin->afterExecute($this->createSubjectStub($request), $this->createStub(Page::class));
 
         $this->assertNull($result);
     }

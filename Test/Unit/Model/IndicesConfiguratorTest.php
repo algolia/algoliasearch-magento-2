@@ -24,73 +24,42 @@ use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOpt
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexOptionsBuilder as SuggestionIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class IndicesConfiguratorTest extends TestCase
 {
     private int $storeId = 1;
 
-    private null|(Data&MockObject) $baseHelper = null;
-    private null|(IndexOptionsBuilder&MockObject) $indexOptionsBuilder = null;
-    private null|(CategoryIndexOptionsBuilder&MockObject) $categoryIndexOptionsBuilder = null;
-    private null|(PageIndexOptionsBuilder&MockObject) $pageIndexOptionsBuilder = null;
-    private null|(ProductIndexOptionsBuilder&MockObject) $productIndexOptionsBuilder = null;
-    private null|(SuggestionIndexOptionsBuilder&MockObject) $suggestionIndexOptionsBuilder = null;
-    private null|(AlgoliaConnector&MockObject) $algoliaConnector = null;
-    private null|(ConfigHelper&MockObject) $configHelper = null;
-    private null|(AutocompleteHelper&MockObject) $autocompleteHelper = null;
-    private null|(ProductHelper&MockObject) $productHelper = null;
-    private null|(CategoryHelper&MockObject) $categoryHelper = null;
-    private null|(PageHelper&MockObject) $pageHelper = null;
-    private null|(SuggestionHelper&MockObject) $suggestionHelper = null;
-    private null|(AdditionalSectionHelper&MockObject) $additionalSectionHelper = null;
-    private null|(AlgoliaCredentialsManager&MockObject) $algoliaCredentialsManager = null;
-    private null|(IndexSettingsHandler&MockObject) $indexSettingsHandler = null;
-    private null|(DiagnosticsLogger&MockObject) $logger = null;
-    private null|(IndicesConfigurator&MockObject) $configurator = null;
+    /**
+     * Partial mock: stub the protected routing methods so saveConfigurationToAlgolia can be
+     * tested in isolation without pulling in each entity's full dependency chain.
+     */
+    protected function createObjectToTest(
+        ?AlgoliaCredentialsManager $algoliaCredentialsManager = null,
+        ?Data $baseHelper = null,
+        ?DiagnosticsLogger $logger = null,
+    ): IndicesConfigurator&MockObject {
+        $logger ??= $this->createStub(DiagnosticsLogger::class);
+        $logger->method('getStoreName')->willReturn('Default Store');
 
-    protected function setUp(): void
-    {
-        $this->baseHelper = $this->createMock(Data::class);
-        $this->indexOptionsBuilder = $this->createMock(IndexOptionsBuilder::class);
-        $this->categoryIndexOptionsBuilder = $this->createMock(CategoryIndexOptionsBuilder::class);
-        $this->pageIndexOptionsBuilder = $this->createMock(PageIndexOptionsBuilder::class);
-        $this->productIndexOptionsBuilder = $this->createMock(ProductIndexOptionsBuilder::class);
-        $this->suggestionIndexOptionsBuilder = $this->createMock(SuggestionIndexOptionsBuilder::class);
-        $this->algoliaConnector = $this->createMock(AlgoliaConnector::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->autocompleteHelper = $this->createMock(AutocompleteHelper::class);
-        $this->productHelper = $this->createMock(ProductHelper::class);
-        $this->categoryHelper = $this->createMock(CategoryHelper::class);
-        $this->pageHelper = $this->createMock(PageHelper::class);
-        $this->suggestionHelper = $this->createMock(SuggestionHelper::class);
-        $this->additionalSectionHelper = $this->createMock(AdditionalSectionHelper::class);
-        $this->algoliaCredentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
-        $this->indexSettingsHandler = $this->createMock(IndexSettingsHandler::class);
-        $this->logger = $this->createMock(DiagnosticsLogger::class);
-
-        // Partial mock: stub protected routing methods so saveConfigurationToAlgolia
-        // can be tested in isolation without pulling in each entity's full dependency chain
-        $this->configurator = $this->getMockBuilder(IndicesConfigurator::class)
+        return $this->getMockBuilder(IndicesConfigurator::class)
             ->setConstructorArgs([
-                $this->baseHelper,
-                $this->indexOptionsBuilder,
-                $this->categoryIndexOptionsBuilder,
-                $this->pageIndexOptionsBuilder,
-                $this->productIndexOptionsBuilder,
-                $this->suggestionIndexOptionsBuilder,
-                $this->algoliaConnector,
-                $this->configHelper,
-                $this->autocompleteHelper,
-                $this->productHelper,
-                $this->categoryHelper,
-                $this->pageHelper,
-                $this->suggestionHelper,
-                $this->additionalSectionHelper,
-                $this->algoliaCredentialsManager,
-                $this->indexSettingsHandler,
-                $this->logger,
+                $baseHelper ?? $this->createStub(Data::class),
+                $this->createStub(IndexOptionsBuilder::class),
+                $this->createStub(CategoryIndexOptionsBuilder::class),
+                $this->createStub(PageIndexOptionsBuilder::class),
+                $this->createStub(ProductIndexOptionsBuilder::class),
+                $this->createStub(SuggestionIndexOptionsBuilder::class),
+                $this->createStub(AlgoliaConnector::class),
+                $this->createStub(ConfigHelper::class),
+                $this->createStub(AutocompleteHelper::class),
+                $this->createStub(ProductHelper::class),
+                $this->createStub(CategoryHelper::class),
+                $this->createStub(PageHelper::class),
+                $this->createStub(SuggestionHelper::class),
+                $this->createStub(AdditionalSectionHelper::class),
+                $algoliaCredentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
+                $this->createStub(IndexSettingsHandler::class),
+                $logger,
             ])
             ->onlyMethods(
                 [
@@ -103,118 +72,139 @@ class IndicesConfiguratorTest extends TestCase
                 ]
             )
             ->getMock();
-
-        $this->logger->method('getStoreName')->willReturn('Default Store');
     }
 
-    private function allowPassingGuards(): void
+    private function createPassingGuards(): array
     {
-        $this->algoliaCredentialsManager->method('checkCredentials')->willReturn(true);
-        $this->baseHelper->method('isIndexingEnabled')->willReturn(true);
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentials')->willReturn(true);
+
+        $baseHelper = $this->createStub(Data::class);
+        $baseHelper->method('isIndexingEnabled')->willReturn(true);
+
+        return [$algoliaCredentialsManager, $baseHelper];
     }
 
     public function testReturnsEarlyWhenCredentialCheckFails(): void
     {
-        $this->algoliaCredentialsManager->method('checkCredentials')->willReturn(false);
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentials')->willReturn(false);
 
-        $this->configurator->expects($this->never())->method('setAllEntitiesSettings');
-        $this->configurator->expects($this->never())->method('setProductsSettings');
-        $this->configurator->expects($this->never())->method('setCategoriesSettings');
-        $this->configurator->expects($this->never())->method('setExtraSettings');
+        $configurator = $this->createObjectToTest(algoliaCredentialsManager: $algoliaCredentialsManager);
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId);
+        $configurator->expects($this->never())->method('setAllEntitiesSettings');
+        $configurator->expects($this->never())->method('setProductsSettings');
+        $configurator->expects($this->never())->method('setCategoriesSettings');
+        $configurator->expects($this->never())->method('setExtraSettings');
+
+        $configurator->saveConfigurationToAlgolia($this->storeId);
     }
 
     public function testReturnsEarlyWhenIndexingIsDisabled(): void
     {
-        $this->algoliaCredentialsManager->method('checkCredentials')->willReturn(true);
-        $this->baseHelper->method('isIndexingEnabled')->willReturn(false);
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentials')->willReturn(true);
 
-        $this->configurator->expects($this->never())->method('setAllEntitiesSettings');
-        $this->configurator->expects($this->never())->method('setProductsSettings');
-        $this->configurator->expects($this->never())->method('setCategoriesSettings');
-        $this->configurator->expects($this->never())->method('setExtraSettings');
+        $baseHelper = $this->createStub(Data::class);
+        $baseHelper->method('isIndexingEnabled')->willReturn(false);
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId);
+        $configurator = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            baseHelper: $baseHelper,
+        );
+
+        $configurator->expects($this->never())->method('setAllEntitiesSettings');
+        $configurator->expects($this->never())->method('setProductsSettings');
+        $configurator->expects($this->never())->method('setCategoriesSettings');
+        $configurator->expects($this->never())->method('setExtraSettings');
+
+        $configurator->saveConfigurationToAlgolia($this->storeId);
     }
 
     public function testCallsAllEntitiesSettingsWhenNoFilterProvided(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
-        $this->configurator->expects($this->once())->method('setAllEntitiesSettings');
-        $this->configurator->expects($this->never())->method('setProductsSettings');
-        $this->configurator->expects($this->never())->method('setCategoriesSettings');
+        $configurator->expects($this->once())->method('setAllEntitiesSettings');
+        $configurator->expects($this->never())->method('setProductsSettings');
+        $configurator->expects($this->never())->method('setCategoriesSettings');
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId);
+        $configurator->saveConfigurationToAlgolia($this->storeId);
     }
 
     public function testForwardsUseTmpIndexToAllEntitiesSettings(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
-        $this->configurator->expects($this->once())
+        $configurator->expects($this->once())
             ->method('setAllEntitiesSettings')
             ->with($this->storeId, true);
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId, true);
+        $configurator->saveConfigurationToAlgolia($this->storeId, true);
     }
 
     public function testCallsOnlyProductsSettingsWhenFilterContainsProducts(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
-        $this->configurator->expects($this->once())->method('setProductsSettings');
-        $this->configurator->expects($this->never())->method('setCategoriesSettings');
-        $this->configurator->expects($this->never())->method('setAllEntitiesSettings');
+        $configurator->expects($this->once())->method('setProductsSettings');
+        $configurator->expects($this->never())->method('setCategoriesSettings');
+        $configurator->expects($this->never())->method('setAllEntitiesSettings');
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId, false, ['products']);
+        $configurator->saveConfigurationToAlgolia($this->storeId, false, ['products']);
     }
 
     public function testForwardsUseTmpIndexToProductsSettings(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
-        $this->configurator->expects($this->once())
+        $configurator->expects($this->once())
             ->method('setProductsSettings')
             ->with($this->storeId, true);
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId, true, ['products']);
+        $configurator->saveConfigurationToAlgolia($this->storeId, true, ['products']);
     }
 
     public function testCallsOnlyCategoriesSettingsWhenFilterContainsCategories(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
-        $this->configurator->expects($this->once())->method('setCategoriesSettings');
-        $this->configurator->expects($this->never())->method('setProductsSettings');
-        $this->configurator->expects($this->never())->method('setAllEntitiesSettings');
+        $configurator->expects($this->once())->method('setCategoriesSettings');
+        $configurator->expects($this->never())->method('setProductsSettings');
+        $configurator->expects($this->never())->method('setAllEntitiesSettings');
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId, false, ['categories']);
+        $configurator->saveConfigurationToAlgolia($this->storeId, false, ['categories']);
     }
 
     public function testCallsBothProductsAndCategoriesWhenBothInFilter(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
-        $this->configurator->expects($this->once())->method('setProductsSettings');
-        $this->configurator->expects($this->once())->method('setCategoriesSettings');
-        $this->configurator->expects($this->never())->method('setAllEntitiesSettings');
+        $configurator->expects($this->once())->method('setProductsSettings');
+        $configurator->expects($this->once())->method('setCategoriesSettings');
+        $configurator->expects($this->never())->method('setAllEntitiesSettings');
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId, false, ['products', 'categories']);
+        $configurator->saveConfigurationToAlgolia($this->storeId, false, ['products', 'categories']);
     }
 
     public function testSkipsUnrecognizedEntitiesInFilterBranch(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
-        $this->configurator->expects($this->once())->method('setPagesSettings');
-        $this->configurator->expects($this->once())->method('setQuerySuggestionsSettings');
-        $this->configurator->expects($this->never())->method('setProductsSettings');
-        $this->configurator->expects($this->never())->method('setCategoriesSettings');
-        $this->configurator->expects($this->never())->method('setAllEntitiesSettings');
+        $configurator->expects($this->once())->method('setPagesSettings');
+        $configurator->expects($this->once())->method('setQuerySuggestionsSettings');
+        $configurator->expects($this->never())->method('setProductsSettings');
+        $configurator->expects($this->never())->method('setCategoriesSettings');
+        $configurator->expects($this->never())->method('setAllEntitiesSettings');
 
-        $this->configurator->saveConfigurationToAlgolia(
+        $configurator->saveConfigurationToAlgolia(
             $this->storeId,
             false,
             ['pages', 'suggestions', 'foo', 'bar']
@@ -223,14 +213,15 @@ class IndicesConfiguratorTest extends TestCase
 
     public function testForwardsAllParametersToSetExtraSettings(): void
     {
-        $this->allowPassingGuards();
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+        $configurator = $this->createObjectToTest($algoliaCredentialsManager, $baseHelper);
 
         $filteredEntities = ['products', 'categories'];
 
-        $this->configurator->expects($this->once())
+        $configurator->expects($this->once())
             ->method('setExtraSettings')
             ->with($this->storeId, true, $filteredEntities);
 
-        $this->configurator->saveConfigurationToAlgolia($this->storeId, true, $filteredEntities);
+        $configurator->saveConfigurationToAlgolia($this->storeId, true, $filteredEntities);
     }
 }

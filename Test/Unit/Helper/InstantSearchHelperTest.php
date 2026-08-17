@@ -10,60 +10,52 @@ use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Store\Model\ScopeInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class InstantSearchHelperTest extends TestCase
 {
     public const MAGENTO_GRID_PRODUCTS_NB = 9;
     public const MAGENTO_LIST_PRODUCTS_NB = 15;
 
-    protected ?InstantSearchHelper $instantSearchHelper;
-
-    protected ?ScopeConfigInterface $configInterface;
-    protected ?WriterInterface $configWriter;
-    protected ?Serializer $serializer;
-
-    protected function setUp(): void
-    {
-        $this->configInterface = $this->createMock(ScopeConfigInterface::class);
-        $this->configWriter = $this->createMock(WriterInterface::class);
-        $this->serializer = $this->createMock(Serializer::class);
-
-        $this->instantSearchHelper = new InstantSearchHelper(
-            $this->configInterface,
-            $this->configWriter,
-            $this->serializer
+    protected function createObjectToTest(
+        ?ScopeConfigInterface $configInterface = null,
+        ?WriterInterface $configWriter = null,
+        ?Serializer $serializer = null,
+    ): InstantSearchHelper {
+        return new InstantSearchHelper(
+            $configInterface ?? $this->createStub(ScopeConfigInterface::class),
+            $configWriter ?? $this->createStub(WriterInterface::class),
+            $serializer ?? $this->createStub(Serializer::class),
         );
     }
 
     #[DataProvider('conficProvider')]
     public function testGetNumberOfProductResults($paginationMode, $customNbOfProducts, $expectedResult): void
     {
-        $this->configInterface
-            ->method('getValue')
-            ->willReturnMap(
-                [
-                    [InstantSearchHelper::PAGINATION_MODE, ScopeInterface::SCOPE_STORE, null, $paginationMode],
-                    [InstantSearchHelper::MAGENTO_GRID_PER_PAGE, ScopeInterface::SCOPE_STORE, null, self::MAGENTO_GRID_PRODUCTS_NB],
-                    [InstantSearchHelper::MAGENTO_LIST_PER_PAGE, ScopeInterface::SCOPE_STORE, null, self::MAGENTO_LIST_PRODUCTS_NB],
-                    [InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS, ScopeInterface::SCOPE_STORE, null, $customNbOfProducts],
-                ]
-            );
+        $configInterface = $this->createStub(ScopeConfigInterface::class);
+        $configInterface->method('getValue')->willReturnMap(
+            [
+                [InstantSearchHelper::PAGINATION_MODE, ScopeInterface::SCOPE_STORE, null, $paginationMode],
+                [InstantSearchHelper::MAGENTO_GRID_PER_PAGE, ScopeInterface::SCOPE_STORE, null, self::MAGENTO_GRID_PRODUCTS_NB],
+                [InstantSearchHelper::MAGENTO_LIST_PER_PAGE, ScopeInterface::SCOPE_STORE, null, self::MAGENTO_LIST_PRODUCTS_NB],
+                [InstantSearchHelper::NUMBER_OF_PRODUCT_RESULTS, ScopeInterface::SCOPE_STORE, null, $customNbOfProducts],
+            ]
+        );
+
+        $instantSearchHelper = $this->createObjectToTest(configInterface: $configInterface);
 
         // Sanity checks
-        $this->assertEquals($paginationMode, $this->instantSearchHelper->getPaginationMode());
+        $this->assertEquals($paginationMode, $instantSearchHelper->getPaginationMode());
         $this->assertEquals(
             self::MAGENTO_GRID_PRODUCTS_NB,
-            $this->instantSearchHelper->getMagentoGridProductsPerPage(ScopeInterface::SCOPE_STORE)
+            $instantSearchHelper->getMagentoGridProductsPerPage(ScopeInterface::SCOPE_STORE)
         );
         $this->assertEquals(
             self::MAGENTO_LIST_PRODUCTS_NB,
-            $this->instantSearchHelper->getMagentoListProductsPerPage(ScopeInterface::SCOPE_STORE)
+            $instantSearchHelper->getMagentoListProductsPerPage(ScopeInterface::SCOPE_STORE)
         );
 
         // Assert returned number of products according to the config
-        $this->assertEquals($expectedResult, $this->instantSearchHelper->getNumberOfProductResults());
+        $this->assertEquals($expectedResult, $instantSearchHelper->getNumberOfProductResults());
     }
 
     public static function conficProvider(): array

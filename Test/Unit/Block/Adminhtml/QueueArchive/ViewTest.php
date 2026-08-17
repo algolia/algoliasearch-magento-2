@@ -10,59 +10,68 @@ use Algolia\AlgoliaSearch\Block\Adminhtml\QueueArchive\View;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
-use PHPUnit\Framework\MockObject\MockObject;
+use Magento\Framework\View\Element\Template\Context;
 
-#[AllowMockObjectsWithoutExpectations]
 class ViewTest extends TestCase
 {
-    protected null|(View&MockObject) $block = null;
-    protected null|(QueueArchiveRepositoryInterface&MockObject) $queueArchiveRepository = null;
-    protected null|(RequestInterface&MockObject) $request = null;
+    protected function createObjectToTest(
+        ?QueueArchiveRepositoryInterface $queueArchiveRepository = null,
+        ?RequestInterface $request = null,
+    ): View {
+        $context = $this->createStub(Context::class);
+        $context->method('getRequest')->willReturn($request ?? $this->createStub(RequestInterface::class));
 
-    protected function setUp(): void
-    {
-        $this->queueArchiveRepository = $this->createMock(QueueArchiveRepositoryInterface::class);
-        $this->request = $this->createMock(RequestInterface::class);
-
-        $this->block = $this->getMockBuilder(View::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getRequest'])
-            ->getMock();
-
-        $this->block->method('getRequest')->willReturn($this->request);
-        $this->setPrivateProperty($this->block, 'queueArchiveRepository', $this->queueArchiveRepository);
+        return new View(
+            $context,
+            $queueArchiveRepository ?? $this->createStub(QueueArchiveRepositoryInterface::class),
+        );
     }
 
     public function testGetCurrentJobLoadsArchiveUsingRequestId(): void
     {
-        $archive = $this->createMock(QueueArchiveInterface::class);
-        $this->request->method('getParam')->with('id')->willReturn(42);
-        $this->queueArchiveRepository->method('getById')->with(42)->willReturn($archive);
+        $archive = $this->createStub(QueueArchiveInterface::class);
 
-        $this->assertSame($archive, $this->block->getCurrentJob());
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(42);
+
+        $queueArchiveRepository = $this->createStub(QueueArchiveRepositoryInterface::class);
+        $queueArchiveRepository->method('getById')->willReturn($archive);
+
+        $block = $this->createObjectToTest(queueArchiveRepository: $queueArchiveRepository, request: $request);
+
+        $this->assertSame($archive, $block->getCurrentJob());
     }
 
     public function testGetCurrentJobMemoizesResult(): void
     {
-        $archive = $this->createMock(QueueArchiveInterface::class);
-        $this->request->method('getParam')->with('id')->willReturn(42);
-        $this->queueArchiveRepository->expects($this->once())->method('getById')->with(42)->willReturn($archive);
+        $archive = $this->createStub(QueueArchiveInterface::class);
 
-        $first = $this->block->getCurrentJob();
-        $second = $this->block->getCurrentJob();
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(42);
+
+        $queueArchiveRepository = $this->createMock(QueueArchiveRepositoryInterface::class);
+        $queueArchiveRepository->expects($this->once())->method('getById')->with(42)->willReturn($archive);
+
+        $block = $this->createObjectToTest(queueArchiveRepository: $queueArchiveRepository, request: $request);
+
+        $first = $block->getCurrentJob();
+        $second = $block->getCurrentJob();
 
         $this->assertSame($first, $second);
     }
 
     public function testGetCurrentJobPropagatesNoSuchEntityException(): void
     {
-        $this->request->method('getParam')->with('id')->willReturn(42);
-        $this->queueArchiveRepository->method('getById')->with(42)
-            ->willThrowException(new NoSuchEntityException());
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(42);
+
+        $queueArchiveRepository = $this->createStub(QueueArchiveRepositoryInterface::class);
+        $queueArchiveRepository->method('getById')->willThrowException(new NoSuchEntityException());
+
+        $block = $this->createObjectToTest(queueArchiveRepository: $queueArchiveRepository, request: $request);
 
         $this->expectException(NoSuchEntityException::class);
 
-        $this->block->getCurrentJob();
+        $block->getCurrentJob();
     }
 }

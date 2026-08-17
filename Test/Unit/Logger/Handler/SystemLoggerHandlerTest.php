@@ -5,24 +5,23 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Logger\Handler;
 use Algolia\AlgoliaSearch\Logger\Handler\SystemLoggerHandler;
 use Magento\Framework\Filesystem\DriverInterface;
 use Magento\Framework\Logger\Handler\Exception as ExceptionHandler;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class SystemLoggerHandlerTest extends AbstractHandlerTestCase
 {
-    /**
-     * @throws \Exception
-     */
-    protected function setUp(): void
-    {
-        $this->handler = new SystemLoggerHandler(
-            $this->createMock(DriverInterface::class),
-            $this->createMock(ExceptionHandler::class),
+    protected function createObjectToTest(
+        ?DriverInterface $driver = null,
+        ?ExceptionHandler $exceptionHandler = null,
+    ): SystemLoggerHandler {
+        return new SystemLoggerHandler(
+            $driver ?? $this->createStub(DriverInterface::class),
+            $exceptionHandler ?? $this->createStub(ExceptionHandler::class),
         );
     }
 
     public function testSystemHandlerFiltersBelowError(): void
     {
+        $handler = $this->createObjectToTest();
+
         $infoRecord = $this->makeLogRecord(
             \Monolog\Logger::INFO,
             'Should not log'
@@ -33,7 +32,7 @@ class SystemLoggerHandlerTest extends AbstractHandlerTestCase
             'Should log'
         );
 
-        $this->assertFalse($this->handler->isHandling($infoRecord), 'INFO should be ignored');
-        $this->assertTrue($this->handler->isHandling($errorRecord), 'ERROR should be handled');
+        $this->assertFalse($handler->isHandling($infoRecord), 'INFO should be ignored');
+        $this->assertTrue($handler->isHandling($errorRecord), 'ERROR should be handled');
     }
 }

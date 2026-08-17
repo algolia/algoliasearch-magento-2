@@ -10,62 +10,78 @@ use Algolia\AlgoliaSearch\Model\JobFactory;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResource;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\RequestInterface;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
-use PHPUnit\Framework\MockObject\MockObject;
+use Magento\Framework\View\Element\Template\Context;
 
-#[AllowMockObjectsWithoutExpectations]
 class ViewTest extends TestCase
 {
-    protected null|(View&MockObject) $block = null;
-    protected null|(JobFactory&MockObject) $jobFactory = null;
-    protected null|(JobResource&MockObject) $jobResource = null;
-    protected null|(RequestInterface&MockObject) $request = null;
+    protected function createObjectToTest(
+        ?JobFactory $jobFactory = null,
+        ?JobResource $jobResource = null,
+        ?RequestInterface $request = null,
+    ): View {
+        $context = $this->createStub(Context::class);
+        $context->method('getRequest')->willReturn($request ?? $this->createStub(RequestInterface::class));
 
-    protected function setUp(): void
-    {
-        $this->jobFactory = $this->createMock(JobFactory::class);
-        $this->jobResource = $this->createMock(JobResource::class);
-        $this->request = $this->createMock(RequestInterface::class);
-
-        $this->block = $this->getMockBuilder(View::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getRequest'])
-            ->getMock();
-
-        $this->block->method('getRequest')->willReturn($this->request);
-        $this->setPrivateProperty($this->block, 'jobFactory', $this->jobFactory);
-        $this->setPrivateProperty($this->block, 'jobResource', $this->jobResource);
+        return new View(
+            $context,
+            $jobFactory ?? $this->createStub(JobFactory::class),
+            $jobResource ?? $this->createStub(JobResource::class),
+        );
     }
 
     public function testGetCurrentJobLoadsJobUsingRequestId(): void
     {
-        $job = $this->createMock(Job::class);
-        $this->request->method('getParam')->with('id')->willReturn(42);
-        $this->jobFactory->method('create')->willReturn($job);
-        $this->jobResource->expects($this->once())->method('load')->with($job, 42);
+        $job = $this->createStub(Job::class);
 
-        $this->assertSame($job, $this->block->getCurrentJob());
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(42);
+
+        $jobFactory = $this->createStub(JobFactory::class);
+        $jobFactory->method('create')->willReturn($job);
+
+        $jobResource = $this->createMock(JobResource::class);
+        $jobResource->expects($this->once())->method('load')->with($job, 42);
+
+        $block = $this->createObjectToTest(jobFactory: $jobFactory, jobResource: $jobResource, request: $request);
+
+        $this->assertSame($job, $block->getCurrentJob());
     }
 
     public function testGetCurrentJobCastsStringIdToInt(): void
     {
-        $job = $this->createMock(Job::class);
-        $this->request->method('getParam')->with('id')->willReturn('42');
-        $this->jobFactory->method('create')->willReturn($job);
-        $this->jobResource->expects($this->once())->method('load')->with($job, 42);
+        $job = $this->createStub(Job::class);
 
-        $this->block->getCurrentJob();
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn('42');
+
+        $jobFactory = $this->createStub(JobFactory::class);
+        $jobFactory->method('create')->willReturn($job);
+
+        $jobResource = $this->createMock(JobResource::class);
+        $jobResource->expects($this->once())->method('load')->with($job, 42);
+
+        $block = $this->createObjectToTest(jobFactory: $jobFactory, jobResource: $jobResource, request: $request);
+
+        $block->getCurrentJob();
     }
 
     public function testGetCurrentJobMemoizesResult(): void
     {
-        $job = $this->createMock(Job::class);
-        $this->request->method('getParam')->with('id')->willReturn(42);
-        $this->jobFactory->expects($this->once())->method('create')->willReturn($job);
-        $this->jobResource->expects($this->once())->method('load')->with($job, 42);
+        $job = $this->createStub(Job::class);
 
-        $first = $this->block->getCurrentJob();
-        $second = $this->block->getCurrentJob();
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(42);
+
+        $jobFactory = $this->createMock(JobFactory::class);
+        $jobFactory->expects($this->once())->method('create')->willReturn($job);
+
+        $jobResource = $this->createMock(JobResource::class);
+        $jobResource->expects($this->once())->method('load')->with($job, 42);
+
+        $block = $this->createObjectToTest(jobFactory: $jobFactory, jobResource: $jobResource, request: $request);
+
+        $first = $block->getCurrentJob();
+        $second = $block->getCurrentJob();
 
         $this->assertSame($first, $second);
     }

@@ -11,21 +11,17 @@ use Magento\Catalog\Controller\Adminhtml\Product\Action\Attribute\Save;
 use Magento\Catalog\Helper\Product\Edit\Action\Attribute;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Redirect;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class CacheCleanBulkAttributePluginTest extends TestCase
 {
-    protected null|(Attribute&MockObject) $attributeHelper = null;
-    protected null|(CacheHelper&MockObject) $cacheHelper = null;
-    protected ?CacheCleanBulkAttributePlugin $plugin = null;
-
-    protected function setUp(): void
-    {
-        $this->attributeHelper = $this->createMock(Attribute::class);
-        $this->cacheHelper = $this->createMock(CacheHelper::class);
-        $this->plugin = new CacheCleanBulkAttributePlugin($this->attributeHelper, $this->cacheHelper);
+    protected function createObjectToTest(
+        ?Attribute $attributeHelper = null,
+        ?CacheHelper $cacheHelper = null,
+    ): CacheCleanBulkAttributePlugin {
+        return new CacheCleanBulkAttributePlugin(
+            $attributeHelper ?? $this->createStub(Attribute::class),
+            $cacheHelper ?? $this->createStub(CacheHelper::class),
+        );
     }
 
     public function testAfterExecuteCallsHandleBulkAttributeChangeWithArgsFromHelperAndRequest(): void
@@ -34,25 +30,30 @@ class CacheCleanBulkAttributePluginTest extends TestCase
         $attributes = ['status' => '1'];
         $storeId = 2;
 
-        $this->attributeHelper->method('getProductIds')->willReturn($productIds);
-        $this->attributeHelper->method('getSelectedStoreId')->willReturn($storeId);
+        $attributeHelper = $this->createStub(Attribute::class);
+        $attributeHelper->method('getProductIds')->willReturn($productIds);
+        $attributeHelper->method('getSelectedStoreId')->willReturn($storeId);
 
-        $request = $this->createMock(RequestInterface::class);
-        $request->method('getParam')->with('attributes', [])->willReturn($attributes);
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn($attributes);
 
+        // getRequest() is unconditionally called exactly once by afterExecute().
         $subject = $this->getMockBuilder(Save::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getRequest'])
             ->getMock();
-        $subject->method('getRequest')->willReturn($request);
+        $subject->expects($this->once())->method('getRequest')->willReturn($request);
 
-        $redirect = $this->createMock(Redirect::class);
+        $redirect = $this->createStub(Redirect::class);
 
-        $this->cacheHelper->expects($this->once())
+        $cacheHelper = $this->createMock(CacheHelper::class);
+        $cacheHelper->expects($this->once())
             ->method('handleBulkAttributeChange')
             ->with($productIds, $attributes, $storeId);
 
-        $result = $this->plugin->afterExecute($subject, $redirect);
+        $plugin = $this->createObjectToTest($attributeHelper, $cacheHelper);
+
+        $result = $plugin->afterExecute($subject, $redirect);
 
         $this->assertSame($redirect, $result);
     }

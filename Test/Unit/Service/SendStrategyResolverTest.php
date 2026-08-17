@@ -5,70 +5,63 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 use Algolia\AlgoliaSearch\Api\SendStrategyInterface;
 use Algolia\AlgoliaSearch\Service\SendStrategyResolver;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class SendStrategyResolverTest extends TestCase
 {
     private const STORE_ID = 1;
 
-    private null|(SendStrategyInterface&MockObject) $defaultStrategy = null;
-
-    protected function setUp(): void
-    {
-        $this->defaultStrategy = $this->createMock(SendStrategyInterface::class);
-    }
-
     public function testResolveReturnsDefaultStrategyWhenNoStrategiesConfigured(): void
     {
-        $resolver = new SendStrategyResolver($this->defaultStrategy);
+        $defaultStrategy = $this->createStub(SendStrategyInterface::class);
+        $resolver = new SendStrategyResolver($defaultStrategy);
 
-        $this->assertSame($this->defaultStrategy, $resolver->resolve(self::STORE_ID));
+        $this->assertSame($defaultStrategy, $resolver->resolve(self::STORE_ID));
     }
 
     public function testResolveReturnsDefaultStrategyWhenNoStrategyIsApplicable(): void
     {
-        $inapplicable = $this->createMock(SendStrategyInterface::class);
+        $defaultStrategy = $this->createStub(SendStrategyInterface::class);
+
+        $inapplicable = $this->createStub(SendStrategyInterface::class);
         $inapplicable->method('isApplicable')->willReturn(false);
 
-        $resolver = new SendStrategyResolver($this->defaultStrategy, [$inapplicable]);
+        $resolver = new SendStrategyResolver($defaultStrategy, [$inapplicable]);
 
-        $this->assertSame($this->defaultStrategy, $resolver->resolve(self::STORE_ID));
+        $this->assertSame($defaultStrategy, $resolver->resolve(self::STORE_ID));
     }
 
     public function testResolveReturnsFirstApplicableStrategy(): void
     {
-        $applicable = $this->createMock(SendStrategyInterface::class);
-        $applicable->method('isApplicable')->with(self::STORE_ID)->willReturn(true);
+        $applicable = $this->createStub(SendStrategyInterface::class);
+        $applicable->method('isApplicable')->willReturn(true);
 
-        $resolver = new SendStrategyResolver($this->defaultStrategy, [$applicable]);
+        $resolver = new SendStrategyResolver($this->createStub(SendStrategyInterface::class), [$applicable]);
 
         $this->assertSame($applicable, $resolver->resolve(self::STORE_ID));
     }
 
     public function testResolveReturnsFirstApplicableWhenMultipleMatch(): void
     {
-        $first = $this->createMock(SendStrategyInterface::class);
+        $first = $this->createStub(SendStrategyInterface::class);
         $first->method('isApplicable')->willReturn(true);
 
-        $second = $this->createMock(SendStrategyInterface::class);
+        $second = $this->createStub(SendStrategyInterface::class);
         $second->method('isApplicable')->willReturn(true);
 
-        $resolver = new SendStrategyResolver($this->defaultStrategy, [$first, $second]);
+        $resolver = new SendStrategyResolver($this->createStub(SendStrategyInterface::class), [$first, $second]);
 
         $this->assertSame($first, $resolver->resolve(self::STORE_ID));
     }
 
     public function testResolveSkipsInapplicableAndReturnsFirstApplicable(): void
     {
-        $inapplicable = $this->createMock(SendStrategyInterface::class);
+        $inapplicable = $this->createStub(SendStrategyInterface::class);
         $inapplicable->method('isApplicable')->willReturn(false);
 
-        $applicable = $this->createMock(SendStrategyInterface::class);
+        $applicable = $this->createStub(SendStrategyInterface::class);
         $applicable->method('isApplicable')->willReturn(true);
 
-        $resolver = new SendStrategyResolver($this->defaultStrategy, [$inapplicable, $applicable]);
+        $resolver = new SendStrategyResolver($this->createStub(SendStrategyInterface::class), [$inapplicable, $applicable]);
 
         $this->assertSame($applicable, $resolver->resolve(self::STORE_ID));
     }
@@ -83,29 +76,32 @@ class SendStrategyResolverTest extends TestCase
             ->with($storeId)
             ->willReturn(false);
 
-        $resolver = new SendStrategyResolver($this->defaultStrategy, [$strategy]);
+        $resolver = new SendStrategyResolver($this->createStub(SendStrategyInterface::class), [$strategy]);
         $resolver->resolve($storeId);
     }
 
     public function testResolveDoesNotCallIsApplicableOnDefaultStrategy(): void
     {
-        $this->defaultStrategy->expects($this->never())->method('isApplicable');
+        $defaultStrategy = $this->createMock(SendStrategyInterface::class);
+        $defaultStrategy->expects($this->never())->method('isApplicable');
 
-        $resolver = new SendStrategyResolver($this->defaultStrategy);
+        $resolver = new SendStrategyResolver($defaultStrategy);
         $resolver->resolve(self::STORE_ID);
     }
 
     public function testResolveIsPerStoreForTheSameStrategy(): void
     {
-        $storeSpecific = $this->createMock(SendStrategyInterface::class);
+        $defaultStrategy = $this->createStub(SendStrategyInterface::class);
+
+        $storeSpecific = $this->createStub(SendStrategyInterface::class);
         $storeSpecific->method('isApplicable')->willReturnMap([
             [self::STORE_ID, true],
             [self::STORE_ID + 1, false],
         ]);
 
-        $resolver = new SendStrategyResolver($this->defaultStrategy, [$storeSpecific]);
+        $resolver = new SendStrategyResolver($defaultStrategy, [$storeSpecific]);
 
         $this->assertSame($storeSpecific, $resolver->resolve(self::STORE_ID));
-        $this->assertSame($this->defaultStrategy, $resolver->resolve(self::STORE_ID + 1));
+        $this->assertSame($defaultStrategy, $resolver->resolve(self::STORE_ID + 1));
     }
 }

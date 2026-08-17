@@ -13,63 +13,69 @@ use Magento\Framework\View\Layout;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class AddAlgoliaAssetsObserverTest extends TestCase
 {
-    protected ?AddAlgoliaAssetsObserver $observer;
-    protected ?ConfigHelper $configHelper;
-    protected ?RenderingManager $renderingManager;
-    protected ?StoreManagerInterface $storeManager;
-    protected ?Http $request;
-    protected ?AlgoliaCredentialsManager $credentialsManager;
-
-    protected function setUp(): void
-    {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->renderingManager = $this->createMock(RenderingManager::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->request = $this->createMock(Http::class);
-        $this->credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
-
-        $this->observer = new AddAlgoliaAssetsObserver(
-            $this->configHelper,
-            $this->renderingManager,
-            $this->storeManager,
-            $this->request,
-            $this->credentialsManager
+    protected function createObjectToTest(
+        ?ConfigHelper $configHelper = null,
+        ?RenderingManager $renderingManager = null,
+        ?StoreManagerInterface $storeManager = null,
+        ?Http $request = null,
+        ?AlgoliaCredentialsManager $credentialsManager = null,
+    ): AddAlgoliaAssetsObserver {
+        return new AddAlgoliaAssetsObserver(
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $renderingManager ?? $this->createStub(RenderingManager::class),
+            $storeManager ?? $this->createStub(StoreManagerInterface::class),
+            $request ?? $this->createStub(Http::class),
+            $credentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
         );
     }
 
-    protected function createMockStore(int $storeId = 1): StoreInterface
+    private function createStoreStub(int $storeId = 1): StoreInterface
     {
-        $store = $this->createMock(StoreInterface::class);
+        $store = $this->createStub(StoreInterface::class);
         $store->method('getId')->willReturn($storeId);
 
         return $store;
     }
 
-    protected function createMockObserver(): Observer
+    private function createObserverStub(): Observer
     {
-        $layout = $this->createMock(Layout::class);
-        $observer = $this->createMock(Observer::class);
-        $observer->method('getData')->with('layout')->willReturn($layout);
+        $layout = $this->createStub(Layout::class);
+        $observer = $this->createStub(Observer::class);
+        $observer->method('getData')->willReturn($layout);
 
         return $observer;
     }
 
     public function testSwaggerActionReturnsEarly(): void
     {
-        $this->request->method('getFullActionName')->willReturn('swagger_index_index');
+        $request = $this->createStub(Http::class);
+        $request->method('getFullActionName')->willReturn('swagger_index_index');
 
-        $this->storeManager->expects($this->never())->method('getStore');
-        $this->configHelper->expects($this->never())->method('isEnabledFrontEnd');
-        $this->credentialsManager->expects($this->never())->method('checkCredentials');
-        $this->renderingManager->expects($this->never())->method('handleFrontendAssets');
-        $this->renderingManager->expects($this->never())->method('handleBackendRendering');
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->expects($this->never())->method('getStore');
 
-        $this->observer->execute($this->createMockObserver());
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->never())->method('isEnabledFrontEnd');
+
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager->expects($this->never())->method('checkCredentials');
+
+        $renderingManager = $this->createMock(RenderingManager::class);
+        $renderingManager->expects($this->never())->method('handleFrontendAssets');
+        $renderingManager->expects($this->never())->method('handleBackendRendering');
+
+        $observer = $this->createObjectToTest(
+            configHelper: $configHelper,
+            renderingManager: $renderingManager,
+            storeManager: $storeManager,
+            request: $request,
+            credentialsManager: $credentialsManager,
+        );
+
+        $observer->execute($this->createObserverStub());
     }
 
     #[DataProvider('executeConditionsProvider')]
@@ -81,28 +87,44 @@ class AddAlgoliaAssetsObserverTest extends TestCase
         $storeId = 1;
         $actionName = 'catalog_category_view';
 
-        $this->request->method('getFullActionName')->willReturn($actionName);
-        $this->storeManager->method('getStore')->willReturn($this->createMockStore($storeId));
-        $this->configHelper->method('isEnabledFrontEnd')->with($storeId)->willReturn($isFrontendEnabled);
-        $this->credentialsManager->method('checkCredentials')->with($storeId)->willReturn($areCredentialsValid);
+        $request = $this->createStub(Http::class);
+        $request->method('getFullActionName')->willReturn($actionName);
 
-        $layout = $this->createMock(Layout::class);
-        $observer = $this->createMock(Observer::class);
-        $observer->method('getData')->with('layout')->willReturn($layout);
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($this->createStoreStub($storeId));
 
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isEnabledFrontEnd')->willReturn($isFrontendEnabled);
+
+        $credentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $credentialsManager->method('checkCredentials')->willReturn($areCredentialsValid);
+
+        $layout = $this->createStub(Layout::class);
+        $observerArg = $this->createStub(Observer::class);
+        $observerArg->method('getData')->willReturn($layout);
+
+        $renderingManager = $this->createMock(RenderingManager::class);
         if ($expectRenderingManagerCalled) {
-            $this->renderingManager->expects($this->once())
+            $renderingManager->expects($this->once())
                 ->method('handleFrontendAssets')
                 ->with($layout, $storeId);
-            $this->renderingManager->expects($this->once())
+            $renderingManager->expects($this->once())
                 ->method('handleBackendRendering')
                 ->with($layout, $actionName, $storeId);
         } else {
-            $this->renderingManager->expects($this->never())->method('handleFrontendAssets');
-            $this->renderingManager->expects($this->never())->method('handleBackendRendering');
+            $renderingManager->expects($this->never())->method('handleFrontendAssets');
+            $renderingManager->expects($this->never())->method('handleBackendRendering');
         }
 
-        $this->observer->execute($observer);
+        $observer = $this->createObjectToTest(
+            configHelper: $configHelper,
+            renderingManager: $renderingManager,
+            storeManager: $storeManager,
+            request: $request,
+            credentialsManager: $credentialsManager,
+        );
+
+        $observer->execute($observerArg);
     }
 
     public static function executeConditionsProvider(): array
@@ -131,4 +153,3 @@ class AddAlgoliaAssetsObserverTest extends TestCase
         ];
     }
 }
-

@@ -7,16 +7,9 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class IndexSettingsComparatorTest extends TestCase
 {
-    protected ?AlgoliaConnector $connector = null;
-    protected ?IndexOptionsInterface $indexOptions = null;
-
-    protected IndexSettingsComparator $indexSettingsComparator;
-
     protected array $testSettings = [
         'searchableAttributes' => [
             'unordered(name)',
@@ -53,19 +46,20 @@ class IndexSettingsComparatorTest extends TestCase
         ],
     ];
 
-    protected function setUp(): void
+    protected function createObjectToTest(?AlgoliaConnector $connector = null): IndexSettingsComparator
     {
-        $this->connector = $this->createMock(AlgoliaConnector::class);
-        $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
-
-        $this->indexSettingsComparator = new IndexSettingsComparator($this->connector);
+        return new IndexSettingsComparator($connector ?? $this->createStub(AlgoliaConnector::class));
     }
 
     public function testWithSameSettings(): void
     {
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($this->testSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($this->testSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithSameSettingsButOrderedDifferently(): void
@@ -106,9 +100,13 @@ class IndexSettingsComparatorTest extends TestCase
             ],
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same (attributes are re-ordered by ksort)
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithSameSettingsButWithMixedAssociativeArray(): void
@@ -120,9 +118,13 @@ class IndexSettingsComparatorTest extends TestCase
             'bar' => 'foo',
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same (associative arrays are re-ordered by recursive ksort)
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithAdditionalSettingsComingFromAlgolia(): void
@@ -130,9 +132,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['additionalSettings'] = 'foo';
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same (additional settings are ignored by array_intersect_key)
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithChangedValue(): void
@@ -140,9 +146,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['maxValuesPerFacet'] = 10;
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithChangedTyping(): void
@@ -150,9 +160,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['typoTolerance'] = false;
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithMissingValue(): void
@@ -160,9 +174,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         unset($algoliaSettings['removeWordsIfNoResults']);
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithRemovedOrderingAttribute(): void
@@ -177,9 +195,13 @@ class IndexSettingsComparatorTest extends TestCase
             // removed color
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithChangedOrdering(): void
@@ -195,37 +217,48 @@ class IndexSettingsComparatorTest extends TestCase
             'unordered(categories_without_path)',
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testInvalidJson(): void
     {
         $algoliaSettings = [INF];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessageMatches('/Invalid JSON/');
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, [INF]));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), [INF]));
     }
 
     public function testUsesProvidedRemoteSettingsWhenPassed(): void
     {
         // When remote settings are supplied, the connector must not be queried.
-        $this->connector->expects($this->never())->method('getSettings');
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->never())->method('getSettings');
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+        $indexOptions = $this->createStub(IndexOptionsInterface::class);
 
         $this->assertTrue(
-            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $this->testSettings)
+            $indexSettingsComparator->matches($indexOptions, $this->testSettings, $this->testSettings)
         );
 
         $changedRemote = $this->testSettings;
         $changedRemote['maxValuesPerFacet'] = 10;
 
         $this->assertFalse(
-            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $changedRemote)
+            $indexSettingsComparator->matches($indexOptions, $this->testSettings, $changedRemote)
         );
     }
 }

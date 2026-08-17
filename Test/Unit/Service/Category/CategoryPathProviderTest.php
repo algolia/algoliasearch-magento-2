@@ -10,28 +10,19 @@ use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class CategoryPathProviderTest extends TestCase
 {
-    private CategoryPathProvider $categoryPathProvider;
-    private ConfigHelper&MockObject $configHelper;
-    private CategoryRepositoryInterface&MockObject $categoryRepository;
-    private CategoryCollectionFactory&MockObject $categoryCollectionFactory;
-
-    protected function setUp(): void
-    {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->categoryRepository = $this->createMock(CategoryRepositoryInterface::class);
-        $this->categoryCollectionFactory = $this->createMock(CategoryCollectionFactory::class);
-
-        $this->categoryPathProvider = new CategoryPathProvider(
-            $this->configHelper,
-            $this->categoryRepository,
-            $this->categoryCollectionFactory
+    protected function createObjectToTest(
+        ?ConfigHelper $configHelper = null,
+        ?CategoryRepositoryInterface $categoryRepository = null,
+        ?CategoryCollectionFactory $categoryCollectionFactory = null,
+    ): CategoryPathProvider {
+        return new CategoryPathProvider(
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $categoryRepository ?? $this->createStub(CategoryRepositoryInterface::class),
+            $categoryCollectionFactory ?? $this->createStub(CategoryCollectionFactory::class),
         );
     }
 
@@ -39,14 +30,16 @@ class CategoryPathProviderTest extends TestCase
     {
         $storeId = 1;
         // Example paths include root (1) and default category (2) which are filtered out by DB level > 1
-        $category = $this->createCategoryMock([1, 2, 10]);
+        $category = $this->createCategoryStub([1, 2, 10]);
 
         // Only categories at DB level 2+ are returned by the collection
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Electronics',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest(categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category, $storeId);
 
         $this->assertEquals('Electronics', $result['path']);
         $this->assertEquals(0, $result['level']); // This is the *visible* level, not the DB level - the "visible" level starts at 0
@@ -56,20 +49,20 @@ class CategoryPathProviderTest extends TestCase
     public function testGetCategoryPathDetailsReturnsMultiLevelPath(): void
     {
         $storeId = 1;
-        $category = $this->createCategoryMock([1, 2, 10, 25, 30]);
+        $category = $this->createCategoryStub([1, 2, 10, 25, 30]);
 
-        $this->configHelper
-            ->method('getCategorySeparator')
-            ->with($storeId)
-            ->willReturn(' /// ');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->willReturn(' /// ');
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Electronics',
             25 => 'Laptops',
             30 => 'Gaming Laptops',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest($configHelper, categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category, $storeId);
 
         $this->assertEquals('Electronics /// Laptops /// Gaming Laptops', $result['path']);
         $this->assertEquals(2, $result['level']);
@@ -79,33 +72,35 @@ class CategoryPathProviderTest extends TestCase
     public function testGetCategoryPathDetailsSkipsCategoriesNotInCollection(): void
     {
         $storeId = 1;
-        $category = $this->createCategoryMock([1, 2, 10, 25]);
+        $category = $this->createCategoryStub([1, 2, 10, 25]);
 
-        $this->configHelper
-            ->method('getCategorySeparator')
-            ->with($storeId)
-            ->willReturn(' / ');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->willReturn(' / ');
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Electronics',
             25 => 'Laptops',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest($configHelper, categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category, $storeId);
 
         $this->assertEquals('Electronics / Laptops', $result['path']);
-        $this->assertEquals(1, $result['level']); 
+        $this->assertEquals(1, $result['level']);
         $this->assertEquals('Electronics', $result['parentCategory']);
     }
 
     public function testGetCategoryPathDetailsReturnsEmptyPathWhenNoCategoriesInCollection(): void
     {
         $storeId = 1;
-        $category = $this->createCategoryMock([1, 2]);
+        $category = $this->createCategoryStub([1, 2]);
 
-        $this->setupCategoryCollection([]);
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest(categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category, $storeId);
 
         $this->assertEquals('', $result['path']);
         $this->assertEquals('', $result['level']);
@@ -114,19 +109,19 @@ class CategoryPathProviderTest extends TestCase
 
     public function testGetCategoryPathDetailsUsesDefaultStoreIdWhenNull(): void
     {
-        $category = $this->createCategoryMock([1, 2, 10, 20]);
+        $category = $this->createCategoryStub([1, 2, 10, 20]);
 
-        $this->configHelper
-            ->method('getCategorySeparator')
-            ->with(null)
-            ->willReturn(' > ');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->willReturn(' > ');
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Category A',
             20 => 'Category B',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category);
+        $categoryPathProvider = $this->createObjectToTest($configHelper, categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category);
 
         $this->assertEquals('Category A > Category B', $result['path']);
         $this->assertEquals(1, $result['level']);
@@ -136,20 +131,20 @@ class CategoryPathProviderTest extends TestCase
     public function testGetCategoryPathDetailsWithEmptySeparator(): void
     {
         $storeId = 1;
-        $category = $this->createCategoryMock([1, 2, 10, 20, 30]);
+        $category = $this->createCategoryStub([1, 2, 10, 20, 30]);
 
-        $this->configHelper
-            ->method('getCategorySeparator')
-            ->with($storeId)
-            ->willReturn('');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->willReturn('');
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'A',
             20 => 'B',
             30 => 'C',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest($configHelper, categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category, $storeId);
 
         $this->assertEquals('ABC', $result['path']);
         $this->assertEquals(2, $result['level']);
@@ -159,19 +154,19 @@ class CategoryPathProviderTest extends TestCase
     public function testGetCategoryPathDetailsWithTwoCategoriesReturnsCorrectParent(): void
     {
         $storeId = 1;
-        $category = $this->createCategoryMock([1, 2, 10, 20]);
+        $category = $this->createCategoryStub([1, 2, 10, 20]);
 
-        $this->configHelper
-            ->method('getCategorySeparator')
-            ->with($storeId)
-            ->willReturn(' / ');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->willReturn(' / ');
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Parent',
             20 => 'Child',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest($configHelper, categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category, $storeId);
 
         $this->assertEquals('Parent / Child', $result['path']);
         $this->assertEquals(1, $result['level']);
@@ -181,33 +176,35 @@ class CategoryPathProviderTest extends TestCase
     public function testGetCategoryPageIdReturnsPath(): void
     {
         $storeId = 1;
-        $category = $this->createCategoryMock([1, 2, 10, 20, 30]);
+        $category = $this->createCategoryStub([1, 2, 10, 20, 30]);
 
-        $this->configHelper
-            ->method('getCategorySeparator')
-            ->with($storeId)
-            ->willReturn(' /// ');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->willReturn(' /// ');
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Root',
             20 => 'Parent',
             30 => 'Child',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPageId($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest($configHelper, categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPageId($category, $storeId);
 
         $this->assertEquals('Root /// Parent /// Child', $result);
     }
 
     public function testGetCategoryPageIdWithNullStoreId(): void
     {
-        $category = $this->createCategoryMock([1, 2, 5]);
+        $category = $this->createCategoryStub([1, 2, 5]);
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             5 => 'Single Category',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPageId($category);
+        $categoryPathProvider = $this->createObjectToTest(categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPageId($category);
 
         $this->assertEquals('Single Category', $result);
     }
@@ -215,11 +212,13 @@ class CategoryPathProviderTest extends TestCase
     public function testGetCategoryPathDetailsWithEmptyPathIds(): void
     {
         $storeId = 1;
-        $category = $this->createCategoryMock([]);
+        $category = $this->createCategoryStub([]);
 
-        $this->setupCategoryCollection([]);
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([]);
 
-        $result = $this->categoryPathProvider->getCategoryPathDetails($category, $storeId);
+        $categoryPathProvider = $this->createObjectToTest(categoryCollectionFactory: $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPathDetails($category, $storeId);
 
         $this->assertEquals('', $result['path']);
         $this->assertEquals('', $result['level']);
@@ -231,35 +230,31 @@ class CategoryPathProviderTest extends TestCase
         $storeId = 1;
         $categoryId = 30;
 
-        $category = $this->createCategoryMock([1, 2, 10, 20, 30]);
+        $category = $this->createCategoryStub([1, 2, 10, 20, 30]);
 
-        $this->categoryRepository
-            ->method('get')
-            ->with($categoryId, $storeId)
-            ->willReturn($category);
+        $categoryRepository = $this->createStub(CategoryRepositoryInterface::class);
+        $categoryRepository->method('get')->willReturn($category);
 
-        $this->configHelper
-            ->method('getCategorySeparator')
-            ->with($storeId)
-            ->willReturn(' / ');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->willReturn(' / ');
 
-        $this->setupCategoryCollection([
+        $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Root',
             20 => 'Parent',
             30 => 'Child',
         ]);
 
-        $result = $this->categoryPathProvider->getCategoryPageId($categoryId, $storeId);
+        $categoryPathProvider = $this->createObjectToTest($configHelper, $categoryRepository, $categoryCollectionFactory);
+
+        $result = $categoryPathProvider->getCategoryPageId($categoryId, $storeId);
 
         $this->assertEquals('Root / Parent / Child', $result);
     }
 
-    private function createCategoryMock(array $pathIds): Category&MockObject
+    private function createCategoryStub(array $pathIds): Category
     {
-        $category = $this->createMock(Category::class);
-        $category
-            ->method('getPathIds')
-            ->willReturn($pathIds);
+        $category = $this->createStub(Category::class);
+        $category->method('getPathIds')->willReturn($pathIds);
 
         return $category;
     }
@@ -267,25 +262,25 @@ class CategoryPathProviderTest extends TestCase
     /**
      * @param array<int, string> $categoryNameMap Map of category ID to name
      */
-    private function setupCategoryCollection(array $categoryNameMap): void
+    private function createCategoryCollectionFactoryStub(array $categoryNameMap): CategoryCollectionFactory
     {
-        $categoryMocks = [];
+        $categoryStubs = [];
         foreach ($categoryNameMap as $id => $name) {
-            $categoryMock = $this->createMock(Category::class);
-            $categoryMock->method('getId')->willReturn($id);
-            $categoryMock->method('getName')->willReturn($name);
-            $categoryMocks[] = $categoryMock;
+            $categoryStub = $this->createStub(Category::class);
+            $categoryStub->method('getId')->willReturn($id);
+            $categoryStub->method('getName')->willReturn($name);
+            $categoryStubs[] = $categoryStub;
         }
 
-        $collection = $this->createMock(CategoryCollection::class);
+        $collection = $this->createStub(CategoryCollection::class);
         $collection->method('addAttributeToSelect')->willReturnSelf();
         $collection->method('addFieldToFilter')->willReturnSelf();
         $collection->method('setStoreId')->willReturnSelf();
-        $collection->method('getIterator')->willReturn(new \ArrayIterator($categoryMocks));
+        $collection->method('getIterator')->willReturn(new \ArrayIterator($categoryStubs));
 
-        $this->categoryCollectionFactory
-            ->method('create')
-            ->willReturn($collection);
+        $categoryCollectionFactory = $this->createStub(CategoryCollectionFactory::class);
+        $categoryCollectionFactory->method('create')->willReturn($collection);
+
+        return $categoryCollectionFactory;
     }
 }
-

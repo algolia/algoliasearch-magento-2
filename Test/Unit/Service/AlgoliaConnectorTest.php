@@ -14,51 +14,47 @@ use Algolia\AlgoliaSearch\Service\Index\IndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\SendStrategyResolver;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Message\ManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class AlgoliaConnectorTest extends TestCase
 {
-    private ?AlgoliaConnector $connector = null;
-    private null|(SendStrategyInterface&MockObject) $mockStrategy = null;
-    private null|(ConfigHelper&MockObject) $config = null;
-    private null|(IndexOptionsInterface&MockObject) $indexOptions = null;
-    private null|(SearchClientProviderInterface&MockObject) $clientProvider = null;
-    private null|(SearchClient&MockObject) $client = null;
-
     private const STORE_ID = 1;
     private const INDEX_NAME = 'magento2_default_products';
     private const TASK_ID = 12345;
 
-    protected function setUp(): void
-    {
-        $this->mockStrategy = $this->createMock(SendStrategyInterface::class);
-        $mockResolver = $this->createMock(SendStrategyResolver::class);
-        $mockResolver->method('resolve')->willReturn($this->mockStrategy);
+    protected function createObjectToTest(
+        ?ConfigHelper $config = null,
+        ?SendStrategyInterface $strategy = null,
+        ?SearchClient $client = null,
+    ): AlgoliaConnector {
+        $config ??= $this->createStub(ConfigHelper::class);
+        $config->method('getNonCastableAttributes')->willReturn([]);
+        $config->method('getMaxRecordSizeLimit')->willReturn(10000);
 
-        $this->config = $this->createMock(ConfigHelper::class);
-        $this->config->method('getNonCastableAttributes')->willReturn([]);
-        $this->config->method('getMaxRecordSizeLimit')->willReturn(10000);
+        $resolver = $this->createStub(SendStrategyResolver::class);
+        $resolver->method('resolve')->willReturn($strategy ?? $this->createStub(SendStrategyInterface::class));
 
-        $this->client = $this->createMock(SearchClient::class);
-        $this->clientProvider = $this->createMock(SearchClientProviderInterface::class);
-        $this->clientProvider->method('getClient')->willReturn($this->client);
+        $clientProvider = $this->createStub(SearchClientProviderInterface::class);
+        $clientProvider->method('getClient')->willReturn($client ?? $this->createStub(SearchClient::class));
 
-        $this->connector = new AlgoliaConnector(
-            $this->config,
-            $this->createMock(ManagerInterface::class),
-            $this->createMock(ConsoleOutput::class),
-            $this->clientProvider,
-            $this->createMock(IndexNameFetcher::class),
-            $this->createMock(IndexOptionsBuilder::class),
-            $mockResolver
+        return new AlgoliaConnector(
+            $config,
+            $this->createStub(ManagerInterface::class),
+            $this->createStub(ConsoleOutput::class),
+            $clientProvider,
+            $this->createStub(IndexNameFetcher::class),
+            $this->createStub(IndexOptionsBuilder::class),
+            $resolver,
         );
+    }
 
-        $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
-        $this->indexOptions->method('getStoreId')->willReturn(self::STORE_ID);
-        $this->indexOptions->method('getIndexName')->willReturn(self::INDEX_NAME);
+    private function createIndexOptionsStub(string $indexName = self::INDEX_NAME, int $storeId = self::STORE_ID): IndexOptionsInterface
+    {
+        $indexOptions = $this->createStub(IndexOptionsInterface::class);
+        $indexOptions->method('getStoreId')->willReturn($storeId);
+        $indexOptions->method('getIndexName')->willReturn($indexName);
+
+        return $indexOptions;
     }
 
     // ── saveObjects() ──
@@ -70,10 +66,12 @@ class AlgoliaConnectorTest extends TestCase
             ['objectID' => '2', 'name' => 'Product B'],
         ];
 
-        $this->mockStrategy->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $indexOptions = $this->createIndexOptionsStub();
+        $strategy->expects($this->once())
             ->method('send')
             ->with(
-                $this->indexOptions,
+                $indexOptions,
                 $this->callback(function ($requests) {
                     $this->assertCount(2, $requests);
                     $this->assertEquals('addObject', $requests[0]['action']);
@@ -86,7 +84,9 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveObjects($this->indexOptions, $objects);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+
+        $connector->saveObjects($indexOptions, $objects);
     }
 
     public function testSaveObjectsWithPartialUpdateCallsBatchWithPartialUpdateAction(): void
@@ -95,10 +95,12 @@ class AlgoliaConnectorTest extends TestCase
             ['objectID' => '1', 'price' => '29.99'],
         ];
 
-        $this->mockStrategy->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $indexOptions = $this->createIndexOptionsStub();
+        $strategy->expects($this->once())
             ->method('send')
             ->with(
-                $this->indexOptions,
+                $indexOptions,
                 $this->callback(function ($requests) {
                     $this->assertEquals('partialUpdateObject', $requests[0]['action']);
 
@@ -107,19 +109,27 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveObjects($this->indexOptions, $objects, true);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+
+        $connector->saveObjects($indexOptions, $objects, true);
     }
 
     public function testSaveObjectsTracksLastOperationInfo(): void
     {
         $objects = [['objectID' => '1', 'name' => 'Product A']];
 
-        $this->mockStrategy->method('send')
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        // saveObjects() sends exactly one batch for a single non-oversized object.
+        $strategy->expects($this->once())
+            ->method('send')
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveObjects($this->indexOptions, $objects);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+        $indexOptions = $this->createIndexOptionsStub();
 
-        $this->assertEquals(self::TASK_ID, $this->connector->getLastTaskId(self::STORE_ID));
+        $connector->saveObjects($indexOptions, $objects);
+
+        $this->assertEquals(self::TASK_ID, $connector->getLastTaskId(self::STORE_ID));
     }
 
     public function testSaveObjectsSetsAlgoliaLastUpdateTimestamp(): void
@@ -127,10 +137,12 @@ class AlgoliaConnectorTest extends TestCase
         $objects = [['objectID' => '1', 'name' => 'Product A']];
         $beforeTime = strtotime('now');
 
-        $this->mockStrategy->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $indexOptions = $this->createIndexOptionsStub();
+        $strategy->expects($this->once())
             ->method('send')
             ->with(
-                $this->indexOptions,
+                $indexOptions,
                 $this->callback(function ($requests) use ($beforeTime) {
                     $body = $requests[0]['body'];
                     $this->assertArrayHasKey('algoliaLastUpdateAtCET', $body);
@@ -141,17 +153,21 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveObjects($this->indexOptions, $objects);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+
+        $connector->saveObjects($indexOptions, $objects);
     }
 
     public function testSaveObjectsCastsNumericValues(): void
     {
         $objects = [['objectID' => '1', 'price' => '29.99', 'qty' => '5']];
 
-        $this->mockStrategy->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $indexOptions = $this->createIndexOptionsStub();
+        $strategy->expects($this->once())
             ->method('send')
             ->with(
-                $this->indexOptions,
+                $indexOptions,
                 $this->callback(function ($requests) {
                     $body = $requests[0]['body'];
                     $this->assertSame(29.99, $body['price']);
@@ -162,23 +178,24 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveObjects($this->indexOptions, $objects);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+
+        $connector->saveObjects($indexOptions, $objects);
     }
 
     public function testSaveObjectsSkipsOversizedRecords(): void
     {
-        // Set max size large enough for small records but too small for the bloated one
-        $this->setPrivateProperty($this->connector, 'maxRecordSize', 200);
-
         $objects = [
             ['objectID' => '1', 'name' => 'Small'],
             ['objectID' => '2', 'name' => str_repeat('x', 10000)],
         ];
 
-        $this->mockStrategy->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $indexOptions = $this->createIndexOptionsStub();
+        $strategy->expects($this->once())
             ->method('send')
             ->with(
-                $this->indexOptions,
+                $indexOptions,
                 $this->callback(function ($requests) {
                     $this->assertCount(1, $requests);
                     $this->assertEquals('1', $requests[0]['body']['objectID']);
@@ -188,7 +205,11 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveObjects($this->indexOptions, $objects);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+        // Set max size large enough for small records but too small for the bloated one
+        $this->setPrivateProperty($connector, 'maxRecordSize', 200);
+
+        $connector->saveObjects($indexOptions, $objects);
     }
 
     // ── deleteObjects() ──
@@ -197,10 +218,12 @@ class AlgoliaConnectorTest extends TestCase
     {
         $ids = ['100', '200', '300'];
 
-        $this->mockStrategy->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $indexOptions = $this->createIndexOptionsStub();
+        $strategy->expects($this->once())
             ->method('send')
             ->with(
-                $this->indexOptions,
+                $indexOptions,
                 $this->callback(function ($requests) {
                     $this->assertCount(3, $requests);
                     foreach ($requests as $request) {
@@ -215,19 +238,27 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->deleteObjects($ids, $this->indexOptions);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+
+        $connector->deleteObjects($ids, $indexOptions);
     }
 
     public function testDeleteObjectsTracksLastOperationInfo(): void
     {
         $ids = ['100'];
 
-        $this->mockStrategy->method('send')
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        // deleteObjects() sends exactly one batch for a single id.
+        $strategy->expects($this->once())
+            ->method('send')
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->deleteObjects($ids, $this->indexOptions);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+        $indexOptions = $this->createIndexOptionsStub();
 
-        $this->assertEquals(self::TASK_ID, $this->connector->getLastTaskId(self::STORE_ID));
+        $connector->deleteObjects($ids, $indexOptions);
+
+        $this->assertEquals(self::TASK_ID, $connector->getLastTaskId(self::STORE_ID));
     }
 
     // ── performBatchOperation() ──
@@ -238,12 +269,16 @@ class AlgoliaConnectorTest extends TestCase
             ['action' => 'addObject', 'body' => ['objectID' => '1', 'name' => 'Test']],
         ];
 
-        $this->mockStrategy->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $indexOptions = $this->createIndexOptionsStub();
+        $strategy->expects($this->once())
             ->method('send')
-            ->with($this->indexOptions, $requests)
+            ->with($indexOptions, $requests)
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->invokeMethod($this->connector, 'performBatchOperation', [$this->indexOptions, $requests]);
+        $connector = $this->createObjectToTest(strategy: $strategy);
+
+        $this->invokeMethod($connector, 'performBatchOperation', [$indexOptions, $requests]);
     }
 
     public function testPerformBatchOperationReturnsStrategyResponse(): void
@@ -253,10 +288,14 @@ class AlgoliaConnectorTest extends TestCase
             'objectIDs' => ['1', '2'],
         ];
 
-        $this->mockStrategy->method('send')->willReturn($expectedResponse);
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        // performBatchOperation() invoked directly, so send() is called exactly once.
+        $strategy->expects($this->once())->method('send')->willReturn($expectedResponse);
 
-        $result = $this->invokeMethod($this->connector, 'performBatchOperation', [
-            $this->indexOptions,
+        $connector = $this->createObjectToTest(strategy: $strategy);
+
+        $result = $this->invokeMethod($connector, 'performBatchOperation', [
+            $this->createIndexOptionsStub(),
             [['action' => 'addObject', 'body' => ['objectID' => '1']]],
         ]);
 
@@ -267,21 +306,30 @@ class AlgoliaConnectorTest extends TestCase
 
     public function testGetSettingsReturnsEmptyArrayWhenIndexDoesNotExist(): void
     {
-        $this->client->method('getSettings')
+        $client = $this->createMock(SearchClient::class);
+        // getSettings() is unconditionally called exactly once.
+        $client->expects($this->once())
+            ->method('getSettings')
             ->willThrowException(new \Exception('Not Found', 404));
 
-        $this->assertSame([], $this->connector->getSettings($this->indexOptions));
+        $connector = $this->createObjectToTest(client: $client);
+
+        $this->assertSame([], $connector->getSettings($this->createIndexOptionsStub()));
     }
 
     public function testGetSettingsRethrowsNon404Exceptions(): void
     {
-        $this->client->method('getSettings')
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
+            ->method('getSettings')
             ->willThrowException(new \Exception('Internal Server Error', 500));
+
+        $connector = $this->createObjectToTest(client: $client);
 
         $this->expectException(\Exception::class);
         $this->expectExceptionCode(500);
 
-        $this->connector->getSettings($this->indexOptions);
+        $connector->getSettings($this->createIndexOptionsStub());
     }
 
     // ── setSettings() ──
@@ -290,35 +338,40 @@ class AlgoliaConnectorTest extends TestCase
     {
         $settings = ['searchableAttributes' => ['name', 'description']];
 
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('setSettings')
             ->with(self::INDEX_NAME, $settings, false)
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->setSettings($this->indexOptions, $settings);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->setSettings($this->createIndexOptionsStub(), $settings);
     }
 
     // ── deleteIndex() ──
 
     public function testDeleteIndexDelegatesToClient(): void
     {
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('deleteIndex')
             ->with(self::INDEX_NAME)
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->deleteIndex($this->indexOptions);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->deleteIndex($this->createIndexOptionsStub());
     }
 
     // ── moveIndex() ──
 
     public function testMoveIndexCallsOperationIndexWithMoveOperation(): void
     {
-        $toIndexOptions = $this->createMock(IndexOptionsInterface::class);
-        $toIndexOptions->method('getIndexName')->willReturn('magento2_default_products_tmp');
-        $toIndexOptions->method('getStoreId')->willReturn(self::STORE_ID);
+        $toIndexOptions = $this->createIndexOptionsStub('magento2_default_products_tmp');
 
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('operationIndex')
             ->with(self::INDEX_NAME, [
                 'operation'   => 'move',
@@ -326,30 +379,34 @@ class AlgoliaConnectorTest extends TestCase
             ])
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->moveIndex($this->indexOptions, $toIndexOptions);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->moveIndex($this->createIndexOptionsStub(), $toIndexOptions);
     }
 
     // ── clearIndex() ──
 
     public function testClearIndexCallsClearObjectsOnClient(): void
     {
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('clearObjects')
             ->with(self::INDEX_NAME)
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->clearIndex($this->indexOptions);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->clearIndex($this->createIndexOptionsStub());
     }
 
     // ── copySynonyms() / copyQueryRules() ──
 
     public function testCopySynonymsUsesOperationIndexWithSynonymsScope(): void
     {
-        $toIndexOptions = $this->createMock(IndexOptionsInterface::class);
-        $toIndexOptions->method('getIndexName')->willReturn('magento2_default_products_replica');
-        $toIndexOptions->method('getStoreId')->willReturn(self::STORE_ID);
+        $toIndexOptions = $this->createIndexOptionsStub('magento2_default_products_replica');
 
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('operationIndex')
             ->with(self::INDEX_NAME, [
                 'operation'   => 'copy',
@@ -358,16 +415,17 @@ class AlgoliaConnectorTest extends TestCase
             ])
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->copySynonyms($this->indexOptions, $toIndexOptions);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->copySynonyms($this->createIndexOptionsStub(), $toIndexOptions);
     }
 
     public function testCopyQueryRulesUsesOperationIndexWithRulesScope(): void
     {
-        $toIndexOptions = $this->createMock(IndexOptionsInterface::class);
-        $toIndexOptions->method('getIndexName')->willReturn('magento2_default_products_replica');
-        $toIndexOptions->method('getStoreId')->willReturn(self::STORE_ID);
+        $toIndexOptions = $this->createIndexOptionsStub('magento2_default_products_replica');
 
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('operationIndex')
             ->with(self::INDEX_NAME, [
                 'operation'   => 'copy',
@@ -376,7 +434,9 @@ class AlgoliaConnectorTest extends TestCase
             ])
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->copyQueryRules($this->indexOptions, $toIndexOptions);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->copyQueryRules($this->createIndexOptionsStub(), $toIndexOptions);
     }
 
     // ── saveRule() / deleteRule() ──
@@ -385,38 +445,43 @@ class AlgoliaConnectorTest extends TestCase
     {
         $rule = [AlgoliaConnector::ALGOLIA_API_OBJECT_ID => 'rule-1', 'condition' => []];
 
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('saveRule')
             ->with(self::INDEX_NAME, 'rule-1', $rule, false)
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveRule($rule, $this->indexOptions);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->saveRule($rule, $this->createIndexOptionsStub());
     }
 
     public function testDeleteRuleDelegatesToClientWithCorrectArguments(): void
     {
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('deleteRule')
             ->with(self::INDEX_NAME, 'rule-1', false)
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->deleteRule($this->indexOptions, 'rule-1');
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->deleteRule($this->createIndexOptionsStub(), 'rule-1');
     }
 
     // ── query() ──
 
     public function testQueryBuildsCorrectRequestStructureForClient(): void
     {
-        $queryOptions = $this->createMock(IndexOptionsInterface::class);
-        $queryOptions->method('getIndexName')->willReturn(self::INDEX_NAME);
-        $queryOptions->method('getStoreId')->willReturn(self::STORE_ID);
+        $queryOptions = $this->createIndexOptionsStub();
 
-        $searchQuery = $this->createMock(SearchQueryInterface::class);
+        $searchQuery = $this->createStub(SearchQueryInterface::class);
         $searchQuery->method('getIndexOptions')->willReturn($queryOptions);
         $searchQuery->method('getQuery')->willReturn('blue shirt');
         $searchQuery->method('getParams')->willReturn(['hitsPerPage' => 10]);
 
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('search')
             ->with($this->callback(function (array $payload) {
                 $request = $payload['requests'][0];
@@ -427,14 +492,17 @@ class AlgoliaConnectorTest extends TestCase
             }))
             ->willReturn(['hits' => []]);
 
-        $this->connector->query($searchQuery);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->query($searchQuery);
     }
 
     // ── getObjects() ──
 
     public function testGetObjectsMapsObjectIdsToRequestFormatWithIndexName(): void
     {
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('getObjects')
             ->with($this->callback(function (array $payload) {
                 $this->assertCount(2, $payload['requests']);
@@ -445,7 +513,9 @@ class AlgoliaConnectorTest extends TestCase
             }))
             ->willReturn(['results' => []]);
 
-        $this->connector->getObjects($this->indexOptions, ['42', '99']);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->getObjects($this->createIndexOptionsStub(), ['42', '99']);
     }
 
     // ── setSettings() merge branch ──
@@ -455,8 +525,9 @@ class AlgoliaConnectorTest extends TestCase
         $onlineSettings = ['ranking' => ['typo', 'geo'], 'attributesToIndex' => ['old_name']];
         $localSettings  = ['searchableAttributes' => ['new_name']];
 
-        $this->client->method('getSettings')->willReturn($onlineSettings);
-        $this->client->expects($this->once())
+        $client = $this->createMock(SearchClient::class);
+        $client->method('getSettings')->willReturn($onlineSettings);
+        $client->expects($this->once())
             ->method('setSettings')
             ->with(
                 self::INDEX_NAME,
@@ -473,7 +544,9 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->setSettings($this->indexOptions, $localSettings, false, true);
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->setSettings($this->createIndexOptionsStub(), $localSettings, false, true);
     }
 
     /**
@@ -491,12 +564,11 @@ class AlgoliaConnectorTest extends TestCase
         ];
         $localSettings = ['attributesToSnippet' => ['description:10']];
 
+        $client = $this->createMock(SearchClient::class);
         // Merge source: the live production index.
-        $this->client->method('getSettings')
-            ->with('magento2_default_products')
-            ->willReturn($onlineSettings);
+        $client->method('getSettings')->willReturn($onlineSettings);
 
-        $this->client->expects($this->once())
+        $client->expects($this->once())
             ->method('setSettings')
             ->with(
                 self::INDEX_NAME,
@@ -517,8 +589,10 @@ class AlgoliaConnectorTest extends TestCase
             )
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->setSettings(
-            $this->indexOptions,
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->setSettings(
+            $this->createIndexOptionsStub(),
             $localSettings,
             false,
             true,
@@ -529,12 +603,12 @@ class AlgoliaConnectorTest extends TestCase
     /**
      * Pins the strip list directly so the regression cannot be reintroduced by
      * an edit to getSettingsToRemove() that drops the semanticSearch entry.
-     *
-     * @throws \ReflectionException
      */
     public function testGetSettingsToRemoveIncludesSemanticSearch(): void
     {
-        $removals = $this->invokeMethod($this->connector, 'getSettingsToRemove', [[]]);
+        $connector = $this->createObjectToTest();
+
+        $removals = $this->invokeMethod($connector, 'getSettingsToRemove', [[]]);
 
         $this->assertContains('semanticSearch', $removals);
     }
@@ -543,39 +617,53 @@ class AlgoliaConnectorTest extends TestCase
 
     public function testWaitLastTaskReturnsEarlyWhenNoOperationHasBeenPerformed(): void
     {
-        $this->client->expects($this->never())->method('waitForTask');
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->never())->method('waitForTask');
 
-        $this->connector->waitLastTask();
+        $connector = $this->createObjectToTest(client: $client);
+
+        $connector->waitLastTask();
     }
 
     public function testWaitLastTaskCallsClientWithStoreSpecificStateAfterOperation(): void
     {
         $objects = [['objectID' => '1', 'name' => 'A']];
-        $this->mockStrategy->method('send')
-            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
-        $this->connector->saveObjects($this->indexOptions, $objects);
 
-        $this->client->expects($this->once())
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        // saveObjects() sends exactly one batch for a single object.
+        $strategy->expects($this->once())
+            ->method('send')
+            ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
+
+        $client = $this->createMock(SearchClient::class);
+        $client->expects($this->once())
             ->method('waitForTask')
             ->with(self::INDEX_NAME, self::TASK_ID);
 
-        $this->connector->waitLastTask(self::STORE_ID);
+        $connector = $this->createObjectToTest(strategy: $strategy, client: $client);
+        $connector->saveObjects($this->createIndexOptionsStub(), $objects);
+
+        $connector->waitLastTask(self::STORE_ID);
     }
 
     // ── castProductObject() ──
 
     public function testCastProductObjectConvertsNumericStringToInteger(): void
     {
+        $connector = $this->createObjectToTest();
+
         $data = ['qty' => '5'];
-        $this->connector->castProductObject($data);
+        $connector->castProductObject($data);
 
         $this->assertSame(5, $data['qty']);
     }
 
     public function testCastProductObjectLeavesNonCastableAttributesUntouched(): void
     {
+        $connector = $this->createObjectToTest();
+
         $data = ['sku' => '12345', 'name' => '100 Faces'];
-        $this->connector->castProductObject($data);
+        $connector->castProductObject($data);
 
         $this->assertSame('12345', $data['sku']);
         $this->assertSame('100 Faces', $data['name']);
@@ -583,8 +671,10 @@ class AlgoliaConnectorTest extends TestCase
 
     public function testCastProductObjectSplitsPipeSeparatedStringsIntoTypedArray(): void
     {
+        $connector = $this->createObjectToTest();
+
         $data = ['color_ids' => '1|2|3'];
-        $this->connector->castProductObject($data);
+        $connector->castProductObject($data);
 
         $this->assertSame([1, 2, 3], $data['color_ids']);
     }
@@ -593,29 +683,40 @@ class AlgoliaConnectorTest extends TestCase
 
     public function testIsValidFloatReturnsFalseForValuesThatEvaluateToInfinity(): void
     {
-        $this->assertFalse($this->connector->isValidFloat('1.8e308'));
+        $connector = $this->createObjectToTest();
+
+        $this->assertFalse($connector->isValidFloat('1.8e308'));
     }
 
     public function testIsValidFloatReturnsTrueForRegularFloatingPointValues(): void
     {
-        $this->assertTrue($this->connector->isValidFloat('3.14'));
+        $connector = $this->createObjectToTest();
+
+        $this->assertTrue($connector->isValidFloat('3.14'));
     }
 
     // ── getLastTaskId() ──
 
     public function testGetLastTaskIdReturnsNullWhenNoOperationHasBeenPerformed(): void
     {
-        $this->assertNull($this->connector->getLastTaskId());
+        $connector = $this->createObjectToTest();
+
+        $this->assertNull($connector->getLastTaskId());
     }
 
     public function testGetLastTaskIdReturnsStoreSpecificTaskIdAfterOperation(): void
     {
         $objects = [['objectID' => '1', 'name' => 'A']];
-        $this->mockStrategy->method('send')
+
+        $strategy = $this->createMock(SendStrategyInterface::class);
+        $strategy->expects($this->once())
+            ->method('send')
             ->willReturn([AlgoliaConnector::ALGOLIA_API_TASK_ID => self::TASK_ID]);
 
-        $this->connector->saveObjects($this->indexOptions, $objects);
+        $connector = $this->createObjectToTest(strategy: $strategy);
 
-        $this->assertSame(self::TASK_ID, $this->connector->getLastTaskId(self::STORE_ID));
+        $connector->saveObjects($this->createIndexOptionsStub(), $objects);
+
+        $this->assertSame(self::TASK_ID, $connector->getLastTaskId(self::STORE_ID));
     }
 }

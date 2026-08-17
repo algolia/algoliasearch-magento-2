@@ -5,22 +5,24 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service\Index\Settings;
 use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsPreserver;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class IndexSettingsPreserverTest extends TestCase
 {
-    protected ?AlgoliaLogger $logger = null;
-
-    protected function setUp(): void
+    protected function createObjectToTest(?AlgoliaLogger $logger = null, ?array $rules = null): IndexSettingsPreserver
     {
-        $this->logger = $this->createMock(AlgoliaLogger::class);
+        $logger ??= $this->createStub(AlgoliaLogger::class);
+
+        return $rules === null
+            ? new IndexSettingsPreserver($logger)
+            : new IndexSettingsPreserver($logger, $rules);
     }
 
     public function testPreservesUnderscoreEntryAbsentFromProposed(): void
     {
-        $this->logger->expects($this->never())->method('warning');
-        $preserver = new IndexSettingsPreserver($this->logger);
+        $logger = $this->createMock(AlgoliaLogger::class);
+        $logger->expects($this->never())->method('warning');
+
+        $preserver = $this->createObjectToTest($logger);
 
         $proposed = ['attributesForFaceting' => ['categories', 'searchable(color)']];
         $remote = ['attributesForFaceting' => ['categories', 'searchable(color)', '_collections']];
@@ -34,8 +36,10 @@ class IndexSettingsPreserverTest extends TestCase
 
     public function testPreservesDecoratedUnderscoreEntry(): void
     {
-        $this->logger->expects($this->never())->method('warning');
-        $preserver = new IndexSettingsPreserver($this->logger);
+        $logger = $this->createMock(AlgoliaLogger::class);
+        $logger->expects($this->never())->method('warning');
+
+        $preserver = $this->createObjectToTest($logger);
 
         $proposed = ['attributesForFaceting' => ['categories']];
         $remote = ['attributesForFaceting' => ['categories', 'filterOnly(_collections)']];
@@ -48,8 +52,10 @@ class IndexSettingsPreserverTest extends TestCase
 
     public function testReturnsProposedUnchangedWhenNoApplicableKey(): void
     {
-        $this->logger->expects($this->never())->method('warning');
-        $preserver = new IndexSettingsPreserver($this->logger);
+        $logger = $this->createMock(AlgoliaLogger::class);
+        $logger->expects($this->never())->method('warning');
+
+        $preserver = $this->createObjectToTest($logger);
 
         $proposed = ['replicas' => ['magento2_default_products_price_asc']];
         $remote = ['attributesForFaceting' => ['_collections']];
@@ -61,10 +67,12 @@ class IndexSettingsPreserverTest extends TestCase
 
     public function testRemoteWinsAndLogsWhenProposedContainsProtectedEntry(): void
     {
-        $this->logger->expects($this->once())
+        $logger = $this->createMock(AlgoliaLogger::class);
+        $logger->expects($this->once())
             ->method('warning')
             ->with($this->stringContains('_foo'));
-        $preserver = new IndexSettingsPreserver($this->logger);
+
+        $preserver = $this->createObjectToTest($logger);
 
         $proposed = ['attributesForFaceting' => ['categories', '_foo']];
         $remote = ['attributesForFaceting' => ['_foo']];
@@ -79,8 +87,10 @@ class IndexSettingsPreserverTest extends TestCase
 
     public function testEmptyRemoteReturnsProposedUnchanged(): void
     {
-        $this->logger->expects($this->never())->method('warning');
-        $preserver = new IndexSettingsPreserver($this->logger);
+        $logger = $this->createMock(AlgoliaLogger::class);
+        $logger->expects($this->never())->method('warning');
+
+        $preserver = $this->createObjectToTest($logger);
 
         $proposed = ['attributesForFaceting' => ['categories', 'searchable(color)']];
         $remote = [];
@@ -92,8 +102,10 @@ class IndexSettingsPreserverTest extends TestCase
 
     public function testCustomRulesArgumentOverridesDefaults(): void
     {
-        $this->logger->expects($this->never())->method('warning');
-        $preserver = new IndexSettingsPreserver($this->logger, ['searchableAttributes' => '/^algolia_/']);
+        $logger = $this->createMock(AlgoliaLogger::class);
+        $logger->expects($this->never())->method('warning');
+
+        $preserver = $this->createObjectToTest($logger, ['searchableAttributes' => '/^algolia_/']);
 
         $proposed = [
             'searchableAttributes' => ['name'],
@@ -113,7 +125,12 @@ class IndexSettingsPreserverTest extends TestCase
 
     public function testDeduplicatesWhenRemotePreservedEntryAlreadyInProposed(): void
     {
-        $preserver = new IndexSettingsPreserver($this->logger);
+        $logger = $this->createMock(AlgoliaLogger::class);
+        // The decorated entry already present in $proposed matches the protected pattern too,
+        // so it's dropped and logged before being merged back in from $remote.
+        $logger->expects($this->once())->method('warning');
+
+        $preserver = $this->createObjectToTest($logger);
 
         $proposed = ['attributesForFaceting' => ['categories', 'filterOnly(_collections)']];
         $remote = ['attributesForFaceting' => ['filterOnly(_collections)']];

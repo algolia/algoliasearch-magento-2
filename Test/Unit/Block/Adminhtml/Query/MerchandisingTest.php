@@ -9,45 +9,54 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\RequestInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class MerchandisingTest extends TestCase
 {
-    protected null|(Merchandising&MockObject) $block = null;
-    protected null|(StoreManagerInterface&MockObject) $storeManager = null;
-    protected null|(RequestInterface&MockObject) $request = null;
+    protected function createObjectToTest(
+        ?StoreManagerInterface $storeManager = null,
+        ?RequestInterface $request = null,
+    ): Merchandising {
+        $block = $this->createPartialMock(Merchandising::class, ['getRequest']);
+        $block->expects($this->once())
+            ->method('getRequest')
+            ->willReturn($request ?? $this->createStub(RequestInterface::class));
 
-    protected function setUp(): void
-    {
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->request = $this->createMock(RequestInterface::class);
+        $this->setPrivateProperty(
+            $block,
+            'storeManager',
+            $storeManager ?? $this->createStub(StoreManagerInterface::class)
+        );
 
-        $this->block = $this->getMockBuilder(Merchandising::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getRequest'])
-            ->getMock();
-
-        $this->block->method('getRequest')->willReturn($this->request);
-        $this->setPrivateProperty($this->block, 'storeManager', $this->storeManager);
+        return $block;
     }
 
     public function testGetCurrentStoreReturnsStoreForRequestedStoreId(): void
     {
-        $store = $this->createMock(StoreInterface::class);
-        $this->request->method('getParam')->with('store')->willReturn(3);
-        $this->storeManager->method('getStore')->with(3)->willReturn($store);
+        $store = $this->createStub(StoreInterface::class);
 
-        $this->assertSame($store, $this->block->getCurrentStore());
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(3);
+
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($store);
+
+        $block = $this->createObjectToTest(storeManager: $storeManager, request: $request);
+
+        $this->assertSame($store, $block->getCurrentStore());
     }
 
     public function testGetCurrentStoreReturnsDefaultStoreWhenNoStoreParam(): void
     {
-        $defaultStore = $this->createMock(StoreInterface::class);
-        $this->request->method('getParam')->with('store')->willReturn(null);
-        $this->storeManager->method('getDefaultStoreView')->willReturn($defaultStore);
+        $defaultStore = $this->createStub(StoreInterface::class);
 
-        $this->assertSame($defaultStore, $this->block->getCurrentStore());
+        $request = $this->createStub(RequestInterface::class);
+        $request->method('getParam')->willReturn(null);
+
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getDefaultStoreView')->willReturn($defaultStore);
+
+        $block = $this->createObjectToTest(storeManager: $storeManager, request: $request);
+
+        $this->assertSame($defaultStore, $block->getCurrentStore());
     }
 }

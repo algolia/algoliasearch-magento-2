@@ -7,36 +7,37 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Block\Instant;
 use Algolia\AlgoliaSearch\Block\Instant\Wrapper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Magento\Framework\View\Element\Template\Context;
 
-#[AllowMockObjectsWithoutExpectations]
 class WrapperTest extends TestCase
 {
-    protected null|(Wrapper&MockObject) $block = null;
-    protected null|(ConfigHelper&MockObject) $config = null;
-
-    protected function setUp(): void
+    protected function createObjectToTest(?ConfigHelper $config = null): Wrapper
     {
-        $this->config = $this->createMock(ConfigHelper::class);
+        $context = $this->createStub(Context::class);
 
-        $this->block = $this->getMockBuilder(Wrapper::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $this->setPrivateProperty($this->block, 'config', $this->config);
+        return new Wrapper(
+            $context,
+            $config ?? $this->createStub(ConfigHelper::class),
+        );
     }
 
     public function testHasFacetsReturnsTrueWhenFacetsExist(): void
     {
-        $this->config->method('getFacets')->willReturn([['attribute' => 'color'], ['attribute' => 'size']]);
-        $this->assertTrue($this->block->hasFacets());
+        $config = $this->createStub(ConfigHelper::class);
+        $config->method('getFacets')->willReturn([['attribute' => 'color'], ['attribute' => 'size']]);
+
+        $block = $this->createObjectToTest($config);
+
+        $this->assertTrue($block->hasFacets());
     }
 
     public function testHasFacetsReturnsFalseWhenFacetsArrayIsEmpty(): void
     {
-        $this->config->method('getFacets')->willReturn([]);
-        $this->assertFalse($this->block->hasFacets());
+        $config = $this->createStub(ConfigHelper::class);
+        $config->method('getFacets')->willReturn([]);
+
+        $block = $this->createObjectToTest($config);
+
+        $this->assertFalse($block->hasFacets());
     }
 }

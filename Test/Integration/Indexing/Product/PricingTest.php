@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * @magentoDbIsolation disabled
@@ -120,9 +121,7 @@ class PricingTest extends ProductsIndexingTestCase
         $this->assertAlgoliaPrice($productId);
     }
 
-    /**
-     * @dataProvider productProvider
-     */
+    #[DataProvider('productProvider')]
     public function testMagentoProductData(int $productId, float $expectedPrice): void
     {
         /**

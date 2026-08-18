@@ -168,8 +168,8 @@ class ReplicaIndexingTest extends TestCase
             $rebuildCmd,
             'execute',
             [
-                $this->createMock(\Symfony\Component\Console\Input\InputInterface::class),
-                $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class),
+                $this->createStub(\Symfony\Component\Console\Input\InputInterface::class),
+                $this->createStub(\Symfony\Component\Console\Output\OutputInterface::class),
             ]
         );
         $this->algoliaConnector->waitLastTask();

@@ -81,7 +81,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      */
     protected function mockProperty(object $object, string $propertyName, string $propertyClass): void
     {
-        $mock = $this->createMock($propertyClass);
+        $mock = $this->createStub($propertyClass);
         $this->setPrivateProperty($object, $propertyName, $mock);
     }
 }

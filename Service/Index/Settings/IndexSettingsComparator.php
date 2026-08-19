@@ -33,7 +33,7 @@ class IndexSettingsComparator
         return $this->getSettingsHash($indexSettings) === $this->getSettingsHash($algoliaSettings);
     }
 
-    private function reconcileKeys(array $remote, array $local): array
+    protected function reconcileKeys(array $remote, array $local): array
     {
         // Existing behaviour: settings Algolia manages but the extension does not
         // are not differences.

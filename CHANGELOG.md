@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.19.1-dev
+
+### Bug fixes
+- Updated `IndexSettingsComparator` to include a protected method `reconcileKeys` to ensure empty attributes such as `customRanking` or `unretrievableAttributes` are handled properly.
+
 ## 3.19.0
 
 ### Security

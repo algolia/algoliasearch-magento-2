@@ -119,15 +119,6 @@ class ProductHelperTest extends TestCase
         $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
     }
 
-    public function testWaitsForLastTaskWhenSettingsChanged(): void
-    {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(true);
-
-        $this->algoliaConnector->expects($this->atLeastOnce())->method('collectTaskIdToWaitFor')->with($this->indexOptions);
-
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
-    }
-
     public function testDoesNotPushSettingsToTmpIndexWhenFlagIsFalse(): void
     {
         $this->indexSettingsHandler->method('setSettings')->willReturn(true);

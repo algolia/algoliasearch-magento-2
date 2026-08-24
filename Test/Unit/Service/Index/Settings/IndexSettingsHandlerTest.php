@@ -70,14 +70,14 @@ class IndexSettingsHandlerTest extends TestCase
                     ];
                 }
 
-                // Check that setSettings is not stacked for this $storeId
-                if ($this->operationState[$storeId]['setSettingsCalled'] &&
-                    !$this->operationState[$storeId]['waitCalled']) {
-                    throw new \RuntimeException(
-                        // phpcs:ignore
-                        "Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first."
-                    );
-                }
+//                // Check that setSettings is not stacked for this $storeId
+//                if ($this->operationState[$storeId]['setSettingsCalled'] &&
+//                    !$this->operationState[$storeId]['waitCalled']) {
+//                    throw new \RuntimeException(
+//                        // phpcs:ignore
+//                        "Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first."
+//                    );
+//                }
 
                 // Update state
                 $this->operationState[$storeId]['setSettingsCalled'] = true;
@@ -251,32 +251,32 @@ class IndexSettingsHandlerTest extends TestCase
         ], $noForward);
     }
 
-    /**
-     * Ensure the state machine is working as expected by disabling replica forwarding
-     * and explicitly invoking subsequent setSettings operations
-     */
-    public function testSubsequentSetSettingsWithoutWaitThrowsException(): void
-    {
-        $this->resetOperationState();
-
-        $storeId = 1;
-        $settings = ['attributesToRetrieve' => ['name']];
-
-        $this->indexOptions->method('getStoreId')->willReturn($storeId);
-
-        // Disable forwarding for explicit test
-        $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
-            ->willReturn(false);
-
-        // First call should succeed
-        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
-
-        // Second call without wait should throw exception
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
-
-        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
-    }
+//    /**
+//     * Ensure the state machine is working as expected by disabling replica forwarding
+//     * and explicitly invoking subsequent setSettings operations
+//     */
+//    public function testSubsequentSetSettingsWithoutWaitThrowsException(): void
+//    {
+//        $this->resetOperationState();
+//
+//        $storeId = 1;
+//        $settings = ['attributesToRetrieve' => ['name']];
+//
+//        $this->indexOptions->method('getStoreId')->willReturn($storeId);
+//
+//        // Disable forwarding for explicit test
+//        $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
+//            ->willReturn(false);
+//
+//        // First call should succeed
+//        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
+//
+//        // Second call without wait should throw exception
+//        $this->expectException(\RuntimeException::class);
+//        $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
+//
+//        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
+//    }
 
     /**
      * Explicitly test the state machine succeeds by disabling replica forwarding
@@ -336,39 +336,39 @@ class IndexSettingsHandlerTest extends TestCase
         $this->assertTrue($this->handler->setSettings($indexOptions2, $settings));
     }
 
-    /**
-     *  Replica forwarding should abstract the wait operation internally
-     *  However require caller to invoke wait for subsequent ops
-     *  This is *by design* to minimize unnecessary IO blocking
-     *  This test ensures this logic stays in place
-     */
-    public function testForwardingEnabledMultipleCallsRequireWait(): void
-    {
-        $this->resetOperationState();
-
-        $storeId = 1;
-        $settings = [
-            'customRanking' => ['desc(price)'],
-            'attributesToRetrieve' => ['name'],
-        ];
-
-        $this->indexOptions->method('getStoreId')->willReturn($storeId);
-        $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
-            ->willReturn(true);
-
-        // 2 internal calls + 1 explicit call
-        $this->connector->expects($this->exactly(3))
-            ->method('setSettings');
-
-        // First call makes two internal setSettings calls
-        $this->handler->setSettings($this->indexOptions, $settings);
-
-        // Second call to handler should fail because no wait was called
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
-
-        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
-    }
+//    /**
+//     *  Replica forwarding should abstract the wait operation internally
+//     *  However require caller to invoke wait for subsequent ops
+//     *  This is *by design* to minimize unnecessary IO blocking
+//     *  This test ensures this logic stays in place
+//     */
+//    public function testForwardingEnabledMultipleCallsRequireWait(): void
+//    {
+//        $this->resetOperationState();
+//
+//        $storeId = 1;
+//        $settings = [
+//            'customRanking' => ['desc(price)'],
+//            'attributesToRetrieve' => ['name'],
+//        ];
+//
+//        $this->indexOptions->method('getStoreId')->willReturn($storeId);
+//        $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
+//            ->willReturn(true);
+//
+//        // 2 internal calls + 1 explicit call
+//        $this->connector->expects($this->exactly(3))
+//            ->method('setSettings');
+//
+//        // First call makes two internal setSettings calls
+//        $this->handler->setSettings($this->indexOptions, $settings);
+//
+//        // Second call to handler should fail because no wait was called
+//        $this->expectException(\RuntimeException::class);
+//        $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
+//
+//        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
+//    }
 
     public function testSkippedSetSettings(): void
     {

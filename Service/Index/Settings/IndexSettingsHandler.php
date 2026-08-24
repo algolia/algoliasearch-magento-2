@@ -63,6 +63,7 @@ class IndexSettingsHandler
                 $indexSettings,
                 false
             );
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
 
             return true;
         }
@@ -73,21 +74,27 @@ class IndexSettingsHandler
 
         // FORWARDED: $settings without excluded attributes
         if ($forward) {
-            $this->connector->setSettings(
-                $indexOptions,
-                $forward,
-                true
-            );
-            $this->connector->waitLastTask($indexOptions->getStoreId());
+            if (! $this->indexSettingsComparator->matches($indexOptions, $forward, $remoteSettings)) {
+                $this->connector->setSettings(
+                    $indexOptions,
+                    $forward,
+                    true
+                );
+                $this->connector->collectTaskIdToWaitFor($indexOptions);
+//                $this->connector->waitLastTask($indexOptions->getStoreId());
+            }
         }
 
         // NOT FORWARDED: array containing excluded attributes only
         if ($noForward) {
-            $this->connector->setSettings(
-                $indexOptions,
-                $noForward,
-                false
-            );
+            if (! $this->indexSettingsComparator->matches($indexOptions, $noForward, $remoteSettings)) {
+                $this->connector->setSettings(
+                    $indexOptions,
+                    $noForward,
+                    false
+                );
+                $this->connector->collectTaskIdToWaitFor($indexOptions);
+            }
         }
 
         return true;

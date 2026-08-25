@@ -81,7 +81,6 @@ class IndexSettingsHandler
                     true
                 );
                 $this->connector->collectTaskIdToWaitFor($indexOptions);
-//                $this->connector->waitLastTask($indexOptions->getStoreId());
             }
         }
 

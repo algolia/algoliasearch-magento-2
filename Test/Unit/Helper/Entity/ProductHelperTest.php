@@ -123,7 +123,7 @@ class ProductHelperTest extends TestCase
     {
         $this->indexSettingsHandler->method('setSettings')->willReturn(true);
 
-        $this->algoliaConnector->expects($this->atLeastOnce())->method('collectTaskIdToWaitFor')->with($this->indexOptions);
+        $this->algoliaConnector->expects($this->never())->method('collectTaskIdToWaitFor')->with($this->indexOptions);
 
         $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
     }

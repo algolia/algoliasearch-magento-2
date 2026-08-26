@@ -390,7 +390,7 @@ class IndexSettingsHandlerTest extends TestCase
     }
 
     #[DataProvider('settingsProvider')]
-    public function testBothForwardAndNoForwardChanged(
+    public function testForwardAndNoForwardSettingsChanges(
         array $proposed,
         array $remote,
         bool $forwardToReplicas,

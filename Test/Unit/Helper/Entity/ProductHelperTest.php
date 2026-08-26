@@ -119,7 +119,7 @@ class ProductHelperTest extends TestCase
         $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
     }
 
-    public function testWaitsForLastTaskWhenSettingsChanged(): void
+    public function testWDoesNotCollectTaskIdWhenSettingsChanged(): void
     {
         $this->indexSettingsHandler->method('setSettings')->willReturn(true);
 

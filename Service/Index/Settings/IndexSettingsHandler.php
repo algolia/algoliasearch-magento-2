@@ -73,27 +73,23 @@ class IndexSettingsHandler
         [$forward, $noForward] = $this->splitSettings($indexSettings);
 
         // FORWARDED: $settings without excluded attributes
-        if ($forward) {
-            if (! $this->indexSettingsComparator->matches($indexOptions, $forward, $remoteSettings)) {
-                $this->connector->setSettings(
-                    $indexOptions,
-                    $forward,
-                    true
-                );
-                $this->connector->collectTaskIdToWaitFor($indexOptions);
-            }
+        if ($forward && !$this->indexSettingsComparator->matches($indexOptions, $forward, $remoteSettings)) {
+            $this->connector->setSettings(
+                $indexOptions,
+                $forward,
+                true
+            );
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
         }
 
         // NOT FORWARDED: array containing excluded attributes only
-        if ($noForward) {
-            if (! $this->indexSettingsComparator->matches($indexOptions, $noForward, $remoteSettings)) {
-                $this->connector->setSettings(
-                    $indexOptions,
-                    $noForward,
-                    false
-                );
-                $this->connector->collectTaskIdToWaitFor($indexOptions);
-            }
+        if ($noForward && !$this->indexSettingsComparator->matches($indexOptions, $noForward, $remoteSettings)) {
+            $this->connector->setSettings(
+                $indexOptions,
+                $noForward,
+                false
+            );
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
         }
 
         return true;

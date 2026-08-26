@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Test\Unit\Service\Index\Settings;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
-use Algolia\AlgoliaSearch\Controller\View\Index;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\AlgoliaLogger;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
@@ -123,7 +122,7 @@ class IndexSettingsHandlerTest extends TestCase
                 false
             );
 
-        // IndexSettingsComparator::matches() is called 3 times:
+        // IndexSettingsComparator::matches() is called 2 times:
         // - once for the full payload
         // - once for $noforward
         $this->indexSettingsComparator->expects($this->exactly(2))->method('matches');
@@ -154,7 +153,7 @@ class IndexSettingsHandlerTest extends TestCase
                 true
             );
 
-        // IndexSettingsComparator::matches() is called 3 times:
+        // IndexSettingsComparator::matches() is called 2 times:
         // - once for the full payload
         // - once for $forward
         $this->indexSettingsComparator->expects($this->exactly(2))->method('matches');

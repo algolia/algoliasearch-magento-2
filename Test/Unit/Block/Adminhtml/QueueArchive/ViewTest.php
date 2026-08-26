@@ -31,11 +31,11 @@ class ViewTest extends TestCase
     {
         $archive = $this->createStub(QueueArchiveInterface::class);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(42);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn(42);
 
-        $queueArchiveRepository = $this->createStub(QueueArchiveRepositoryInterface::class);
-        $queueArchiveRepository->method('getById')->willReturn($archive);
+        $queueArchiveRepository = $this->createMock(QueueArchiveRepositoryInterface::class);
+        $queueArchiveRepository->method('getById')->with(42)->willReturn($archive);
 
         $block = $this->createObjectToTest(queueArchiveRepository: $queueArchiveRepository, request: $request);
 
@@ -46,8 +46,8 @@ class ViewTest extends TestCase
     {
         $archive = $this->createStub(QueueArchiveInterface::class);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(42);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn(42);
 
         $queueArchiveRepository = $this->createMock(QueueArchiveRepositoryInterface::class);
         $queueArchiveRepository->expects($this->once())->method('getById')->with(42)->willReturn($archive);
@@ -62,11 +62,11 @@ class ViewTest extends TestCase
 
     public function testGetCurrentJobPropagatesNoSuchEntityException(): void
     {
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(42);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn(42);
 
-        $queueArchiveRepository = $this->createStub(QueueArchiveRepositoryInterface::class);
-        $queueArchiveRepository->method('getById')->willThrowException(new NoSuchEntityException());
+        $queueArchiveRepository = $this->createMock(QueueArchiveRepositoryInterface::class);
+        $queueArchiveRepository->method('getById')->with(42)->willThrowException(new NoSuchEntityException());
 
         $block = $this->createObjectToTest(queueArchiveRepository: $queueArchiveRepository, request: $request);
 

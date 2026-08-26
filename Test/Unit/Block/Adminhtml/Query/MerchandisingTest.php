@@ -34,11 +34,11 @@ class MerchandisingTest extends TestCase
     {
         $store = $this->createStub(StoreInterface::class);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(3);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('store')->willReturn(3);
 
-        $storeManager = $this->createStub(StoreManagerInterface::class);
-        $storeManager->method('getStore')->willReturn($store);
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->method('getStore')->with(3)->willReturn($store);
 
         $block = $this->createObjectToTest(storeManager: $storeManager, request: $request);
 
@@ -49,8 +49,8 @@ class MerchandisingTest extends TestCase
     {
         $defaultStore = $this->createStub(StoreInterface::class);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(null);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('store')->willReturn(null);
 
         $storeManager = $this->createStub(StoreManagerInterface::class);
         $storeManager->method('getDefaultStoreView')->willReturn($defaultStore);

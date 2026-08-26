@@ -43,8 +43,8 @@ class AddAlgoliaAssetsObserverTest extends TestCase
     private function createObserverStub(): Observer
     {
         $layout = $this->createStub(Layout::class);
-        $observer = $this->createStub(Observer::class);
-        $observer->method('getData')->willReturn($layout);
+        $observer = $this->createMock(Observer::class);
+        $observer->method('getData')->with('layout')->willReturn($layout);
 
         return $observer;
     }
@@ -93,15 +93,15 @@ class AddAlgoliaAssetsObserverTest extends TestCase
         $storeManager = $this->createStub(StoreManagerInterface::class);
         $storeManager->method('getStore')->willReturn($this->createStoreStub($storeId));
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isEnabledFrontEnd')->willReturn($isFrontendEnabled);
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isEnabledFrontEnd')->with($storeId)->willReturn($isFrontendEnabled);
 
-        $credentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
-        $credentialsManager->method('checkCredentials')->willReturn($areCredentialsValid);
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager->method('checkCredentials')->with($storeId)->willReturn($areCredentialsValid);
 
         $layout = $this->createStub(Layout::class);
-        $observerArg = $this->createStub(Observer::class);
-        $observerArg->method('getData')->willReturn($layout);
+        $observerArg = $this->createMock(Observer::class);
+        $observerArg->method('getData')->with('layout')->willReturn($layout);
 
         $renderingManager = $this->createMock(RenderingManager::class);
         if ($expectRenderingManagerCalled) {

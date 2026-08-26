@@ -566,7 +566,7 @@ class AlgoliaConnectorTest extends TestCase
 
         $client = $this->createMock(SearchClient::class);
         // Merge source: the live production index.
-        $client->method('getSettings')->willReturn($onlineSettings);
+        $client->method('getSettings')->with('magento2_default_products')->willReturn($onlineSettings);
 
         $client->expects($this->once())
             ->method('setSettings')

@@ -17,8 +17,8 @@ class AbstractReindexAllButtonTest extends TestCase
         string $redirectPath,
         ?ConfigHelper $configHelper = null,
     ): AbstractReindexAllButton {
-        $urlBuilder = $this->createStub(UrlInterface::class);
-        $urlBuilder->method('getUrl')->willReturn('http://example.com/reindex');
+        $urlBuilder = $this->createMock(UrlInterface::class);
+        $urlBuilder->method('getUrl')->with('algolia_algoliasearch/indexingmanager/reindex')->willReturn('http://example.com/reindex');
 
         $context = $this->createStub(Context::class);
         $context->method('getUrlBuilder')->willReturn($urlBuilder);

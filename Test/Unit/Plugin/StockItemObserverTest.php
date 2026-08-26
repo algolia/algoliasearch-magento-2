@@ -16,8 +16,8 @@ class StockItemObserverTest extends TestCase
 {
     protected function createObjectToTest(?Indexer $indexer = null): StockItemObserver
     {
-        $indexerRegistry = $this->createStub(IndexerRegistry::class);
-        $indexerRegistry->method('get')->willReturn($indexer ?? $this->createStub(Indexer::class));
+        $indexerRegistry = $this->createMock(IndexerRegistry::class);
+        $indexerRegistry->method('get')->with('algolia_products')->willReturn($indexer ?? $this->createStub(Indexer::class));
 
         return new StockItemObserver($indexerRegistry);
     }

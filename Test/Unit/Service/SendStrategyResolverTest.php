@@ -32,8 +32,8 @@ class SendStrategyResolverTest extends TestCase
 
     public function testResolveReturnsFirstApplicableStrategy(): void
     {
-        $applicable = $this->createStub(SendStrategyInterface::class);
-        $applicable->method('isApplicable')->willReturn(true);
+        $applicable = $this->createMock(SendStrategyInterface::class);
+        $applicable->method('isApplicable')->with(self::STORE_ID)->willReturn(true);
 
         $resolver = new SendStrategyResolver($this->createStub(SendStrategyInterface::class), [$applicable]);
 

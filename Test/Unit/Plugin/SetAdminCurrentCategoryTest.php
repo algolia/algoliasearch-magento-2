@@ -40,13 +40,13 @@ class SetAdminCurrentCategoryTest extends TestCase
 
     public function testAfterExecuteSetsCurrentCategoryAndReturnsResult(): void
     {
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(42);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn(42);
 
         $category = $this->createStub(CategoryInterface::class);
 
-        $categoryRepository = $this->createStub(CategoryRepositoryInterface::class);
-        $categoryRepository->method('get')->willReturn($category);
+        $categoryRepository = $this->createMock(CategoryRepositoryInterface::class);
+        $categoryRepository->method('get')->with(42)->willReturn($category);
 
         $currentCategory = $this->createMock(CurrentCategory::class);
         $currentCategory->expects($this->once())->method('set')->with($category);
@@ -61,8 +61,8 @@ class SetAdminCurrentCategoryTest extends TestCase
 
     public function testAfterExecuteReturnsNullWhenCategoryNotFound(): void
     {
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(999);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn(999);
 
         $categoryRepository = $this->createStub(CategoryRepositoryInterface::class);
         $categoryRepository->method('get')->willThrowException(new NoSuchEntityException());

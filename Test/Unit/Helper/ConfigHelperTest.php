@@ -95,11 +95,11 @@ class ConfigHelperTest extends TestCase
     ): void {
         $storeId = 1;
 
-        $autocompleteHelper = $this->createStub(AutocompleteHelper::class);
-        $autocompleteHelper->method('isEnabled')->willReturn($isAutocompleteEnabled);
+        $autocompleteHelper = $this->createMock(AutocompleteHelper::class);
+        $autocompleteHelper->method('isEnabled')->with($storeId)->willReturn($isAutocompleteEnabled);
 
-        $instantSearchHelper = $this->createStub(InstantSearchHelper::class);
-        $instantSearchHelper->method('isEnabled')->willReturn($isInstantSearchEnabled);
+        $instantSearchHelper = $this->createMock(InstantSearchHelper::class);
+        $instantSearchHelper->method('isEnabled')->with($storeId)->willReturn($isInstantSearchEnabled);
 
         $configHelper = $this->createObjectToTest(
             autocompleteHelper: $autocompleteHelper,

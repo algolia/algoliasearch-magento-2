@@ -61,8 +61,8 @@ class CategoryObserverTest extends TestCase
 
     private function createProductCollectionStub(array $productIds): ProductCollection
     {
-        $collection = $this->createStub(ProductCollection::class);
-        $collection->method('getColumnValues')->willReturn($productIds);
+        $collection = $this->createMock(ProductCollection::class);
+        $collection->method('getColumnValues')->with('entity_id')->willReturn($productIds);
 
         return $collection;
     }
@@ -312,7 +312,7 @@ class CategoryObserverTest extends TestCase
         $productIndexer->method('getView')->willReturn($view);
 
         $connection = $this->createMock(AdapterInterface::class);
-        $connection->method('isTableExists')->willReturn(true);
+        $connection->method('isTableExists')->with($changelogTableName)->willReturn(true);
         $connection->expects($this->once())
             ->method('insertMultiple')
             ->with($changelogTableName, [
@@ -320,8 +320,8 @@ class CategoryObserverTest extends TestCase
                 ['entity_id' => 20],
             ]);
 
-        $resource = $this->createStub(ResourceConnection::class);
-        $resource->method('getTableName')->willReturn($changelogTableName);
+        $resource = $this->createMock(ResourceConnection::class);
+        $resource->method('getTableName')->with('algolia_products_cl')->willReturn($changelogTableName);
         $resource->method('getConnection')->willReturn($connection);
 
         $observer = $this->createObjectToTest(

@@ -38,8 +38,8 @@ class AddToCartRedirectForInsightsTest extends TestCase
 
     public function testBeforeAddProductReturnsNullWhenInsightsDisabled(): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isClickConversionAnalyticsEnabled')->willReturn(false);
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(false);
 
         $plugin = $this->createObjectToTest($configHelper);
 

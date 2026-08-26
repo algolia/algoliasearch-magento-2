@@ -43,8 +43,8 @@ class FacetBuilderTest extends TestCase
 
         $instantSearchHelper = $this->createFacetsStub();
         $groupCollection = $this->createGroupsStub();
-        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId);
-        $configHelper->method('isCustomerGroupsEnabled')->willReturn(true);
+        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId, configHelperAsMock: true);
+        $configHelper->method('isCustomerGroupsEnabled')->with($storeId)->willReturn(true);
 
         $groupExcludedWebsiteRepository = $this->createStub(GroupExcludedWebsiteRepositoryInterface::class);
         $groupExcludedWebsiteRepository->method('getCustomerGroupExcludedWebsites')->willReturn([]);
@@ -66,8 +66,8 @@ class FacetBuilderTest extends TestCase
 
         $instantSearchHelper = $this->createFacetsStub();
         $groupCollection = $this->createGroupsStub();
-        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId);
-        $configHelper->method('isCustomerGroupsEnabled')->willReturn(false);
+        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId, configHelperAsMock: true);
+        $configHelper->method('isCustomerGroupsEnabled')->with($storeId)->willReturn(false);
 
         $facetBuilder = $this->createObjectToTest($configHelper, $instantSearchHelper, $storeManager, $groupCollection);
 
@@ -86,8 +86,8 @@ class FacetBuilderTest extends TestCase
 
         $instantSearchHelper = $this->createFacetsStub();
         $groupCollection = $this->createGroupsStub();
-        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId);
-        $configHelper->method('isCustomerGroupsEnabled')->willReturn(true);
+        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId, configHelperAsMock: true);
+        $configHelper->method('isCustomerGroupsEnabled')->with($storeId)->willReturn(true);
 
         $groupExcludedWebsiteRepository = $this->createStub(GroupExcludedWebsiteRepositoryInterface::class);
         $groupExcludedWebsiteRepository->method('getCustomerGroupExcludedWebsites')->willReturn([$websiteId]);
@@ -111,7 +111,7 @@ class FacetBuilderTest extends TestCase
     public function testGetAttributesForFacetingIncludesCategoryLevel0(): void
     {
         $storeId = 1;
-        $instantSearchHelper = $this->createFacetsStub();
+        $instantSearchHelper = $this->createFacetsStub(asMock: true);
         $instantSearchHelper = $this->withCategoryConfig($instantSearchHelper, $storeId);
 
         $facetBuilder = $this->createObjectToTest(instantSearchHelper: $instantSearchHelper);
@@ -129,7 +129,7 @@ class FacetBuilderTest extends TestCase
     public function testGetAttributesForFacetingIncludesMerchMetaData(): void
     {
         $storeId = 1;
-        $instantSearchHelper = $this->createFacetsStub();
+        $instantSearchHelper = $this->createFacetsStub(asMock: true);
         $instantSearchHelper = $this->withCategoryConfig($instantSearchHelper, $storeId);
 
         $facetBuilder = $this->createObjectToTest(instantSearchHelper: $instantSearchHelper);
@@ -152,7 +152,7 @@ class FacetBuilderTest extends TestCase
     public function testGetAttributesForFacetingIncludesVisualMerchData(): void
     {
         $storeId = 1;
-        $instantSearchHelper = $this->createFacetsStub();
+        $instantSearchHelper = $this->createFacetsStub(asMock: true);
         $instantSearchHelper = $this->withCategoryConfig($instantSearchHelper, $storeId);
         $configHelper = $this->createVisualMerchEnablementStub($storeId);
 
@@ -174,8 +174,8 @@ class FacetBuilderTest extends TestCase
 
         $instantSearchHelper = $this->createFacetsStub();
         $groupCollection = $this->createGroupsStub();
-        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId);
-        $configHelper->method('isCustomerGroupsEnabled')->willReturn(true);
+        [$configHelper, $storeManager] = $this->createStoreConfigStubs($storeId, $websiteId, configHelperAsMock: true);
+        $configHelper->method('isCustomerGroupsEnabled')->with($storeId)->willReturn(true);
 
         $groupExcludedWebsiteRepository = $this->createStub(GroupExcludedWebsiteRepositoryInterface::class);
         $groupExcludedWebsiteRepository->method('getCustomerGroupExcludedWebsites')->willReturn([]);
@@ -209,7 +209,7 @@ class FacetBuilderTest extends TestCase
         $storeId = 1;
         $websiteId = 2;
 
-        $instantSearchHelper = $this->createStub(InstantSearchHelper::class);
+        $instantSearchHelper = $this->createMock(InstantSearchHelper::class);
         $instantSearchHelper->method('getFacets')->willReturn([
             [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color'],
             [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'size'],
@@ -239,7 +239,7 @@ class FacetBuilderTest extends TestCase
     public function testGetRenderingContentDoesNotIncludeMetaData(): void
     {
         $storeId = 1;
-        $instantSearchHelper = $this->createFacetsStub();
+        $instantSearchHelper = $this->createFacetsStub(asMock: true);
         $instantSearchHelper = $this->withCategoryConfig($instantSearchHelper, $storeId);
         $configHelper = $this->createVisualMerchEnablementStub($storeId);
 
@@ -320,9 +320,9 @@ class FacetBuilderTest extends TestCase
         $this->assertEquals('filterOnly(size)', $result);
     }
 
-    private function createFacetsStub(): InstantSearchHelper
+    private function createFacetsStub(bool $asMock = false): InstantSearchHelper
     {
-        $instantSearchHelper = $this->createStub(InstantSearchHelper::class);
+        $instantSearchHelper = $asMock ? $this->createMock(InstantSearchHelper::class) : $this->createStub(InstantSearchHelper::class);
         $instantSearchHelper->method('getFacets')->willReturn([
             [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'brand', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_NOT_SEARCHABLE],
             [FacetBuilder::FACET_KEY_ATTRIBUTE_NAME => 'color', FacetBuilder::FACET_KEY_SEARCHABLE => FacetBuilder::FACET_SEARCHABLE_SEARCHABLE],
@@ -335,34 +335,34 @@ class FacetBuilderTest extends TestCase
     /**
      * @return array{0: ConfigHelper, 1: StoreManagerInterface}
      */
-    private function createStoreConfigStubs(int $storeId, int $websiteId): array
+    private function createStoreConfigStubs(int $storeId, int $websiteId, bool $configHelperAsMock = false): array
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper = $configHelperAsMock ? $this->createMock(ConfigHelper::class) : $this->createStub(ConfigHelper::class);
         $configHelper->method('getAllowedCurrencies')->willReturn(['EUR', 'USD']);
 
         $store = $this->createStub(StoreInterface::class);
         $store->method('getWebsiteId')->willReturn($websiteId);
 
-        $storeManager = $this->createStub(StoreManagerInterface::class);
-        $storeManager->method('getStore')->willReturn($store);
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->method('getStore')->with($storeId)->willReturn($store);
 
         return [$configHelper, $storeManager];
     }
 
     private function withCategoryConfig(InstantSearchHelper $instantSearchHelper, int $storeId): InstantSearchHelper
     {
-        $instantSearchHelper->method('shouldReplaceCategories')->willReturn(true);
+        $instantSearchHelper->method('shouldReplaceCategories')->with($storeId)->willReturn(true);
 
         return $instantSearchHelper;
     }
 
     private function createGroupsStub(): GroupCollection
     {
-        $group1 = $this->createStub(Group::class);
-        $group1->method('getData')->willReturn(1);
+        $group1 = $this->createMock(Group::class);
+        $group1->method('getData')->with('customer_group_id')->willReturn(1);
 
-        $group2 = $this->createStub(Group::class);
-        $group2->method('getData')->willReturn(2);
+        $group2 = $this->createMock(Group::class);
+        $group2->method('getData')->with('customer_group_id')->willReturn(2);
 
         $groupCollection = $this->createStub(GroupCollection::class);
         $groupCollection->method('getIterator')->willReturn(new \ArrayIterator([$group1, $group2]));
@@ -372,9 +372,9 @@ class FacetBuilderTest extends TestCase
 
     private function createVisualMerchEnablementStub(int $storeId): ConfigHelper
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isVisualMerchEnabled')->willReturn(true);
-        $configHelper->method('getCategoryPageIdAttributeName')->willReturn('categoryPageId');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isVisualMerchEnabled')->with($storeId)->willReturn(true);
+        $configHelper->method('getCategoryPageIdAttributeName')->with($storeId)->willReturn('categoryPageId');
 
         return $configHelper;
     }

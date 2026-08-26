@@ -34,8 +34,8 @@ class CacheCleanBulkAttributePluginTest extends TestCase
         $attributeHelper->method('getProductIds')->willReturn($productIds);
         $attributeHelper->method('getSelectedStoreId')->willReturn($storeId);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn($attributes);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('attributes', [])->willReturn($attributes);
 
         // getRequest() is unconditionally called exactly once by afterExecute().
         $subject = $this->getMockBuilder(Save::class)

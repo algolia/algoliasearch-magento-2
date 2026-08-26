@@ -97,8 +97,8 @@ class IndexSettingsHandlerTest extends TestCase
             'attributesToRetrieve' => ['name', 'price'],
         ];
 
-        $config = $this->createStub(ConfigHelper::class);
-        $config->method('shouldForwardPrimaryIndexSettingsToReplicas')->willReturn(true);
+        $config = $this->createMock(ConfigHelper::class);
+        $config->method('shouldForwardPrimaryIndexSettingsToReplicas')->with($storeId)->willReturn(true);
 
         $connector = $this->createStateMachineConnector();
 

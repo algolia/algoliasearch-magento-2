@@ -165,8 +165,8 @@ class ClearQueueCommandTest extends TestCase
 
     public function testClearQueueForStoreSuccess(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreName')->willReturn('Default Store');
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreName')->with(1)->willReturn('Default Store');
 
         $cmd = $this->createPartialObjectToTest(['clearQueueTableForStore'], storeNameFetcher: $storeNameFetcher);
         $output = new BufferedOutput();
@@ -183,8 +183,8 @@ class ClearQueueCommandTest extends TestCase
 
     public function testClearQueueForStoreErrorPrinted(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreName')->willReturn('Default Store');
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreName')->with(1)->willReturn('Default Store');
 
         $cmd = $this->createPartialObjectToTest(['clearQueueTableForStore'], storeNameFetcher: $storeNameFetcher);
         $output = new BufferedOutput();

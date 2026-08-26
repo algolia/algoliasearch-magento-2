@@ -830,7 +830,7 @@ class EventProcessorTest extends TestCase
         $product = $this->createStub(Product::class);
         $product->method('getId')->willReturn($id);
 
-        $item = $this->createStub(OrderItem::class);
+        $item = $this->createMock(OrderItem::class);
         $item->method('getProduct')->willReturn($product);
         $item->method('getPrice')->willReturn($price);
         $item->method('getOriginalPrice')->willReturn($price);
@@ -838,10 +838,10 @@ class EventProcessorTest extends TestCase
         $item->method('getQtyOrdered')->willReturn($qty);
 
         if ($queryId !== null) {
-            $item->method('hasData')->willReturn(true);
-            $item->method('getData')->willReturn($queryId);
+            $item->method('hasData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn(true);
+            $item->method('getData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn($queryId);
         } else {
-            $item->method('hasData')->willReturn(false);
+            $item->method('hasData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn(false);
         }
 
         return $item;

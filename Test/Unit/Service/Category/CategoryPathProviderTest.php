@@ -51,8 +51,8 @@ class CategoryPathProviderTest extends TestCase
         $storeId = 1;
         $category = $this->createCategoryStub([1, 2, 10, 25, 30]);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('getCategorySeparator')->willReturn(' /// ');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->with($storeId)->willReturn(' /// ');
 
         $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Electronics',
@@ -74,8 +74,8 @@ class CategoryPathProviderTest extends TestCase
         $storeId = 1;
         $category = $this->createCategoryStub([1, 2, 10, 25]);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('getCategorySeparator')->willReturn(' / ');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->with($storeId)->willReturn(' / ');
 
         $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Electronics',
@@ -111,8 +111,8 @@ class CategoryPathProviderTest extends TestCase
     {
         $category = $this->createCategoryStub([1, 2, 10, 20]);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('getCategorySeparator')->willReturn(' > ');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->with(null)->willReturn(' > ');
 
         $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Category A',
@@ -133,8 +133,8 @@ class CategoryPathProviderTest extends TestCase
         $storeId = 1;
         $category = $this->createCategoryStub([1, 2, 10, 20, 30]);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('getCategorySeparator')->willReturn('');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->with($storeId)->willReturn('');
 
         $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'A',
@@ -156,8 +156,8 @@ class CategoryPathProviderTest extends TestCase
         $storeId = 1;
         $category = $this->createCategoryStub([1, 2, 10, 20]);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('getCategorySeparator')->willReturn(' / ');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->with($storeId)->willReturn(' / ');
 
         $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Parent',
@@ -178,8 +178,8 @@ class CategoryPathProviderTest extends TestCase
         $storeId = 1;
         $category = $this->createCategoryStub([1, 2, 10, 20, 30]);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('getCategorySeparator')->willReturn(' /// ');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->with($storeId)->willReturn(' /// ');
 
         $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Root',
@@ -232,11 +232,11 @@ class CategoryPathProviderTest extends TestCase
 
         $category = $this->createCategoryStub([1, 2, 10, 20, 30]);
 
-        $categoryRepository = $this->createStub(CategoryRepositoryInterface::class);
-        $categoryRepository->method('get')->willReturn($category);
+        $categoryRepository = $this->createMock(CategoryRepositoryInterface::class);
+        $categoryRepository->method('get')->with($categoryId, $storeId)->willReturn($category);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('getCategorySeparator')->willReturn(' / ');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('getCategorySeparator')->with($storeId)->willReturn(' / ');
 
         $categoryCollectionFactory = $this->createCategoryCollectionFactoryStub([
             10 => 'Root',

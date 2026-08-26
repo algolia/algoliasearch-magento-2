@@ -36,8 +36,8 @@ class ReindexTest extends TestCase
             $resultInstance = $this->createStub(Redirect::class);
             $resultInstance->method('setPath')->willReturnSelf();
 
-            $resultFactory = $this->createStub(ResultFactory::class);
-            $resultFactory->method('create')->willReturn($resultInstance);
+            $resultFactory = $this->createMock(ResultFactory::class);
+            $resultFactory->method('create')->with(ResultFactory::TYPE_REDIRECT)->willReturn($resultInstance);
         }
 
         $context = $this->createStub(Context::class);

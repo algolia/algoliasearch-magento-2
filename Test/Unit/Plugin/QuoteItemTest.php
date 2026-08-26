@@ -24,17 +24,17 @@ class QuoteItemTest extends TestCase
         $product = $this->createStub(Product::class);
         $product->method('getStoreId')->willReturn(1);
 
-        $item = $this->createStub(AbstractItem::class);
+        $item = $this->createMock(AbstractItem::class);
         $item->method('getProduct')->willReturn($product);
-        $item->method('getData')->willReturn('encoded_query_data');
+        $item->method('getData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn('encoded_query_data');
 
         return $item;
     }
 
     public function testAfterConvertCopiesQueryParamWhenOrderTrackingEnabled(): void
     {
-        $insightsHelper = $this->createStub(InsightsHelper::class);
-        $insightsHelper->method('isOrderPlacedTracked')->willReturn(true);
+        $insightsHelper = $this->createMock(InsightsHelper::class);
+        $insightsHelper->method('isOrderPlacedTracked')->with(1)->willReturn(true);
 
         $orderItem = $this->getMockBuilder(OrderItem::class)
             ->disableOriginalConstructor()
@@ -55,8 +55,8 @@ class QuoteItemTest extends TestCase
 
     public function testAfterConvertDoesNotCopyQueryParamWhenOrderTrackingDisabled(): void
     {
-        $insightsHelper = $this->createStub(InsightsHelper::class);
-        $insightsHelper->method('isOrderPlacedTracked')->willReturn(false);
+        $insightsHelper = $this->createMock(InsightsHelper::class);
+        $insightsHelper->method('isOrderPlacedTracked')->with(1)->willReturn(false);
 
         $orderItem = $this->getMockBuilder(OrderItem::class)
             ->disableOriginalConstructor()

@@ -33,8 +33,8 @@ class ViewTest extends TestCase
     {
         $job = $this->createStub(Job::class);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(42);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn(42);
 
         $jobFactory = $this->createStub(JobFactory::class);
         $jobFactory->method('create')->willReturn($job);
@@ -51,8 +51,8 @@ class ViewTest extends TestCase
     {
         $job = $this->createStub(Job::class);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn('42');
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn('42');
 
         $jobFactory = $this->createStub(JobFactory::class);
         $jobFactory->method('create')->willReturn($job);
@@ -69,8 +69,8 @@ class ViewTest extends TestCase
     {
         $job = $this->createStub(Job::class);
 
-        $request = $this->createStub(RequestInterface::class);
-        $request->method('getParam')->willReturn(42);
+        $request = $this->createMock(RequestInterface::class);
+        $request->method('getParam')->with('id')->willReturn(42);
 
         $jobFactory = $this->createMock(JobFactory::class);
         $jobFactory->expects($this->once())->method('create')->willReturn($job);

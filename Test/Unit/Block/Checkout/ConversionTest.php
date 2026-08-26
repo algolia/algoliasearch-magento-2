@@ -30,8 +30,8 @@ class ConversionTest extends TestCase
 
     public function testGetOrderItemsConversionJsonExcludesItemsWithoutQueryParam(): void
     {
-        $item = $this->createStub(Item::class);
-        $item->method('hasData')->willReturn(false);
+        $item = $this->createMock(Item::class);
+        $item->method('hasData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn(false);
 
         $order = $this->createStub(Order::class);
         $order->method('getAllVisibleItems')->willReturn([$item]);
@@ -48,9 +48,9 @@ class ConversionTest extends TestCase
     {
         $queryData = json_encode(['queryID' => 'abc123', 'position' => 1]);
 
-        $item = $this->createStub(Item::class);
-        $item->method('hasData')->willReturn(true);
-        $item->method('getData')->willReturn($queryData);
+        $item = $this->createMock(Item::class);
+        $item->method('hasData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn(true);
+        $item->method('getData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn($queryData);
         $item->method('getProductId')->willReturn(42);
 
         $order = $this->createStub(Order::class);
@@ -73,8 +73,8 @@ class ConversionTest extends TestCase
         $checkoutSession = $this->createStub(Session::class);
         $checkoutSession->method('getLastRealOrder')->willReturn($order);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isClickConversionAnalyticsEnabled')->willReturn(false);
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(false);
 
         $block = $this->createObjectToTest(checkoutSession: $checkoutSession, configHelper: $configHelper);
 
@@ -89,9 +89,9 @@ class ConversionTest extends TestCase
         $checkoutSession = $this->createStub(Session::class);
         $checkoutSession->method('getLastRealOrder')->willReturn($order);
 
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isClickConversionAnalyticsEnabled')->willReturn(true);
-        $configHelper->method('getConversionAnalyticsMode')->willReturn('click');
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(true);
+        $configHelper->method('getConversionAnalyticsMode')->with(1)->willReturn('click');
 
         $block = $this->createObjectToTest(checkoutSession: $checkoutSession, configHelper: $configHelper);
 

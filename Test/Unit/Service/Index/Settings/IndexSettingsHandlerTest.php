@@ -11,6 +11,7 @@ use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsHandler;
 use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsPreserver;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 #[AllowMockObjectsWithoutExpectations]
 class IndexSettingsHandlerTest extends TestCase
@@ -25,12 +26,6 @@ class IndexSettingsHandlerTest extends TestCase
     protected ?IndexOptionsInterface $indexOptions = null;
 
     private ?IndexSettingsHandler $handler = null;
-
-    /**
-     * State machine to track pending operations per store ID
-     * Format: [storeId => ['totalCalls' => int, 'waitCalled' => bool, 'batchesCompleted' => int]]
-     */
-    private array $operationState = [];
 
     protected function setUp(): void
     {
@@ -392,5 +387,99 @@ class IndexSettingsHandlerTest extends TestCase
         $this->indexOptions->method('getStoreId')->willReturn(1);
 
         $this->assertFalse($handler->setSettings($this->indexOptions, $proposed));
+    }
+
+    #[DataProvider('settingsProvider')]
+    public function testBothForwardAndNoForwardChanged(
+        array $proposed,
+        array $remote,
+        bool $forwardToReplicas,
+        int $expectedNumberOfTasksCollected
+    ) : void
+    {
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->method('getSettings')->willReturn($remote);
+
+        $preserver = $this->createMock(IndexSettingsPreserver::class);
+        $preserver->method('preserve')->willReturn($proposed);
+
+        $comparator = new IndexSettingsComparator($connector);
+
+        $config = $this->createMock(ConfigHelper::class);
+        $config->method('shouldForwardPrimaryIndexSettingsToReplicas')->willReturn($forwardToReplicas);
+
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $preserver, $this->logger);
+        $this->indexOptions->method('getStoreId')->willReturn(1);
+
+        $connector->expects($this->exactly($expectedNumberOfTasksCollected))->method('setSettings');
+        $connector->expects($this->exactly($expectedNumberOfTasksCollected))->method('collectTaskIdToWaitFor');
+
+        $handler->setSettings($this->indexOptions, $proposed);
+    }
+
+    public static function settingsProvider(): array
+    {
+        return [
+            [ // Both forward and noforward have changes => 2 collected tasks expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['asc(price)'],
+                    'attributesToRetrieve' => ['title']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 2
+            ],
+            [ // Only forward has changes  => 1 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['title']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 1
+            ],
+            [ // Only noforward has changes => 1 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['asc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 1
+            ],
+            [ // forward and noforward are identical => 0 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 0
+            ],
+            [ // Both forward and noforward have changes but forward to replicas is set to false => 1 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['asc(price)'],
+                    'attributesToRetrieve' => ['title']
+                ],
+                'forwardToReplicas' => false,
+                'expectedNumberOfTasksCollected' => 1
+            ],
+        ];
     }
 }

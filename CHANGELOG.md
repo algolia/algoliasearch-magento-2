@@ -10,6 +10,7 @@
 - Fixed suggestions indexing issue where the index could be completely emptied during the process - thank you @its-leoeff511
 - Prevented semanticSearch echo back to Algolia when extra settings are enabled 
 - Upgraded guzzlehttp/guzzle to ^7.15.2 to remediate [CVE-2026-69246](https://github.com/advisories/GHSA-v5mv-p594-2x33)
+- Updated `IndexSettingsComparator` to include a protected method `reconcileKeys` to ensure empty attributes such as `customRanking` or `unretrievableAttributes` are handled properly.
 
 ## 3.18.1
 

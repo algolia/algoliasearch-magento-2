@@ -137,7 +137,6 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -162,7 +161,6 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -187,7 +185,6 @@ class IndicesConfigurator
 
         if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
             $this->logSettingsPush($indexOptions, $settings);
-            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         $this->logger->stop($logEventName, true);
@@ -219,7 +216,6 @@ class IndicesConfigurator
 
             if ($this->indexSettingsHandler->setSettings($indexOptions, $settings)) {
                 $this->logSettingsPush($indexOptions, $settings);
-                $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
             }
         }
 
@@ -275,7 +271,6 @@ class IndicesConfigurator
 
                     if ($this->indexSettingsHandler->setSettings($indexOptions, $extraSettings)) {
                         $this->logSettingsPush($indexOptions, $extraSettings);
-                        $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
                     }
 
                     if ($section === 'products' && $saveToTmpIndicesToo) {

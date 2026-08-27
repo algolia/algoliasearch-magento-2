@@ -102,7 +102,7 @@ class ProductHelperTest extends TestCase
         );
     }
 
-    public function testWaitsForLastTaskWhenSettingsChanged(): void
+    public function testDoesNotCollectTaskIdWhenSettingsChanged(): void
     {
         $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
         $indexSettingsHandler->method('setSettings')->willReturn(true);

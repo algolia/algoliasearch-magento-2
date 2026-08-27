@@ -14,28 +14,18 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class MerchandisingTest extends TestCase
 {
-    /**
-     * Merchandising::__construct() calls Context::getStoreManager() and then
-     * parent::__construct() (Magento\Backend\Block\Template), which reaches into the
-     * ObjectManager — unavailable in a unit test. The constructor must stay disabled; a partial
-     * mock overriding getRequest() (also ObjectManager-backed via the real request resolution)
-     * is the only way to exercise this block, with the remaining collaborators injected directly
-     * via reflection.
-     */
     protected function createObjectToTest(
         ?CurrentCategory $currentCategory = null,
         ?StoreManagerInterface $storeManager = null,
         ?RequestInterface $request = null,
     ): Merchandising {
-        $block = $this->createPartialMock(Merchandising::class, ['getRequest']);
-        // getRequest() is overridden purely to dodge the ObjectManager call above. Only
-        // getCurrentStore() actually calls it (isRootCategory()/canDisplayProducts() never do), so
-        // the real call count is genuinely tied to whether the test supplies a $request —
-        // expects($this->any()) does NOT satisfy PHPUnit's "no expectations set" check (verified:
-        // it still reports a notice), so this has to be a real, accurate count.
-        $block->expects($request !== null ? $this->once() : $this->never())
-            ->method('getRequest')
-            ->willReturn($request ?? $this->createStub(RequestInterface::class));
+        $block = (new \ReflectionClass(Merchandising::class))->newInstanceWithoutConstructor();
+
+        $this->setPrivateProperty(
+            $block,
+            '_request',
+            $request ?? $this->createStub(RequestInterface::class)
+        );
 
         $this->setPrivateProperty(
             $block,

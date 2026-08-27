@@ -24,16 +24,11 @@ class StockItemObserverTest extends TestCase
 
     public function testBeforeSaveReindexesProductWhenIndexerNotScheduled(): void
     {
-        // getProductId() is a magic getter (via DataObject::__call), so __call is explicitly
-        // mocked to control it rather than mocking an undeclared method.
-        $stockItem = $this->getMockBuilder(AbstractModel::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
-        // getProductId() is called exactly once when the indexer isn't scheduled.
-        $stockItem->expects($this->once())
-            ->method('__call')
-            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 42 : null);
+        // getProductId() is a magic getter (via DataObject::__call), so __call is stubbed
+        // to control it rather than mocking an undeclared method. It's a feeder of canned
+        // data (indirect input), not behavior under test, so it stays a plain stub.
+        $stockItem = $this->createStub(AbstractModel::class);
+        $stockItem->method('__call')->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 42 : null);
 
         $indexer = $this->createMock(Indexer::class);
         $indexer->method('isScheduled')->willReturn(false);
@@ -52,12 +47,8 @@ class StockItemObserverTest extends TestCase
 
     public function testBeforeSaveSkipsReindexWhenIndexerIsScheduled(): void
     {
-        $stockItem = $this->getMockBuilder(AbstractModel::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
-        // Indexer is scheduled → getProductId() is never reached.
-        $stockItem->expects($this->never())->method('__call');
+        // Indexer is scheduled → getProductId() is never reached, so __call needs no configuration.
+        $stockItem = $this->createStub(AbstractModel::class);
 
         $indexer = $this->createMock(Indexer::class);
         $indexer->method('isScheduled')->willReturn(true);

@@ -110,7 +110,7 @@ class ProductHelperTest extends TestCase
         $indexOptions = $this->createIndexOptions('prod_index');
 
         $algoliaConnector = $this->createMock(AlgoliaConnector::class);
-        $algoliaConnector->expects($this->atLeastOnce())->method('collectTaskIdToWaitFor')->with($indexOptions);
+        $algoliaConnector->expects($this->never())->method('collectTaskIdToWaitFor')->with($indexOptions);
 
         $productHelper = $this->createObjectToTest(
             indexSettingsHandler: $indexSettingsHandler,

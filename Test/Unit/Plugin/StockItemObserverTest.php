@@ -11,96 +11,99 @@ use Magento\CatalogInventory\Model\ResourceModel\Stock\Item as StockItemResource
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Model\AbstractModel;
 use Magento\Indexer\Model\Indexer;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class StockItemObserverTest extends TestCase
 {
-    protected null|(Indexer&MockObject) $indexer = null;
-    protected null|(IndexerRegistry&MockObject) $indexerRegistry = null;
-    protected null|(StockItemResource&MockObject) $stockItemResource = null;
-    protected ?StockItemObserver $plugin = null;
-
-    protected function setUp(): void
+    protected function createObjectToTest(?Indexer $indexer = null): StockItemObserver
     {
-        $this->indexer = $this->createMock(Indexer::class);
-        $this->indexerRegistry = $this->createMock(IndexerRegistry::class);
-        $this->indexerRegistry->method('get')->with('algolia_products')->willReturn($this->indexer);
-        $this->stockItemResource = $this->createMock(StockItemResource::class);
+        $indexerRegistry = $this->createMock(IndexerRegistry::class);
+        $indexerRegistry->method('get')->with('algolia_products')->willReturn($indexer ?? $this->createStub(Indexer::class));
 
-        $this->plugin = new StockItemObserver($this->indexerRegistry);
+        return new StockItemObserver($indexerRegistry);
     }
 
     public function testBeforeSaveReindexesProductWhenIndexerNotScheduled(): void
     {
-        $stockItem = $this->getMockBuilder(AbstractModel::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
-        $stockItem->method('__call')
-            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 42 : null);
+        // getProductId() is a magic getter (via DataObject::__call), so __call is stubbed
+        // to control it rather than mocking an undeclared method. It's a feeder of canned
+        // data (indirect input), not behavior under test, so it stays a plain stub.
+        $stockItem = $this->createStub(AbstractModel::class);
+        $stockItem->method('__call')->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 42 : null);
 
-        $this->stockItemResource->expects($this->once())
+        $indexer = $this->createMock(Indexer::class);
+        $indexer->method('isScheduled')->willReturn(false);
+        $indexer->expects($this->once())->method('reindexRow')->with(42);
+
+        $stockItemResource = $this->createMock(StockItemResource::class);
+        $stockItemResource->expects($this->once())
             ->method('addCommitCallback')
             ->with($this->callback('is_callable'))
             ->willReturnCallback(fn(callable $cb) => $cb());
 
-        $this->indexer->method('isScheduled')->willReturn(false);
-        $this->indexer->expects($this->once())->method('reindexRow')->with(42);
+        $plugin = $this->createObjectToTest($indexer);
 
-        $this->plugin->beforeSave($this->stockItemResource, $stockItem);
+        $plugin->beforeSave($stockItemResource, $stockItem);
     }
 
     public function testBeforeSaveSkipsReindexWhenIndexerIsScheduled(): void
     {
-        $stockItem = $this->getMockBuilder(AbstractModel::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
+        // Indexer is scheduled → getProductId() is never reached, so __call needs no configuration.
+        $stockItem = $this->createStub(AbstractModel::class);
 
-        $this->stockItemResource->expects($this->once())
+        $indexer = $this->createMock(Indexer::class);
+        $indexer->method('isScheduled')->willReturn(true);
+        $indexer->expects($this->never())->method('reindexRow');
+
+        $stockItemResource = $this->createMock(StockItemResource::class);
+        $stockItemResource->expects($this->once())
             ->method('addCommitCallback')
             ->willReturnCallback(fn(callable $cb) => $cb());
 
-        $this->indexer->method('isScheduled')->willReturn(true);
-        $this->indexer->expects($this->never())->method('reindexRow');
+        $plugin = $this->createObjectToTest($indexer);
 
-        $this->plugin->beforeSave($this->stockItemResource, $stockItem);
+        $plugin->beforeSave($stockItemResource, $stockItem);
     }
 
     public function testAfterDeleteReindexesProductWhenIndexerNotScheduled(): void
     {
-        $stockItem = $this->createMock(StockItemInterface::class);
+        $stockItem = $this->createStub(StockItemInterface::class);
         $stockItem->method('getProductId')->willReturn(99);
 
-        $result = $this->createMock(StockItemResource::class);
+        $result = $this->createStub(StockItemResource::class);
 
-        $this->stockItemResource->expects($this->once())
+        $indexer = $this->createMock(Indexer::class);
+        $indexer->method('isScheduled')->willReturn(false);
+        $indexer->expects($this->once())->method('reindexRow')->with(99);
+
+        $stockItemResource = $this->createMock(StockItemResource::class);
+        $stockItemResource->expects($this->once())
             ->method('addCommitCallback')
             ->with($this->callback('is_callable'))
             ->willReturnCallback(fn(callable $cb) => $cb());
 
-        $this->indexer->method('isScheduled')->willReturn(false);
-        $this->indexer->expects($this->once())->method('reindexRow')->with(99);
+        $plugin = $this->createObjectToTest($indexer);
 
-        $returnedResult = $this->plugin->afterDelete($this->stockItemResource, $result, $stockItem);
+        $returnedResult = $plugin->afterDelete($stockItemResource, $result, $stockItem);
 
         $this->assertSame($result, $returnedResult);
     }
 
     public function testAfterDeleteSkipsReindexWhenIndexerIsScheduled(): void
     {
-        $stockItem = $this->createMock(StockItemInterface::class);
-        $result = $this->createMock(StockItemResource::class);
+        $stockItem = $this->createStub(StockItemInterface::class);
+        $result = $this->createStub(StockItemResource::class);
 
-        $this->stockItemResource->expects($this->once())
+        $indexer = $this->createMock(Indexer::class);
+        $indexer->method('isScheduled')->willReturn(true);
+        $indexer->expects($this->never())->method('reindexRow');
+
+        $stockItemResource = $this->createMock(StockItemResource::class);
+        $stockItemResource->expects($this->once())
             ->method('addCommitCallback')
             ->willReturnCallback(fn(callable $cb) => $cb());
 
-        $this->indexer->method('isScheduled')->willReturn(true);
-        $this->indexer->expects($this->never())->method('reindexRow');
+        $plugin = $this->createObjectToTest($indexer);
 
-        $this->plugin->afterDelete($this->stockItemResource, $result, $stockItem);
+        $plugin->afterDelete($stockItemResource, $result, $stockItem);
     }
 }

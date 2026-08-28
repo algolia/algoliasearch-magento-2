@@ -9,54 +9,58 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Registry\CurrentProduct;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Magento\Framework\View\Element\Template\Context;
 
-#[AllowMockObjectsWithoutExpectations]
 class RecommendProductViewTest extends TestCase
 {
-    protected null|(RecommendProductView&MockObject) $block = null;
-    protected null|(CurrentProduct&MockObject) $currentProduct = null;
-    protected null|(ConfigHelper&MockObject) $configHelper = null;
+    protected function createObjectToTest(
+        ?CurrentProduct $currentProduct = null,
+        ?ConfigHelper $configHelper = null,
+    ): RecommendProductView {
+        $context = $this->createStub(Context::class);
 
-    protected function setUp(): void
-    {
-        $this->currentProduct = $this->createMock(CurrentProduct::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-
-        $this->block = $this->getMockBuilder(RecommendProductView::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $this->setPrivateProperty($this->block, 'currentProduct', $this->currentProduct);
-        $this->setPrivateProperty($this->block, 'configHelper', $this->configHelper);
+        return new RecommendProductView(
+            $context,
+            $currentProduct ?? $this->createStub(CurrentProduct::class),
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+        );
     }
 
     public function testGetProductReturnsProductFromRegistry(): void
     {
-        $product = $this->createMock(Product::class);
-        $this->currentProduct->method('get')->willReturn($product);
+        $product = $this->createStub(Product::class);
 
-        $this->assertSame($product, $this->block->getProduct());
+        $currentProduct = $this->createStub(CurrentProduct::class);
+        $currentProduct->method('get')->willReturn($product);
+
+        $block = $this->createObjectToTest(currentProduct: $currentProduct);
+
+        $this->assertSame($product, $block->getProduct());
     }
 
     public function testGetProductCachesRegistryLookup(): void
     {
-        $product = $this->createMock(Product::class);
-        $this->currentProduct->expects($this->once())->method('get')->willReturn($product);
+        $product = $this->createStub(Product::class);
 
-        $this->block->getProduct();
-        $this->block->getProduct();
+        $currentProduct = $this->createMock(CurrentProduct::class);
+        $currentProduct->expects($this->once())->method('get')->willReturn($product);
+
+        $block = $this->createObjectToTest(currentProduct: $currentProduct);
+
+        $block->getProduct();
+        $block->getProduct();
     }
 
     public function testGetAlgoliaRecommendConfigurationReturnsExpectedKeys(): void
     {
-        $this->configHelper->method('isRecommendFrequentlyBroughtTogetherEnabled')->willReturn(true);
-        $this->configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(false);
-        $this->configHelper->method('isTrendItemsEnabledInPDP')->willReturn(true);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isRecommendFrequentlyBroughtTogetherEnabled')->willReturn(true);
+        $configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(false);
+        $configHelper->method('isTrendItemsEnabledInPDP')->willReturn(true);
 
-        $config = $this->block->getAlgoliaRecommendConfiguration();
+        $block = $this->createObjectToTest(configHelper: $configHelper);
+
+        $config = $block->getAlgoliaRecommendConfiguration();
 
         $this->assertTrue($config['enabledFBT']);
         $this->assertFalse($config['enabledRelated']);

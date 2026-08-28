@@ -10,46 +10,67 @@ use Algolia\AlgoliaSearch\Service\Insights\EventProcessor;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
 use Magento\Directory\Model\Currency;
+use Magento\Framework\Locale\FormatInterface as LocaleFormatInterface;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Quote\Model\Quote\Item;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item as OrderItem;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Tax\Model\Config as TaxConfig;
-use Magento\Framework\Locale\FormatInterface as LocaleFormatInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class EventProcessorTest extends TestCase
 {
-    protected ?TaxConfig $taxConfig = null;
-    protected ?StoreManagerInterface $storeManager = null;
-    protected ?Store $store = null;
-    protected ?LocaleFormatInterface $localeFormat = null;
-    protected ?Currency $currency = null;
-    protected ?InsightsClient $insightsClient = null;
-    protected ?EventProcessor $eventProcessor = null;
+    protected function createObjectToTest(
+        ?TaxConfig $taxConfig = null,
+        ?StoreManagerInterface $storeManager = null,
+        ?LocaleFormatInterface $localeFormat = null,
+    ): EventProcessor {
+        return new EventProcessor(
+            $taxConfig ?? $this->createStub(TaxConfig::class),
+            $storeManager ?? $this->createStub(StoreManagerInterface::class),
+            $localeFormat ?? $this->createStub(LocaleFormatInterface::class),
+        );
+    }
 
-    public function setUp(): void
-    {
-        $this->taxConfig =  $this->createMock(TaxConfig::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->store = $this->createMock(Store::class);
-        $this->localeFormat = $this->createMock(LocaleFormatInterface::class);
-        $this->currency = $this->createMock(Currency::class);
-        $this->insightsClient = $this->createMock(InsightsClient::class);
-        $this->eventProcessor = new EventProcessor($this->taxConfig, $this->storeManager, $this->localeFormat);
+    private function createFullyConfiguredEventProcessor(
+        ?InsightsClient $insightsClient = null,
+        ?TaxConfig $taxConfig = null,
+        int $decimalPrecision = PriceCurrencyInterface::DEFAULT_PRECISION,
+    ): EventProcessor {
+        $currency = $this->createStub(Currency::class);
+        $currency->method('getCode')->willReturn('USD');
+
+        $store = $this->createStub(Store::class);
+        $store->method('getCurrentCurrency')->willReturn($currency);
+        $store->method('getId')->willReturn(1);
+
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($store);
+
+        $localeFormat = $this->createStub(LocaleFormatInterface::class);
+        $localeFormat->method('getPriceFormat')->willReturn(['requiredPrecision' => $decimalPrecision]);
+
+        $eventProcessor = $this->createObjectToTest($taxConfig, $storeManager, $localeFormat);
+
+        $eventProcessor
+            ->setInsightsClient($insightsClient ?? $this->createStub(InsightsClient::class))
+            ->setAnonymousUserToken('user-token');
+
+        return $eventProcessor;
     }
 
     // Test dependency validation and setup methods
 
     public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenMissingDependencies(): void
     {
+        $eventProcessor = $this->createObjectToTest();
+
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Events model is missing necessary dependencies to function.');
 
-        $this->eventProcessor->convertedObjectIDsAfterSearch(
+        $eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
             'test-index',
             ['1', '2', '3'],
@@ -59,12 +80,13 @@ class EventProcessorTest extends TestCase
 
     public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenUserTokenMissing(): void
     {
-        $this->eventProcessor->setInsightsClient($this->insightsClient);
+        $eventProcessor = $this->createObjectToTest();
+        $eventProcessor->setInsightsClient($this->createStub(InsightsClient::class));
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Events model is missing necessary dependencies to function.');
 
-        $this->eventProcessor->convertedObjectIDsAfterSearch(
+        $eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
             'test-index',
             ['1', '2', '3'],
@@ -74,13 +96,13 @@ class EventProcessorTest extends TestCase
 
     public function testConvertedObjectIDsAfterSearchThrowsExceptionWhenInsightsClientMissing(): void
     {
-        $this->eventProcessor
-            ->setAnonymousUserToken('user-token');
+        $eventProcessor = $this->createObjectToTest();
+        $eventProcessor->setAnonymousUserToken('user-token');
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Events model is missing necessary dependencies to function.');
 
-        $this->eventProcessor->convertedObjectIDsAfterSearch(
+        $eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
             'test-index',
             ['1', '2', '3'],
@@ -92,9 +114,8 @@ class EventProcessorTest extends TestCase
 
     public function testConvertedObjectIDsAfterSearchWithAllDependencies(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -116,7 +137,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $result = $this->eventProcessor->convertedObjectIDsAfterSearch(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
             'test-index',
             ['1', '2', '3'],
@@ -126,10 +149,8 @@ class EventProcessorTest extends TestCase
 
     public function testConvertedObjectIDsAfterSearchWithAuthenticatedToken(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-        $this->eventProcessor->setAuthenticatedUserToken('auth-token-123');
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -143,7 +164,10 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertedObjectIDsAfterSearch(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+        $eventProcessor->setAuthenticatedUserToken('auth-token-123');
+
+        $eventProcessor->convertedObjectIDsAfterSearch(
             'test-event',
             'test-index',
             ['1'],
@@ -155,9 +179,8 @@ class EventProcessorTest extends TestCase
 
     public function testConvertedObjectIDs(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -175,7 +198,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertedObjectIDs(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertedObjectIDs(
             'test-event',
             'test-index',
             ['1', '2']
@@ -186,12 +211,11 @@ class EventProcessorTest extends TestCase
 
     public function testConvertAddToCart(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
+        $product = $this->createProductStub('123', 100.0);
+        $item = $this->createItemStub($product, 85.0, 2);
 
-        $product = $this->createMockProduct('123', 100.0);
-        $item = $this->createMockItem($product, 85.0, 2);
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -210,7 +234,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertAddToCart(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertAddToCart(
             'add-to-cart-event',
             'products-index',
             $item,
@@ -220,12 +246,11 @@ class EventProcessorTest extends TestCase
 
     public function testConvertAddToCartWithoutQueryID(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
+        $product = $this->createProductStub('123', 100.0);
+        $item = $this->createItemStub($product, 80.0, 1);
 
-        $product = $this->createMockProduct('123', 100.0);
-        $item = $this->createMockItem($product, 80.0, 1);
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -239,7 +264,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertAddToCart(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertAddToCart(
             'add-to-cart-event',
             'products-index',
             $item
@@ -248,12 +275,11 @@ class EventProcessorTest extends TestCase
 
     public function testConvertAddToCartFloatingPointPrecision(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
+        $product = $this->createProductStub('123', 23.99);
+        $item = $this->createItemStub($product, 23.93, 1);
 
-        $product = $this->createMockProduct('123', 23.99);
-        $item = $this->createMockItem($product, 23.93, 1);
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -267,7 +293,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertAddToCart(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertAddToCart(
             'add-to-cart-event',
             'products-index',
             $item
@@ -276,13 +304,11 @@ class EventProcessorTest extends TestCase
 
     public function testConvertAddToCartWithStandardDecimalPrecision(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-        $this->setupCurrencyPrecision(2);
+        $product = $this->createProductStub('123', 23.992);
+        $item = $this->createItemStub($product, 23.931, 1);
 
-        $product = $this->createMockProduct('123', 23.992);
-        $item = $this->createMockItem($product, 23.931, 1);
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -296,7 +322,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertAddToCart(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient, decimalPrecision: 2);
+
+        $eventProcessor->convertAddToCart(
             'add-to-cart-event',
             'products-index',
             $item
@@ -305,13 +333,11 @@ class EventProcessorTest extends TestCase
 
     public function testConvertAddToCartWith3PointDecimalPrecision(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-        $this->setupCurrencyPrecision(3);
+        $product = $this->createProductStub('123', 23.992);
+        $item = $this->createItemStub($product, 23.931, 1);
 
-        $product = $this->createMockProduct('123', 23.992);
-        $item = $this->createMockItem($product, 23.931, 1);
-
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -325,7 +351,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertAddToCart(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient, decimalPrecision: 3);
+
+        $eventProcessor->convertAddToCart(
             'add-to-cart-event',
             'products-index',
             $item
@@ -335,14 +363,13 @@ class EventProcessorTest extends TestCase
     // Test convertPurchaseForItems
     public function testConvertPurchaseForItems(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
         $items = $this->createOrderItems([
             ['id' => '1', 'price' => 50.0, 'originalPrice' => 60.0, 'cartDiscountAmount' => 10.0, 'qtyOrdered' => 2],
             ['id' => '2', 'price' => 30.0, 'originalPrice' => 35.0, 'cartDiscountAmount' => 5.0, 'qtyOrdered' => 1],
         ]);
 
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -366,7 +393,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertPurchaseForItems(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertPurchaseForItems(
             'purchase-event',
             'products-index',
             $items,
@@ -376,8 +405,6 @@ class EventProcessorTest extends TestCase
 
     public function testConvertPurchaseForItemsEnforcesObjectLimit(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
         // Create more items than the limit allows
         $itemsData = [];
         for ($i = 1; $i <= 25; $i++) {
@@ -385,13 +412,14 @@ class EventProcessorTest extends TestCase
         }
         $items = $this->createOrderItems($itemsData);
 
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        // Should be limited to MAX_OBJECT_IDS_PER_EVENT (20)
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
                 $this->callback(function ($payload) {
                     $event = $payload['events'][0];
-                    // Should be limited to MAX_OBJECT_IDS_PER_EVENT (20)
                     $this->assertCount(EventProcessorInterface::MAX_OBJECT_IDS_PER_EVENT, $event['objectIDs']);
                     $this->assertCount(EventProcessorInterface::MAX_OBJECT_IDS_PER_EVENT, $event['objectData']);
                     // But value should include all 25 items
@@ -403,7 +431,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertPurchaseForItems(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertPurchaseForItems(
             'purchase-event',
             'products-index',
             $items
@@ -412,15 +442,14 @@ class EventProcessorTest extends TestCase
 
     public function testConvertPurchaseForItemsFloatingPointPrecision(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
         // These additions should trigger floating point precision errors if rounding is not applied
         $items = $this->createOrderItems([
             ['id' => '1', 'price' => 10.10, 'originalPrice' => 15.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
             ['id' => '2', 'price' => 33.20, 'originalPrice' => 35.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
         ]);
 
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -438,7 +467,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertPurchaseForItems(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertPurchaseForItems(
             'purchase-event',
             'products-index',
             $items,
@@ -452,14 +483,13 @@ class EventProcessorTest extends TestCase
      */
     public function testConvertPurchaseForItemsFloatingPointPrecisionWithCartDiscount(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
         // These additions should trigger floating point precision errors if rounding is not applied
         $items = $this->createOrderItems([
             ['id' => '1', 'price' => 10.00, 'originalPrice' => 10.00, 'cartDiscountAmount' => .30, 'qtyOrdered' => 3],
         ]);
 
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -476,7 +506,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertPurchaseForItems(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertPurchaseForItems(
             'purchase-event',
             'products-index',
             $items,
@@ -488,9 +520,7 @@ class EventProcessorTest extends TestCase
 
     public function testConvertPurchaseGroupsByQueryID(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
-        $order = $this->createMock(Order::class);
+        $order = $this->createStub(Order::class);
 
         $items = [
             $this->createOrderItemWithQueryId('1', 'query-1', 50.0, 1),
@@ -501,7 +531,8 @@ class EventProcessorTest extends TestCase
 
         $order->method('getAllVisibleItems')->willReturn($items);
 
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -519,7 +550,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $result = $this->eventProcessor->convertPurchase(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $result = $eventProcessor->convertPurchase(
             'purchase-event',
             'products-index',
             $order
@@ -530,9 +563,7 @@ class EventProcessorTest extends TestCase
 
     public function testConvertPurchaseHandlesLargeOrders(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
-        $order = $this->createMock(Order::class);
+        $order = $this->createStub(Order::class);
 
         // Create more events than MAX_EVENTS_PER_REQUEST allows
         $items = [];
@@ -542,13 +573,16 @@ class EventProcessorTest extends TestCase
 
         $order->method('getAllVisibleItems')->willReturn($items);
 
+        $insightsClient = $this->createMock(InsightsClient::class);
         // Should be called twice due to chunking (1000 + 500)
-        $this->insightsClient
+        $insightsClient
             ->expects($this->exactly(2))
             ->method('pushEvents')
             ->willReturn(['status' => 'ok']);
 
-        $result = $this->eventProcessor->convertPurchase(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $result = $eventProcessor->convertPurchase(
             'purchase-event',
             'products-index',
             $order
@@ -562,8 +596,6 @@ class EventProcessorTest extends TestCase
      */
     public function testConvertPurchaseUsesStringIds(): void
     {
-        $this->setupFullyConfiguredEventProcessor();
-
         // These additions should trigger floating point precision errors if rounding is not applied
         $items = $this->createOrderItems([
             ['id' => 10, 'price' => 10.00, 'originalPrice' => 10.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
@@ -571,7 +603,8 @@ class EventProcessorTest extends TestCase
             ['id' => 30.0, 'price' => 30.00, 'originalPrice' => 30.00, 'cartDiscountAmount' => 0, 'qtyOrdered' => 1],
         ]);
 
-        $this->insightsClient
+        $insightsClient = $this->createMock(InsightsClient::class);
+        $insightsClient
             ->expects($this->once())
             ->method('pushEvents')
             ->with(
@@ -588,7 +621,9 @@ class EventProcessorTest extends TestCase
             )
             ->willReturn(['status' => 'ok']);
 
-        $this->eventProcessor->convertPurchaseForItems(
+        $eventProcessor = $this->createFullyConfiguredEventProcessor($insightsClient);
+
+        $eventProcessor->convertPurchaseForItems(
             'purchase-event',
             'products-index',
             $items,
@@ -596,34 +631,32 @@ class EventProcessorTest extends TestCase
         );
     }
 
-
     // Test protected methods
 
     #[DataProvider('orderItemsProvider')]
     public function testObjectDataForPurchase($priceIncludesTax, $orderItemsData, $expectedResult, $expectedTotalRevenue): void
     {
-        $this->setupFullyConfiguredEventProcessor();
+        $taxConfig = $this->createStub(TaxConfig::class);
+        $taxConfig->method('priceIncludesTax')->willReturn($priceIncludesTax);
 
-        $this->taxConfig->method('priceIncludesTax')->willReturn($priceIncludesTax);
+        $eventProcessor = $this->createFullyConfiguredEventProcessor(taxConfig: $taxConfig);
 
         $orderItems = [];
 
         foreach ($orderItemsData as $orderItemData) {
-            $orderItem = $this->getMockBuilder(OrderItem::class)
-                ->disableOriginalConstructor()
-                ->getMock();
+            $orderItem = $this->createStub(OrderItem::class);
 
-            foreach ($orderItemData as $method => $value){
+            foreach ($orderItemData as $method => $value) {
                 $orderItem->method($method)->willReturn($value);
             }
 
             $orderItems[] = $orderItem;
         }
 
-        $object = $this->invokeMethod($this->eventProcessor, 'getObjectDataForPurchase', [$orderItems]);
+        $object = $this->invokeMethod($eventProcessor, 'getObjectDataForPurchase', [$orderItems]);
         $this->assertEquals($expectedResult, $object);
 
-        $totalRevenue = $this->invokeMethod($this->eventProcessor, 'getTotalRevenueForEvent', [$object]);
+        $totalRevenue = $this->invokeMethod($eventProcessor, 'getTotalRevenueForEvent', [$object]);
         $this->assertEquals($expectedTotalRevenue, $totalRevenue);
     }
 
@@ -749,38 +782,18 @@ class EventProcessorTest extends TestCase
 
     // Helper methods
 
-    protected function setupFullyConfiguredEventProcessor(): void
+    protected function createProductStub(string $id, float $price): Product
     {
-        $this->currency->method('getCode')->willReturn('USD');
-        $this->store->method('getCurrentCurrency')->willReturn($this->currency);
-        $this->store->method('getId')->willReturn(1);
-        $this->storeManager->method('getStore')->willReturn($this->store);
-
-        $this->eventProcessor
-            ->setInsightsClient($this->insightsClient)
-            ->setAnonymousUserToken('user-token');
-    }
-
-    protected function setupCurrencyPrecision(int $decimalPrecision = \Magento\Framework\Pricing\PriceCurrencyInterface::DEFAULT_PRECISION): void
-    {
-        $this->localeFormat->method('getPriceFormat')->willReturn([
-            'requiredPrecision' => $decimalPrecision,
-        ]);
-        $this->invokeMethod($this->eventProcessor, 'initDecimalPrecision');
-    }
-
-    protected function createMockProduct(string $id, float $price): Product
-    {
-        $product = $this->createMock(Product::class);
+        $product = $this->createStub(Product::class);
         $product->method('getId')->willReturn($id);
         $product->method('getPrice')->willReturn($price);
 
         return $product;
     }
 
-    protected function createMockItem(Product $product, float $salePrice, int $qtyToAdd): Item
+    protected function createItemStub(Product $product, float $salePrice, int $qtyToAdd): Item
     {
-        $item = $this->createMock(Item::class);
+        $item = $this->createStub(Item::class);
         $item->method('getProduct')->willReturn($product);
         $item->method('getData')
             ->willReturnMap([
@@ -796,10 +809,10 @@ class EventProcessorTest extends TestCase
     {
         $items = [];
         foreach ($itemsData as $data) {
-            $product = $this->createMock(Product::class);
+            $product = $this->createStub(Product::class);
             $product->method('getId')->willReturn($data['id']);
 
-            $item = $this->createMock(OrderItem::class);
+            $item = $this->createStub(OrderItem::class);
             $item->method('getProduct')->willReturn($product);
             $item->method('getPrice')->willReturn($data['price']);
             $item->method('getOriginalPrice')->willReturn($data['originalPrice']);
@@ -814,7 +827,7 @@ class EventProcessorTest extends TestCase
 
     protected function createOrderItemWithQueryId(string $id, ?string $queryId, float $price, int $qty): OrderItem
     {
-        $product = $this->createMock(Product::class);
+        $product = $this->createStub(Product::class);
         $product->method('getId')->willReturn($id);
 
         $item = $this->createMock(OrderItem::class);

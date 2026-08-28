@@ -12,56 +12,40 @@ use Magento\Catalog\Model\Product;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Checkout\Model\Cart;
 use Magento\Checkout\Model\Session;
-use Magento\Framework\DataObject;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class AddToCartRedirectForInsightsTest extends TestCase
 {
-    protected null|(StoreManagerInterface&MockObject) $storeManager = null;
-    protected null|(ProductRepositoryInterface&MockObject) $productRepository = null;
-    protected null|(Session&MockObject) $checkoutSession = null;
-    protected null|(StockRegistryInterface&MockObject) $stockRegistry = null;
-    protected null|(ManagerInterface&MockObject) $eventManager = null;
-    protected null|(ConfigHelper&MockObject) $configHelper = null;
-    protected null|(Cart&MockObject) $cart = null;
-    protected ?AddToCartRedirectForInsights $plugin = null;
-
-    protected function setUp(): void
+    protected function createObjectToTest(?ConfigHelper $configHelper = null): AddToCartRedirectForInsights
     {
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->productRepository = $this->createMock(ProductRepositoryInterface::class);
-        $this->checkoutSession = $this->createMock(Session::class);
-        $this->stockRegistry = $this->createMock(StockRegistryInterface::class);
-        $this->eventManager = $this->createMock(ManagerInterface::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->cart = $this->createMock(Cart::class);
-
-        $store = $this->createMock(StoreInterface::class);
+        $store = $this->createStub(StoreInterface::class);
         $store->method('getId')->willReturn(1);
-        $this->storeManager->method('getStore')->willReturn($store);
 
-        $this->plugin = new AddToCartRedirectForInsights(
-            $this->storeManager,
-            $this->productRepository,
-            $this->checkoutSession,
-            $this->stockRegistry,
-            $this->eventManager,
-            $this->configHelper
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($store);
+
+        return new AddToCartRedirectForInsights(
+            $storeManager,
+            $this->createStub(ProductRepositoryInterface::class),
+            $this->createStub(Session::class),
+            $this->createStub(StockRegistryInterface::class),
+            $this->createStub(ManagerInterface::class),
+            $configHelper ?? $this->createStub(ConfigHelper::class),
         );
     }
 
     public function testBeforeAddProductReturnsNullWhenInsightsDisabled(): void
     {
-        $this->configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(false);
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(false);
 
-        $result = $this->plugin->beforeAddProduct(
-            $this->cart,
-            $this->createMock(Product::class),
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $result = $plugin->beforeAddProduct(
+            $this->createStub(Cart::class),
+            $this->createStub(Product::class),
             ['referer' => 'instantsearch', 'queryID' => 'abc', 'indexName' => 'idx']
         );
 
@@ -70,10 +54,13 @@ class AddToCartRedirectForInsightsTest extends TestCase
 
     public function testBeforeAddProductReturnsNullWhenRequestInfoMissingInsightsKeys(): void
     {
-        $this->configHelper->method('isClickConversionAnalyticsEnabled')->willReturn(true);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->willReturn(true);
 
-        $result = $this->plugin->beforeAddProduct(
-            $this->cart,
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $result = $plugin->beforeAddProduct(
+            $this->createStub(Cart::class),
             1,
             ['referer' => 'instantsearch'] // missing queryID and indexName
         );
@@ -83,10 +70,13 @@ class AddToCartRedirectForInsightsTest extends TestCase
 
     public function testBeforeAddProductReturnsNullWhenRefererIsNotInstantSearch(): void
     {
-        $this->configHelper->method('isClickConversionAnalyticsEnabled')->willReturn(true);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->willReturn(true);
 
-        $result = $this->plugin->beforeAddProduct(
-            $this->cart,
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $result = $plugin->beforeAddProduct(
+            $this->createStub(Cart::class),
             1,
             ['referer' => 'catalog', 'queryID' => 'abc123', 'indexName' => 'products']
         );

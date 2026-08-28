@@ -7,36 +7,43 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Block\Navigation\Renderer;
 use Algolia\AlgoliaSearch\Block\Navigation\Renderer\SliderRenderer;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Layer\Filter\FilterInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Magento\Framework\Json\EncoderInterface;
+use Magento\Framework\Locale\FormatInterface;
+use Magento\Framework\View\Element\Template\Context;
 
-#[AllowMockObjectsWithoutExpectations]
 class SliderRendererTest extends TestCase
 {
-    protected null|(SliderRenderer&MockObject) $block = null;
+    protected function createObjectToTest(
+        ?EncoderInterface $jsonEncoder = null,
+        ?FormatInterface $localeFormat = null,
+    ): SliderRenderer {
+        $context = $this->createStub(Context::class);
 
-    protected function setUp(): void
-    {
-        $this->block = $this->getMockBuilder(SliderRenderer::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
+        return new SliderRenderer(
+            $context,
+            $jsonEncoder ?? $this->createStub(EncoderInterface::class),
+            $localeFormat ?? $this->createStub(FormatInterface::class),
+        );
     }
 
     public function testGetDataRoleConcatenatesRoleWithFilterRequestVar(): void
     {
-        $filter = $this->createMock(FilterInterface::class);
+        $filter = $this->createStub(FilterInterface::class);
         $filter->method('getRequestVar')->willReturn('price');
-        $this->setPrivateProperty($this->block, 'filter', $filter);
 
-        $this->assertSame('range-slider-price', $this->block->getDataRole());
+        $block = $this->createObjectToTest();
+        $this->setPrivateProperty($block, 'filter', $filter);
+
+        $this->assertSame('range-slider-price', $block->getDataRole());
     }
 
     public function testGetFilterReturnsStoredFilter(): void
     {
-        $filter = $this->createMock(FilterInterface::class);
-        $this->setPrivateProperty($this->block, 'filter', $filter);
+        $filter = $this->createStub(FilterInterface::class);
 
-        $this->assertSame($filter, $this->block->getFilter());
+        $block = $this->createObjectToTest();
+        $this->setPrivateProperty($block, 'filter', $filter);
+
+        $this->assertSame($filter, $block->getFilter());
     }
 }

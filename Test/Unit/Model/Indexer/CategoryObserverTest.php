@@ -18,55 +18,81 @@ use Magento\Framework\Mview\ViewInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class CategoryObserverTest extends TestCase
 {
-    protected null|(IndexerInterface&MockObject) $categoryIndexer = null;
-    protected null|(IndexerInterface&MockObject) $productIndexer = null;
-    protected null|(IndexerRegistry&MockObject) $indexerRegistry = null;
-    protected null|(StoreManagerInterface&MockObject) $storeManager = null;
-    protected null|(ResourceConnection&MockObject) $resource = null;
-    protected null|(ProductBatchQueueProcessor&MockObject) $productBatchQueueProcessor = null;
-    protected null|(AlgoliaCredentialsManager&MockObject) $algoliaCredentialsManager = null;
-    protected ?CategoryObserver $observer = null;
-    protected null|(CategoryResourceModel&MockObject) $categoryResource = null;
-    protected null|(CategoryResourceModel&MockObject) $result = null;
-    protected null|(CategoryModel&MockObject) $category = null;
+    protected function createObjectToTest(
+        ?IndexerInterface $categoryIndexer = null,
+        ?IndexerInterface $productIndexer = null,
+        ?StoreManagerInterface $storeManager = null,
+        ?ResourceConnection $resource = null,
+        ?ProductBatchQueueProcessor $productBatchQueueProcessor = null,
+        ?AlgoliaCredentialsManager $algoliaCredentialsManager = null,
+    ): CategoryObserver {
+        $categoryIndexer ??= $this->createStub(IndexerInterface::class);
+        $productIndexer ??= $this->createStub(IndexerInterface::class);
 
-    protected function setUp(): void
-    {
-        $this->categoryIndexer = $this->createMock(IndexerInterface::class);
-        $this->productIndexer = $this->createMock(IndexerInterface::class);
-        $this->indexerRegistry = $this->createMock(IndexerRegistry::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->resource = $this->createMock(ResourceConnection::class);
-        $this->productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
-        $this->algoliaCredentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $indexerRegistry = $this->createStub(IndexerRegistry::class);
+        $indexerRegistry->method('get')->willReturnMap([
+            ['algolia_categories', $categoryIndexer],
+            ['algolia_products', $productIndexer],
+        ]);
 
-        $this->indexerRegistry->method('get')
-            ->willReturnMap([
-                ['algolia_categories', $this->categoryIndexer],
-                ['algolia_products', $this->productIndexer],
-            ]);
-
-        $this->observer = new CategoryObserver(
-            $this->indexerRegistry,
-            $this->storeManager,
-            $this->resource,
-            $this->productBatchQueueProcessor,
-            $this->algoliaCredentialsManager
+        return new CategoryObserver(
+            $indexerRegistry,
+            $storeManager ?? $this->createStub(StoreManagerInterface::class),
+            $resource ?? $this->createStub(ResourceConnection::class),
+            $productBatchQueueProcessor ?? $this->createStub(ProductBatchQueueProcessor::class),
+            $algoliaCredentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
         );
+    }
 
-        $this->categoryResource = $this->createMock(CategoryResourceModel::class);
-        $this->result = $this->createMock(CategoryResourceModel::class);
-        // getChangedProductIds() is a @method docblock annotation (magic method), not a real PHP method.
-        // __call is included in onlyMethods so magic method calls can be configured in PHPUnit 12.
-        $this->category = $this->getMockBuilder(CategoryModel::class)
+    /**
+     * getChangedProductIds() is a @method docblock annotation (magic method), not a real PHP
+     * method — __call must be included in onlyMethods so it can be configured in PHPUnit 12.
+     */
+    private function createCategoryMock(): CategoryModel&MockObject
+    {
+        return $this->getMockBuilder(CategoryModel::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getId', 'getOrigData', 'getData', 'getProductCollection', 'getProductsPosition', '__call'])
             ->getMock();
+    }
+
+    private function createProductCollectionStub(array $productIds): ProductCollection
+    {
+        $collection = $this->createMock(ProductCollection::class);
+        $collection->method('getColumnValues')->with('entity_id')->willReturn($productIds);
+
+        return $collection;
+    }
+
+    private function createStoreStub(int $storeId): StoreInterface
+    {
+        $store = $this->createStub(StoreInterface::class);
+        $store->method('getId')->willReturn($storeId);
+
+        return $store;
+    }
+
+    /**
+     * Captures the commit callback registered via addCommitCallback and immediately invokes it.
+     */
+    private function captureAndInvokeCommitCallback(CategoryObserver $observer, string $method, CategoryModel $category): void
+    {
+        $capturedCallback = null;
+        $categoryResource = $this->createStub(CategoryResourceModel::class);
+        $categoryResource->method('addCommitCallback')
+            ->willReturnCallback(function (callable $callback) use (&$capturedCallback) {
+                $capturedCallback = $callback;
+            });
+
+        $result = $this->createStub(CategoryResourceModel::class);
+
+        $observer->$method($categoryResource, $result, $category);
+
+        $this->assertNotNull($capturedCallback, 'No commit callback was registered by ' . $method);
+        $capturedCallback();
     }
 
     // -------------------------------------------------------------------------
@@ -75,104 +101,169 @@ class CategoryObserverTest extends TestCase
 
     public function testAfterSaveReturnsEarlyWhenCredentialsInvalid(): void
     {
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
 
-        $this->categoryResource->expects($this->never())->method('addCommitCallback');
+        $categoryResource = $this->createMock(CategoryResourceModel::class);
+        $categoryResource->expects($this->never())->method('addCommitCallback');
 
-        $returnValue = $this->observer->afterSave($this->categoryResource, $this->result, $this->category);
+        $result = $this->createStub(CategoryResourceModel::class);
 
-        $this->assertSame($this->result, $returnValue);
+        // The credentials check short-circuits before the callback ever touches the category.
+        $category = $this->createCategoryMock();
+        $category->expects($this->never())->method('getId');
+
+        $observer = $this->createObjectToTest(algoliaCredentialsManager: $algoliaCredentialsManager);
+
+        $returnValue = $observer->afterSave($categoryResource, $result, $category);
+
+        $this->assertSame($result, $returnValue);
     }
 
     public function testAfterSaveReturnsResultWhenCredentialsValid(): void
     {
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->categoryResource->method('addCommitCallback');
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
 
-        $returnValue = $this->observer->afterSave($this->categoryResource, $this->result, $this->category);
+        $categoryResource = $this->createStub(CategoryResourceModel::class);
+        $categoryResource->method('addCommitCallback');
 
-        $this->assertSame($this->result, $returnValue);
+        $result = $this->createStub(CategoryResourceModel::class);
+
+        // The callback is registered but never invoked in this test, so the category is untouched.
+        $category = $this->createCategoryMock();
+        $category->expects($this->never())->method('getId');
+
+        $observer = $this->createObjectToTest(algoliaCredentialsManager: $algoliaCredentialsManager);
+
+        $returnValue = $observer->afterSave($categoryResource, $result, $category);
+
+        $this->assertSame($result, $returnValue);
     }
 
     public function testAfterSaveCallbackReindexesCategoryRowWhenNotScheduled(): void
     {
         $categoryId = 42;
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn($categoryId);
-        $this->category->method('__call')
+
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        // Not scheduled → reindexRow(category->getId()) is called exactly once.
+        $category->expects($this->once())->method('getId')->willReturn($categoryId);
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? null : null);
-        $this->category->method('getOrigData')->willReturn('same');
-        $this->category->method('getData')->willReturn('same');
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection([]));
-        $this->categoryIndexer->method('isScheduled')->willReturn(false);
+        $category->method('getOrigData')->willReturn('same');
+        $category->method('getData')->willReturn('same');
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub([]));
 
-        $this->categoryIndexer->expects($this->once())->method('reindexRow')->with($categoryId);
+        $categoryIndexer = $this->createMock(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(false);
+        $categoryIndexer->expects($this->once())->method('reindexRow')->with($categoryId);
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     public function testAfterSaveCallbackSkipsProductReindexWhenNoAttributeChangesAndNoChangedProducts(): void
     {
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn(1);
-        $this->category->method('__call')
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        $category->expects($this->once())->method('getId')->willReturn(1);
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
         // origData === getData for all watched keys → no collectionIds
-        $this->category->method('getOrigData')->willReturn('same');
-        $this->category->method('getData')->willReturn('same');
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection([]));
-        $this->categoryIndexer->method('isScheduled')->willReturn(false);
+        $category->method('getOrigData')->willReturn('same');
+        $category->method('getData')->willReturn('same');
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub([]));
 
-        $this->productBatchQueueProcessor->expects($this->never())->method('processBatch');
+        $categoryIndexer = $this->createStub(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(false);
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->never())->method('processBatch');
+
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     public function testAfterSaveCallbackReindexesProductsWhenNameChanges(): void
     {
         $productIds = [10, 20, 30];
-        $store = $this->createMockStore(1);
-        $this->storeManager->method('getStores')->willReturn([1 => $store]);
+        $store = $this->createStoreStub(1);
 
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn(1);
-        $this->category->method('__call')
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn([1 => $store]);
+
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        $category->expects($this->once())->method('getId')->willReturn(1);
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($productIds));
-        $this->categoryIndexer->method('isScheduled')->willReturn(false);
-
-        $this->category->method('getOrigData')->willReturnCallback(
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub($productIds));
+        $category->method('getOrigData')->willReturnCallback(
             fn($key) => $key === 'name' ? 'Old Name' : null
         );
-        $this->category->method('getData')->willReturnCallback(
+        $category->method('getData')->willReturnCallback(
             fn($key) => $key === 'name' ? 'New Name' : null
         );
 
-        $this->productBatchQueueProcessor->expects($this->once())
+        $categoryIndexer = $this->createStub(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(false);
+
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->once())
             ->method('processBatch')
             ->with(1, $productIds);
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     public function testAfterSaveCallbackMergesAndDeduplicatesChangedAndCollectionProductIds(): void
     {
         $changedProductIds = [5, 6];
         $collectionIds = [6, 7, 8]; // 6 appears in both
-        $store = $this->createMockStore(1);
-        $this->storeManager->method('getStores')->willReturn([1 => $store]);
+        $store = $this->createStoreStub(1);
 
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn(1);
-        $this->category->method('__call')
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn([1 => $store]);
+
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        $category->expects($this->once())->method('getId')->willReturn(1);
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? $changedProductIds : null);
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
-        $this->categoryIndexer->method('isScheduled')->willReturn(false);
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub($collectionIds));
+        $category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
+        $category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
 
-        $this->category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
-        $this->category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
+        $categoryIndexer = $this->createStub(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(false);
 
-        $this->productBatchQueueProcessor->expects($this->once())
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->once())
             ->method('processBatch')
             ->with(1, $this->callback(function (array $ids) {
                 sort($ids);
@@ -180,7 +271,14 @@ class CategoryObserverTest extends TestCase
                 return true;
             }));
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     public function testAfterSaveCallbackUpdatesChangelogWhenScheduledAndHasCollectionIdsButNoChangedProducts(): void
@@ -188,30 +286,33 @@ class CategoryObserverTest extends TestCase
         $collectionIds = [10, 20];
         $changelogTableName = 'algolia_products_cl';
 
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn(1);
-        $this->category->method('__call')
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        // Scheduled branch never reaches category->getId().
+        $category->expects($this->never())->method('getId');
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
-        $this->categoryIndexer->method('isScheduled')->willReturn(true);
-
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub($collectionIds));
         // Attribute change to populate collectionIds
-        $this->category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
-        $this->category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
+        $category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
+        $category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
 
-        $this->productIndexer->method('isScheduled')->willReturn(true);
+        $categoryIndexer = $this->createStub(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(true);
 
-        $changelog = $this->createMock(ChangelogInterface::class);
+        $changelog = $this->createStub(ChangelogInterface::class);
         $changelog->method('getName')->willReturn('algolia_products_cl');
-        $view = $this->createMock(ViewInterface::class);
+        $view = $this->createStub(ViewInterface::class);
         $view->method('getChangelog')->willReturn($changelog);
-        $this->productIndexer->method('getView')->willReturn($view);
+
+        $productIndexer = $this->createStub(IndexerInterface::class);
+        $productIndexer->method('isScheduled')->willReturn(true);
+        $productIndexer->method('getView')->willReturn($view);
 
         $connection = $this->createMock(AdapterInterface::class);
-        $this->resource->method('getTableName')->with('algolia_products_cl')->willReturn($changelogTableName);
-        $this->resource->method('getConnection')->willReturn($connection);
         $connection->method('isTableExists')->with($changelogTableName)->willReturn(true);
-
         $connection->expects($this->once())
             ->method('insertMultiple')
             ->with($changelogTableName, [
@@ -219,79 +320,129 @@ class CategoryObserverTest extends TestCase
                 ['entity_id' => 20],
             ]);
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $resource = $this->createMock(ResourceConnection::class);
+        $resource->method('getTableName')->with('algolia_products_cl')->willReturn($changelogTableName);
+        $resource->method('getConnection')->willReturn($connection);
+
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+            productIndexer: $productIndexer,
+            resource: $resource,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     public function testAfterSaveCallbackCallsReindexListWhenScheduledAndProductIndexerNotScheduled(): void
     {
         $collectionIds = [10, 20];
 
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn(1);
-        $this->category->method('__call')
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        $category->expects($this->never())->method('getId');
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
-        $this->categoryIndexer->method('isScheduled')->willReturn(true);
-
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub($collectionIds));
         // Attribute change to populate collectionIds
-        $this->category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
-        $this->category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
+        $category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
+        $category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
 
-        $this->productIndexer->method('isScheduled')->willReturn(false);
-        $this->productIndexer->expects($this->once())->method('reindexList')->with($collectionIds);
+        $categoryIndexer = $this->createStub(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(true);
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $productIndexer = $this->createMock(IndexerInterface::class);
+        $productIndexer->method('isScheduled')->willReturn(false);
+        $productIndexer->expects($this->once())->method('reindexList')->with($collectionIds);
+
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+            productIndexer: $productIndexer,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     public function testAfterSaveCallbackSkipsInsertWhenChangelogTableDoesNotExist(): void
     {
         $collectionIds = [10, 20];
 
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn(1);
-        $this->category->method('__call')
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        $category->expects($this->never())->method('getId');
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [] : null);
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection($collectionIds));
-        $this->categoryIndexer->method('isScheduled')->willReturn(true);
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub($collectionIds));
+        $category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
+        $category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
 
-        $this->category->method('getOrigData')->willReturnCallback(fn($k) => $k === 'name' ? 'Old' : null);
-        $this->category->method('getData')->willReturnCallback(fn($k) => $k === 'name' ? 'New' : null);
+        $categoryIndexer = $this->createStub(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(true);
 
-        $this->productIndexer->method('isScheduled')->willReturn(true);
-
-        $changelog = $this->createMock(ChangelogInterface::class);
+        $changelog = $this->createStub(ChangelogInterface::class);
         $changelog->method('getName')->willReturn('algolia_products_cl');
-        $view = $this->createMock(ViewInterface::class);
+        $view = $this->createStub(ViewInterface::class);
         $view->method('getChangelog')->willReturn($changelog);
-        $this->productIndexer->method('getView')->willReturn($view);
+
+        $productIndexer = $this->createStub(IndexerInterface::class);
+        $productIndexer->method('isScheduled')->willReturn(true);
+        $productIndexer->method('getView')->willReturn($view);
 
         $connection = $this->createMock(AdapterInterface::class);
-        $this->resource->method('getTableName')->willReturn('algolia_products_cl');
-        $this->resource->method('getConnection')->willReturn($connection);
         $connection->method('isTableExists')->willReturn(false);
-
         $connection->expects($this->never())->method('insertMultiple');
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $resource = $this->createStub(ResourceConnection::class);
+        $resource->method('getTableName')->willReturn('algolia_products_cl');
+        $resource->method('getConnection')->willReturn($connection);
+
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+            productIndexer: $productIndexer,
+            resource: $resource,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     public function testAfterSaveCallbackSkipsUpdateCategoryProductsWhenScheduledAndChangedProductsExist(): void
     {
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->category->method('getId')->willReturn(1);
-        $this->category->method('__call')
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $category = $this->createCategoryMock();
+        $category->expects($this->never())->method('getId');
+        $category->method('__call')
             ->willReturnCallback(fn($name, $args) => $name === 'getChangedProductIds' ? [10, 20] : null);
         // No attribute changes, so collectionIds stays empty
-        $this->category->method('getOrigData')->willReturn('same');
-        $this->category->method('getData')->willReturn('same');
-        $this->category->method('getProductCollection')->willReturn($this->createMockProductCollection([]));
-        $this->categoryIndexer->method('isScheduled')->willReturn(true);
+        $category->method('getOrigData')->willReturn('same');
+        $category->method('getData')->willReturn('same');
+        $category->method('getProductCollection')->willReturn($this->createProductCollectionStub([]));
+
+        $categoryIndexer = $this->createStub(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(true);
 
         // updateCategoryProducts should not be triggered (changedProductIds count > 0)
-        $this->productIndexer->expects($this->never())->method('reindexList');
-        $this->resource->expects($this->never())->method('getConnection');
+        $productIndexer = $this->createMock(IndexerInterface::class);
+        $productIndexer->expects($this->never())->method('reindexList');
 
-        $this->captureAndInvokeCommitCallback('afterSave', $this->category);
+        $resource = $this->createMock(ResourceConnection::class);
+        $resource->expects($this->never())->method('getConnection');
+
+        $observer = $this->createObjectToTest(
+            algoliaCredentialsManager: $algoliaCredentialsManager,
+            categoryIndexer: $categoryIndexer,
+            productIndexer: $productIndexer,
+            resource: $resource,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterSave', $category);
     }
 
     // -------------------------------------------------------------------------
@@ -300,41 +451,71 @@ class CategoryObserverTest extends TestCase
 
     public function testAfterDeleteReturnsResult(): void
     {
-        $this->categoryResource->method('addCommitCallback');
+        $categoryResource = $this->createStub(CategoryResourceModel::class);
+        $categoryResource->method('addCommitCallback');
 
-        $returnValue = $this->observer->afterDelete($this->categoryResource, $this->result, $this->category);
+        $result = $this->createStub(CategoryResourceModel::class);
 
-        $this->assertSame($this->result, $returnValue);
+        $category = $this->createCategoryMock();
+        $category->expects($this->never())->method('getId');
+
+        $observer = $this->createObjectToTest();
+
+        $returnValue = $observer->afterDelete($categoryResource, $result, $category);
+
+        $this->assertSame($result, $returnValue);
     }
 
     public function testAfterDeleteCallbackReindexesCategoryAndProductsWhenNotScheduled(): void
     {
         $categoryId = 15;
         $productPositions = [10 => 0, 20 => 1, 30 => 2];
-        $store = $this->createMockStore(1);
-        $this->storeManager->method('getStores')->willReturn([1 => $store]);
+        $store = $this->createStoreStub(1);
 
-        $this->category->method('getId')->willReturn($categoryId);
-        $this->category->method('getProductsPosition')->willReturn($productPositions);
-        $this->categoryIndexer->method('isScheduled')->willReturn(false);
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn([1 => $store]);
 
-        $this->categoryIndexer->expects($this->once())->method('reindexRow')->with($categoryId);
-        $this->productBatchQueueProcessor->expects($this->once())
+        $category = $this->createCategoryMock();
+        $category->expects($this->once())->method('getId')->willReturn($categoryId);
+        $category->method('getProductsPosition')->willReturn($productPositions);
+
+        $categoryIndexer = $this->createMock(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(false);
+        $categoryIndexer->expects($this->once())->method('reindexRow')->with($categoryId);
+
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->once())
             ->method('processBatch')
             ->with(1, array_keys($productPositions));
 
-        $this->captureAndInvokeCommitCallback('afterDelete', $this->category);
+        $observer = $this->createObjectToTest(
+            categoryIndexer: $categoryIndexer,
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterDelete', $category);
     }
 
     public function testAfterDeleteCallbackSkipsReindexWhenScheduled(): void
     {
-        $this->category->method('getId')->willReturn(1);
-        $this->categoryIndexer->method('isScheduled')->willReturn(true);
+        // Scheduled → the whole reindex branch is skipped, so category->getId() is never reached.
+        $category = $this->createCategoryMock();
+        $category->expects($this->never())->method('getId');
 
-        $this->categoryIndexer->expects($this->never())->method('reindexRow');
-        $this->productBatchQueueProcessor->expects($this->never())->method('processBatch');
+        $categoryIndexer = $this->createMock(IndexerInterface::class);
+        $categoryIndexer->method('isScheduled')->willReturn(true);
+        $categoryIndexer->expects($this->never())->method('reindexRow');
 
-        $this->captureAndInvokeCommitCallback('afterDelete', $this->category);
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->never())->method('processBatch');
+
+        $observer = $this->createObjectToTest(
+            categoryIndexer: $categoryIndexer,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+        );
+
+        $this->captureAndInvokeCommitCallback($observer, 'afterDelete', $category);
     }
 
     // -------------------------------------------------------------------------
@@ -343,61 +524,42 @@ class CategoryObserverTest extends TestCase
 
     public function testReindexAffectedProductsSkipsWhenEmpty(): void
     {
-        $this->storeManager->expects($this->never())->method('getStores');
-        $this->productBatchQueueProcessor->expects($this->never())->method('processBatch');
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->expects($this->never())->method('getStores');
 
-        $this->invokeMethod($this->observer, 'reindexAffectedProducts', [[]]);
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->never())->method('processBatch');
+
+        $observer = $this->createObjectToTest(
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+        );
+
+        $this->invokeMethod($observer, 'reindexAffectedProducts', [[]]);
     }
 
     public function testReindexAffectedProductsCallsProcessBatchForEachStore(): void
     {
         $productIds = [1, 2, 3];
-        $store1 = $this->createMockStore(1);
-        $store2 = $this->createMockStore(2);
-        $this->storeManager->method('getStores')->willReturn([1 => $store1, 2 => $store2]);
+        $store1 = $this->createStoreStub(1);
+        $store2 = $this->createStoreStub(2);
 
-        $this->productBatchQueueProcessor->expects($this->exactly(2))
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn([1 => $store1, 2 => $store2]);
+
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->exactly(2))
             ->method('processBatch')
             ->willReturnCallback(function (int $storeId, array $ids) use ($productIds) {
                 $this->assertContains($storeId, [1, 2]);
                 $this->assertEquals($productIds, $ids);
             });
 
-        $this->invokeMethod($this->observer, 'reindexAffectedProducts', [$productIds]);
-    }
+        $observer = $this->createObjectToTest(
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+        );
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private function createMockProductCollection(array $productIds): ProductCollection
-    {
-        $collection = $this->createMock(ProductCollection::class);
-        $collection->method('getColumnValues')->with('entity_id')->willReturn($productIds);
-        return $collection;
-    }
-
-    private function createMockStore(int $storeId): StoreInterface
-    {
-        $store = $this->createMock(StoreInterface::class);
-        $store->method('getId')->willReturn($storeId);
-        return $store;
-    }
-
-    /**
-     * Captures the commit callback registered via addCommitCallback and immediately invokes it.
-     */
-    private function captureAndInvokeCommitCallback(string $method, CategoryModel $category): void
-    {
-        $capturedCallback = null;
-        $this->categoryResource->method('addCommitCallback')
-            ->willReturnCallback(function (callable $callback) use (&$capturedCallback) {
-                $capturedCallback = $callback;
-            });
-
-        $this->observer->$method($this->categoryResource, $this->result, $category);
-
-        $this->assertNotNull($capturedCallback, 'No commit callback was registered by ' . $method);
-        $capturedCallback();
+        $this->invokeMethod($observer, 'reindexAffectedProducts', [$productIds]);
     }
 }

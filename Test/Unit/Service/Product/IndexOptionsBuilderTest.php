@@ -15,35 +15,21 @@ use Magento\Customer\Model\Context as CustomerContext;
 use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class IndexOptionsBuilderTest extends TestCase
 {
-    private IndexOptionsBuilder $indexOptionsBuilder;
-    private SortingTransformer|MockObject $sortingTransformer;
-    private HttpContext|MockObject $httpContext;
-    private IndexNameFetcher|MockObject $indexNameFetcher;
-    private IndexOptionsInterfaceFactory|MockObject $indexOptionsFactory;
-    private DiagnosticsLogger|MockObject $logger;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->sortingTransformer = $this->createMock(SortingTransformer::class);
-        $this->httpContext = $this->createMock(HttpContext::class);
-        $this->indexNameFetcher = $this->createMock(IndexNameFetcher::class);
-        $this->indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
-        $this->logger = $this->createMock(DiagnosticsLogger::class);
-
-        $this->indexOptionsBuilder = new IndexOptionsBuilder(
-            $this->sortingTransformer,
-            $this->httpContext,
-            $this->indexNameFetcher,
-            $this->indexOptionsFactory,
-            $this->logger
+    protected function createObjectToTest(
+        ?SortingTransformer $sortingTransformer = null,
+        ?HttpContext $httpContext = null,
+        ?IndexNameFetcher $indexNameFetcher = null,
+        ?IndexOptionsInterfaceFactory $indexOptionsFactory = null,
+    ): IndexOptionsBuilder {
+        return new IndexOptionsBuilder(
+            $sortingTransformer ?? $this->createStub(SortingTransformer::class),
+            $httpContext ?? $this->createStub(HttpContext::class),
+            $indexNameFetcher ?? $this->createStub(IndexNameFetcher::class),
+            $indexOptionsFactory ?? $this->createStub(IndexOptionsInterfaceFactory::class),
+            $this->createStub(DiagnosticsLogger::class),
         );
     }
 
@@ -54,7 +40,8 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        $this->indexOptionsFactory
+        $indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $indexOptionsFactory
             ->expects($this->once())
             ->method('create')
             ->with([
@@ -86,7 +73,8 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('isTemporaryIndex')
             ->willReturn(false);
 
-        $this->indexNameFetcher
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher
             ->expects($this->once())
             ->method('getIndexName')
             ->with(ProductHelper::INDEX_NAME_SUFFIX, $storeId, false)
@@ -97,7 +85,9 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('setIndexName')
             ->with($expectedIndexName);
 
-        $result = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $indexOptionsBuilder = $this->createObjectToTest(indexNameFetcher: $indexNameFetcher, indexOptionsFactory: $indexOptionsFactory);
+
+        $result = $indexOptionsBuilder->buildEntityIndexOptions($storeId);
 
         $this->assertSame($indexOptions, $result);
     }
@@ -110,7 +100,8 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        $this->indexOptionsFactory
+        $indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $indexOptionsFactory
             ->expects($this->once())
             ->method('create')
             ->with([
@@ -142,7 +133,8 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('isTemporaryIndex')
             ->willReturn($isTmp);
 
-        $this->indexNameFetcher
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher
             ->expects($this->once())
             ->method('getIndexName')
             ->with(ProductHelper::INDEX_NAME_SUFFIX, $storeId, $isTmp)
@@ -153,7 +145,9 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('setIndexName')
             ->with($expectedIndexName);
 
-        $result = $this->indexOptionsBuilder->buildEntityIndexOptions($storeId, $isTmp);
+        $indexOptionsBuilder = $this->createObjectToTest(indexNameFetcher: $indexNameFetcher, indexOptionsFactory: $indexOptionsFactory);
+
+        $result = $indexOptionsBuilder->buildEntityIndexOptions($storeId, $isTmp);
 
         $this->assertSame($indexOptions, $result);
     }
@@ -165,7 +159,8 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        $this->indexOptionsFactory
+        $indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $indexOptionsFactory
             ->expects($this->once())
             ->method('create')
             ->with([
@@ -197,16 +192,19 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('isTemporaryIndex')
             ->willReturn(false);
 
-        $this->indexNameFetcher
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher
             ->expects($this->once())
             ->method('getIndexName')
             ->with(ProductHelper::INDEX_NAME_SUFFIX, $storeId, false)
             ->willThrowException($exception);
 
+        $indexOptionsBuilder = $this->createObjectToTest(indexNameFetcher: $indexNameFetcher, indexOptionsFactory: $indexOptionsFactory);
+
         $this->expectException(NoSuchEntityException::class);
         $this->expectExceptionMessage('Store not found');
 
-        $this->indexOptionsBuilder->buildEntityIndexOptions($storeId);
+        $indexOptionsBuilder->buildEntityIndexOptions($storeId);
     }
 
     public function testBuildReplicaIndexOptionsWithValidReplica(): void
@@ -230,21 +228,24 @@ class IndexOptionsBuilderTest extends TestCase
             ],
         ];
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
             ->willReturn($availableSorts);
 
-        $indexOptions = $this->createMock(IndexOptionsInterface::class);
+        $indexOptions = $this->createStub(IndexOptionsInterface::class);
 
-        $this->indexOptionsFactory
+        $indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $indexOptionsFactory
             ->expects($this->once())
             ->method('create')
             ->with([
@@ -255,7 +256,9 @@ class IndexOptionsBuilderTest extends TestCase
             ])
             ->willReturn($indexOptions);
 
-        $result = $this->indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext, indexOptionsFactory: $indexOptionsFactory);
+
+        $result = $indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
 
         $this->assertSame($indexOptions, $result);
     }
@@ -276,21 +279,24 @@ class IndexOptionsBuilderTest extends TestCase
             ],
         ];
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
             ->willReturn($availableSorts);
 
-        $indexOptions = $this->createMock(IndexOptionsInterface::class);
+        $indexOptions = $this->createStub(IndexOptionsInterface::class);
 
-        $this->indexOptionsFactory
+        $indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $indexOptionsFactory
             ->expects($this->once())
             ->method('create')
             ->with([
@@ -301,7 +307,9 @@ class IndexOptionsBuilderTest extends TestCase
             ])
             ->willReturn($indexOptions);
 
-        $result = $this->indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext, indexOptionsFactory: $indexOptionsFactory);
+
+        $result = $indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
 
         $this->assertSame($indexOptions, $result);
     }
@@ -322,13 +330,15 @@ class IndexOptionsBuilderTest extends TestCase
             ],
         ];
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
@@ -336,7 +346,8 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        $this->indexOptionsFactory
+        $indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $indexOptionsFactory
             ->expects($this->once())
             ->method('create')
             ->with([
@@ -368,7 +379,8 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('isTemporaryIndex')
             ->willReturn(false);
 
-        $this->indexNameFetcher
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher
             ->expects($this->once())
             ->method('getIndexName')
             ->with(ProductHelper::INDEX_NAME_SUFFIX, $storeId, false)
@@ -379,7 +391,9 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('setIndexName')
             ->with($entityIndexName);
 
-        $result = $this->indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext, $indexNameFetcher, $indexOptionsFactory);
+
+        $result = $indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
 
         $this->assertSame($indexOptions, $result);
     }
@@ -392,13 +406,15 @@ class IndexOptionsBuilderTest extends TestCase
         $customerGroupId = 0;
         $entityIndexName = 'store_1_products';
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
@@ -406,7 +422,8 @@ class IndexOptionsBuilderTest extends TestCase
 
         $indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        $this->indexOptionsFactory
+        $indexOptionsFactory = $this->createMock(IndexOptionsInterfaceFactory::class);
+        $indexOptionsFactory
             ->expects($this->once())
             ->method('create')
             ->with([
@@ -438,7 +455,8 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('isTemporaryIndex')
             ->willReturn(false);
 
-        $this->indexNameFetcher
+        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
+        $indexNameFetcher
             ->expects($this->once())
             ->method('getIndexName')
             ->with(ProductHelper::INDEX_NAME_SUFFIX, $storeId, false)
@@ -449,7 +467,9 @@ class IndexOptionsBuilderTest extends TestCase
             ->method('setIndexName')
             ->with($entityIndexName);
 
-        $result = $this->indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext, $indexNameFetcher, $indexOptionsFactory);
+
+        $result = $indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
 
         $this->assertSame($indexOptions, $result);
     }
@@ -462,22 +482,26 @@ class IndexOptionsBuilderTest extends TestCase
         $customerGroupId = 0;
         $exception = new LocalizedException(__('Configuration error'));
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
             ->willThrowException($exception);
 
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext);
+
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('Configuration error');
 
-        $this->indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder->buildReplicaIndexOptions($storeId, $sortField, $sortDirection);
     }
 
     public function testGetReplicaIndexNameReturnsIndexName(): void
@@ -501,19 +525,23 @@ class IndexOptionsBuilderTest extends TestCase
             ],
         ];
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
             ->willReturn($availableSorts);
 
-        $result = $this->indexOptionsBuilder->getReplicaIndexName($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext);
+
+        $result = $indexOptionsBuilder->getReplicaIndexName($storeId, $sortField, $sortDirection);
 
         $this->assertSame($expectedIndexName, $result);
     }
@@ -533,19 +561,23 @@ class IndexOptionsBuilderTest extends TestCase
             ],
         ];
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
             ->willReturn($availableSorts);
 
-        $result = $this->indexOptionsBuilder->getReplicaIndexName($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext);
+
+        $result = $indexOptionsBuilder->getReplicaIndexName($storeId, $sortField, $sortDirection);
 
         $this->assertNull($result);
     }
@@ -565,19 +597,23 @@ class IndexOptionsBuilderTest extends TestCase
             ],
         ];
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->sortingTransformer
+        $sortingTransformer = $this->createMock(SortingTransformer::class);
+        $sortingTransformer
             ->expects($this->once())
             ->method('getSortingIndices')
             ->with($storeId, $customerGroupId)
             ->willReturn($availableSorts);
 
-        $result = $this->indexOptionsBuilder->getReplicaIndexName($storeId, $sortField, $sortDirection);
+        $indexOptionsBuilder = $this->createObjectToTest($sortingTransformer, $httpContext);
+
+        $result = $indexOptionsBuilder->getReplicaIndexName($storeId, $sortField, $sortDirection);
 
         $this->assertNull($result);
     }
@@ -586,28 +622,33 @@ class IndexOptionsBuilderTest extends TestCase
     {
         $expectedGroupId = 3;
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($expectedGroupId);
 
-        $result = $this->invokeMethod($this->indexOptionsBuilder, 'getCustomerGroupId');
+        $indexOptionsBuilder = $this->createObjectToTest(httpContext: $httpContext);
+
+        $result = $this->invokeMethod($indexOptionsBuilder, 'getCustomerGroupId');
 
         $this->assertSame($expectedGroupId, $result);
     }
 
     public function testGetCustomerGroupIdReturnsNull(): void
     {
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext
             ->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn(null);
 
-        $result = $this->invokeMethod($this->indexOptionsBuilder, 'getCustomerGroupId');
+        $indexOptionsBuilder = $this->createObjectToTest(httpContext: $httpContext);
+
+        $result = $this->invokeMethod($indexOptionsBuilder, 'getCustomerGroupId');
 
         $this->assertNull($result);
     }
 }
-

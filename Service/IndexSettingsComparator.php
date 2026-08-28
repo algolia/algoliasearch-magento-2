@@ -19,9 +19,33 @@ class IndexSettingsComparator
     public function matches(IndexOptionsInterface $indexOptions, array $indexSettings): bool
     {
         $algoliaSettings = $this->connector->getSettings($indexOptions);
-        $algoliaSettings = array_intersect_key($algoliaSettings, $indexSettings);
+        [$algoliaSettings, $indexSettings] = $this->reconcileKeys($algoliaSettings, $indexSettings);
 
         return $this->getSettingsHash($indexSettings) === $this->getSettingsHash($algoliaSettings);
+    }
+
+    protected function reconcileKeys(array $remote, array $local): array
+    {
+        // Existing behaviour: settings Algolia manages but the extension does not
+        // are not differences.
+        $remote = array_intersect_key($remote, $local);
+
+        // Algolia does not round-trip empty list settings. `customRanking` is
+        // omitted from getSettings whenever it is empty, and
+        // `unretrievableAttributes` is omitted until it has been set at least
+        // once. For these keys "absent remotely" and "empty locally" describe the
+        // same index state, so they must compare equal.
+        foreach ($local as $key => $value) {
+            if ($value === []) {
+                if (!array_key_exists($key, $remote)) {
+                    unset($local[$key]);
+                } else if ($remote[$key] === null)  {
+                    $local[$key] = null;
+                }
+            }
+        }
+
+        return [$remote, $local];
     }
 
     /**

@@ -209,4 +209,154 @@ class IndexSettingsComparatorTest extends TestCase
         // Must be different
         $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, [INF]));
     }
+
+    // ── reconcileKeys() ──
+
+    /**
+     * @dataProvider reconcileKeysProvider
+     */
+    public function testReconcileKeys(array $remote, array $local, array $expectedRemote, array $expectedLocal): void
+    {
+        [$reconciledRemote, $reconciledLocal] = $this->invokeMethod(
+            $this->indexSettingsComparator,
+            'reconcileKeys',
+            [$remote, $local]
+        );
+
+        $this->assertSame($expectedRemote, $reconciledRemote);
+        $this->assertSame($expectedLocal, $reconciledLocal);
+    }
+
+    public static function reconcileKeysProvider(): array
+    {
+        return [
+            'remote-only keys are dropped' => [
+                'remote' => ['searchableAttributes' => ['name'], 'algoliaManagedSetting' => 'foo'],
+                'local' => ['searchableAttributes' => ['name']],
+                'expectedRemote' => ['searchableAttributes' => ['name']],
+                'expectedLocal' => ['searchableAttributes' => ['name']],
+            ],
+            'empty local customRanking absent remotely is dropped from local' => [
+                'remote' => ['searchableAttributes' => ['name']],
+                'local' => ['searchableAttributes' => ['name'], 'customRanking' => []],
+                'expectedRemote' => ['searchableAttributes' => ['name']],
+                'expectedLocal' => ['searchableAttributes' => ['name']],
+            ],
+            'empty local unretrievableAttributes absent remotely is dropped from local' => [
+                'remote' => ['searchableAttributes' => ['name']],
+                'local' => ['searchableAttributes' => ['name'], 'unretrievableAttributes' => []],
+                'expectedRemote' => ['searchableAttributes' => ['name']],
+                'expectedLocal' => ['searchableAttributes' => ['name']],
+            ],
+            'empty local customRanking with null remote value is coerced to null' => [
+                'remote' => ['customRanking' => null],
+                'local' => ['customRanking' => []],
+                'expectedRemote' => ['customRanking' => null],
+                'expectedLocal' => ['customRanking' => null],
+            ],
+            'empty local unretrievableAttributes with null remote value is coerced to null' => [
+                'remote' => ['unretrievableAttributes' => null],
+                'local' => ['unretrievableAttributes' => []],
+                'expectedRemote' => ['unretrievableAttributes' => null],
+                'expectedLocal' => ['unretrievableAttributes' => null],
+            ],
+            'empty local value with non-null empty remote value is left untouched' => [
+                'remote' => ['customRanking' => []],
+                'local' => ['customRanking' => []],
+                'expectedRemote' => ['customRanking' => []],
+                'expectedLocal' => ['customRanking' => []],
+            ],
+            'empty local value with real remote value is left untouched (surfaces as a diff)' => [
+                'remote' => ['customRanking' => ['desc(price)']],
+                'local' => ['customRanking' => []],
+                'expectedRemote' => ['customRanking' => ['desc(price)']],
+                'expectedLocal' => ['customRanking' => []],
+            ],
+            'non-empty local value absent remotely is left untouched (surfaces as a diff)' => [
+                'remote' => [],
+                'local' => ['customRanking' => ['desc(price)']],
+                'expectedRemote' => [],
+                'expectedLocal' => ['customRanking' => ['desc(price)']],
+            ],
+        ];
+    }
+
+    // ── customRanking / unretrievableAttributes round-trip omission ──
+
+    public function testMatchesWhenCustomRankingEmptyLocallyAndAbsentFromRemote(): void
+    {
+        $local = ['searchableAttributes' => ['name'], 'customRanking' => []];
+        // Algolia omits customRanking entirely from getSettings() whenever it's empty.
+        $remote = ['searchableAttributes' => ['name']];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $local));
+    }
+
+    public function testMatchesWhenUnretrievableAttributesEmptyLocallyAndAbsentFromRemote(): void
+    {
+        $local = ['searchableAttributes' => ['name'], 'unretrievableAttributes' => []];
+        // Algolia omits unretrievableAttributes until it has been set at least once.
+        $remote = ['searchableAttributes' => ['name']];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $local));
+    }
+
+    public function testMatchesWhenCustomRankingEmptyLocallyAndNullRemotely(): void
+    {
+        $local = ['customRanking' => []];
+        $remote = ['customRanking' => null];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $local));
+    }
+
+    public function testMatchesWhenUnretrievableAttributesEmptyLocallyAndNullRemotely(): void
+    {
+        $local = ['unretrievableAttributes' => []];
+        $remote = ['unretrievableAttributes' => null];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $local));
+    }
+
+    public function testMatchesWhenCustomRankingAndUnretrievableAttributesBothEmptyAndAbsentRemotely(): void
+    {
+        $local = [
+            'searchableAttributes' => ['name'],
+            'customRanking' => [],
+            'unretrievableAttributes' => [],
+        ];
+        $remote = ['searchableAttributes' => ['name']];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $local));
+    }
+
+    public function testDoesNotMatchWhenCustomRankingNonEmptyLocallyButAbsentFromRemote(): void
+    {
+        $local = ['customRanking' => ['desc(price)']];
+        // Not an omitted-because-empty case: the extension proposes a real ranking Algolia doesn't have.
+        $remote = [];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $local));
+    }
+
+    public function testDoesNotMatchWhenUnretrievableAttributesDifferAndBothNonEmpty(): void
+    {
+        $local = ['unretrievableAttributes' => ['in_stock']];
+        $remote = ['unretrievableAttributes' => ['ordered_qty']];
+
+        $this->connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $local));
+    }
 }

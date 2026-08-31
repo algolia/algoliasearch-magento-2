@@ -4,6 +4,11 @@
 
 ### Updates
 - Unified way to manage temporary index management for suggestions, pages and additional sections
+- Updated `IndexSettingsHandler::setSettings`:
+  - It now fetches the remote settings once, runs preservation, then threads that same payload into the comparator.
+  - It now use multiple `IndexSettingsComparator::matches()` for settings both forwarded and non-forwarded to replicas to ensure no no-op operations are sent to the dashboard.
+  - Removed `waitLastTask` occurrences in favor of `collectTaskIdToWaitFor` ones to ensure waiting at the end of the process.
+  - Updated unit tests.
 
 ### Bug Fixes
 - Fixed pages indexing issue where settings and synonyms added on the Algolia dashboard were wiped during the process - thank you @PromInc

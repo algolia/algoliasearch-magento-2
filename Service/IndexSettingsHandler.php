@@ -35,8 +35,11 @@ class IndexSettingsHandler
      */
     public function setSettings(IndexOptionsInterface $indexOptions, array $indexSettings): bool
     {
+        // Fetch the remote settings once and thread them through the comparator.
+        $remoteSettings = $this->connector->getSettings($indexOptions);
+
         // Early return if Algolia settings are already the same
-        if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings)) {
+        if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings, $remoteSettings)) {
             if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
                 $this->logger->info(
                     sprintf("Skipped setSettings (no diff with existing) for store ID: %d (index name: %s)",
@@ -54,6 +57,8 @@ class IndexSettingsHandler
                 $indexSettings,
                 false
             );
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
+
             return true;
         }
 
@@ -62,22 +67,23 @@ class IndexSettingsHandler
         [$forward, $noForward] = $this->splitSettings($indexSettings);
 
         // FORWARDED: $settings without excluded attributes
-        if ($forward) {
+        if ($forward && !$this->indexSettingsComparator->matches($indexOptions, $forward, $remoteSettings)) {
             $this->connector->setSettings(
                 $indexOptions,
                 $forward,
                 true
             );
-            $this->connector->waitLastTask($indexOptions->getStoreId());
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
         }
 
         // NOT FORWARDED: array containing excluded attributes only
-        if ($noForward) {
+        if ($noForward && !$this->indexSettingsComparator->matches($indexOptions, $noForward, $remoteSettings)) {
             $this->connector->setSettings(
                 $indexOptions,
                 $noForward,
                 false
             );
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
         }
 
         return true;

@@ -22,12 +22,6 @@ class IndexSettingsHandlerTest extends TestCase
 
     private ?IndexSettingsHandler $handler = null;
 
-    /**
-     * State machine to track pending operations per store ID
-     * Format: [storeId => ['totalCalls' => int, 'waitCalled' => bool, 'batchesCompleted' => int]]
-     */
-    private array $operationState = [];
-
     protected function setUp(): void
     {
         $this->connector = $this->createMock(AlgoliaConnector::class);
@@ -37,9 +31,6 @@ class IndexSettingsHandlerTest extends TestCase
         $this->logger = $this->createMock(AlgoliaLogger::class);
         $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
 
-        // Configure the mock to use our state machine
-        $this->setupStateMachineMock();
-
         $this->handler = new IndexSettingsHandlerTestable(
             $this->connector,
             $this->config,
@@ -48,51 +39,8 @@ class IndexSettingsHandlerTest extends TestCase
         );
     }
 
-    private function setupStateMachineMock(): void
-    {
-        $this->connector->method('setSettings')
-            ->willReturnCallback(function($indexOptions, $settings, $forwardToReplicas, $mergeSettings, $mergeFrom = '') {
-                $storeId = $indexOptions->getStoreId();
-
-                // Initialize state if not exists
-                if (!isset($this->operationState[$storeId])) {
-                    $this->operationState[$storeId] = [
-                        'setSettingsCalled' => false,
-                        'waitCalled' => false
-                    ];
-                }
-
-                // Check that setSettings is not stacked for this $storeId
-                if ($this->operationState[$storeId]['setSettingsCalled'] &&
-                    !$this->operationState[$storeId]['waitCalled']) {
-                    throw new \RuntimeException(
-                        // phpcs:ignore
-                        "Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first."
-                    );
-                }
-
-                // Update state
-                $this->operationState[$storeId]['setSettingsCalled'] = true;
-                $this->operationState[$storeId]['waitCalled'] = false;
-            });
-
-        $this->connector->method('waitLastTask')
-            ->willReturnCallback(function($storeId = null) {
-                if ($storeId !== null && isset($this->operationState[$storeId])) {
-                    $this->operationState[$storeId]['waitCalled'] = true;
-                }
-            });
-    }
-
-    private function resetOperationState(): void
-    {
-        $this->operationState = [];
-    }
-
     public function testSetSettingsWithForwardingEnabledAndMixedSettings(): void
     {
-        $this->resetOperationState();
-
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
@@ -125,13 +73,20 @@ class IndexSettingsHandlerTest extends TestCase
                 }
             });
 
+
+        // IndexSettingsComparator::matches() is called 3 times:
+        // - once for the full payload
+        // - once for $forward
+        // - once for $noforward
+        $this->indexSettingsComparator->expects($this->exactly(3))->method('matches');
+        // Only two taskIDs are collected ($forward and $noforward
+        $this->connector->expects($this->exactly(2))->method('collectTaskIdToWaitFor');
+
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testSetSettingsWithForwardingEnabledOnlyExcludedSettings(): void
     {
-        $this->resetOperationState();
-
         $storeId = 1;
         $settings = [
             'ranking' => ['asc(name)'],
@@ -151,13 +106,18 @@ class IndexSettingsHandlerTest extends TestCase
                 false
             );
 
+        // IndexSettingsComparator::matches() is called 2 times:
+        // - once for the full payload
+        // - once for $noforward
+        $this->indexSettingsComparator->expects($this->exactly(2))->method('matches');
+        // Only one taskID is collected ($noforward)
+        $this->connector->expects($this->once())->method('collectTaskIdToWaitFor');
+
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testSetSettingsWithForwardingEnabledOnlyForwardableSettings(): void
     {
-        $this->resetOperationState();
-
         $storeId = 1;
         $settings = [
             'attributesToHighlight' => ['title'],
@@ -177,13 +137,18 @@ class IndexSettingsHandlerTest extends TestCase
                 true
             );
 
+        // IndexSettingsComparator::matches() is called 2 times:
+        // - once for the full payloadExpand comment
+        // - once for $forward
+        $this->indexSettingsComparator->expects($this->exactly(2))->method('matches');
+        // Only one taskID is collected ($forward)
+        $this->connector->expects($this->exactly(1))->method('collectTaskIdToWaitFor');
+
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testSetSettingsWithForwardingDisabled(): void
     {
-        $this->resetOperationState();
-
         $storeId = 1;
         $settings = [
             'customRanking' => ['desc(price)'],
@@ -202,13 +167,16 @@ class IndexSettingsHandlerTest extends TestCase
                 false
             );
 
+        // IndexSettingsComparator::matches() is called once (since we don't split)
+        $this->indexSettingsComparator->expects($this->once())->method('matches');
+        // Only one taskID is collected (full payload with early return)
+        $this->connector->expects($this->once())->method('collectTaskIdToWaitFor');
+
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
 
     public function testForwardSettingsWithEmptyInput(): void
     {
-        $this->resetOperationState();
-
         $storeId = 1;
         $settings = [];
 
@@ -218,6 +186,10 @@ class IndexSettingsHandlerTest extends TestCase
 
         // Connector should not be called
         $this->connector->expects($this->never())->method('setSettings');
+
+        // IndexSettingsComparator::matches() is called once (empty array will always match and early return)
+        $this->indexSettingsComparator->expects($this->once())->method('matches');
+        $this->connector->expects($this->never())->method('collectTaskIdToWaitFor');
 
         $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
     }
@@ -240,70 +212,8 @@ class IndexSettingsHandlerTest extends TestCase
         ], $noForward);
     }
 
-    /**
-     * Ensure the state machine is working as expected by disabling replica forwarding
-     * and explicitly invoking subsequent setSettings operations
-     */
-    public function testSubsequentSetSettingsWithoutWaitThrowsException(): void
-    {
-        $this->resetOperationState();
-
-        $storeId = 1;
-        $settings = ['attributesToRetrieve' => ['name']];
-
-        $this->indexOptions->method('getStoreId')->willReturn($storeId);
-
-        // Disable forwarding for explicit test
-        $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
-            ->willReturn(false);
-
-        // First call should succeed
-        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
-
-        // Second call without wait should throw exception
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
-
-        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
-    }
-
-    /**
-     * Explicitly test the state machine succeeds by disabling replica forwarding
-     * and explicitly invoking the wait operation
-     * */
-    public function testSubsequentSetSettingsAfterWaitSucceeds(): void
-    {
-        $this->resetOperationState();
-
-        $storeId = 1;
-        $settings = ['attributesToRetrieve' => ['name']];
-
-        $this->indexOptions->method('getStoreId')->willReturn($storeId);
-        // Disable forwarding for explicit test
-        $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
-            ->willReturn(false);
-
-        $this->connector->expects($this->exactly(2))
-            ->method('setSettings');
-
-        $this->connector->expects($this->once())
-            ->method('waitLastTask')
-            ->with($storeId);
-
-        // First call should succeed
-        $this->handler->setSettings($this->indexOptions, $settings);
-
-        // Wait for the task
-        $this->connector->waitLastTask($storeId);
-
-        // Second call after wait should succeed
-        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
-    }
-
     public function testDifferentStoreIdsDontInterfere(): void
     {
-        $this->resetOperationState();
-
         $storeId1 = 1;
         $storeId2 = 2;
         $settings = ['attributesToRetrieve' => ['name']];
@@ -321,48 +231,17 @@ class IndexSettingsHandlerTest extends TestCase
         $this->connector->expects($this->exactly(2))
             ->method('setSettings');
 
+        // IndexSettingsComparator::matches() is called 2 times:
+        // - once for the full payload of the 2 stores
+        $this->indexSettingsComparator->expects($this->exactly(2))->method('matches');
+        $this->connector->expects($this->exactly(2))->method('collectTaskIdToWaitFor');
+
         $this->assertTrue($this->handler->setSettings($indexOptions1, $settings));
         $this->assertTrue($this->handler->setSettings($indexOptions2, $settings));
     }
 
-    /**
-     *  Replica forwarding should abstract the wait operation internally
-     *  However require caller to invoke wait for subsequent ops
-     *  This is *by design* to minimize unnecessary IO blocking
-     *  This test ensures this logic stays in place
-     */
-    public function testForwardingEnabledMultipleCallsRequireWait(): void
-    {
-        $this->resetOperationState();
-
-        $storeId = 1;
-        $settings = [
-            'customRanking' => ['desc(price)'],
-            'attributesToRetrieve' => ['name']
-        ];
-
-        $this->indexOptions->method('getStoreId')->willReturn($storeId);
-        $this->config->method('shouldForwardPrimaryIndexSettingsToReplicas')
-            ->willReturn(true);
-
-        // 2 internal calls + 1 explicit call
-        $this->connector->expects($this->exactly(3))
-            ->method('setSettings');
-
-        // First call makes two internal setSettings calls
-        $this->handler->setSettings($this->indexOptions, $settings);
-
-        // Second call to handler should fail because no wait was called
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage("Cannot call setSettings on store $storeId: previous operation still pending. Call waitLastTask first.");
-
-        $this->assertTrue($this->handler->setSettings($this->indexOptions, $settings));
-    }
-
     public function testSkippedSetSettings(): void
     {
-        $this->resetOperationState();
-
         $indexSettingsComparator = $this->createMock(IndexSettingsComparator::class);
         $indexSettingsComparator->method('matches')->willReturn(true);
 
@@ -381,6 +260,146 @@ class IndexSettingsHandlerTest extends TestCase
 
         $this->indexOptions->method('getStoreId')->willReturn($storeId);
 
+        // IndexSettingsComparator::matches() is called once (match = early return)
+        $indexSettingsComparator->expects($this->once())->method('matches');
+
+        $this->connector->expects($this->never())->method('collectTaskIdToWaitFor');
+
         $this->assertFalse($this->handler->setSettings($this->indexOptions, $settings));
     }
+
+    public function testGetSettingsCalledExactlyOncePerSetSettings(): void
+    {
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())
+            ->method('getSettings')
+            ->willReturn(['attributesForFaceting' => ['categories']]);
+
+        $comparator = $this->createMock(IndexSettingsComparator::class);
+        $comparator->method('matches')->willReturn(false);
+
+        $config = $this->createMock(ConfigHelper::class);
+        $config->method('shouldForwardPrimaryIndexSettingsToReplicas')->willReturn(false);
+
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $this->logger);
+        $this->indexOptions->method('getStoreId')->willReturn(1);
+
+        $this->assertTrue($handler->setSettings($this->indexOptions, ['attributesForFaceting' => ['categories']]));
+    }
+
+    public function testComparatorReceivesPreFetchedRemote(): void
+    {
+        $remote = ['attributesForFaceting' => ['categories', '_collections']];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $comparator = $this->createMock(IndexSettingsComparator::class);
+        $comparator->expects($this->once())
+            ->method('matches')
+            ->with($this->indexOptions, $this->anything(), $remote)
+            ->willReturn(true);
+
+        $config = $this->createMock(ConfigHelper::class);
+        $config->method('isLoggingEnabled')->willReturn(false);
+
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $this->logger);
+        $this->indexOptions->method('getStoreId')->willReturn(1);
+
+        $this->assertFalse($handler->setSettings($this->indexOptions, ['attributesForFaceting' => ['categories']]));
+    }
+
+    /**
+     * @dataProvider settingsProvider
+     */
+    public function testForwardAndNoForwardSettingsChanges(
+        array $proposed,
+        array $remote,
+        bool $forwardToReplicas,
+        int $expectedNumberOfTasksCollected
+    ) : void
+    {
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->method('getSettings')->willReturn($remote);
+
+        $comparator = new IndexSettingsComparator($connector);
+
+        $config = $this->createMock(ConfigHelper::class);
+        $config->method('shouldForwardPrimaryIndexSettingsToReplicas')->willReturn($forwardToReplicas);
+
+        $handler = new IndexSettingsHandler($connector, $config, $comparator, $this->logger);
+        $this->indexOptions->method('getStoreId')->willReturn(1);
+
+        $connector->expects($this->exactly($expectedNumberOfTasksCollected))->method('setSettings');
+        $connector->expects($this->exactly($expectedNumberOfTasksCollected))->method('collectTaskIdToWaitFor');
+
+        $handler->setSettings($this->indexOptions, $proposed);
+    }
+
+    public static function settingsProvider(): array
+    {
+        return [
+            [ // Both forward and noforward have changes => 2 collected tasks expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['asc(price)'],
+                    'attributesToRetrieve' => ['title']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 2
+            ],
+            [ // Only forward has changes  => 1 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['title']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 1
+            ],
+            [ // Only noforward has changes => 1 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['asc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 1
+            ],
+            [ // forward and noforward are identical => 0 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'forwardToReplicas' => true,
+                'expectedNumberOfTasksCollected' => 0
+            ],
+            [ // Both forward and noforward have changes but forward to replicas is set to false => 1 collected task expected
+                'proposed' => [
+                    'customRanking' => ['desc(price)'],
+                    'attributesToRetrieve' => ['name']
+                ],
+                'remote' => [
+                    'customRanking' => ['asc(price)'],
+                    'attributesToRetrieve' => ['title']
+                ],
+                'forwardToReplicas' => false,
+                'expectedNumberOfTasksCollected' => 1
+            ],
+        ];
+    }
+
 }

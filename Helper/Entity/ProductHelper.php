@@ -323,7 +323,6 @@ class ProductHelper extends AbstractEntityHelper
         if ($this->indexSettingsHandler->setSettings($indexOptions, $indexSettings)) {
             $this->logger->log('Index name: ' . $indexOptions->getIndexName());
             $this->logger->log('Settings: ' . json_encode($indexSettings));
-            $this->algoliaConnector->collectTaskIdToWaitFor($indexOptions);
         }
 
         if ($saveToTmpIndicesToo) {

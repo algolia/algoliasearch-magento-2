@@ -359,4 +359,21 @@ class IndexSettingsComparatorTest extends TestCase
 
         $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $local));
     }
+
+    public function testUsesProvidedRemoteSettingsWhenPassed(): void
+    {
+        // When remote settings are supplied, the connector must not be queried.
+        $this->connector->expects($this->never())->method('getSettings');
+
+        $this->assertTrue(
+            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $this->testSettings)
+        );
+
+        $changedRemote = $this->testSettings;
+        $changedRemote['maxValuesPerFacet'] = 10;
+
+        $this->assertFalse(
+            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $changedRemote)
+        );
+    }
 }

@@ -35,7 +35,7 @@ class IndexSettingsHandler
      */
     public function setSettings(IndexOptionsInterface $indexOptions, array $indexSettings): bool
     {
-        // Fetch the remote settings once and thread them through both the preserver and the comparator.
+        // Fetch the remote settings once and thread them through the comparator.
         $remoteSettings = $this->connector->getSettings($indexOptions);
 
         // Early return if Algolia settings are already the same

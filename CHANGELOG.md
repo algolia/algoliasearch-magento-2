@@ -1,5 +1,27 @@
 # CHANGE LOG
 
+## 3.18.2
+
+### Updates
+- Unified way to manage temporary index management for suggestions, pages and additional sections
+- Updated `IndexSettingsHandler::setSettings`:
+  - It now fetches the remote settings once, runs preservation, then threads that same payload into the comparator.
+  - It now use multiple `IndexSettingsComparator::matches()` for settings both forwarded and non-forwarded to replicas to ensure no no-op operations are sent to the dashboard.
+  - Removed `waitLastTask` occurrences in favor of `collectTaskIdToWaitFor` ones to ensure waiting at the end of the process.
+  - Updated unit tests.
+- Updated `Cron/ProcessQueue`:
+  - Removed the check linked to outdated indexer and replaced it with the same condition but for queue enablement.
+  - Removed usage of monolithic `ConfigHelper`
+  - Added Unit tests
+
+
+### Bug Fixes
+- Fixed pages indexing issue where settings and synonyms added on the Algolia dashboard were wiped during the process - thank you @PromInc
+- Fixed suggestions indexing issue where the index could be completely emptied during the process - thank you @its-leoeff511
+- Prevented semanticSearch echo back to Algolia when extra settings are enabled 
+- Upgraded guzzlehttp/guzzle to ^7.15.2 to remediate [CVE-2026-69246](https://github.com/advisories/GHSA-v5mv-p594-2x33)
+- Updated `IndexSettingsComparator` to include a protected method `reconcileKeys` to ensure empty attributes such as `customRanking` or `unretrievableAttributes` are handled properly.
+
 ## 3.18.1
 
 ### Updates

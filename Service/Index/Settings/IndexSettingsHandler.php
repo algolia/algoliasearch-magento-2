@@ -37,6 +37,15 @@ class IndexSettingsHandler
     {
         // Fetch the remote settings once and thread them through both the preserver and the comparator.
         $remoteSettings = $this->connector->getSettings($indexOptions);
+        if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
+            $this->logger->info(
+                sprintf("Remote settings for store ID: %d (index name: %s) : %s",
+                    $indexOptions->getStoreId(),
+                    $indexOptions->getIndexName(),
+                    json_encode($remoteSettings)
+                )
+            );
+        }
 
         // Merge back any remotely managed entries (e.g. ingestion-owned attributesForFaceting) so they
         // survive this write. This must run before the comparison so no-op detection sees the final payload.

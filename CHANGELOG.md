@@ -1,6 +1,13 @@
 # CHANGE LOG
 
-## 3.19.1-dev
+## 3.19.1
+
+### Updates
+- Updated `IndexSettingsHandler::setSettings`:
+    - It now fetches the remote settings once, runs preservation, then threads that same payload into the comparator.
+    - It now use multiple `IndexSettingsComparator::matches()` for settings both forwarded and non-forwarded to replicas to ensure no no-op operations are sent to the dashboard.
+    - Removed `waitLastTask` occurrences in favor of `collectTaskIdToWaitFor` ones to ensure waiting at the end of the process.
+    - Updated unit tests.
 
 ### Bug fixes
 - Updated `IndexSettingsComparator` to include a protected method `reconcileKeys` to ensure empty attributes such as `customRanking` or `unretrievableAttributes` are handled properly.

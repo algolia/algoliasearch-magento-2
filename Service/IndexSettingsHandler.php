@@ -37,6 +37,15 @@ class IndexSettingsHandler
     {
         // Fetch the remote settings once and thread them through the comparator.
         $remoteSettings = $this->connector->getSettings($indexOptions);
+        if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
+            $this->logger->info(
+                sprintf("Remote settings for store ID: %d (index name: %s) : %s",
+                    $indexOptions->getStoreId(),
+                    $indexOptions->getIndexName(),
+                    json_encode($remoteSettings)
+                )
+            );
+        }
 
         // Early return if Algolia settings are already the same
         if ($this->indexSettingsComparator->matches($indexOptions, $indexSettings, $remoteSettings)) {

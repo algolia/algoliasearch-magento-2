@@ -9,32 +9,26 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Backend\Block\Widget\Context;
 use Magento\Framework\UrlInterface;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class AbstractReindexAllButtonTest extends TestCase
 {
-    protected null|(ConfigHelper&MockObject) $configHelper = null;
-    protected null|(Context&MockObject) $context = null;
-    protected null|(UrlInterface&MockObject) $urlBuilder = null;
+    protected function createObjectToTest(
+        string $entity,
+        string $redirectPath,
+        ?ConfigHelper $configHelper = null,
+    ): AbstractReindexAllButton {
+        $urlBuilder = $this->createMock(UrlInterface::class);
+        $urlBuilder->method('getUrl')->with('algolia_algoliasearch/indexingmanager/reindex')->willReturn('http://example.com/reindex');
 
-    protected function setUp(): void
-    {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->context = $this->createMock(Context::class);
-        $this->urlBuilder = $this->createMock(UrlInterface::class);
+        $context = $this->createStub(Context::class);
+        $context->method('getUrlBuilder')->willReturn($urlBuilder);
 
-        $this->urlBuilder->method('getUrl')
-            ->with('algolia_algoliasearch/indexingmanager/reindex')
-            ->willReturn('http://example.com/reindex');
-
-        $this->context->method('getUrlBuilder')->willReturn($this->urlBuilder);
-    }
-
-    private function makeButton(string $entity, string $redirectPath): AbstractReindexAllButton
-    {
-        return new class($this->context, $this->configHelper, $entity, $redirectPath) extends AbstractReindexAllButton {
+        return new class(
+            $context,
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $entity,
+            $redirectPath,
+        ) extends AbstractReindexAllButton {
             public function __construct(
                 Context $context,
                 ConfigHelper $configHelper,
@@ -50,8 +44,10 @@ class AbstractReindexAllButtonTest extends TestCase
 
     public function testGetButtonDataReturnsBasicStructureForNonProductEntity(): void
     {
-        $this->configHelper->method('isQueueActive')->willReturn(false);
-        $button = $this->makeButton('categories', 'algolia/indexingmanager/categories');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(false);
+
+        $button = $this->createObjectToTest('categories', 'algolia/indexingmanager/categories', $configHelper);
 
         $data = $button->getButtonData();
 
@@ -63,8 +59,10 @@ class AbstractReindexAllButtonTest extends TestCase
 
     public function testGetButtonDataAddsWarningWhenQueueInactiveAndEntityIsProducts(): void
     {
-        $this->configHelper->method('isQueueActive')->willReturn(false);
-        $button = $this->makeButton('products', 'algolia/indexingmanager/products');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(false);
+
+        $button = $this->createObjectToTest('products', 'algolia/indexingmanager/products', $configHelper);
 
         $data = $button->getButtonData();
 
@@ -74,8 +72,10 @@ class AbstractReindexAllButtonTest extends TestCase
 
     public function testGetButtonDataDoesNotAddWarningWhenQueueActiveAndEntityIsProducts(): void
     {
-        $this->configHelper->method('isQueueActive')->willReturn(true);
-        $button = $this->makeButton('products', 'algolia/indexingmanager/products');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(true);
+
+        $button = $this->createObjectToTest('products', 'algolia/indexingmanager/products', $configHelper);
 
         $data = $button->getButtonData();
 

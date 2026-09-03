@@ -7,66 +7,71 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\SearchClientProvider;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class SearchClientProviderTest extends TestCase
 {
-    private null|(ConfigHelper&MockObject) $config = null;
-    private null|(AlgoliaCredentialsManager&MockObject) $credentialsManager = null;
-    private ?SearchClientProvider $provider = null;
+    protected function createObjectToTest(
+        ?ConfigHelper $config = null,
+        ?AlgoliaCredentialsManager $credentialsManager = null,
+    ): SearchClientProvider {
+        $config ??= $this->createStub(ConfigHelper::class);
+        $config->method('getExtensionVersion')->willReturn('3.19.0');
+        $config->method('getMagentoVersion')->willReturn('2.4.8');
+        $config->method('getMagentoEdition')->willReturn('Community');
 
-    protected function setUp(): void
-    {
-        $this->config = $this->createMock(ConfigHelper::class);
-        $this->config->method('getExtensionVersion')->willReturn('3.19.0');
-        $this->config->method('getMagentoVersion')->willReturn('2.4.8');
-        $this->config->method('getMagentoEdition')->willReturn('Community');
-
-        $this->credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
-
-        $this->provider = new SearchClientProvider(
-            $this->config,
-            $this->credentialsManager
+        return new SearchClientProvider(
+            $config,
+            $credentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
         );
     }
 
     public function testGetClientThrowsWhenCredentialsInvalid(): void
     {
-        $this->credentialsManager->method('checkCredentials')->willReturn(false);
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager->expects($this->once())->method('checkCredentials')->willReturn(false);
+
+        $provider = $this->createObjectToTest(credentialsManager: $credentialsManager);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Algolia credentials were not provided');
 
-        $this->provider->getClient(1);
+        $provider->getClient(1);
     }
 
     public function testGetClientWithNullStoreIdDefaultsToZero(): void
     {
-        $this->credentialsManager->method('checkCredentials')
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager->expects($this->once())
+            ->method('checkCredentials')
             ->with(0)
             ->willReturn(false);
 
+        $provider = $this->createObjectToTest(credentialsManager: $credentialsManager);
+
         $this->expectException(AlgoliaException::class);
 
-        $this->provider->getClient(null);
+        $provider->getClient(null);
     }
 
     public function testGetClientCachesPerStore(): void
     {
-        $this->credentialsManager->expects($this->once())
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager->expects($this->once())
             ->method('checkCredentials')
             ->with(1)
             ->willReturn(true);
-        $this->config->method('getApplicationID')->willReturn('test-app-id');
-        $this->config->method('getAPIKey')->willReturn('test-api-key');
-        $this->config->method('getConnectionTimeout')->willReturn(5);
-        $this->config->method('getReadTimeout')->willReturn(10);
-        $this->config->method('getWriteTimeout')->willReturn(30);
 
-        $client1 = $this->provider->getClient(1);
-        $client1Again = $this->provider->getClient(1);
+        $config = $this->createStub(ConfigHelper::class);
+        $config->method('getApplicationID')->willReturn('test-app-id');
+        $config->method('getAPIKey')->willReturn('test-api-key');
+        $config->method('getConnectionTimeout')->willReturn(5);
+        $config->method('getReadTimeout')->willReturn(10);
+        $config->method('getWriteTimeout')->willReturn(30);
+
+        $provider = $this->createObjectToTest($config, $credentialsManager);
+
+        $client1 = $provider->getClient(1);
+        $client1Again = $provider->getClient(1);
 
         $this->assertSame($client1, $client1Again);
     }
@@ -74,21 +79,26 @@ class SearchClientProviderTest extends TestCase
     public function testGetClientReturnsDifferentClientsPerStore(): void
     {
         $storeIds = [];
-        $this->credentialsManager->expects($this->exactly(2))
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager->expects($this->exactly(2))
             ->method('checkCredentials')
             ->with($this->callback(function (int $storeId) use (&$storeIds) {
                 $storeIds[] = $storeId;
                 return true;
             }))
             ->willReturn(true);
-        $this->config->method('getApplicationID')->willReturn('test-app-id');
-        $this->config->method('getAPIKey')->willReturn('test-api-key');
-        $this->config->method('getConnectionTimeout')->willReturn(5);
-        $this->config->method('getReadTimeout')->willReturn(10);
-        $this->config->method('getWriteTimeout')->willReturn(30);
 
-        $client1 = $this->provider->getClient(1);
-        $client2 = $this->provider->getClient(2);
+        $config = $this->createStub(ConfigHelper::class);
+        $config->method('getApplicationID')->willReturn('test-app-id');
+        $config->method('getAPIKey')->willReturn('test-api-key');
+        $config->method('getConnectionTimeout')->willReturn(5);
+        $config->method('getReadTimeout')->willReturn(10);
+        $config->method('getWriteTimeout')->willReturn(30);
+
+        $provider = $this->createObjectToTest($config, $credentialsManager);
+
+        $client1 = $provider->getClient(1);
+        $client2 = $provider->getClient(2);
 
         $this->assertNotSame($client1, $client2);
         $this->assertEquals([1, 2], $storeIds);

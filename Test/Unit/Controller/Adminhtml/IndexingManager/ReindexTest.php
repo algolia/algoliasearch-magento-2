@@ -16,175 +16,178 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-#[AllowMockObjectsWithoutExpectations]
 class ReindexTest extends TestCase
 {
-    protected ?Reindex $reindexController = null;
+    protected function createObjectToTest(
+        ?RequestInterface $request = null,
+        ?ManagerInterface $messageManager = null,
+        ?ResultFactory $resultFactory = null,
+        ?StoreManagerInterface $storeManager = null,
+        ?StoreNameFetcher $storeNameFetcher = null,
+        ?IndexNameFetcher $indexNameFetcher = null,
+        ?ConfigHelper $configHelper = null,
+        ?ProductBatchQueueProcessor $productBatchQueueProcessor = null,
+        ?CategoryBatchQueueProcessor $categoryBatchQueueProcessor = null,
+        ?PageBatchQueueProcessor $pageBatchQueueProcessor = null,
+    ): Reindex {
+        if ($resultFactory === null) {
+            $resultInstance = $this->createStub(Redirect::class);
+            $resultInstance->method('setPath')->willReturnSelf();
 
-    protected ?Context $context = null;
-    protected ?RequestInterface $request = null;
-    protected ?ManagerInterface $messageManager = null;
-    protected ?ResultFactory $resultFactory = null;
+            $resultFactory = $this->createMock(ResultFactory::class);
+            $resultFactory->method('create')->with(ResultFactory::TYPE_REDIRECT)->willReturn($resultInstance);
+        }
 
-    protected ?StoreManagerInterface $storeManager = null;
-    protected ?StoreNameFetcher $storeNameFetcher = null;
-    protected ?IndexNameFetcher $indexNameFetcher = null;
-    protected ?ConfigHelper $configHelper = null;
-    protected ?ProductBatchQueueProcessor $productBatchQueueProcessor = null;
-    protected ?CategoryBatchQueueProcessor $categoryBatchQueueProcessor = null;
-    protected ?PageBatchQueueProcessor $pageBatchQueueProcessor = null;
+        $context = $this->createStub(Context::class);
+        $context->method('getRequest')->willReturn($request ?? $this->createStub(RequestInterface::class));
+        $context->method('getMessageManager')->willReturn($messageManager ?? $this->createStub(ManagerInterface::class));
+        $context->method('getResultFactory')->willReturn($resultFactory);
 
-    protected ?array $stores = ['1' => 'foo', '2' => 'bar'];
-
-    protected function setUp(): void
-    {
-        $this->request = $this->createMock(RequestInterface::class);
-        $this->messageManager = $this->createMock(ManagerInterface::class);
-        $this->resultFactory = $this->createMock(ResultFactory::class);
-        $resultInstance = $this->createMock(Redirect::class);
-        $resultInstance->method('setPath')->willReturn('');
-        $this->resultFactory->method('create')
-            ->with(ResultFactory::TYPE_REDIRECT)
-            ->willReturn($resultInstance);
-
-        $this->context = $this->createMock(Context::class);
-        $this->context->method('getRequest')->willReturn($this->request);
-        $this->context->method('getMessageManager')->willReturn($this->messageManager);
-        $this->context->method('getResultFactory')->willReturn($this->resultFactory);
-
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->storeManager->method('getStores')->willReturn($this->stores);
-
-        $this->storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $this->indexNameFetcher = $this->createMock(IndexNameFetcher::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
-        $this->categoryBatchQueueProcessor = $this->createMock(CategoryBatchQueueProcessor::class);
-        $this->pageBatchQueueProcessor = $this->createMock(PageBatchQueueProcessor::class);
-
-        $this->reindexController = new Reindex(
-            $this->context,
-            $this->storeManager,
-            $this->storeNameFetcher,
-            $this->indexNameFetcher,
-            $this->configHelper,
-            $this->productBatchQueueProcessor,
-            $this->categoryBatchQueueProcessor,
-            $this->pageBatchQueueProcessor
+        return new Reindex(
+            $context,
+            $storeManager ?? $this->createStub(StoreManagerInterface::class),
+            $storeNameFetcher ?? $this->createStub(StoreNameFetcher::class),
+            $indexNameFetcher ?? $this->createStub(IndexNameFetcher::class),
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $productBatchQueueProcessor ?? $this->createStub(ProductBatchQueueProcessor::class),
+            $categoryBatchQueueProcessor ?? $this->createStub(CategoryBatchQueueProcessor::class),
+            $pageBatchQueueProcessor ?? $this->createStub(PageBatchQueueProcessor::class),
         );
     }
 
     public function testExecuteFullIndexingAllEntitiesAllStores()
     {
-        $this->request
-            ->expects($this->once())
-            ->method('getParams')
-            ->willReturn([
-                'store_id' => null,
-                'entity' => 'all',
-            ]);
+        $request = $this->createMock(RequestInterface::class);
+        $request->expects($this->once())->method('getParams')->willReturn([
+            'store_id' => null,
+            'entity' => 'all',
+        ]);
 
-        $this->productBatchQueueProcessor
-            ->expects($this->exactly(2))
-            ->method('processBatch');
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn(['1' => 'foo', '2' => 'bar']);
 
-        $this->categoryBatchQueueProcessor
-            ->expects($this->exactly(2))
-            ->method('processBatch');
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->exactly(2))->method('processBatch');
 
-        $this->pageBatchQueueProcessor
-            ->expects($this->exactly(2))
-            ->method('processBatch');
+        $categoryBatchQueueProcessor = $this->createMock(CategoryBatchQueueProcessor::class);
+        $categoryBatchQueueProcessor->expects($this->exactly(2))->method('processBatch');
 
-        $this->reindexController->execute();
+        $pageBatchQueueProcessor = $this->createMock(PageBatchQueueProcessor::class);
+        $pageBatchQueueProcessor->expects($this->exactly(2))->method('processBatch');
+
+        $controller = $this->createObjectToTest(
+            request: $request,
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+            categoryBatchQueueProcessor: $categoryBatchQueueProcessor,
+            pageBatchQueueProcessor: $pageBatchQueueProcessor,
+        );
+
+        $controller->execute();
     }
 
     public function testExecuteFullIndexingPagesAllStores()
     {
-        $this->request
-            ->expects($this->once())
-            ->method('getParams')
-            ->willReturn([
-                'store_id' => null,
-                'entity' => 'pages',
-            ]);
+        $request = $this->createMock(RequestInterface::class);
+        $request->expects($this->once())->method('getParams')->willReturn([
+            'store_id' => null,
+            'entity' => 'pages',
+        ]);
 
-        $this->productBatchQueueProcessor
-            ->expects($this->never())
-            ->method('processBatch');
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn(['1' => 'foo', '2' => 'bar']);
 
-        $this->categoryBatchQueueProcessor
-            ->expects($this->never())
-            ->method('processBatch');
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->never())->method('processBatch');
 
-        $this->pageBatchQueueProcessor
-            ->expects($this->exactly(2))
-            ->method('processBatch');
+        $categoryBatchQueueProcessor = $this->createMock(CategoryBatchQueueProcessor::class);
+        $categoryBatchQueueProcessor->expects($this->never())->method('processBatch');
 
-        $this->reindexController->execute();
+        $pageBatchQueueProcessor = $this->createMock(PageBatchQueueProcessor::class);
+        $pageBatchQueueProcessor->expects($this->exactly(2))->method('processBatch');
+
+        $controller = $this->createObjectToTest(
+            request: $request,
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+            categoryBatchQueueProcessor: $categoryBatchQueueProcessor,
+            pageBatchQueueProcessor: $pageBatchQueueProcessor,
+        );
+
+        $controller->execute();
     }
 
     public function testExecuteFullIndexingProductsOneStore()
     {
-        $this->request
-            ->expects($this->once())
-            ->method('getParams')
-            ->willReturn([
-                'store_id' => '1',
-                'entity' => 'products',
-            ]);
+        $request = $this->createMock(RequestInterface::class);
+        $request->expects($this->once())->method('getParams')->willReturn([
+            'store_id' => '1',
+            'entity' => 'products',
+        ]);
 
-        $this->productBatchQueueProcessor
-            ->expects($this->once())
-            ->method('processBatch');
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->once())->method('processBatch');
 
-        $this->categoryBatchQueueProcessor
-            ->expects($this->never())
-            ->method('processBatch');
+        $categoryBatchQueueProcessor = $this->createMock(CategoryBatchQueueProcessor::class);
+        $categoryBatchQueueProcessor->expects($this->never())->method('processBatch');
 
-        $this->pageBatchQueueProcessor
-            ->expects($this->never())
-            ->method('processBatch');
+        $pageBatchQueueProcessor = $this->createMock(PageBatchQueueProcessor::class);
+        $pageBatchQueueProcessor->expects($this->never())->method('processBatch');
 
-        $this->reindexController->execute();
+        $controller = $this->createObjectToTest(
+            request: $request,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+            categoryBatchQueueProcessor: $categoryBatchQueueProcessor,
+            pageBatchQueueProcessor: $pageBatchQueueProcessor,
+        );
+
+        $controller->execute();
     }
 
     public function testExecuteProductsMassAction()
     {
         $selectedProducts = [2, 3, 4];
 
-        $this->request
-            ->expects($this->once())
-            ->method('getParams')
-            ->willReturn([
-                'store_id' => null,
-                'namespace' => 'product_listing',
-                'selected' => $selectedProducts,
-            ]);
+        $request = $this->createMock(RequestInterface::class);
+        $request->expects($this->once())->method('getParams')->willReturn([
+            'store_id' => null,
+            'namespace' => 'product_listing',
+            'selected' => $selectedProducts,
+        ]);
 
-        $this->productBatchQueueProcessor
-            ->expects($this->exactly(2))
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn(['1' => 'foo', '2' => 'bar']);
+
+        $productBatchQueueProcessor = $this->createMock(ProductBatchQueueProcessor::class);
+        $productBatchQueueProcessor->expects($this->exactly(2))
             ->method('processBatch')
             ->with(1 || 2, $selectedProducts);
 
-        $this->categoryBatchQueueProcessor
-            ->expects($this->never())
-            ->method('processBatch');
+        $categoryBatchQueueProcessor = $this->createMock(CategoryBatchQueueProcessor::class);
+        $categoryBatchQueueProcessor->expects($this->never())->method('processBatch');
 
-        $this->pageBatchQueueProcessor
-            ->expects($this->never())
-            ->method('processBatch');
+        $pageBatchQueueProcessor = $this->createMock(PageBatchQueueProcessor::class);
+        $pageBatchQueueProcessor->expects($this->never())->method('processBatch');
 
-        $this->reindexController->execute();
+        $controller = $this->createObjectToTest(
+            request: $request,
+            storeManager: $storeManager,
+            productBatchQueueProcessor: $productBatchQueueProcessor,
+            categoryBatchQueueProcessor: $categoryBatchQueueProcessor,
+            pageBatchQueueProcessor: $pageBatchQueueProcessor,
+        );
+
+        $controller->execute();
     }
 
     #[DataProvider('entityParamsProvider')]
     public function testEntityToIndex($params, $result)
     {
-        $this->assertEquals($result, $this->invokeMethod($this->reindexController, 'defineEntitiesToIndex', [$params]));
+        $controller = $this->createObjectToTest();
+
+        $this->assertEquals($result, $this->invokeMethod($controller, 'defineEntitiesToIndex', [$params]));
     }
 
     public static function entityParamsProvider(): array
@@ -216,7 +219,9 @@ class ReindexTest extends TestCase
     #[DataProvider('redirectParamsProvider')]
     public function testRedirectPath($params, $result)
     {
-        $this->assertEquals($result, $this->invokeMethod($this->reindexController, 'defineRedirectPath', [$params]));
+        $controller = $this->createObjectToTest();
+
+        $this->assertEquals($result, $this->invokeMethod($controller, 'defineRedirectPath', [$params]));
     }
 
     public static function redirectParamsProvider(): array

@@ -9,33 +9,23 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\InsightsHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\View\Element\Template\Context;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Item;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class ConversionTest extends TestCase
 {
-    protected null|(Conversion&MockObject) $block = null;
-    protected null|(Session&MockObject) $checkoutSession = null;
-    protected null|(ConfigHelper&MockObject) $configHelper = null;
-    protected null|(Order&MockObject) $order = null;
+    protected function createObjectToTest(
+        ?Session $checkoutSession = null,
+        ?ConfigHelper $configHelper = null,
+    ): Conversion {
+        $context = $this->createStub(Context::class);
 
-    protected function setUp(): void
-    {
-        $this->checkoutSession = $this->createMock(Session::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->order = $this->createMock(Order::class);
-
-        $this->block = $this->getMockBuilder(Conversion::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $this->setPrivateProperty($this->block, 'checkoutSession', $this->checkoutSession);
-        $this->setPrivateProperty($this->block, 'configHelper', $this->configHelper);
-        $this->checkoutSession->method('getLastRealOrder')->willReturn($this->order);
+        return new Conversion(
+            $context,
+            $checkoutSession ?? $this->createStub(Session::class),
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+        );
     }
 
     public function testGetOrderItemsConversionJsonExcludesItemsWithoutQueryParam(): void
@@ -43,9 +33,15 @@ class ConversionTest extends TestCase
         $item = $this->createMock(Item::class);
         $item->method('hasData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn(false);
 
-        $this->order->method('getAllVisibleItems')->willReturn([$item]);
+        $order = $this->createStub(Order::class);
+        $order->method('getAllVisibleItems')->willReturn([$item]);
 
-        $this->assertSame('[]', $this->block->getOrderItemsConversionJson());
+        $checkoutSession = $this->createStub(Session::class);
+        $checkoutSession->method('getLastRealOrder')->willReturn($order);
+
+        $block = $this->createObjectToTest(checkoutSession: $checkoutSession);
+
+        $this->assertSame('[]', $block->getOrderItemsConversionJson());
     }
 
     public function testGetOrderItemsConversionJsonIncludesItemsWithQueryParam(): void
@@ -57,26 +53,48 @@ class ConversionTest extends TestCase
         $item->method('getData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn($queryData);
         $item->method('getProductId')->willReturn(42);
 
-        $this->order->method('getAllVisibleItems')->willReturn([$item]);
+        $order = $this->createStub(Order::class);
+        $order->method('getAllVisibleItems')->willReturn([$item]);
 
-        $result = json_decode($this->block->getOrderItemsConversionJson());
+        $checkoutSession = $this->createStub(Session::class);
+        $checkoutSession->method('getLastRealOrder')->willReturn($order);
+
+        $block = $this->createObjectToTest(checkoutSession: $checkoutSession);
+
+        $result = json_decode($block->getOrderItemsConversionJson());
         $this->assertEquals('abc123', $result->{'42'}->queryID);
     }
 
     public function testToHtmlReturnsEmptyStringWhenConversionAnalyticsDisabled(): void
     {
-        $this->order->method('getStoreId')->willReturn(1);
-        $this->configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(false);
+        $order = $this->createStub(Order::class);
+        $order->method('getStoreId')->willReturn(1);
 
-        $this->assertSame('', $this->block->toHtml());
+        $checkoutSession = $this->createStub(Session::class);
+        $checkoutSession->method('getLastRealOrder')->willReturn($order);
+
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(false);
+
+        $block = $this->createObjectToTest(checkoutSession: $checkoutSession, configHelper: $configHelper);
+
+        $this->assertSame('', $block->toHtml());
     }
 
     public function testToHtmlReturnsEmptyStringWhenConversionModeIsNotPurchase(): void
     {
-        $this->order->method('getStoreId')->willReturn(1);
-        $this->configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(true);
-        $this->configHelper->method('getConversionAnalyticsMode')->with(1)->willReturn('click');
+        $order = $this->createStub(Order::class);
+        $order->method('getStoreId')->willReturn(1);
 
-        $this->assertSame('', $this->block->toHtml());
+        $checkoutSession = $this->createStub(Session::class);
+        $checkoutSession->method('getLastRealOrder')->willReturn($order);
+
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->method('isClickConversionAnalyticsEnabled')->with(1)->willReturn(true);
+        $configHelper->method('getConversionAnalyticsMode')->with(1)->willReturn('click');
+
+        $block = $this->createObjectToTest(checkoutSession: $checkoutSession, configHelper: $configHelper);
+
+        $this->assertSame('', $block->toHtml());
     }
 }

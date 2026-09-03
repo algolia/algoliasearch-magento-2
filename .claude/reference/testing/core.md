@@ -41,6 +41,7 @@
     - Use createMock() with expects() only when the call itself is the behavior under test (indirect output: dispatch, persist, log, an outbound API call). The interaction is the contract you are proving.
     - Default a dependency to a stub. Promote it to a mock only when you are asserting the interaction.
 - Prefer usage of `$this->callback('is_callable')` over `$this->callable()`
+- `expects` must be derived from the specification for the test, never from the test's own wiring.
 
 **DO Mock:**
 - Every object that needs to be passed in the constructor of the tested class

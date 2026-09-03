@@ -65,8 +65,8 @@ abstract class IndexingTestCase extends TestCase
             $command,
             'execute',
             [
-                $this->createMock(InputInterface::class),
-                $this->createMock(OutputInterface::class),
+                $this->createStub(InputInterface::class),
+                $this->createStub(OutputInterface::class),
             ]
         );
         $this->algoliaConnector->waitLastTask();

@@ -9,37 +9,32 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Category;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Url;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class CategoryUrlPluginTest extends TestCase
 {
-    protected null|(ObjectManagerInterface&MockObject) $objectManager = null;
-    protected ?CategoryUrlPlugin $plugin = null;
-
-    protected function setUp(): void
+    protected function createObjectToTest(?ObjectManagerInterface $objectManager = null): CategoryUrlPlugin
     {
-        $this->objectManager = $this->createMock(ObjectManagerInterface::class);
-        $this->plugin = new CategoryUrlPlugin($this->objectManager);
+        return new CategoryUrlPlugin($objectManager ?? $this->createStub(ObjectManagerInterface::class));
     }
 
     public function testCallsProceedWhenStoreIdIsZero(): void
     {
-        $category = $this->createMock(Category::class);
+        $category = $this->createStub(Category::class);
         $category->method('getStoreId')->willReturn(0);
 
         $expected = new \stdClass();
         $proceed = fn() => $expected;
 
-        $result = $this->plugin->aroundGetUrlInstance($category, $proceed);
+        $plugin = $this->createObjectToTest();
+
+        $result = $plugin->aroundGetUrlInstance($category, $proceed);
 
         $this->assertSame($expected, $result);
     }
 
     public function testCreatesUrlWithStoreIdWhenStoreIdIsNonZero(): void
     {
-        $category = $this->createMock(Category::class);
+        $category = $this->createStub(Category::class);
         $category->method('getStoreId')->willReturn(3);
 
         $urlInstance = $this->getMockBuilder(Url::class)
@@ -51,14 +46,17 @@ class CategoryUrlPluginTest extends TestCase
             ->with('setStoreId', [3])
             ->willReturnSelf();
 
-        $this->objectManager->expects($this->once())
+        $objectManager = $this->createMock(ObjectManagerInterface::class);
+        $objectManager->expects($this->once())
             ->method('create')
             ->with(Url::class)
             ->willReturn($urlInstance);
 
+        $plugin = $this->createObjectToTest($objectManager);
+
         $proceed = function () { $this->fail('proceed should not be called'); };
 
-        $result = $this->plugin->aroundGetUrlInstance($category, $proceed);
+        $result = $plugin->aroundGetUrlInstance($category, $proceed);
 
         $this->assertSame($urlInstance, $result);
     }

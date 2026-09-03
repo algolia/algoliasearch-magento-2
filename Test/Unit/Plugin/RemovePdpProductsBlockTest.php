@@ -8,70 +8,89 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Plugin\RemovePdpProductsBlock;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\View\Element\AbstractBlock;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class RemovePdpProductsBlockTest extends TestCase
 {
-    protected null|(ConfigHelper&MockObject) $configHelper = null;
-    protected null|(AbstractBlock&MockObject) $subject = null;
-    protected ?RemovePdpProductsBlock $plugin = null;
-
-    protected function setUp(): void
+    protected function createObjectToTest(?ConfigHelper $configHelper = null): RemovePdpProductsBlock
     {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->subject = $this->createMock(AbstractBlock::class);
-        $this->plugin = new RemovePdpProductsBlock($this->configHelper);
+        return new RemovePdpProductsBlock($configHelper ?? $this->createStub(ConfigHelper::class));
     }
 
     public function testReturnsEmptyStringForRelatedBlockWhenAllConditionsMet(): void
     {
-        $this->subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::RELATED_BLOCK_NAME);
-        $this->configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(true);
-        $this->configHelper->method('isRemoveCoreRelatedProductsBlock')->willReturn(true);
+        $subject = $this->createStub(AbstractBlock::class);
+        $subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::RELATED_BLOCK_NAME);
 
-        $this->assertSame('', $this->plugin->afterToHtml($this->subject, '<div>related</div>'));
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(true);
+        $configHelper->method('isRemoveCoreRelatedProductsBlock')->willReturn(true);
+
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $this->assertSame('', $plugin->afterToHtml($subject, '<div>related</div>'));
     }
 
     public function testReturnsOriginalResultForRelatedBlockWhenRelatedProductsNotEnabled(): void
     {
-        $this->subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::RELATED_BLOCK_NAME);
-        $this->configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(false);
+        $subject = $this->createStub(AbstractBlock::class);
+        $subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::RELATED_BLOCK_NAME);
 
-        $this->assertSame('<div>related</div>', $this->plugin->afterToHtml($this->subject, '<div>related</div>'));
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(false);
+
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $this->assertSame('<div>related</div>', $plugin->afterToHtml($subject, '<div>related</div>'));
     }
 
     public function testReturnsOriginalResultForRelatedBlockWhenCoreBlockRemovalNotEnabled(): void
     {
-        $this->subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::RELATED_BLOCK_NAME);
-        $this->configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(true);
-        $this->configHelper->method('isRemoveCoreRelatedProductsBlock')->willReturn(false);
+        $subject = $this->createStub(AbstractBlock::class);
+        $subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::RELATED_BLOCK_NAME);
 
-        $this->assertSame('<div>related</div>', $this->plugin->afterToHtml($this->subject, '<div>related</div>'));
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isRecommendRelatedProductsEnabled')->willReturn(true);
+        $configHelper->method('isRemoveCoreRelatedProductsBlock')->willReturn(false);
+
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $this->assertSame('<div>related</div>', $plugin->afterToHtml($subject, '<div>related</div>'));
     }
 
     public function testReturnsEmptyStringForUpsellBlockWhenAllConditionsMet(): void
     {
-        $this->subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::UPSELL_BLOCK_NAME);
-        $this->configHelper->method('isRecommendFrequentlyBroughtTogetherEnabled')->willReturn(true);
-        $this->configHelper->method('isRemoveUpsellProductsBlock')->willReturn(true);
+        $subject = $this->createStub(AbstractBlock::class);
+        $subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::UPSELL_BLOCK_NAME);
 
-        $this->assertSame('', $this->plugin->afterToHtml($this->subject, '<div>upsell</div>'));
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isRecommendFrequentlyBroughtTogetherEnabled')->willReturn(true);
+        $configHelper->method('isRemoveUpsellProductsBlock')->willReturn(true);
+
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $this->assertSame('', $plugin->afterToHtml($subject, '<div>upsell</div>'));
     }
 
     public function testReturnsOriginalResultForUpsellBlockWhenFbtNotEnabled(): void
     {
-        $this->subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::UPSELL_BLOCK_NAME);
-        $this->configHelper->method('isRecommendFrequentlyBroughtTogetherEnabled')->willReturn(false);
+        $subject = $this->createStub(AbstractBlock::class);
+        $subject->method('getNameInLayout')->willReturn(RemovePdpProductsBlock::UPSELL_BLOCK_NAME);
 
-        $this->assertSame('<div>upsell</div>', $this->plugin->afterToHtml($this->subject, '<div>upsell</div>'));
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isRecommendFrequentlyBroughtTogetherEnabled')->willReturn(false);
+
+        $plugin = $this->createObjectToTest($configHelper);
+
+        $this->assertSame('<div>upsell</div>', $plugin->afterToHtml($subject, '<div>upsell</div>'));
     }
 
     public function testReturnsOriginalResultForUnknownBlock(): void
     {
-        $this->subject->method('getNameInLayout')->willReturn('some.other.block');
+        $subject = $this->createStub(AbstractBlock::class);
+        $subject->method('getNameInLayout')->willReturn('some.other.block');
 
-        $this->assertSame('<div>content</div>', $this->plugin->afterToHtml($this->subject, '<div>content</div>'));
+        $plugin = $this->createObjectToTest();
+
+        $this->assertSame('<div>content</div>', $plugin->afterToHtml($subject, '<div>content</div>'));
     }
 }

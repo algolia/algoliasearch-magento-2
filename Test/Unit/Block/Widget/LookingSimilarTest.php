@@ -7,34 +7,32 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Block\Widget;
 use Algolia\AlgoliaSearch\Block\Widget\LookingSimilar;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
+use Magento\Framework\Math\Random;
+use Magento\Framework\View\Element\Template\Context;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class LookingSimilarTest extends TestCase
 {
-    protected null|(LookingSimilar&MockObject) $block = null;
-    protected null|(ConfigHelper&MockObject) $configHelper = null;
+    protected function createObjectToTest(
+        ?ConfigHelper $configHelper = null,
+        ?Random $mathRandom = null,
+    ): LookingSimilar {
+        $context = $this->createStub(Context::class);
 
-    protected function setUp(): void
-    {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-
-        $this->block = $this->getMockBuilder(LookingSimilar::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $this->setPrivateProperty($this->block, 'configHelper', $this->configHelper);
+        return new LookingSimilar(
+            $context,
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $mathRandom ?? $this->createStub(Random::class),
+        );
     }
 
     #[DataProvider('productIdsDataProvider')]
     public function testGetProductIdsReturnsJsonEncodedArray(string $input, string $expected): void
     {
-        $this->block->setData('productIds', $input);
+        $block = $this->createObjectToTest();
+        $block->setData('productIds', $input);
 
-        $this->assertSame($expected, $this->block->getProductIds());
+        $this->assertSame($expected, $block->getProductIds());
     }
 
     public static function productIdsDataProvider(): array

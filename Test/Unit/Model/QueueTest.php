@@ -7,41 +7,53 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
 use Algolia\AlgoliaSearch\Service\Product\IndexBuilder as ProductIndexBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\ObjectManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
-#[AllowMockObjectsWithoutExpectations]
 class QueueTest extends TestCase
 {
-    private null|(ConfigHelper&MockObject) $configHelper = null;
-    private null|(DiagnosticsLogger&MockObject) $logger = null;
-    private null|(ObjectManagerInterface&MockObject) $objectManager = null;
-    private null|(AdapterInterface&MockObject) $dbAdapter = null;
-    private ?Queue $queue = null;
-
     /**
-     * @throws \ReflectionException
+     * Queue::__construct() resolves its db connection via $objectManager->create(...), an
+     * injected instance call (not a static ObjectManager access), so it's safe to construct for
+     * real once that instance is stubbed to hand back the desired $dbAdapter.
      */
-    protected function setUp(): void
-    {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->logger = $this->createMock(DiagnosticsLogger::class);
-        $this->objectManager = $this->createMock(ObjectManagerInterface::class);
-        $this->dbAdapter = $this->createMock(AdapterInterface::class);
+    protected function createObjectToTest(
+        ?ConfigHelper $configHelper = null,
+        ?DiagnosticsLogger $logger = null,
+        ?ObjectManagerInterface $objectManager = null,
+        ?AdapterInterface $dbAdapter = null,
+    ): Queue {
+        $dbAdapter ??= $this->createStub(AdapterInterface::class);
 
-        $this->queue = $this->createQueueMock();
+        $resourceConnection = $this->createStub(ResourceConnection::class);
+        $resourceConnection->method('getTableName')->willReturnArgument(0);
+        $resourceConnection->method('getConnection')->willReturn($dbAdapter);
+
+        $objectManager ??= $this->createStub(ObjectManagerInterface::class);
+        $objectManager->method('create')->willReturn($resourceConnection);
+
+        return new Queue(
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $logger ?? $this->createStub(DiagnosticsLogger::class),
+            $this->createStub(JobCollectionFactory::class),
+            $resourceConnection,
+            $objectManager,
+            $this->createStub(ConsoleOutput::class),
+        );
     }
 
     #[DataProvider('authorizedHandlersProvider')]
     public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueInactive(string $class, string $method, array $data): void
     {
-        $this->configHelper->method('isQueueActive')->willReturn(false);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(false);
 
         $mockHandler = $this->getMockBuilder($class)
             ->disableOriginalConstructor()
@@ -50,46 +62,60 @@ class QueueTest extends TestCase
 
         $mockHandler->expects($this->once())->method($method);
 
-        $this->objectManager->expects($this->once())
+        $objectManager = $this->createMock(ObjectManagerInterface::class);
+        $objectManager->expects($this->once())
             ->method('get')
             ->with($class)
             ->willReturn($mockHandler);
 
-        $this->queue->addToQueue($class, $method, $data);
+        $queue = $this->createObjectToTest(configHelper: $configHelper, objectManager: $objectManager);
+
+        $queue->addToQueue($class, $method, $data);
     }
 
     #[DataProvider('authorizedHandlersProvider')]
     public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueActive(string $class, string $method, array $data): void
     {
-        $this->configHelper->method('isQueueActive')->willReturn(true);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(true);
 
-        $this->dbAdapter->expects($this->once())->method('insert');
+        $dbAdapter = $this->createMock(AdapterInterface::class);
+        $dbAdapter->expects($this->once())->method('insert');
 
-        $this->queue->addToQueue($class, $method, $data);
+        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+
+        $queue->addToQueue($class, $method, $data);
     }
 
     #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueInactive(string $class, string $method): void
     {
-        $this->configHelper->method('isQueueActive')->willReturn(false);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(false);
+
+        $queue = $this->createObjectToTest(configHelper: $configHelper);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
 
-        $this->queue->addToQueue($class, $method, []);
+        $queue->addToQueue($class, $method, []);
     }
 
     #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueActive(string $class, string $method): void
     {
-        $this->configHelper->method('isQueueActive')->willReturn(true);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(true);
 
-        $this->dbAdapter->expects($this->never())->method('insert');
+        $dbAdapter = $this->createMock(AdapterInterface::class);
+        $dbAdapter->expects($this->never())->method('insert');
+
+        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
 
-        $this->queue->addToQueue($class, $method, []);
+        $queue->addToQueue($class, $method, []);
     }
 
     /**
@@ -145,26 +171,4 @@ class QueueTest extends TestCase
             ],
         ];
     }
-
-    /**
-     * Create Queue using reflection to bypass the generated CollectionFactory dependency
-     *
-     * @throws \ReflectionException
-     */
-    private function createQueueMock(): Queue
-    {
-
-        $queue = $this->getMockBuilder(Queue::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $this->setPrivateProperty($queue, 'configHelper', $this->configHelper);
-        $this->setPrivateProperty($queue, 'logger', $this->logger);
-        $this->setPrivateProperty($queue, 'objectManager', $this->objectManager);
-        $this->setPrivateProperty($queue, 'db', $this->dbAdapter);
-
-        return $queue;
-    }
-
 }

@@ -11,33 +11,30 @@ use Magento\Framework\Model\Context;
 use Magento\Framework\Registry;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class QueueCronTest extends TestCase
 {
-    protected ?QueueCron $queueCronModel;
-
-    protected function setUp(): void
+    protected function createObjectToTest(): QueueCron
     {
-        $context = $this->createMock(Context::class);
-        $eventDispatcher = $this->createMock(ManagerInterface::class);
-        $context->method('getEventDispatcher')->willReturn($eventDispatcher);
+        $context = $this->createStub(Context::class);
+        $context->method('getEventDispatcher')->willReturn($this->createStub(ManagerInterface::class));
 
-        $registry = $this->createMock(Registry::class);
-        $config = $this->createMock(ScopeConfigInterface::class);
-        $cacheTypeList = $this->createMock(TypeListInterface::class);
-
-        $this->queueCronModel = new QueueCron($context, $registry, $config, $cacheTypeList);
+        return new QueueCron(
+            $context,
+            $this->createStub(Registry::class),
+            $this->createStub(ScopeConfigInterface::class),
+            $this->createStub(TypeListInterface::class),
+        );
     }
 
     #[DataProvider('valuesProvider')]
     public function testInput($value, $isValid, $canReplay = true): void
     {
-        $this->queueCronModel->setValue($value);
+        $queueCronModel = $this->createObjectToTest();
+        $queueCronModel->setValue($value);
 
         try {
-            $result = $this->queueCronModel->beforeSave();
+            $result = $queueCronModel->beforeSave();
             $this->assertIsObject($result);
         } catch (InvalidCronException $exception) {
             $this->assertEquals(

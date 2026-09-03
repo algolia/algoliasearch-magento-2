@@ -7,16 +7,10 @@ use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Index\Settings\IndexSettingsComparator;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
 
-#[AllowMockObjectsWithoutExpectations]
 class IndexSettingsComparatorTest extends TestCase
 {
-    protected ?AlgoliaConnector $connector = null;
-    protected ?IndexOptionsInterface $indexOptions = null;
-
-    protected IndexSettingsComparator $indexSettingsComparator;
-
     protected array $testSettings = [
         'searchableAttributes' => [
             'unordered(name)',
@@ -53,19 +47,20 @@ class IndexSettingsComparatorTest extends TestCase
         ],
     ];
 
-    protected function setUp(): void
+    protected function createObjectToTest(?AlgoliaConnector $connector = null): IndexSettingsComparator
     {
-        $this->connector = $this->createMock(AlgoliaConnector::class);
-        $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
-
-        $this->indexSettingsComparator = new IndexSettingsComparator($this->connector);
+        return new IndexSettingsComparator($connector ?? $this->createStub(AlgoliaConnector::class));
     }
 
     public function testWithSameSettings(): void
     {
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($this->testSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($this->testSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithSameSettingsButOrderedDifferently(): void
@@ -106,9 +101,13 @@ class IndexSettingsComparatorTest extends TestCase
             ],
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same (attributes are re-ordered by ksort)
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithSameSettingsButWithMixedAssociativeArray(): void
@@ -120,9 +119,13 @@ class IndexSettingsComparatorTest extends TestCase
             'bar' => 'foo',
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same (associative arrays are re-ordered by recursive ksort)
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithAdditionalSettingsComingFromAlgolia(): void
@@ -130,9 +133,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['additionalSettings'] = 'foo';
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be the same (additional settings are ignored by array_intersect_key)
-        $this->assertTrue($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithChangedValue(): void
@@ -140,9 +147,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['maxValuesPerFacet'] = 10;
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithChangedTyping(): void
@@ -150,9 +161,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         $algoliaSettings['typoTolerance'] = false;
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithMissingValue(): void
@@ -160,9 +175,13 @@ class IndexSettingsComparatorTest extends TestCase
         $algoliaSettings = $this->testSettings;
         unset($algoliaSettings['removeWordsIfNoResults']);
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithRemovedOrderingAttribute(): void
@@ -177,9 +196,13 @@ class IndexSettingsComparatorTest extends TestCase
             // removed color
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testWithChangedOrdering(): void
@@ -195,37 +218,219 @@ class IndexSettingsComparatorTest extends TestCase
             'unordered(categories_without_path)',
         ];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $this->testSettings));
     }
 
     public function testInvalidJson(): void
     {
         $algoliaSettings = [INF];
 
-        $this->connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($algoliaSettings);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessageMatches('/Invalid JSON/');
         // Must be different
-        $this->assertFalse($this->indexSettingsComparator->matches($this->indexOptions, [INF]));
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), [INF]));
     }
 
     public function testUsesProvidedRemoteSettingsWhenPassed(): void
     {
         // When remote settings are supplied, the connector must not be queried.
-        $this->connector->expects($this->never())->method('getSettings');
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->never())->method('getSettings');
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+        $indexOptions = $this->createStub(IndexOptionsInterface::class);
 
         $this->assertTrue(
-            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $this->testSettings)
+            $indexSettingsComparator->matches($indexOptions, $this->testSettings, $this->testSettings)
         );
 
         $changedRemote = $this->testSettings;
         $changedRemote['maxValuesPerFacet'] = 10;
 
         $this->assertFalse(
-            $this->indexSettingsComparator->matches($this->indexOptions, $this->testSettings, $changedRemote)
+            $indexSettingsComparator->matches($indexOptions, $this->testSettings, $changedRemote)
         );
+    }
+
+    // ── reconcileKeys() ──
+
+    #[DataProvider('reconcileKeysProvider')]
+    public function testReconcileKeys(array $remote, array $local, array $expectedRemote, array $expectedLocal): void
+    {
+        $indexSettingsComparator = $this->createObjectToTest();
+
+        [$reconciledRemote, $reconciledLocal] = $this->invokeMethod(
+            $indexSettingsComparator,
+            'reconcileKeys',
+            [$remote, $local]
+        );
+
+        $this->assertSame($expectedRemote, $reconciledRemote);
+        $this->assertSame($expectedLocal, $reconciledLocal);
+    }
+
+    public static function reconcileKeysProvider(): array
+    {
+        return [
+            'remote-only keys are dropped' => [
+                'remote' => ['searchableAttributes' => ['name'], 'algoliaManagedSetting' => 'foo'],
+                'local' => ['searchableAttributes' => ['name']],
+                'expectedRemote' => ['searchableAttributes' => ['name']],
+                'expectedLocal' => ['searchableAttributes' => ['name']],
+            ],
+            'empty local customRanking absent remotely is dropped from local' => [
+                'remote' => ['searchableAttributes' => ['name']],
+                'local' => ['searchableAttributes' => ['name'], 'customRanking' => []],
+                'expectedRemote' => ['searchableAttributes' => ['name']],
+                'expectedLocal' => ['searchableAttributes' => ['name']],
+            ],
+            'empty local unretrievableAttributes absent remotely is dropped from local' => [
+                'remote' => ['searchableAttributes' => ['name']],
+                'local' => ['searchableAttributes' => ['name'], 'unretrievableAttributes' => []],
+                'expectedRemote' => ['searchableAttributes' => ['name']],
+                'expectedLocal' => ['searchableAttributes' => ['name']],
+            ],
+            'empty local customRanking with null remote value is coerced to null' => [
+                'remote' => ['customRanking' => null],
+                'local' => ['customRanking' => []],
+                'expectedRemote' => ['customRanking' => null],
+                'expectedLocal' => ['customRanking' => null],
+            ],
+            'empty local unretrievableAttributes with null remote value is coerced to null' => [
+                'remote' => ['unretrievableAttributes' => null],
+                'local' => ['unretrievableAttributes' => []],
+                'expectedRemote' => ['unretrievableAttributes' => null],
+                'expectedLocal' => ['unretrievableAttributes' => null],
+            ],
+            'empty local value with non-null empty remote value is left untouched' => [
+                'remote' => ['customRanking' => []],
+                'local' => ['customRanking' => []],
+                'expectedRemote' => ['customRanking' => []],
+                'expectedLocal' => ['customRanking' => []],
+            ],
+            'empty local value with real remote value is left untouched (surfaces as a diff)' => [
+                'remote' => ['customRanking' => ['desc(price)']],
+                'local' => ['customRanking' => []],
+                'expectedRemote' => ['customRanking' => ['desc(price)']],
+                'expectedLocal' => ['customRanking' => []],
+            ],
+            'non-empty local value absent remotely is left untouched (surfaces as a diff)' => [
+                'remote' => [],
+                'local' => ['customRanking' => ['desc(price)']],
+                'expectedRemote' => [],
+                'expectedLocal' => ['customRanking' => ['desc(price)']],
+            ],
+        ];
+    }
+
+    // ── customRanking / unretrievableAttributes round-trip omission ──
+
+    public function testMatchesWhenCustomRankingEmptyLocallyAndAbsentFromRemote(): void
+    {
+        $local = ['searchableAttributes' => ['name'], 'customRanking' => []];
+        // Algolia omits customRanking entirely from getSettings() whenever it's empty.
+        $remote = ['searchableAttributes' => ['name']];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $local));
+    }
+
+    public function testMatchesWhenUnretrievableAttributesEmptyLocallyAndAbsentFromRemote(): void
+    {
+        $local = ['searchableAttributes' => ['name'], 'unretrievableAttributes' => []];
+        // Algolia omits unretrievableAttributes until it has been set at least once.
+        $remote = ['searchableAttributes' => ['name']];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $local));
+    }
+
+    public function testMatchesWhenCustomRankingEmptyLocallyAndNullRemotely(): void
+    {
+        $local = ['customRanking' => []];
+        $remote = ['customRanking' => null];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $local));
+    }
+
+    public function testMatchesWhenUnretrievableAttributesEmptyLocallyAndNullRemotely(): void
+    {
+        $local = ['unretrievableAttributes' => []];
+        $remote = ['unretrievableAttributes' => null];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $local));
+    }
+
+    public function testMatchesWhenCustomRankingAndUnretrievableAttributesBothEmptyAndAbsentRemotely(): void
+    {
+        $local = [
+            'searchableAttributes' => ['name'],
+            'customRanking' => [],
+            'unretrievableAttributes' => [],
+        ];
+        $remote = ['searchableAttributes' => ['name']];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
+        $this->assertTrue($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $local));
+    }
+
+    public function testDoesNotMatchWhenCustomRankingNonEmptyLocallyButAbsentFromRemote(): void
+    {
+        $local = ['customRanking' => ['desc(price)']];
+        // Not an omitted-because-empty case: the extension proposes a real ranking Algolia doesn't have.
+        $remote = [];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $local));
+    }
+
+    public function testDoesNotMatchWhenUnretrievableAttributesDifferAndBothNonEmpty(): void
+    {
+        $local = ['unretrievableAttributes' => ['in_stock']];
+        $remote = ['unretrievableAttributes' => ['ordered_qty']];
+
+        $connector = $this->createMock(AlgoliaConnector::class);
+        $connector->expects($this->once())->method('getSettings')->willReturn($remote);
+
+        $indexSettingsComparator = $this->createObjectToTest($connector);
+
+        $this->assertFalse($indexSettingsComparator->matches($this->createStub(IndexOptionsInterface::class), $local));
     }
 }

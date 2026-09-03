@@ -6,7 +6,6 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Helper\Entity;
 
 use Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
-use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -26,157 +25,184 @@ use Magento\Eav\Model\Config;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class ProductHelperTest extends TestCase
 {
     private array $defaultSettings = ['searchableAttributes' => [], 'customRanking' => []];
     private int $storeId = 1;
 
-    private null|(Config&MockObject) $eavConfig = null;
-    private null|(ConfigHelper&MockObject) $configHelper = null;
-    private null|(AlgoliaConnector&MockObject) $algoliaConnector = null;
-    private null|(IndexOptionsBuilder&MockObject) $indexOptionsBuilder = null;
-    private null|(DiagnosticsLogger&MockObject) $logger = null;
-    private null|(StoreManagerInterface&MockObject) $storeManager = null;
-    private null|(ManagerInterface&MockObject) $eventManager = null;
-    private null|(Visibility&MockObject) $visibility = null;
-    private null|(Stock&MockObject) $stockHelper = null;
-    private null|(Type&MockObject) $productType = null;
-    private null|(CollectionFactory&MockObject) $productCollectionFactory = null;
-    private null|(IndexNameFetcher&MockObject) $indexNameFetcher = null;
-    private null|(ReplicaManagerInterface&MockObject) $replicaManager = null;
-    private null|(ProductInterfaceFactory&MockObject) $productFactory = null;
-    private null|(ProductRecordBuilder&MockObject) $productRecordBuilder = null;
-    private null|(FacetBuilder&MockObject) $facetBuilder = null;
-    private null|(IndexSettingsHandler&MockObject) $indexSettingsHandler = null;
-    private null|(ProductHelper&MockObject) $productHelper = null;
-    private null|(IndexOptionsInterface&MockObject) $indexOptions = null;
-    private null|(IndexOptionsInterface&MockObject) $indexTmpOptions = null;
-
-    protected function setUp(): void
-    {
-        $this->eavConfig = $this->createMock(Config::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->algoliaConnector = $this->createMock(AlgoliaConnector::class);
-        $this->indexOptionsBuilder = $this->createMock(IndexOptionsBuilder::class);
-        $this->logger = $this->createMock(DiagnosticsLogger::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->eventManager = $this->createMock(ManagerInterface::class);
-        $this->visibility = $this->createMock(Visibility::class);
-        $this->stockHelper = $this->createMock(Stock::class);
-        $this->productType = $this->createMock(Type::class);
-        $this->productCollectionFactory = $this->createMock(CollectionFactory::class);
-        $this->indexNameFetcher = $this->createMock(IndexNameFetcher::class);
-        $this->replicaManager = $this->createMock(ReplicaManagerInterface::class);
-        $this->productFactory = $this->createMock(ProductInterfaceFactory::class);
-        $this->productRecordBuilder = $this->createMock(ProductRecordBuilder::class);
-        $this->facetBuilder = $this->createMock(FacetBuilder::class);
-        $this->indexSettingsHandler = $this->createMock(IndexSettingsHandler::class);
-
-        // Partial mock: stub getIndexSettings and the protected setFacetsQueryRules
-        // so setSettings() tests remain isolated from their implementations
-        $this->productHelper = $this->getMockBuilder(ProductHelper::class)
+    /**
+     * ProductHelper is partially mocked to isolate setSettings() from getIndexSettings() and
+     * setFacetsQueryRules(), whose own real implementations pull in unrelated collaborators.
+     * getIndexSettings() is unconditionally called exactly once by setSettings(), so asserting
+     * that real invariant here also satisfies PHPUnit's "no expectations" check for this mock.
+     */
+    protected function createObjectToTest(
+        ?ConfigHelper $configHelper = null,
+        ?AlgoliaConnector $algoliaConnector = null,
+        ?DiagnosticsLogger $logger = null,
+        ?IndexSettingsHandler $indexSettingsHandler = null,
+        ?ReplicaManagerInterface $replicaManager = null,
+        ?FacetBuilder $facetBuilder = null,
+    ): ProductHelper&MockObject {
+        $productHelper = $this->getMockBuilder(ProductHelper::class)
             ->setConstructorArgs([
-                $this->eavConfig,
-                $this->configHelper,
-                $this->algoliaConnector,
-                $this->indexOptionsBuilder,
-                $this->logger,
-                $this->storeManager,
-                $this->eventManager,
-                $this->visibility,
-                $this->stockHelper,
-                $this->productType,
-                $this->productCollectionFactory,
-                $this->indexNameFetcher,
-                $this->replicaManager,
-                $this->productFactory,
-                $this->productRecordBuilder,
-                $this->facetBuilder,
-                $this->indexSettingsHandler,
+                $this->createStub(Config::class),
+                $configHelper ?? $this->createStub(ConfigHelper::class),
+                $algoliaConnector ?? $this->createStub(AlgoliaConnector::class),
+                $this->createStub(IndexOptionsBuilder::class),
+                $logger ?? $this->createStub(DiagnosticsLogger::class),
+                $this->createStub(StoreManagerInterface::class),
+                $this->createStub(ManagerInterface::class),
+                $this->createStub(Visibility::class),
+                $this->createStub(Stock::class),
+                $this->createStub(Type::class),
+                $this->createStub(CollectionFactory::class),
+                $this->createStub(IndexNameFetcher::class),
+                $replicaManager ?? $this->createStub(ReplicaManagerInterface::class),
+                $this->createStub(ProductInterfaceFactory::class),
+                $this->createStub(ProductRecordBuilder::class),
+                $facetBuilder ?? $this->createStub(FacetBuilder::class),
+                $indexSettingsHandler ?? $this->createStub(IndexSettingsHandler::class),
             ])
             ->onlyMethods(['getIndexSettings', 'setFacetsQueryRules'])
             ->getMock();
 
-        $this->productHelper->method('getIndexSettings')->willReturn($this->defaultSettings);
+        $productHelper->expects($this->once())->method('getIndexSettings')->willReturn($this->defaultSettings);
 
-        $this->indexOptions = $this->createMock(IndexOptionsInterface::class);
-        $this->indexOptions->method('getIndexName')->willReturn('prod_index');
+        return $productHelper;
+    }
 
-        $this->indexTmpOptions = $this->createMock(IndexOptionsInterface::class);
-        $this->indexTmpOptions->method('getIndexName')->willReturn('prod_index_tmp');
+    private function createIndexOptions(string $indexName): IndexOptionsInterface
+    {
+        $indexOptions = $this->createStub(IndexOptionsInterface::class);
+        $indexOptions->method('getIndexName')->willReturn($indexName);
+
+        return $indexOptions;
     }
 
     public function testSkipsAlgoliaConnectorUpdateWhenSettingsUnchanged(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(false);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(false);
 
-        $this->algoliaConnector->expects($this->never())->method('waitLastTask');
-        $this->algoliaConnector->expects($this->never())->method('setSettings');
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $algoliaConnector->expects($this->never())->method('waitLastTask');
+        $algoliaConnector->expects($this->never())->method('setSettings');
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
+        $productHelper = $this->createObjectToTest(
+            indexSettingsHandler: $indexSettingsHandler,
+            algoliaConnector: $algoliaConnector,
+        );
+
+        $productHelper->setSettings(
+            $this->createIndexOptions('prod_index'),
+            $this->createIndexOptions('prod_index_tmp'),
+            $this->storeId
+        );
     }
 
-    public function testWaitsForLastTaskWhenSettingsChanged(): void
+    public function testDoesNotCollectTaskIdWhenSettingsChanged(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(true);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(true);
 
-        $this->algoliaConnector->expects($this->atLeastOnce())->method('collectTaskIdToWaitFor')->with($this->indexOptions);
+        $indexOptions = $this->createIndexOptions('prod_index');
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $algoliaConnector->expects($this->never())->method('collectTaskIdToWaitFor')->with($indexOptions);
+
+        $productHelper = $this->createObjectToTest(
+            indexSettingsHandler: $indexSettingsHandler,
+            algoliaConnector: $algoliaConnector,
+        );
+
+        $productHelper->setSettings($indexOptions, $this->createIndexOptions('prod_index_tmp'), $this->storeId);
     }
 
     public function testDoesNotPushSettingsToTmpIndexWhenFlagIsFalse(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(true);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(true);
 
-        $this->algoliaConnector->expects($this->never())->method('setSettings');
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $algoliaConnector->expects($this->never())->method('setSettings');
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, false);
+        $productHelper = $this->createObjectToTest(
+            indexSettingsHandler: $indexSettingsHandler,
+            algoliaConnector: $algoliaConnector,
+        );
+
+        $productHelper->setSettings(
+            $this->createIndexOptions('prod_index'),
+            $this->createIndexOptions('prod_index_tmp'),
+            $this->storeId,
+            false
+        );
     }
 
     public function testPushesSettingsToTmpIndexWithMergeParametersWhenFlagIsTrue(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(true);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(true);
 
-        $this->algoliaConnector->expects($this->once())
+        $indexOptions = $this->createIndexOptions('prod_index');
+        $indexTmpOptions = $this->createIndexOptions('prod_index_tmp');
+
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $algoliaConnector->expects($this->once())
             ->method('copyIndexConfig')
-            ->with(
-                $this->indexOptions,
-                $this->indexTmpOptions
-            );
+            ->with($indexOptions, $indexTmpOptions);
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, true);
+        $productHelper = $this->createObjectToTest(
+            indexSettingsHandler: $indexSettingsHandler,
+            algoliaConnector: $algoliaConnector,
+        );
+
+        $productHelper->setSettings($indexOptions, $indexTmpOptions, $this->storeId, true);
     }
 
     public function testNoPushSettingsToTmpIndexWithMergeParametersWhenFlagIsFalse(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(true);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(true);
 
-        $this->algoliaConnector->expects($this->never())
-            ->method('copyIndexConfig');
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $algoliaConnector->expects($this->never())->method('copyIndexConfig');
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, false);
+        $productHelper = $this->createObjectToTest(
+            indexSettingsHandler: $indexSettingsHandler,
+            algoliaConnector: $algoliaConnector,
+        );
+
+        $productHelper->setSettings(
+            $this->createIndexOptions('prod_index'),
+            $this->createIndexOptions('prod_index_tmp'),
+            $this->storeId,
+            false
+        );
     }
 
     public function testAlwaysCallsSetFacetsQueryRulesForMainIndexEvenWhenSettingsUnchanged(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(false);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(false);
 
-        $this->productHelper->expects($this->atLeastOnce())
-            ->method('setFacetsQueryRules')
-            ->with($this->indexOptions);
+        $indexOptions = $this->createIndexOptions('prod_index');
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
+        $productHelper = $this->createObjectToTest(indexSettingsHandler: $indexSettingsHandler);
+        $productHelper->expects($this->atLeastOnce())->method('setFacetsQueryRules')->with($indexOptions);
+
+        $productHelper->setSettings($indexOptions, $this->createIndexOptions('prod_index_tmp'), $this->storeId);
     }
 
     public function testCallsSetFacetsQueryRulesForTmpIndexWhenSaveToTmpIsTrue(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(false);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(false);
 
-        $this->productHelper->expects($this->exactly(2))
+        $productHelper = $this->createObjectToTest(indexSettingsHandler: $indexSettingsHandler);
+        $productHelper->expects($this->exactly(2))
             ->method('setFacetsQueryRules')
             ->willReturnCallback(function (IndexOptionsInterface $opts) {
                 static $calls = [];
@@ -184,28 +210,46 @@ class ProductHelperTest extends TestCase
                 return null;
             });
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, true);
+        $productHelper->setSettings(
+            $this->createIndexOptions('prod_index'),
+            $this->createIndexOptions('prod_index_tmp'),
+            $this->storeId,
+            true
+        );
     }
 
     public function testDoesNotCallSetFacetsQueryRulesForTmpIndexWhenFlagIsFalse(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(false);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(false);
 
-        $this->productHelper->expects($this->once())
-            ->method('setFacetsQueryRules')
-            ->with($this->indexOptions);
+        $indexOptions = $this->createIndexOptions('prod_index');
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId, false);
+        $productHelper = $this->createObjectToTest(indexSettingsHandler: $indexSettingsHandler);
+        $productHelper->expects($this->once())->method('setFacetsQueryRules')->with($indexOptions);
+
+        $productHelper->setSettings($indexOptions, $this->createIndexOptions('prod_index_tmp'), $this->storeId, false);
     }
 
     public function testAlwaysSyncsReplicasToAlgoliaWithIndexSettings(): void
     {
-        $this->indexSettingsHandler->method('setSettings')->willReturn(false);
+        $indexSettingsHandler = $this->createStub(IndexSettingsHandler::class);
+        $indexSettingsHandler->method('setSettings')->willReturn(false);
 
-        $this->replicaManager->expects($this->once())
+        $replicaManager = $this->createMock(ReplicaManagerInterface::class);
+        $replicaManager->expects($this->once())
             ->method('syncReplicasToAlgolia')
             ->with($this->storeId, $this->defaultSettings);
 
-        $this->productHelper->setSettings($this->indexOptions, $this->indexTmpOptions, $this->storeId);
+        $productHelper = $this->createObjectToTest(
+            indexSettingsHandler: $indexSettingsHandler,
+            replicaManager: $replicaManager,
+        );
+
+        $productHelper->setSettings(
+            $this->createIndexOptions('prod_index'),
+            $this->createIndexOptions('prod_index_tmp'),
+            $this->storeId
+        );
     }
 }

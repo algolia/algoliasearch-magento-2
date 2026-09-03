@@ -37,6 +37,15 @@ class IndexSettingsHandler
     {
         // Fetch the remote settings once and thread them through both the preserver and the comparator.
         $remoteSettings = $this->connector->getSettings($indexOptions);
+        if ($this->config->isLoggingEnabled($indexOptions->getStoreId())) {
+            $this->logger->info(
+                sprintf("Remote settings for store ID: %d (index name: %s) : %s",
+                    $indexOptions->getStoreId(),
+                    $indexOptions->getIndexName(),
+                    json_encode($remoteSettings)
+                )
+            );
+        }
 
         // Merge back any remotely managed entries (e.g. ingestion-owned attributesForFaceting) so they
         // survive this write. This must run before the comparison so no-op detection sees the final payload.
@@ -63,6 +72,7 @@ class IndexSettingsHandler
                 $indexSettings,
                 false
             );
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
 
             return true;
         }
@@ -72,22 +82,23 @@ class IndexSettingsHandler
         [$forward, $noForward] = $this->splitSettings($indexSettings);
 
         // FORWARDED: $settings without excluded attributes
-        if ($forward) {
+        if ($forward && !$this->indexSettingsComparator->matches($indexOptions, $forward, $remoteSettings)) {
             $this->connector->setSettings(
                 $indexOptions,
                 $forward,
                 true
             );
-            $this->connector->waitLastTask($indexOptions->getStoreId());
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
         }
 
         // NOT FORWARDED: array containing excluded attributes only
-        if ($noForward) {
+        if ($noForward && !$this->indexSettingsComparator->matches($indexOptions, $noForward, $remoteSettings)) {
             $this->connector->setSettings(
                 $indexOptions,
                 $noForward,
                 false
             );
+            $this->connector->collectTaskIdToWaitFor($indexOptions);
         }
 
         return true;

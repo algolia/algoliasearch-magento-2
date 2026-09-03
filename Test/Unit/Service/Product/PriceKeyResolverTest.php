@@ -8,31 +8,21 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Customer\Model\Context as CustomerContext;
 use Magento\Framework\App\Http\Context as HttpContext;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class PriceKeyResolverTest extends TestCase
 {
-    private PriceKeyResolver $priceKeyResolver;
-    private ConfigHelper|MockObject $configHelper;
-    private StoreManagerInterface|MockObject $storeManager;
-    private HttpContext|MockObject $httpContext;
-
-    protected function setUp(): void
-    {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->httpContext = $this->createMock(HttpContext::class);
-
-        $this->priceKeyResolver = new PriceKeyResolver(
-            $this->configHelper,
-            $this->storeManager,
-            $this->httpContext
+    protected function createObjectToTest(
+        ?ConfigHelper $configHelper = null,
+        ?StoreManagerInterface $storeManager = null,
+        ?HttpContext $httpContext = null,
+    ): PriceKeyResolver {
+        return new PriceKeyResolver(
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $storeManager ?? $this->createStub(StoreManagerInterface::class),
+            $httpContext ?? $this->createStub(HttpContext::class),
         );
     }
 
@@ -45,30 +35,30 @@ class PriceKeyResolverTest extends TestCase
         string $expectedPriceKey
     ): void {
         $storeMock = $this->createMock(Store::class);
+        $storeMock->expects($this->once())->method('getCurrentCurrencyCode')->willReturn($currencyCode);
 
-        $this->configHelper
-            ->expects($this->once())
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->once())
             ->method('isCustomerGroupsEnabled')
             ->with($storeId)
             ->willReturn($isCustomerGroupsEnabled);
 
-        $this->httpContext
+        // getGroupId() only calls the http context when customer groups are enabled.
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($isCustomerGroupsEnabled ? $this->once() : $this->never())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->storeManager
-            ->expects($this->once())
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->expects($this->once())
             ->method('getStore')
             ->with($storeId)
             ->willReturn($storeMock);
 
-        $storeMock
-            ->expects($this->once())
-            ->method('getCurrentCurrencyCode')
-            ->willReturn($currencyCode);
+        $priceKeyResolver = $this->createObjectToTest($configHelper, $storeManager, $httpContext);
 
-        $result = $this->priceKeyResolver->getPriceKey($storeId);
+        $result = $priceKeyResolver->getPriceKey($storeId);
 
         $this->assertEquals($expectedPriceKey, $result);
     }
@@ -156,34 +146,32 @@ class PriceKeyResolverTest extends TestCase
         $currencyCode = 'USD';
 
         $storeMock = $this->createMock(Store::class);
+        // Store and currency are only fetched once due to caching
+        $storeMock->expects($this->once())->method('getCurrentCurrencyCode')->willReturn($currencyCode);
 
         // getGroupId() is called twice (once per getPriceKey call) to determine the cache key
-        $this->configHelper
-            ->expects($this->exactly(2))
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->exactly(2))
             ->method('isCustomerGroupsEnabled')
             ->with($storeId)
             ->willReturn(true);
 
-        $this->httpContext
-            ->expects($this->exactly(2))
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($this->exactly(2))
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        // Store and currency are only fetched once due to caching
-        $this->storeManager
-            ->expects($this->once())
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->expects($this->once())
             ->method('getStore')
             ->with($storeId)
             ->willReturn($storeMock);
 
-        $storeMock
-            ->expects($this->once())
-            ->method('getCurrentCurrencyCode')
-            ->willReturn($currencyCode);
+        $priceKeyResolver = $this->createObjectToTest($configHelper, $storeManager, $httpContext);
 
-        $result1 = $this->priceKeyResolver->getPriceKey($storeId);
-        $result2 = $this->priceKeyResolver->getPriceKey($storeId);
+        $result1 = $priceKeyResolver->getPriceKey($storeId);
+        $result2 = $priceKeyResolver->getPriceKey($storeId);
 
         $this->assertEquals('.USD.group_2', $result1);
         $this->assertEquals('.USD.group_2', $result2);
@@ -197,37 +185,32 @@ class PriceKeyResolverTest extends TestCase
         $customerGroupId = 1;
 
         $storeMock1 = $this->createMock(Store::class);
+        $storeMock1->expects($this->once())->method('getCurrentCurrencyCode')->willReturn('USD');
 
         $storeMock2 = $this->createMock(Store::class);
+        $storeMock2->expects($this->once())->method('getCurrentCurrencyCode')->willReturn('EUR');
 
-        $this->configHelper
-            ->method('isCustomerGroupsEnabled')
-            ->willReturn(true);
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->exactly(2))->method('isCustomerGroupsEnabled')->willReturn(true);
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($this->exactly(2))
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->storeManager
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->expects($this->exactly(2))
             ->method('getStore')
             ->willReturnMap([
                 [$storeId1, $storeMock1],
                 [$storeId2, $storeMock2],
             ]);
 
-        $storeMock1
-            ->expects($this->once())
-            ->method('getCurrentCurrencyCode')
-            ->willReturn('USD');
+        $priceKeyResolver = $this->createObjectToTest($configHelper, $storeManager, $httpContext);
 
-        $storeMock2
-            ->expects($this->once())
-            ->method('getCurrentCurrencyCode')
-            ->willReturn('EUR');
-
-        $result1 = $this->priceKeyResolver->getPriceKey($storeId1);
-        $result2 = $this->priceKeyResolver->getPriceKey($storeId2);
+        $result1 = $priceKeyResolver->getPriceKey($storeId1);
+        $result2 = $priceKeyResolver->getPriceKey($storeId2);
 
         $this->assertEquals('.USD.group_1', $result1);
         $this->assertEquals('.EUR.group_1', $result2);
@@ -242,37 +225,33 @@ class PriceKeyResolverTest extends TestCase
         $currencyCode = 'USD';
 
         $storeMock1 = $this->createMock(Store::class);
+        $storeMock1->expects($this->once())->method('getCurrentCurrencyCode')->willReturn($currencyCode);
 
         $storeMock2 = $this->createMock(Store::class);
+        $storeMock2->expects($this->once())->method('getCurrentCurrencyCode')->willReturn($currencyCode);
 
-        $this->configHelper
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->exactly(2))
             ->method('isCustomerGroupsEnabled')
             ->with($storeId)
             ->willReturn(true);
 
-        $this->httpContext
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($this->exactly(2))
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturnOnConsecutiveCalls($customerGroupId1, $customerGroupId2);
 
-        $this->storeManager
-            ->expects($this->exactly(2))
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->expects($this->exactly(2))
             ->method('getStore')
             ->with($storeId)
             ->willReturnOnConsecutiveCalls($storeMock1, $storeMock2);
 
-        $storeMock1
-            ->expects($this->once())
-            ->method('getCurrentCurrencyCode')
-            ->willReturn($currencyCode);
+        $priceKeyResolver = $this->createObjectToTest($configHelper, $storeManager, $httpContext);
 
-        $storeMock2
-            ->expects($this->once())
-            ->method('getCurrentCurrencyCode')
-            ->willReturn($currencyCode);
-
-        $result1 = $this->priceKeyResolver->getPriceKey($storeId);
-        $result2 = $this->priceKeyResolver->getPriceKey($storeId);
+        $result1 = $priceKeyResolver->getPriceKey($storeId);
+        $result2 = $priceKeyResolver->getPriceKey($storeId);
 
         $this->assertEquals('.USD.group_1', $result1);
         $this->assertEquals('.USD.group_2', $result2);
@@ -284,44 +263,49 @@ class PriceKeyResolverTest extends TestCase
         $storeId = 999;
         $customerGroupId = 1;
 
-        $this->configHelper
-            ->expects($this->once())
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->once())
             ->method('isCustomerGroupsEnabled')
             ->with($storeId)
             ->willReturn(true);
 
-        $this->httpContext
+        // getGroupId() runs (and calls the http context) before getStore() is reached and throws.
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $this->storeManager
-            ->expects($this->once())
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->expects($this->once())
             ->method('getStore')
             ->with($storeId)
             ->willThrowException(new NoSuchEntityException(__('Store not found')));
 
+        $priceKeyResolver = $this->createObjectToTest($configHelper, $storeManager, $httpContext);
+
         $this->expectException(NoSuchEntityException::class);
         $this->expectExceptionMessage('Store not found');
 
-        $this->priceKeyResolver->getPriceKey($storeId);
+        $priceKeyResolver->getPriceKey($storeId);
     }
 
     public function testGetGroupIdReturnsDefaultWhenCustomerGroupsDisabled(): void
     {
         $storeId = 1;
 
-        $this->configHelper
-            ->expects($this->once())
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->once())
             ->method('isCustomerGroupsEnabled')
             ->with($storeId)
             ->willReturn(false);
 
-        $this->httpContext
-            ->expects($this->never())
-            ->method('getValue');
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($this->never())->method('getValue');
 
-        $result = $this->invokeMethod($this->priceKeyResolver, 'getGroupId', [$storeId]);
+        $priceKeyResolver = $this->createObjectToTest($configHelper, httpContext: $httpContext);
+
+        $result = $this->invokeMethod($priceKeyResolver, 'getGroupId', [$storeId]);
 
         $this->assertEquals('default', $result);
     }
@@ -331,19 +315,21 @@ class PriceKeyResolverTest extends TestCase
         $storeId = 1;
         $customerGroupId = 5;
 
-        $this->configHelper
-            ->expects($this->once())
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->once())
             ->method('isCustomerGroupsEnabled')
             ->with($storeId)
             ->willReturn(true);
 
-        $this->httpContext
-            ->expects($this->once())
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $result = $this->invokeMethod($this->priceKeyResolver, 'getGroupId', [$storeId]);
+        $priceKeyResolver = $this->createObjectToTest($configHelper, httpContext: $httpContext);
+
+        $result = $this->invokeMethod($priceKeyResolver, 'getGroupId', [$storeId]);
 
         $this->assertEquals('group_5', $result);
     }
@@ -353,19 +339,21 @@ class PriceKeyResolverTest extends TestCase
         $storeId = 1;
         $customerGroupId = '3';
 
-        $this->configHelper
-            ->expects($this->once())
+        $configHelper = $this->createMock(ConfigHelper::class);
+        $configHelper->expects($this->once())
             ->method('isCustomerGroupsEnabled')
             ->with($storeId)
             ->willReturn(true);
 
-        $this->httpContext
-            ->expects($this->once())
+        $httpContext = $this->createMock(HttpContext::class);
+        $httpContext->expects($this->once())
             ->method('getValue')
             ->with(CustomerContext::CONTEXT_GROUP)
             ->willReturn($customerGroupId);
 
-        $result = $this->invokeMethod($this->priceKeyResolver, 'getGroupId', [$storeId]);
+        $priceKeyResolver = $this->createObjectToTest($configHelper, httpContext: $httpContext);
+
+        $result = $this->invokeMethod($priceKeyResolver, 'getGroupId', [$storeId]);
 
         $this->assertEquals('group_3', $result);
     }

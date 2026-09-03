@@ -22,82 +22,69 @@ use Magento\Framework\Module\ResourceInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Weee\Helper\Data as WeeeHelper;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class ConfigHelperTest extends TestCase
 {
-    protected ?ConfigHelper $configHelper;
-    protected ?ScopeConfigInterface $configInterface;
-    protected ?WriterInterface $configWriter;
-    protected ?StoreManagerInterface $storeManager;
-    protected ?Currency $currency;
-    protected ?DirCurrency $dirCurrency;
-    protected ?DirectoryList $directoryList;
-    protected ?ResourceInterface $moduleResource;
-    protected ?ProductMetadataInterface $productMetadata;
-    protected ?ManagerInterface $eventManager;
-    protected ?Serializer $serializer;
-    protected ?GroupCollection $groupCollection;
-    protected ?GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository;
-    protected ?CookieHelper $cookieHelper;
-    protected ?AutocompleteHelper $autocompleteHelper;
-    protected ?InstantSearchHelper $instantSearchHelper;
-    protected ?QueueHelper $queueHelper;
-
-    protected ?WeeeHelper $weeeHelper;
-
-    protected function setUp(): void
-    {
-        $this->configInterface = $this->createMock(ScopeConfigInterface::class);
-        $this->configWriter = $this->createMock(WriterInterface::class);
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->currency = $this->createMock(Currency::class);
-        $this->dirCurrency = $this->createMock(DirCurrency::class);
-        $this->directoryList = $this->createMock(DirectoryList::class);
-        $this->moduleResource = $this->createMock(ResourceInterface::class);
-        $this->productMetadata = $this->createMock(ProductMetadataInterface::class);
-        $this->eventManager = $this->createMock(ManagerInterface::class);
-        $this->serializer = $this->createMock(Serializer::class);
-        $this->groupCollection = $this->createMock(GroupCollection::class);
-        $this->groupExcludedWebsiteRepository = $this->createMock(GroupExcludedWebsiteRepositoryInterface::class);
-        $this->cookieHelper = $this->createMock(CookieHelper::class);
-        $this->autocompleteHelper = $this->createMock(AutocompleteHelper::class);
-        $this->instantSearchHelper = $this->createMock(InstantSearchHelper::class);
-        $this->queueHelper = $this->createMock(QueueHelper::class);
-        $this->weeeHelper = $this->createMock(WeeeHelper::class);
-
-        $this->configHelper = new ConfigHelper(
-            $this->configInterface,
-            $this->configWriter,
-            $this->storeManager,
-            $this->currency,
-            $this->dirCurrency,
-            $this->directoryList,
-            $this->moduleResource,
-            $this->productMetadata,
-            $this->eventManager,
-            $this->serializer,
-            $this->groupCollection,
-            $this->groupExcludedWebsiteRepository,
-            $this->cookieHelper,
-            $this->autocompleteHelper,
-            $this->instantSearchHelper,
-            $this->queueHelper,
-            $this->weeeHelper
+    protected function createObjectToTest(
+        ?ScopeConfigInterface $configInterface = null,
+        ?WriterInterface $configWriter = null,
+        ?StoreManagerInterface $storeManager = null,
+        ?Currency $currency = null,
+        ?DirCurrency $dirCurrency = null,
+        ?DirectoryList $directoryList = null,
+        ?ResourceInterface $moduleResource = null,
+        ?ProductMetadataInterface $productMetadata = null,
+        ?ManagerInterface $eventManager = null,
+        ?Serializer $serializer = null,
+        ?GroupCollection $groupCollection = null,
+        ?GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository = null,
+        ?CookieHelper $cookieHelper = null,
+        ?AutocompleteHelper $autocompleteHelper = null,
+        ?InstantSearchHelper $instantSearchHelper = null,
+        ?QueueHelper $queueHelper = null,
+        ?WeeeHelper $weeeHelper = null,
+    ): ConfigHelper {
+        return new ConfigHelper(
+            $configInterface ?? $this->createStub(ScopeConfigInterface::class),
+            $configWriter ?? $this->createStub(WriterInterface::class),
+            $storeManager ?? $this->createStub(StoreManagerInterface::class),
+            $currency ?? $this->createStub(Currency::class),
+            $dirCurrency ?? $this->createStub(DirCurrency::class),
+            $directoryList ?? $this->createStub(DirectoryList::class),
+            $moduleResource ?? $this->createStub(ResourceInterface::class),
+            $productMetadata ?? $this->createStub(ProductMetadataInterface::class),
+            $eventManager ?? $this->createStub(ManagerInterface::class),
+            $serializer ?? $this->createStub(Serializer::class),
+            $groupCollection ?? $this->createStub(GroupCollection::class),
+            $groupExcludedWebsiteRepository ?? $this->createStub(GroupExcludedWebsiteRepositoryInterface::class),
+            $cookieHelper ?? $this->createStub(CookieHelper::class),
+            $autocompleteHelper ?? $this->createStub(AutocompleteHelper::class),
+            $instantSearchHelper ?? $this->createStub(InstantSearchHelper::class),
+            $queueHelper ?? $this->createStub(QueueHelper::class),
+            $weeeHelper ?? $this->createStub(WeeeHelper::class),
         );
     }
 
     public function testGetIndexPrefix()
     {
         $testPrefix = 'foo_bar_';
-        $this->configInterface->method('getValue')->willReturn($testPrefix);
-        $this->assertEquals($testPrefix, $this->configHelper->getIndexPrefix());
+
+        $configInterface = $this->createStub(ScopeConfigInterface::class);
+        $configInterface->method('getValue')->willReturn($testPrefix);
+
+        $configHelper = $this->createObjectToTest(configInterface: $configInterface);
+
+        $this->assertEquals($testPrefix, $configHelper->getIndexPrefix());
     }
 
-    public function testGetIndexPrefixWhenNull() {
-        $this->configInterface->method('getValue')->willReturn(null);
-        $this->assertEquals('', $this->configHelper->getIndexPrefix());
+    public function testGetIndexPrefixWhenNull()
+    {
+        $configInterface = $this->createStub(ScopeConfigInterface::class);
+        $configInterface->method('getValue')->willReturn(null);
+
+        $configHelper = $this->createObjectToTest(configInterface: $configInterface);
+
+        $this->assertEquals('', $configHelper->getIndexPrefix());
     }
 
     #[DataProvider('isEnabledFrontEndProvider')]
@@ -108,10 +95,18 @@ class ConfigHelperTest extends TestCase
     ): void {
         $storeId = 1;
 
-        $this->autocompleteHelper->method('isEnabled')->with($storeId)->willReturn($isAutocompleteEnabled);
-        $this->instantSearchHelper->method('isEnabled')->with($storeId)->willReturn($isInstantSearchEnabled);
+        $autocompleteHelper = $this->createMock(AutocompleteHelper::class);
+        $autocompleteHelper->method('isEnabled')->with($storeId)->willReturn($isAutocompleteEnabled);
 
-        $this->assertSame($expectedResult, $this->configHelper->isEnabledFrontEnd($storeId));
+        $instantSearchHelper = $this->createMock(InstantSearchHelper::class);
+        $instantSearchHelper->method('isEnabled')->with($storeId)->willReturn($isInstantSearchEnabled);
+
+        $configHelper = $this->createObjectToTest(
+            autocompleteHelper: $autocompleteHelper,
+            instantSearchHelper: $instantSearchHelper,
+        );
+
+        $this->assertSame($expectedResult, $configHelper->isEnabledFrontEnd($storeId));
     }
 
     public static function isEnabledFrontEndProvider(): array

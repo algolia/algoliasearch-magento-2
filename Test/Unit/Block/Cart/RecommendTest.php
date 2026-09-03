@@ -8,82 +8,70 @@ use Algolia\AlgoliaSearch\Block\Cart\Recommend;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\DataObject;
+use Magento\Framework\View\Element\Template\Context;
 use Magento\Quote\Model\Quote;
-use Magento\Quote\Model\Quote\Item;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class RecommendTest extends TestCase
 {
-    protected null|(Recommend&MockObject) $block = null;
-    protected null|(Session&MockObject) $checkoutSession = null;
-    protected null|(ConfigHelper&MockObject) $configHelper = null;
-    protected null|(Quote&MockObject) $quote = null;
+    protected function createObjectToTest(
+        ?Session $checkoutSession = null,
+        ?ConfigHelper $configHelper = null,
+    ): Recommend {
+        $context = $this->createStub(Context::class);
 
-    protected function setUp(): void
-    {
-        $this->checkoutSession = $this->createMock(Session::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->quote = $this->createMock(Quote::class);
-
-        $this->block = $this->getMockBuilder(Recommend::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods([])
-            ->getMock();
-
-        $this->setPrivateProperty($this->block, 'checkoutSession', $this->checkoutSession);
-        $this->setPrivateProperty($this->block, 'configHelper', $this->configHelper);
-
-        $this->checkoutSession->method('getQuote')->willReturn($this->quote);
+        return new Recommend(
+            $context,
+            $checkoutSession ?? $this->createStub(Session::class),
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+        );
     }
 
     public function testGetAllCartItemsReturnsEmptyArrayWhenCartIsEmpty(): void
     {
-        $this->quote->method('getAllVisibleItems')->willReturn([]);
-        $this->assertSame([], $this->block->getAllCartItems());
+        $quote = $this->createStub(Quote::class);
+        $quote->method('getAllVisibleItems')->willReturn([]);
+
+        $checkoutSession = $this->createStub(Session::class);
+        $checkoutSession->method('getQuote')->willReturn($quote);
+
+        $block = $this->createObjectToTest(checkoutSession: $checkoutSession);
+
+        $this->assertSame([], $block->getAllCartItems());
     }
 
     public function testGetAllCartItemsReturnsProductIdsFromCart(): void
     {
-        $item1 = $this->getMockBuilder(Item::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
-        $item1->method('__call')
-            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 10 : null);
+        // Quote\Item::getProductId() is a magic getter (via DataObject::__call), so a plain
+        // DataObject stands in for it here instead of mocking an undeclared method.
+        $item1 = new DataObject(['product_id' => 10]);
+        $item2 = new DataObject(['product_id' => 20]);
 
-        $item2 = $this->getMockBuilder(Item::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
-        $item2->method('__call')
-            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 20 : null);
+        $quote = $this->createStub(Quote::class);
+        $quote->method('getAllVisibleItems')->willReturn([$item1, $item2]);
 
-        $this->quote->method('getAllVisibleItems')->willReturn([$item1, $item2]);
+        $checkoutSession = $this->createStub(Session::class);
+        $checkoutSession->method('getQuote')->willReturn($quote);
 
-        $this->assertSame([10, 20], $this->block->getAllCartItems());
+        $block = $this->createObjectToTest(checkoutSession: $checkoutSession);
+
+        $this->assertSame([10, 20], $block->getAllCartItems());
     }
 
     public function testGetAllCartItemsDeduplicatesProductIds(): void
     {
-        $item1 = $this->getMockBuilder(Item::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
-        $item1->method('__call')
-            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 10 : null);
+        $item1 = new DataObject(['product_id' => 10]);
+        $item2 = new DataObject(['product_id' => 10]);
 
-        $item2 = $this->getMockBuilder(Item::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['__call'])
-            ->getMock();
-        $item2->method('__call')
-            ->willReturnCallback(fn($name, $args) => $name === 'getProductId' ? 10 : null);
+        $quote = $this->createStub(Quote::class);
+        $quote->method('getAllVisibleItems')->willReturn([$item1, $item2]);
 
-        $this->quote->method('getAllVisibleItems')->willReturn([$item1, $item2]);
+        $checkoutSession = $this->createStub(Session::class);
+        $checkoutSession->method('getQuote')->willReturn($quote);
 
-        $result = $this->block->getAllCartItems();
+        $block = $this->createObjectToTest(checkoutSession: $checkoutSession);
+
+        $result = $block->getAllCartItems();
         $this->assertCount(1, $result);
         $this->assertContains(10, $result);
     }

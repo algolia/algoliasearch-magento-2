@@ -13,93 +13,92 @@ use Magento\Framework\Event;
 use Magento\Framework\Event\Observer;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class SaveSettingsTest extends TestCase
 {
-    private null|(StoreManagerInterface&MockObject) $storeManager = null;
-    private null|(IndicesConfigurator&MockObject) $indicesConfigurator = null;
-    private null|(Data&MockObject) $helper = null;
-    private null|(ProductHelper&MockObject) $productHelper = null;
-    private ?SaveSettings $saveSettings = null;
-
-    protected function setUp(): void
-    {
-        $this->storeManager = $this->createMock(StoreManagerInterface::class);
-        $this->indicesConfigurator = $this->createMock(IndicesConfigurator::class);
-        $this->helper = $this->createMock(Data::class);
-        $this->productHelper = $this->createMock(ProductHelper::class);
-
-        $this->saveSettings = new SaveSettings(
-            $this->storeManager,
-            $this->indicesConfigurator,
-            $this->helper,
-            $this->productHelper
+    protected function createObjectToTest(
+        ?StoreManagerInterface $storeManager = null,
+        ?IndicesConfigurator $indicesConfigurator = null,
+        ?Data $helper = null,
+    ): SaveSettings {
+        return new SaveSettings(
+            $storeManager ?? $this->createStub(StoreManagerInterface::class),
+            $indicesConfigurator ?? $this->createStub(IndicesConfigurator::class),
+            $helper ?? $this->createStub(Data::class),
+            $this->createStub(ProductHelper::class),
         );
     }
 
     private function createObserver(string $eventName): Observer
     {
-        $event = $this->createMock(Event::class);
+        $event = $this->createStub(Event::class);
         $event->method('getName')->willReturn($eventName);
 
-        $observer = $this->createMock(Observer::class);
+        $observer = $this->createStub(Observer::class);
         $observer->method('getEvent')->willReturn($event);
 
         return $observer;
     }
 
-    private function withStores(array $storeIds, bool $indexingEnabled = true): void
+    private function createStoreManagerWithStores(array $storeIds): StoreManagerInterface
     {
         $stores = [];
         foreach ($storeIds as $id) {
-            $stores[$id] = $this->createMock(StoreInterface::class);
+            $stores[$id] = $this->createStub(StoreInterface::class);
         }
-        $this->storeManager->method('getStores')->willReturn($stores);
-        $this->helper->method('isIndexingEnabled')->willReturn($indexingEnabled);
+
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStores')->willReturn($stores);
+
+        return $storeManager;
     }
 
     public function testCallsSaveConfigurationForEachEnabledStore(): void
     {
-        $this->storeManager->method('getStores')->willReturn([
-            1 => $this->createMock(StoreInterface::class),
-            2 => $this->createMock(StoreInterface::class),
-        ]);
-        $this->helper->method('isIndexingEnabled')->willReturn(true);
+        $storeManager = $this->createStoreManagerWithStores([1, 2]);
 
-        $this->indicesConfigurator->expects($this->exactly(2))
-            ->method('saveConfigurationToAlgolia');
+        $helper = $this->createStub(Data::class);
+        $helper->method('isIndexingEnabled')->willReturn(true);
 
-        $this->saveSettings->execute($this->createObserver('some_event'));
+        $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
+        $indicesConfigurator->expects($this->exactly(2))->method('saveConfigurationToAlgolia');
+
+        $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
+
+        $saveSettings->execute($this->createObserver('some_event'));
     }
 
     public function testSkipsStoreWhenIndexingIsDisabled(): void
     {
-        $this->storeManager->method('getStores')->willReturn([
-            1 => $this->createMock(StoreInterface::class),
-            2 => $this->createMock(StoreInterface::class),
-        ]);
-        $this->helper->method('isIndexingEnabled')
-            ->willReturnMap([[1, false], [2, true]]);
+        $storeManager = $this->createStoreManagerWithStores([1, 2]);
 
-        $this->indicesConfigurator->expects($this->once())
+        $helper = $this->createStub(Data::class);
+        $helper->method('isIndexingEnabled')->willReturnMap([[1, false], [2, true]]);
+
+        $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
+        $indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
             ->with(2, false, $this->anything());
 
-        $this->saveSettings->execute($this->createObserver('some_event'));
+        $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
+
+        $saveSettings->execute($this->createObserver('some_event'));
     }
 
     public function testNeverCallsSaveConfigurationWhenAllStoresHaveIndexingDisabled(): void
     {
-        $this->withStores([1, 2], false);
+        $storeManager = $this->createStoreManagerWithStores([1, 2]);
 
-        $this->indicesConfigurator->expects($this->never())
-            ->method('saveConfigurationToAlgolia');
+        $helper = $this->createStub(Data::class);
+        $helper->method('isIndexingEnabled')->willReturn(false);
 
-        $this->saveSettings->execute($this->createObserver('some_event'));
+        $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
+        $indicesConfigurator->expects($this->never())->method('saveConfigurationToAlgolia');
+
+        $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
+
+        $saveSettings->execute($this->createObserver('some_event'));
     }
 
     #[DataProvider('eventFilteredEntitiesProvider')]
@@ -107,13 +106,19 @@ class SaveSettingsTest extends TestCase
         string $eventName,
         array $expectedEntities
     ): void {
-        $this->withStores([1]);
+        $storeManager = $this->createStoreManagerWithStores([1]);
 
-        $this->indicesConfigurator->expects($this->once())
+        $helper = $this->createStub(Data::class);
+        $helper->method('isIndexingEnabled')->willReturn(true);
+
+        $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
+        $indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
             ->with(1, false, $expectedEntities);
 
-        $this->saveSettings->execute($this->createObserver($eventName));
+        $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
+
+        $saveSettings->execute($this->createObserver($eventName));
     }
 
     public static function eventFilteredEntitiesProvider(): array
@@ -144,12 +149,18 @@ class SaveSettingsTest extends TestCase
 
     public function testAlwaysPassesFalseForUseTmpIndex(): void
     {
-        $this->withStores([1]);
+        $storeManager = $this->createStoreManagerWithStores([1]);
 
-        $this->indicesConfigurator->expects($this->once())
+        $helper = $this->createStub(Data::class);
+        $helper->method('isIndexingEnabled')->willReturn(true);
+
+        $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
+        $indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
             ->with(1, false, $this->anything());
 
-        $this->saveSettings->execute($this->createObserver('some_event'));
+        $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
+
+        $saveSettings->execute($this->createObserver('some_event'));
     }
 }

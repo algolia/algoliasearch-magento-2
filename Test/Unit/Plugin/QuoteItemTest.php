@@ -11,62 +11,65 @@ use Magento\Catalog\Model\Product;
 use Magento\Quote\Model\Quote\Item\AbstractItem;
 use Magento\Quote\Model\Quote\Item\ToOrderItem;
 use Magento\Sales\Model\Order\Item as OrderItem;
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class QuoteItemTest extends TestCase
 {
-    protected null|(InsightsHelper&MockObject) $insightsHelper = null;
-    protected null|(AbstractItem&MockObject) $item = null;
-    protected null|(OrderItem&MockObject) $orderItem = null;
-    protected null|(ToOrderItem&MockObject) $subject = null;
-    protected ?QuoteItem $plugin = null;
-
-    protected function setUp(): void
+    protected function createObjectToTest(?InsightsHelper $insightsHelper = null): QuoteItem
     {
-        $this->insightsHelper = $this->createMock(InsightsHelper::class);
+        return new QuoteItem($insightsHelper ?? $this->createStub(InsightsHelper::class));
+    }
 
-        $product = $this->createMock(Product::class);
+    private function createItemStub(): AbstractItem
+    {
+        $product = $this->createStub(Product::class);
         $product->method('getStoreId')->willReturn(1);
 
-        $this->item = $this->createMock(AbstractItem::class);
-        $this->item->method('getProduct')->willReturn($product);
-        $this->item->method('getData')
-            ->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)
-            ->willReturn('encoded_query_data');
+        $item = $this->createMock(AbstractItem::class);
+        $item->method('getProduct')->willReturn($product);
+        $item->method('getData')->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM)->willReturn('encoded_query_data');
 
-        $this->orderItem = $this->getMockBuilder(OrderItem::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['setData'])
-            ->getMock();
-
-        $this->subject = $this->createMock(ToOrderItem::class);
-
-        $this->plugin = new QuoteItem($this->insightsHelper);
+        return $item;
     }
 
     public function testAfterConvertCopiesQueryParamWhenOrderTrackingEnabled(): void
     {
-        $this->insightsHelper->method('isOrderPlacedTracked')->with(1)->willReturn(true);
+        $insightsHelper = $this->createMock(InsightsHelper::class);
+        $insightsHelper->method('isOrderPlacedTracked')->with(1)->willReturn(true);
 
-        $this->orderItem->expects($this->once())
+        $orderItem = $this->getMockBuilder(OrderItem::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['setData'])
+            ->getMock();
+        $orderItem->expects($this->once())
             ->method('setData')
             ->with(InsightsHelper::QUOTE_ITEM_QUERY_PARAM, 'encoded_query_data');
 
-        $result = $this->plugin->afterConvert($this->subject, $this->orderItem, $this->item);
+        $subject = $this->createStub(ToOrderItem::class);
 
-        $this->assertSame($this->orderItem, $result);
+        $plugin = $this->createObjectToTest($insightsHelper);
+
+        $result = $plugin->afterConvert($subject, $orderItem, $this->createItemStub());
+
+        $this->assertSame($orderItem, $result);
     }
 
     public function testAfterConvertDoesNotCopyQueryParamWhenOrderTrackingDisabled(): void
     {
-        $this->insightsHelper->method('isOrderPlacedTracked')->with(1)->willReturn(false);
+        $insightsHelper = $this->createMock(InsightsHelper::class);
+        $insightsHelper->method('isOrderPlacedTracked')->with(1)->willReturn(false);
 
-        $this->orderItem->expects($this->never())->method('setData');
+        $orderItem = $this->getMockBuilder(OrderItem::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['setData'])
+            ->getMock();
+        $orderItem->expects($this->never())->method('setData');
 
-        $result = $this->plugin->afterConvert($this->subject, $this->orderItem, $this->item);
+        $subject = $this->createStub(ToOrderItem::class);
 
-        $this->assertSame($this->orderItem, $result);
+        $plugin = $this->createObjectToTest($insightsHelper);
+
+        $result = $plugin->afterConvert($subject, $orderItem, $this->createItemStub());
+
+        $this->assertSame($orderItem, $result);
     }
 }

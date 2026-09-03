@@ -11,40 +11,31 @@ use Magento\Framework\View\Layout;
 use Magento\Framework\View\Layout\ProcessorInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class RenderingManagerTest extends TestCase
 {
-    protected ?AutocompleteHelper $autocompleteConfigHelper;
-    protected ?InstantSearchHelper $instantSearchConfigHelper;
-    protected ?CurrentCategory $category;
-
-    protected ?RenderingManager $renderingManager;
-
-    public function setUp(): void
-    {
-        $this->autocompleteConfigHelper = $this->createMock(AutocompleteHelper::class);
-        $this->instantSearchConfigHelper = $this->createMock(InstantSearchHelper::class);
-        $this->category = $this->createMock(CurrentCategory::class);
-
-        $this->renderingManager = new RenderingManager(
-            $this->autocompleteConfigHelper,
-            $this->instantSearchConfigHelper,
-            $this->category
+    protected function createObjectToTest(
+        ?AutocompleteHelper $autocompleteConfigHelper = null,
+        ?InstantSearchHelper $instantSearchConfigHelper = null,
+        ?CurrentCategory $category = null,
+    ): RenderingManager {
+        return new RenderingManager(
+            $autocompleteConfigHelper ?? $this->createStub(AutocompleteHelper::class),
+            $instantSearchConfigHelper ?? $this->createStub(InstantSearchHelper::class),
+            $category ?? $this->createStub(CurrentCategory::class),
         );
     }
 
     #[DataProvider('backendValuesProvider')]
     public function testBackendRendering($actionName, $isLayoutUpdated): void
     {
-        $this->autocompleteConfigHelper->method('isEnabled')->willReturn(true);
-        $this->instantSearchConfigHelper->method('isEnabled')->willReturn(true);
+        $autocompleteConfigHelper = $this->createStub(AutocompleteHelper::class);
+        $autocompleteConfigHelper->method('isEnabled')->willReturn(true);
 
-        $layout = $this->createMock(Layout::class);
+        $instantSearchConfigHelper = $this->createStub(InstantSearchHelper::class);
+        $instantSearchConfigHelper->method('isEnabled')->willReturn(true);
+
         $update = $this->createMock(ProcessorInterface::class);
-        $layout->method('getUpdate')->willReturn($update);
-
         if ($isLayoutUpdated) {
             $update->expects($this->once())
                 ->method('addHandle')
@@ -54,7 +45,12 @@ class RenderingManagerTest extends TestCase
                 ->method('addHandle');
         }
 
-        $this->renderingManager->handleBackendRendering($layout, $actionName, 0);
+        $layout = $this->createStub(Layout::class);
+        $layout->method('getUpdate')->willReturn($update);
+
+        $renderingManager = $this->createObjectToTest($autocompleteConfigHelper, $instantSearchConfigHelper);
+
+        $renderingManager->handleBackendRendering($layout, $actionName, 0);
     }
 
     #[DataProvider('shouldPreventBackendRenderingProvider')]
@@ -66,15 +62,20 @@ class RenderingManagerTest extends TestCase
         ?string $categoryDisplayMode,
         bool $expectedResult
     ): void {
-        $this->instantSearchConfigHelper->method('isEnabled')->willReturn($isInstantSearchEnabled);
-        $this->instantSearchConfigHelper->method('shouldReplaceCategories')->willReturn($shouldReplaceCategories);
+        $instantSearchConfigHelper = $this->createStub(InstantSearchHelper::class);
+        $instantSearchConfigHelper->method('isEnabled')->willReturn($isInstantSearchEnabled);
+        $instantSearchConfigHelper->method('shouldReplaceCategories')->willReturn($shouldReplaceCategories);
 
-        $currentCategory = $this->createMock(Category::class);
-        $this->category->method('get')->willReturn($currentCategory);
+        $currentCategory = $this->createStub(Category::class);
         $currentCategory->method('getId')->willReturn($categoryId);
         $currentCategory->method('getDisplayMode')->willReturn($categoryDisplayMode);
 
-        $this->assertSame($expectedResult, $this->renderingManager->shouldPreventBackendRendering($actionName, 0));
+        $category = $this->createStub(CurrentCategory::class);
+        $category->method('get')->willReturn($currentCategory);
+
+        $renderingManager = $this->createObjectToTest(instantSearchConfigHelper: $instantSearchConfigHelper, category: $category);
+
+        $this->assertSame($expectedResult, $renderingManager->shouldPreventBackendRendering($actionName, 0));
     }
 
     public static function shouldPreventBackendRenderingProvider(): array

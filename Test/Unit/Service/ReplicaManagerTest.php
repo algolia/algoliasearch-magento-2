@@ -16,40 +16,23 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Algolia\AlgoliaSearch\Validator\VirtualReplicaValidatorFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use ReflectionException;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class ReplicaManagerTest extends TestCase
 {
-    protected ?ConfigHelper $configHelper;
-    protected ?ReplicaManager $replicaManager;
-
-    public function setUp(): void
+    protected function createObjectToTest(?ConfigHelper $configHelper = null): ReplicaManager
     {
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $instantSearchHelper = $this->createMock(InstantSearchHelper::class);
-        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
-        $indexOptionsBuilder = $this->createMock(IndexOptionsBuilder::class);
-        $replicaState = $this->createMock(ReplicaState::class);
-        $virtualReplicaValidatorFactory = $this->createMock(VirtualReplicaValidatorFactory::class);
-        $indexNameFetcher = $this->createMock(IndexNameFetcher::class);
-        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $sortingTransformer = $this->createMock(SortingTransformer::class);
-        $storeManager = $this->createMock(StoreManagerInterface::class);
-        $logger = $this->createMock(DiagnosticsLogger::class);
-
-        $this->replicaManager = new ReplicaManager(
-            $this->configHelper,
-            $instantSearchHelper,
-            $algoliaConnector,
-            $indexOptionsBuilder,
-            $replicaState,
-            $virtualReplicaValidatorFactory,
-            $indexNameFetcher,
-            $storeNameFetcher,
-            $sortingTransformer,
-            $storeManager,
-            $logger
+        return new ReplicaManager(
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $this->createStub(InstantSearchHelper::class),
+            $this->createStub(AlgoliaConnector::class),
+            $this->createStub(IndexOptionsBuilder::class),
+            $this->createStub(ReplicaState::class),
+            $this->createStub(VirtualReplicaValidatorFactory::class),
+            $this->createStub(IndexNameFetcher::class),
+            $this->createStub(StoreNameFetcher::class),
+            $this->createStub(SortingTransformer::class),
+            $this->createStub(StoreManagerInterface::class),
+            $this->createStub(DiagnosticsLogger::class),
         );
     }
 
@@ -66,7 +49,7 @@ class ReplicaManagerTest extends TestCase
         $replicaToRemove = 'replica2';
 
         $newReplicas = $this->invokeMethod(
-            $this->replicaManager,
+            $this->createObjectToTest(),
             'removeReplicaFromReplicaSetting',
             [$replicaSetting, $replicaToRemove]
         );
@@ -89,7 +72,7 @@ class ReplicaManagerTest extends TestCase
         $replicaToRemove = 'replica2';
 
         $newReplicas = $this->invokeMethod(
-            $this->replicaManager,
+            $this->createObjectToTest(),
             'removeReplicaFromReplicaSetting',
             [$replicaSetting, $replicaToRemove]
         );
@@ -101,9 +84,13 @@ class ReplicaManagerTest extends TestCase
 
     public function testMaxReplicasLimit(): void
     {
-        $this->assertEquals(20, $this->replicaManager->getMaxVirtualReplicasPerIndex());
+        $replicaManager = $this->createObjectToTest();
+        $this->assertEquals(20, $replicaManager->getMaxVirtualReplicasPerIndex());
 
-        $this->configHelper->method('getMaxReplicasLimit')->willReturn(10);
-        $this->assertEquals(10, $this->replicaManager->getMaxVirtualReplicasPerIndex());
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getMaxReplicasLimit')->willReturn(10);
+
+        $replicaManager = $this->createObjectToTest($configHelper);
+        $this->assertEquals(10, $replicaManager->getMaxVirtualReplicasPerIndex());
     }
 }

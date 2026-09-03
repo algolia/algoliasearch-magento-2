@@ -20,50 +20,30 @@ use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 
-#[AllowMockObjectsWithoutExpectations]
 class BatchQueueProcessorTest extends TestCase
 {
-    protected ?Data $dataHelper;
-    protected ?ConfigHelper $configHelper;
-    protected ?ProductHelper $productHelper;
-    protected ?QueueHelper $queueHelper;
-    protected ?Queue $queue;
-    protected ?DiagnosticsLogger $diag;
-    protected ?AlgoliaCredentialsManager $algoliaCredentialsManager;
-    protected ?IndexBuilder $indexBuilder;
-    protected ?IndexCollectionSize $indexCollectionSizeCache;
-    protected ?BatchQueueProcessor $processor;
-    protected ?IndexOptionsBuilder $indexOptionsBuilder;
-    protected IndexSettingsComparator $indexSettingsComparator;
-
-    protected function setUp(): void
-    {
-        $this->dataHelper = $this->createMock(Data::class);
-        $this->configHelper = $this->createMock(ConfigHelper::class);
-        $this->productHelper = $this->createMock(ProductHelper::class);
-        $this->queue = $this->createMock(Queue::class);
-        $this->diag = $this->createMock(DiagnosticsLogger::class);
-        $this->algoliaCredentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
-        $this->indexBuilder = $this->createMock(IndexBuilder::class);
-        $this->indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
-        $this->queueHelper = $this->createMock(QueueHelper::class);
-        $this->indexOptionsBuilder = $this->createMock(IndexOptionsBuilder::class);
-        $this->indexSettingsComparator = $this->createMock(IndexSettingsComparator::class);
-
-        $this->processor = new BatchQueueProcessor(
-            $this->dataHelper,
-            $this->configHelper,
-            $this->productHelper,
-            $this->queueHelper,
-            $this->queue,
-            $this->diag,
-            $this->algoliaCredentialsManager,
-            $this->indexBuilder,
-            $this->indexCollectionSizeCache,
-            $this->indexOptionsBuilder,
-            $this->indexSettingsComparator
+    protected function createObjectToTest(
+        ?Data $dataHelper = null,
+        ?ConfigHelper $configHelper = null,
+        ?ProductHelper $productHelper = null,
+        ?QueueHelper $queueHelper = null,
+        ?Queue $queue = null,
+        ?AlgoliaCredentialsManager $algoliaCredentialsManager = null,
+        ?IndexCollectionSize $indexCollectionSizeCache = null,
+    ): BatchQueueProcessor {
+        return new BatchQueueProcessor(
+            $dataHelper ?? $this->createStub(Data::class),
+            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $productHelper ?? $this->createStub(ProductHelper::class),
+            $queueHelper ?? $this->createStub(QueueHelper::class),
+            $queue ?? $this->createStub(Queue::class),
+            $this->createStub(DiagnosticsLogger::class),
+            $algoliaCredentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
+            $this->createStub(IndexBuilder::class),
+            $indexCollectionSizeCache ?? $this->createStub(IndexCollectionSize::class),
+            $this->createStub(IndexOptionsBuilder::class),
+            $this->createStub(IndexSettingsComparator::class),
         );
     }
 
@@ -73,11 +53,15 @@ class BatchQueueProcessorTest extends TestCase
      */
     public function testProcessBatchSkipsWhenIndexingDisabled()
     {
-        $this->dataHelper->method('isIndexingEnabled')->willReturn(false);
+        $dataHelper = $this->createStub(Data::class);
+        $dataHelper->method('isIndexingEnabled')->willReturn(false);
 
-        $this->algoliaCredentialsManager->expects($this->never())->method('checkCredentialsWithSearchOnlyAPIKey');
+        $algoliaCredentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->expects($this->never())->method('checkCredentialsWithSearchOnlyAPIKey');
 
-        $this->processor->processBatch(1);
+        $processor = $this->createObjectToTest($dataHelper, algoliaCredentialsManager: $algoliaCredentialsManager);
+
+        $processor->processBatch(1);
     }
 
     /**
@@ -86,14 +70,18 @@ class BatchQueueProcessorTest extends TestCase
      */
     public function testProcessBatchSkipsWhenCredentialsInvalid()
     {
-        $this->dataHelper->method('isIndexingEnabled')->willReturn(true);
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
+        $dataHelper = $this->createStub(Data::class);
+        $dataHelper->method('isIndexingEnabled')->willReturn(true);
 
-        $this->algoliaCredentialsManager->expects($this->once())
+        $algoliaCredentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
+        $algoliaCredentialsManager->expects($this->once())
             ->method('displayErrorMessage')
             ->with(BatchQueueProcessor::class, 1);
 
-        $this->processor->processBatch(1);
+        $processor = $this->createObjectToTest($dataHelper, algoliaCredentialsManager: $algoliaCredentialsManager);
+
+        $processor->processBatch(1);
     }
 
     /**
@@ -102,10 +90,13 @@ class BatchQueueProcessorTest extends TestCase
      */
     public function testProcessBatchHandlesDeltaIndexing()
     {
-        $this->setupBasicIndexingConfig(10);
-        $this->productHelper->method('getParentProductIds')->willReturn([]);
+        [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig(10);
 
-        $this->queue->expects($this->once())
+        $productHelper = $this->createStub(ProductHelper::class);
+        $productHelper->method('getParentProductIds')->willReturn([]);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())
             ->method('addToQueue')
             ->with(
                 IndexBuilder::class,
@@ -113,22 +104,27 @@ class BatchQueueProcessorTest extends TestCase
                 $this->arrayHasKey('entityIds')
             );
 
-        $this->processor->processBatch(1, range(1, 5));
+        $processor = $this->createObjectToTest($dataHelper, $configHelper, $productHelper, queue: $queue, algoliaCredentialsManager: $algoliaCredentialsManager);
+
+        $processor->processBatch(1, range(1, 5));
     }
 
     public function testProcessBatchHandlesDeltaIndexingPaged()
     {
         $pageSize = 10;
-        $this->setupBasicIndexingConfig($pageSize);
-        $this->productHelper->method('getParentProductIds')->willReturn([]);
+        [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig($pageSize);
+
+        $productHelper = $this->createStub(ProductHelper::class);
+        $productHelper->method('getParentProductIds')->willReturn([]);
 
         $invocationCount = 0;
-        $this->queue->expects($this->exactly(5))
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->exactly(5))
             ->method('addToQueue')
             ->with(
                 IndexBuilder::class,
                 'buildIndexList',
-                $this->callback(function(array $arg) use (&$invocationCount, $pageSize) {
+                $this->callback(function (array $arg) use (&$invocationCount, $pageSize) {
                     $invocationCount++;
 
                     return array_key_exists('storeId', $arg)
@@ -139,7 +135,9 @@ class BatchQueueProcessorTest extends TestCase
                 })
             );
 
-        $this->processor->processBatch(1, range(1, 50));
+        $processor = $this->createObjectToTest($dataHelper, $configHelper, $productHelper, queue: $queue, algoliaCredentialsManager: $algoliaCredentialsManager);
+
+        $processor->processBatch(1, range(1, 50));
     }
 
     /**
@@ -148,17 +146,24 @@ class BatchQueueProcessorTest extends TestCase
      */
     public function testProcessBatchHandlesFullIndexing()
     {
-        $this->setupBasicIndexingConfig(10);
-        $this->configHelper->method('isQueueActive')->willReturn(false);
-        $this->indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(10);
-        $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
-        $this->queueHelper->method('useTmpIndex')->willReturn(false);
+        [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig(10);
+        $configHelper->method('isQueueActive')->willReturn(false);
+
+        $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
+        $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(10);
+
+        $productHelper = $this->createStub(ProductHelper::class);
+        $productHelper->method('getProductCollectionQuery')->willReturn($this->getStubCollection());
+
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('useTmpIndex')->willReturn(false);
 
         $invocationCount = 0;
-        $this->queue->expects($this->exactly(2))
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->exactly(2))
             ->method('addToQueue')
             ->willReturnCallback(
-                function(
+                function (
                     string $className,
                     string $method,
                     array $data,
@@ -180,11 +185,21 @@ class BatchQueueProcessorTest extends TestCase
                             $this->assertArrayHasKey('storeId', $data);
 
                             break;
-                    }
                 }
+            }
             );
 
-        $this->processor->processBatch(1);
+        $processor = $this->createObjectToTest(
+            $dataHelper,
+            $configHelper,
+            $productHelper,
+            $queueHelper,
+            $queue,
+            $algoliaCredentialsManager,
+            $indexCollectionSizeCache,
+        );
+
+        $processor->processBatch(1);
     }
 
     /**
@@ -193,16 +208,32 @@ class BatchQueueProcessorTest extends TestCase
      */
     public function testProcessBatchFullIndexingWithNoCache()
     {
-        $this->setupBasicIndexingConfig(10);
-        $this->configHelper->method('isQueueActive')->willReturn(false);
-        $this->indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(IndexCollectionSize::NOT_FOUND);
-        $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection(10, 1));
-        $this->queueHelper->method('useTmpIndex')->willReturn(false);
+        [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig(10);
+        $configHelper->method('isQueueActive')->willReturn(false);
 
-        $this->queue->expects($this->exactly(2))
-            ->method('addToQueue');
+        $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
+        $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(IndexCollectionSize::NOT_FOUND);
 
-        $this->processor->processBatch(1);
+        $productHelper = $this->createStub(ProductHelper::class);
+        $productHelper->method('getProductCollectionQuery')->willReturn($this->getStubCollection(10, 1));
+
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('useTmpIndex')->willReturn(false);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->exactly(2))->method('addToQueue');
+
+        $processor = $this->createObjectToTest(
+            $dataHelper,
+            $configHelper,
+            $productHelper,
+            $queueHelper,
+            $queue,
+            $algoliaCredentialsManager,
+            $indexCollectionSizeCache,
+        );
+
+        $processor->processBatch(1);
     }
 
     /**
@@ -212,17 +243,24 @@ class BatchQueueProcessorTest extends TestCase
     public function testProcessBatchHandlesFullIndexingPaged()
     {
         $pageSize = 10;
-        $this->setupBasicIndexingConfig($pageSize);
-        $this->configHelper->method('isQueueActive')->willReturn(false);
-        $this->indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(50);
-        $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
-        $this->queueHelper->method('useTmpIndex')->willReturn(false);
+        [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig($pageSize);
+        $configHelper->method('isQueueActive')->willReturn(false);
+
+        $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
+        $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(50);
+
+        $productHelper = $this->createStub(ProductHelper::class);
+        $productHelper->method('getProductCollectionQuery')->willReturn($this->getStubCollection());
+
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('useTmpIndex')->willReturn(false);
 
         $invocationCount = 0;
-        $this->queue->expects($this->exactly(6))
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->exactly(6))
             ->method('addToQueue')
             ->willReturnCallback(
-                function(
+                function (
                     string $className,
                     string $method,
                     array $data,
@@ -249,7 +287,17 @@ class BatchQueueProcessorTest extends TestCase
                 }
             );
 
-        $this->processor->processBatch(1);
+        $processor = $this->createObjectToTest(
+            $dataHelper,
+            $configHelper,
+            $productHelper,
+            $queueHelper,
+            $queue,
+            $algoliaCredentialsManager,
+            $indexCollectionSizeCache,
+        );
+
+        $processor->processBatch(1);
     }
 
     /**
@@ -258,21 +306,26 @@ class BatchQueueProcessorTest extends TestCase
      */
     public function testProcessBatchMovesTempIndexIfQueueActive()
     {
-        $this->setupBasicIndexingConfig(10);
-        $this->configHelper->method('isQueueActive')->willReturn(true);
-        $this->indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(10);
+        [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig(10);
+        $configHelper->method('isQueueActive')->willReturn(true);
 
-        $this->productHelper->method('getProductCollectionQuery')->willReturn($this->getMockCollection());
-        $this->productHelper->method('getTempIndexName')->willReturn('tmp_index');
-        $this->productHelper->method('getIndexName')->willReturn('main_index');
+        $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
+        $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(10);
 
-        $this->queueHelper->method('useTmpIndex')->willReturn(true);
+        $productHelper = $this->createStub(ProductHelper::class);
+        $productHelper->method('getProductCollectionQuery')->willReturn($this->getStubCollection());
+        $productHelper->method('getTempIndexName')->willReturn('tmp_index');
+        $productHelper->method('getIndexName')->willReturn('main_index');
+
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('useTmpIndex')->willReturn(true);
 
         $invocationCount = 0;
-        $this->queue->expects($this->exactly(3))
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->exactly(3))
             ->method('addToQueue')
             ->willReturnCallback(
-                function(
+                function (
                     string $className,
                     string $method,
                     array $data,
@@ -291,22 +344,42 @@ class BatchQueueProcessorTest extends TestCase
                 }
             );
 
-        $this->processor->processBatch(1);
+        $processor = $this->createObjectToTest(
+            $dataHelper,
+            $configHelper,
+            $productHelper,
+            $queueHelper,
+            $queue,
+            $algoliaCredentialsManager,
+            $indexCollectionSizeCache,
+        );
+
+        $processor->processBatch(1);
     }
 
-    protected function setupBasicIndexingConfig(int $elementsPerPage): void
+    /**
+     * @return array{0: Data, 1: AlgoliaCredentialsManager, 2: ConfigHelper}
+     */
+    protected function createBasicIndexingConfig(int $elementsPerPage): array
     {
-        $this->dataHelper->method('isIndexingEnabled')->willReturn(true);
-        $this->algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $this->configHelper->method('getNumberOfElementByPage')->willReturn($elementsPerPage);
-        $this->configHelper->method('includeNonVisibleProductsInIndex')->willReturn(false);
+        $dataHelper = $this->createStub(Data::class);
+        $dataHelper->method('isIndexingEnabled')->willReturn(true);
+
+        $algoliaCredentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
+        $algoliaCredentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getNumberOfElementByPage')->willReturn($elementsPerPage);
+        $configHelper->method('includeNonVisibleProductsInIndex')->willReturn(false);
+
+        return [$dataHelper, $algoliaCredentialsManager, $configHelper];
     }
 
-    protected function getMockCollection(int $size = 10, int $expectedSizeCalls = 0): Collection
+    protected function getStubCollection(int $size = 10, int $expectedSizeCalls = 0): Collection
     {
-        $mockCollection = $this->createMock(Collection::class);
-        $mockCollection->expects($this->exactly($expectedSizeCalls))->method('getSize')->willReturn($size);
+        $collection = $this->createMock(Collection::class);
+        $collection->expects($this->exactly($expectedSizeCalls))->method('getSize')->willReturn($size);
 
-        return $mockCollection;
+        return $collection;
     }
 }

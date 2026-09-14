@@ -55,7 +55,8 @@ class IndicesConfigurator
     public function saveConfigurationToAlgolia(
         int $storeId,
         bool $useTmpIndex = false,
-        array $filteredEntities = [])
+        array $filteredEntities = [],
+        bool $skipWait = false)
     : void
     {
         $logEventName = 'Save configuration to Algolia for store: ' . $this->logger->getStoreName($storeId);
@@ -97,6 +98,11 @@ class IndicesConfigurator
         }
 
         $this->setExtraSettings($storeId, $useTmpIndex, $filteredEntities);
+
+        if ($this->configHelper->isAsyncConfigSaveEnabled($storeId) && $skipWait) {
+            $this->logger->stop($logEventName, true, true);
+            return;
+        }
 
         $this->algoliaConnector->waitForAllCollectedTaskIds($storeId);
 

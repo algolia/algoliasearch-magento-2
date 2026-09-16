@@ -79,7 +79,7 @@ class SaveSettingsTest extends TestCase
         $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
         $indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
-            ->with(2, false, $this->anything());
+            ->with(2, false, $this->anything(), true);
 
         $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
 
@@ -114,7 +114,7 @@ class SaveSettingsTest extends TestCase
         $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
         $indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
-            ->with(1, false, $expectedEntities);
+            ->with(1, false, $expectedEntities, true);
 
         $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
 
@@ -157,7 +157,7 @@ class SaveSettingsTest extends TestCase
         $indicesConfigurator = $this->createMock(IndicesConfigurator::class);
         $indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
-            ->with(1, false, $this->anything());
+            ->with(1, false, $this->anything(), $this->anything());
 
         $saveSettings = $this->createObjectToTest($storeManager, $indicesConfigurator, $helper);
 

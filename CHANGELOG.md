@@ -1,5 +1,10 @@
 # CHANGE LOG
 
+## 3.19.2
+
+### Features
+- Introduced "Asynchronous configuration save" feature for multi-stores setup experiencing very long saving time.
+
 ## 3.19.1
 
 ### Updates

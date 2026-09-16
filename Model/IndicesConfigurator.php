@@ -100,6 +100,7 @@ class IndicesConfigurator
         $this->setExtraSettings($storeId, $useTmpIndex, $filteredEntities);
 
         if ($this->configHelper->isAsyncConfigSaveEnabled($storeId) && $skipWait) {
+            $this->logger->log('Skipping wait for task completion (asynchronous configuration save enabled).');
             $this->logger->stop($logEventName, true, true);
             return;
         }

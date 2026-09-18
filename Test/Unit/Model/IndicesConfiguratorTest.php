@@ -231,4 +231,47 @@ class IndicesConfiguratorTest extends TestCase
 
         $this->configurator->saveConfigurationToAlgolia($this->storeId, true, $filteredEntities);
     }
+
+    /**
+     * @dataProvider skipWaitProvider
+     */
+    public function testSkipsWaitOnlyWhenAsyncConfigSaveEnabledAndSkipWaitRequested(
+        bool $asyncConfigSaveEnabled,
+        bool $skipWait,
+        bool $expectedWaitCalled
+    ): void {
+        $this->allowPassingGuards();
+
+        $this->configHelper->method('isAsyncConfigSaveEnabled')->willReturn($asyncConfigSaveEnabled);
+        $this->algoliaConnector->expects($expectedWaitCalled ? $this->once() : $this->never())
+            ->method('waitForAllCollectedTaskIds')
+            ->with($this->storeId);
+
+        // Empty filter routes through setAllEntitiesSettings(); asserted here only so this
+        // mock isn't left with zero expectations, per PHPUnit's "no expectations" check.
+        $this->configurator->expects($this->once())->method('setAllEntitiesSettings');
+
+        $this->configurator->saveConfigurationToAlgolia($this->storeId, false, [], $skipWait);
+    }
+
+    public static function skipWaitProvider(): array
+    {
+        return [
+            'async disabled, skipWait false => waits' => [false, false, true],
+            'async disabled, skipWait true => still waits (async off)' => [false, true, true],
+            'async enabled, skipWait false => waits (caller did not request skip)' => [true, false, true],
+            'async enabled, skipWait true => skips wait' => [true, true, false],
+        ];
+    }
+
+    public function testDefaultSkipWaitIsFalse(): void
+    {
+        $this->allowPassingGuards();
+
+        $this->configHelper->method('isAsyncConfigSaveEnabled')->willReturn(true);
+        $this->algoliaConnector->expects($this->once())->method('waitForAllCollectedTaskIds');
+        $this->configurator->expects($this->once())->method('setAllEntitiesSettings');
+
+        $this->configurator->saveConfigurationToAlgolia($this->storeId);
+    }
 }

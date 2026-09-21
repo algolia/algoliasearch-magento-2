@@ -381,7 +381,7 @@ class ConfigHelper
         );
     }
 
-    public function getPricingVersion($storeId = null): bool
+    public function getPricingVersion($storeId = null): int
     {
         return $this->configInterface->getValue(
             self::PRICING_VERSION,

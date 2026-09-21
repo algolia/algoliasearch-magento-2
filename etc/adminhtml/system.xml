@@ -674,6 +674,15 @@
                         ]]>
                     </comment>
                 </field>
+                <field id="pricing_version" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Pricing version</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\Pricing</source_model>
+                    <comment>
+                        <![CDATA[
+                            Choose either legacy pricing classes (V1 - used until v3.20.0) or new pricing classes (V2)
+                        ]]>
+                    </comment>
+                </field>
             </group>
         </section>
         <section id="algoliasearch_categories" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">

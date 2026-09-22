@@ -25,10 +25,6 @@ abstract class ProductWithoutChildren
     ) {}
 
     /**
-     * @param Product $product
-     * @param $subProducts
-     * @param bool $withTax
-     * @return array
      * @throws DiagnosticsException
      * @throws LocalizedException
      */
@@ -47,14 +43,14 @@ abstract class ProductWithoutChildren
         } else {
             $excludedGroups = [];
             foreach ($this->groups as $group) {
-                $groupId = (int)$group->getData('customer_group_id');
+                $groupId = (int) $group->getData('customer_group_id');
                 $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
                 if (in_array($product->getStore()->getWebsiteId(), $excludedWebsites)) {
                     $excludedGroups[] = $groupId;
                 }
             }
             if(count($excludedGroups) > 0) {
-                $this->groups->addFieldToFilter('main_table.customer_group_id', ["nin" => $excludedGroups]);
+                $this->groups->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
                 $this->groups->clear();
             }
         }
@@ -98,27 +94,12 @@ abstract class ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param $priceData
-     * @param $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
-     * @return array
-     */
     protected function addAdditionalData($priceData, $product, $withTax, $subProducts, $currencyCode): array
     {
         // Empty for products without children
         return $priceData;
     }
 
-    /**
-     * @param Product $product
-     * @param $currencyCode
-     * @param $withTax
-     * @param $subProducts
-     * @return array
-     */
     protected function getSpecialPrice(Product $product, $currencyCode, $withTax, $subProducts): array
     {
         $specialPrice = [];
@@ -148,13 +129,11 @@ abstract class ProductWithoutChildren
                 $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice($product, $specialPrice[$groupId], $withTax);
             }
         }
+
         return $specialPrice;
     }
 
     /**
-     * @param $groupId
-     * @param $product
-     * @param $subProducts
      * @return float|int|mixed
      */
     protected function getRulePrice($groupId, $product, $subProducts)
@@ -163,9 +142,6 @@ abstract class ProductWithoutChildren
     }
 
     /**
-     * @param Product $product
-     * @param $currencyCode
-     * @param $withTax
      * @return array
      */
     protected function getTierPrice(Product $product, $currencyCode, $withTax)
@@ -224,12 +200,6 @@ abstract class ProductWithoutChildren
         return $tierPrice;
     }
 
-    /**
-     * @param array $priceData
-     * @param $tierPrice
-     * @param $currencyCode
-     * @return array
-     */
     protected function addTierPrices(array $priceData, $tierPrice, $currencyCode): array
     {
         if ($this->areCustomersGroupsEnabled) {
@@ -257,13 +227,6 @@ abstract class ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param array $priceData
-     * @param Product $product
-     * @param $currencyCode
-     * @param $withTax
-     * @return array
-     */
     protected function addCustomerGroupsPrices(array $priceData, Product $product, $currencyCode, $withTax): array
     {
         /** @var Group $group */
@@ -300,12 +263,6 @@ abstract class ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param $priceData
-     * @param $specialPrice
-     * @param $currencyCode
-     * @return array
-     */
     protected function addSpecialPrices($priceData, $specialPrice, $currencyCode): array
     {
         if ($this->areCustomersGroupsEnabled) {
@@ -324,6 +281,7 @@ abstract class ProductWithoutChildren
                     }
                 }
             }
+
             return $priceData;
         }
 

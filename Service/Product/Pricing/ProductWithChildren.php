@@ -7,16 +7,8 @@ use Magento\Customer\Model\Group;
 
 abstract class ProductWithChildren extends ProductWithoutChildren
 {
-    const PRICE_NOT_SET = -1;
+    public const PRICE_NOT_SET = -1;
 
-    /**
-     * @param $priceData
-     * @param $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
-     * @return array
-     */
     protected function addAdditionalData($priceData, $product, $withTax, $subProducts, $currencyCode): array
     {
         [$min, $max, $minOriginal, $maxOriginal] =
@@ -39,13 +31,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param Product $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
-     * @return array
-     */
     protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode): array
     {
         $min      = PHP_INT_MAX;
@@ -90,14 +75,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return [$min, $max, $original, $originalMax];
     }
 
-    /**
-     * @param $priceData
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
-     * @return array
-     */
     protected function handleNonEqualMinMaxPrices($priceData, $currencyCode, $min, $max, $dashedFormat): array
     {
         if (isset($priceData[$currencyCode]['default_original_formated']) === false
@@ -130,13 +107,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param $priceData
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @return array
-     */
     protected function handleZeroDefaultPrice($priceData, $currencyCode, $min, $max): array
     {
         $priceData[$currencyCode]['default'] = $min;
@@ -151,17 +121,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param $priceData
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
-     * @param $product
-     * @param $subProducts
-     * @param $withTax
-     * @return array
-     */
     protected function setFinalGroupPrices(
         $priceData,
         $currencyCode,
@@ -170,7 +129,8 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         $dashedFormat,
         $product,
         $subProducts,
-        $withTax)
+        $withTax
+    )
     : array
     {
         $subProductsMinArray = count($subProducts) > 0 ?
@@ -200,14 +160,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param $product
-     * @param $subProducts
-     * @param $min
-     * @param $currencyCode
-     * @param $withTax
-     * @return array
-     */
     protected function formatMinArray($product, $subProducts, $min, $currencyCode, $withTax): array
     {
         $minArray = [];
@@ -236,14 +188,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $minArray;
     }
 
-    /**
-     * @param $product
-     * @param $subProducts
-     * @param $min
-     * @param $currencyCode
-     * @param $withTax
-     * @return array
-     */
     protected function getGroupPriceList($product, $subProducts, $min, $currencyCode, $withTax): array
     {
         $groupPriceList = [];
@@ -263,7 +207,8 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                 $price = $this->pricingHelper->getTaxPrice(
                     $product,
                     $subProduct->getPriceModel()->getFinalPrice(1, $subProduct),
-                    $withTax)
+                    $withTax
+                )
                 ;
 
                 if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {
@@ -290,15 +235,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $groupPriceList;
     }
 
-    /**
-     * @param $priceData
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $minOriginal
-     * @param $maxOriginal
-     * @return array
-     */
     public function handleOriginalPrice($priceData, $currencyCode, $min, $max, $minOriginal, $maxOriginal): array
     {
         if ($min !== $max) {
@@ -334,17 +270,12 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $priceData;
     }
 
-    /**
-     * @param $priceData
-     * @param $currencyCode
-     * @return array
-     */
     public function handleGroupOriginalPriceFormatted($priceData, $currencyCode): array
     {
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
-                $groupId = (int)$group->getData('customer_group_id');
+                $groupId = (int) $group->getData('customer_group_id');
                 $priceData[$currencyCode]['group_' . $groupId . '_original_formated'] =
                     $priceData[$currencyCode]['default_original_formated'];
             }

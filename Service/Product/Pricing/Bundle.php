@@ -26,12 +26,6 @@ class Bundle extends ProductWithChildren
 
     /**
      * Override parent addAdditionalData function
-     * @param $priceData
-     * @param $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
-     * @return array
      */
     protected function addAdditionalData($priceData, $product, $withTax, $subProducts, $currencyCode): array
     {
@@ -74,13 +68,6 @@ class Bundle extends ProductWithChildren
         return $priceData;
     }
 
-    /**
-     * @param Product $product
-     * @param $withTax
-     * @param $subProducts
-     * @param $currencyCode
-     * @return array
-     */
     protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode): array
     {
         $productWithPrice = $this->productFactory->create()->load($product->getId());
@@ -121,24 +108,17 @@ class Bundle extends ProductWithChildren
                 $max = $this->pricingHelper->convertPrice($max, $this->store, $currencyCode);
             }
         }
+
         return [
             'min' => $minPriceArray,
             'max' => $maxPriceArray,
             'min_price' => $minPrice,
             'max_price' => $max,
             'min_original' => $minOriginalPrice,
-            'max_original' => $maxOriginalPrice
+            'max_original' => $maxOriginalPrice,
         ];
     }
 
-    /**
-     * @param $priceData
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
-     * @return array
-     */
     protected function handleBundleNonEqualMinMaxPrices($priceData, $currencyCode, $min, $max, $dashedFormat): array
     {
         if (isset($priceData[$currencyCode]['default_original_formated']) === false
@@ -158,12 +138,6 @@ class Bundle extends ProductWithChildren
         return $priceData;
     }
 
-    /**
-     * @param $minPrices
-     * @param $max
-     * @param $currencyCode
-     * @return array
-     */
     protected function getBundleDashedPriceFormat($minPrices, $max, $currencyCode) : array
     {
         $dashedFormatPrice = [];
@@ -175,17 +149,10 @@ class Bundle extends ProductWithChildren
                 $this->pricingHelper->formatPrice($min, $this->store, $currencyCode) .
                 ' - ' . $this->pricingHelper->formatPrice($max[$groupId], $this->store, $currencyCode);
         }
+
         return $dashedFormatPrice;
     }
 
-    /**
-     * @param $priceData
-     * @param $currencyCode
-     * @param $min
-     * @param $max
-     * @param $dashedFormat
-     * @return array
-     */
     protected function setFinalGroupPricesBundle($priceData, $currencyCode, $min, $max, $dashedFormat): array
     {
         /** @var Group $group */

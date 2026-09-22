@@ -24,13 +24,6 @@ class Downloadable extends ProductWithoutChildren
         );
     }
 
-    /**
-     * @param array $priceData
-     * @param Product $product
-     * @param $currencyCode
-     * @param $withTax
-     * @return array
-     */
     protected function addCustomerGroupsPrices(array $priceData, Product $product, $currencyCode, $withTax): array
     {
         /** @var Group $group */

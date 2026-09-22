@@ -5,14 +5,14 @@ namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
-use Magento\Catalog\Model\ProductFactory;
 
 class Downloadable extends ProductWithoutChildren
 {
     public function __construct(
-        protected ProductFactory $productFactory,
+        protected ProductRepositoryInterface $productRepository,
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger
@@ -29,7 +29,7 @@ class Downloadable extends ProductWithoutChildren
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
-            $product = $this->productFactory->create()->load($product->getId());
+            $product = $this->productRepository->getById($product->getId(), false, $product->getStoreId(), true);
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();

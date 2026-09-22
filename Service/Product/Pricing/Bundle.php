@@ -5,14 +5,14 @@ namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ProductFactory;
 use Magento\Customer\Model\Group;
 
 class Bundle extends ProductWithChildren
 {
     public function __construct(
-        protected ProductFactory $productFactory,
+        protected ProductRepositoryInterface $productRepository,
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger
@@ -70,7 +70,7 @@ class Bundle extends ProductWithChildren
 
     protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode): array
     {
-        $productWithPrice = $this->productFactory->create()->load($product->getId());
+        $productWithPrice = $this->productRepository->getById($product->getId(), false, $product->getStoreId(), true);
         $productWithPrice->setData('website_id', $product->getStore()->getWebsiteId());
         $minPrice = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
         $minOriginalPrice = $productWithPrice->getPriceInfo()->getPrice('regular_price')->getMinimalPrice()->getValue();

@@ -11,7 +11,7 @@ use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Group;
 use Magento\Framework\Exception\LocalizedException;
 
-abstract class ProductWithoutChildren
+abstract class AbstractProduct
 {
     protected $store;
     protected $baseCurrencyCode;

@@ -2,6 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
-class Grouped extends ProductWithChildren
+class Grouped extends AbstractProductWithChildren
 {
 }

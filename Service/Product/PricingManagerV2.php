@@ -54,12 +54,11 @@ class PricingManagerV2
     protected function getPriceFields(Product $product): array
     {
         $priceDisplayType = $this->taxHelper->getPriceDisplayType($product->getStore());
-        if ($priceDisplayType === TaxConfig::DISPLAY_TYPE_EXCLUDING_TAX) {
-            return ['price' => false];
+
+        if ($priceDisplayType === TaxConfig::DISPLAY_TYPE_BOTH) {
+            return ['price' => false, 'price_with_tax' => true];
         }
-        if ($priceDisplayType === TaxConfig::DISPLAY_TYPE_INCLUDING_TAX) {
-            return ['price' => true];
-        }
-        return ['price' => false, 'price_with_tax' => true];
+
+        return ['price' => $priceDisplayType === TaxConfig::DISPLAY_TYPE_INCLUDING_TAX];
     }
 }

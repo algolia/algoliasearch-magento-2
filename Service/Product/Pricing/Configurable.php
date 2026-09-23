@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
-class Configurable extends ProductWithChildren
+class Configurable extends AbstractProductWithChildren
 {
     /**
      * @return float|int|mixed

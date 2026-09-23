@@ -5,7 +5,7 @@ namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
-abstract class ProductWithChildren extends ProductWithoutChildren
+abstract class AbstractProductWithChildren extends AbstractProduct
 {
     public const PRICE_NOT_SET = -1;
 

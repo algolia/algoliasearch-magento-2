@@ -9,7 +9,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
-class Bundle extends ProductWithChildren
+class Bundle extends AbstractProductWithChildren
 {
     public function __construct(
         protected ProductRepositoryInterface $productRepository,

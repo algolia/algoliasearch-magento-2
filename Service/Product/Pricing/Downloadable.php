@@ -9,7 +9,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
-class Downloadable extends ProductWithoutChildren
+class Downloadable extends AbstractProduct
 {
     public function __construct(
         protected ProductRepositoryInterface $productRepository,

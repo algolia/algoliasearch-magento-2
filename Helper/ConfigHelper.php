@@ -41,6 +41,7 @@ class ConfigHelper
     public const ENABLE_VISUAL_MERCHANDISING = 'algoliasearch_products/products/enable_visual_merchandising';
     public const CATEGORY_PAGE_ID_ATTRIBUTE_NAME = 'algoliasearch_products/products/category_page_id_attribute_name';
     public const INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX = 'algoliasearch_products/products/include_non_visible_products_in_index';
+    public const PRICING_VERSION = 'algoliasearch_products/products/pricing_version';
 
     // --- Categories --- //
 
@@ -375,6 +376,15 @@ class ConfigHelper
     {
         return $this->configInterface->isSetFlag(
             self::INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function getPricingVersion($storeId = null): int
+    {
+        return $this->configInterface->getValue(
+            self::PRICING_VERSION,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );

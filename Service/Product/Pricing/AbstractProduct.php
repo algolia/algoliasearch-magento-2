@@ -15,6 +15,7 @@ abstract class AbstractProduct
 {
     protected $store;
     protected $baseCurrencyCode;
+    protected $currencies;
     protected $groups;
     protected $areCustomersGroupsEnabled;
 
@@ -24,6 +25,15 @@ abstract class AbstractProduct
         protected DiagnosticsLogger $logger
     ) {}
 
+    protected function initProductPricingConfiguration(Product $product): void
+    {
+        $this->store = $product->getStore();
+        $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
+        $this->currencies = $this->store->getAvailableCurrencyCodes(true);
+        $this->baseCurrencyCode = $this->store->getBaseCurrencyCode();
+        $this->groups = $this->pricingHelper->getCustomerGroupCollection();
+    }
+
     /**
      * @throws DiagnosticsException
      * @throws LocalizedException
@@ -32,31 +42,10 @@ abstract class AbstractProduct
     {
         $priceData = [];
         $this->logger->startProfiling(__METHOD__);
-        $this->store = $product->getStore();
-        $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
-        $currencies = $this->store->getAvailableCurrencyCodes(true);
-        $this->baseCurrencyCode = $this->store->getBaseCurrencyCode();
-        $this->groups = $this->pricingHelper->getCustomerGroupCollection();
+        $this->initProductPricingConfiguration($product);
+        $this->filterCustomerGroups($product);
 
-        if (!$this->areCustomersGroupsEnabled) {
-            $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
-        } else {
-            $excludedGroups = [];
-            foreach ($this->groups as $group) {
-                $groupId = (int) $group->getData('customer_group_id');
-                $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
-                if (in_array($product->getStore()->getWebsiteId(), $excludedWebsites)) {
-                    $excludedGroups[] = $groupId;
-                }
-            }
-            if(count($excludedGroups) > 0) {
-                $this->groups->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
-                $this->groups->clear();
-            }
-        }
-
-        $product->setPriceCalculation(true);
-        foreach ($currencies as $currencyCode) {
+        foreach ($this->currencies as $currencyCode) {
             $priceData[$currencyCode] = [];
             $price = $product->getPrice();
             if ($this->configHelper->isFptEnabled($product->getStoreId())) {
@@ -92,6 +81,26 @@ abstract class AbstractProduct
         $this->logger->stopProfiling(__METHOD__);
 
         return $priceData;
+    }
+
+    protected function filterCustomerGroups(Product $product): void
+    {
+        if (!$this->areCustomersGroupsEnabled) {
+            $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
+        } else {
+            $excludedGroups = [];
+            foreach ($this->groups as $group) {
+                $groupId = (int) $group->getData('customer_group_id');
+                $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
+                if (in_array($product->getStore()->getWebsiteId(), $excludedWebsites)) {
+                    $excludedGroups[] = $groupId;
+                }
+            }
+            if(count($excludedGroups) > 0) {
+                $this->groups->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
+                $this->groups->clear();
+            }
+        }
     }
 
     protected function addAdditionalData($priceData, $product, $withTax, $subProducts, $currencyCode): array

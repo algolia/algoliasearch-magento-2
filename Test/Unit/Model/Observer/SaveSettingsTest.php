@@ -84,7 +84,7 @@ class SaveSettingsTest extends TestCase
 
         $this->indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
-            ->with(2, false, $this->anything());
+            ->with(2, false, $this->anything(), true);
 
         $this->saveSettings->execute($this->createObserver('some_event'));
     }
@@ -110,7 +110,7 @@ class SaveSettingsTest extends TestCase
 
         $this->indicesConfigurator->expects($this->once())
             ->method('saveConfigurationToAlgolia')
-            ->with(1, false, $expectedEntities);
+            ->with(1, false, $expectedEntities, true);
 
         $this->saveSettings->execute($this->createObserver($eventName));
     }

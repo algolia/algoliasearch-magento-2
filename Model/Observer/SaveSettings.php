@@ -46,7 +46,7 @@ class SaveSettings implements ObserverInterface
                     continue;
                 }
 
-                $this->indicesConfigurator->saveConfigurationToAlgolia($storeId, false, $filteredEntities);
+                $this->indicesConfigurator->saveConfigurationToAlgolia($storeId, false, $filteredEntities, true);
             }
         } catch (\Exception $e) {
             if ($e->getCode() !== 404) {

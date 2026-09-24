@@ -94,6 +94,15 @@
         </arguments>
     </type>
 
+    <type name="Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">algoliasearch_queue_archive</argument>
+            <argument name="eventPrefix" xsi:type="string">algoliasearch_query_archive_collection</argument>
+            <argument name="eventObject" xsi:type="string">algoliasearch_query_archive_collection</argument>
+            <argument name="resourceModel" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive</argument>
+        </arguments>
+    </type>
+
     <type name="Magento\Framework\EntityManager\MetadataPool">
         <arguments>
             <argument name="metadata" xsi:type="array">
@@ -144,12 +153,6 @@
         <plugin name="algoliasearch_query_quote_item_conversion" type="Algolia\AlgoliaSearch\Plugin\QuoteItem"/>
     </type>
 
-    <virtualType name="Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
-        <arguments>
-            <argument name="mainTable" xsi:type="string">algoliasearch_queue_archive</argument>
-            <argument name="resourceModel" xsi:type="string">Algolia\AlgoliaSearch\Model\ResourceModel\QueueArchive\Collection</argument>
-        </arguments>
-    </virtualType>
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">

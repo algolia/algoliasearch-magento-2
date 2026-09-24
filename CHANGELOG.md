@@ -1,5 +1,13 @@
 # CHANGE LOG
 
+## 3.18.3
+
+### Features
+- Introduced "Asynchronous configuration save" feature for multi-stores setup experiencing very long saving time.
+
+### Bug fixes
+- Removed virtual type queue archive grid collection and added regular type instead.
+
 ## 3.18.2
 
 ### Updates

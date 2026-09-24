@@ -131,6 +131,7 @@ class ConfigHelper
     public const WRITE_TIMEOUT = 'algoliasearch_advanced/advanced/write_timeout';
     protected const FORWARD_TO_REPLICAS = 'algoliasearch_advanced/advanced/forward_to_replicas';
     public const AUTO_PRICE_INDEXING_ENABLED = 'algoliasearch_advanced/advanced/auto_price_indexing';
+    public const ASYNC_CONFIG_SAVE = 'algoliasearch_advanced/advanced/async_config_save';
     public const PROFILER_ENABLED = 'algoliasearch_advanced/advanced/enable_profiler';
 
     // Indexing Queue advanced settings
@@ -1314,6 +1315,15 @@ class ConfigHelper
     {
         return $this->configInterface->isSetFlag(
             self::AUTO_PRICE_INDEXING_ENABLED,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+    }
+
+    public function isAsyncConfigSaveEnabled(?int $storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(
+            self::ASYNC_CONFIG_SAVE,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );

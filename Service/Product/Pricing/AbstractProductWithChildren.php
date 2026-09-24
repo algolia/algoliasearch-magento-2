@@ -9,7 +9,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 {
     public const PRICE_NOT_SET = -1;
 
-    protected function addAdditionalData($priceData, $product, $withTax, $subProducts, $currencyCode): array
+    protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode): void
     {
         [$min, $max, $minOriginal, $maxOriginal] =
             $this->getMinMaxPrices($product, $withTax, $subProducts, $currencyCode);
@@ -17,18 +17,16 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $dashedFormat = $this->pricingHelper->formatDashedPriceFormat($min, $max, $this->store, $currencyCode);
 
         if ($min !== $max) {
-            $priceData = $this->handleNonEqualMinMaxPrices($priceData, $currencyCode, $min, $max, $dashedFormat);
+            $this->handleNonEqualMinMaxPrices($currencyCode, $min, $max, $dashedFormat);
         }
 
-        $priceData = $this->handleOriginalPrice($priceData, $currencyCode, $min, $max, $minOriginal, $maxOriginal);
-        if (!$priceData[$currencyCode]['default']) {
-            $priceData = $this->handleZeroDefaultPrice($priceData, $currencyCode, $min, $max);
+        $this->handleOriginalPrice($currencyCode, $min, $max, $minOriginal, $maxOriginal);
+        if ($this->priceData->getPrice() === 0.00) {
+            $this->handleZeroDefaultPrice($currencyCode, $min, $max);
         }
         if ($this->areCustomersGroupsEnabled) {
-            $priceData = $this->setFinalGroupPrices($priceData, $currencyCode, $min, $max, $dashedFormat, $product, $subProducts, $withTax);
+            $this->setFinalGroupPrices($currencyCode, $min, $max, $dashedFormat, $product, $subProducts, $withTax);
         }
-
-        return $priceData;
     }
 
     protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode): array
@@ -75,54 +73,43 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         return [$min, $max, $original, $originalMax];
     }
 
-    protected function handleNonEqualMinMaxPrices($priceData, $currencyCode, $min, $max, $dashedFormat): array
+    protected function handleNonEqualMinMaxPrices($currencyCode, $min, $max, $dashedFormat): void
     {
-        if (isset($priceData[$currencyCode]['default_original_formated']) === false
-            || $min <= $priceData[$currencyCode]['default']) {
-            $priceData[$currencyCode]['default_formated'] = $dashedFormat;
-
-            //// Do not keep special price that is already taken into account in min max
-            unset(
-                $priceData['special_from_date'],
-                $priceData['special_to_date'],
-                $priceData['default_original_formated']
-            );
-            $priceData[$currencyCode]['default'] = 0; // will be reset just after
+        if ($this->priceData->getFormatedPrice() === "" || $min <= $this->priceData->getPrice()) {
+            $this->priceData->setFormatedPrice($dashedFormat);
+            $this->priceData->setSpecialFromDate("");
+            $this->priceData->setSpecialToDate("");
+            $this->priceData->setFormatedOriginalPrice("");
+            $this->priceData->setPrice(0); // will be reset just after
         }
 
-        $priceData[$currencyCode]['default_max'] = $max;
+        $this->priceData->setMaxPrice($max);
 
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                if ($min !== $max && $min <= $priceData[$currencyCode]['group_' . $groupId]) {
-                    $priceData[$currencyCode]['group_' . $groupId]               = 0;
-                    $priceData[$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
+                if ($min !== $max && $min <= $this->priceData->getPrice($groupId)) {
+                    $this->priceData->setPrice(0, $groupId);
+                    $this->priceData->setFormatedPrice($dashedFormat, $groupId);
                 }
-                $priceData[$currencyCode]['group_' . $groupId . '_max'] = $max;
+                $this->priceData->setMaxPrice($max, $groupId);
             }
         }
-
-        return $priceData;
     }
 
-    protected function handleZeroDefaultPrice($priceData, $currencyCode, $min, $max): array
+    protected function handleZeroDefaultPrice($currencyCode, $min, $max): void
     {
-        $priceData[$currencyCode]['default'] = $min;
+        $this->priceData->setPrice($min);
 
         if ($min !== $max) {
-            return $priceData;
+            return;
         }
-        $priceData[$currencyCode]['default'] = $min;
-        $priceData[$currencyCode]['default_formated'] =
-            $this->pricingHelper->formatPrice($min, $this->store, $currencyCode);
 
-        return $priceData;
+        $this->priceData->setFormatedPrice($this->pricingHelper->formatPrice($min, $this->store, $currencyCode));
     }
 
     protected function setFinalGroupPrices(
-        $priceData,
         $currencyCode,
         $min,
         $max,
@@ -130,8 +117,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $product,
         $subProducts,
         $withTax
-    )
-    : array
+    ) : void
     {
         $subProductsMinArray = count($subProducts) > 0 ?
             $this->formatMinArray($product, $subProducts, $min, $currencyCode, $withTax) :
@@ -141,23 +127,20 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $groupId = (int) $group->getData('customer_group_id');
 
             if (!empty($subProductsMinArray)) {
-                $priceData[$currencyCode]['group_' . $groupId] = $subProductsMinArray[$groupId]['price'];
-                $priceData[$currencyCode]['group_' . $groupId . '_formated'] = $subProductsMinArray[$groupId]['formatted'];
-                $priceData[$currencyCode]['group_' . $groupId . '_max'] = $subProductsMinArray[$groupId]['price_max'];
+                $this->priceData->setPrice($subProductsMinArray[$groupId]['price'], $groupId);
+                $this->priceData->setFormatedPrice($subProductsMinArray[$groupId]['formatted'], $groupId);
+                $this->priceData->setMaxPrice($subProductsMinArray[$groupId]['price_max'], $groupId);
             } else {
-                if ($priceData[$currencyCode]['group_' . $groupId] == 0) {
-                    $priceData[$currencyCode]['group_' . $groupId] = $min;
+                if ($this->priceData->getPrice($groupId) == 0) {
+                    $this->priceData->setPrice($min, $groupId);
                     if ($min === $max) {
-                        $priceData[$currencyCode]['group_' . $groupId . '_formated'] =
-                            $priceData[$currencyCode]['default_formated'];
+                        $this->priceData->setFormatedPrice($this->priceData->getFormatedPrice(), $groupId);
                     } else {
-                        $priceData[$currencyCode]['group_' . $groupId . '_formated'] = $dashedFormat;
+                        $this->priceData->setFormatedPrice($dashedFormat, $groupId);
                     }
                 }
             }
         }
-
-        return $priceData;
     }
 
     protected function formatMinArray($product, $subProducts, $min, $currencyCode, $withTax): array
@@ -235,52 +218,53 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         return $groupPriceList;
     }
 
-    public function handleOriginalPrice($priceData, $currencyCode, $min, $max, $minOriginal, $maxOriginal): array
+    public function handleOriginalPrice($currencyCode, $min, $max, $minOriginal, $maxOriginal): void
     {
         if ($min !== $max) {
             if ($min !== $minOriginal || $max !== $maxOriginal) {
                 if ($minOriginal !== $maxOriginal) {
-                    $priceData[$currencyCode]['default_original_formated'] = $this->pricingHelper->formatDashedPriceFormat(
-                        $minOriginal,
-                        $maxOriginal,
-                        $this->store,
-                        $currencyCode
+                    $this->priceData->setFormatedOriginalPrice(
+                        $this->pricingHelper->formatDashedPriceFormat(
+                            $minOriginal,
+                            $maxOriginal,
+                            $this->store,
+                            $currencyCode
+                        )
                     );
-                    $priceData = $this->handleGroupOriginalPriceFormatted($priceData, $currencyCode);
+                    $this->handleGroupOriginalPriceFormatted();
                 } else {
-                    $priceData[$currencyCode]['default_original_formated'] = $this->pricingHelper->formatPrice(
-                        $minOriginal,
-                        $this->store,
-                        $currencyCode
+                    $this->priceData->setFormatedOriginalPrice(
+                        $this->pricingHelper->formatPrice(
+                            $minOriginal,
+                            $this->store,
+                            $currencyCode
+                        )
                     );
-                    $priceData =$this->handleGroupOriginalPriceFormatted($priceData, $currencyCode);
+                    $this->handleGroupOriginalPriceFormatted();
                 }
             }
         } else {
             if ($min < $minOriginal) {
-                $priceData[$currencyCode]['default_original_formated'] = $this->pricingHelper->formatPrice(
-                    $minOriginal,
-                    $this->store,
-                    $currencyCode
+                $this->priceData->setFormatedOriginalPrice(
+                    $this->pricingHelper->formatPrice(
+                        $minOriginal,
+                        $this->store,
+                        $currencyCode
+                    )
                 );
-                $priceData = $this->handleGroupOriginalPriceFormatted($priceData, $currencyCode);
+                $this->handleGroupOriginalPriceFormatted();
             }
         }
-
-        return $priceData;
     }
 
-    public function handleGroupOriginalPriceFormatted($priceData, $currencyCode): array
+    public function handleGroupOriginalPriceFormatted(): void
     {
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                $priceData[$currencyCode]['group_' . $groupId . '_original_formated'] =
-                    $priceData[$currencyCode]['default_original_formated'];
+                $this->priceData->setFormatedOriginalPrice($this->priceData->getFormatedOriginalPrice(), $groupId);
             }
         }
-
-        return $priceData;
     }
 }

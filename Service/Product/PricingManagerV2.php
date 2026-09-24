@@ -38,10 +38,15 @@ class PricingManagerV2
         }
 
         $priceFields = $this->getPriceFields($product);
+        $currencies = $product->getStore()->getAvailableCurrencyCodes(true);
 
         // price/price_with_tax => true/false
         foreach ($priceFields as $field => $withTax) {
-            $customData[$field] = $this->{$priceManager}->getPriceData($product, $subProducts, $withTax);
+            $customData[$field] = [];
+            foreach ($currencies as $currencyCode) {
+                $customData[$field][$currencyCode] =
+                    $this->{$priceManager}->getPriceData($product, $subProducts, $currencyCode, $withTax);
+            }
         }
 
         return $customData;

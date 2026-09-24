@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
+use Algolia\AlgoliaSearch\Api\Data\PriceDataInterfaceFactory;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -15,16 +16,18 @@ class Downloadable extends AbstractProduct
         protected ProductRepositoryInterface $productRepository,
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
+        protected PriceDataInterfaceFactory $priceDataInterfaceFactory,
         protected DiagnosticsLogger $logger
     ) {
         parent::__construct(
             $configHelper,
             $pricingHelper,
+            $priceDataInterfaceFactory,
             $logger
         );
     }
 
-    protected function addCustomerGroupsPrices(array $priceData, Product $product, $currencyCode, $withTax): array
+    protected function addCustomerGroupsPrices(Product $product, $currencyCode, $withTax): void
     {
         /** @var Group $group */
         foreach ($this->groups as $group) {
@@ -39,29 +42,28 @@ class Downloadable extends AbstractProduct
             }
 
             if ($discountedPrice !== false) {
-                $priceData[$currencyCode]['group_' . $groupId] =
-                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax);
-                $priceData[$currencyCode]['group_' . $groupId . '_formated'] =
+                $this->priceData->setPrice(
+                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax),
+                    $groupId
+                );
+                $this->priceData->setFormatedPrice(
                     $this->pricingHelper->formatPrice(
-                        $priceData[$currencyCode]['group_' . $groupId],
+                        $this->priceData->getPrice($groupId),
                         $this->store,
                         $currencyCode
-                    );
-                if ($priceData[$currencyCode]['default'] >
-                    $priceData[$currencyCode]['group_' . $groupId]) {
-                    $priceData[$currencyCode]['group_' . $groupId . '_original_formated'] =
-                        $priceData[$currencyCode]['default_formated'];
+                    ),
+                    $groupId
+                );
+
+                if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
+                    $this->priceData->setFormatedOriginalPrice($this->priceData->getFormatedPrice(), $groupId);
                 }
             } else {
-                $priceData[$currencyCode]['group_' . $groupId] =
-                    $priceData[$currencyCode]['default'];
-                $priceData[$currencyCode]['group_' . $groupId . '_formated'] =
-                    $priceData[$currencyCode]['default_formated'];
+                $this->priceData->setPrice($this->priceData->getPrice(), $groupId);
+                $this->priceData->setFormatedPrice($this->priceData->getFormatedPrice(), $groupId);
             }
         }
 
         $product->setData('customer_group_id', null);
-
-        return $priceData;
     }
 }

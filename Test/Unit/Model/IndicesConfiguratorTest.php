@@ -23,6 +23,7 @@ use Algolia\AlgoliaSearch\Service\Page\IndexOptionsBuilder as PageIndexOptionsBu
 use Algolia\AlgoliaSearch\Service\Product\IndexOptionsBuilder as ProductIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Service\Suggestion\IndexOptionsBuilder as SuggestionIndexOptionsBuilder;
 use Algolia\AlgoliaSearch\Test\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class IndicesConfiguratorTest extends TestCase
@@ -36,6 +37,8 @@ class IndicesConfiguratorTest extends TestCase
     protected function createObjectToTest(
         ?AlgoliaCredentialsManager $algoliaCredentialsManager = null,
         ?Data $baseHelper = null,
+        ?ConfigHelper $configHelper = null,
+        ?AlgoliaConnector $algoliaConnector = null,
         ?DiagnosticsLogger $logger = null,
     ): IndicesConfigurator&MockObject {
         $logger ??= $this->createStub(DiagnosticsLogger::class);
@@ -49,8 +52,8 @@ class IndicesConfiguratorTest extends TestCase
                 $this->createStub(PageIndexOptionsBuilder::class),
                 $this->createStub(ProductIndexOptionsBuilder::class),
                 $this->createStub(SuggestionIndexOptionsBuilder::class),
-                $this->createStub(AlgoliaConnector::class),
-                $this->createStub(ConfigHelper::class),
+                $algoliaConnector ?? $this->createStub(AlgoliaConnector::class),
+                $configHelper ?? $this->createStub(ConfigHelper::class),
                 $this->createStub(AutocompleteHelper::class),
                 $this->createStub(ProductHelper::class),
                 $this->createStub(CategoryHelper::class),
@@ -223,5 +226,65 @@ class IndicesConfiguratorTest extends TestCase
             ->with($this->storeId, true, $filteredEntities);
 
         $configurator->saveConfigurationToAlgolia($this->storeId, true, $filteredEntities);
+    }
+
+    #[DataProvider('skipWaitProvider')]
+    public function testSkipsWaitOnlyWhenAsyncConfigSaveEnabledAndSkipWaitRequested(
+        bool $asyncConfigSaveEnabled,
+        bool $skipWait,
+        bool $expectedWaitCalled
+    ): void {
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isAsyncConfigSaveEnabled')->willReturn($asyncConfigSaveEnabled);
+
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $algoliaConnector->expects($expectedWaitCalled ? $this->once() : $this->never())
+            ->method('waitForAllCollectedTaskIds')
+            ->with($this->storeId);
+
+        $configurator = $this->createObjectToTest(
+            $algoliaCredentialsManager,
+            $baseHelper,
+            $configHelper,
+            $algoliaConnector,
+        );
+        // Empty filter routes through setAllEntitiesSettings(); asserted here only so this
+        // mock isn't left with zero expectations, per PHPUnit's "no expectations" check.
+        $configurator->expects($this->once())->method('setAllEntitiesSettings');
+
+        $configurator->saveConfigurationToAlgolia($this->storeId, false, [], $skipWait);
+    }
+
+    public static function skipWaitProvider(): array
+    {
+        return [
+            'async disabled, skipWait false => waits' => [false, false, true],
+            'async disabled, skipWait true => still waits (async off)' => [false, true, true],
+            'async enabled, skipWait false => waits (caller did not request skip)' => [true, false, true],
+            'async enabled, skipWait true => skips wait' => [true, true, false],
+        ];
+    }
+
+    public function testDefaultSkipWaitIsFalse(): void
+    {
+        [$algoliaCredentialsManager, $baseHelper] = $this->createPassingGuards();
+
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isAsyncConfigSaveEnabled')->willReturn(true);
+
+        $algoliaConnector = $this->createMock(AlgoliaConnector::class);
+        $algoliaConnector->expects($this->once())->method('waitForAllCollectedTaskIds');
+
+        $configurator = $this->createObjectToTest(
+            $algoliaCredentialsManager,
+            $baseHelper,
+            $configHelper,
+            $algoliaConnector,
+        );
+        $configurator->expects($this->once())->method('setAllEntitiesSettings');
+
+        $configurator->saveConfigurationToAlgolia($this->storeId);
     }
 }

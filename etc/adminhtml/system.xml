@@ -1593,6 +1593,19 @@
                         <model>Algolia\AlgoliaSearch\Model\Config\AutomaticPriceIndexingComment</model>
                     </comment>
                 </field>
+                <field id="async_config_save" translate="label comment" type="select" sortOrder="125" showInDefault="1">
+                    <label>Enable asynchronous configuration save</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                           If you enable this feature, configuration will be sent to the Algolia Dashboard and your Magento server won't wait for its response.
+                           <br>
+                           This is especially useful when you have a multi-stores setup and when you're experiencing very long saving time when you click "Save Config".
+                           <br>
+                           <span class="algolia-config-warning">&#9888;</span> This will introduce some latency between Magento and your Algolia Dashboard, we recommend to wait for your dashboard to reflect the changes you made in Magento before any further actions like another configuration save or a reindex.
+                        ]]>
+                    </comment>
+                </field>
                 <field id="enable_profiler" translate="label comment" type="select" sortOrder="130" showInDefault="1">
                     <label>Enable Profiler</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

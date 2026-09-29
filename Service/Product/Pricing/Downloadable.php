@@ -2,7 +2,6 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
-use Algolia\AlgoliaSearch\Api\Data\PriceDataInterfaceFactory;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -16,13 +15,11 @@ class Downloadable extends AbstractProduct
         protected ProductRepositoryInterface $productRepository,
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
-        protected PriceDataInterfaceFactory $priceDataInterfaceFactory,
         protected DiagnosticsLogger $logger
     ) {
         parent::__construct(
             $configHelper,
             $pricingHelper,
-            $priceDataInterfaceFactory,
             $logger
         );
     }

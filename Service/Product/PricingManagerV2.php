@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
+use Algolia\AlgoliaSearch\Api\Data\PriceDataInterfaceFactory;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle as PriceManagerBundle;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable as PriceManagerConfigurable;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable as PriceManagerDownloadable;
@@ -21,7 +22,8 @@ class PricingManagerV2
         protected PriceManagerDownloadable $priceManagerDownloadable,
         protected PriceManagerConfigurable $priceManagerConfigurable,
         protected PriceManagerBundle $priceManagerBundle,
-        protected PriceManagerGrouped $priceManagerGrouped
+        protected PriceManagerGrouped $priceManagerGrouped,
+        protected PriceDataInterfaceFactory $priceDataInterfaceFactory
     ) {}
 
     /**
@@ -44,8 +46,14 @@ class PricingManagerV2
         foreach ($priceFields as $field => $withTax) {
             $customData[$field] = [];
             foreach ($currencies as $currencyCode) {
-                $customData[$field][$currencyCode] =
-                    $this->{$priceManager}->getPriceData($product, $subProducts, $currencyCode, $withTax);
+                $priceData = $this->{$priceManager}->getPriceData(
+                    $this->priceDataInterfaceFactory->create(),
+                    $product,
+                    $subProducts,
+                    $currencyCode,
+                    $withTax
+                );
+                $customData[$field][$currencyCode] = $priceData->getData();
             }
         }
 

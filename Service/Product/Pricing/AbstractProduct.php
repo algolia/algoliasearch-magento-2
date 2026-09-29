@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
-use Algolia\AlgoliaSearch\Api\Data\PriceDataInterfaceFactory;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
@@ -27,7 +26,6 @@ abstract class AbstractProduct
     public function __construct(
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
-        protected PriceDataInterfaceFactory $priceDataInterfaceFactory,
         protected DiagnosticsLogger $logger
     ) {}
 
@@ -37,18 +35,23 @@ abstract class AbstractProduct
         $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
         $this->baseCurrencyCode = $this->store->getBaseCurrencyCode();
         $this->groups = $this->pricingHelper->getCustomerGroupCollection();
-
-        $this->priceData = $this->priceDataInterfaceFactory->create();
     }
 
     /**
      * @throws DiagnosticsException
      * @throws LocalizedException
      */
-    public function getPriceData(Product $product, $subProducts, string $currencyCode, bool $withTax): array
+    public function getPriceData(
+        PriceDataInterface $priceData,
+        Product $product,
+        $subProducts,
+        string $currencyCode,
+        bool $withTax)
+    : PriceDataInterface
     {
         $this->logger->startProfiling(__METHOD__);
         $this->initProductPricingConfiguration($product);
+        $this->priceData = $priceData;
         $this->filterCustomerGroups($product);
 
         $price = $product->getPrice();
@@ -104,7 +107,7 @@ abstract class AbstractProduct
 
         $this->logger->stopProfiling(__METHOD__);
 
-        return $this->priceData->getData();
+        return $this->priceData;
     }
 
     protected function filterCustomerGroups(Product $product): void

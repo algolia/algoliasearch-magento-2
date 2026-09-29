@@ -76,7 +76,7 @@ abstract class AbstractProduct
          *  ]
          */
         $this->priceData->setPrice($this->pricingHelper->round($price));
-        $this->priceData->setFormatedPrice(
+        $this->priceData->setFormattedPrice(
             $this->pricingHelper->formatPrice($price, $this->store, $currencyCode)
         );
         $this->priceData->setSpecialFromDate(
@@ -240,7 +240,7 @@ abstract class AbstractProduct
 
                 if ($tierPrice[$groupId]) {
                     $this->priceData->setTierPrice($tierPrice[$groupId], $groupId);
-                    $this->priceData->setFormatedTierPrice(
+                    $this->priceData->setFormattedTierPrice(
                         $this->pricingHelper->formatPrice($tierPrice[$groupId], $this->store, $currencyCode),
                         $groupId
                     );
@@ -250,7 +250,7 @@ abstract class AbstractProduct
 
         if ($tierPrice[0]) {
             $this->priceData->setTierPrice($this->pricingHelper->round($tierPrice[0]));
-            $this->priceData->setFormatedTierPrice(
+            $this->priceData->setFormattedTierPrice(
                 $this->pricingHelper->formatPrice($tierPrice[0], $this->store, $currencyCode),
             );
         }
@@ -272,7 +272,7 @@ abstract class AbstractProduct
                     $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax),
                     $groupId
                 );
-                $this->priceData->setFormatedPrice(
+                $this->priceData->setFormattedPrice(
                     $this->pricingHelper->formatPrice(
                         $this->priceData->getPrice($groupId), $this->store, $currencyCode
                     ),
@@ -280,14 +280,14 @@ abstract class AbstractProduct
                 );
 
                 if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
-                    $this->priceData->setFormatedOriginalPrice(
-                        $this->priceData->getFormatedPrice(),
+                    $this->priceData->setFormattedOriginalPrice(
+                        $this->priceData->getFormattedPrice(),
                         $groupId
                     );
                 }
             } else {
                 $this->priceData->setPrice($this->priceData->getPrice(), $groupId);
-                $this->priceData->setFormatedPrice($this->priceData->getFormatedPrice(), $groupId);
+                $this->priceData->setFormattedPrice($this->priceData->getFormattedPrice(), $groupId);
             }
         }
 
@@ -302,22 +302,22 @@ abstract class AbstractProduct
                 $groupId = (int) $group->getData('customer_group_id');
                 if ($specialPrice[$groupId]  && $specialPrice[$groupId] < $this->priceData->getPrice($groupId)) {
                     $this->priceData->setPrice($specialPrice[$groupId], $groupId);
-                    $this->priceData->setFormatedPrice(
+                    $this->priceData->setFormattedPrice(
                         $this->pricingHelper->formatPrice($specialPrice[$groupId], $this->store, $currencyCode),
                         $groupId
                     );
 
                     if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
-                        $this->priceData->setFormatedOriginalPrice($this->priceData->getFormatedPrice(), $groupId);
+                        $this->priceData->setFormattedOriginalPrice($this->priceData->getFormattedPrice(), $groupId);
                     }
                 }
             }
         }
 
         if ($specialPrice[0] && $specialPrice[0] < $this->priceData->getPrice()) {
-            $this->priceData->setFormatedOriginalPrice($this->priceData->getFormatedPrice());
+            $this->priceData->setFormattedOriginalPrice($this->priceData->getFormattedPrice());
             $this->priceData->setPrice($this->pricingHelper->round($specialPrice[0]));
-            $this->priceData->setFormatedPrice(
+            $this->priceData->setFormattedPrice(
                 $this->pricingHelper->formatPrice($specialPrice[0], $this->store, $currencyCode)
             );
         }

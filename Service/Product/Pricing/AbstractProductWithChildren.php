@@ -75,11 +75,11 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 
     protected function handleNonEqualMinMaxPrices($currencyCode, $min, $max, $dashedFormat): void
     {
-        if ($this->priceData->getFormatedPrice() === "" || $min <= $this->priceData->getPrice()) {
-            $this->priceData->setFormatedPrice($dashedFormat);
+        if ($this->priceData->getFormattedPrice() === "" || $min <= $this->priceData->getPrice()) {
+            $this->priceData->setFormattedPrice($dashedFormat);
             $this->priceData->setSpecialFromDate("");
             $this->priceData->setSpecialToDate("");
-            $this->priceData->setFormatedOriginalPrice("");
+            $this->priceData->setFormattedOriginalPrice("");
             $this->priceData->setPrice(0); // will be reset just after
         }
 
@@ -91,7 +91,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 $groupId = (int) $group->getData('customer_group_id');
                 if ($min !== $max && $min <= $this->priceData->getPrice($groupId)) {
                     $this->priceData->setPrice(0, $groupId);
-                    $this->priceData->setFormatedPrice($dashedFormat, $groupId);
+                    $this->priceData->setFormattedPrice($dashedFormat, $groupId);
                 }
                 $this->priceData->setMaxPrice($max, $groupId);
             }
@@ -106,7 +106,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             return;
         }
 
-        $this->priceData->setFormatedPrice($this->pricingHelper->formatPrice($min, $this->store, $currencyCode));
+        $this->priceData->setFormattedPrice($this->pricingHelper->formatPrice($min, $this->store, $currencyCode));
     }
 
     protected function setFinalGroupPrices(
@@ -128,15 +128,15 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 
             if (!empty($subProductsMinArray)) {
                 $this->priceData->setPrice($subProductsMinArray[$groupId]['price'], $groupId);
-                $this->priceData->setFormatedPrice($subProductsMinArray[$groupId]['formatted'], $groupId);
+                $this->priceData->setFormattedPrice($subProductsMinArray[$groupId]['formatted'], $groupId);
                 $this->priceData->setMaxPrice($subProductsMinArray[$groupId]['price_max'], $groupId);
             } else {
                 if ($this->priceData->getPrice($groupId) == 0) {
                     $this->priceData->setPrice($min, $groupId);
                     if ($min === $max) {
-                        $this->priceData->setFormatedPrice($this->priceData->getFormatedPrice(), $groupId);
+                        $this->priceData->setFormattedPrice($this->priceData->getFormattedPrice(), $groupId);
                     } else {
-                        $this->priceData->setFormatedPrice($dashedFormat, $groupId);
+                        $this->priceData->setFormattedPrice($dashedFormat, $groupId);
                     }
                 }
             }
@@ -223,7 +223,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         if ($min !== $max) {
             if ($min !== $minOriginal || $max !== $maxOriginal) {
                 if ($minOriginal !== $maxOriginal) {
-                    $this->priceData->setFormatedOriginalPrice(
+                    $this->priceData->setFormattedOriginalPrice(
                         $this->pricingHelper->formatDashedPriceFormat(
                             $minOriginal,
                             $maxOriginal,
@@ -233,7 +233,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                     );
                     $this->handleGroupOriginalPriceFormatted();
                 } else {
-                    $this->priceData->setFormatedOriginalPrice(
+                    $this->priceData->setFormattedOriginalPrice(
                         $this->pricingHelper->formatPrice(
                             $minOriginal,
                             $this->store,
@@ -245,7 +245,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             }
         } else {
             if ($min < $minOriginal) {
-                $this->priceData->setFormatedOriginalPrice(
+                $this->priceData->setFormattedOriginalPrice(
                     $this->pricingHelper->formatPrice(
                         $minOriginal,
                         $this->store,
@@ -263,7 +263,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                $this->priceData->setFormatedOriginalPrice($this->priceData->getFormatedOriginalPrice(), $groupId);
+                $this->priceData->setFormattedOriginalPrice($this->priceData->getFormattedOriginalPrice(), $groupId);
             }
         }
     }

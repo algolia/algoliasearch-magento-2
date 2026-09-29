@@ -116,13 +116,13 @@ class Bundle extends AbstractProductWithChildren
 
     protected function handleBundleNonEqualMinMaxPrices($min, $max, $dashedFormat): void
     {
-        if ($this->priceData->getFormatedOriginalPrice() === "" || $min <= $this->priceData->getPrice()) {
-            $this->priceData->setFormatedPrice($dashedFormat);
+        if ($this->priceData->getFormattedOriginalPrice() === "" || $min <= $this->priceData->getPrice()) {
+            $this->priceData->setFormattedPrice($dashedFormat);
 
             //// Do not keep special price that is already taken into account in min max
             $this->priceData->setSpecialFromDate("");
             $this->priceData->setSpecialToDate("");
-            $this->priceData->setFormatedOriginalPrice("");
+            $this->priceData->setFormattedOriginalPrice("");
             $this->priceData->setPrice(0); // will be reset just after
         }
 
@@ -151,9 +151,9 @@ class Bundle extends AbstractProductWithChildren
             $groupId = (int) $group->getData('customer_group_id');
             $this->priceData->setPrice($min[$groupId], $groupId);
             if ($min[$groupId] === $max[$groupId]) {
-                $this->priceData->setFormatedPrice($this->priceData->getFormatedPrice(), $groupId);
+                $this->priceData->setFormattedPrice($this->priceData->getFormattedPrice(), $groupId);
             } else {
-                $this->priceData->setFormatedPrice($dashedFormat[$groupId], $groupId);
+                $this->priceData->setFormattedPrice($dashedFormat[$groupId], $groupId);
             }
         }
     }

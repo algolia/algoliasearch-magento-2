@@ -29,25 +29,25 @@ class PriceData extends DataObject implements PDI
             PDI::PREFIX_GROUP.  $groupId . PDI::SUFFIX_MAX;
     }
 
-    protected function resolveFormatedPriceKey(?int $groupId = null): string
+    protected function resolveFormattedPriceKey(?int $groupId = null): string
     {
         return $groupId === null ?
-            PDI::PREFIX_DEFAULT . PDI::SUFFIX_FORMATED:
-            PDI::PREFIX_GROUP . $groupId . PDI::SUFFIX_FORMATED;
+            PDI::PREFIX_DEFAULT . PDI::SUFFIX_FORMATTED:
+            PDI::PREFIX_GROUP . $groupId . PDI::SUFFIX_FORMATTED;
     }
 
-    protected function resolveFormatedOriginalPriceKey(?int $groupId = null): string
+    protected function resolveFormattedOriginalPriceKey(?int $groupId = null): string
     {
         return $groupId === null ?
-            PDI::PREFIX_DEFAULT . PDI::SUFFIX_ORIGINAL . PDI::SUFFIX_FORMATED:
-            PDI::PREFIX_GROUP . $groupId . PDI::SUFFIX_ORIGINAL . PDI::SUFFIX_FORMATED;
+            PDI::PREFIX_DEFAULT . PDI::SUFFIX_ORIGINAL . PDI::SUFFIX_FORMATTED:
+            PDI::PREFIX_GROUP . $groupId . PDI::SUFFIX_ORIGINAL . PDI::SUFFIX_FORMATTED;
     }
 
-    protected function resolveFormatedTierPriceKey(?int $groupId = null): string
+    protected function resolveFormattedTierPriceKey(?int $groupId = null): string
     {
         return $groupId === null ?
-            PDI::PREFIX_DEFAULT . PDI::SUFFIX_TIER . PDI::SUFFIX_FORMATED:
-            PDI::PREFIX_GROUP . $groupId . PDI::SUFFIX_TIER . PDI::SUFFIX_FORMATED;
+            PDI::PREFIX_DEFAULT . PDI::SUFFIX_TIER . PDI::SUFFIX_FORMATTED:
+            PDI::PREFIX_GROUP . $groupId . PDI::SUFFIX_TIER . PDI::SUFFIX_FORMATTED;
     }
 
     /**
@@ -68,19 +68,19 @@ class PriceData extends DataObject implements PDI
         $this->setData($this->resolveMaxPriceKey($groupId), $price);
     }
 
-    public function setFormatedPrice(mixed $formatedPrice, ?int $groupId = null): void
+    public function setFormattedPrice(mixed $formattedPrice, ?int $groupId = null): void
     {
-        $this->setData($this->resolveFormatedPriceKey($groupId), $formatedPrice);
+        $this->setData($this->resolveFormattedPriceKey($groupId), $formattedPrice);
     }
 
-    public function setFormatedOriginalPrice(mixed $formatedPrice, ?int $groupId = null): void
+    public function setFormattedOriginalPrice(mixed $formattedPrice, ?int $groupId = null): void
     {
-        $this->setData($this->resolveFormatedOriginalPriceKey($groupId), $formatedPrice);
+        $this->setData($this->resolveFormattedOriginalPriceKey($groupId), $formattedPrice);
     }
 
-    public function setFormatedTierPrice(mixed $formatedPrice, ?int $groupId = null): void
+    public function setFormattedTierPrice(mixed $formattedPrice, ?int $groupId = null): void
     {
-        $this->setData($this->resolveFormatedTierPriceKey($groupId), $formatedPrice);
+        $this->setData($this->resolveFormattedTierPriceKey($groupId), $formattedPrice);
     }
 
     public function setSpecialFromDate(mixed $date): void
@@ -117,23 +117,23 @@ class PriceData extends DataObject implements PDI
         return $this->hasData($key) ? $this->getData($key) : "";
     }
 
-    public function getFormatedPrice(?int $groupId = null): mixed
+    public function getFormattedPrice(?int $groupId = null): mixed
     {
-        $key = $this->resolveFormatedPriceKey($groupId);
+        $key = $this->resolveFormattedPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : "";
     }
 
-    public function getFormatedOriginalPrice(?int $groupId = null): mixed
+    public function getFormattedOriginalPrice(?int $groupId = null): mixed
     {
-        $key = $this->resolveFormatedOriginalPriceKey($groupId);
+        $key = $this->resolveFormattedOriginalPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : "";
     }
 
-    public function getFormatedTierPrice(?int $groupId = null): mixed
+    public function getFormattedTierPrice(?int $groupId = null): mixed
     {
-        $key = $this->resolveFormatedTierPriceKey($groupId);
+        $key = $this->resolveFormattedTierPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : "";
     }

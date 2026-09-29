@@ -6,7 +6,7 @@ interface PriceDataInterface
 {
     public const PREFIX_DEFAULT = 'default';
     public const PREFIX_GROUP = 'group_';
-    public const SUFFIX_FORMATED = '_formated';
+    public const SUFFIX_FORMATTED = '_formated';
     public const SUFFIX_TIER = '_tier';
     public const SUFFIX_ORIGINAL = '_original';
     public const SUFFIX_MAX = '_max';
@@ -33,19 +33,19 @@ interface PriceDataInterface
     public function setMaxPrice(mixed $price, ?int $groupId = null): void;
 
     /**
-     * set formated price (default if no customer group is specified)
+     * set formatted price (default if no customer group is specified)
      */
-    public function setFormatedPrice(mixed $formatedPrice, ?int $groupId = null): void;
+    public function setFormattedPrice(mixed $formattedPrice, ?int $groupId = null): void;
 
     /**
-     * set original formated price (default if no customer group is specified)
+     * set original formatted price (default if no customer group is specified)
      */
-    public function setFormatedOriginalPrice(mixed $formatedPrice, ?int $groupId = null): void;
+    public function setFormattedOriginalPrice(mixed $formattedPrice, ?int $groupId = null): void;
 
     /**
-     * set tier formated price (default if no customer group is specified)
+     * set tier formatted price (default if no customer group is specified)
      */
-    public function setFormatedTierPrice(mixed $formatedPrice, ?int $groupId = null): void;
+    public function setFormattedTierPrice(mixed $formattedPrice, ?int $groupId = null): void;
 
     /**
      * set special from date
@@ -77,19 +77,19 @@ interface PriceDataInterface
     public function getMaxPrice(?int $groupId = null): mixed;
 
     /**
-     * get formated price (default if no customer group is specified)
+     * get formatted price (default if no customer group is specified)
      */
-    public function getFormatedPrice(?int $groupId = null): mixed;
+    public function getFormattedPrice(?int $groupId = null): mixed;
 
     /**
-     * get original formated price (default if no customer group is specified)
+     * get original formatted price (default if no customer group is specified)
      */
-    public function getFormatedOriginalPrice(?int $groupId = null): mixed;
+    public function getFormattedOriginalPrice(?int $groupId = null): mixed;
 
     /**
-     * get tier formated price (default if no customer group is specified)
+     * get tier formatted price (default if no customer group is specified)
      */
-    public function getFormatedTierPrice(?int $groupId = null): mixed;
+    public function getFormattedTierPrice(?int $groupId = null): mixed;
 
     /**
      * get special from date

@@ -674,8 +674,8 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="pricing_version" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Pricing version</label>
+                <field id="pricing_engine" translate="label comment" type="select" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Pricing engine</label>
                     <source_model>Algolia\AlgoliaSearch\Model\Source\Pricing</source_model>
                     <comment>
                         <![CDATA[

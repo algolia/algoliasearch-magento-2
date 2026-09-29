@@ -28,7 +28,7 @@ class PriceManager
 
     public function addPriceDataByProductType($customData, Product $product, $subProducts)
     {
-        if ($this->configHelper->getPricingVersion() === Pricing::PRICING_V2) {
+        if ($this->configHelper->getPricingEngine() === Pricing::PRICING_V2) {
             return $this->pricingManagerV2->addPriceDataByProductType($customData, $product, $subProducts);
         }
 

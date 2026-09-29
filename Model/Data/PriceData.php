@@ -63,32 +63,32 @@ class PriceData extends DataObject implements PDI
         $this->setData($this->resolveTierPriceKey($groupId), $price);
     }
 
-    public function setMaxPrice(mixed $price, ?int $groupId = null): void
+    public function setMaxPrice(float $price, ?int $groupId = null): void
     {
         $this->setData($this->resolveMaxPriceKey($groupId), $price);
     }
 
-    public function setFormattedPrice(mixed $formattedPrice, ?int $groupId = null): void
+    public function setFormattedPrice(string $formattedPrice, ?int $groupId = null): void
     {
         $this->setData($this->resolveFormattedPriceKey($groupId), $formattedPrice);
     }
 
-    public function setFormattedOriginalPrice(mixed $formattedPrice, ?int $groupId = null): void
+    public function setFormattedOriginalPrice(string $formattedPrice, ?int $groupId = null): void
     {
         $this->setData($this->resolveFormattedOriginalPriceKey($groupId), $formattedPrice);
     }
 
-    public function setFormattedTierPrice(mixed $formattedPrice, ?int $groupId = null): void
+    public function setFormattedTierPrice(string $formattedPrice, ?int $groupId = null): void
     {
         $this->setData($this->resolveFormattedTierPriceKey($groupId), $formattedPrice);
     }
 
-    public function setSpecialFromDate(mixed $date): void
+    public function setSpecialFromDate(int|string $date): void
     {
         $this->setData(PDI::SPECIAL_FROM_DATE, $date);
     }
 
-    public function setSpecialToDate(mixed $date): void
+    public function setSpecialToDate(int|string $date): void
     {
         $this->setData(PDI::SPECIAL_TO_DATE, $date);
     }
@@ -110,40 +110,40 @@ class PriceData extends DataObject implements PDI
         return $this->hasData($key) ? (float) $this->getData($key) : 0.00;
     }
 
-    public function getMaxPrice(?int $groupId = null): mixed
+    public function getMaxPrice(?int $groupId = null): float
     {
         $key = $this->resolveMaxPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : "";
     }
 
-    public function getFormattedPrice(?int $groupId = null): mixed
+    public function getFormattedPrice(?int $groupId = null): string
     {
         $key = $this->resolveFormattedPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : "";
     }
 
-    public function getFormattedOriginalPrice(?int $groupId = null): mixed
+    public function getFormattedOriginalPrice(?int $groupId = null): string
     {
         $key = $this->resolveFormattedOriginalPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : "";
     }
 
-    public function getFormattedTierPrice(?int $groupId = null): mixed
+    public function getFormattedTierPrice(?int $groupId = null): string
     {
         $key = $this->resolveFormattedTierPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : "";
     }
 
-    public function getSpecialFromDate(): mixed
+    public function getSpecialFromDate(): false|int
     {
         return $this->getData(PDI::SPECIAL_FROM_DATE);
     }
 
-    public function getSpecialToDate(): mixed
+    public function getSpecialToDate(): false|int
     {
         return $this->getData(PDI::SPECIAL_TO_DATE);
     }

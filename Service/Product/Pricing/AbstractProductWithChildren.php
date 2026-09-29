@@ -17,7 +17,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $dashedFormat = $this->pricingHelper->formatDashedPriceFormat($min, $max, $this->store, $currencyCode);
 
         if ($min !== $max) {
-            $this->handleNonEqualMinMaxPrices($currencyCode, $min, $max, $dashedFormat);
+            $this->handleNonEqualMinMaxPrices($min, $max, $dashedFormat);
         }
 
         $this->handleOriginalPrice($currencyCode, $min, $max, $minOriginal, $maxOriginal);
@@ -73,7 +73,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         return [$min, $max, $original, $originalMax];
     }
 
-    protected function handleNonEqualMinMaxPrices($currencyCode, $min, $max, $dashedFormat): void
+    protected function handleNonEqualMinMaxPrices($min, $max, $dashedFormat): void
     {
         if ($this->priceData->getFormattedPrice() === "" || $min <= $this->priceData->getPrice()) {
             $this->priceData->setFormattedPrice($dashedFormat);
@@ -83,7 +83,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $this->priceData->setPrice(0); // will be reset just after
         }
 
-        $this->priceData->setMaxPrice($max);
+        $this->priceData->setMaxPrice((float) $max);
 
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
@@ -93,7 +93,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                     $this->priceData->setPrice(0, $groupId);
                     $this->priceData->setFormattedPrice($dashedFormat, $groupId);
                 }
-                $this->priceData->setMaxPrice($max, $groupId);
+                $this->priceData->setMaxPrice((float) $max, $groupId);
             }
         }
     }
@@ -129,7 +129,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             if (!empty($subProductsMinArray)) {
                 $this->priceData->setPrice($subProductsMinArray[$groupId]['price'], $groupId);
                 $this->priceData->setFormattedPrice($subProductsMinArray[$groupId]['formatted'], $groupId);
-                $this->priceData->setMaxPrice($subProductsMinArray[$groupId]['price_max'], $groupId);
+                $this->priceData->setMaxPrice((float) $subProductsMinArray[$groupId]['price_max'], $groupId);
             } else {
                 if ($this->priceData->getPrice($groupId) == 0) {
                     $this->priceData->setPrice($min, $groupId);

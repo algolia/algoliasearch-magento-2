@@ -126,7 +126,7 @@ class Bundle extends AbstractProductWithChildren
             $this->priceData->setPrice(0); // will be reset just after
         }
 
-        $this->priceData->setMaxPrice($max);
+        $this->priceData->setMaxPrice((float) $max);
     }
 
     protected function getBundleDashedPriceFormat($minPrices, $max, $currencyCode) : array

@@ -43,21 +43,9 @@ class Downloadable extends AbstractProduct
                     $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax),
                     $groupId
                 );
-                $this->priceData->setFormattedPrice(
-                    $this->pricingHelper->formatPrice(
-                        $this->priceData->getPrice($groupId),
-                        $this->store,
-                        $currencyCode
-                    ),
-                    $groupId
-                );
 
-                if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
-                    $this->priceData->setFormattedOriginalPrice($this->priceData->getFormattedPrice(), $groupId);
-                }
             } else {
                 $this->priceData->setPrice($this->priceData->getPrice(), $groupId);
-                $this->priceData->setFormattedPrice($this->priceData->getFormattedPrice(), $groupId);
             }
         }
 

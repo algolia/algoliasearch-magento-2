@@ -30,36 +30,17 @@ class Bundle extends AbstractProductWithChildren
     protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode): void
     {
         $data = $this->getMinMaxPrices($product, $withTax, $subProducts, $currencyCode);
-        $dashedFormat = $this->pricingHelper->formatDashedPriceFormat(
-            $data['min_price'],
-            $data['max_price'],
-            $this->store,
-            $currencyCode
-        );
 
         if ($data['min_price'] !== $data['max_price']) {
-            $this->handleBundleNonEqualMinMaxPrices($data['min_price'], $data['max_price'], $dashedFormat);
+            $this->handleBundleNonEqualMinMaxPrices($data['min_price'], $data['max_price']);
         }
-
-        $this->handleOriginalPrice(
-            $currencyCode,
-            $data['min_price'],
-            $data['max_price'],
-            $data['min_original'],
-            $data['max_original']
-        );
 
         if ($this->priceData->getPrice() === 0.00) {
             $this->handleZeroDefaultPrice($currencyCode, $data['min_price'], $data['max_price']);
         }
 
         if ($this->areCustomersGroupsEnabled) {
-            $groupedDashedFormat = $this->getBundleDashedPriceFormat($data['min'], $data['max'], $currencyCode);
-            $this->setFinalGroupPricesBundle(
-                $data['min'],
-                $data['max'],
-                $groupedDashedFormat
-            );
+            $this->setFinalGroupPricesBundle($data['min']);
         }
     }
 
@@ -68,8 +49,6 @@ class Bundle extends AbstractProductWithChildren
         $productWithPrice = $this->productRepository->getById($product->getId(), false, $product->getStoreId(), true);
         $productWithPrice->setData('website_id', $product->getStore()->getWebsiteId());
         $minPrice = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
-        $minOriginalPrice = $productWithPrice->getPriceInfo()->getPrice('regular_price')->getMinimalPrice()->getValue();
-        $maxOriginalPrice = $productWithPrice->getPriceInfo()->getPrice('regular_price')->getMaximalPrice()->getValue();
         $max = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
         $minArray = [];
         $maxArray = [];
@@ -94,8 +73,6 @@ class Bundle extends AbstractProductWithChildren
 
         if ($currencyCode !== $this->baseCurrencyCode) {
             $minPrice = $this->pricingHelper->convertPrice($minPrice, $this->store, $currencyCode);
-            $minOriginalPrice = $this->pricingHelper->convertPrice($minOriginalPrice, $this->store, $currencyCode);
-            $maxOriginalPrice = $this->pricingHelper->convertPrice($maxOriginalPrice, $this->store, $currencyCode);
             foreach ($minPriceArray as $groupId => $price) {
                 $minPriceArray[$groupId] = $this->pricingHelper->convertPrice($price, $this->store, $currencyCode);
             }
@@ -108,21 +85,17 @@ class Bundle extends AbstractProductWithChildren
             'min' => $minPriceArray,
             'max' => $maxPriceArray,
             'min_price' => $minPrice,
-            'max_price' => $max,
-            'min_original' => $minOriginalPrice,
-            'max_original' => $maxOriginalPrice,
+            'max_price' => $max
         ];
     }
 
-    protected function handleBundleNonEqualMinMaxPrices($min, $max, $dashedFormat): void
+    protected function handleBundleNonEqualMinMaxPrices($min, $max): void
     {
-        if ($this->priceData->getFormattedOriginalPrice() === "" || $min <= $this->priceData->getPrice()) {
-            $this->priceData->setFormattedPrice($dashedFormat);
+        if ($min <= $this->priceData->getPrice()) {
 
             //// Do not keep special price that is already taken into account in min max
             $this->priceData->setSpecialFromDate("");
             $this->priceData->setSpecialToDate("");
-            $this->priceData->setFormattedOriginalPrice("");
             $this->priceData->setPrice(0); // will be reset just after
         }
 
@@ -144,17 +117,12 @@ class Bundle extends AbstractProductWithChildren
         return $dashedFormatPrice;
     }
 
-    protected function setFinalGroupPricesBundle($min, $max, $dashedFormat): void
+    protected function setFinalGroupPricesBundle($min): void
     {
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $this->priceData->setPrice($min[$groupId], $groupId);
-            if ($min[$groupId] === $max[$groupId]) {
-                $this->priceData->setFormattedPrice($this->priceData->getFormattedPrice(), $groupId);
-            } else {
-                $this->priceData->setFormattedPrice($dashedFormat[$groupId], $groupId);
-            }
         }
     }
 }

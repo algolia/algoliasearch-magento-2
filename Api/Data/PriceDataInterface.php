@@ -28,6 +28,11 @@ interface PriceDataInterface
     public function setTierPrice(float $price, ?int $groupId = null): void;
 
     /**
+     * set original price (default if no customer group is specified)
+     */
+    public function setOriginalPrice(float $price, ?int $groupId = null): void;
+
+    /**
      * set max price (default if no customer group is specified)
      */
     public function setMaxPrice(float $price, ?int $groupId = null): void;
@@ -70,6 +75,11 @@ interface PriceDataInterface
      * get tier price (default if no customer group is specified)
      */
     public function getTierPrice(?int $groupId = null): float;
+
+    /**
+     * get original price (default if no customer group is specified)
+     */
+    public function getOriginalPrice(?int $groupId = null): float;
 
     /**
      * get max price (default if no customer group is specified)

@@ -23,7 +23,8 @@ class PricingManagerV2
         protected PriceManagerConfigurable $priceManagerConfigurable,
         protected PriceManagerBundle $priceManagerBundle,
         protected PriceManagerGrouped $priceManagerGrouped,
-        protected PriceDataInterfaceFactory $priceDataInterfaceFactory
+        protected PriceDataInterfaceFactory $priceDataInterfaceFactory,
+        protected PriceDataFormatter $priceDataFormatter
     ) {}
 
     /**
@@ -53,7 +54,12 @@ class PricingManagerV2
                     $currencyCode,
                     $withTax
                 );
-                $customData[$field][$currencyCode] = $priceData->getData();
+
+                $customData[$field][$currencyCode] = $this->priceDataFormatter->formatPriceDataObject(
+                    $priceData,
+                    $product->getStore(),
+                    $currencyCode
+                )->getData();
             }
         }
 

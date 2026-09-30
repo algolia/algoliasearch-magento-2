@@ -24,7 +24,7 @@ class Downloadable extends AbstractProduct
         );
     }
 
-    protected function addCustomerGroupsPrices(array $priceData, Product $product, $currencyCode, $withTax): array
+    protected function addCustomerGroupsPrices(Product $product, $currencyCode, $withTax): void
     {
         /** @var Group $group */
         foreach ($this->groups as $group) {
@@ -39,29 +39,28 @@ class Downloadable extends AbstractProduct
             }
 
             if ($discountedPrice !== false) {
-                $priceData[$currencyCode]['group_' . $groupId] =
-                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax);
-                $priceData[$currencyCode]['group_' . $groupId . '_formated'] =
+                $this->priceData->setPrice(
+                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax),
+                    $groupId
+                );
+                $this->priceData->setFormattedPrice(
                     $this->pricingHelper->formatPrice(
-                        $priceData[$currencyCode]['group_' . $groupId],
+                        $this->priceData->getPrice($groupId),
                         $this->store,
                         $currencyCode
-                    );
-                if ($priceData[$currencyCode]['default'] >
-                    $priceData[$currencyCode]['group_' . $groupId]) {
-                    $priceData[$currencyCode]['group_' . $groupId . '_original_formated'] =
-                        $priceData[$currencyCode]['default_formated'];
+                    ),
+                    $groupId
+                );
+
+                if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
+                    $this->priceData->setFormattedOriginalPrice($this->priceData->getFormattedPrice(), $groupId);
                 }
             } else {
-                $priceData[$currencyCode]['group_' . $groupId] =
-                    $priceData[$currencyCode]['default'];
-                $priceData[$currencyCode]['group_' . $groupId . '_formated'] =
-                    $priceData[$currencyCode]['default_formated'];
+                $this->priceData->setPrice($this->priceData->getPrice(), $groupId);
+                $this->priceData->setFormattedPrice($this->priceData->getFormattedPrice(), $groupId);
             }
         }
 
         $product->setData('customer_group_id', null);
-
-        return $priceData;
     }
 }

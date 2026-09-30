@@ -36,6 +36,13 @@ class PriceData extends DataObject implements PDI
             PDI::PREFIX_GROUP.  $groupId . PDI::SUFFIX_MAX;
     }
 
+    protected function resolveMinPriceKey(?int $groupId = null): string
+    {
+        return $groupId === null ?
+            PDI::PREFIX_DEFAULT . PDI::SUFFIX_MIN :
+            PDI::PREFIX_GROUP.  $groupId . PDI::SUFFIX_MIN;
+    }
+
     protected function resolveFormattedPriceKey(?int $groupId = null): string
     {
         return $groupId === null ?
@@ -80,6 +87,11 @@ class PriceData extends DataObject implements PDI
         $this->setData($this->resolveMaxPriceKey($groupId), $price);
     }
 
+    public function setMinPrice(float $price, ?int $groupId = null): void
+    {
+        $this->setData($this->resolveMinPriceKey($groupId), $price);
+    }
+
     public function setFormattedPrice(string $formattedPrice, ?int $groupId = null): void
     {
         $this->setData($this->resolveFormattedPriceKey($groupId), $formattedPrice);
@@ -106,6 +118,19 @@ class PriceData extends DataObject implements PDI
     }
 
     /**
+     *  ********* UNSETTERS ********
+     */
+    public function unsetMaxPrice(?int $groupId = null): void
+    {
+        $this->unsetData($this->resolveMaxPriceKey($groupId));
+    }
+
+    public function unsetMinPrice(?int $groupId = null): void
+    {
+        $this->unsetData($this->resolveMinPriceKey($groupId));
+    }
+
+    /**
      *  ********* GETTERS ********
      */
     public function getPrice(?int $groupId = null): float
@@ -125,6 +150,13 @@ class PriceData extends DataObject implements PDI
     public function getMaxPrice(?int $groupId = null): float
     {
         $key = $this->resolveMaxPriceKey($groupId);
+
+        return $this->hasData($key) ? $this->getData($key) : 0.00;
+    }
+
+    public function getMinPrice(?int $groupId = null): float
+    {
+        $key = $this->resolveMinPriceKey($groupId);
 
         return $this->hasData($key) ? $this->getData($key) : 0.00;
     }

@@ -46,13 +46,17 @@ class PricingManagerV2
         foreach ($priceFields as $field => $withTax) {
             $customData[$field] = [];
             foreach ($currencies as $currencyCode) {
-                $customData[$field][$currencyCode] = $this->{$priceManager}->calculatePriceData(
+                $priceObject = $this->{$priceManager}->calculatePriceData(
                     $this->priceDataInterfaceFactory->create(),
                     $product,
                     $subProducts,
                     $currencyCode,
                     $withTax
                 )->getData();
+
+                ksort($priceObject);
+
+                $customData[$field][$currencyCode] = $priceObject;
             }
         }
 

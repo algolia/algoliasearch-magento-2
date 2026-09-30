@@ -38,7 +38,8 @@ class PriceDataFormatter
         ?int $groupId = null
     ) : PriceDataInterface
     {
-        if ($priceData->getPrice($groupId) > 0.00) {
+        // Basic price
+        if ($priceData->getPrice($groupId)) {
             $priceData->setFormattedPrice(
                 $this->pricingHelper->formatPrice(
                     $priceData->getPrice(),
@@ -49,7 +50,31 @@ class PriceDataFormatter
             );
         }
 
-        if ($priceData->getOriginalPrice() > 0.00) {
+        // Min/Max prices for configurable/bundle/grouped
+        if (($priceData->getMinPrice($groupId) && $priceData->getMaxPrice($groupId)) &&
+            $priceData->getMinPrice($groupId) < $priceData->getMaxPrice($groupId))
+        {
+            $priceData->setFormattedPrice(
+                $this->pricingHelper->formatPrice(
+                    $priceData->getMinPrice($groupId),
+                    $store,
+                    $currencyCode
+                ) . ' - ' .
+                $this->pricingHelper->formatPrice(
+                    $priceData->getMaxPrice($groupId),
+                    $store,
+                    $currencyCode
+                ),
+                $groupId
+            );
+
+            // Clean values to reduce the price object size
+            $priceData->unsetMinPrice($groupId);
+            $priceData->unsetMaxPrice($groupId);
+        }
+
+        // Original price for crossed-out price
+        if ($priceData->getOriginalPrice()) {
             $priceData->setFormattedOriginalPrice(
                 $this->pricingHelper->formatPrice(
                     $priceData->getOriginalPrice(),

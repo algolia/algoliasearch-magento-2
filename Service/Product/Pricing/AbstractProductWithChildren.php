@@ -79,6 +79,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $this->priceData->setPrice(0); // will be reset just after
         }
 
+        $this->priceData->setMinPrice((float) $min);
         $this->priceData->setMaxPrice((float) $max);
 
         if ($this->areCustomersGroupsEnabled) {
@@ -88,6 +89,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 if ($min !== $max && $min <= $this->priceData->getPrice($groupId)) {
                     $this->priceData->setPrice(0, $groupId);
                 }
+                $this->priceData->setMinPrice((float) $min, $groupId);
                 $this->priceData->setMaxPrice((float) $max, $groupId);
             }
         }
@@ -115,6 +117,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 
             if (!empty($subProductsMinArray)) {
                 $this->priceData->setPrice($subProductsMinArray[$groupId]['price'], $groupId);
+                $this->priceData->setMinPrice($subProductsMinArray[$groupId]['price'], $groupId);
                 $this->priceData->setMaxPrice((float) $subProductsMinArray[$groupId]['price_max'], $groupId);
             } else {
                 if ($this->priceData->getPrice($groupId) == 0) {

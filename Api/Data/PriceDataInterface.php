@@ -10,6 +10,7 @@ interface PriceDataInterface
     public const SUFFIX_TIER = '_tier';
     public const SUFFIX_ORIGINAL = '_original';
     public const SUFFIX_MAX = '_max';
+    public const SUFFIX_MIN = '_min';
     public const SPECIAL_FROM_DATE = 'special_from_date';
     public const SPECIAL_TO_DATE = 'special_to_date';
 
@@ -36,6 +37,11 @@ interface PriceDataInterface
      * set max price (default if no customer group is specified)
      */
     public function setMaxPrice(float $price, ?int $groupId = null): void;
+
+    /**
+     * set min price (default if no customer group is specified)
+     */
+    public function setMinPrice(float $price, ?int $groupId = null): void;
 
     /**
      * set formatted price (default if no customer group is specified)
@@ -85,6 +91,11 @@ interface PriceDataInterface
      * get max price (default if no customer group is specified)
      */
     public function getMaxPrice(?int $groupId = null): float;
+
+    /**
+     * get min price (default if no customer group is specified)
+     */
+    public function getMinPrice(?int $groupId = null): float;
 
     /**
      * get formatted price (default if no customer group is specified)

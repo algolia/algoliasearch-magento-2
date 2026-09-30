@@ -41,7 +41,7 @@ abstract class AbstractProduct
      * @throws DiagnosticsException
      * @throws LocalizedException
      */
-    public function getPriceData(
+    public function calculatePriceData(
         PriceDataInterface $priceData,
         Product $product,
         $subProducts,

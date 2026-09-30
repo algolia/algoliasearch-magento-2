@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
@@ -15,12 +16,14 @@ class Downloadable extends AbstractProduct
         protected ProductRepositoryInterface $productRepository,
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
-        protected DiagnosticsLogger $logger
+        protected DiagnosticsLogger $logger,
+        protected PriceDataFormatter $priceDataFormatter
     ) {
         parent::__construct(
             $configHelper,
             $pricingHelper,
-            $logger
+            $logger,
+            $priceDataFormatter
         );
     }
 

@@ -23,8 +23,7 @@ class PricingManagerV2
         protected PriceManagerConfigurable $priceManagerConfigurable,
         protected PriceManagerBundle $priceManagerBundle,
         protected PriceManagerGrouped $priceManagerGrouped,
-        protected PriceDataInterfaceFactory $priceDataInterfaceFactory,
-        protected PriceDataFormatter $priceDataFormatter
+        protected PriceDataInterfaceFactory $priceDataInterfaceFactory
     ) {}
 
     /**
@@ -47,18 +46,12 @@ class PricingManagerV2
         foreach ($priceFields as $field => $withTax) {
             $customData[$field] = [];
             foreach ($currencies as $currencyCode) {
-                $priceData = $this->{$priceManager}->calculatePriceData(
+                $customData[$field][$currencyCode] = $this->{$priceManager}->calculatePriceData(
                     $this->priceDataInterfaceFactory->create(),
                     $product,
                     $subProducts,
                     $currencyCode,
                     $withTax
-                );
-
-                $customData[$field][$currencyCode] = $this->priceDataFormatter->formatPriceDataObject(
-                    $priceData,
-                    $product->getStore(),
-                    $currencyCode
                 )->getData();
             }
         }

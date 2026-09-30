@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Group;
@@ -26,7 +27,8 @@ abstract class AbstractProduct
     public function __construct(
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
-        protected DiagnosticsLogger $logger
+        protected DiagnosticsLogger $logger,
+        protected PriceDataFormatter $priceDataFormatter
     ) {}
 
     protected function initProductPricingConfiguration(Product $product): void
@@ -103,7 +105,11 @@ abstract class AbstractProduct
 
         $this->logger->stopProfiling(__METHOD__);
 
-        return $this->priceData;
+        return $this->priceDataFormatter->formatPriceDataObject(
+            $this->priceData,
+            $this->store,
+            $currencyCode
+        );
     }
 
     protected function filterCustomerGroups(Product $product): void

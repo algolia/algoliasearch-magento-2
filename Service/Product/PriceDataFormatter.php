@@ -67,10 +67,6 @@ class PriceDataFormatter
                 ),
                 $groupId
             );
-
-            // Clean values to reduce the price object size
-            $priceData->unsetMinPrice($groupId);
-            $priceData->unsetMaxPrice($groupId);
         }
 
         // Original price for crossed-out price
@@ -84,6 +80,10 @@ class PriceDataFormatter
                 $groupId
             );
         }
+
+        // Clean values to reduce the price object size
+        $priceData->unsetMinPrice($groupId);
+        $priceData->unsetMaxPrice($groupId);
 
         return $priceData;
     }

@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Group;
@@ -26,7 +27,8 @@ abstract class AbstractProduct
     public function __construct(
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
-        protected DiagnosticsLogger $logger
+        protected DiagnosticsLogger $logger,
+        protected PriceDataFormatter $priceDataFormatter
     ) {}
 
     protected function initProductPricingConfiguration(Product $product): void
@@ -69,16 +71,12 @@ abstract class AbstractProduct
          *
          *  [...
          *      'defaut' => X.XX,
-         *      'default_formated' => "$XX.XX"
          *      'special_from_date' => 1789984652,
          *      'special_to_date' => 1789984652
          *   ...
          *  ]
          */
         $this->priceData->setPrice($this->pricingHelper->round($price));
-        $this->priceData->setFormattedPrice(
-            $this->pricingHelper->formatPrice($price, $this->store, $currencyCode)
-        );
         $this->priceData->setSpecialFromDate(
             (!empty($product->getSpecialFromDate())) ? strtotime((string) $product->getSpecialFromDate()) : ''
         );
@@ -95,7 +93,7 @@ abstract class AbstractProduct
         }
 
         $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax, $subProducts);
-        $this->addSpecialPrices($specialPrice, $currencyCode);
+        $this->addSpecialPrices($specialPrice);
 
         $tierPrice = $this->getTierPrice($product, $currencyCode, $withTax);
         $this->addTierPrices($tierPrice, $currencyCode);
@@ -107,7 +105,11 @@ abstract class AbstractProduct
 
         $this->logger->stopProfiling(__METHOD__);
 
-        return $this->priceData;
+        return $this->priceDataFormatter->formatPriceDataObject(
+            $this->priceData,
+            $this->store,
+            $currencyCode
+        );
     }
 
     protected function filterCustomerGroups(Product $product): void
@@ -240,19 +242,12 @@ abstract class AbstractProduct
 
                 if ($tierPrice[$groupId]) {
                     $this->priceData->setTierPrice($tierPrice[$groupId], $groupId);
-                    $this->priceData->setFormattedTierPrice(
-                        $this->pricingHelper->formatPrice($tierPrice[$groupId], $this->store, $currencyCode),
-                        $groupId
-                    );
                 }
             }
         }
 
         if ($tierPrice[0]) {
             $this->priceData->setTierPrice($this->pricingHelper->round($tierPrice[0]));
-            $this->priceData->setFormattedTierPrice(
-                $this->pricingHelper->formatPrice($tierPrice[0], $this->store, $currencyCode),
-            );
         }
     }
 
@@ -272,29 +267,20 @@ abstract class AbstractProduct
                     $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax),
                     $groupId
                 );
-                $this->priceData->setFormattedPrice(
-                    $this->pricingHelper->formatPrice(
-                        $this->priceData->getPrice($groupId), $this->store, $currencyCode
-                    ),
-                    $groupId
-                );
 
                 if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
-                    $this->priceData->setFormattedOriginalPrice(
-                        $this->priceData->getFormattedPrice(),
-                        $groupId
-                    );
+                    $this->priceData->setOriginalPrice($this->priceData->getPrice(), $groupId);
                 }
+
             } else {
                 $this->priceData->setPrice($this->priceData->getPrice(), $groupId);
-                $this->priceData->setFormattedPrice($this->priceData->getFormattedPrice(), $groupId);
             }
         }
 
         $product->setData('customer_group_id', null);
     }
 
-    protected function addSpecialPrices($specialPrice, $currencyCode): void
+    protected function addSpecialPrices($specialPrice): void
     {
         if ($this->areCustomersGroupsEnabled) {
             /** @var Group $group */
@@ -302,24 +288,17 @@ abstract class AbstractProduct
                 $groupId = (int) $group->getData('customer_group_id');
                 if ($specialPrice[$groupId]  && $specialPrice[$groupId] < $this->priceData->getPrice($groupId)) {
                     $this->priceData->setPrice($specialPrice[$groupId], $groupId);
-                    $this->priceData->setFormattedPrice(
-                        $this->pricingHelper->formatPrice($specialPrice[$groupId], $this->store, $currencyCode),
-                        $groupId
-                    );
 
                     if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
-                        $this->priceData->setFormattedOriginalPrice($this->priceData->getFormattedPrice(), $groupId);
+                        $this->priceData->setOriginalPrice($this->priceData->getPrice(), $groupId);
                     }
                 }
             }
         }
 
         if ($specialPrice[0] && $specialPrice[0] < $this->priceData->getPrice()) {
-            $this->priceData->setFormattedOriginalPrice($this->priceData->getFormattedPrice());
+            $this->priceData->setOriginalPrice($this->priceData->getPrice());
             $this->priceData->setPrice($this->pricingHelper->round($specialPrice[0]));
-            $this->priceData->setFormattedPrice(
-                $this->pricingHelper->formatPrice($specialPrice[0], $this->store, $currencyCode)
-            );
         }
     }
 }

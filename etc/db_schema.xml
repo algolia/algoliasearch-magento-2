@@ -20,6 +20,10 @@
         <column xsi:type="int" name="is_full_reindex" unsigned="true" nullable="false" default="0" identity="false" comment="Indicates if the job is part of a full reindex"/>
         <column xsi:type="datetime" name="locked_at" on_update="false" nullable="true" comment="Indicates time where PID was assigned to the job"/>
         <column xsi:type="text" name="debug" nullable="true" comment="Debug info"/>
+        <column xsi:type="int" name="store_id" unsigned="true" nullable="true" identity="false" comment="Store Id"/>
+        <index referenceId="ALGOLIASEARCH_QUEUE_STORE_ID" indexType="btree">
+            <column name="store_id"/>
+        </index>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="job_id"/>
         </constraint>

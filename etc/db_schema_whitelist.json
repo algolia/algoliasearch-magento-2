@@ -13,7 +13,11 @@
             "created": true,
             "is_full_reindex": true,
             "locked_at": true,
-            "debug": true
+            "debug": true,
+            "store_id": true
+        },
+        "index": {
+            "ALGOLIASEARCH_QUEUE_STORE_ID": true
         },
         "constraint": {
             "PRIMARY": true

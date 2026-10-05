@@ -88,6 +88,7 @@ class Queue
                 'max_retries' => $this->configHelper->getRetryLimit(),
                 'is_full_reindex' => $isFullReindex ? 1 : 0,
                 'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled() ? (new \Exception)->getTraceAsString() : null,
+                'store_id' => isset($data['storeId']) ? (int) $data['storeId'] : null,
             ]);
         } else {
             $object = $this->objectManager->get($className);

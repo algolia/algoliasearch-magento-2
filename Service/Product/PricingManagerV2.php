@@ -3,6 +3,8 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterfaceFactory;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterfaceFactory;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle as PriceManagerBundle;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable as PriceManagerConfigurable;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable as PriceManagerDownloadable;
@@ -23,7 +25,8 @@ class PricingManagerV2
         protected PriceManagerConfigurable $priceManagerConfigurable,
         protected PriceManagerBundle $priceManagerBundle,
         protected PriceManagerGrouped $priceManagerGrouped,
-        protected PriceDataInterfaceFactory $priceDataInterfaceFactory
+        protected PriceDataInterfaceFactory $priceDataFactory,
+        protected PricingContextInterfaceFactory $pricingContextFactory
     ) {}
 
     /**
@@ -46,12 +49,15 @@ class PricingManagerV2
         foreach ($priceFields as $field => $withTax) {
             $customData[$field] = [];
             foreach ($currencies as $currencyCode) {
+                $pricingContext = $this->pricingContextFactory->create();
+                $pricingContext->setData(PricingContextInterface::PRODUCT, $product);
+                $pricingContext->setData(PricingContextInterface::SUB_PRODUCTS, $subProducts);
+                $pricingContext->setData(PricingContextInterface::CURRENCY_CODE, $currencyCode);
+                $pricingContext->setData(PricingContextInterface::USE_TAX, $withTax);
+
                 $priceArray = $this->{$priceManager}->calculatePriceData(
-                    $this->priceDataInterfaceFactory->create(),
-                    $product,
-                    $subProducts,
-                    $currencyCode,
-                    $withTax
+                    $this->priceDataFactory->create(),
+                    $pricingContext
                 )->toArray();
 
                 ksort($priceArray);

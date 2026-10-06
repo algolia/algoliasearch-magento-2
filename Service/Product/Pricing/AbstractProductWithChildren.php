@@ -2,6 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
+use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
@@ -9,26 +11,35 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 {
     public const PRICE_NOT_SET = -1;
 
-    protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode): void
+    protected function addAdditionalData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
     {
         [$min, $max, $minOriginal, $maxOriginal] =
-            $this->getMinMaxPrices($product, $withTax, $subProducts, $currencyCode);
+            $this->getMinMaxPrices($pricingContext);
 
         if ($min !== $max) {
-            $this->handleNonEqualMinMaxPrices($min, $max);
+            $this->handleNonEqualMinMaxPrices($priceData, $pricingContext, $min, $max);
         }
 
-        $this->priceData->setOriginalPrice($maxOriginal);
-        if ($this->priceData->getPrice() === 0.00) {
-            $this->priceData->setPrice($min);
+        if ($max < $maxOriginal) {
+            $priceData->setOriginalPrice($maxOriginal);
         }
-        if ($this->areCustomersGroupsEnabled) {
-            $this->setFinalGroupPrices($currencyCode, $min, $product, $subProducts, $withTax);
+
+        if ($priceData->getPrice() === 0.00) {
+            $priceData->setPrice($min);
         }
+        if ($pricingContext->areCustomerGroupsEnabled()) {
+            $this->setFinalGroupPrices($priceData, $pricingContext, $min);
+        }
+
+        return $priceData;
     }
 
-    protected function getMinMaxPrices(Product $product, $withTax, $subProducts, $currencyCode): array
+    protected function getMinMaxPrices(PricingContextInterface $pricingContext): array
     {
+        $product = $pricingContext->getProduct();
+        $subProducts = $pricingContext->getSubProducts();
+
         $min      = PHP_INT_MAX;
         $max      = 0;
         $original = $min;
@@ -36,8 +47,8 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         if (count($subProducts) > 0) {
             /** @var Product $subProduct */
             foreach ($subProducts as $subProduct) {
-                $specialPrice = $this->getSpecialPrice($subProduct, $currencyCode, $withTax, $subProducts);
-                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
+                $specialPrice = $this->getSpecialPrice($pricingContext);
+                $tierPrice = $this->getTierPrice($pricingContext);
                 if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
                     $minPrice = $tierPrice[0];
                 } else {
@@ -47,15 +58,23 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 $finalPrice = $subProduct->getFinalPrice();
                 $basePrice  = $subProduct->getPrice();
 
-                if ($currencyCode !== $this->baseCurrencyCode) {
-                    $finalPrice = $this->pricingHelper->convertPrice($finalPrice, $this->store, $currencyCode);
-                    $basePrice  = $this->pricingHelper->convertPrice($basePrice, $this->store, $currencyCode);
+                if ($pricingContext->currencyIsDifferentFromBase()) {
+                    $finalPrice = $this->pricingHelper->convertPrice(
+                        $finalPrice,
+                        $pricingContext->getStore(),
+                        $pricingContext->getCurrencyCode()
+                    );
+                    $basePrice  = $this->pricingHelper->convertPrice(
+                        $basePrice,
+                        $pricingContext->getStore(),
+                        $pricingContext->getCurrencyCode()
+                    );
                 }
 
-                $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $withTax);
-                $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $withTax);
+                $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->useTax());
+                $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->useTax());
 
-                if ($this->configHelper->isFptEnabled($subProduct->getStoreId())) {
+                if ($pricingContext->isFptEnabled()) {
                     $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);
                 }
 
@@ -71,66 +90,80 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         return [$min, $max, $original, $originalMax];
     }
 
-    protected function handleNonEqualMinMaxPrices($min, $max): void
+    protected function handleNonEqualMinMaxPrices(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
+        $min,
+        $max
+    ): PriceDataInterface
     {
-        if ($min <= $this->priceData->getPrice()) {
-            $this->priceData->setSpecialFromDate("");
-            $this->priceData->setSpecialToDate("");
-            $this->priceData->setPrice(0); // will be reset just after
+        if ($min <= $priceData->getPrice()) {
+            $priceData->setSpecialFromDate("");
+            $priceData->setSpecialToDate("");
+            $priceData->setPrice(0); // will be reset just after
         }
 
-        $this->priceData->setMinPrice((float) $min);
-        $this->priceData->setMaxPrice((float) $max);
+        $priceData->setMinPrice((float) $min);
+        $priceData->setMaxPrice((float) $max);
 
-        if ($this->areCustomersGroupsEnabled) {
+        if ($pricingContext->areCustomerGroupsEnabled()) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                if ($min !== $max && $min <= $this->priceData->getPrice($groupId)) {
-                    $this->priceData->setPrice(0, $groupId);
+                if ($min !== $max && $min <= $priceData->getPrice($groupId)) {
+                    $priceData->setPrice(0, $groupId);
                 }
-                $this->priceData->setMinPrice((float) $min, $groupId);
-                $this->priceData->setMaxPrice((float) $max, $groupId);
+                $priceData->setMinPrice((float) $min, $groupId);
+                $priceData->setMaxPrice((float) $max, $groupId);
             }
         }
+
+        return $priceData;
     }
 
-    protected function handleZeroDefaultPrice($currencyCode, $min, $max): void
+    protected function handleZeroDefaultPrice(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
+        $min,
+        $max)
+    : PriceDataInterface
     {
-
+        return $priceData;
     }
 
     protected function setFinalGroupPrices(
-        $currencyCode,
-        $min,
-        $product,
-        $subProducts,
-        $withTax
-    ) : void
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
+        $min
+    ) : PriceDataInterface
     {
+        $subProducts = $pricingContext->getSubProducts();
+
         $subProductsMinArray = count($subProducts) > 0 ?
-            $this->formatMinArray($product, $subProducts, $min, $currencyCode, $withTax) :
+            $this->formatMinArray($pricingContext, $min) :
             [];
 
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
 
             if (!empty($subProductsMinArray)) {
-                $this->priceData->setPrice($subProductsMinArray[$groupId]['price'], $groupId);
-                $this->priceData->setMinPrice($subProductsMinArray[$groupId]['price'], $groupId);
-                $this->priceData->setMaxPrice((float) $subProductsMinArray[$groupId]['price_max'], $groupId);
+                $priceData->setPrice($subProductsMinArray[$groupId]['price'], $groupId);
+                $priceData->setMinPrice($subProductsMinArray[$groupId]['price'], $groupId);
+                $priceData->setMaxPrice((float) $subProductsMinArray[$groupId]['price_max'], $groupId);
             } else {
-                if ($this->priceData->getPrice($groupId) == 0) {
-                    $this->priceData->setPrice($min, $groupId);
+                if ($priceData->getPrice($groupId) == 0) {
+                    $priceData->setPrice($min, $groupId);
                 }
             }
         }
+
+        return $priceData;
     }
 
-    protected function formatMinArray($product, $subProducts, $min, $currencyCode, $withTax): array
+    protected function formatMinArray(PricingContextInterface $pricingContext, $min): array
     {
         $minArray = [];
-        $groupPriceList = $this->getGroupPriceList($product, $subProducts, $min, $currencyCode, $withTax);
+        $groupPriceList = $this->getGroupPriceList($pricingContext, $min);
 
         foreach ($groupPriceList as $key => $value) {
             $minArray[$key]['price'] = $value['min'];
@@ -140,8 +173,10 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         return $minArray;
     }
 
-    protected function getGroupPriceList($product, $subProducts, $min, $currencyCode, $withTax): array
+    protected function getGroupPriceList(PricingContextInterface $pricingContext, $min): array
     {
+        $subProducts = $pricingContext->getSubProducts();
+
         $groupPriceList = [];
         $subProductsMin = self::PRICE_NOT_SET;
         $subProductsMax = self::PRICE_NOT_SET;
@@ -154,14 +189,13 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 $subProduct->setData('customer_group_id', $groupId);
                 $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
 
-                $specialPrice = $this->getSpecialPrice($subProduct, $currencyCode, $withTax, []);
-                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
+                $specialPrice = $this->getSpecialPrice($pricingContext);
+                $tierPrice = $this->getTierPrice($pricingContext);
                 $price = $this->pricingHelper->getTaxPrice(
-                    $product,
+                    $pricingContext->getProduct(),
                     $subProduct->getPriceModel()->getFinalPrice(1, $subProduct),
-                    $withTax
-                )
-                ;
+                    $pricingContext->useTax()
+                );
 
                 if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {
                     $minPrice = $tierPrice[$groupId];

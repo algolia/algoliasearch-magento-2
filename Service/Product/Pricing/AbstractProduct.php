@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
@@ -17,12 +18,7 @@ use Magento\Store\Model\Store;
 
 abstract class AbstractProduct
 {
-    protected Store $store;
-    protected ?string $baseCurrencyCode;
     protected CustomerGroupResourceCollection $groups;
-    protected bool $areCustomersGroupsEnabled;
-
-    protected PriceDataInterface $priceData;
 
     public function __construct(
         protected ConfigHelper $configHelper,
@@ -31,40 +27,33 @@ abstract class AbstractProduct
         protected PriceDataFormatter $priceDataFormatter
     ) {}
 
-    protected function initProductPricingConfiguration(Product $product): void
-    {
-        $this->store = $product->getStore();
-        $this->areCustomersGroupsEnabled = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId());
-        $this->baseCurrencyCode = $this->store->getBaseCurrencyCode();
-        $this->groups = $this->pricingHelper->getCustomerGroupCollection();
-    }
-
     /**
      * @throws DiagnosticsException
      * @throws LocalizedException
      */
-    public function calculatePriceData(
-        PriceDataInterface $priceData,
-        Product $product,
-        $subProducts,
-        string $currencyCode,
-        bool $withTax)
+    public function calculatePriceData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
     : PriceDataInterface
     {
         $this->logger->startProfiling(__METHOD__);
-        $this->initProductPricingConfiguration($product);
-        $this->priceData = $priceData;
-        $this->filterCustomerGroups($product);
+
+        $product = $pricingContext->getProduct();
+        $this->groups = $this->pricingHelper->getCustomerGroupCollection();
+
+        $this->filterCustomerGroups($pricingContext);
 
         $price = $product->getPrice();
         if ($this->configHelper->isFptEnabled($product->getStoreId())) {
             $price += $this->pricingHelper->getWeeeAmount($product);
         }
-        if ($currencyCode !== $this->baseCurrencyCode) {
-            $price = $this->pricingHelper->convertPrice($price, $this->store, $currencyCode);
+        if ($pricingContext->currencyIsDifferentFromBase()) {
+            $price = $this->pricingHelper->convertPrice(
+                $price,
+                $pricingContext->getStore(),
+                $pricingContext->getCurrencyCode()
+            );
         }
 
-        $price = $this->pricingHelper->getTaxPrice($product, $price, $withTax);
+        $price = $this->pricingHelper->getTaxPrice($product, $price, $pricingContext->useTax());
 
         /**
          *  Basic inputs related to every product
@@ -76,11 +65,11 @@ abstract class AbstractProduct
          *   ...
          *  ]
          */
-        $this->priceData->setPrice($this->pricingHelper->round($price));
-        $this->priceData->setSpecialFromDate(
+        $priceData->setPrice($this->pricingHelper->round($price));
+        $priceData->setSpecialFromDate(
             (!empty($product->getSpecialFromDate())) ? strtotime((string) $product->getSpecialFromDate()) : ''
         );
-        $this->priceData->setSpecialToDate(
+        $priceData->setSpecialToDate(
             (!empty($product->getSpecialToDate())) ? strtotime((string) $product->getSpecialToDate()) : ''
         );
 
@@ -88,40 +77,33 @@ abstract class AbstractProduct
         /**
          *  Additional inputs depending on multiple factors (customer groups, special/tier prices ...)
          */
-        if ($this->areCustomersGroupsEnabled) {
-            $this->addCustomerGroupsPrices($product, $currencyCode, $withTax);
+        if ($pricingContext->areCustomerGroupsEnabled()) {
+            $priceData = $this->addCustomerGroupsPrices($priceData, $pricingContext);
         }
 
-        $specialPrice = $this->getSpecialPrice($product, $currencyCode, $withTax, $subProducts);
-        $this->addSpecialPrices($specialPrice);
-
-        $tierPrice = $this->getTierPrice($product, $currencyCode, $withTax);
-        $this->addTierPrices($tierPrice, $currencyCode);
+        $priceData = $this->addSpecialPrices($priceData, $pricingContext);
+        $priceData = $this->addTierPrices($priceData, $pricingContext);
 
         /**
          *  Additional inputs from child products
          */
-        $this->addAdditionalData($product, $withTax, $subProducts, $currencyCode);
+        $priceData = $this->addAdditionalData($priceData, $pricingContext);
 
         $this->logger->stopProfiling(__METHOD__);
 
-        return $this->priceDataFormatter->formatPriceDataObject(
-            $this->priceData,
-            $this->store,
-            $currencyCode
-        );
+        return $this->priceDataFormatter->formatPriceDataObject($priceData, $pricingContext);
     }
 
-    protected function filterCustomerGroups(Product $product): void
+    protected function filterCustomerGroups(PricingContextInterface $pricingContext): void
     {
-        if (!$this->areCustomersGroupsEnabled) {
+        if (!$pricingContext->areCustomerGroupsEnabled()) {
             $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
         } else {
             $excludedGroups = [];
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
                 $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
-                if (in_array($product->getStore()->getWebsiteId(), $excludedWebsites)) {
+                if (in_array($pricingContext->getStore()->getWebsiteId(), $excludedWebsites)) {
                     $excludedGroups[] = $groupId;
                 }
             }
@@ -132,13 +114,16 @@ abstract class AbstractProduct
         }
     }
 
-    protected function addAdditionalData($product, $withTax, $subProducts, $currencyCode): void
+    protected function addAdditionalData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
     {
         // Empty for products without children
+        return $priceData;
     }
 
-    protected function getSpecialPrice(Product $product, $currencyCode, $withTax, $subProducts): array
+    protected function getSpecialPrice(PricingContextInterface $pricingContext): array
     {
+        $product = $pricingContext->getProduct();
         $specialPrice = [];
         /** @var Group $group */
         foreach ($this->groups as $group) {
@@ -147,7 +132,7 @@ abstract class AbstractProduct
             $specialPrices[$groupId][] = $this->pricingHelper->getRulePrice($groupId, $product);
             // The price with applied catalog rules
             $finalPrice = $product->getFinalPrice(); // The product's special price
-            if ($this->configHelper->isFptEnabled($product->getStoreId())) {
+            if ($pricingContext->isFptEnabled()) {
                 $finalPrice += $this->pricingHelper->getWeeeAmount($product);
             }
             $specialPrices[$groupId][] = $finalPrice;
@@ -157,13 +142,21 @@ abstract class AbstractProduct
                 $specialPrice[$groupId] = min($specialPrices[$groupId]);
             }
             if ($specialPrice[$groupId]) {
-                if ($currencyCode !== $this->baseCurrencyCode) {
+                if ($pricingContext->currencyIsDifferentFromBase()) {
                     $specialPrice[$groupId] =
                         $this->pricingHelper->round(
-                            $this->pricingHelper->convertPrice($specialPrice[$groupId], $this->store, $currencyCode)
+                            $this->pricingHelper->convertPrice(
+                                $specialPrice[$groupId],
+                                $pricingContext->getStore(),
+                                $pricingContext->getCurrencyCode()
+                            )
                         );
                 }
-                $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice($product, $specialPrice[$groupId], $withTax);
+                $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice(
+                    $product,
+                    $specialPrice[$groupId],
+                    $pricingContext->useTax()
+                );
             }
         }
 
@@ -175,9 +168,10 @@ abstract class AbstractProduct
         return $this->pricingHelper->getRulePrice($groupId, $product);
     }
 
-    protected function getTierPrice(Product $product, $currencyCode, $withTax)
+    protected function getTierPrice(PricingContextInterface $pricingContext): array
     {
         $this->logger->startProfiling(__METHOD__);
+        $product = $pricingContext->getProduct();
         $tierPrice = [];
         $tierPrices = [];
 
@@ -219,13 +213,21 @@ abstract class AbstractProduct
                     min($currentTierPrice, $tierPrices[$groupId]);
             }
 
-            if ($currencyCode !== $this->baseCurrencyCode) {
+            if ($pricingContext->currencyIsDifferentFromBase()) {
                 $currentTierPrice =
                     $this->pricingHelper->round(
-                        $this->pricingHelper->convertPrice($currentTierPrice, $product->getStore(), $currencyCode)
+                        $this->pricingHelper->convertPrice(
+                            $currentTierPrice,
+                            $product->getStore(),
+                            $pricingContext->getCurrencyCode()
+                        )
                     );
             }
-            $tierPrice[$groupId] = $this->pricingHelper->getTaxPrice($product, $currentTierPrice, $withTax);
+            $tierPrice[$groupId] = $this->pricingHelper->getTaxPrice(
+                $product,
+                $currentTierPrice,
+                $pricingContext->useTax()
+            );
         }
 
         $this->logger->stopProfiling(__METHOD__);
@@ -233,72 +235,95 @@ abstract class AbstractProduct
         return $tierPrice;
     }
 
-    protected function addTierPrices($tierPrice, $currencyCode): void
+    protected function addTierPrices(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext
+    ) : PriceDataInterface
     {
-        if ($this->areCustomersGroupsEnabled) {
+        $tierPrice = $this->getTierPrice($pricingContext);
+
+        if ($pricingContext->areCustomerGroupsEnabled()) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
 
                 if ($tierPrice[$groupId]) {
-                    $this->priceData->setTierPrice($tierPrice[$groupId], $groupId);
+                    $priceData->setTierPrice($tierPrice[$groupId], $groupId);
                 }
             }
         }
 
         if ($tierPrice[0]) {
-            $this->priceData->setTierPrice($this->pricingHelper->round($tierPrice[0]));
+            $priceData->setTierPrice($this->pricingHelper->round($tierPrice[0]));
         }
+
+        return $priceData;
     }
 
-    protected function addCustomerGroupsPrices(Product $product, $currencyCode, $withTax): void
+    protected function addCustomerGroupsPrices(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
     {
+        $product = $pricingContext->getProduct();
+
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
-            if ($currencyCode !== $this->baseCurrencyCode) {
-                $discountedPrice = $this->pricingHelper->convertPrice($discountedPrice, $this->store, $currencyCode);
+            if ($pricingContext->currencyIsDifferentFromBase()) {
+                $discountedPrice = $this->pricingHelper->convertPrice(
+                    $discountedPrice,
+                    $pricingContext->getStore(),
+                    $pricingContext->getCurrencyCode()
+                );
             }
             if ($discountedPrice !== false) {
-                $this->priceData->setPrice(
-                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax),
+                $priceData->setPrice(
+                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->useTax()),
                     $groupId
                 );
 
-                if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
-                    $this->priceData->setOriginalPrice($this->priceData->getPrice(), $groupId);
+                if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
+                    $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
                 }
 
             } else {
-                $this->priceData->setPrice($this->priceData->getPrice(), $groupId);
+                $priceData->setPrice($priceData->getPrice(), $groupId);
             }
         }
 
         $product->setData('customer_group_id', null);
+
+        return $priceData;
     }
 
-    protected function addSpecialPrices($specialPrice): void
+    protected function addSpecialPrices(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext
+    ): PriceDataInterface
     {
-        if ($this->areCustomersGroupsEnabled) {
+        $specialPrice = $this->getSpecialPrice($pricingContext);
+
+        if ($pricingContext->areCustomerGroupsEnabled()) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                if ($specialPrice[$groupId]  && $specialPrice[$groupId] < $this->priceData->getPrice($groupId)) {
-                    $this->priceData->setPrice($specialPrice[$groupId], $groupId);
+                if ($specialPrice[$groupId]  && $specialPrice[$groupId] < $priceData->getPrice($groupId)) {
+                    $priceData->setPrice($specialPrice[$groupId], $groupId);
 
-                    if ($this->priceData->getPrice() > $this->priceData->getPrice($groupId)) {
-                        $this->priceData->setOriginalPrice($this->priceData->getPrice(), $groupId);
+                    if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
+                        $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
                     }
                 }
             }
         }
 
-        if ($specialPrice[0] && $specialPrice[0] < $this->priceData->getPrice()) {
-            $this->priceData->setOriginalPrice($this->priceData->getPrice());
-            $this->priceData->setPrice($this->pricingHelper->round($specialPrice[0]));
+        if ($specialPrice[0] && $specialPrice[0] < $priceData->getPrice()) {
+            $priceData->setOriginalPrice($priceData->getPrice());
+            $priceData->setPrice($this->pricingHelper->round($specialPrice[0]));
         }
+
+        return $priceData;
     }
 }

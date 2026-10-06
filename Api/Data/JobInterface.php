@@ -29,6 +29,7 @@ interface JobInterface
     public const FIELD_RETRIES = 'retries';
     public const FIELD_ERROR_LOG = 'error_log';
     public const FIELD_DATA_SIZE = 'data_size';
+    public const FIELD_STORE_ID = 'store_id';
 
     public function getClass(): string;
 

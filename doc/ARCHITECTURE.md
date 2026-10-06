@@ -203,7 +203,7 @@ Defined in `etc/db_schema.xml`:
 
 | Table | Purpose |
 |-------|---------|
-| `algoliasearch_queue` | Pending indexing jobs |
+| `algoliasearch_queue` | Pending indexing jobs (store-scoped via `store_id`) |
 | `algoliasearch_queue_log` | Per-run execution logs |
 | `algoliasearch_queue_archive` | Completed/failed job archive |
 | `algoliasearch_landing_page` | Built-in merchandising landing pages (see Cross-Cutting Concerns) |

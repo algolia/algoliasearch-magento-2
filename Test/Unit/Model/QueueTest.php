@@ -128,6 +128,30 @@ class QueueTest extends TestCase
         $this->assertContains('buildIndex', Job::ALLOWED_HANDLERS[ProductIndexBuilder::class]);
     }
 
+    public function testAddToQueueWritesStoreIdColumnFromJobData(): void
+    {
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(true);
+
+        $insertedRows = [];
+        $dbAdapter = $this->createMock(AdapterInterface::class);
+        $dbAdapter->expects($this->exactly(2))
+            ->method('insert')
+            ->willReturnCallback(function (string $table, array $bind) use (&$insertedRows) {
+                $insertedRows[] = $bind;
+
+                return 1;
+            });
+
+        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+
+        $queue->addToQueue(ProductIndexBuilder::class, 'buildIndex', ['storeId' => '1', 'entityIds' => [1, 2, 3], 'options' => []]);
+        $queue->addToQueue(ProductIndexBuilder::class, 'buildIndex', [1, [1, 2, 3], []]);
+
+        $this->assertSame(1, $insertedRows[0]['store_id']);
+        $this->assertNull($insertedRows[1]['store_id']);
+    }
+
     public static function authorizedHandlersProvider(): array
     {
         return [

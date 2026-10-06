@@ -68,10 +68,6 @@ class Queue
 
     public function addToQueue(string $className, string $method, array $data, int $dataSize = 1, bool $isFullReindex = false): void
     {
-        if (is_object($className)) {
-            $className = $className::class;
-        }
-
         if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
             !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
             throw new AlgoliaException('Unauthorized job handler');
@@ -88,6 +84,7 @@ class Queue
                 'max_retries' => $this->configHelper->getRetryLimit(),
                 'is_full_reindex' => $isFullReindex ? 1 : 0,
                 'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled() ? (new \Exception)->getTraceAsString() : null,
+                'store_id' => isset($data['storeId']) ? (int) $data['storeId'] : null,
             ]);
         } else {
             $object = $this->objectManager->get($className);

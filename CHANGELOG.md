@@ -1,5 +1,13 @@
 # CHANGE LOG
 
+## 3.20.0
+
+### Updates
+- Added an indexed `store_id` column to the `algoliasearch_queue` table.
+    - New jobs now record their store at enqueue time.
+    - A data patch backfills `store_id` for existing jobs; rows whose store cannot be determined remain `NULL`.
+    - This is groundwork for store-partitioned queue processing; there is no behavior change to how jobs are processed.
+
 ## 3.19.2
 
 ### Features

@@ -54,8 +54,10 @@ class QueueTest extends TestCase
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
         $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
 
+        $storeId = 1;
+
         $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
-        $productBatchQueueProcessor->processBatch(1);
+        $productBatchQueueProcessor->processBatch($storeId);
 
         $rows = $this->connection->query('SELECT * FROM algoliasearch_queue')->fetchAll();
         $this->assertEquals(3, count($rows));
@@ -63,6 +65,8 @@ class QueueTest extends TestCase
         $i = 0;
         foreach ($rows as $row) {
             $i++;
+
+            $this->assertSame($storeId, (int) $row['store_id']);
 
             if ($i === 1) {
                 $this->assertEquals(IndicesConfigurator::class, $row['class']);

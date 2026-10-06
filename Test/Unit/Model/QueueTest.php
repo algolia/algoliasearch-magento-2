@@ -135,7 +135,8 @@ class QueueTest extends TestCase
 
         $insertedRows = [];
         $dbAdapter = $this->createMock(AdapterInterface::class);
-        $dbAdapter->method('insert')
+        $dbAdapter->expects($this->exactly(2))
+            ->method('insert')
             ->willReturnCallback(function (string $table, array $bind) use (&$insertedRows) {
                 $insertedRows[] = $bind;
 

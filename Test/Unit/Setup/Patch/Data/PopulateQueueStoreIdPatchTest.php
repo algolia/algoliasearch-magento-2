@@ -25,7 +25,7 @@ class PopulateQueueStoreIdPatchTest extends TestCase
         $this->whereArguments = [];
         $this->chunks = $chunks;
 
-        $select = $this->createMock(Select::class);
+        $select = $this->createStub(Select::class);
         $select->method('from')->willReturnSelf();
         $select->method('where')->willReturnCallback(function (...$arguments) use ($select) {
             $this->whereArguments[] = $arguments;
@@ -35,7 +35,7 @@ class PopulateQueueStoreIdPatchTest extends TestCase
         $select->method('order')->willReturnSelf();
         $select->method('limit')->willReturnSelf();
 
-        $adapter = $this->createMock(AdapterInterface::class);
+        $adapter = $this->createStub(AdapterInterface::class);
         $adapter->method('select')->willReturn($select);
         $adapter->method('startSetup');
         $adapter->method('endSetup');

@@ -68,10 +68,6 @@ class Queue
 
     public function addToQueue(string $className, string $method, array $data, int $dataSize = 1, bool $isFullReindex = false): void
     {
-        if (is_object($className)) {
-            $className = $className::class;
-        }
-
         if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
             !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
             throw new AlgoliaException('Unauthorized job handler');

@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
+use Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
@@ -15,12 +16,14 @@ class Bundle extends AbstractProductWithChildren
 {
     public function __construct(
         protected ProductRepositoryInterface $productRepository,
+        protected MinMaxPricesInterfaceFactory $minMaxPricesFactory,
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
         protected PriceDataFormatter $priceDataFormatter
     ) {
         parent::__construct(
+            $minMaxPricesFactory,
             $configHelper,
             $pricingHelper,
             $logger,
@@ -132,6 +135,16 @@ class Bundle extends AbstractProductWithChildren
             $priceData->setPrice($min[$groupId], $groupId);
         }
 
+        return $priceData;
+    }
+
+    protected function handleZeroDefaultPrice(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
+        $min,
+        $max)
+    : PriceDataInterface
+    {
         return $priceData;
     }
 }

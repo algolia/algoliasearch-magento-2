@@ -88,6 +88,7 @@ abstract class AbstractProduct
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
+
             if ($pricingContext->isCurrencyDifferentFromBase()) {
                 $discountedPrice = $this->pricingHelper->convertPrice(
                     $discountedPrice,

@@ -12,6 +12,14 @@ interface PricingContextInterface
     public const CURRENCY_CODE = 'currency_code';
     public const USE_TAX = 'use_tax';
 
+    public function setProduct(Product $product): void;
+
+    public function setSubProducts(array $subProducts): void;
+
+    public function setCurrencyCode(string $currencyCode): void;
+
+    public function setUseTax(bool $useTax): void;
+
     public function getProduct(): Product;
 
     public function getSubProducts(): array;

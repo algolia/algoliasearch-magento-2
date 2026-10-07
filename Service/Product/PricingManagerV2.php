@@ -50,10 +50,10 @@ class PricingManagerV2
             $customData[$field] = [];
             foreach ($currencies as $currencyCode) {
                 $pricingContext = $this->pricingContextFactory->create();
-                $pricingContext->setData(PricingContextInterface::PRODUCT, $product);
-                $pricingContext->setData(PricingContextInterface::SUB_PRODUCTS, $subProducts);
-                $pricingContext->setData(PricingContextInterface::CURRENCY_CODE, $currencyCode);
-                $pricingContext->setData(PricingContextInterface::USE_TAX, $withTax);
+                $pricingContext->setProduct($product);
+                $pricingContext->setSubProducts($subProducts);
+                $pricingContext->setCurrencyCode($currencyCode);
+                $pricingContext->setUseTax($withTax);
 
                 $priceArray = $this->{$priceManager}->calculatePriceData(
                     $this->priceDataFactory->create(),

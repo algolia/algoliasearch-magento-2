@@ -17,6 +17,26 @@ class PricingContext extends DataObject implements PCI
         parent::__construct($data);
     }
 
+    public function setProduct(Product $product): void
+    {
+        $this->setData(self::PRODUCT, $product);
+    }
+
+    public function setSubProducts(array $subProducts): void
+    {
+        $this->setData(self::SUB_PRODUCTS, $subProducts);
+    }
+
+    public function setCurrencyCode(string $currencyCode): void
+    {
+        $this->setData(self::CURRENCY_CODE, $currencyCode);
+    }
+
+    public function setUseTax(bool $useTax): void
+    {
+        $this->setData(self::USE_TAX, $useTax);
+    }
+
     public function getProduct(): Product
     {
         return $this->getData(self::PRODUCT);

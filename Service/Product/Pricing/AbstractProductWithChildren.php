@@ -11,11 +11,10 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 {
     public const PRICE_NOT_SET = -1;
 
-    protected function addAdditionalData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    protected function addComplexPricing(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
     : PriceDataInterface
     {
-        [$min, $max, $minOriginal, $maxOriginal] =
-            $this->getMinMaxPrices($pricingContext);
+        [$min, $max, $minOriginal, $maxOriginal] = $this->getChildrenMinMaxPrices($pricingContext);
 
         if ($min !== $max) {
             $priceData = $this->handleNonEqualMinMaxPrices($priceData, $pricingContext, $min, $max);
@@ -43,7 +42,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         return $priceData;
     }
 
-    protected function getMinMaxPrices(PricingContextInterface $pricingContext): array
+    protected function getChildrenMinMaxPrices(PricingContextInterface $pricingContext): array
     {
         $product = $pricingContext->getProduct();
         $subProducts = $pricingContext->getSubProducts();

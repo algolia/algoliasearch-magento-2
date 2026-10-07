@@ -28,10 +28,7 @@ class Bundle extends AbstractProductWithChildren
         );
     }
 
-    /**
-     * Override parent addAdditionalData function
-     */
-    protected function addAdditionalData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    protected function addComplexPricing(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
     : PriceDataInterface
     {
         $data = $this->getMinMaxPrices($pricingContext);

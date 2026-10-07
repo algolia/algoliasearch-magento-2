@@ -80,7 +80,7 @@ class Bundle extends AbstractProductWithChildren
             $maxPriceArray[$groupId] = $max;
         }
 
-        if ($pricingContext->currencyIsDifferentFromBase()) {
+        if ($pricingContext->isCurrencyDifferentFromBase()) {
             $minPrice = $this->pricingHelper->convertPrice(
                 $minPrice,
                 $pricingContext->getStore(),

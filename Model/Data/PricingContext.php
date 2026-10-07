@@ -57,7 +57,7 @@ class PricingContext extends DataObject implements PCI
         return $this->configHelper->isFptEnabled($this->getStoreId());
     }
 
-    public function currencyIsDifferentFromBase(): bool
+    public function isCurrencyDifferentFromBase(): bool
     {
         return $this->getCurrencyCode() !== $this->getBaseCurrencyCode();
     }

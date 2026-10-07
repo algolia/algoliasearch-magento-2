@@ -45,7 +45,7 @@ abstract class AbstractProduct
         if ($this->configHelper->isFptEnabled($product->getStoreId())) {
             $price += $this->pricingHelper->getWeeeAmount($product);
         }
-        if ($pricingContext->currencyIsDifferentFromBase()) {
+        if ($pricingContext->isCurrencyDifferentFromBase()) {
             $price = $this->pricingHelper->convertPrice(
                 $price,
                 $pricingContext->getStore(),
@@ -142,7 +142,7 @@ abstract class AbstractProduct
                 $specialPrice[$groupId] = min($specialPrices[$groupId]);
             }
             if ($specialPrice[$groupId]) {
-                if ($pricingContext->currencyIsDifferentFromBase()) {
+                if ($pricingContext->isCurrencyDifferentFromBase()) {
                     $specialPrice[$groupId] =
                         $this->pricingHelper->round(
                             $this->pricingHelper->convertPrice(
@@ -213,7 +213,7 @@ abstract class AbstractProduct
                     min($currentTierPrice, $tierPrices[$groupId]);
             }
 
-            if ($pricingContext->currencyIsDifferentFromBase()) {
+            if ($pricingContext->isCurrencyDifferentFromBase()) {
                 $currentTierPrice =
                     $this->pricingHelper->round(
                         $this->pricingHelper->convertPrice(
@@ -271,7 +271,7 @@ abstract class AbstractProduct
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
-            if ($pricingContext->currencyIsDifferentFromBase()) {
+            if ($pricingContext->isCurrencyDifferentFromBase()) {
                 $discountedPrice = $this->pricingHelper->convertPrice(
                     $discountedPrice,
                     $pricingContext->getStore(),

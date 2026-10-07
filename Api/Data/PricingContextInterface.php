@@ -11,8 +11,6 @@ interface PricingContextInterface
     public const SUB_PRODUCTS = 'sub_products';
     public const CURRENCY_CODE = 'currency_code';
     public const USE_TAX = 'use_tax';
-    public const CUSTOMER_GROUPS = 'customer_groups';
-
 
     public function getProduct(): Product;
 
@@ -29,4 +27,6 @@ interface PricingContextInterface
     public function areCustomerGroupsEnabled(): bool;
 
     public function isFptEnabled(): bool;
+
+    public function isCurrencyDifferentFromBase(): bool;
 }

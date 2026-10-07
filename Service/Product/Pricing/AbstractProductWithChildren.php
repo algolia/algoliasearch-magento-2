@@ -58,7 +58,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 $finalPrice = $subProduct->getFinalPrice();
                 $basePrice  = $subProduct->getPrice();
 
-                if ($pricingContext->currencyIsDifferentFromBase()) {
+                if ($pricingContext->isCurrencyDifferentFromBase()) {
                     $finalPrice = $this->pricingHelper->convertPrice(
                         $finalPrice,
                         $pricingContext->getStore(),

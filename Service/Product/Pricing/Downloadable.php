@@ -2,12 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
+use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
 class Downloadable extends AbstractProduct
@@ -27,8 +28,11 @@ class Downloadable extends AbstractProduct
         );
     }
 
-    protected function addCustomerGroupsPrices(Product $product, $currencyCode, $withTax): void
+    protected function addCustomerGroupsPrices(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
     {
+        $product = $pricingContext->getProduct();
+
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
@@ -37,21 +41,31 @@ class Downloadable extends AbstractProduct
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
-            if ($currencyCode !== $this->baseCurrencyCode) {
-                $discountedPrice = $this->pricingHelper->convertPrice($discountedPrice, $this->store, $currencyCode);
+            if ($pricingContext->isCurrencyDifferentFromBase()) {
+                $discountedPrice = $this->pricingHelper->convertPrice(
+                    $discountedPrice,
+                    $pricingContext->getStore(),
+                    $pricingContext->getCurrencyCode()
+                );
             }
 
             if ($discountedPrice !== false) {
-                $this->priceData->setPrice(
-                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $withTax),
+                $priceData->setPrice(
+                    $this->pricingHelper->getTaxPrice(
+                        $product,
+                        $discountedPrice,
+                        $pricingContext->shouldIncludeTax()
+                    ),
                     $groupId
                 );
 
             } else {
-                $this->priceData->setPrice($this->priceData->getPrice(), $groupId);
+                $priceData->setPrice($priceData->getPrice(), $groupId);
             }
         }
 
         $product->setData('customer_group_id', null);
+
+        return $priceData;
     }
 }

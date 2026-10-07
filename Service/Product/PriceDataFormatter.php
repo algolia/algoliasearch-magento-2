@@ -3,9 +3,9 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
-use Magento\Store\Model\Store;
 
 class PriceDataFormatter
 {
@@ -16,15 +16,14 @@ class PriceDataFormatter
 
     public function formatPriceDataObject(
         PriceDataInterface $priceData,
-        Store $store,
-        string $currencyCode
+        PricingContextInterface $pricingContext
     ) : PriceDataInterface
     {
-        $priceData = $this->formatFields($priceData, $store, $currencyCode);
+        $priceData = $this->formatFields($priceData, $pricingContext);
 
-        if ($this->configHelper->isCustomerGroupsEnabled($store->getId())) {
+        if ($this->configHelper->isCustomerGroupsEnabled($pricingContext->getStore())) {
             foreach ($this->pricingHelper->getCustomerGroupCollection() as $customerGroup) {
-                $priceData = $this->formatFields($priceData, $store, $currencyCode, $customerGroup->getId());
+                $priceData = $this->formatFields($priceData, $pricingContext, $customerGroup->getId());
             }
         }
 
@@ -33,16 +32,18 @@ class PriceDataFormatter
 
     protected function formatFields(
         PriceDataInterface $priceData,
-        Store $store,
-        string $currencyCode,
+        PricingContextInterface $pricingContext,
         ?int $groupId = null
     ) : PriceDataInterface
     {
+        $store = $pricingContext->getStore();
+        $currencyCode = $pricingContext->getCurrencyCode();
+
         // Basic price
-        if ($priceData->getPrice($groupId)) {
+        if (is_float($priceData->getPrice($groupId))) {
             $priceData->setFormattedPrice(
                 $this->pricingHelper->formatPrice(
-                    $priceData->getPrice(),
+                    $priceData->getPrice($groupId),
                     $store,
                     $currencyCode
                 ),
@@ -51,7 +52,8 @@ class PriceDataFormatter
         }
 
         // Min/Max prices for configurable/bundle/grouped
-        if (($priceData->getMinPrice($groupId) && $priceData->getMaxPrice($groupId)) &&
+        if ((is_float($priceData->getMinPrice($groupId)) &&
+            is_float($priceData->getMaxPrice($groupId))) &&
             $priceData->getMinPrice($groupId) < $priceData->getMaxPrice($groupId))
         {
             $priceData->setFormattedPrice(
@@ -70,10 +72,11 @@ class PriceDataFormatter
         }
 
         // Original price for crossed-out price
-        if ($priceData->getOriginalPrice()) {
+        if (is_float($priceData->getOriginalPrice($groupId)) &&
+            $priceData->getOriginalPrice($groupId) > $priceData->getPrice($groupId)) {
             $priceData->setFormattedOriginalPrice(
                 $this->pricingHelper->formatPrice(
-                    $priceData->getOriginalPrice(),
+                    $priceData->getOriginalPrice($groupId),
                     $store,
                     $currencyCode
                 ),

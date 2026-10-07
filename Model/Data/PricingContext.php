@@ -32,9 +32,9 @@ class PricingContext extends DataObject implements PCI
         $this->setData(self::CURRENCY_CODE, $currencyCode);
     }
 
-    public function setUseTax(bool $useTax): void
+    public function setShouldIncludeTax(bool $shouldIncludeTax): void
     {
-        $this->setData(self::USE_TAX, $useTax);
+        $this->setData(self::SHOULD_INCLUDE_TAX, $shouldIncludeTax);
     }
 
     public function getProduct(): Product
@@ -57,9 +57,9 @@ class PricingContext extends DataObject implements PCI
         return $this->getStore()->getBaseCurrencyCode();
     }
 
-    public function useTax(): bool
+    public function shouldIncludeTax(): bool
     {
-        return $this->getData(self::USE_TAX);
+        return $this->getData(self::SHOULD_INCLUDE_TAX);
     }
 
     public function getStore(): Store

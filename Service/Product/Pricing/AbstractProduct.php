@@ -53,7 +53,7 @@ abstract class AbstractProduct
             );
         }
 
-        $price = $this->pricingHelper->getTaxPrice($product, $price, $pricingContext->useTax());
+        $price = $this->pricingHelper->getTaxPrice($product, $price, $pricingContext->shouldIncludeTax());
 
         /**
          *  Basic inputs related to every product
@@ -155,7 +155,7 @@ abstract class AbstractProduct
                 $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice(
                     $product,
                     $specialPrice[$groupId],
-                    $pricingContext->useTax()
+                    $pricingContext->shouldIncludeTax()
                 );
             }
         }
@@ -226,7 +226,7 @@ abstract class AbstractProduct
             $tierPrice[$groupId] = $this->pricingHelper->getTaxPrice(
                 $product,
                 $currentTierPrice,
-                $pricingContext->useTax()
+                $pricingContext->shouldIncludeTax()
             );
         }
 
@@ -280,7 +280,7 @@ abstract class AbstractProduct
             }
             if ($discountedPrice !== false) {
                 $priceData->setPrice(
-                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->useTax()),
+                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->shouldIncludeTax()),
                     $groupId
                 );
 

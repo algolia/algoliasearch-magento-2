@@ -71,8 +71,8 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                     );
                 }
 
-                $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->useTax());
-                $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->useTax());
+                $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax());
+                $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax());
 
                 if ($pricingContext->isFptEnabled()) {
                     $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);
@@ -194,7 +194,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 $price = $this->pricingHelper->getTaxPrice(
                     $pricingContext->getProduct(),
                     $subProduct->getPriceModel()->getFinalPrice(1, $subProduct),
-                    $pricingContext->useTax()
+                    $pricingContext->shouldIncludeTax()
                 );
 
                 if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {

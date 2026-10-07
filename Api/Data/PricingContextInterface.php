@@ -10,7 +10,7 @@ interface PricingContextInterface
     public const PRODUCT = 'product';
     public const SUB_PRODUCTS = 'sub_products';
     public const CURRENCY_CODE = 'currency_code';
-    public const USE_TAX = 'use_tax';
+    public const SHOULD_INCLUDE_TAX = 'should_include_tax';
 
     public function setProduct(Product $product): void;
 
@@ -18,7 +18,7 @@ interface PricingContextInterface
 
     public function setCurrencyCode(string $currencyCode): void;
 
-    public function setUseTax(bool $useTax): void;
+    public function setShouldIncludeTax(bool $shouldIncludeTax): void;
 
     public function getProduct(): Product;
 
@@ -28,7 +28,7 @@ interface PricingContextInterface
 
     public function getBaseCurrencyCode(): string;
 
-    public function useTax(): bool;
+    public function shouldIncludeTax(): bool;
 
     public function getStore(): Store;
 

@@ -46,14 +46,14 @@ class PricingManagerV2
         $currencies = $product->getStore()->getAvailableCurrencyCodes(true);
 
         // price/price_with_tax => true/false
-        foreach ($priceFields as $field => $withTax) {
+        foreach ($priceFields as $field => $shouldIncludeTax) {
             $customData[$field] = [];
             foreach ($currencies as $currencyCode) {
                 $pricingContext = $this->pricingContextFactory->create();
                 $pricingContext->setProduct($product);
                 $pricingContext->setSubProducts($subProducts);
                 $pricingContext->setCurrencyCode($currencyCode);
-                $pricingContext->setUseTax($withTax);
+                $pricingContext->setShouldIncludeTax($shouldIncludeTax);
 
                 $priceArray = $this->{$priceManager}->calculatePriceData(
                     $this->priceDataFactory->create(),

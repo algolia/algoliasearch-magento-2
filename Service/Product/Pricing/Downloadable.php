@@ -54,7 +54,7 @@ class Downloadable extends AbstractProduct
                     $this->pricingHelper->getTaxPrice(
                         $product,
                         $discountedPrice,
-                        $pricingContext->useTax()
+                        $pricingContext->shouldIncludeTax()
                     ),
                     $groupId
                 );

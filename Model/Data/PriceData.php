@@ -191,11 +191,11 @@ class PriceData extends DataObject implements PDI
 
     public function getSpecialFromDate(): false|int
     {
-        return $this->getData(PDI::SPECIAL_FROM_DATE);
+        return $this->hasData(PDI::SPECIAL_FROM_DATE) ? $this->getData(PDI::SPECIAL_FROM_DATE) : false;
     }
 
     public function getSpecialToDate(): false|int
     {
-        return $this->getData(PDI::SPECIAL_TO_DATE);
+        return $this->hasData(PDI::SPECIAL_TO_DATE) ? $this->getData(PDI::SPECIAL_TO_DATE) : false;
     }
 }

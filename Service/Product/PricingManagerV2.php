@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterfaceFactory;
-use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterfaceFactory;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle as PriceManagerBundle;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable as PriceManagerConfigurable;

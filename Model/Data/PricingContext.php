@@ -69,12 +69,12 @@ class PricingContext extends DataObject implements PCI
 
     public function areCustomerGroupsEnabled(): bool
     {
-        return $this->configHelper->isCustomerGroupsEnabled($this->getStoreId());
+        return $this->configHelper->isCustomerGroupsEnabled($this->getStore()->getId());
     }
 
     public function isFptEnabled(): bool
     {
-        return $this->configHelper->isFptEnabled($this->getStoreId());
+        return $this->configHelper->isFptEnabled($this->getStore()->getId());
     }
 
     public function isCurrencyDifferentFromBase(): bool

@@ -18,7 +18,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $this->getMinMaxPrices($pricingContext);
 
         if ($min !== $max) {
-            $this->handleNonEqualMinMaxPrices($priceData, $pricingContext, $min, $max);
+            $priceData = $this->handleNonEqualMinMaxPrices($priceData, $pricingContext, $min, $max);
         }
 
         if ($max < $maxOriginal) {
@@ -28,8 +28,16 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         if ($priceData->getPrice() === 0.00) {
             $priceData->setPrice($min);
         }
+
         if ($pricingContext->areCustomerGroupsEnabled()) {
-            $this->setFinalGroupPrices($priceData, $pricingContext, $min);
+            if ($max < $maxOriginal) {
+                foreach ($this->groups as $group) {
+                    $groupId = (int) $group->getData('customer_group_id');
+                    $priceData->setOriginalPrice($maxOriginal, $groupId);
+                }
+            }
+
+            $priceData = $this->setFinalGroupPrices($priceData, $pricingContext, $min);
         }
 
         return $priceData;
@@ -47,8 +55,8 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         if (count($subProducts) > 0) {
             /** @var Product $subProduct */
             foreach ($subProducts as $subProduct) {
-                $specialPrice = $this->getSpecialPrice($pricingContext);
-                $tierPrice = $this->getTierPrice($pricingContext);
+                $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
+                $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
                 if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
                     $minPrice = $tierPrice[0];
                 } else {
@@ -189,8 +197,8 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 $subProduct->setData('customer_group_id', $groupId);
                 $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
 
-                $specialPrice = $this->getSpecialPrice($pricingContext);
-                $tierPrice = $this->getTierPrice($pricingContext);
+                $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
+                $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
                 $price = $this->pricingHelper->getTaxPrice(
                     $pricingContext->getProduct(),
                     $subProduct->getPriceModel()->getFinalPrice(1, $subProduct),

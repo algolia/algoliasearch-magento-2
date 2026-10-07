@@ -121,9 +121,9 @@ abstract class AbstractProduct
         return $priceData;
     }
 
-    protected function getSpecialPrice(PricingContextInterface $pricingContext): array
+    protected function getSpecialPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
     {
-        $product = $pricingContext->getProduct();
+        $product = $subProduct ?? $pricingContext->getProduct();
         $specialPrice = [];
         /** @var Group $group */
         foreach ($this->groups as $group) {
@@ -168,10 +168,10 @@ abstract class AbstractProduct
         return $this->pricingHelper->getRulePrice($groupId, $product);
     }
 
-    protected function getTierPrice(PricingContextInterface $pricingContext): array
+    protected function getTierPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
     {
         $this->logger->startProfiling(__METHOD__);
-        $product = $pricingContext->getProduct();
+        $product = $subProduct ?? $pricingContext->getProduct();
         $tierPrice = [];
         $tierPrices = [];
 

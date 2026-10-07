@@ -40,10 +40,10 @@ class PriceDataFormatter
         $currencyCode = $pricingContext->getCurrencyCode();
 
         // Basic price
-        if ($priceData->getPrice($groupId)) {
+        if (is_float($priceData->getPrice($groupId))) {
             $priceData->setFormattedPrice(
                 $this->pricingHelper->formatPrice(
-                    $priceData->getPrice(),
+                    $priceData->getPrice($groupId),
                     $store,
                     $currencyCode
                 ),
@@ -52,7 +52,8 @@ class PriceDataFormatter
         }
 
         // Min/Max prices for configurable/bundle/grouped
-        if (($priceData->getMinPrice($groupId) && $priceData->getMaxPrice($groupId)) &&
+        if ((is_float($priceData->getMinPrice($groupId)) &&
+            is_float($priceData->getMaxPrice($groupId))) &&
             $priceData->getMinPrice($groupId) < $priceData->getMaxPrice($groupId))
         {
             $priceData->setFormattedPrice(
@@ -71,10 +72,11 @@ class PriceDataFormatter
         }
 
         // Original price for crossed-out price
-        if ($priceData->getOriginalPrice()) {
+        if (is_float($priceData->getOriginalPrice($groupId)) &&
+            $priceData->getOriginalPrice($groupId) > $priceData->getPrice($groupId)) {
             $priceData->setFormattedOriginalPrice(
                 $this->pricingHelper->formatPrice(
-                    $priceData->getOriginalPrice(),
+                    $priceData->getOriginalPrice($groupId),
                     $store,
                     $currencyCode
                 ),

@@ -225,6 +225,27 @@ The queue processes full reindex and delta jobs in a mixed ratio
 (`FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33`), ensuring delta updates get at least 67%
 of each processing cycle.
 
+### Store-Scoped Job Claiming
+
+`Queue::runCron()`, `run()`, `getJobs()` and `fetchJobs()` accept a trailing optional
+`?int $storeId`. When given, the claim query filters on `store_id` in SQL next to the
+existing `pid IS NULL` condition (before `FOR UPDATE`), and the recursive
+`run(-1)` pass keeps the same store so a worker cannot drift into other stores during an
+empty-queue run. `clearOldFailingJobs()` is scoped the same way so two workers cleaning up
+different stores cannot both archive the same failed rows. `unlockStackedJobs()` stays
+global (time-based and idempotent).
+
+`Queue::getStoreIdsWithPendingJobs(): int[]` returns the stores that have claimable jobs.
+It excludes locked rows, rows that exhausted their retries, and NULL-store rows. The caller
+must run `unlockStackedJobs()` first so stale locks do not hide pending work.
+
+**Store-agnostic (NULL store_id) rows.** Every in-tree enqueue path goes through
+`Queue::addToQueue()`, and all in-tree callers (the `Service/*/BatchQueueProcessor`
+classes) pass `storeId` in the job data. NULL rows can only come from legacy rows the
+backfill could not resolve or off-contract third-party `addToQueue()` calls. Policy:
+store-scoped workers never claim NULL rows; sequential mode (no store filter) still drains
+them. MAGE-1742 (typed job definitions) removes the NULL source at the enqueue site.
+
 ## Index Architecture
 
 ### Multi-Store Scoping

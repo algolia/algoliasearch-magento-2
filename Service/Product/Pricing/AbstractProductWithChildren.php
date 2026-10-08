@@ -46,7 +46,6 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 
     protected function getChildrenMinMaxPrices(PricingContextInterface $pricingContext): MinMaxPricesInterface
     {
-        $product = $pricingContext->getProduct();
         $subProducts = $pricingContext->getSubProducts();
 
         $min      = PHP_INT_MAX;
@@ -56,36 +55,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         if (count($subProducts) > 0) {
             /** @var Product $subProduct */
             foreach ($subProducts as $subProduct) {
-                $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
-                $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
-                if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
-                    $minPrice = $tierPrice[0];
-                } else {
-                    $minPrice = $specialPrice[0];
-                }
-
-                $finalPrice = $subProduct->getFinalPrice();
-                $basePrice  = $subProduct->getPrice();
-
-                if ($pricingContext->isCurrencyDifferentFromBase()) {
-                    $finalPrice = $this->pricingHelper->convertPrice(
-                        $finalPrice,
-                        $pricingContext->getStore(),
-                        $pricingContext->getCurrencyCode()
-                    );
-                    $basePrice  = $this->pricingHelper->convertPrice(
-                        $basePrice,
-                        $pricingContext->getStore(),
-                        $pricingContext->getCurrencyCode()
-                    );
-                }
-
-                $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax());
-                $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax());
-
-                if ($pricingContext->isFptEnabled()) {
-                    $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);
-                }
+                [$price, $basePrice] = $this->getSubProductPrices($pricingContext, $subProduct);
 
                 $min = min($min, $price);
                 $original = min($original, $basePrice);
@@ -106,6 +76,43 @@ abstract class AbstractProductWithChildren extends AbstractProduct
                 ]
             ]
         );
+    }
+
+    protected function getSubProductPrices(PricingContextInterface $pricingContext, Product $subProduct): array
+    {
+        $product = $pricingContext->getProduct();
+        $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
+        $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
+        if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
+            $minPrice = $tierPrice[0];
+        } else {
+            $minPrice = $specialPrice[0];
+        }
+
+        $finalPrice = $subProduct->getFinalPrice();
+        $basePrice  = $subProduct->getPrice();
+
+        if ($pricingContext->isCurrencyDifferentFromBase()) {
+            $finalPrice = $this->pricingHelper->convertPrice(
+                $finalPrice,
+                $pricingContext->getStore(),
+                $pricingContext->getCurrencyCode()
+            );
+            $basePrice  = $this->pricingHelper->convertPrice(
+                $basePrice,
+                $pricingContext->getStore(),
+                $pricingContext->getCurrencyCode()
+            );
+        }
+
+        $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax());
+        $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax());
+
+        if ($pricingContext->isFptEnabled()) {
+            $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);
+        }
+
+        return [$price, $basePrice];
     }
 
     protected function addOriginalPrice(
@@ -141,12 +148,6 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             return $priceData;
         }
 
-        if ($min <= $priceData->getPrice()) {
-            $priceData->setSpecialFromDate("");
-            $priceData->setSpecialToDate("");
-            $priceData->setPrice(0); // will be reset just after
-        }
-
         $priceData->setMinPrice($min);
         $priceData->setMaxPrice($max);
 
@@ -154,11 +155,8 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                if ($min !== $max && $min <= $priceData->getPrice($groupId)) {
-                    $priceData->setPrice(0, $groupId);
-                }
-                $priceData->setMinPrice((float) $min, $groupId);
-                $priceData->setMaxPrice((float) $max, $groupId);
+                $priceData->setMinPrice($min, $groupId);
+                $priceData->setMaxPrice($max, $groupId);
             }
         }
 

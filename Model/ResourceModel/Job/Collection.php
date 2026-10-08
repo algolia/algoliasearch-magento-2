@@ -8,7 +8,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
 
     protected $_eventPrefix = 'algoliasearch_queue_job_collection';
 
-    protected $_eventObject = 'jpb_collection';
+    protected $_eventObject = 'job_collection';
 
     /**
      * Define resource model

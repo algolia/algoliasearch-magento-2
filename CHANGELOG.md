@@ -2,6 +2,17 @@
 
 ## 3.20.0
 
+### Breaking changes
+- Changed the signature of the `protected` methods `Queue::getJobs()` and `Queue::fetchJobs()` to accept a trailing optional `?int $storeId` parameter. A third-party class extending `Queue` and overriding either method with the old signature will now fatal under PHP's signature-compatibility rule. `Queue` is not marked `@api`, no subclass or DI preference ships with the extension, and both methods keep accepting their previous argument lists unchanged, so the risk for standard integrations is nil.
+
+### Features
+- Added store-aware job claiming to the queue, groundwork for store-partitioned indexing where one worker process runs per store view.
+    - `Queue::runCron()`, `run()`, `getJobs()` and `fetchJobs()` accept a trailing optional `?int $storeId`. When given, jobs are claimed with a SQL `store_id` filter applied before `FOR UPDATE`, and the recursive full-queue pass stays scoped to the same store.
+    - `Queue::getStoreIdsWithPendingJobs(): int[]` returns, ascending, the stores that have claimable jobs. It excludes locked rows, rows that exhausted their retries, and `store_id IS NULL` rows. 
+    - Failed-job cleanup (`clearOldFailingJobs()`) is scoped to the same store when one is given, preventing two workers from archiving the same failed rows twice. Unfiltered cleanup is unchanged.
+    - Store-scoped workers never claim `store_id IS NULL` rows; sequential (unfiltered) processing still drains them, so legacy and off-contract rows keep being processed.
+    - There is no behavior change when no store ID is passed: unfiltered calls claim and process exactly as before.
+
 ### Updates
 - Added an indexed `store_id` column to the `algoliasearch_queue` table.
     - New jobs now record their store at enqueue time.

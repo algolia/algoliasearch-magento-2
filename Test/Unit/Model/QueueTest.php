@@ -5,8 +5,10 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Model;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Model\ResourceModel\Job as JobResourceModel;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
 use Algolia\AlgoliaSearch\Service\Category\IndexBuilder as CategoryIndexBuilder;
@@ -15,9 +17,13 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Model\Context;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Registry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Zend_Db_Statement_Interface;
 
 class QueueTest extends TestCase
 {
@@ -178,6 +184,7 @@ class QueueTest extends TestCase
             $collection->method('addFieldToFilter')->willReturnCallback(
                 function ($field, $condition) use (&$collectionFilters, $collection) {
                     $collectionFilters[] = [$field, $condition];
+
                     return $collection;
                 }
             );
@@ -250,6 +257,7 @@ class QueueTest extends TestCase
         $dbAdapter->method('delete')->willReturnCallback(
             function (string $table, $where) use (&$deletedCriteria) {
                 $deletedCriteria[] = $where;
+
                 return 1;
             }
         );
@@ -272,6 +280,7 @@ class QueueTest extends TestCase
         $dbAdapter->method('delete')->willReturnCallback(
             function (string $table, $where) use (&$deletedCriteria) {
                 $deletedCriteria[] = $where;
+
                 return 1;
             }
         );
@@ -295,6 +304,7 @@ class QueueTest extends TestCase
         $select->method('where')->willReturnCallback(
             function (string $where) use (&$whereClauses, $select) {
                 $whereClauses[] = $where;
+
                 return $select;
             }
         );
@@ -308,6 +318,194 @@ class QueueTest extends TestCase
 
         $this->assertSame([1, 2, 3], $queue->getStoreIdsWithPendingJobs());
         $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NOT NULL'], $whereClauses);
+    }
+
+    public function testFailedJobInOneStoreSkipsOnlyThatStoresMoveIndex(): void
+    {
+        $objectManager = $this->createMockObjectManagerForIndexMover(1);
+        $updateCalls = [];
+
+        $jobs = [
+            $this->createQueueJob(1, ProductIndexBuilder::class, 'unauthorizedMethod', ['entityIds' => [1, 2]], 1),
+            $this->createQueueJob(2, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 1], 1, $objectManager),
+            $this->createQueueJob(3, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 2], 2, $objectManager),
+        ];
+
+        $queue = $this->createProcessingQueue($objectManager, $updateCalls, $jobs);
+
+        $queue->runCron(10);
+
+        $this->assertContains([['pid' => null], ['job_id = ?' => 2]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertNotContains([['pid' => null], ['job_id = ?' => 3]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertSame([1 => 1], $this->getPrivateProperty($queue, 'noOfFailedJobsByStore'));
+    }
+
+    public function testFailedJobWithoutStoreDoesNotAffectNumberedStores(): void
+    {
+        $objectManager = $this->createMockObjectManagerForIndexMover(2);
+        $updateCalls = [];
+
+        $jobs = [
+            $this->createQueueJob(1, ProductIndexBuilder::class, 'unauthorizedMethod', ['entityIds' => [1, 2]], null),
+            $this->createQueueJob(2, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 1], 1, $objectManager),
+            $this->createQueueJob(3, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 2], 2, $objectManager),
+        ];
+
+        $queue = $this->createProcessingQueue($objectManager, $updateCalls, $jobs);
+
+        $queue->runCron(10);
+
+        $this->assertNotContains([['pid' => null], ['job_id = ?' => 2]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertNotContains([['pid' => null], ['job_id = ?' => 3]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertSame([0 => 1], $this->getPrivateProperty($queue, 'noOfFailedJobsByStore'));
+    }
+
+    public function testFailedJobStillSkipsSingleStoresMoveIndex(): void
+    {
+        $objectManager = $this->createMockObjectManagerForIndexMover(0);
+        $updateCalls = [];
+
+        $jobs = [
+            $this->createQueueJob(1, ProductIndexBuilder::class, 'unauthorizedMethod', ['entityIds' => [1, 2]], 5),
+            $this->createQueueJob(2, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 5], 5, $objectManager),
+        ];
+
+        $queue = $this->createProcessingQueue($objectManager, $updateCalls, $jobs);
+
+        $queue->runCron(10);
+
+        $this->assertContains([['pid' => null], ['job_id = ?' => 2]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertSame([5 => 1], $this->getPrivateProperty($queue, 'noOfFailedJobsByStore'));
+    }
+
+    /**
+     * ObjectManager mock returning a moveIndexWithSetSettings() mock handler for IndexMover,
+     * with the given expectation on how often a handler is resolved.
+     */
+    private function createMockObjectManagerForIndexMover(int $times): ObjectManagerInterface
+    {
+        $handlerClass = IndexMover::class;
+        $handler = $this->getMockBuilder($handlerClass)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['moveIndexWithSetSettings'])
+            ->getMock();
+        $handler->expects($this->exactly($times))->method('moveIndexWithSetSettings');
+
+        $objectManager = $this->createMock(ObjectManagerInterface::class);
+        $objectManager->expects($this->exactly($times))
+            ->method('get')
+            ->with($handlerClass)
+            ->willReturn($handler);
+
+        return $objectManager;
+    }
+
+    /**
+     * Queue wired for runCron() with actual job processing: the first claimed batch is empty
+     * (full-reindex fetch) and the second returns the given jobs (realtime fetch).
+     *
+     * @param Job[] $jobs
+     * @param array[] $updateCalls
+     */
+    private function createProcessingQueue(
+        ObjectManagerInterface $objectManager,
+        array &$updateCalls,
+        array $jobs,
+    ): Queue {
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(true);
+
+        $itemsPerCall = [[], $jobs];
+        $callIndex = 0;
+        $collectionFactory = $this->createStub(JobCollectionFactory::class);
+        $collectionFactory->method('create')->willReturnCallback(function () use ($itemsPerCall, &$callIndex) {
+            $items = $itemsPerCall[$callIndex++] ?? [];
+
+            $select = $this->createStub(Select::class);
+            $select->method('limit')->willReturnSelf();
+            $select->method('forUpdate')->willReturnSelf();
+
+            $collection = $this->createStub(Collection::class);
+            $collection->method('addFieldToFilter')->willReturnSelf();
+            $collection->method('setOrder')->willReturnSelf();
+            $collection->method('getSelect')->willReturn($select);
+            $collection->method('getItems')->willReturn($items);
+
+            return $collection;
+        });
+
+        $select = $this->createStub(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnSelf();
+        $select->method('order')->willReturnSelf();
+        $select->method('limit')->willReturnSelf();
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('select')->willReturn($select);
+        $dbAdapter->method('query')->willReturn($this->createStub(Zend_Db_Statement_Interface::class));
+        $dbAdapter->method('update')->willReturnCallback(
+            function (string $table, array $bind, $where = '') use (&$updateCalls) {
+                $updateCalls[] = [$bind, $where];
+
+                return 1;
+            }
+        );
+
+        return $this->createObjectToTest(
+            configHelper: $configHelper,
+            objectManager: $objectManager,
+            dbAdapter: $dbAdapter,
+            jobCollectionFactory: $collectionFactory,
+        );
+    }
+
+    /**
+     * @param array[] $updateCalls
+     *
+     * @return array[] Pairs of [bind, where] recorded from AdapterInterface::update() calls
+     */
+    private function pluckBindAndWhere(array $updateCalls): array
+    {
+        return array_map(fn (array $call) => [$call[0], $call[1]], $updateCalls);
+    }
+
+    /**
+     * Real Job model mirroring a claimed queue row: store comes from the store_id column,
+     * prepare() later decodes $decodedData for execution.
+     */
+    private function createQueueJob(
+        int $id,
+        string $class,
+        string $method,
+        array $decodedData,
+        ?int $storeId,
+        ?ObjectManagerInterface $jobObjectManager = null,
+    ): Job {
+        $context = $this->createStub(Context::class);
+        $context->method('getEventDispatcher')->willReturn($this->createStub(ManagerInterface::class));
+
+        $resourceModel = $this->createStub(JobResourceModel::class);
+        $resourceModel->method('save')->willReturnSelf();
+
+        $job = new Job(
+            $context,
+            $this->createStub(Registry::class),
+            $jobObjectManager ?? $this->createStub(ObjectManagerInterface::class),
+            $resourceModel,
+        );
+
+        $job->setData('job_id', $id);
+        $job->setIdFieldName('job_id');
+        $job->setClass($class);
+        $job->setMethod($method);
+        $job->setData('data', json_encode($decodedData));
+        $job->setData('data_size', 1);
+
+        if ($storeId !== null) {
+            $job->setData('store_id', $storeId);
+        }
+
+        return $job;
     }
 
     public static function authorizedHandlersProvider(): array

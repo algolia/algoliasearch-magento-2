@@ -22,6 +22,7 @@ use Magento\Framework\Model\Context;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Registry;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\Stub;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Zend_Db_Statement_Interface;
 
@@ -59,8 +60,11 @@ class QueueTest extends TestCase
     }
 
     #[DataProvider('authorizedHandlersProvider')]
-    public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueInactive(string $class, string $method, array $data): void
-    {
+    public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueInactive(
+        string $class,
+        string $method,
+        array $data
+    ): void {
         $configHelper = $this->createStub(ConfigHelper::class);
         $configHelper->method('isQueueActive')->willReturn(false);
 
@@ -83,8 +87,11 @@ class QueueTest extends TestCase
     }
 
     #[DataProvider('authorizedHandlersProvider')]
-    public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueActive(string $class, string $method, array $data): void
-    {
+    public function testAddToQueueSucceedsForAuthorizedHandlerWhenQueueActive(
+        string $class,
+        string $method,
+        array $data
+    ): void {
         $configHelper = $this->createStub(ConfigHelper::class);
         $configHelper->method('isQueueActive')->willReturn(true);
 
@@ -154,7 +161,11 @@ class QueueTest extends TestCase
 
         $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
 
-        $queue->addToQueue(ProductIndexBuilder::class, 'buildIndex', ['storeId' => '1', 'entityIds' => [1, 2, 3], 'options' => []]);
+        $queue->addToQueue(
+            ProductIndexBuilder::class,
+            'buildIndex',
+            ['storeId' => '1', 'entityIds' => [1, 2, 3], 'options' => []]
+        );
         $queue->addToQueue(ProductIndexBuilder::class, 'buildIndex', [1, [1, 2, 3], []]);
 
         $this->assertSame(1, $insertedRows[0]['store_id']);
@@ -198,7 +209,7 @@ class QueueTest extends TestCase
         return $collectionFactory;
     }
 
-    private function createQueueAdapter(): AdapterInterface
+    private function createQueueAdapter(): AdapterInterface&Stub
     {
         $select = $this->createStub(Select::class);
         $select->method('from')->willReturnSelf();
@@ -326,9 +337,29 @@ class QueueTest extends TestCase
         $updateCalls = [];
 
         $jobs = [
-            $this->createQueueJob(1, ProductIndexBuilder::class, 'unauthorizedMethod', ['entityIds' => [1, 2]], 1),
-            $this->createQueueJob(2, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 1], 1, $objectManager),
-            $this->createQueueJob(3, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 2], 2, $objectManager),
+            $this->createQueueJob(
+                1,
+                ProductIndexBuilder::class,
+                'unauthorizedMethod',
+                ['entityIds' => [1, 2]],
+                1
+            ),
+            $this->createQueueJob(
+                2,
+                IndexMover::class,
+                Queue::MOVE_INDEX_METHOD_NAME,
+                ['tmp_index', 'prod_index', 1],
+                1,
+                $objectManager
+            ),
+            $this->createQueueJob(
+                3,
+                IndexMover::class,
+                Queue::MOVE_INDEX_METHOD_NAME,
+                ['tmp_index', 'prod_index', 2],
+                2,
+                $objectManager
+            ),
         ];
 
         $queue = $this->createProcessingQueue($objectManager, $updateCalls, $jobs);
@@ -346,9 +377,29 @@ class QueueTest extends TestCase
         $updateCalls = [];
 
         $jobs = [
-            $this->createQueueJob(1, ProductIndexBuilder::class, 'unauthorizedMethod', ['entityIds' => [1, 2]], null),
-            $this->createQueueJob(2, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 1], 1, $objectManager),
-            $this->createQueueJob(3, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 2], 2, $objectManager),
+            $this->createQueueJob(
+                1,
+                ProductIndexBuilder::class,
+                'unauthorizedMethod',
+                ['entityIds' => [1, 2]],
+                null
+            ),
+            $this->createQueueJob(
+                2,
+                IndexMover::class,
+                Queue::MOVE_INDEX_METHOD_NAME,
+                ['tmp_index', 'prod_index', 1],
+                1,
+                $objectManager
+            ),
+            $this->createQueueJob(
+                3,
+                IndexMover::class,
+                Queue::MOVE_INDEX_METHOD_NAME,
+                ['tmp_index', 'prod_index', 2],
+                2,
+                $objectManager
+            ),
         ];
 
         $queue = $this->createProcessingQueue($objectManager, $updateCalls, $jobs);
@@ -366,8 +417,21 @@ class QueueTest extends TestCase
         $updateCalls = [];
 
         $jobs = [
-            $this->createQueueJob(1, ProductIndexBuilder::class, 'unauthorizedMethod', ['entityIds' => [1, 2]], 5),
-            $this->createQueueJob(2, IndexMover::class, Queue::MOVE_INDEX_METHOD_NAME, ['tmp_index', 'prod_index', 5], 5, $objectManager),
+            $this->createQueueJob(
+                1,
+                ProductIndexBuilder::class,
+                'unauthorizedMethod',
+                ['entityIds' => [1, 2]],
+                5
+            ),
+            $this->createQueueJob(
+                2,
+                IndexMover::class,
+                Queue::MOVE_INDEX_METHOD_NAME,
+                ['tmp_index', 'prod_index', 5],
+                5,
+                $objectManager
+            ),
         ];
 
         $queue = $this->createProcessingQueue($objectManager, $updateCalls, $jobs);
@@ -418,21 +482,23 @@ class QueueTest extends TestCase
         $itemsPerCall = [[], $jobs];
         $callIndex = 0;
         $collectionFactory = $this->createStub(JobCollectionFactory::class);
-        $collectionFactory->method('create')->willReturnCallback(function () use ($itemsPerCall, &$callIndex) {
-            $items = $itemsPerCall[$callIndex++] ?? [];
+        $collectionFactory->method('create')->willReturnCallback(
+            function () use ($itemsPerCall, &$callIndex) {
+                $items = $itemsPerCall[$callIndex++] ?? [];
 
-            $select = $this->createStub(Select::class);
-            $select->method('limit')->willReturnSelf();
-            $select->method('forUpdate')->willReturnSelf();
+                $select = $this->createStub(Select::class);
+                $select->method('limit')->willReturnSelf();
+                $select->method('forUpdate')->willReturnSelf();
 
-            $collection = $this->createStub(Collection::class);
-            $collection->method('addFieldToFilter')->willReturnSelf();
-            $collection->method('setOrder')->willReturnSelf();
-            $collection->method('getSelect')->willReturn($select);
-            $collection->method('getItems')->willReturn($items);
+                $collection = $this->createStub(Collection::class);
+                $collection->method('addFieldToFilter')->willReturnSelf();
+                $collection->method('setOrder')->willReturnSelf();
+                $collection->method('getSelect')->willReturn($select);
+                $collection->method('getItems')->willReturn($items);
 
-            return $collection;
-        });
+                return $collection;
+            }
+        );
 
         $select = $this->createStub(Select::class);
         $select->method('from')->willReturnSelf();

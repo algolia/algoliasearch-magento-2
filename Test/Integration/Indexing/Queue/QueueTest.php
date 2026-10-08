@@ -119,7 +119,7 @@ class QueueTest extends TestCase
         $indexOptions = $this->getIndexOptions('products', 1);
         $settings = $this->algoliaConnector->getSettings($indexOptions);
 
-        $indexOptionsTmp = $this->getIndexOptions('products', 1 , true);
+        $indexOptionsTmp = $this->getIndexOptions('products', 1, true);
         $settingsTmp = $this->algoliaConnector->getSettings($indexOptionsTmp);
 
         // Asserts that the prod settings have been copied successfully to tmp
@@ -1010,5 +1010,212 @@ class QueueTest extends TestCase
         $this->assertEquals(100, (int) $firstJob['data_size']);
 
         $this->assertEquals($this->assertValues->lastJobDataSize, (int) $lastJob['data_size']);
+    }
+
+    /**
+     * Seeds a test job into the queue.
+     *
+     * The store_id column is always written explicitly (not only inside the payload JSON):
+     * MAGE-1742 will make the column the source of truth for claiming, so the claim tests
+     * must not depend on the payload fallback in Job::prepare().
+     *
+     * @param array $overrides column values on top of a valid buildIndexList job; pass
+     *                         'store_id' => null for a legacy store-agnostic row
+     */
+    private function seedJob(array $overrides = []): void
+    {
+        $storeId = array_key_exists('store_id', $overrides) ? $overrides['store_id'] : 1;
+
+        $row = array_merge([
+            'created' => '2017-09-01 12:00:00',
+            'pid' => null,
+            'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
+            'method' => 'buildIndexList',
+            'data' => json_encode(['storeId' => (string) $storeId, 'entityIds' => ['9', '22']]),
+            'max_retries' => 3,
+            'retries' => 0,
+            'error_log' => '',
+            'data_size' => 2,
+            'store_id' => $storeId,
+            'is_full_reindex' => 0,
+        ], $overrides);
+
+        $this->connection->insert('algoliasearch_queue', $row);
+    }
+
+    /**
+     * Raw queue rows as the DB stores them, ordered by insertion. Used to assert on the
+     * claim side effects (pid and locked_at stamping) rather than on in-memory job objects,
+     * which mirror the same values.
+     *
+     * @return array<int, array{job_id: string, store_id: ?string, pid: ?string, locked_at: ?string}>
+     */
+    private function fetchQueueRows(): array
+    {
+        return $this->connection->query(
+            'SELECT job_id, store_id, pid, locked_at FROM algoliasearch_queue ORDER BY job_id'
+        )->fetchAll();
+    }
+
+    /**
+     * A claim returns merged jobs, where one job may cover several queue rows. This maps
+     * the claim back to the individual job_id rows it locked, so assertions can reason
+     * about which DB rows were claimed rather than how the claimer merged them.
+     *
+     * @param Job[] $jobs
+     *
+     * @return int[]
+     */
+    private function getClaimedRowIds(array $jobs): array
+    {
+        $rowIds = [];
+        foreach ($jobs as $job) {
+            $rowIds = array_merge($rowIds, $job->getMergedIds());
+        }
+
+        return array_map('intval', $rowIds);
+    }
+
+    /**
+     * getStoreIdsWithPendingJobs() must only surface stores whose rows a worker can
+     * actually claim: rows locked by another worker, rows that exhausted their retries,
+     * and legacy store-agnostic rows (which store-scoped workers never claim) are hidden.
+     */
+    public function testGetStoreIdsWithPendingJobsReturnsOnlyClaimableStores()
+    {
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+
+        $this->seedJob(['store_id' => 1]);
+        $this->seedJob(['store_id' => 2]);
+        $this->seedJob(['store_id' => 3]);
+        // Locked by another worker
+        $this->seedJob(['store_id' => 4, 'pid' => 99999]);
+        // Exhausted retries
+        $this->seedJob(['store_id' => 5, 'retries' => 3]);
+        // Legacy store-agnostic row
+        $this->seedJob(['store_id' => null, 'data' => '{"entityIds":["9","22"]}']);
+
+        $this->assertSame([1, 2, 3], $this->queue->getStoreIdsWithPendingJobs());
+    }
+
+    /**
+     * A store-scoped claim reserves rows exclusively for one worker: the claiming worker
+     * gets every pending row of its store (two same-store rows merge into one job here)
+     * and the pid/locked_at stamping must not leak onto rows belonging to other stores,
+     * which remain available for their own workers.
+     */
+    public function testStoreScopedClaimOnlyClaimsItsOwnStoreRows()
+    {
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
+
+        $this->seedJob(['store_id' => 1, 'data_size' => 1, 'data' => '{"storeId":"1","entityIds":["9"]}']);
+        $this->seedJob(['store_id' => 2, 'data_size' => 1, 'data' => '{"storeId":"2","entityIds":["9"]}']);
+        $this->seedJob(['store_id' => 1, 'data_size' => 1, 'data' => '{"storeId":"1","entityIds":["22"]}']);
+        $this->seedJob(['store_id' => 2, 'data_size' => 1, 'data' => '{"storeId":"2","entityIds":["22"]}']);
+
+        $storeOneRowIds = array_map('intval', array_column(
+            array_filter($this->fetchQueueRows(), fn (array $row) => $row['store_id'] === '1'),
+            'job_id'
+        ));
+
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10, 'storeId' => 1]);
+
+        $this->assertCount(1, $jobs);
+        $this->assertSame(1, (int) $jobs[0]->getStoreId());
+        $this->assertSame($storeOneRowIds, $this->getClaimedRowIds($jobs));
+
+        foreach ($this->fetchQueueRows() as $row) {
+            if ($row['store_id'] === '1') {
+                $this->assertNotNull($row['pid'], 'Claimed row must be stamped with a pid');
+                $this->assertNotNull($row['locked_at'], 'Claimed row must be stamped with a lock time');
+            } else {
+                $this->assertNull($row['pid'], 'Other stores rows must stay unclaimed');
+                $this->assertNull($row['locked_at'], 'Other stores rows must stay unlocked');
+            }
+        }
+    }
+
+    /**
+     * Sequential equivalent of two workers racing: getJobs() stamps pid inside the claim
+     * transaction, so once a claim commits its rows are invisible to every later claim
+     * (pid IS NULL filter), regardless of which Queue instance issues it. 
+     * maxJobs=1 yields one job per claim, and because the rows cannot merge, 
+     * four claims drain the four seeded rows exactly once.
+     */
+    public function testScopedClaimsAreDisjointAcrossInstancesAndDrainPerStore()
+    {
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
+
+        // 200 entityIds per row: two rows would exceed the 300 batch size, so they never merge
+        $manyIds = json_encode(['storeId' => '1', 'entityIds' => array_map('strval', range(1, 200))]);
+        $manyIdsStoreTwo = json_encode(['storeId' => '2', 'entityIds' => array_map('strval', range(201, 400))]);
+
+        $this->seedJob(['store_id' => 1, 'data_size' => 200, 'data' => $manyIds]);
+        $this->seedJob(['store_id' => 1, 'data_size' => 200, 'data' => $manyIds]);
+        $this->seedJob(['store_id' => 2, 'data_size' => 200, 'data' => $manyIdsStoreTwo]);
+        $this->seedJob(['store_id' => 2, 'data_size' => 200, 'data' => $manyIdsStoreTwo]);
+
+        $queueOne = $this->objectManager->create(Queue::class);
+        $queueTwo = $this->objectManager->create(Queue::class);
+
+        $claimStoreOneFirst = $this->invokeMethod($queueOne, 'getJobs', ['maxJobs' => 1, 'storeId' => 1]);
+        $claimStoreTwo = $this->invokeMethod($queueTwo, 'getJobs', ['maxJobs' => 1, 'storeId' => 2]);
+        $claimStoreOneRemaining = $this->invokeMethod($queueOne, 'getJobs', ['maxJobs' => 1, 'storeId' => 1]);
+        $claimStoreTwoRemaining = $this->invokeMethod($queueTwo, 'getJobs', ['maxJobs' => 1, 'storeId' => 2]);
+
+        $this->assertCount(1, $claimStoreOneFirst);
+        $this->assertCount(1, $claimStoreTwo);
+        $this->assertCount(1, $claimStoreOneRemaining);
+        $this->assertCount(1, $claimStoreTwoRemaining);
+
+        $rowIdsStoreOneFirst = $this->getClaimedRowIds($claimStoreOneFirst);
+        $rowIdsStoreTwo = $this->getClaimedRowIds($claimStoreTwo);
+        $rowIdsStoreOneRemaining = $this->getClaimedRowIds($claimStoreOneRemaining);
+        $rowIdsStoreTwoRemaining = $this->getClaimedRowIds($claimStoreTwoRemaining);
+
+        $this->assertEmpty(
+            array_intersect($rowIdsStoreOneFirst, $rowIdsStoreOneRemaining),
+            'A second claim on the same store must only return the remaining rows'
+        );
+        $this->assertEmpty(
+            array_intersect($rowIdsStoreTwo, $rowIdsStoreTwoRemaining),
+            'A second claim on the same store must only return the remaining rows'
+        );
+        $this->assertEmpty(
+            array_intersect($rowIdsStoreOneFirst, $rowIdsStoreTwo),
+            'Claims on different stores must be disjoint'
+        );
+
+        $claimedRowIds = array_merge(
+            $rowIdsStoreOneFirst,
+            $rowIdsStoreOneRemaining,
+            $rowIdsStoreTwo,
+            $rowIdsStoreTwoRemaining
+        );
+        $this->assertSame(
+            array_column($this->fetchQueueRows(), 'job_id'),
+            array_map('strval', $claimedRowIds),
+            'Together the claims must have covered every seeded row exactly once'
+        );
+    }
+
+    /**
+     * Regression guard for the sequential contract: without a store ID the claim must
+     * behave exactly as before this change and reserve pending rows across all stores.
+     */
+    public function testUnfilteredClaimStillSpansStores()
+    {
+        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
+
+        $this->seedJob(['store_id' => 1]);
+        $this->seedJob(['store_id' => 2]);
+
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
+
+        $this->assertCount(2, $jobs);
+        $this->assertEqualsCanonicalizing(['1', '2'], array_map(fn (Job $job) => (string) $job->getStoreId(), $jobs));
     }
 }

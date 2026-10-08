@@ -499,8 +499,20 @@ class Queue
         return round($maxBatchSize / count($jobs));
     }
 
-    protected function getStoreMaxBatchSize(int $storeId): int
+    /**
+     * Returns the maximum batch size for a given store ID.
+     *
+     * @param int|null $storeId Nullable for correctness as jobs can conceivably be created without a store ID
+     *  (e.g. legacy/third party/off-contract rows) which would claim with the default page size
+     *
+     * @return int
+     */
+    protected function getStoreMaxBatchSize(?int $storeId = null): int
     {
+        if ($storeId === null) {
+            return $this->configHelper->getNumberOfElementByPage();
+        }
+
         if (!isset($this->storeMaxBatchSizes[$storeId])) {
             try {
                 $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage($storeId);

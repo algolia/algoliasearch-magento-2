@@ -34,7 +34,13 @@ class Queue
 
     protected string $archiveTable;
 
-    /** @var array<int, int> Failed job counts, keyed by store ID (jobs without a store land in 0) */
+    /**
+     * Failure bucket for jobs without a store (NULL store_id, legacy rows).
+     * Deliberately shared with store_id 0 (admin scope), which never carries indexing jobs.
+     */
+    protected const int NO_STORE = 0;
+
+    /** @var array<int, int> Failed job counts, keyed by store ID (jobs without a store land in NO_STORE) */
     protected array $noOfFailedJobsByStore = [];
 
     /** @var string[] */
@@ -198,7 +204,7 @@ class Queue
 
     protected function getFailureStoreKey(Job $job): int
     {
-        return (int) $job->getStoreId();
+        return (int) ($job->getStoreId() ?? self::NO_STORE);
     }
 
     protected function handleFailedJob(Job $job, Exception $e): void

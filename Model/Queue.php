@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Model;
 
+use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
@@ -18,37 +19,32 @@ use Zend_Db_Statement_Exception;
 
 class Queue
 {
-    public const FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33;
-    public const UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
-    public const CLEAR_ARCHIVE_LOGS_AFTER_DAYS = 30;
+    public const float FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33;
+    public const int UNLOCK_STACKED_JOBS_AFTER_MINUTES = 15;
+    public const int CLEAR_ARCHIVE_LOGS_AFTER_DAYS = 30;
 
-    public const FAILED_JOB_ARCHIVE_CRITERIA = 'retries >= max_retries';
-    public const MOVE_INDEX_METHOD_NAME = 'moveIndexWithSetSettings';
+    public const string FAILED_JOB_ARCHIVE_CRITERIA = 'retries >= max_retries';
+    public const string MOVE_INDEX_METHOD_NAME = 'moveIndexWithSetSettings';
 
-    /** @var AdapterInterface */
-    protected $db;
+    protected AdapterInterface $db;
 
-    /** @var string */
-    protected $table;
+    protected string $table;
 
-    /** @var string */
-    protected $logTable;
+    protected string $logTable;
 
-    /** @var string */
-    protected $archiveTable;
+    protected string $archiveTable;
 
-    /** @var int */
-    protected $noOfFailedJobs = 0;
+    protected int $noOfFailedJobs = 0;
 
-    /** @var array */
-    protected $staticJobMethods = [
+    /** @var string[] */
+    protected array $staticJobMethods = [
         'saveConfigurationToAlgolia',
         'moveIndexWithSetSettings',
         'deleteObjects',
     ];
 
-    /** @var array */
-    protected $logRecord;
+    /** @var array<string, mixed> */
+    protected array $logRecord;
 
     protected array $storeMaxBatchSizes;
 
@@ -66,8 +62,16 @@ class Queue
         $this->db = $objectManager->create(ResourceConnection::class)->getConnection('core_write');
     }
 
-    public function addToQueue(string $className, string $method, array $data, int $dataSize = 1, bool $isFullReindex = false): void
-    {
+    /**
+     * @throws AlgoliaException
+     */
+    public function addToQueue(
+        string $className,
+        string $method,
+        array $data,
+        int $dataSize = 1,
+        bool $isFullReindex = false
+    ): void {
         if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
             !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
             throw new AlgoliaException('Unauthorized job handler');
@@ -83,7 +87,9 @@ class Queue
                 'pid'       => null,
                 'max_retries' => $this->configHelper->getRetryLimit(),
                 'is_full_reindex' => $isFullReindex ? 1 : 0,
-                'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled() ? (new \Exception)->getTraceAsString() : null,
+                'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled()
+                    ? (new Exception)->getTraceAsString()
+                    : null,
                 'store_id' => isset($data['storeId']) ? (int) $data['storeId'] : null,
             ]);
         } else {
@@ -117,7 +123,7 @@ class Queue
      *
      * @throws Exception
      */
-    public function runCron(?int $nbJobs = null, bool $force = false): void
+    public function runCron(?int $nbJobs = null, bool $force = false, ?int $storeId = null): void
     {
         if (!$this->configHelper->isQueueActive() && $force === false) {
             return;
@@ -144,13 +150,14 @@ class Queue
             }
         }
 
-        $this->run($nbJobs);
+        $this->run($nbJobs, $storeId);
 
         $this->logRecord['duration'] = time() - $started;
 
         if (php_sapi_name() === 'cli') {
             $this->output->writeln(
-                $this->logRecord['processed_jobs'] . ' jobs processed in ' . $this->logRecord['duration'] . ' seconds.'
+                $this->logRecord['processed_jobs'] . ' jobs processed in '
+                    . $this->logRecord['duration'] . ' seconds.'
             );
         }
 
@@ -158,7 +165,8 @@ class Queue
     }
 
     /**
-     * Returns a more portable where clause as a string (useful across multiple db calls that do not always accept an array)
+     * Returns a more portable where clause as a string
+     * (useful across multiple db calls that do not always accept an array)
      * e.g. alternative to something like...
      * ['job_id IN (?)' => $job->getMergedIds()]
      *
@@ -169,7 +177,7 @@ class Queue
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function processJob(Job $job): void
     {
@@ -215,10 +223,9 @@ class Queue
             $this->archiveFailedJobs($where);
         }
 
-        // Do not nullify PID until archived (want to preserve for debugging to identify potential multi thread interlacing)
-        $this->db->update($this->table, [
-            'pid' => null,
-        ], $where);
+        // Do not nullify PID until archived
+        // (want to preserve for debugging to identify potential multi thread interlacing)
+        $this->db->update($this->table, ['pid' => null,], $where);
 
         if (php_sapi_name() === 'cli') {
             $this->output->writeln($logMessage);
@@ -229,11 +236,11 @@ class Queue
      *
      * @throws Exception
      */
-    public function run(int $maxJobs): void
+    public function run(int $maxJobs, ?int $storeId = null): void
     {
-        $this->clearOldFailingJobs();
+        $this->clearOldFailingJobs($storeId);
 
-        $jobs = $this->getJobs($maxJobs);
+        $jobs = $this->getJobs($maxJobs, $storeId);
 
         if ($jobs === []) {
             return;
@@ -261,7 +268,7 @@ class Queue
 
         $isFullReindex = ($maxJobs === -1);
         if ($isFullReindex) {
-            $this->run(-1);
+            $this->run(-1, $storeId);
         }
     }
 
@@ -269,7 +276,8 @@ class Queue
      * Archive jobs based on desired columns and where clause filter criteria
      *
      */
-    protected function archiveJobs(array $sourceColumns, array $targetColumns, string $whereClause): void {
+    protected function archiveJobs(array $sourceColumns, array $targetColumns, string $whereClause): void
+    {
         $select = $this->db->select()
             ->from($this->table, $sourceColumns)
             ->where($whereClause);
@@ -290,8 +298,14 @@ class Queue
      */
     protected function archiveFailedJobs(string $whereClause = self::FAILED_JOB_ARCHIVE_CRITERIA) : void
     {
-        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'debug'];
-        $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'debug'];
+        $sourceColumns =[
+            'pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size',
+            'created', 'NOW()', 'is_full_reindex', 'debug'
+        ];
+        $targetColumns = [
+            'pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size',
+            'created_at', 'processed_at', 'is_full_reindex', 'debug']
+        ;
         $this->archiveJobs(
             $sourceColumns,
             $targetColumns,
@@ -303,9 +317,16 @@ class Queue
      * Archive a successful job - based on supplied where clause criteria
      *
      */
-    protected function archiveSuccessfulJobs(string $whereClause): void {
-        $sourceColumns =['pid', 'class', 'method', 'data', 'retries', 'CONVERT(\'\', CHAR)', 'data_size', 'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'];
-        $targetColumns = ['pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size', 'created_at', 'processed_at', 'is_full_reindex', 'success', 'debug'];
+    protected function archiveSuccessfulJobs(string $whereClause): void
+    {
+        $sourceColumns =[
+            'pid', 'class', 'method', 'data', 'retries', 'CONVERT(\'\', CHAR)', 'data_size',
+            'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'
+        ];
+        $targetColumns = [
+            'pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size',
+            'created_at', 'processed_at', 'is_full_reindex', 'success', 'debug'
+        ];
         $this->archiveJobs(
             $sourceColumns,
             $targetColumns,
@@ -321,7 +342,7 @@ class Queue
      * @return Job[]
      *
      */
-    protected function getJobs(int $maxJobs): array
+    protected function getJobs(int $maxJobs, ?int $storeId = null): array
     {
         $maxJobs = ($maxJobs === -1) ? $this->configHelper->getNumberOfJobToRun() : $maxJobs;
 
@@ -330,12 +351,12 @@ class Queue
         try {
             $this->db->beginTransaction();
 
-            $fullReindexJobs = $this->fetchJobs($fullReindexJobsLimit, true);
+            $fullReindexJobs = $this->fetchJobs($fullReindexJobsLimit, true, null, $storeId);
             $fullReindexJobsCount = count($fullReindexJobs);
 
             $realtimeJobsLimit = (int) $maxJobs - $fullReindexJobsCount;
 
-            $realtimeJobs = $this->fetchJobs($realtimeJobsLimit, false);
+            $realtimeJobs = $this->fetchJobs($realtimeJobsLimit, false, null, $storeId);
 
             $jobs = array_merge($fullReindexJobs, $realtimeJobs);
             $jobsCount = count($jobs);
@@ -349,7 +370,7 @@ class Queue
                     $lastFullReindexJobId = max($this->getJobsIdsFromMergedJobs($jobs));
                 }
 
-                $restFullReindexJobs = $this->fetchJobs($restLimit, true, $lastFullReindexJobId);
+                $restFullReindexJobs = $this->fetchJobs($restLimit, true, $lastFullReindexJobId, $storeId);
 
                 $jobs = array_merge($jobs, $restFullReindexJobs);
             }
@@ -370,8 +391,12 @@ class Queue
      *
      * @return Job[]
      */
-    protected function fetchJobs(int $jobsLimit, bool $fetchFullReindexJobs = false, ?int $lastJobId = null): array
-    {
+    protected function fetchJobs(
+        int $jobsLimit,
+        bool $fetchFullReindexJobs = false,
+        ?int $lastJobId = null,
+        ?int $storeId = null
+    ): array {
         $jobs = [];
 
         $actualBatchSize = -1;
@@ -385,7 +410,13 @@ class Queue
             $jobsCollection = $this->jobCollectionFactory->create();
             $jobsCollection
                 ->addFieldToFilter('pid', ['null' => true])
-                ->addFieldToFilter('is_full_reindex', $fetchFullReindexJobs)
+                ->addFieldToFilter('is_full_reindex', $fetchFullReindexJobs);
+
+            if ($storeId !== null) {
+                $jobsCollection->addFieldToFilter(JobInterface::FIELD_STORE_ID, $storeId);
+            }
+
+            $jobsCollection
                 ->setOrder('job_id', Collection::SORT_ORDER_ASC)
                 ->getSelect()
                 ->limit($limit, $offset)
@@ -420,12 +451,13 @@ class Queue
                 break;
             }
 
-            // Introduced an array of job sizes to determine the total batch size currently processed (sum of all jobs contained in the run)
+            // Introduced an array of job sizes to determine the total batch size currently processed
+            // (sum of all jobs contained in the run)
             // This will determine if we can continue to loop over the jobs
             $jobSizes = [];
 
             foreach ($rawJobs as $job) {
-                $jobSize = (int) $job->getDataSize();
+                $jobSize = $job->getDataSize();
                 $jobSizes[$job->getId()] = $jobSize;
                 $jobs[] = $job;
             }
@@ -457,7 +489,7 @@ class Queue
         if (!isset($this->storeMaxBatchSizes[$storeId])) {
             try {
                 $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage($storeId);
-            } catch (\Exception $e) {
+            } catch (Exception) {
                 // In case a job was created before a store deletion
                 $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage();
             }
@@ -514,7 +546,6 @@ class Queue
 
         $tempSortableJobs = [];
 
-        /** @var Job $job */
         foreach ($jobs as $job) {
             $job->prepare();
 
@@ -528,9 +559,7 @@ class Queue
             $tempSortableJobs[] = $job;
         }
 
-        $sortedJobs = $this->stackSortedJobs($sortedJobs, $tempSortableJobs);
-
-        return $sortedJobs;
+        return $this->stackSortedJobs($sortedJobs, $tempSortableJobs);
     }
 
     /**
@@ -607,7 +636,8 @@ class Queue
             ], ['job_id IN (?)' => $jobsIds]);
         }
 
-        // Persist to local objects for later reference and to address bugs where referenced data in object is not present
+        // Persist to local objects for later reference and to address bugs
+        // where referenced data in object is not present
         // Not modifying persistence logic atm
         // TODO: Implement repository pattern / service contracts for jobs
         foreach ($jobs as $job) {
@@ -631,15 +661,44 @@ class Queue
         return $jobsIds;
     }
 
-    protected function clearOldFailingJobs(): void
+    protected function clearOldFailingJobs(?int $storeId = null): void
     {
+        $criteria = self::FAILED_JOB_ARCHIVE_CRITERIA;
+
+        if ($storeId !== null) {
+            // Keep the archive/delete pair scoped so two workers cleaning up different stores
+            // cannot both INSERT the same rows into the archive
+            $criteria .= ' AND store_id = ' . $storeId;
+        }
+
         // Enhanced archive will have already logged this failure
         if (!$this->configHelper->isEnhancedQueueArchiveEnabled()) {
-            $this->archiveFailedJobs();
+            $this->archiveFailedJobs($criteria);
         }
         // DEBUG:
         // $this->archiveJobs('1 = 1');
-        $this->db->delete($this->table, self::FAILED_JOB_ARCHIVE_CRITERIA);
+        $this->db->delete($this->table, $criteria);
+    }
+
+    /**
+     * Returns the store IDs that currently have claimable jobs, ascending.
+     *
+     * Excludes locked rows (pid set), rows that exhausted their retries and store-agnostic
+     * rows (store_id IS NULL), which store-scoped workers never claim. The caller must run
+     * unlockStackedJobs() first so stale locks do not hide pending work.
+     *
+     * @return int[]
+     */
+    public function getStoreIdsWithPendingJobs(): array
+    {
+        $select = $this->db->select()
+            ->from($this->table, new Zend_Db_Expr('DISTINCT store_id'))
+            ->where('pid IS NULL')
+            ->where('retries < max_retries')
+            ->where('store_id IS NOT NULL')
+            ->order('store_id');
+
+        return array_map('intval', $this->db->fetchCol($select));
     }
 
     /**

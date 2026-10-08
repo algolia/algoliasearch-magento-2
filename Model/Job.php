@@ -32,11 +32,11 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 {
     protected $_eventPrefix = 'algoliasearch_queue_job';
 
-    private const METHOD_BUILD_INDEX = 'buildIndex';
-    private const METHOD_BUILD_INDEX_FULL = 'buildIndexFull';
-    private const METHOD_BUILD_INDEX_LIST = 'buildIndexList';
+    private const string METHOD_BUILD_INDEX = 'buildIndex';
+    private const string METHOD_BUILD_INDEX_FULL = 'buildIndexFull';
+    private const string METHOD_BUILD_INDEX_LIST = 'buildIndexList';
 
-    public const ALLOWED_HANDLERS = [
+    public const array ALLOWED_HANDLERS = [
         'Algolia\AlgoliaSearch\Model\IndicesConfigurator' => [
             'saveConfigurationToAlgolia',
         ],

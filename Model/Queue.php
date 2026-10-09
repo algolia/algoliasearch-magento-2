@@ -34,7 +34,14 @@ class Queue
 
     protected string $archiveTable;
 
-    protected int $noOfFailedJobs = 0;
+    /**
+     * Failure bucket for jobs without a store (NULL store_id, legacy rows).
+     * Deliberately shared with store_id 0 (admin scope), which never carries indexing jobs.
+     */
+    protected const int NO_STORE = 0;
+
+    /** @var array<int, int> Failed job counts, keyed by store ID (jobs without a store land in NO_STORE) */
+    protected array $noOfFailedJobsByStore = [];
 
     /** @var string[] */
     protected array $staticJobMethods = [
@@ -195,9 +202,15 @@ class Queue
         $this->logRecord['processed_jobs'] += count($job->getMergedIds());
     }
 
+    protected function getFailureStoreKey(Job $job): int
+    {
+        return (int) ($job->getStoreId() ?? self::NO_STORE);
+    }
+
     protected function handleFailedJob(Job $job, Exception $e): void
     {
-        $this->noOfFailedJobs++;
+        $storeKey = $this->getFailureStoreKey($job);
+        $this->noOfFailedJobsByStore[$storeKey] = ($this->noOfFailedJobsByStore[$storeKey] ?? 0) + 1;
 
         // Log error information
         $logMessage = 'Queue processing ' . $job->getPid() . ' [KO]:
@@ -248,11 +261,13 @@ class Queue
 
         // Run all reserved jobs
         foreach ($jobs as $job) {
-            // If there are some failed jobs before move, we want to skip the move
+            // If there are some failed jobs for this store before move, we want to skip the move
             // as most probably not all products have prices reindexed
             // and therefore are not indexed yet in TMP index
             // TODO: Refactor this
-            if ($job->getMethod() === self::MOVE_INDEX_METHOD_NAME && $this->noOfFailedJobs > 0) {
+            if ($job->getMethod() === self::MOVE_INDEX_METHOD_NAME
+                && ($this->noOfFailedJobsByStore[$this->getFailureStoreKey($job)] ?? 0) > 0
+            ) {
                 // Set pid to NULL so it's not deleted after
                 $this->db->update($this->table, ['pid' => null], ['job_id = ?' => $job->getId()]);
 
@@ -300,7 +315,7 @@ class Queue
     {
         $sourceColumns =[
             'pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size',
-            'created', 'NOW()', 'is_full_reindex', 'debug'
+            'created', 'NOW()', 'is_full_reindex', 'debug',
         ];
         $targetColumns = [
             'pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size',
@@ -321,11 +336,11 @@ class Queue
     {
         $sourceColumns =[
             'pid', 'class', 'method', 'data', 'retries', 'CONVERT(\'\', CHAR)', 'data_size',
-            'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug'
+            'created', 'NOW()', 'is_full_reindex', 'CONVERT(1,UNSIGNED)', 'debug',
         ];
         $targetColumns = [
             'pid', 'class', 'method', 'data', 'retries', 'error_log', 'data_size',
-            'created_at', 'processed_at', 'is_full_reindex', 'success', 'debug'
+            'created_at', 'processed_at', 'is_full_reindex', 'success', 'debug',
         ];
         $this->archiveJobs(
             $sourceColumns,
@@ -484,8 +499,20 @@ class Queue
         return round($maxBatchSize / count($jobs));
     }
 
-    protected function getStoreMaxBatchSize(int $storeId): int
+    /**
+     * Returns the maximum batch size for a given store ID.
+     *
+     * @param int|null $storeId Nullable for correctness as jobs can conceivably be created without a store ID
+     *  (e.g. legacy/third party/off-contract rows) which would claim with the default page size
+     *
+     * @return int
+     */
+    protected function getStoreMaxBatchSize(?int $storeId = null): int
     {
+        if ($storeId === null) {
+            return $this->configHelper->getNumberOfElementByPage();
+        }
+
         if (!isset($this->storeMaxBatchSizes[$storeId])) {
             try {
                 $this->storeMaxBatchSizes[$storeId] = $this->configHelper->getNumberOfElementByPage($storeId);

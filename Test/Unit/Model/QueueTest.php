@@ -366,8 +366,8 @@ class QueueTest extends TestCase
 
         $queue->runCron(10);
 
-        $this->assertContains([['pid' => null], ['job_id = ?' => 2]], $this->pluckBindAndWhere($updateCalls));
-        $this->assertNotContains([['pid' => null], ['job_id = ?' => 3]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertContains([['pid' => null], ['job_id = ?' => 2]], $updateCalls);
+        $this->assertNotContains([['pid' => null], ['job_id = ?' => 3]], $updateCalls);
         $this->assertSame([1 => 1], $this->getPrivateProperty($queue, 'noOfFailedJobsByStore'));
     }
 
@@ -406,8 +406,8 @@ class QueueTest extends TestCase
 
         $queue->runCron(10);
 
-        $this->assertNotContains([['pid' => null], ['job_id = ?' => 2]], $this->pluckBindAndWhere($updateCalls));
-        $this->assertNotContains([['pid' => null], ['job_id = ?' => 3]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertNotContains([['pid' => null], ['job_id = ?' => 2]], $updateCalls);
+        $this->assertNotContains([['pid' => null], ['job_id = ?' => 3]], $updateCalls);
         $this->assertSame([0 => 1], $this->getPrivateProperty($queue, 'noOfFailedJobsByStore'));
     }
 
@@ -438,7 +438,7 @@ class QueueTest extends TestCase
 
         $queue->runCron(10);
 
-        $this->assertContains([['pid' => null], ['job_id = ?' => 2]], $this->pluckBindAndWhere($updateCalls));
+        $this->assertContains([['pid' => null], ['job_id = ?' => 2]], $updateCalls);
         $this->assertSame([5 => 1], $this->getPrivateProperty($queue, 'noOfFailedJobsByStore'));
     }
 
@@ -469,7 +469,7 @@ class QueueTest extends TestCase
      * (full-reindex fetch) and the second returns the given jobs (realtime fetch).
      *
      * @param Job[] $jobs
-     * @param array[] $updateCalls
+     * @param array[] $updateCalls Bucket to receive [bind, where] recorded from AdapterInterface::update() calls
      */
     private function createProcessingQueue(
         ObjectManagerInterface $objectManager,
@@ -479,7 +479,7 @@ class QueueTest extends TestCase
         $configHelper = $this->createStub(ConfigHelper::class);
         $configHelper->method('isQueueActive')->willReturn(true);
 
-        $itemsPerCall = [[], $jobs];
+        $itemsPerCall = [[], $jobs]; // [full reindex, realtime]
         $callIndex = 0;
         $collectionFactory = $this->createStub(JobCollectionFactory::class);
         $collectionFactory->method('create')->willReturnCallback(
@@ -526,18 +526,8 @@ class QueueTest extends TestCase
     }
 
     /**
-     * @param array[] $updateCalls
-     *
-     * @return array[] Pairs of [bind, where] recorded from AdapterInterface::update() calls
-     */
-    private function pluckBindAndWhere(array $updateCalls): array
-    {
-        return array_map(fn (array $call) => [$call[0], $call[1]], $updateCalls);
-    }
-
-    /**
      * Real Job model mirroring a claimed queue row: store comes from the store_id column,
-     * prepare() later decodes $decodedData for execution.
+     * Job::prepare() later decodes $decodedData for execution.
      */
     private function createQueueJob(
         int $id,

@@ -4,6 +4,8 @@
 
 ### Breaking changes
 - Changed the signature of the `protected` methods `Queue::getJobs()` and `Queue::fetchJobs()` to accept a trailing optional `?int $storeId` parameter. A third-party class extending `Queue` and overriding either method with the old signature will now fatal under PHP's signature-compatibility rule. `Queue` is not marked `@api`, no subclass or DI preference ships with the extension, and both methods keep accepting their previous argument lists unchanged, so the risk for standard integrations is nil.
+- Replaced the `protected` property `Queue::$noOfFailedJobs` (int counter) with the per-store failure map `Queue::$noOfFailedJobsByStore` (`array<int, int>`, keyed by store ID, with jobs without a store tracked under `Queue::NO_STORE`). A third-party class extending `Queue` and reading or writing the old property will no longer find it. `Queue` is not marked `@api`, no subclass or DI preference ships with the extension, and nothing outside `Queue` referenced the counter, so the risk for standard integrations is nil.
+- Changed the signature of the `protected` method `Queue::getStoreMaxBatchSize()` from a required `int $storeId` to a nullable trailing optional `?int $storeId = null`. An overriding method keeping the old signature will now fatal under PHP's signature-compatibility rule; the previous call pattern remains valid.
 
 ### Features
 - Added store-aware job claiming to the queue, groundwork for store-partitioned indexing where one worker process runs per store view.
@@ -18,6 +20,10 @@
     - New jobs now record their store at enqueue time.
     - A data patch backfills `store_id` for existing jobs; rows whose store cannot be determined remain `NULL`.
     - This is groundwork for store-partitioned queue processing; there is no behavior change to how jobs are processed.
+
+### Bug fixes
+- Scoped queue failure tracking to the store of the failing job. Previously a single process-wide counter recorded every failed job, so within one queue run a failure in one store made `Queue::run()` skip `moveIndexWithSetSettings` for every subsequent store of the same pass, leaving their index settings (synonyms, facets, ranking) silently stale after a partial failure in an unrelated store. A failed job now only suppresses the move for its own store: jobs without a store are tracked under bucket 0 and do not suppress numbered stores, and single-store behavior is unchanged.
+- Fixed a potential fatal error when claiming legacy queue rows whose `store_id` is `NULL` while resolving the batch size.
 
 ## 3.19.2
 

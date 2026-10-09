@@ -40,6 +40,7 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\IndexOptionsInterface" type="Algolia\AlgoliaSearch\Model\Data\IndexOptions" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\PriceDataInterface" type="Algolia\AlgoliaSearch\Model\Data\PriceData" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\PricingContextInterface" type="Algolia\AlgoliaSearch\Model\Data\PricingContext" />
+    <preference for="Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterface" type="Algolia\AlgoliaSearch\Model\Data\MinMaxPrices" />
 
     <!-- Client provider -->
     <preference for="Algolia\AlgoliaSearch\Api\SearchClientProviderInterface"

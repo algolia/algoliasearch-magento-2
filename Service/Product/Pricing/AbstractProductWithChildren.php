@@ -2,89 +2,60 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
+use Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterface;
+use Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\PricingHelper;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
 abstract class AbstractProductWithChildren extends AbstractProduct
 {
-    public const PRICE_NOT_SET = -1;
+    public const int PRICE_NOT_SET = -1;
 
-    protected function addAdditionalData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    public function __construct(
+        protected MinMaxPricesInterfaceFactory $minMaxPricesFactory,
+        protected ConfigHelper $configHelper,
+        protected PricingHelper $pricingHelper,
+        protected DiagnosticsLogger $logger,
+        protected PriceDataFormatter $priceDataFormatter
+    ) {
+        parent::__construct(
+            $configHelper,
+            $pricingHelper,
+            $logger,
+            $priceDataFormatter
+        );
+    }
+
+    protected function addComplexPricing(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
     : PriceDataInterface
     {
-        [$min, $max, $minOriginal, $maxOriginal] =
-            $this->getMinMaxPrices($pricingContext);
+        $minMaxPrices = $this->getChildrenMinMaxPrices($pricingContext);
 
-        if ($min !== $max) {
-            $priceData = $this->handleNonEqualMinMaxPrices($priceData, $pricingContext, $min, $max);
-        }
-
-        if ($max < $maxOriginal) {
-            $priceData->setOriginalPrice($maxOriginal);
-        }
-
-        if ($priceData->getPrice() === 0.00) {
-            $priceData->setPrice($min);
-        }
-
-        if ($pricingContext->areCustomerGroupsEnabled()) {
-            if ($max < $maxOriginal) {
-                foreach ($this->groups as $group) {
-                    $groupId = (int) $group->getData('customer_group_id');
-                    $priceData->setOriginalPrice($maxOriginal, $groupId);
-                }
-            }
-
-            $priceData = $this->setFinalGroupPrices($priceData, $pricingContext, $min);
-        }
+        $priceData = $this->addOriginalPrice($priceData, $minMaxPrices);
+        $priceData = $this->addPriceRange($priceData, $pricingContext, $minMaxPrices);
+        $priceData = $this->addChildrenCustomerGroupsPrices($priceData, $pricingContext, $minMaxPrices);
 
         return $priceData;
     }
 
-    protected function getMinMaxPrices(PricingContextInterface $pricingContext): array
+    protected function getChildrenMinMaxPrices(PricingContextInterface $pricingContext): MinMaxPricesInterface
     {
-        $product = $pricingContext->getProduct();
         $subProducts = $pricingContext->getSubProducts();
 
-        $min      = PHP_INT_MAX;
-        $max      = 0;
+        $min      = PHP_FLOAT_MAX;
+        $max      = 0.0;
         $original = $min;
         $originalMax = $max;
         if (count($subProducts) > 0) {
             /** @var Product $subProduct */
             foreach ($subProducts as $subProduct) {
-                $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
-                $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
-                if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
-                    $minPrice = $tierPrice[0];
-                } else {
-                    $minPrice = $specialPrice[0];
-                }
-
-                $finalPrice = $subProduct->getFinalPrice();
-                $basePrice  = $subProduct->getPrice();
-
-                if ($pricingContext->isCurrencyDifferentFromBase()) {
-                    $finalPrice = $this->pricingHelper->convertPrice(
-                        $finalPrice,
-                        $pricingContext->getStore(),
-                        $pricingContext->getCurrencyCode()
-                    );
-                    $basePrice  = $this->pricingHelper->convertPrice(
-                        $basePrice,
-                        $pricingContext->getStore(),
-                        $pricingContext->getCurrencyCode()
-                    );
-                }
-
-                $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax());
-                $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax());
-
-                if ($pricingContext->isFptEnabled()) {
-                    $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);
-                }
+                [$price, $basePrice] = $this->getSubProductPrices($pricingContext, $subProduct);
 
                 $min = min($min, $price);
                 $original = min($original, $basePrice);
@@ -95,51 +66,126 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $originalMax = $original = $min = $max;
         }
 
-        return [$min, $max, $original, $originalMax];
+        return $this->minMaxPricesFactory->create([
+            'min' => $min,
+            'max' => $max,
+            'minOriginal' => $original,
+            'maxOriginal' => $originalMax,
+        ]);
     }
 
-    protected function handleNonEqualMinMaxPrices(
-        PriceDataInterface $priceData,
-        PricingContextInterface $pricingContext,
-        $min,
-        $max
-    ): PriceDataInterface
+    protected function getSubProductPrices(PricingContextInterface $pricingContext, Product $subProduct): array
     {
-        if ($min <= $priceData->getPrice()) {
-            $priceData->setSpecialFromDate("");
-            $priceData->setSpecialToDate("");
-            $priceData->setPrice(0); // will be reset just after
+        $product = $pricingContext->getProduct();
+        $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
+        $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
+        if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
+            $minPrice = $tierPrice[0];
+        } else {
+            $minPrice = $specialPrice[0];
         }
 
-        $priceData->setMinPrice((float) $min);
-        $priceData->setMaxPrice((float) $max);
+        $finalPrice = $subProduct->getFinalPrice();
+        $basePrice  = $subProduct->getPrice();
+
+        if ($pricingContext->isCurrencyDifferentFromBase()) {
+            $finalPrice = $this->pricingHelper->convertPrice(
+                $finalPrice,
+                $pricingContext->getStore(),
+                $pricingContext->getCurrencyCode()
+            );
+            $basePrice  = $this->pricingHelper->convertPrice(
+                $basePrice,
+                $pricingContext->getStore(),
+                $pricingContext->getCurrencyCode()
+            );
+        }
+
+        $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax());
+        $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax());
+
+        if ($pricingContext->isFptEnabled()) {
+            $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);
+        }
+
+        return [$price, $basePrice];
+    }
+
+    protected function addOriginalPrice(
+        PriceDataInterface $priceData,
+        MinMaxPricesInterface $minMaxPrices
+    ): PriceDataInterface
+    {
+        $min = $minMaxPrices->getMin();
+        $max = $minMaxPrices->getMax();
+        $maxOriginal = $minMaxPrices->getMaxOriginal();
+
+        if ($max < $maxOriginal) {
+            $priceData->setOriginalPrice($maxOriginal);
+        }
+
+        if ($priceData->getPrice() === 0.00) {
+            $priceData->setPrice($min);
+        }
+
+        return $priceData;
+    }
+
+    protected function addPriceRange(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
+        MinMaxPricesInterface $minMaxPrices
+    ): PriceDataInterface
+    {
+        $min = $minMaxPrices->getMin();
+        $max = $minMaxPrices->getMax();
+
+        if ($min === $max) {
+            return $priceData;
+        }
+
+        $priceData->setMinPrice($min);
+        $priceData->setMaxPrice($max);
 
         if ($pricingContext->areCustomerGroupsEnabled()) {
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                if ($min !== $max && $min <= $priceData->getPrice($groupId)) {
-                    $priceData->setPrice(0, $groupId);
-                }
-                $priceData->setMinPrice((float) $min, $groupId);
-                $priceData->setMaxPrice((float) $max, $groupId);
+                $priceData->setMinPrice($min, $groupId);
+                $priceData->setMaxPrice($max, $groupId);
             }
         }
 
         return $priceData;
     }
 
-    protected function handleZeroDefaultPrice(
+    protected function addChildrenCustomerGroupsPrices(
         PriceDataInterface $priceData,
         PricingContextInterface $pricingContext,
-        $min,
-        $max)
-    : PriceDataInterface
+        MinMaxPricesInterface $minMaxPrices
+    ): PriceDataInterface
     {
+        if (!$pricingContext->areCustomerGroupsEnabled()) {
+            return $priceData;
+        }
+
+        $min = $minMaxPrices->getMin();
+        $max = $minMaxPrices->getMax();
+        $maxOriginal = $minMaxPrices->getMaxOriginal();
+
+        if ($max < $maxOriginal) {
+            foreach ($this->groups as $group) {
+                $groupId = (int) $group->getData('customer_group_id');
+                $priceData->setOriginalPrice($maxOriginal, $groupId);
+            }
+        }
+
+        $priceData = $this->addCustomerGroupsFinalPrices($priceData, $pricingContext, $min);
+
         return $priceData;
     }
 
-    protected function setFinalGroupPrices(
+    protected function addCustomerGroupsFinalPrices(
         PriceDataInterface $priceData,
         PricingContextInterface $pricingContext,
         $min

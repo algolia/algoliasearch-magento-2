@@ -32,6 +32,11 @@ class Downloadable extends AbstractProduct
     : PriceDataInterface
     {
         $product = $pricingContext->getProduct();
+        $this->filterCustomerGroups($pricingContext);
+
+        if (!$pricingContext->areCustomerGroupsEnabled()) {
+            return $priceData;
+        }
 
         /** @var Group $group */
         foreach ($this->groups as $group) {

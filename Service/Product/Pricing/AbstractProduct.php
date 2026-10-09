@@ -36,11 +36,24 @@ abstract class AbstractProduct
     {
         $this->logger->startProfiling(__METHOD__);
 
-        $product = $pricingContext->getProduct();
         $this->groups = $this->pricingHelper->getCustomerGroupCollection();
 
-        $this->filterCustomerGroups($pricingContext);
+        $priceData = $this->addDefaultPrice($priceData, $pricingContext);
+        $priceData = $this->addCustomerGroupsPrices($priceData, $pricingContext);
+        $priceData = $this->addSpecialPrices($priceData, $pricingContext);
+        $priceData = $this->addTierPrices($priceData, $pricingContext);
+        // Additional pricing logic coming from child classes
+        $priceData = $this->addComplexPricing($priceData, $pricingContext);
 
+        $this->logger->stopProfiling(__METHOD__);
+
+        return $this->priceDataFormatter->formatPriceDataObject($priceData, $pricingContext);
+    }
+
+    protected function addDefaultPrice(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
+    {
+        $product = $pricingContext->getProduct();
         $price = $product->getPrice();
         if ($this->configHelper->isFptEnabled($product->getStoreId())) {
             $price += $this->pricingHelper->getWeeeAmount($product);
@@ -54,71 +67,138 @@ abstract class AbstractProduct
         }
 
         $price = $this->pricingHelper->getTaxPrice($product, $price, $pricingContext->shouldIncludeTax());
-
-        /**
-         *  Basic inputs related to every product
-         *
-         *  [...
-         *      'defaut' => X.XX,
-         *      'special_from_date' => 1789984652,
-         *      'special_to_date' => 1789984652
-         *   ...
-         *  ]
-         */
         $priceData->setPrice($this->pricingHelper->round($price));
-        $priceData->setSpecialFromDate(
-            (!empty($product->getSpecialFromDate())) ? strtotime((string) $product->getSpecialFromDate()) : ''
-        );
-        $priceData->setSpecialToDate(
-            (!empty($product->getSpecialToDate())) ? strtotime((string) $product->getSpecialToDate()) : ''
-        );
 
+        return $priceData;
+    }
 
-        /**
-         *  Additional inputs depending on multiple factors (customer groups, special/tier prices ...)
-         */
-        if ($pricingContext->areCustomerGroupsEnabled()) {
-            $priceData = $this->addCustomerGroupsPrices($priceData, $pricingContext);
+    protected function addCustomerGroupsPrices(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
+    {
+        $product = $pricingContext->getProduct();
+        $this->filterCustomerGroups($pricingContext);
+
+        if (!$pricingContext->areCustomerGroupsEnabled()) {
+            return $priceData;
         }
 
-        $priceData = $this->addSpecialPrices($priceData, $pricingContext);
-        $priceData = $this->addTierPrices($priceData, $pricingContext);
+        /** @var Group $group */
+        foreach ($this->groups as $group) {
+            $groupId = (int) $group->getData('customer_group_id');
+            $product->setData('customer_group_id', $groupId);
+            $product->setData('website_id', $product->getStore()->getWebsiteId());
+            $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
 
-        /**
-         *  Additional inputs from child products
-         */
-        $priceData = $this->addAdditionalData($priceData, $pricingContext);
+            if ($pricingContext->isCurrencyDifferentFromBase()) {
+                $discountedPrice = $this->pricingHelper->convertPrice(
+                    $discountedPrice,
+                    $pricingContext->getStore(),
+                    $pricingContext->getCurrencyCode()
+                );
+            }
+            if ($discountedPrice) {
+                $priceData->setPrice(
+                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->shouldIncludeTax()),
+                    $groupId
+                );
 
-        $this->logger->stopProfiling(__METHOD__);
+                if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
+                    $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
+                }
 
-        return $this->priceDataFormatter->formatPriceDataObject($priceData, $pricingContext);
+            } else {
+                $priceData->setPrice($priceData->getPrice(), $groupId);
+            }
+        }
+
+        $product->setData('customer_group_id', null);
+
+        return $priceData;
+    }
+
+    protected function addSpecialPrices(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext
+    ): PriceDataInterface
+    {
+        $specialPrice = $this->getSpecialPrice($pricingContext);
+
+        if ($pricingContext->areCustomerGroupsEnabled()) {
+            /** @var Group $group */
+            foreach ($this->groups as $group) {
+                $groupId = (int) $group->getData('customer_group_id');
+                if ($specialPrice[$groupId]  && $specialPrice[$groupId] < $priceData->getPrice($groupId)) {
+                    $priceData->setPrice($specialPrice[$groupId], $groupId);
+
+                    if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
+                        $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
+                    }
+                }
+            }
+        }
+
+        if ($specialPrice[0] && $specialPrice[0] < $priceData->getPrice()) {
+            $priceData->setOriginalPrice($priceData->getPrice());
+            $priceData->setPrice($this->pricingHelper->round($specialPrice[0]));
+        }
+
+        $this->addSpecialPriceDates($priceData, $pricingContext);
+
+        return $priceData;
+    }
+
+    protected function addTierPrices(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext
+    ) : PriceDataInterface
+    {
+        $tierPrice = $this->getTierPrice($pricingContext);
+
+        if ($pricingContext->areCustomerGroupsEnabled()) {
+            /** @var Group $group */
+            foreach ($this->groups as $group) {
+                $groupId = (int) $group->getData('customer_group_id');
+
+                if ($tierPrice[$groupId]) {
+                    $priceData->setTierPrice($tierPrice[$groupId], $groupId);
+                }
+            }
+        }
+
+        if ($tierPrice[0]) {
+            $priceData->setTierPrice($this->pricingHelper->round($tierPrice[0]));
+        }
+
+        return $priceData;
+    }
+
+    protected function addComplexPricing(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
+    {
+        // Empty for products without children
+        return $priceData;
     }
 
     protected function filterCustomerGroups(PricingContextInterface $pricingContext): void
     {
         if (!$pricingContext->areCustomerGroupsEnabled()) {
             $this->groups->addFieldToFilter('main_table.customer_group_id', 0);
-        } else {
-            $excludedGroups = [];
-            foreach ($this->groups as $group) {
-                $groupId = (int) $group->getData('customer_group_id');
-                $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
-                if (in_array($pricingContext->getStore()->getWebsiteId(), $excludedWebsites)) {
-                    $excludedGroups[] = $groupId;
-                }
-            }
-            if(count($excludedGroups) > 0) {
-                $this->groups->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
-                $this->groups->clear();
+            return;
+        }
+
+        $excludedGroups = [];
+        foreach ($this->groups as $group) {
+            $groupId = (int) $group->getData('customer_group_id');
+            $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
+            if (in_array($pricingContext->getStore()->getWebsiteId(), $excludedWebsites)) {
+                $excludedGroups[] = $groupId;
             }
         }
-    }
 
-    protected function addAdditionalData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
-    : PriceDataInterface
-    {
-        // Empty for products without children
-        return $priceData;
+        if (count($excludedGroups) > 0) {
+            $this->groups->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
+            $this->groups->clear();
+        }
     }
 
     protected function getSpecialPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
@@ -235,94 +315,17 @@ abstract class AbstractProduct
         return $tierPrice;
     }
 
-    protected function addTierPrices(
-        PriceDataInterface $priceData,
-        PricingContextInterface $pricingContext
-    ) : PriceDataInterface
-    {
-        $tierPrice = $this->getTierPrice($pricingContext);
-
-        if ($pricingContext->areCustomerGroupsEnabled()) {
-            /** @var Group $group */
-            foreach ($this->groups as $group) {
-                $groupId = (int) $group->getData('customer_group_id');
-
-                if ($tierPrice[$groupId]) {
-                    $priceData->setTierPrice($tierPrice[$groupId], $groupId);
-                }
-            }
-        }
-
-        if ($tierPrice[0]) {
-            $priceData->setTierPrice($this->pricingHelper->round($tierPrice[0]));
-        }
-
-        return $priceData;
-    }
-
-    protected function addCustomerGroupsPrices(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    protected function addSpecialPriceDates(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
     : PriceDataInterface
     {
         $product = $pricingContext->getProduct();
 
-        /** @var Group $group */
-        foreach ($this->groups as $group) {
-            $groupId = (int) $group->getData('customer_group_id');
-            $product->setData('customer_group_id', $groupId);
-            $product->setData('website_id', $product->getStore()->getWebsiteId());
-            $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
-            if ($pricingContext->isCurrencyDifferentFromBase()) {
-                $discountedPrice = $this->pricingHelper->convertPrice(
-                    $discountedPrice,
-                    $pricingContext->getStore(),
-                    $pricingContext->getCurrencyCode()
-                );
-            }
-            if ($discountedPrice !== false) {
-                $priceData->setPrice(
-                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->shouldIncludeTax()),
-                    $groupId
-                );
-
-                if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
-                    $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
-                }
-
-            } else {
-                $priceData->setPrice($priceData->getPrice(), $groupId);
-            }
-        }
-
-        $product->setData('customer_group_id', null);
-
-        return $priceData;
-    }
-
-    protected function addSpecialPrices(
-        PriceDataInterface $priceData,
-        PricingContextInterface $pricingContext
-    ): PriceDataInterface
-    {
-        $specialPrice = $this->getSpecialPrice($pricingContext);
-
-        if ($pricingContext->areCustomerGroupsEnabled()) {
-            /** @var Group $group */
-            foreach ($this->groups as $group) {
-                $groupId = (int) $group->getData('customer_group_id');
-                if ($specialPrice[$groupId]  && $specialPrice[$groupId] < $priceData->getPrice($groupId)) {
-                    $priceData->setPrice($specialPrice[$groupId], $groupId);
-
-                    if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
-                        $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
-                    }
-                }
-            }
-        }
-
-        if ($specialPrice[0] && $specialPrice[0] < $priceData->getPrice()) {
-            $priceData->setOriginalPrice($priceData->getPrice());
-            $priceData->setPrice($this->pricingHelper->round($specialPrice[0]));
-        }
+        $priceData->setSpecialFromDate(
+            (!empty($product->getSpecialFromDate())) ? strtotime((string) $product->getSpecialFromDate()) : ''
+        );
+        $priceData->setSpecialToDate(
+            (!empty($product->getSpecialToDate())) ? strtotime((string) $product->getSpecialToDate()) : ''
+        );
 
         return $priceData;
     }

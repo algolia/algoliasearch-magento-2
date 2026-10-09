@@ -2,139 +2,88 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
-use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
+use Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Helper\PricingHelper;
-use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
-use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
-use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
 class Bundle extends AbstractProductWithChildren
 {
-    public function __construct(
-        protected ProductRepositoryInterface $productRepository,
-        protected ConfigHelper $configHelper,
-        protected PricingHelper $pricingHelper,
-        protected DiagnosticsLogger $logger,
-        protected PriceDataFormatter $priceDataFormatter
-    ) {
-        parent::__construct(
-            $configHelper,
-            $pricingHelper,
-            $logger,
-            $priceDataFormatter
-        );
-    }
-
-    /**
-     * Override parent addAdditionalData function
-     */
-    protected function addAdditionalData(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
-    : PriceDataInterface
+    protected function getChildrenMinMaxPrices(PricingContextInterface $pricingContext): MinMaxPricesInterface
     {
-        $data = $this->getMinMaxPrices($pricingContext);
+        $subProducts = $pricingContext->getSubProducts();
 
-        if ($data['min_price'] !== $data['max_price']) {
-            $priceData = $this->handleBundleNonEqualMinMaxPrices($priceData, $data['min_price'], $data['max_price']);
-        }
+        $options = [];
+        $optionsOriginal = [];
+        $min = $max = $original = $originalMax = 0.00;
 
-        if ($priceData->getPrice() === 0.00) {
-            $priceData = $this->handleZeroDefaultPrice($priceData, $pricingContext, $data['min_price'], $data['max_price']);
-        }
+        if (count($subProducts) > 0) {
+            /** @var Product $subProduct */
+            foreach ($subProducts as $subProduct) {
+                [$price, $basePrice] = $this->getSubProductPrices($pricingContext, $subProduct);
 
-        if ($pricingContext->areCustomerGroupsEnabled()) {
-            $priceData = $this->setFinalGroupPricesBundle($priceData, $data['min']);
-        }
-
-        return $priceData;
-    }
-
-    protected function getMinMaxPrices(PricingContextInterface $pricingContext): array
-    {
-        $product = $pricingContext->getProduct();
-
-        $productWithPrice = $this->productRepository->getById($product->getId(), false, $product->getStoreId(), true);
-        $productWithPrice->setData('website_id', $product->getStore()->getWebsiteId());
-        $minPrice = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
-        $max = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
-        $minArray = [];
-        $maxArray = [];
-
-        foreach ($this->groups as $group) {
-            $groupId = (int) $group->getData('customer_group_id');
-            $productWithPrice->setData('customer_group_id', $groupId);
-            $minPrice = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
-            $minArray[$groupId] = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMinimalPrice()->getValue();
-            $maxArray[$groupId] = $productWithPrice->getPriceInfo()->getPrice('final_price')->getMaximalPrice()->getValue();
-            $productWithPrice->setData('customer_group_id', null);
-        }
-
-        $minPriceArray = [];
-        foreach ($minArray as $groupId => $min) {
-            $minPriceArray[$groupId] = $min;
-        }
-        $maxPriceArray = [];
-        foreach ($maxArray as $groupId => $max) {
-            $maxPriceArray[$groupId] = $max;
-        }
-
-        if ($pricingContext->isCurrencyDifferentFromBase()) {
-            $minPrice = $this->pricingHelper->convertPrice(
-                $minPrice,
-                $pricingContext->getStore(),
-                $pricingContext->getCurrencyCode(),
-            );
-
-            foreach ($minPriceArray as $groupId => $price) {
-                $minPriceArray[$groupId] = $this->pricingHelper->convertPrice(
-                    $price,
-                    $pricingContext->getStore(),
-                    $pricingContext->getCurrencyCode(),
-                );
-
-                if ($minPrice !== $max) {
-                    $max = $this->pricingHelper->convertPrice(
-                        $max,
-                        $pricingContext->getStore(),
-                        $pricingContext->getCurrencyCode(),
-                    );
-                }
+                $options[$subProduct->getOptionId()][] = $price;
+                $optionsOriginal[$subProduct->getOptionId()][] = $basePrice;
+            }
+            // Addition of each option values (maximal and minimal amount combinations)
+            foreach ($options as $optionsValues) {
+                $min += min($optionsValues);
+                $max += max($optionsValues);
+            }
+            // Same thing for original values
+            foreach ($optionsOriginal as $optionOriginalValues) {
+                $original += min($optionOriginalValues);
+                $originalMax += max($optionOriginalValues);
             }
         }
 
-        return [
-            'min' => $minPriceArray,
-            'max' => $maxPriceArray,
-            'min_price' => $minPrice,
-            'max_price' => $max
-        ];
+        return $this->minMaxPricesFactory->create([
+            'min' => $min,
+            'max' => $max,
+            'minOriginal' => $original,
+            'maxOriginal' => $originalMax,
+        ]);
     }
 
-    protected function handleBundleNonEqualMinMaxPrices(PriceDataInterface $priceData, $min, $max): PriceDataInterface
+    protected function getGroupPriceList(PricingContextInterface $pricingContext, $min): array
     {
-        if ($min <= $priceData->getPrice()) {
+        $subProducts = $pricingContext->getSubProducts();
 
-            //// Do not keep special price that is already taken into account in min max
-            $priceData->setSpecialFromDate("");
-            $priceData->setSpecialToDate("");
-            $priceData->setPrice(0); // will be reset just after
-        }
+        $groupPriceList = [];
 
-        $priceData->setMaxPrice((float) $max);
-
-        return $priceData;
-    }
-
-    protected function setFinalGroupPricesBundle(PriceDataInterface $priceData, $min): PriceDataInterface
-    {
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
-            $priceData->setPrice($min[$groupId], $groupId);
+            $options = [];
+
+            foreach ($subProducts as $subProduct) {
+                $subProduct->setData('customer_group_id', $groupId);
+                $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
+
+                $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
+                $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
+                $price = $this->pricingHelper->getTaxPrice(
+                    $pricingContext->getProduct(),
+                    $subProduct->getPriceModel()->getFinalPrice(1, $subProduct),
+                    $pricingContext->shouldIncludeTax()
+                );
+
+                if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {
+                    $price = $tierPrice[$groupId];
+                }
+
+                $options[$subProduct->getOptionId()][] = $price;
+                $subProduct->setData('customer_group_id', null);
+            }
+
+            $groupPriceList[$groupId]['min'] = $groupPriceList[$groupId]['max'] = 0.00;
+
+            foreach ($options as $optionsValues) {
+                $groupPriceList[$groupId]['min'] += min($optionsValues);
+                $groupPriceList[$groupId]['max'] += max($optionsValues);
+            }
         }
 
-        return $priceData;
+        return $groupPriceList;
     }
 }

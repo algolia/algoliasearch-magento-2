@@ -3,27 +3,33 @@
 namespace Algolia\AlgoliaSearch\Model\Data;
 
 use Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterface as MMPI;
-use Magento\Framework\DataObject;
 
-class MinMaxPrices extends DataObject implements MMPI
+class MinMaxPrices implements MMPI
 {
+    public function __construct(
+        protected float $min,
+        protected float $max,
+        protected float $minOriginal,
+        protected float $maxOriginal,
+    ){}
+
     public function getMin(): float
     {
-        return $this->getData(MMPI::MIN);
+        return $this->min;
     }
 
     public function getMax(): float
     {
-        return $this->getData(MMPI::MAX);
+        return $this->max;
     }
 
     public function getMinOriginal(): float
     {
-        return $this->getData(MMPI::MIN_ORIGINAL);
+        return $this->minOriginal;
     }
 
     public function getMaxOriginal(): float
     {
-        return $this->getData(MMPI::MAX_ORIGINAL);
+        return $this->maxOriginal;
     }
 }

@@ -15,7 +15,7 @@ use Magento\Customer\Model\Group;
 
 abstract class AbstractProductWithChildren extends AbstractProduct
 {
-    public const PRICE_NOT_SET = -1;
+    public const int PRICE_NOT_SET = -1;
 
     public function __construct(
         protected MinMaxPricesInterfaceFactory $minMaxPricesFactory,
@@ -48,8 +48,8 @@ abstract class AbstractProductWithChildren extends AbstractProduct
     {
         $subProducts = $pricingContext->getSubProducts();
 
-        $min      = PHP_INT_MAX;
-        $max      = 0;
+        $min      = PHP_FLOAT_MAX;
+        $max      = 0.0;
         $original = $min;
         $originalMax = $max;
         if (count($subProducts) > 0) {
@@ -66,16 +66,12 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $originalMax = $original = $min = $max;
         }
 
-        return $this->minMaxPricesFactory->create(
-            [
-                'data' => [
-                    MinMaxPricesInterface::MIN => $min,
-                    MinMaxPricesInterface::MAX => $max,
-                    MinMaxPricesInterface::MIN_ORIGINAL => $original,
-                    MinMaxPricesInterface::MAX_ORIGINAL => $originalMax,
-                ]
-            ]
-        );
+        return $this->minMaxPricesFactory->create([
+            'min' => $min,
+            'max' => $max,
+            'minOriginal' => $original,
+            'maxOriginal' => $originalMax,
+        ]);
     }
 
     protected function getSubProductPrices(PricingContextInterface $pricingContext, Product $subProduct): array

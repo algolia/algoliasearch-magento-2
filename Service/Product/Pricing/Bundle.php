@@ -37,16 +37,12 @@ class Bundle extends AbstractProductWithChildren
             }
         }
 
-        return $this->minMaxPricesFactory->create(
-            [
-                'data' => [
-                    MinMaxPricesInterface::MIN => $min,
-                    MinMaxPricesInterface::MAX => $max,
-                    MinMaxPricesInterface::MIN_ORIGINAL => $original,
-                    MinMaxPricesInterface::MAX_ORIGINAL => $originalMax,
-                ]
-            ]
-        );
+        return $this->minMaxPricesFactory->create([
+            'min' => $min,
+            'max' => $max,
+            'minOriginal' => $original,
+            'maxOriginal' => $originalMax,
+        ]);
     }
 
     protected function getGroupPriceList(PricingContextInterface $pricingContext, $min): array

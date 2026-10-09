@@ -96,7 +96,7 @@ abstract class AbstractProduct
                     $pricingContext->getCurrencyCode()
                 );
             }
-            if ($discountedPrice !== false) {
+            if ($discountedPrice) {
                 $priceData->setPrice(
                     $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->shouldIncludeTax()),
                     $groupId

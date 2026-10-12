@@ -210,7 +210,7 @@ class ProcessQueueCommandTest extends TestCase
         $this->assertStringContainsString('Second Store', $output->fetch());
     }
 
-    public function testExecuteUnlocksWhenRunCronThrows(): void
+    public function testExecuteUnlocksAndPropagatesNonDatabaseExceptions(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
@@ -231,6 +231,60 @@ class ProcessQueueCommandTest extends TestCase
             $this->createObjectToTest(queue: $queue, lockManager: $lockManager, storeNameFetcher: $storeNameFetcher),
             [2]
         );
+    }
+
+    public function testExecuteReturnsFailureWhenLegacyPathHitDatabaseException(): void
+    {
+        $queue = $this->createStub(Queue::class);
+        $queue->method('runCron')->willThrowException(new \Zend_Db_Exception('database unavailable'));
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand($this->createObjectToTest(queue: $queue), [], $output);
+
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+        $this->assertStringContainsString('database unavailable', $output->fetch());
+    }
+
+    public function testExecuteContinuesRemainingStoresAndReturnsFailureWhenDatabaseExceptionThrown(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+
+        $lockManager = $this->createMock(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+        // Every acquired store gets unlocked, including the one whose run failed
+        $unlockIndex = 0;
+        $lockManager->expects($this->exactly(2))
+            ->method('unlock')
+            ->willReturnCallback(function (string $name) use (&$unlockIndex) {
+                $this->assertSame(self::LOCK_PREFIX . [2, 3][$unlockIndex++], $name);
+
+                return true;
+            });
+
+        $runIndex = 0;
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->exactly(2))
+            ->method('runCron')
+            ->willReturnCallback(function ($nbJobs, $force, $storeId) use (&$runIndex) {
+                $this->assertSame([2, 3][$runIndex++], $storeId);
+
+                if ($storeId === 2) {
+                    throw new \Zend_Db_Statement_Exception('lock wait timeout exceeded');
+                }
+            });
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(queue: $queue, lockManager: $lockManager, storeNameFetcher: $storeNameFetcher),
+            [2, 3],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+        $fetch = $output->fetch();
+        $this->assertStringContainsString('Second Store', $fetch);
+        $this->assertStringContainsString('lock wait timeout exceeded', $fetch);
     }
 
     #[DataProvider('invalidStoreIdsProvider')]

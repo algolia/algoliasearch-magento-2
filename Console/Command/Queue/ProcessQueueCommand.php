@@ -13,6 +13,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Lock\LockManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Zend_Db_Exception;
 
 /**
  * Queue processing worker.
@@ -99,11 +100,14 @@ class ProcessQueueCommand extends AbstractStoreCommand
             return $this->processQueueForAllStores();
         }
 
+        $hasFailure = false;
         foreach ($storeIds as $storeId) {
-            $this->processQueueForStore($storeId, $storeNames[$storeId]);
+            if (!$this->processQueueForStore($storeId, $storeNames[$storeId])) {
+                $hasFailure = true;
+            }
         }
 
-        return Cli::RETURN_SUCCESS;
+        return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
     }
 
     /**
@@ -117,7 +121,13 @@ class ProcessQueueCommand extends AbstractStoreCommand
             return Cli::RETURN_SUCCESS;
         }
 
-        $this->queue->runCron();
+        try {
+            $this->queue->runCron();
+        } catch (Zend_Db_Exception $e) {
+            $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+
+            return Cli::RETURN_FAILURE;
+        }
 
         return Cli::RETURN_SUCCESS;
     }
@@ -125,13 +135,14 @@ class ProcessQueueCommand extends AbstractStoreCommand
     /**
      * Worker path for a single store. A held lock means another process (cron or worker)
      * is already draining that store: skip it with a warning and let the remaining stores run.
+     * A database failure is reported but does not abort the remaining stores.
      */
-    protected function processQueueForStore(int $storeId, string $storeName): void
+    protected function processQueueForStore(int $storeId, string $storeName): bool
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
 
-            return;
+            return true;
         }
 
         $lockName = $this->getStoreLockName($storeId);
@@ -142,14 +153,23 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 . ' (ID ' . $storeId . '), skipping.</comment>'
             );
 
-            return;
+            return true;
         }
 
         try {
             $this->queue->runCron(null, false, $storeId);
+        } catch (Zend_Db_Exception $e) {
+            $this->output->writeln(
+                '<error>Failed to process indexing queue for ' . $storeName . ' (ID ' . $storeId . '): '
+                . $e->getMessage() . '</error>'
+            );
+
+            return false;
         } finally {
             $this->lockManager->unlock($lockName);
         }
+
+        return true;
     }
 
     protected function getStoreLockName(int $storeId): string

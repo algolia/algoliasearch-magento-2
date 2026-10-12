@@ -14,6 +14,7 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\ObjectManagerInterface;
 use PDO;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Zend_Db_Exception;
 use Zend_Db_Expr;
 use Zend_Db_Statement_Exception;
 
@@ -128,7 +129,7 @@ class Queue
 
     /**
      *
-     * @throws Exception
+     * @throws Zend_Db_Exception
      */
     public function runCron(?int $nbJobs = null, bool $force = false, ?int $storeId = null): void
     {
@@ -247,7 +248,7 @@ class Queue
 
     /**
      *
-     * @throws Exception
+     * @throws Zend_Db_Exception
      */
     public function run(int $maxJobs, ?int $storeId = null): void
     {
@@ -264,7 +265,6 @@ class Queue
             // If there are some failed jobs for this store before move, we want to skip the move
             // as most probably not all products have prices reindexed
             // and therefore are not indexed yet in TMP index
-            // TODO: Refactor this
             if ($job->getMethod() === self::MOVE_INDEX_METHOD_NAME
                 && ($this->noOfFailedJobsByStore[$this->getFailureStoreKey($job)] ?? 0) > 0
             ) {
@@ -505,7 +505,6 @@ class Queue
      * @param int|null $storeId Nullable for correctness as jobs can conceivably be created without a store ID
      *  (e.g. legacy/third party/off-contract rows) which would claim with the default page size
      *
-     * @return int
      */
     protected function getStoreMaxBatchSize(?int $storeId = null): int
     {

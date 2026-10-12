@@ -76,7 +76,7 @@ class ProcessQueueCommandTest extends TestCase
 
     public function testExecuteProcessesSingleStoreAsWorker(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
@@ -109,7 +109,7 @@ class ProcessQueueCommandTest extends TestCase
      */
     public function testWorkerPathOnlyLocksAndRunsCron(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
 
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
@@ -139,7 +139,7 @@ class ProcessQueueCommandTest extends TestCase
 
     public function testExecuteProcessesEachStoreWithItsOwnLockInOrder(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
 
         $lockIndex = 0;
@@ -180,7 +180,7 @@ class ProcessQueueCommandTest extends TestCase
 
     public function testExecuteSkipsStoreWhenLockIsHeldAndProcessesTheRest(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
@@ -212,7 +212,7 @@ class ProcessQueueCommandTest extends TestCase
 
     public function testExecuteUnlocksWhenRunCronThrows(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
@@ -221,7 +221,7 @@ class ProcessQueueCommandTest extends TestCase
             ->method('unlock')
             ->with(self::LOCK_PREFIX . '2');
 
-        $queue = $this->createMock(Queue::class);
+        $queue = $this->createStub(Queue::class);
         $queue->method('runCron')->willThrowException(new \Exception('run failed'));
 
         $this->expectException(\Exception::class);
@@ -264,7 +264,7 @@ class ProcessQueueCommandTest extends TestCase
 
     public function testExecuteFailsOnUnknownStoreBeforeAnyWork(): void
     {
-        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')
             ->willThrowException(NoSuchEntityException::singleField('storeId', 42));
 
@@ -284,7 +284,7 @@ class ProcessQueueCommandTest extends TestCase
 
     public function testExecuteReportsMissingCredentialsPerStoreAndContinues(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
 
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);

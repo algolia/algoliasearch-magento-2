@@ -5,10 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Integration\Indexing\Queue;
 use Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
-use Algolia\AlgoliaSearch\Test\Integration\TestCase;
-use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Console\Cli;
-use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Store\Api\StoreRepositoryInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -20,11 +17,8 @@ use Symfony\Component\Console\Output\BufferedOutput;
  *
  * @magentoAppIsolation enabled
  */
-class ProcessQueueCommandTest extends TestCase
+class ProcessQueueCommandTest extends QueueTestCase
 {
-    /** @var AdapterInterface */
-    private $connection;
-
     /** @var StoreRepositoryInterface */
     private $storeRepository;
 
@@ -34,18 +28,14 @@ class ProcessQueueCommandTest extends TestCase
 
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
 
-        /** @var ResourceConnection $resource */
-        $resource = $this->objectManager->get(ResourceConnection::class);
-        $this->connection = $resource->getConnection();
-
         $this->storeRepository = $this->objectManager->get(StoreRepositoryInterface::class);
 
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
     }
 
     protected function tearDown(): void
     {
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         parent::tearDown();
     }
@@ -60,8 +50,23 @@ class ProcessQueueCommandTest extends TestCase
         $defaultStore = $this->storeRepository->get('default');
         $secondStore = $this->storeRepository->get('fixture_second_store');
 
-        $this->seedJob((int) $defaultStore->getId());
-        $this->seedJob((int) $secondStore->getId());
+        $defaultStoreId = (int) $defaultStore->getId();
+        $secondStoreId = (int) $secondStore->getId();
+
+        $this->seedJob([
+            'store_id' => $defaultStoreId,
+            'class' => IndicesConfigurator::class,
+            'method' => 'saveConfigurationToAlgolia',
+            'data' => json_encode([$defaultStoreId]),
+            'data_size' => 1,
+        ]);
+        $this->seedJob([
+            'store_id' => $secondStoreId,
+            'class' => IndicesConfigurator::class,
+            'method' => 'saveConfigurationToAlgolia',
+            'data' => json_encode([$secondStoreId]),
+            'data_size' => 1,
+        ]);
 
         [$exitCode] = $this->runCommand([(int) $defaultStore->getId()]);
 
@@ -100,37 +105,5 @@ class ProcessQueueCommandTest extends TestCase
         $exitCode = $this->invokeMethod($command, 'execute', [$input, $output]);
 
         return [$exitCode, $output];
-    }
-
-    /**
-     * Seeds one runnable job (saveConfigurationToAlgolia is a valid handler that succeeds
-     * against the real Algolia application) so a drain assertion cannot be satisfied by
-     * claiming alone - the job must actually execute to leave the queue.
-     */
-    private function seedJob(int $storeId): void
-    {
-        $this->connection->insert('algoliasearch_queue', [
-            'created' => date('Y-m-d H:i:s'),
-            'pid' => null,
-            'class' => IndicesConfigurator::class,
-            'method' => 'saveConfigurationToAlgolia',
-            'data' => json_encode([$storeId]),
-            'max_retries' => 3,
-            'retries' => 0,
-            'error_log' => '',
-            'data_size' => 1,
-            'store_id' => $storeId,
-            'is_full_reindex' => 0,
-        ]);
-    }
-
-    /**
-     * @return array<int, array{job_id: string, store_id: string, pid: ?string, locked_at: ?string}>
-     */
-    private function fetchQueueRows(): array
-    {
-        return $this->connection->query(
-            'SELECT job_id, store_id, pid, locked_at FROM algoliasearch_queue ORDER BY job_id'
-        )->fetchAll();
     }
 }

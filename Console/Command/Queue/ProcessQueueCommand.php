@@ -111,14 +111,15 @@ class ProcessQueueCommand extends AbstractStoreCommand
     }
 
     /**
-     * Sequential (no store ID) path - unchanged legacy behavior
+     * Sequential (no store ID) path - unchanged processing, but missing credentials
+     * now report failure instead of the legacy success exit
      */
     protected function processQueueForAllStores(): int
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class);
 
-            return Cli::RETURN_SUCCESS;
+            return Cli::RETURN_FAILURE;
         }
 
         try {
@@ -135,14 +136,15 @@ class ProcessQueueCommand extends AbstractStoreCommand
     /**
      * Worker path for a single store. A held lock means another process (cron or worker)
      * is already draining that store: skip it with a warning and let the remaining stores run.
-     * A database failure is reported but does not abort the remaining stores.
+     * Missing credentials and database failures report the error and count as failures;
+     * a store that fails processing does not abort the remaining stores.
      */
     protected function processQueueForStore(int $storeId, string $storeName): bool
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
 
-            return true;
+            return false;
         }
 
         $lockName = $this->getStoreLockName($storeId);

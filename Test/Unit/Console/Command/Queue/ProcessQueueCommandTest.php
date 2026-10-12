@@ -71,7 +71,7 @@ class ProcessQueueCommandTest extends TestCase
             []
         );
 
-        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
     }
 
     public function testExecuteProcessesSingleStoreAsWorker(): void
@@ -336,7 +336,7 @@ class ProcessQueueCommandTest extends TestCase
         $this->assertSame(Cli::RETURN_FAILURE, $code);
     }
 
-    public function testExecuteReportsMissingCredentialsPerStoreAndContinues(): void
+    public function testExecuteReportsMissingCredentialsPerStoreAndReturnsFailure(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
@@ -363,7 +363,43 @@ class ProcessQueueCommandTest extends TestCase
             [2]
         );
 
-        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+    }
+
+    public function testExecuteContinuesRemainingStoresWhenOneStoreMissesCredentials(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')
+            ->willReturnCallback(fn(?int $storeId) => $storeId !== 2); // fail creds on 3
+        $credentialsManager->expects($this->once())
+            ->method('displayErrorMessage')
+            ->with(ProcessQueueCommand::class, 2);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->with(null, false, 3);
+
+        // Only the store with valid credentials is locked
+        $lockManager = $this->createMock(LockManagerInterface::class);
+        $lockManager->expects($this->once())
+            ->method('lock')
+            ->with(self::LOCK_PREFIX . '3')
+            ->willReturn(true);
+        $lockManager->method('unlock')->willReturn(true);
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                credentialsManager: $credentialsManager,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher
+            ),
+            [2, 3]
+        );
+
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
     }
 
     public function testDefinitionKeepsAliasAndOptionalArrayStoreArgument(): void

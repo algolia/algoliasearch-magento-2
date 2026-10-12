@@ -50,19 +50,18 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return 'Process Algolia\'s indexing queue for specified store(s) or all stores.'
-            . ' When store ID(s) are given the command runs in worker mode:'
-            . ' it processes only those stores and never spawns other processes.';
+        return 'Process the Algolia indexing queue for specified store(s) or all stores.';
     }
 
     protected function getStoreArgumentDescription(): string
     {
-        return 'ID(s) for store(s) to process the indexing queue for (optional),'
-            . ' if not specified, the whole indexing queue is processed as a single sequential run.'
-            . ' When store ID(s) are given, the command acts as a worker: it takes a per-store lock'
-            . ' and skips any store whose queue is already being processed. Run one worker per store'
-            . ' (e.g.: <info>bin/magento algolia:queue:process 2</info>);'
-            . ' passing many store IDs to a single process reintroduces cross-store memory growth (CR-11644).';
+        return <<<'DESCRIPTION'
+            ID(s) for store(s) to process the indexing queue for (optional),
+            if not specified, the whole indexing queue is processed as a single sequential run.
+            When store ID(s) are given, the command acts as a worker: it takes a per-store lock
+            and skips any store whose queue is already being processed. Run one worker per store
+            (e.g.: <info>bin/magento algolia:queue:process 2</info>)
+            DESCRIPTION;
     }
 
     protected function getAdditionalDefinition(): array

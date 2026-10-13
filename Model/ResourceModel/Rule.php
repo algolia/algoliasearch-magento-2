@@ -10,7 +10,7 @@ class Rule extends CoreRule
      * Fetch Rules for every customer groups at once
      */
     public function getAllRulePricesFromProduct(\DateTimeInterface $date, $websiteId, $productIds)
-    {var_dump("fetch");
+    {
         $connection = $this->getConnection();
         $select = $connection->select()
             ->from($this->getTable('catalogrule_product_price'))

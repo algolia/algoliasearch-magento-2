@@ -116,6 +116,12 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
         $model = $this->objectManager->get($class);
         $data = $this->getDecodedData();
 
+        // The queue supplies the store from the store_id column, bound by parameter name
+        // ($storeId). Legacy rows without a column value keep the store inside their payload.
+        if ($this->getStoreId() !== null) {
+            $data['storeId'] = $this->getStoreId();
+        }
+
         $this->setRetries((int) $this->getRetries() + 1);
 
         call_user_func_array([$model, $method], $data);
@@ -139,7 +145,9 @@ class Job extends \Magento\Framework\Model\AbstractModel implements JobInterface
 
             $this->setDecodedData($decodedData);
 
-            if (isset($decodedData['storeId'])) {
+            // The store_id column is the source of truth; legacy rows carry the store inside
+            // the payload and only promote it when the column is empty
+            if ($this->getStoreId() === null && isset($decodedData['storeId'])) {
                 $this->setStoreId($decodedData['storeId']);
             }
         }

@@ -6,6 +6,9 @@ use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContext;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinition;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\Collection;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobCollectionFactory;
 use Exception;
@@ -62,7 +65,8 @@ class Queue
         protected JobCollectionFactory   $jobCollectionFactory,
         protected ResourceConnection     $resourceConnection,
         protected ObjectManagerInterface $objectManager,
-        protected ConsoleOutput          $output
+        protected ConsoleOutput          $output,
+        protected JobContextFactory      $jobContextFactory
     ) {
         $this->table = $resourceConnection->getTableName('algoliasearch_queue');
         $this->logTable = $resourceConnection->getTableName('algoliasearch_queue_log');
@@ -71,8 +75,47 @@ class Queue
     }
 
     /**
+     * Canonical enqueue entry point. The store is part of the job definition: it is persisted
+     * in the store_id column and injected into the handler by parameter name ($storeId) at
+     * execution time. It never enters the serialized payload.
+     *
      * @throws AlgoliaException
      */
+    public function addJob(JobDefinition $job, ?JobContext $context = null): void
+    {
+        $this->assertAuthorizedHandler($job->className, $job->method);
+
+        $context ??= $this->jobContextFactory->create();
+
+        if ($this->configHelper->isQueueActive()) {
+            $this->enqueueRow(
+                $job->className,
+                $job->method,
+                $job->data,
+                $context->dataSize,
+                $context->isFullReindex,
+                $job->storeId
+            );
+        } else {
+            $object = $this->objectManager->get($job->className);
+
+            call_user_func_array(
+                [$object, $job->method],
+                array_merge($job->data, ['storeId' => $job->storeId])
+            );
+        }
+    }
+
+    /**
+     * @deprecated Use addJob() with a JobDefinition instead. Kept as a never-throwing shell for
+     *  subclass overrides and off-contract callers: any in-payload store is extracted into the
+     *  store_id column and stripped from the payload (column is the source of truth, the two can
+     *  never disagree), writing NULL when the payload carries no store. Removal is planned for
+     *  the next major version.
+     *
+     * @throws AlgoliaException
+     */
+    #[\Deprecated]
     public function addToQueue(
         string $className,
         string $method,
@@ -80,31 +123,60 @@ class Queue
         int $dataSize = 1,
         bool $isFullReindex = false
     ): void {
-        if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
-            !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
-            throw new AlgoliaException('Unauthorized job handler');
-        }
+        $this->assertAuthorizedHandler($className, $method);
+
+        $this->logger->log(
+            'Queue::addToQueue() is deprecated, use Queue::addJob() with a JobDefinition instead.'
+        );
 
         if ($this->configHelper->isQueueActive()) {
-            $this->db->insert($this->table, [
-                'created'   => date('Y-m-d H:i:s'),
-                'class'     => $className,
-                'method'    => $method,
-                'data'      => json_encode($data),
-                'data_size' => $dataSize,
-                'pid'       => null,
-                'max_retries' => $this->configHelper->getRetryLimit(),
-                'is_full_reindex' => $isFullReindex ? 1 : 0,
-                'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled()
-                    ? (new Exception)->getTraceAsString()
-                    : null,
-                'store_id' => isset($data['storeId']) ? (int) $data['storeId'] : null,
-            ]);
+            $storeId = isset($data['storeId']) ? (int) $data['storeId'] : null;
+            unset($data['storeId']);
+
+            $this->enqueueRow($className, $method, $data, $dataSize, $isFullReindex, $storeId);
         } else {
             $object = $this->objectManager->get($className);
 
             call_user_func_array([$object, $method], $data);
         }
+    }
+
+    /**
+     * @throws AlgoliaException
+     */
+    protected function assertAuthorizedHandler(string $className, string $method): void
+    {
+        if (!isset(Job::ALLOWED_HANDLERS[$className]) ||
+            !in_array($method, Job::ALLOWED_HANDLERS[$className], true)) {
+            throw new AlgoliaException('Unauthorized job handler');
+        }
+    }
+
+    /**
+     * @param array $data Handler arguments excluding the store
+     */
+    protected function enqueueRow(
+        string $className,
+        string $method,
+        array $data,
+        int $dataSize,
+        bool $isFullReindex,
+        ?int $storeId
+    ): void {
+        $this->db->insert($this->table, [
+            'created'   => date('Y-m-d H:i:s'),
+            'class'     => $className,
+            'method'    => $method,
+            'data'      => json_encode($data),
+            'data_size' => $dataSize,
+            'pid'       => null,
+            'max_retries' => $this->configHelper->getRetryLimit(),
+            'is_full_reindex' => $isFullReindex ? 1 : 0,
+            'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled()
+                ? (new Exception)->getTraceAsString()
+                : null,
+            'store_id' => $storeId,
+        ]);
     }
 
     /**

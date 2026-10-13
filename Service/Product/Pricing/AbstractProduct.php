@@ -8,13 +8,13 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\Collection as CustomerGroupResourceCollection;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Store\Model\Store;
 
 abstract class AbstractProduct
 {
@@ -24,7 +24,8 @@ abstract class AbstractProduct
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
-        protected PriceDataFormatter $priceDataFormatter
+        protected PriceDataFormatter $priceDataFormatter,
+        protected CatalogRulesManager $catalogRulesManager
     ) {}
 
     /**
@@ -204,12 +205,13 @@ abstract class AbstractProduct
     protected function getSpecialPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
     {
         $product = $subProduct ?? $pricingContext->getProduct();
+        $catalogRules = $this->catalogRulesManager->getProductRules($pricingContext, $subProduct);
         $specialPrice = [];
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $specialPrices[$groupId] = [];
-            $specialPrices[$groupId][] = $this->pricingHelper->getRulePrice($groupId, $product);
+            $specialPrices[$groupId][] = $catalogRules[$groupId] ?? false;
             // The price with applied catalog rules
             $finalPrice = $product->getFinalPrice(); // The product's special price
             if ($pricingContext->isFptEnabled()) {
@@ -241,11 +243,6 @@ abstract class AbstractProduct
         }
 
         return $specialPrice;
-    }
-
-    protected function getRulePrice($groupId, $product, $subProducts)
-    {
-        return $this->pricingHelper->getRulePrice($groupId, $product);
     }
 
     protected function getTierPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array

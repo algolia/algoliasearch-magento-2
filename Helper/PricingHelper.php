@@ -127,21 +127,6 @@ class PricingHelper
     }
 
     /**
-     * @param $groupId
-     * @param $product
-     * @return float
-     */
-    public function getRulePrice($groupId, $product): float
-    {
-        return (float) $this->rule->getRulePrice(
-            new DateTime(),
-            $product->getStore()->getWebsiteId(),
-            $groupId,
-            $product->getId()
-        );
-    }
-
-    /**
      * @param $product
      * @return float
      */

@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
@@ -22,13 +23,15 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
-        protected PriceDataFormatter $priceDataFormatter
+        protected PriceDataFormatter $priceDataFormatter,
+        protected CatalogRulesManager $catalogRulesManager
     ) {
         parent::__construct(
             $configHelper,
             $pricingHelper,
             $logger,
-            $priceDataFormatter
+            $priceDataFormatter,
+            $catalogRulesManager
         );
     }
 

@@ -2,11 +2,11 @@
 
 namespace Algolia\AlgoliaSearch\Service\Product;
 
-use Magento\CatalogRule\Model\ResourceModel\RuleFactory;
-use Magento\CatalogRule\Observer\RulePricesStorage;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
+use Algolia\AlgoliaSearch\Model\ResourceModel\RuleFactory;
+use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\GroupManagementInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Store\Model\Store;
 
 class CatalogRulesManager
 {
@@ -17,30 +17,60 @@ class CatalogRulesManager
         protected TimezoneInterface $localeDate
     ){}
 
-    public function getProductRules(Store $store, array $productIds = [], ?int $groupId = null): array
+    public function getProductRules(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
     {
-        if (empty($productIds)) {
-            return [];
+        $websiteId = $pricingContext->getStore()->getWebsiteId();
+        $date = (new \DateTime())->setTimestamp($this->localeDate->scopeTimeStamp($pricingContext->getStore()));
+        // Fetch all rules for the product and its subproducts all at once
+        $products = array_merge([$pricingContext->getProduct()], $pricingContext->getSubProducts());
+
+        $rulesToFetch = [];
+        foreach ($products as $product) {
+            $key = $this->getStorageKey($product->getId(), $websiteId);
+            if (!$this->rulePricesStorage->hasRulePrice($key)) {
+                $rulesToFetch[] = $product->getId();
+            }
         }
 
-        $websiteId = $store->getWebsiteId();
-        $groupId = $groupId ?? $this->groupManagement->getNotLoggedInGroup()->getId();
-        $date = (new \DateTime())->setTimestamp($this->localeDate->scopeTimeStamp($store));
+        if (!empty($rulesToFetch)) {
+            $this->setRulesInStorage($rulesToFetch, $date, $websiteId);
+        }
 
-        // @todo add cache logic
+        return $this->getRulesFromStorage(
+            $pricingContext,
+            $subProduct ? $subProduct->getId() : $pricingContext->getProduct()->getId()
+        );
+    }
 
-        $rulePrices = $this->resourceRuleFactory->create()->getRulePrices(
+    public function getStorageKey(int $productId, int $websiteId): string
+    {
+        return implode('|', [$productId, $websiteId]);
+    }
+
+    protected function getRulesFromStorage(PricingContextInterface $pricingContext, int $productId): array
+    {
+        $key = $this->getStorageKey($productId, $pricingContext->getStore()->getWebsiteId());
+
+        return $this->rulePricesStorage->getRulePrice($key);
+    }
+
+    protected function setRulesInStorage(array $productIds, \DateTime $date, int $websiteId): void
+    {
+        $rulePrices = $this->resourceRuleFactory->create()->getAllRulePricesFromProduct(
             $date,
             $websiteId,
-            $groupId,
             $productIds
         );
 
-        foreach ($productIds as $productId) {
-            $key = implode('|', [$date->format('Y-m-d H:i:s'), $websiteId, $groupId, $productId]);
-            $this->rulePricesStorage->setRulePrice($key, $rulePrices[$productId] ?? false);
+        $prices = [];
+        foreach ($rulePrices as $rulePrice) {
+            $key = $this->getStorageKey($rulePrice['product_id'], $websiteId);
+            $prices[$key][$rulePrice['customer_group_id']] = (float) $rulePrice['rule_price'];
         }
 
-        return $rulePrices;
+        foreach ($productIds as $productId) {
+            $key = $this->getStorageKey($productId, $websiteId);
+            $this->rulePricesStorage->setRulePrice($key, $prices ?? false);
+        }
     }
 }

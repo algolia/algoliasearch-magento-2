@@ -12,21 +12,15 @@ use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Job\CollectionFactory as JobsCollectionFactory;
 use Algolia\AlgoliaSearch\Service\Product\BatchQueueProcessor as ProductBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Adapter\AdapterInterface;
 
 /**
  * @magentoDbIsolation disabled
  *
  * @magentoAppIsolation enabled
  */
-class QueueTest extends TestCase
+class QueueTest extends QueueTestCase
 {
-    /** @var JobsCollectionFactory */
-    private $jobsCollectionFactory;
-
-    /** @var AdapterInterface */
-    private $connection;
+    private JobsCollectionFactory $jobsCollectionFactory;
 
     /** @var Queue */
     private $queue;
@@ -36,10 +30,6 @@ class QueueTest extends TestCase
         parent::setUp();
 
         $this->jobsCollectionFactory = $this->objectManager->create(JobsCollectionFactory::class);
-
-        /** @var ResourceConnection $resource */
-        $resource = $this->objectManager->get(ResourceConnection::class);
-        $this->connection = $resource->getConnection();
 
         $this->queue = $this->objectManager->create(Queue::class);
     }
@@ -52,7 +42,7 @@ class QueueTest extends TestCase
         ]);
 
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $storeId = 1;
 
@@ -92,7 +82,7 @@ class QueueTest extends TestCase
     public function testExecute()
     {
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
         $productBatchQueueProcessor->processBatch(1);
@@ -155,7 +145,7 @@ class QueueTest extends TestCase
     public function testExecuteWithWrongJobClass()
     {
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $data = [
             [
@@ -185,7 +175,7 @@ class QueueTest extends TestCase
     public function testExecuteWithWrongJobMethod()
     {
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $data = [
             [
@@ -217,7 +207,7 @@ class QueueTest extends TestCase
         $this->setConfig(QueueHelper::IS_ACTIVE, '1');
         // Setting "Use a temporary index for full products reindex" configuration to "No"
         $this->setConfig(QueueHelper::USE_TMP_INDEX, '0');
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
         $productBatchQueueProcessor->processBatch(1);
@@ -543,7 +533,7 @@ class QueueTest extends TestCase
 
     public function testMergingWithStaticMethods()
     {
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $data = [
             [
@@ -693,7 +683,7 @@ class QueueTest extends TestCase
 
     public function testGetJobs()
     {
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $data = [
             [
@@ -914,7 +904,7 @@ class QueueTest extends TestCase
         $productIds = range(1, 5000);
         $jsonProductIds = json_encode($productIds);
 
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
         $this->connection->query('INSERT INTO `algoliasearch_queue` (`job_id`, `pid`, `class`, `method`, `data`, `max_retries`, `retries`, `error_log`, `data_size`) VALUES
             (1, NULL, \'class\', \'buildIndexList\', \'{"storeId":"1","entityIds":' . $jsonProductIds . '}\', 3, 0, \'\', 5000),
             (2, NULL, \'class\', \'buildIndexList\', \'{"storeId":"2","entityIds":["9","22"]}\', 3, 0, \'\', 2);');
@@ -952,7 +942,7 @@ class QueueTest extends TestCase
         $productIds = range(1, 99);
         $jsonProductIds = json_encode($productIds);
 
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
         $this->connection->query('INSERT INTO `algoliasearch_queue` (`job_id`, `pid`, `class`, `method`, `data`, `max_retries`, `retries`, `error_log`, `data_size`) VALUES
             (1, NULL, \'class\', \'buildIndexList\', \'{"storeId":"1","entityIds":' . $jsonProductIds . '}\', 3, 0, \'\', 99),
             (2, NULL, \'class\', \'buildIndexList\', \'{"storeId":"2","entityIds":["9","22"]}\', 3, 0, \'\', 2);');
@@ -996,7 +986,7 @@ class QueueTest extends TestCase
         $this->setConfig(QueueHelper::NUMBER_OF_JOB_TO_RUN, 10);
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 100);
 
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $productBatchQueueProcessor = $this->objectManager->get(ProductBatchQueueProcessor::class);
         $productBatchQueueProcessor->processBatch(1, range(1, 512));
@@ -1010,51 +1000,6 @@ class QueueTest extends TestCase
         $this->assertEquals(100, (int) $firstJob['data_size']);
 
         $this->assertEquals($this->assertValues->lastJobDataSize, (int) $lastJob['data_size']);
-    }
-
-    /**
-     * Seeds a test job into the queue.
-     *
-     * The store_id column is always written explicitly (not only inside the payload JSON):
-     * MAGE-1742 will make the column the source of truth for claiming, so the claim tests
-     * must not depend on the payload fallback in Job::prepare().
-     *
-     * @param array $overrides column values on top of a valid buildIndexList job; pass
-     *                         'store_id' => null for a legacy store-agnostic row
-     */
-    private function seedJob(array $overrides = []): void
-    {
-        $storeId = array_key_exists('store_id', $overrides) ? $overrides['store_id'] : 1;
-
-        $row = array_merge([
-            'created' => '2017-09-01 12:00:00',
-            'pid' => null,
-            'class' => \Algolia\AlgoliaSearch\Service\Category\IndexBuilder::class,
-            'method' => 'buildIndexList',
-            'data' => json_encode(['storeId' => (string) $storeId, 'entityIds' => ['9', '22']]),
-            'max_retries' => 3,
-            'retries' => 0,
-            'error_log' => '',
-            'data_size' => 2,
-            'store_id' => $storeId,
-            'is_full_reindex' => 0,
-        ], $overrides);
-
-        $this->connection->insert('algoliasearch_queue', $row);
-    }
-
-    /**
-     * Raw queue rows as the DB stores them, ordered by insertion. Used to assert on the
-     * claim side effects (pid and locked_at stamping) rather than on in-memory job objects,
-     * which mirror the same values.
-     *
-     * @return array<int, array{job_id: string, store_id: ?string, pid: ?string, locked_at: ?string}>
-     */
-    private function fetchQueueRows(): array
-    {
-        return $this->connection->query(
-            'SELECT job_id, store_id, pid, locked_at FROM algoliasearch_queue ORDER BY job_id'
-        )->fetchAll();
     }
 
     /**
@@ -1083,7 +1028,7 @@ class QueueTest extends TestCase
      */
     public function testGetStoreIdsWithPendingJobsReturnsOnlyClaimableStores()
     {
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
 
         $this->seedJob(['store_id' => 1]);
         $this->seedJob(['store_id' => 2]);
@@ -1106,7 +1051,7 @@ class QueueTest extends TestCase
      */
     public function testStoreScopedClaimOnlyClaimsItsOwnStoreRows()
     {
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 
         $this->seedJob(['store_id' => 1, 'data_size' => 1, 'data' => '{"storeId":"1","entityIds":["9"]}']);
@@ -1139,13 +1084,13 @@ class QueueTest extends TestCase
     /**
      * Sequential equivalent of two workers racing: getJobs() stamps pid inside the claim
      * transaction, so once a claim commits its rows are invisible to every later claim
-     * (pid IS NULL filter), regardless of which Queue instance issues it. 
-     * maxJobs=1 yields one job per claim, and because the rows cannot merge, 
+     * (pid IS NULL filter), regardless of which Queue instance issues it.
+     * maxJobs=1 yields one job per claim, and because the rows cannot merge,
      * four claims drain the four seeded rows exactly once.
      */
     public function testScopedClaimsAreDisjointAcrossInstancesAndDrainPerStore()
     {
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 
         // 200 entityIds per row: two rows would exceed the 300 batch size, so they never merge
@@ -1207,7 +1152,7 @@ class QueueTest extends TestCase
      */
     public function testUnfilteredClaimStillSpansStores()
     {
-        $this->connection->query('TRUNCATE TABLE algoliasearch_queue');
+        $this->clearQueueTable();
         $this->setConfig(ConfigHelper::NUMBER_OF_ELEMENT_BY_PAGE, 300);
 
         $this->seedJob(['store_id' => 1]);

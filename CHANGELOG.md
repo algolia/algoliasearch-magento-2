@@ -6,6 +6,8 @@
 - Changed the signature of the `protected` methods `Queue::getJobs()` and `Queue::fetchJobs()` to accept a trailing optional `?int $storeId` parameter. A third-party class extending `Queue` and overriding either method with the old signature will now fatal under PHP's signature-compatibility rule. `Queue` is not marked `@api`, no subclass or DI preference ships with the extension, and both methods keep accepting their previous argument lists unchanged, so the risk for standard integrations is nil.
 - Replaced the `protected` property `Queue::$noOfFailedJobs` (int counter) with the per-store failure map `Queue::$noOfFailedJobsByStore` (`array<int, int>`, keyed by store ID, with jobs without a store tracked under `Queue::NO_STORE`). A third-party class extending `Queue` and reading or writing the old property will no longer find it. `Queue` is not marked `@api`, no subclass or DI preference ships with the extension, and nothing outside `Queue` referenced the counter, so the risk for standard integrations is nil.
 - Changed the signature of the `protected` method `Queue::getStoreMaxBatchSize()` from a required `int $storeId` to a nullable trailing optional `?int $storeId = null`. An overriding method keeping the old signature will now fatal under PHP's signature-compatibility rule; the previous call pattern remains valid.
+- Changed the constructor of `ProcessQueueCommand` (new `StoreNameFetcher` and `LockManagerInterface` dependencies). Only code instantiating the command directly is affected; DI-registered usage is unaffected.
+- The no-argument run of `algolia:queue:process` now exits with code 1 when Algolia credentials are missing, instead of the legacy 0. Processing is unchanged; scripts and cron monitors that relied on the silent 0 will now see a failure.
 
 ### Features
 - Added store-aware job claiming to the queue, groundwork for store-partitioned indexing where one worker process runs per store view.
@@ -14,6 +16,7 @@
     - Failed-job cleanup (`clearOldFailingJobs()`) is scoped to the same store when one is given, preventing two workers from archiving the same failed rows twice. Unfiltered cleanup is unchanged.
     - Store-scoped workers never claim `store_id IS NULL` rows; sequential (unfiltered) processing still drains them, so legacy and off-contract rows keep being processed.
     - There is no behavior change when no store ID is passed: unfiltered calls claim and process exactly as before.
+- Added worker mode to `algolia:queue:process`: passing store ID(s) processes only those stores' jobs under a non-blocking per-store lock, so cron and one worker per store view can run concurrently without double-processing. A store already being drained is skipped, and a failure on one store does not abort the remaining stores. This is the groundwork for store-partitioned parallel indexing. The no-argument sequential run and the `algolia:reindex:process_queue` alias are unchanged.
 
 ### Updates
 - Added an indexed `store_id` column to the `algoliasearch_queue` table.

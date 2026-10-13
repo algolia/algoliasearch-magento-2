@@ -246,6 +246,23 @@ backfill could not resolve or off-contract third-party `addToQueue()` calls. Pol
 store-scoped workers never claim NULL rows; sequential mode (no store filter) still drains
 them. MAGE-1742 (typed job definitions) removes the NULL source at the enqueue site.
 
+### Worker Mode
+
+`algolia:queue:process` is the CLI counterpart of store-scoped claiming. Run with store ID(s),
+it acts as a per-store worker: it claims only those stores' jobs under a non-blocking per-store
+lock, so the cron job and any number of workers can run concurrently without double-processing.
+This is the operating mode the parallel indexing orchestrator (MAGE-1731) drives - one worker
+process per store view.
+
+Two invariants hold by convention:
+
+- **Workers never spawn.** Parallelism comes from running one worker per store, never from a
+  worker starting another process. The orchestrator must always pass a store ID; this is the
+  structural recursion guard.
+- **Failure isolation.** One store's failure does not abort the other stores' workers.
+
+Without store IDs the command remains the legacy sequential run over the whole queue.
+
 ## Index Architecture
 
 ### Multi-Store Scoping

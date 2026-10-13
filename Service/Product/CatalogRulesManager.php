@@ -42,7 +42,7 @@ class CatalogRulesManager
         );
     }
 
-    public function getStorageKey(int $productId, int $websiteId): string
+    protected function getStorageKey(int $productId, int $websiteId): string
     {
         return implode('|', [$productId, $websiteId]);
     }

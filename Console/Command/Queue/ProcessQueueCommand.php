@@ -25,7 +25,7 @@ use Zend_Db_Exception;
  */
 class ProcessQueueCommand extends AbstractStoreCommand
 {
-    protected const LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
+    protected const string LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
 
     public function __construct(
         protected State                     $state,
@@ -77,9 +77,6 @@ class ProcessQueueCommand extends AbstractStoreCommand
         $this->setAliases(['algolia:reindex:process_queue']);
     }
 
-    /**
-     * @throws LocalizedException
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->input = $input;

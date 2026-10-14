@@ -9,7 +9,6 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\DB\Adapter\AdapterInterface;
-use Magento\Framework\DB\Select;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -198,9 +197,9 @@ class ClearQueueCommandTest extends TestCase
         $this->assertStringContainsString("Failed to clear indexing queue for Default Store: $errorMsg", $output->fetch());
     }
 
-    public function testClearQueueForStoreJsonPathDeletesJobs(): void
+    public function testClearQueueForStoreDeletesJobsByStoreIdColumn(): void
     {
-        $adapter = $this->createMockSearchAdapter();
+        $adapter = $this->createMock(AdapterInterface::class);
         $output = new BufferedOutput();
 
         $jobResourceModel = $this->createStub(JobResourceModel::class);
@@ -210,10 +209,9 @@ class ClearQueueCommandTest extends TestCase
         $cmd = $this->createObjectToTest(jobResourceModel: $jobResourceModel);
         $this->setPrivateProperty($cmd, 'output', $output);
 
-        $adapter->expects($this->once())->method('fetchCol')->willReturn([10, 11]);
         $adapter->expects($this->once())
             ->method('delete')
-            ->with('algoliasearch_queue', ['job_id IN (?)' => [10, 11]])
+            ->with('algoliasearch_queue', ['store_id = ?' => 5])
             ->willReturn(2);
 
         $this->invokeMethod($cmd, 'clearQueueForStore', [5]);
@@ -221,10 +219,10 @@ class ClearQueueCommandTest extends TestCase
         $this->assertStringContainsString('Deleted 2 jobs for store ID 5', $output->fetch());
     }
 
-    public function testClearQueueForStoreJsonPathNoJobs(): void
+    public function testClearQueueForStoreNoJobs(): void
     {
-        $adapter = $this->createStubSearchAdapter();
-        $adapter->method('fetchCol')->willReturn([]);
+        $adapter = $this->createStub(AdapterInterface::class);
+        $adapter->method('delete')->willReturn(0);
 
         $output = new BufferedOutput();
 
@@ -240,89 +238,6 @@ class ClearQueueCommandTest extends TestCase
         $this->assertStringContainsString('No jobs found for store ID 5', $output->fetch());
     }
 
-    public function testClearQueueForStoreFallsBackWhenJsonThrows(): void
-    {
-        $adapter = $this->createStub(AdapterInterface::class);
-        $adapter->method('select')->willThrowException(new \Exception('No JSON support'));
-
-        $jobResourceModel = $this->createStub(JobResourceModel::class);
-        $jobResourceModel->method('getConnection')->willReturn($adapter);
-
-        $cmd = $this->createPartialObjectToTest(['clearQueueTableForStoreFallback'], jobResourceModel: $jobResourceModel);
-        $output = new BufferedOutput();
-        $this->setPrivateProperty($cmd, 'output', $output);
-
-        $cmd->expects($this->once())->method('clearQueueTableForStoreFallback')->with(5);
-
-        $this->invokeMethod($cmd, 'clearQueueForStore', [5]);
-
-        $this->assertStringContainsString('JSON filtering not supported', $output->fetch());
-    }
-
-    public function testClearQueueForStoreFallbackDeletesMatching(): void
-    {
-        $adapter = $this->createMockSearchAdapter();
-        $output = new BufferedOutput();
-
-        $jobResourceModel = $this->createStub(JobResourceModel::class);
-        $jobResourceModel->method('getConnection')->willReturn($adapter);
-        $jobResourceModel->method('getMainTable')->willReturn('algoliasearch_queue');
-
-        $cmd = $this->createObjectToTest(jobResourceModel: $jobResourceModel);
-        $this->setPrivateProperty($cmd, 'output', $output);
-
-        $adapter->method('fetchAll')->willReturn([
-            ['job_id' => 1, 'data' => '{"storeId":5,"foo":1}'],
-            ['job_id' => 2, 'data' => '{"storeId":7}'],
-            ['job_id' => 3, 'data' => '{"storeId":5}'],
-        ]);
-
-        $adapter->expects($this->once())
-            ->method('delete')
-            ->with('algoliasearch_queue', ['job_id IN (?)' => [1, 3]])
-            ->willReturn(2);
-
-        $this->invokeMethod($cmd, 'clearQueueTableForStoreFallback', [5]);
-
-        $this->assertStringContainsString('Deleted 2 jobs for store ID 5 (fallback method)', $output->fetch());
-    }
-
-    public function testClearQueueForStoreFallbackNoMatch(): void
-    {
-        $adapter = $this->createStubSearchAdapter();
-        $adapter->method('fetchAll')->willReturn([
-            ['job_id' => 1, 'data' => '{"storeId":8}'],
-        ]);
-
-        $output = new BufferedOutput();
-
-        $jobResourceModel = $this->createStub(JobResourceModel::class);
-        $jobResourceModel->method('getConnection')->willReturn($adapter);
-
-        $cmd = $this->createObjectToTest(jobResourceModel: $jobResourceModel);
-        $this->setPrivateProperty($cmd, 'output', $output);
-
-        $this->invokeMethod($cmd, 'clearQueueTableForStoreFallback', [5]);
-
-        $this->assertStringContainsString('No jobs found for store ID 5 (fallback method)', $output->fetch());
-    }
-
-    public function testClearQueueForStoreFallbackThrowsWrapped(): void
-    {
-        $adapter = $this->createStubSearchAdapter();
-        $adapter->method('fetchAll')->willThrowException(new \Exception('db fail'));
-
-        $jobResourceModel = $this->createStub(JobResourceModel::class);
-        $jobResourceModel->method('getConnection')->willReturn($adapter);
-
-        $cmd = $this->createObjectToTest(jobResourceModel: $jobResourceModel);
-
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Failed to clear queue for store 5: db fail');
-
-        $this->invokeMethod($cmd, 'clearQueueTableForStoreFallback', [5]);
-    }
-
     public function testMetadataStrings(): void
     {
         $cmd = $this->createObjectToTest();
@@ -330,29 +245,5 @@ class ClearQueueCommandTest extends TestCase
         $this->assertStringContainsString('queue:', $this->invokeMethod($cmd, 'getCommandPrefix'));
         $this->assertStringContainsString('Clear the indexing queue', $this->invokeMethod($cmd, 'getCommandDescription'));
         $this->assertStringContainsString('algolia:queue:clear', $this->invokeMethod($cmd, 'getStoreArgumentDescription'));
-    }
-
-    private function createStubSearchAdapter(): AdapterInterface
-    {
-        $select = $this->createStub(Select::class);
-        $select->method('from')->willReturnSelf();
-        $select->method('where')->willReturnSelf();
-
-        $adapter = $this->createStub(AdapterInterface::class);
-        $adapter->method('select')->willReturn($select);
-
-        return $adapter;
-    }
-
-    private function createMockSearchAdapter(): AdapterInterface&MockObject
-    {
-        $select = $this->createStub(Select::class);
-        $select->method('from')->willReturnSelf();
-        $select->method('where')->willReturnSelf();
-
-        $adapter = $this->createMock(AdapterInterface::class);
-        $adapter->method('select')->willReturn($select);
-
-        return $adapter;
     }
 }

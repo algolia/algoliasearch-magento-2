@@ -144,91 +144,25 @@ class ClearQueueCommand extends AbstractStoreCommand
     }
 
     /**
-     * Clear the queue for a specific store (2 different approaches)
-     * Filters jobs by store_id in the JSON data field and deletes them
-     *
-     * @throws \Exception
+     * Clear the queue for a specific store
+     * Deletes jobs scoped by the store_id column
      */
     protected function clearQueueTableForStore(int $storeId): void
     {
-        try {
-            // Use JSON_EXTRACT to filter by store_id in the data field
-            // This assumes MySQL 5.7+ or MariaDB 10.2+ for JSON support
-            $connection = $this->jobResourceModel->getConnection();
-            $mainTable = $this->jobResourceModel->getMainTable();
+        $connection = $this->jobResourceModel->getConnection();
+        $mainTable = $this->jobResourceModel->getMainTable();
 
-            $select = $connection->select()
-                ->from($mainTable, ['job_id'])
-                ->where('JSON_EXTRACT(data, "$.storeId") = ?', $storeId);
+        $deletedCount = $connection->delete(
+            $mainTable,
+            ['store_id = ?' => $storeId]
+        );
 
-            $jobIds = $connection->fetchCol($select);
+        if ($deletedCount === 0) {
+            $this->output->writeln('<comment>No jobs found for store ID ' . $storeId . '</comment>');
 
-            if (empty($jobIds)) {
-                $this->output->writeln('<comment>No jobs found for store ID ' . $storeId . '</comment>');
-
-                return;
-            }
-
-            // Delete the filtered jobs
-            $deletedCount = $connection->delete(
-                $mainTable,
-                ['job_id IN (?)' => $jobIds]
-            );
-
-            $this->output->writeln('<info>Deleted ' . $deletedCount . ' jobs for store ID ' . $storeId . '</info>');
-
-        } catch (\Exception $e) {
-            // Fallback method if JSON_EXTRACT is not supported
-            $this->output->writeln('<comment>JSON filtering not supported by database, using fallback method...</comment>');
-            $this->clearQueueTableForStoreFallback($storeId);
+            return;
         }
-    }
 
-    /**
-     * Fallback method for clearing queue by store when JSON filtering is not supported
-     * Loads all jobs and filters them in PHP
-     *
-     * @throws \Exception
-     */
-    protected function clearQueueTableForStoreFallback(int $storeId): void
-    {
-        try {
-            $connection = $this->jobResourceModel->getConnection();
-            $mainTable = $this->jobResourceModel->getMainTable();
-
-            // Get all jobs and filter by store_id in PHP
-            $select = $connection->select()
-                ->from($mainTable, ['job_id', 'data'])
-                ->where('data IS NOT NULL');
-
-            $jobs = $connection->fetchAll($select);
-            $jobsToDelete = [];
-
-            foreach ($jobs as $job) {
-                $data = json_decode($job['data'], true);
-                if (isset($data['storeId']) && $data['storeId'] == $storeId) {
-                    $jobsToDelete[] = $job['job_id'];
-                }
-            }
-
-            if (empty($jobsToDelete)) {
-                $this->output->writeln('<comment>No jobs found for store ID ' . $storeId . ' (fallback method)</comment>');
-
-                return;
-            }
-
-            // Delete the filtered jobs
-            $deletedCount = $connection->delete(
-                $mainTable,
-                ['job_id IN (?)' => $jobsToDelete]
-            );
-
-            $this->output->writeln('<info>Deleted ' . $deletedCount . ' jobs for store ID ' . $storeId . ' (fallback method)</info>');
-
-        } catch (\Exception $e) {
-            // Safe: $storeId is cast to int, exception messages are internal.
-            // phpcs:ignore
-            throw new \Exception(sprintf('Failed to clear queue for store %d: %s', $storeId, $e->getMessage()));
-        }
+        $this->output->writeln('<info>Deleted ' . $deletedCount . ' jobs for store ID ' . $storeId . '</info>');
     }
 }

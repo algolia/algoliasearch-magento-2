@@ -6,6 +6,8 @@ use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\PageHelper;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinitionFactory;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
@@ -22,7 +24,9 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         protected PageHelper $pageHelper,
         protected IndexSettingsComparator $indexSettingsComparator,
         protected IndexOptionsBuilder $indexOptionsBuilder,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected JobDefinitionFactory $jobDefinitionFactory,
+        protected JobContextFactory $jobContextFactory
     ){}
 
     /**
@@ -45,30 +49,35 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
 
         if (!$this->indexSettingsComparator->matches($indexOptions, $pageSettings)) {
             /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
-            $this->queue->addToQueue(
-                IndicesConfigurator::class,
-                'saveConfigurationToAlgolia',
-                [
-                    'storeId' => $storeId,
-                    'useTmpIndex' => (!$entityIds),
-                    'filteredEntities' => ['pages']
-                ]
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => IndicesConfigurator::class,
+                    'method'    => 'saveConfigurationToAlgolia',
+                    'storeId'   => $storeId,
+                    'data'      => [
+                        'useTmpIndex' => (!$entityIds),
+                        'filteredEntities' => ['pages'],
+                    ],
+                ])
             );
         }
 
 
         if ($this->isPagesInAdditionalSections($storeId)) {
-            $data = ['storeId' => $storeId];
+            $data = [];
             if (is_array($entityIds) && count($entityIds) > 0) {
                 $data['options'] = ['entityIds' => $entityIds];
             }
 
             /** @uses PageIndexBuilder::buildIndexFull() */
-            $this->queue->addToQueue(
-                PageIndexBuilder::class,
-                'buildIndexFull',
-                $data,
-                is_array($entityIds) ? count($entityIds) : 1
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => PageIndexBuilder::class,
+                    'method'    => 'buildIndexFull',
+                    'storeId'   => $storeId,
+                    'data'      => $data,
+                ]),
+                $this->jobContextFactory->create(['dataSize' => is_array($entityIds) ? count($entityIds) : 1])
             );
         }
     }

@@ -5,6 +5,8 @@ namespace Algolia\AlgoliaSearch\Service\Suggestion;
 use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\SuggestionHelper;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinitionFactory;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
@@ -19,7 +21,9 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         protected SuggestionHelper $suggestionHelper,
         protected IndexSettingsComparator $indexSettingsComparator,
         protected IndexOptionsBuilder $indexOptionsBuilder,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected JobDefinitionFactory $jobDefinitionFactory,
+        protected JobContextFactory $jobContextFactory
     ){}
 
     public function processBatch(int $storeId, ?array $entityIds = null): void
@@ -39,23 +43,26 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
 
         if (!$this->indexSettingsComparator->matches($indexOptions, $suggestionSettings)) {
             /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
-            $this->queue->addToQueue(
-                IndicesConfigurator::class,
-                'saveConfigurationToAlgolia',
-                [
-                    'storeId' => $storeId,
-                    'useTmpIndex' => true,
-                    'filteredEntities' => ['suggestions']
-                ]
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => IndicesConfigurator::class,
+                    'method'    => 'saveConfigurationToAlgolia',
+                    'storeId'   => $storeId,
+                    'data'      => [
+                        'useTmpIndex' => true,
+                        'filteredEntities' => ['suggestions'],
+                    ],
+                ])
             );
         }
 
         /** @uses SuggestionIndexBuilder::buildIndexFull() */
-        $this->queue->addToQueue(
-            SuggestionIndexBuilder::class,
-            'buildIndexFull',
-            ['storeId' => $storeId],
-            1
+        $this->queue->addJob(
+            $this->jobDefinitionFactory->create([
+                'className' => SuggestionIndexBuilder::class,
+                'method'    => 'buildIndexFull',
+                'storeId'   => $storeId,
+            ])
         );
     }
 }

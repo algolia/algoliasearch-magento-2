@@ -6,6 +6,8 @@ use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinitionFactory;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
@@ -23,7 +25,9 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         protected CategoryHelper            $categoryHelper,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
         protected IndexOptionsBuilder       $indexOptionsBuilder,
-        protected IndexSettingsComparator   $indexSettingsComparator
+        protected IndexSettingsComparator   $indexSettingsComparator,
+        protected JobDefinitionFactory      $jobDefinitionFactory,
+        protected JobContextFactory         $jobContextFactory
     ){}
 
     /**
@@ -56,14 +60,14 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
     {
         foreach (array_chunk($categoryIds, $categoriesPerPage) as $chunk) {
             /** @uses CategoryIndexBuilder::buildIndexList */
-            $this->queue->addToQueue(
-                CategoryIndexBuilder::class,
-                'buildIndexList',
-                [
-                    'storeId' => $storeId,
-                    'entityIds' => $chunk,
-                ],
-                count($chunk)
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => CategoryIndexBuilder::class,
+                    'method'    => 'buildIndexList',
+                    'storeId'   => $storeId,
+                    'data'      => ['entityIds' => $chunk],
+                ]),
+                $this->jobContextFactory->create(['dataSize' => count($chunk)])
             );
         }
     }
@@ -80,14 +84,16 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
 
         if (!$this->indexSettingsComparator->matches($indexOptions, $categoriesSettings)) {
             /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
-            $this->queue->addToQueue(
-                IndicesConfigurator::class,
-                'saveConfigurationToAlgolia',
-                [
-                    'storeId' => $storeId,
-                    'useTmpIndex' => false,
-                    'filteredEntities' => ['categories']
-                ]
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => IndicesConfigurator::class,
+                    'method'    => 'saveConfigurationToAlgolia',
+                    'storeId'   => $storeId,
+                    'data'      => [
+                        'useTmpIndex' => false,
+                        'filteredEntities' => ['categories'],
+                    ],
+                ])
             );
         }
 
@@ -97,21 +103,20 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         $pages = ceil($size / $categoriesPerPage);
 
         for ($i = 1; $i <= $pages; $i++) {
-            $data = [
-                'storeId' => $storeId,
-                'options' => [
-                    'page' => $i,
-                    'pageSize' => $categoriesPerPage,
-                ],
-            ];
-
             /** @uses CategoryIndexBuilder::buildIndexFull() */
-            $this->queue->addToQueue(
-                CategoryIndexBuilder::class,
-                'buildIndexFull',
-                $data,
-                $categoriesPerPage,
-                true
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => CategoryIndexBuilder::class,
+                    'method'    => 'buildIndexFull',
+                    'storeId'   => $storeId,
+                    'data'      => [
+                        'options' => [
+                            'page'     => $i,
+                            'pageSize' => $categoriesPerPage,
+                        ],
+                    ],
+                ]),
+                $this->jobContextFactory->create(['dataSize' => $categoriesPerPage, 'isFullReindex' => true])
             );
         }
     }

@@ -239,12 +239,31 @@ global (time-based and idempotent).
 It excludes locked rows, rows that exhausted their retries, and NULL-store rows. The caller
 must run `unlockStackedJobs()` first so stale locks do not hide pending work.
 
-**Store-agnostic (NULL store_id) rows.** Every in-tree enqueue path goes through
-`Queue::addToQueue()`, and all in-tree callers (the `Service/*/BatchQueueProcessor`
-classes) pass `storeId` in the job data. NULL rows can only come from legacy rows the
-backfill could not resolve or off-contract third-party `addToQueue()` calls. Policy:
-store-scoped workers never claim NULL rows; sequential mode (no store filter) still drains
-them. MAGE-1742 (typed job definitions) removes the NULL source at the enqueue site.
+**Enqueue contract.** The canonical enqueue entry point is
+`Queue::addJob(JobDefinition, ?JobContext)` with the DTOs in `Model/Data/Queue/`.
+`JobDefinition::$storeId` is non-nullable and is the job's single source of truth: it is
+persisted in the `store_id` column and injected into the handler by parameter name
+(`$storeId`) at execution time. It never enters the serialized payload, so new rows carry
+storeless payloads and adjacent-job merging (same class, method and store only) cannot
+cross store boundaries.
+
+**Handler execution convention.** Jobs execute via `call_user_func_array([$model, $method], $data)`,
+so payload keys bind to handler parameters by name. The queue bolts the claimed row's
+`store_id` column onto the data as `storeId` before invocation. Every whitelisted handler
+must name its store parameter `$storeId` and receive it from the queue.
+
+**Deprecated `addToQueue()`.** Kept as a never-throwing shell for subclass overrides and
+off-contract callers (this method will be removed in a future version). When the queue is
+active it extracts any in-payload store into the `store_id` column and strips the key (the
+two can never disagree), writing NULL when the payload carries no store; its use is logged
+to `algolia.log`.
+
+**Store-agnostic (NULL store_id) rows.** With `addJob()` canonical and `addToQueue()`
+stripping the payload store, NULL rows can only come from third-party `addToQueue()` calls
+with storeless payloads. Policy: store-scoped workers never claim NULL rows; sequential
+mode (no store filter) still drains them. Legacy rows that carry their store inside the
+payload keep draining: `Job::prepare()` promotes the payload store to the job only when
+the column is NULL, and the column wins whenever it is populated.
 
 ### Worker Mode
 
@@ -442,7 +461,10 @@ reworked in a future release.
 
 **Adding queue handlers:**
 Register the class and method in `Job::ALLOWED_HANDLERS` or the job will be silently
-rejected at execution time.
+rejected at execution time. The handler's store parameter must be named `$storeId`: the
+queue supplies it by name from the job's `store_id` column, never as part of the enqueued
+payload. Enqueue through `Queue::addJob()` with a `JobDefinition`, not the deprecated
+`addToQueue()`.
 
 ### Anti-patterns to avoid
 

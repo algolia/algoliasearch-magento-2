@@ -9,6 +9,10 @@ use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\Cache\Product\IndexCollectionSize;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContext;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinition;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinitionFactory;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
@@ -31,6 +35,8 @@ class BatchQueueProcessorTest extends TestCase
         ?Queue $queue = null,
         ?AlgoliaCredentialsManager $algoliaCredentialsManager = null,
         ?IndexCollectionSize $indexCollectionSizeCache = null,
+        ?JobDefinitionFactory $jobDefinitionFactory = null,
+        ?JobContextFactory $jobContextFactory = null,
     ): BatchQueueProcessor {
         return new BatchQueueProcessor(
             $dataHelper ?? $this->createStub(Data::class),
@@ -44,7 +50,37 @@ class BatchQueueProcessorTest extends TestCase
             $indexCollectionSizeCache ?? $this->createStub(IndexCollectionSize::class),
             $this->createStub(IndexOptionsBuilder::class),
             $this->createStub(IndexSettingsComparator::class),
+            $jobDefinitionFactory ?? $this->createJobDefinitionFactory(),
+            $jobContextFactory ?? $this->createJobContextFactory(),
         );
+    }
+
+    private function createJobDefinitionFactory(): JobDefinitionFactory
+    {
+        $factory = $this->createStub(JobDefinitionFactory::class);
+        $factory->method('create')->willReturnCallback(
+            static fn (array $data = []) => new JobDefinition(
+                $data['className'],
+                $data['method'],
+                $data['storeId'],
+                $data['data'] ?? [],
+            )
+        );
+
+        return $factory;
+    }
+
+    private function createJobContextFactory(): JobContextFactory
+    {
+        $factory = $this->createStub(JobContextFactory::class);
+        $factory->method('create')->willReturnCallback(
+            static fn (array $data = []) => new JobContext(
+                $data['dataSize'] ?? 1,
+                $data['isFullReindex'] ?? false,
+            )
+        );
+
+        return $factory;
     }
 
     /**
@@ -85,8 +121,8 @@ class BatchQueueProcessorTest extends TestCase
     }
 
     /**
-     * @throws NoSuchEntityException
      * @throws DiagnosticsException
+     * @throws NoSuchEntityException
      */
     public function testProcessBatchHandlesDeltaIndexing()
     {
@@ -97,12 +133,14 @@ class BatchQueueProcessorTest extends TestCase
 
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->once())
-            ->method('addToQueue')
-            ->with(
-                IndexBuilder::class,
-                'buildIndexList',
-                $this->arrayHasKey('entityIds')
-            );
+            ->method('addJob')
+            ->with($this->callback(function (JobDefinition $job) {
+                return $job->className === IndexBuilder::class
+                    && $job->method === 'buildIndexList'
+                    && $job->storeId === 1
+                    && array_key_exists('entityIds', $job->data)
+                    && !array_key_exists('storeId', $job->data);
+            }));
 
         $processor = $this->createObjectToTest($dataHelper, $configHelper, $productHelper, queue: $queue, algoliaCredentialsManager: $algoliaCredentialsManager);
 
@@ -120,20 +158,19 @@ class BatchQueueProcessorTest extends TestCase
         $invocationCount = 0;
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->exactly(5))
-            ->method('addToQueue')
-            ->with(
-                IndexBuilder::class,
-                'buildIndexList',
-                $this->callback(function (array $arg) use (&$invocationCount, $pageSize) {
-                    $invocationCount++;
+            ->method('addJob')
+            ->with($this->callback(function (JobDefinition $job) use (&$invocationCount, $pageSize) {
+                $invocationCount++;
 
-                    return array_key_exists('storeId', $arg)
-                        && array_key_exists('entityIds', $arg)
-                        && array_key_exists('options', $arg)
-                        && $arg['options']['pageSize'] === $pageSize
-                        && $arg['options']['page'] === $invocationCount;
-                })
-            );
+                return $job->className === IndexBuilder::class
+                    && $job->method === 'buildIndexList'
+                    && $job->storeId === 1
+                    && !array_key_exists('storeId', $job->data)
+                    && array_key_exists('entityIds', $job->data)
+                    && array_key_exists('options', $job->data)
+                    && $job->data['options']['pageSize'] === $pageSize
+                    && $job->data['options']['page'] === $invocationCount;
+            }));
 
         $processor = $this->createObjectToTest($dataHelper, $configHelper, $productHelper, queue: $queue, algoliaCredentialsManager: $algoliaCredentialsManager);
 
@@ -161,32 +198,31 @@ class BatchQueueProcessorTest extends TestCase
         $invocationCount = 0;
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->exactly(2))
-            ->method('addToQueue')
+            ->method('addJob')
             ->willReturnCallback(
-                function (
-                    string $className,
-                    string $method,
-                    array $data,
-                    int $dataSize,
-                    bool $isFullReindex
-                )
-                use (&$invocationCount) {
+                function (JobDefinition $job, JobContext $context) use (&$invocationCount) {
                     $invocationCount++;
                     switch ($invocationCount) {
                         case 1:
-                            $this->assertEquals(IndicesConfigurator::class, $className);
-                            $this->assertEquals('saveConfigurationToAlgolia', $method);
-                            $this->assertArrayHasKey('storeId', $data);
+                            $this->assertEquals(IndicesConfigurator::class, $job->className);
+                            $this->assertEquals('saveConfigurationToAlgolia', $job->method);
+                            $this->assertEquals(1, $job->storeId);
+                            $this->assertArrayNotHasKey('storeId', $job->data);
+                            $this->assertTrue($context->isFullReindex);
+                            $this->assertEquals(1, $context->dataSize);
 
                             break;
                         case 2:
-                            $this->assertEquals(IndexBuilder::class, $className);
-                            $this->assertEquals('buildIndexFull', $method);
-                            $this->assertArrayHasKey('storeId', $data);
+                            $this->assertEquals(IndexBuilder::class, $job->className);
+                            $this->assertEquals('buildIndexFull', $job->method);
+                            $this->assertEquals(1, $job->storeId);
+                            $this->assertArrayNotHasKey('storeId', $job->data);
+                            $this->assertTrue($context->isFullReindex);
+                            $this->assertEquals(10, $context->dataSize);
 
                             break;
+                    }
                 }
-            }
             );
 
         $processor = $this->createObjectToTest(
@@ -221,7 +257,7 @@ class BatchQueueProcessorTest extends TestCase
         $queueHelper->method('useTmpIndex')->willReturn(false);
 
         $queue = $this->createMock(Queue::class);
-        $queue->expects($this->exactly(2))->method('addToQueue');
+        $queue->expects($this->exactly(2))->method('addJob');
 
         $processor = $this->createObjectToTest(
             $dataHelper,
@@ -258,29 +294,27 @@ class BatchQueueProcessorTest extends TestCase
         $invocationCount = 0;
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->exactly(6))
-            ->method('addToQueue')
+            ->method('addJob')
             ->willReturnCallback(
-                function (
-                    string $className,
-                    string $method,
-                    array $data,
-                    int $dataSize,
-                    bool $isFullReindex
-                )
-                use (&$invocationCount, $pageSize) {
+                function (JobDefinition $job, JobContext $context) use (&$invocationCount, $pageSize) {
                     $invocationCount++;
                     switch ($invocationCount) {
                         case 1:
-                            $this->assertEquals(IndicesConfigurator::class, $className);
-                            $this->assertEquals('saveConfigurationToAlgolia', $method);
+                            $this->assertEquals(IndicesConfigurator::class, $job->className);
+                            $this->assertEquals('saveConfigurationToAlgolia', $job->method);
+                            $this->assertEquals(1, $job->storeId);
 
                             break;
                         default:
-                            $this->assertEquals(IndexBuilder::class, $className);
-                            $this->assertEquals('buildIndexFull', $method);
-                            $this->assertArrayHasKey('options', $data);
-                            $this->assertEquals($pageSize, $data['options']['pageSize']);
-                            $this->assertEquals($invocationCount - 1, $data['options']['page']);
+                            $this->assertEquals(IndexBuilder::class, $job->className);
+                            $this->assertEquals('buildIndexFull', $job->method);
+                            $this->assertEquals(1, $job->storeId);
+                            $this->assertArrayNotHasKey('storeId', $job->data);
+                            $this->assertArrayHasKey('options', $job->data);
+                            $this->assertEquals($pageSize, $job->data['options']['pageSize']);
+                            $this->assertEquals($invocationCount - 1, $job->data['options']['page']);
+                            $this->assertTrue($context->isFullReindex);
+                            $this->assertEquals($pageSize, $context->dataSize);
 
                             break;
                     }
@@ -323,23 +357,18 @@ class BatchQueueProcessorTest extends TestCase
         $invocationCount = 0;
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->exactly(3))
-            ->method('addToQueue')
+            ->method('addJob')
             ->willReturnCallback(
-                function (
-                    string $className,
-                    string $method,
-                    array $data,
-                    int $dataSize,
-                    bool $isFullReindex
-                )
-                use (&$invocationCount) {
+                function (JobDefinition $job, JobContext $context) use (&$invocationCount) {
                     $invocationCount++;
                     if ($invocationCount === 3) {
-                        $this->assertEquals(IndexMover::class, $className);
-                        $this->assertEquals('moveIndexWithSetSettings', $method);
-                        $this->assertArrayHasKey('tmpIndexName', $data);
-                        $this->assertArrayHasKey('indexName', $data);
-                        $this->assertArrayHasKey('storeId', $data);
+                        $this->assertEquals(IndexMover::class, $job->className);
+                        $this->assertEquals('moveIndexWithSetSettings', $job->method);
+                        $this->assertEquals(1, $job->storeId);
+                        $this->assertArrayHasKey('tmpIndexName', $job->data);
+                        $this->assertArrayHasKey('indexName', $job->data);
+                        $this->assertArrayNotHasKey('storeId', $job->data);
+                        $this->assertTrue($context->isFullReindex);
                     }
                 }
             );

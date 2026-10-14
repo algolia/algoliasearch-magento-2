@@ -28,6 +28,7 @@
     - A data patch backfills `store_id` for existing jobs; rows whose store cannot be determined remain `NULL`.
     - This is groundwork for store-partitioned queue processing; there is no behavior change to how jobs are processed.
 - Deprecated `Queue::addToQueue()`. Third-party callers should migrate to `Queue::addJob()` with a `JobDefinition`.
+- Simplified store-scoped runs of `algolia:queue:clear`: pending jobs are now deleted by the `store_id` column instead of JSON filtering on the serialized payload, removing the `JSON_EXTRACT` database requirement and the in-PHP fallback path. Legacy rows whose store is only inside the payload (`store_id` is `NULL`) are no longer matched by a store-scoped clear but a run without store arguments still removes them.
 
 ### Bug fixes
 - Scoped queue failure tracking to the store of the failing job. Previously a single process-wide counter recorded every failed job, so within one queue run a failure in one store made `Queue::run()` skip `moveIndexWithSetSettings` for every subsequent store of the same pass, leaving their index settings (synonyms, facets, ranking) silently stale after a partial failure in an unrelated store. A failed job now only suppresses the move for its own store: jobs without a store are tracked under bucket 0 and do not suppress numbered stores, and single-store behavior is unchanged.

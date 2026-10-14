@@ -8,6 +8,7 @@
 - Changed the signature of the `protected` method `Queue::getStoreMaxBatchSize()` from a required `int $storeId` to a nullable trailing optional `?int $storeId = null`. An overriding method keeping the old signature will now fatal under PHP's signature-compatibility rule; the previous call pattern remains valid.
 - Changed the constructor of `ProcessQueueCommand` (new `StoreNameFetcher` and `LockManagerInterface` dependencies). Only code instantiating the command directly is affected; DI-registered usage is unaffected.
 - The no-argument run of `algolia:queue:process` now exits with code 1 when Algolia credentials are missing, instead of the legacy 0. Processing is unchanged; scripts and cron monitors that relied on the silent 0 will now see a failure.
+- Added a trailing `JobContextFactory` constructor parameter to `Queue`, and trailing `JobDefinitionFactory` and `JobContextFactory` constructor parameters to the five `Service/*/BatchQueueProcessor` classes. Only code instantiating these classes directly is affected; DI-registered usage is unaffected, and no subclass or DI preference ships with the extension.
 
 ### Features
 - Added store-aware job claiming to the queue, groundwork for store-partitioned indexing where one worker process runs per store view.
@@ -17,12 +18,17 @@
     - Store-scoped workers never claim `store_id IS NULL` rows; sequential (unfiltered) processing still drains them, so legacy and off-contract rows keep being processed.
     - There is no behavior change when no store ID is passed: unfiltered calls claim and process exactly as before.
 - Added worker mode to `algolia:queue:process`: passing store ID(s) processes only those stores' jobs under a non-blocking per-store lock, so cron and one worker per store view can run concurrently without double-processing. A store already being drained is skipped, and a failure on one store does not abort the remaining stores. This is the groundwork for store-partitioned parallel indexing. The no-argument sequential run and the `algolia:reindex:process_queue` alias are unchanged.
+- All jobs must now be store-scoped: added `Queue::addJob(JobDefinition, ?JobContext)` as the canonical enqueue entry point, backed by the readonly DTOs `Model\Data\Queue\JobDefinition` and `Model\Data\Queue\JobContext`.
+    - `JobDefinition::$storeId` is non-nullable and is the single source of truth for the job's store: it is persisted in the `store_id` column and injected into the handler by parameter name (`$storeId`) at execution time. It never enters the serialized payload, so new jobs carry storeless payloads and job merging cannot cross store boundaries.
+    - When the queue is inactive, `addJob()` executes the handler directly with the store supplied by name, matching the queued path.
+    - Jobs enqueued before this release keep draining unchanged: legacy rows with a `NULL` column promote their in-payload store, and the column wins whenever it is populated. All in-tree enqueuers (the `Service/*/BatchQueueProcessor` classes) now use `addJob()`.
 
 ### Updates
 - Added an indexed `store_id` column to the `algoliasearch_queue` table.
     - New jobs now record their store at enqueue time.
     - A data patch backfills `store_id` for existing jobs; rows whose store cannot be determined remain `NULL`.
     - This is groundwork for store-partitioned queue processing; there is no behavior change to how jobs are processed.
+- Deprecated `Queue::addToQueue()`. Third-party callers should migrate to `Queue::addJob()` with a `JobDefinition`.
 
 ### Bug fixes
 - Scoped queue failure tracking to the store of the failing job. Previously a single process-wide counter recorded every failed job, so within one queue run a failure in one store made `Queue::run()` skip `moveIndexWithSetSettings` for every subsequent store of the same pass, leaving their index settings (synonyms, facets, ranking) silently stale after a partial failure in an unrelated store. A failed job now only suppresses the move for its own store: jobs without a store are tracked under bucket 0 and do not suppress numbered stores, and single-store behavior is unchanged.

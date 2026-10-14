@@ -48,14 +48,7 @@ class Downloadable extends AbstractProduct
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
-
-            if ($pricingContext->isCurrencyDifferentFromBase()) {
-                $discountedPrice = $this->pricingHelper->convertPrice(
-                    $discountedPrice,
-                    $pricingContext->getStore(),
-                    $pricingContext->getCurrencyCode()
-                );
-            }
+            $discountedPrice = $this->pricingHelper->handleConversion($discountedPrice, $pricingContext);
 
             if ($discountedPrice !== false) {
                 $priceData->setPrice(

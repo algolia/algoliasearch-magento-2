@@ -5,6 +5,9 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Model;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContext;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinition;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\Job;
 use Algolia\AlgoliaSearch\Model\Queue;
@@ -29,6 +32,21 @@ use Zend_Db_Statement_Interface;
 class QueueTest extends TestCase
 {
     /**
+     * The unit test bootstrap converts E_USER_DEPRECATED into an exception, so calls into the
+     * #[\Deprecated] addToQueue() shell are masked (PHP 8.4+) to keep asserting its behavior.
+     */
+    private function callDeprecated(callable $call): void
+    {
+        $previousLevel = error_reporting(error_reporting() & ~E_USER_DEPRECATED);
+
+        try {
+            $call();
+        } finally {
+            error_reporting($previousLevel);
+        }
+    }
+
+    /**
      * Queue::__construct() resolves its db connection via $objectManager->create(...), an
      * injected instance call (not a static ObjectManager access), so it's safe to construct for
      * real once that instance is stubbed to hand back the desired $dbAdapter.
@@ -39,6 +57,7 @@ class QueueTest extends TestCase
         ?ObjectManagerInterface $objectManager = null,
         ?AdapterInterface $dbAdapter = null,
         ?JobCollectionFactory $jobCollectionFactory = null,
+        ?JobContextFactory $jobContextFactory = null,
     ): Queue {
         $dbAdapter ??= $this->createStub(AdapterInterface::class);
 
@@ -49,6 +68,9 @@ class QueueTest extends TestCase
         $objectManager ??= $this->createStub(ObjectManagerInterface::class);
         $objectManager->method('create')->willReturn($resourceConnection);
 
+        $jobContextFactory ??= $this->createStub(JobContextFactory::class);
+        $jobContextFactory->method('create')->willReturn(new JobContext());
+
         return new Queue(
             $configHelper ?? $this->createStub(ConfigHelper::class),
             $logger ?? $this->createStub(DiagnosticsLogger::class),
@@ -56,6 +78,7 @@ class QueueTest extends TestCase
             $resourceConnection,
             $objectManager,
             $this->createStub(ConsoleOutput::class),
+            $jobContextFactory,
         );
     }
 
@@ -83,7 +106,7 @@ class QueueTest extends TestCase
 
         $queue = $this->createObjectToTest(configHelper: $configHelper, objectManager: $objectManager);
 
-        $queue->addToQueue($class, $method, $data);
+        $this->callDeprecated(fn () => $queue->addToQueue($class, $method, $data));
     }
 
     #[DataProvider('authorizedHandlersProvider')]
@@ -100,7 +123,7 @@ class QueueTest extends TestCase
 
         $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
 
-        $queue->addToQueue($class, $method, $data);
+        $this->callDeprecated(fn () => $queue->addToQueue($class, $method, $data));
     }
 
     #[DataProvider('unauthorizedHandlersProvider')]
@@ -114,7 +137,7 @@ class QueueTest extends TestCase
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
 
-        $queue->addToQueue($class, $method, []);
+        $this->callDeprecated(fn () => $queue->addToQueue($class, $method, []));
     }
 
     #[DataProvider('unauthorizedHandlersProvider')]
@@ -131,7 +154,7 @@ class QueueTest extends TestCase
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
 
-        $queue->addToQueue($class, $method, []);
+        $this->callDeprecated(fn () => $queue->addToQueue($class, $method, []));
     }
 
     /**
@@ -144,7 +167,7 @@ class QueueTest extends TestCase
         $this->assertContains('buildIndex', Job::ALLOWED_HANDLERS[ProductIndexBuilder::class]);
     }
 
-    public function testAddToQueueWritesStoreIdColumnFromJobData(): void
+    public function testAddToQueueExtractsStoreIdColumnFromPayloadAndStripsTheKey(): void
     {
         $configHelper = $this->createStub(ConfigHelper::class);
         $configHelper->method('isQueueActive')->willReturn(true);
@@ -159,17 +182,96 @@ class QueueTest extends TestCase
                 return 1;
             });
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+        $logger = $this->createMock(DiagnosticsLogger::class);
+        $logger->expects($this->exactly(2))
+            ->method('log')
+            ->with($this->stringContains('Queue::addToQueue() is deprecated'));
 
-        $queue->addToQueue(
+        $queue = $this->createObjectToTest(configHelper: $configHelper, logger: $logger, dbAdapter: $dbAdapter);
+
+        $this->callDeprecated(fn () => $queue->addToQueue(
             ProductIndexBuilder::class,
             'buildIndex',
             ['storeId' => '1', 'entityIds' => [1, 2, 3], 'options' => []]
-        );
-        $queue->addToQueue(ProductIndexBuilder::class, 'buildIndex', [1, [1, 2, 3], []]);
+        ));
+        $this->callDeprecated(fn () => $queue->addToQueue(
+            ProductIndexBuilder::class,
+            'buildIndex',
+            ['entityIds' => [4, 5, 6], 'options' => []]
+        ));
 
+        // In-payload store is extracted into the column; the key never reaches the payload
         $this->assertSame(1, $insertedRows[0]['store_id']);
+        $payload = json_decode($insertedRows[0]['data'], true);
+        $this->assertArrayNotHasKey('storeId', $payload);
+        $this->assertSame(['entityIds' => [1, 2, 3], 'options' => []], $payload);
+
         $this->assertNull($insertedRows[1]['store_id']);
+    }
+
+    public function testAddJobWritesStoreIdColumnFromJobDefinition(): void
+    {
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(true);
+
+        $insertedRows = [];
+        $dbAdapter = $this->createMock(AdapterInterface::class);
+        $dbAdapter->expects($this->once())
+            ->method('insert')
+            ->willReturnCallback(function (string $table, array $bind) use (&$insertedRows) {
+                $insertedRows[] = $bind;
+
+                return 1;
+            });
+
+        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+
+        $queue->addJob(new JobDefinition(
+            ProductIndexBuilder::class,
+            'buildIndex',
+            3,
+            ['entityIds' => [1, 2, 3], 'options' => []]
+        ));
+
+        $this->assertSame(3, $insertedRows[0]['store_id']);
+
+        $payload = json_decode($insertedRows[0]['data'], true);
+        $this->assertArrayNotHasKey('storeId', $payload);
+    }
+
+    public function testAddJobBoltsStoreOnByHandlerNameWhenQueueInactive(): void
+    {
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('isQueueActive')->willReturn(false);
+
+        $receivedArgs = [];
+        $mockHandler = $this->getMockBuilder(ProductIndexBuilder::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['buildIndex'])
+            ->getMock();
+        $mockHandler->expects($this->once())
+            ->method('buildIndex')
+            ->willReturnCallback(function (...$args) use (&$receivedArgs) {
+                $receivedArgs = $args;
+            });
+
+        $objectManager = $this->createStub(ObjectManagerInterface::class);
+        $objectManager->method('get')->willReturn($mockHandler);
+
+        $queue = $this->createObjectToTest(configHelper: $configHelper, objectManager: $objectManager);
+
+        $queue->addJob(new JobDefinition(
+            ProductIndexBuilder::class,
+            'buildIndex',
+            3,
+            ['entityIds' => [1, 2, 3], 'options' => []]
+        ));
+
+        // Named arguments land positionally in the mock's declared signature:
+        // buildIndex(int $storeId, ?array $entityIds, ?array $options)
+        $this->assertSame(3, $receivedArgs[0]);
+        $this->assertSame([1, 2, 3], $receivedArgs[1]);
+        $this->assertSame([], $receivedArgs[2]);
     }
 
     /**
@@ -348,7 +450,7 @@ class QueueTest extends TestCase
                 2,
                 IndexMover::class,
                 Queue::MOVE_INDEX_METHOD_NAME,
-                ['tmp_index', 'prod_index', 1],
+                ['tmpIndexName' => 'tmp_index', 'indexName' => 'prod_index'],
                 1,
                 $objectManager
             ),
@@ -356,7 +458,7 @@ class QueueTest extends TestCase
                 3,
                 IndexMover::class,
                 Queue::MOVE_INDEX_METHOD_NAME,
-                ['tmp_index', 'prod_index', 2],
+                ['tmpIndexName' => 'tmp_index', 'indexName' => 'prod_index'],
                 2,
                 $objectManager
             ),
@@ -388,7 +490,7 @@ class QueueTest extends TestCase
                 2,
                 IndexMover::class,
                 Queue::MOVE_INDEX_METHOD_NAME,
-                ['tmp_index', 'prod_index', 1],
+                ['tmpIndexName' => 'tmp_index', 'indexName' => 'prod_index'],
                 1,
                 $objectManager
             ),
@@ -396,7 +498,7 @@ class QueueTest extends TestCase
                 3,
                 IndexMover::class,
                 Queue::MOVE_INDEX_METHOD_NAME,
-                ['tmp_index', 'prod_index', 2],
+                ['tmpIndexName' => 'tmp_index', 'indexName' => 'prod_index'],
                 2,
                 $objectManager
             ),
@@ -428,7 +530,7 @@ class QueueTest extends TestCase
                 2,
                 IndexMover::class,
                 Queue::MOVE_INDEX_METHOD_NAME,
-                ['tmp_index', 'prod_index', 5],
+                ['tmpIndexName' => 'tmp_index', 'indexName' => 'prod_index'],
                 5,
                 $objectManager
             ),
@@ -564,28 +666,33 @@ class QueueTest extends TestCase
         return $job;
     }
 
+    /**
+     * Payloads keep the legacy shape (store inside the payload): the deprecated addToQueue()
+     * shell spreads $data as-is when the queue is inactive, preserving legacy direct-execution
+     * semantics. Storeless shapes are covered by the addJob() tests.
+     */
     public static function authorizedHandlersProvider(): array
     {
         return [
             'IndicesConfigurator::saveConfigurationToAlgolia' => [
                 'class' => 'Algolia\AlgoliaSearch\Model\IndicesConfigurator',
                 'method' => 'saveConfigurationToAlgolia',
-                'data' => [1, false],
+                'data' => ['storeId' => 1, 'useTmpIndex' => false, 'filteredEntities' => ['products']],
             ],
             'IndexMover::moveIndexWithSetSettings' => [
                 'class' => 'Algolia\AlgoliaSearch\Model\IndexMover',
                 'method' => 'moveIndexWithSetSettings',
-                'data' => ['test_index_tmp', 'test_index', 1],
+                'data' => ['tmpIndexName' => 'test_index_tmp', 'indexName' => 'test_index', 'storeId' => 1],
             ],
             'Product\IndexBuilder::buildIndex' => [
                 'class' => ProductIndexBuilder::class,
                 'method' => 'buildIndex',
-                'data' => [1, [1, 2, 3], []],
+                'data' => ['storeId' => 1, 'entityIds' => [1, 2, 3], 'options' => []],
             ],
             'Category\IndexBuilder::buildIndexList' => [
                 'class' => CategoryIndexBuilder::class,
                 'method' => 'buildIndexList',
-                'data' => [1, [1, 2, 3], []],
+                'data' => ['storeId' => 1, 'entityIds' => [1, 2, 3], 'options' => []],
             ],
         ];
     }

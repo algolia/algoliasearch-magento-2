@@ -32,7 +32,7 @@ class JobTest extends TestCase
     }
 
     #[DataProvider('authorizedHandlersProvider')]
-    public function testExecuteSucceedsForAuthorizedHandler(string $class, string $method, array $methodArgs): void
+    public function testExecuteSucceedsForAuthorizedHandler(string $class, string $method, array $methodArgs, int $storeId): void
     {
         $mockHandler = $this->getMockBuilder($class)
             ->disableOriginalConstructor()
@@ -55,6 +55,7 @@ class JobTest extends TestCase
         $job->setMethod($method);
         $job->setData('decoded_data', $methodArgs);
         $job->setData('retries', 0);
+        $job->setData('store_id', $storeId);
 
         $result = $job->execute();
 
@@ -76,68 +77,223 @@ class JobTest extends TestCase
         $job->execute();
     }
 
+    /**
+     * Runs a job through execute() against a mock handler whose received arguments are
+     * captured into $receivedArgs (named-argument keys are aligned positionally).
+     */
+    private function createHandlerCaptureJob(
+        string $class,
+        string $method,
+        array $decodedData,
+        ?int $storeId,
+        array &$receivedArgs
+    ): Job {
+        $mockHandler = $this->getMockBuilder($class)
+            ->disableOriginalConstructor()
+            ->onlyMethods([$method])
+            ->getMock();
+        $mockHandler->expects($this->once())
+            ->method($method)
+            ->willReturnCallback(function (...$args) use (&$receivedArgs) {
+                $receivedArgs = $args;
+            });
+
+        $objectManager = $this->createStub(ObjectManagerInterface::class);
+        $objectManager->method('get')->willReturn($mockHandler);
+
+        $resourceModel = $this->createStub(JobResourceModel::class);
+        $resourceModel->method('save')->willReturnSelf();
+
+        $job = $this->createObjectToTest(objectManager: $objectManager, resourceModel: $resourceModel);
+        $job->setClass($class);
+        $job->setMethod($method);
+        $job->setData('decoded_data', $decodedData);
+        $job->setData('retries', 0);
+
+        if ($storeId !== null) {
+            $job->setData('store_id', $storeId);
+        }
+
+        return $job;
+    }
+
+    public function testExecuteSuppliesStoreIdFromColumn(): void
+    {
+        $receivedArgs = [];
+        $job = $this->createHandlerCaptureJob(
+            ProductIndexBuilder::class,
+            'buildIndex',
+            ['entityIds' => [1, 2, 3], 'options' => []],
+            3,
+            $receivedArgs
+        );
+
+        $job->execute();
+
+        // Named arguments land positionally in the mock's declared signature:
+        // buildIndex(int $storeId, ?array $entityIds, ?array $options)
+        $this->assertSame(3, $receivedArgs[0]);
+        $this->assertSame([1, 2, 3], $receivedArgs[1]);
+        $this->assertSame([], $receivedArgs[2]);
+    }
+
+    public function testExecutePrefersColumnOverDisagreeingPayloadStore(): void
+    {
+        $receivedArgs = [];
+        $job = $this->createHandlerCaptureJob(
+            ProductIndexBuilder::class,
+            'buildIndex',
+            ['entityIds' => [1, 2, 3], 'options' => [], 'storeId' => 5],
+            3,
+            $receivedArgs
+        );
+
+        $job->execute();
+
+        $this->assertSame(3, $receivedArgs[0]);
+    }
+
+    public function testExecuteKeepsPayloadStoreForLegacyRowWithoutColumn(): void
+    {
+        $receivedArgs = [];
+        $job = $this->createHandlerCaptureJob(
+            ProductIndexBuilder::class,
+            'buildIndex',
+            ['entityIds' => [1, 2, 3], 'options' => [], 'storeId' => 2],
+            null,
+            $receivedArgs
+        );
+
+        $job->execute();
+
+        $this->assertSame(2, $receivedArgs[0]);
+    }
+
+    public function testPreparePromotesPayloadStoreOnlyWhenColumnEmpty(): void
+    {
+        $job = $this->createObjectToTest();
+        $job->setData('data', json_encode(['entityIds' => [1], 'storeId' => 2]));
+
+        $job->prepare();
+
+        $this->assertSame(2, $job->getStoreId());
+    }
+
+    public function testPrepareKeepsColumnStoreOverPayloadStore(): void
+    {
+        $job = $this->createObjectToTest();
+        $job->setData('store_id', 3);
+        $job->setData('data', json_encode(['entityIds' => [1], 'storeId' => 2]));
+
+        $job->prepare();
+
+        $this->assertSame(3, $job->getStoreId());
+    }
+
+    public function testJobsMergeOnlyWithinSameStore(): void
+    {
+        $jobA = $this->createStoreScopedJob(1, ['entityIds' => [1, 2]]);
+        $jobB = $this->createStoreScopedJob(1, ['entityIds' => [2, 3]]);
+        $jobC = $this->createStoreScopedJob(2, ['entityIds' => [4]]);
+
+        $this->assertTrue($jobA->canMerge($jobB, 10));
+        $this->assertFalse($jobA->canMerge($jobC, 10));
+
+        $jobA->merge($jobB);
+
+        $this->assertSame([1, 2, 3], array_values($jobA->getDecodedData()['entityIds']));
+        $this->assertSame(3, $jobA->getDataSize());
+    }
+
+    private function createStoreScopedJob(int $storeId, array $decodedData): Job
+    {
+        $job = $this->createObjectToTest();
+        $job->setData('job_id', random_int(1, PHP_INT_MAX));
+        $job->setIdFieldName('job_id');
+        $job->setClass(ProductIndexBuilder::class);
+        $job->setMethod('buildIndex');
+        $job->setData('store_id', $storeId);
+        $job->setData('decoded_data', $decodedData);
+        $job->setData('data_size', count($decodedData['entityIds']));
+        $job->prepare();
+
+        return $job;
+    }
+
     public static function authorizedHandlersProvider(): array
     {
         return [
             'IndicesConfigurator::saveConfigurationToAlgolia' => [
                 'class' => 'Algolia\AlgoliaSearch\Model\IndicesConfigurator',
                 'method' => 'saveConfigurationToAlgolia',
-                'methodArgs' => [1, false],
+                'methodArgs' => ['useTmpIndex' => false, 'filteredEntities' => ['products']],
+                'storeId' => 1,
             ],
             'IndexMover::moveIndexWithSetSettings' => [
                 'class' => 'Algolia\AlgoliaSearch\Model\IndexMover',
                 'method' => 'moveIndexWithSetSettings',
-                'methodArgs' => ['test_index_tmp', 'test_index', 1],
+                'methodArgs' => ['tmpIndexName' => 'test_index_tmp', 'indexName' => 'test_index'],
+                'storeId' => 1,
             ],
             'Product\IndexBuilder::buildIndex' => [
                 'class' => ProductIndexBuilder::class,
                 'method' => 'buildIndex',
-                'methodArgs' => [1, [1, 2, 3], []],
+                'methodArgs' => ['entityIds' => [1, 2, 3], 'options' => []],
+                'storeId' => 1,
             ],
             'Product\IndexBuilder::buildIndexFull' => [
                 'class' => ProductIndexBuilder::class,
                 'method' => 'buildIndexFull',
-                'methodArgs' => [1, []],
+                'methodArgs' => ['options' => []],
+                'storeId' => 1,
             ],
             'Product\IndexBuilder::buildIndexList' => [
                 'class' => ProductIndexBuilder::class,
                 'method' => 'buildIndexList',
-                'methodArgs' => [1, [1, 2, 3], []],
+                'methodArgs' => ['entityIds' => [1, 2, 3], 'options' => []],
+                'storeId' => 1,
             ],
             'Product\IndexBuilder::deleteInactiveProducts' => [
                 'class' => ProductIndexBuilder::class,
                 'method' => 'deleteInactiveProducts',
-                'methodArgs' => [1],
+                'methodArgs' => [],
+                'storeId' => 1,
             ],
             'Category\IndexBuilder::buildIndex' => [
                 'class' => CategoryIndexBuilder::class,
                 'method' => 'buildIndex',
-                'methodArgs' => [1, [1, 2, 3], []],
+                'methodArgs' => ['entityIds' => [1, 2, 3], 'options' => []],
+                'storeId' => 1,
             ],
             'Category\IndexBuilder::buildIndexFull' => [
                 'class' => CategoryIndexBuilder::class,
                 'method' => 'buildIndexFull',
-                'methodArgs' => [1, []],
+                'methodArgs' => ['options' => []],
+                'storeId' => 1,
             ],
             'Category\IndexBuilder::buildIndexList' => [
                 'class' => CategoryIndexBuilder::class,
                 'method' => 'buildIndexList',
-                'methodArgs' => [1, [1, 2, 3], []],
+                'methodArgs' => ['entityIds' => [1, 2, 3], 'options' => []],
+                'storeId' => 1,
             ],
             'Page\IndexBuilder::buildIndex' => [
                 'class' => 'Algolia\AlgoliaSearch\Service\Page\IndexBuilder',
                 'method' => 'buildIndex',
-                'methodArgs' => [1, [1, 2, 3], []],
+                'methodArgs' => ['entityIds' => [1, 2, 3], 'options' => []],
+                'storeId' => 1,
             ],
             'Suggestion\IndexBuilder::buildIndexFull' => [
                 'class' => 'Algolia\AlgoliaSearch\Service\Suggestion\IndexBuilder',
                 'method' => 'buildIndexFull',
-                'methodArgs' => [1, []],
+                'methodArgs' => ['options' => []],
+                'storeId' => 1,
             ],
             'AdditionalSection\IndexBuilder::buildIndex' => [
                 'class' => 'Algolia\AlgoliaSearch\Service\AdditionalSection\IndexBuilder',
                 'method' => 'buildIndex',
-                'methodArgs' => [1, [1, 2, 3], []],
+                'methodArgs' => ['entityIds' => [1, 2, 3], 'options' => []],
+                'storeId' => 1,
             ],
         ];
     }

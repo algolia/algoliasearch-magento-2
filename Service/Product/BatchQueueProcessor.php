@@ -11,6 +11,8 @@ use Algolia\AlgoliaSearch\Helper\Data;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\Cache\Product\IndexCollectionSize;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
+use Algolia\AlgoliaSearch\Model\Data\Queue\JobDefinitionFactory;
 use Algolia\AlgoliaSearch\Model\IndexMover;
 use Algolia\AlgoliaSearch\Model\IndicesConfigurator;
 use Algolia\AlgoliaSearch\Model\Queue;
@@ -33,7 +35,9 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         protected ProductIndexBuilder       $productIndexBuilder,
         protected IndexCollectionSize       $indexCollectionSizeCache,
         protected IndexOptionsBuilder       $indexOptionsBuilder,
-        protected IndexSettingsComparator   $indexSettingsComparator
+        protected IndexSettingsComparator   $indexSettingsComparator,
+        protected JobDefinitionFactory      $jobDefinitionFactory,
+        protected JobContextFactory         $jobContextFactory
     ){}
 
     /**
@@ -100,11 +104,18 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         }
 
         /** @uses IndicesConfigurator::saveConfigurationToAlgolia() */
-        $this->queue->addToQueue(IndicesConfigurator::class, 'saveConfigurationToAlgolia', [
-            'storeId' => $storeId,
-            'useTmpIndex' => $useTmpIndex,
-            'filteredEntities' => ['products']
-        ], 1, true);
+        $this->queue->addJob(
+            $this->jobDefinitionFactory->create([
+                'className' => IndicesConfigurator::class,
+                'method'    => 'saveConfigurationToAlgolia',
+                'storeId'   => $storeId,
+                'data'      => [
+                    'useTmpIndex' => $useTmpIndex,
+                    'filteredEntities' => ['products'],
+                ],
+            ]),
+            $this->jobContextFactory->create(['dataSize' => 1, 'isFullReindex' => true])
+        );
     }
 
     /**
@@ -112,11 +123,18 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
      */
     protected function moveTempIndex(int $storeId): void {
         /** @uses IndexMover::moveIndexWithSetSettings() */
-        $this->queue->addToQueue(IndexMover::class, 'moveIndexWithSetSettings', [
-            'tmpIndexName' => $this->productHelper->getTempIndexName($storeId),
-            'indexName' => $this->productHelper->getIndexName($storeId),
-            'storeId' => $storeId,
-        ], 1, true);
+        $this->queue->addJob(
+            $this->jobDefinitionFactory->create([
+                'className' => IndexMover::class,
+                'method'    => 'moveIndexWithSetSettings',
+                'storeId'   => $storeId,
+                'data'      => [
+                    'tmpIndexName' => $this->productHelper->getTempIndexName($storeId),
+                    'indexName'    => $this->productHelper->getIndexName($storeId),
+                ],
+            ]),
+            $this->jobContextFactory->create(['dataSize' => 1, 'isFullReindex' => true])
+        );
     }
 
     protected function handleDeltaIndex(array $entityIds, int $storeId, int $productsPerPage): void
@@ -125,18 +143,20 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
 
         foreach (array_chunk($entityIds, $productsPerPage) as $i => $chunk) {
             /** @uses ProductIndexBuilder::buildIndexList() */
-            $this->queue->addToQueue(
-                ProductIndexBuilder::class,
-                'buildIndexList',
-                [
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => ProductIndexBuilder::class,
+                    'method'    => 'buildIndexList',
                     'storeId'   => $storeId,
-                    'entityIds' => $chunk,
-                    'options'   => [
-                        'page'        => $i + 1,
-                        'pageSize'    => $productsPerPage,
+                    'data'      => [
+                        'entityIds' => $chunk,
+                        'options'   => [
+                            'page'     => $i + 1,
+                            'pageSize' => $productsPerPage,
+                        ],
                     ],
-                ],
-                count($chunk)
+                ]),
+                $this->jobContextFactory->create(['dataSize' => count($chunk)])
             );
         }
     }
@@ -150,22 +170,21 @@ class BatchQueueProcessor implements BatchQueueProcessorInterface
         $collection = $this->productHelper->getProductCollectionQuery($storeId, [], $onlyVisible);
         $pages = ceil($this->getCollectionSize($storeId, $collection) / $productsPerPage);
         for ($i = 1; $i <= $pages; $i++) {
-            $data = [
-                'storeId' => $storeId,
-                'options' => [
-                    'page'        => $i,
-                    'pageSize'    => $productsPerPage,
-                    'useTmpIndex' => $useTmpIndex,
-                ],
-            ];
-
             /** @uses ProductIndexBuilder::buildIndexFull() */
-            $this->queue->addToQueue(
-                ProductIndexBuilder::class,
-                'buildIndexFull',
-                $data,
-                $productsPerPage,
-                true
+            $this->queue->addJob(
+                $this->jobDefinitionFactory->create([
+                    'className' => ProductIndexBuilder::class,
+                    'method'    => 'buildIndexFull',
+                    'storeId'   => $storeId,
+                    'data'      => [
+                        'options' => [
+                            'page'        => $i,
+                            'pageSize'    => $productsPerPage,
+                            'useTmpIndex' => $useTmpIndex,
+                        ],
+                    ],
+                ]),
+                $this->jobContextFactory->create(['dataSize' => $productsPerPage, 'isFullReindex' => true])
             );
         }
     }

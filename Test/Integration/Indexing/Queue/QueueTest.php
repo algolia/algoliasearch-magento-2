@@ -20,10 +20,8 @@ use Algolia\AlgoliaSearch\Test\Integration\TestCase;
  */
 class QueueTest extends QueueTestCase
 {
-    private JobsCollectionFactory $jobsCollectionFactory;
-
-    /** @var Queue */
-    private $queue;
+    private ?JobsCollectionFactory $jobsCollectionFactory = null;
+    private ?Queue $queue = null;
 
     protected function setUp(): void
     {
@@ -57,6 +55,8 @@ class QueueTest extends QueueTestCase
             $i++;
 
             $this->assertSame($storeId, (int) $row['store_id']);
+            // New jobs never carry the store inside the payload; the column is the source of truth
+            $this->assertArrayNotHasKey('storeId', json_decode((string) $row['data'], true));
 
             if ($i === 1) {
                 $this->assertEquals(IndicesConfigurator::class, $row['class']);
@@ -1041,6 +1041,28 @@ class QueueTest extends QueueTestCase
         $this->seedJob(['store_id' => null, 'data' => '{"entityIds":["9","22"]}']);
 
         $this->assertSame([1, 2, 3], $this->queue->getStoreIdsWithPendingJobs());
+    }
+
+    /**
+     * The store_id column is the source of truth for claimed jobs: a legacy-format payload
+     * that disagrees with the column must not override it (Job::prepare() only promotes the
+     * payload store when the column is empty), and the payload key is never stripped so
+     * named-argument execution keeps working for legacy rows.
+     */
+    public function testClaimedJobPrefersColumnStoreIdOverPayload()
+    {
+        $this->clearQueueTable();
+
+        $this->seedJob([
+            'store_id' => 1,
+            'data' => '{"storeId":"2","entityIds":["9","22"]}',
+        ]);
+
+        $jobs = $this->invokeMethod($this->queue, 'getJobs', ['maxJobs' => 10]);
+
+        $this->assertCount(1, $jobs);
+        $this->assertSame(1, (int) $jobs[0]->getStoreId());
+        $this->assertSame('2', $jobs[0]->getDecodedData()['storeId']);
     }
 
     /**

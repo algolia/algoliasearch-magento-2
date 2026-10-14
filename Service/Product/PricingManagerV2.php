@@ -13,8 +13,6 @@ use Magento\Tax\Model\Config as TaxConfig;
 class PricingManagerV2
 {
     public const string DEFAULT_PM = 'priceManager';
-    public const string DEFAULT_MANAGER = 'default';
-    public const string GROUPS_MANAGER = 'customer_groups';
 
     public function __construct(
         protected TaxHelper $taxHelper,
@@ -58,15 +56,12 @@ class PricingManagerV2
     protected function resolvePriceManager(Product $product): Pricing
     {
         $priceManager = self::DEFAULT_PM . ucfirst($product->getTypeId());
-        $key = $this->configHelper->isCustomerGroupsEnabled($product->getStoreId()) ?
-            self::GROUPS_MANAGER :
-            self::DEFAULT_MANAGER;
 
-        if (isset($this->priceManagers[$key][$priceManager])) {
-            return $this->priceManagers[$key][$priceManager];
+        if (isset($this->priceManagers[$priceManager])) {
+            return $this->priceManagers[$priceManager];
         }
 
-        return $this->priceManagers[self::DEFAULT_MANAGER][self::DEFAULT_PM . 'Simple'];
+        return $this->priceManagers[self::DEFAULT_PM . 'Simple'];
     }
 
     protected function getPriceFields(Product $product): array

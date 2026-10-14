@@ -59,22 +59,12 @@
     <type name="Algolia\AlgoliaSearch\Service\Product\PricingManagerV2">
         <arguments>
             <argument name="priceManagers" xsi:type="array">
-                <item name="default" xsi:type="array">
-                    <item name="priceManagerBundle" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle</item>
-                    <item name="priceManagerConfigurable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable</item>
-                    <item name="priceManagerDownloadable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable</item>
-                    <item name="priceManagerGrouped" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Grouped</item>
-                    <item name="priceManagerSimple" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Simple</item>
-                    <item name="priceManagerVirtual" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Virtual</item>
-                </item>
-                <item name="customer_groups" xsi:type="array">
-                    <item name="priceManagerBundle" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle</item>
-                    <item name="priceManagerConfigurable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable</item>
-                    <item name="priceManagerDownloadable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable</item>
-                    <item name="priceManagerGrouped" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Grouped</item>
-                    <item name="priceManagerSimple" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Simple</item>
-                    <item name="priceManagerVirtual" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Virtual</item>
-                </item>
+                <item name="priceManagerBundle" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle</item>
+                <item name="priceManagerConfigurable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable</item>
+                <item name="priceManagerDownloadable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable</item>
+                <item name="priceManagerGrouped" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Grouped</item>
+                <item name="priceManagerSimple" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Simple</item>
+                <item name="priceManagerVirtual" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Virtual</item>
             </argument>
         </arguments>
     </type>

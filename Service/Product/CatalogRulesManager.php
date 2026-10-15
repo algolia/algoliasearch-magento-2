@@ -10,8 +10,9 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
 class CatalogRulesManager
 {
+    private array $rulePrices = [];
+
     public function __construct(
-        protected RulePricesStorage $rulePricesStorage,
         protected RuleFactory $resourceRuleFactory,
         protected GroupManagementInterface $groupManagement,
         protected TimezoneInterface $localeDate
@@ -27,7 +28,7 @@ class CatalogRulesManager
         $rulesToFetch = [];
         foreach ($products as $product) {
             $key = $this->getStorageKey($product->getId(), $websiteId);
-            if (!$this->rulePricesStorage->hasRulePrice($key)) {
+            if (!$this->hasRulePrice($key)) {
                 $rulesToFetch[] = $product->getId();
             }
         }
@@ -51,7 +52,7 @@ class CatalogRulesManager
     {
         $key = $this->getStorageKey($productId, $pricingContext->getStore()->getWebsiteId());
 
-        return $this->rulePricesStorage->getRulePrice($key);
+        return $this->getRulePrice($key);
     }
 
     protected function setRulesInStorage(array $productIds, \DateTime $date, int $websiteId): void
@@ -70,7 +71,22 @@ class CatalogRulesManager
 
         foreach ($productIds as $productId) {
             $key = $this->getStorageKey($productId, $websiteId);
-            $this->rulePricesStorage->setRulePrice($key, $prices[$key] ?? []);
+            $this->setRulePrice($key, $prices[$key] ?? []);
         }
+    }
+
+    protected function getRulePrice(string $id): array|false
+    {
+        return $this->rulePrices[$id] ?? false;
+    }
+
+    protected function hasRulePrice(string $id): bool
+    {
+        return isset($this->rulePrices[$id]);
+    }
+
+    protected function setRulePrice(string $id, array $prices): void
+    {
+        $this->rulePrices[$id] = $prices;
     }
 }

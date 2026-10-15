@@ -8,7 +8,6 @@ use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Model\ResourceModel\Rule;
 use Algolia\AlgoliaSearch\Model\ResourceModel\RuleFactory;
 use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
-use Algolia\AlgoliaSearch\Service\Product\RulePricesStorage;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\GroupManagementInterface;
@@ -18,74 +17,29 @@ use Magento\Store\Model\Store;
 class CatalogRulesManagerTest extends TestCase
 {
     protected function createObjectToTest(
-        ?RulePricesStorage $rulePricesStorage = null,
         ?RuleFactory $resourceRuleFactory = null,
         ?GroupManagementInterface $groupManagement = null,
         ?TimezoneInterface $localeDate = null
     ): CatalogRulesManager {
         return new CatalogRulesManager(
-            $rulePricesStorage ?? $this->createStub(RulePricesStorage::class),
             $resourceRuleFactory ?? $this->createStub(RuleFactory::class),
             $groupManagement ?? $this->createStub(GroupManagementInterface::class),
             $localeDate ?? $this->createStub(TimezoneInterface::class)
         );
     }
-    public function testGetProductRulesReturnsRulesFromStorageWhenAlreadyCached(): void
+
+    public function testGetProductRulesFetchesAndReturnsRules(): void
     {
         $productId = 100;
         $websiteId = 1;
         $timestamp = 1697241600;
+        $dbRules = [
+            ['product_id' => 100, 'customer_group_id' => 0, 'rule_price' => '99.99'],
+            ['product_id' => 100, 'customer_group_id' => 1, 'rule_price' => '89.99'],
+        ];
         $expectedRules = [
             0 => 99.99,
             1 => 89.99,
-        ];
-
-        $store = $this->createStub(Store::class);
-        $store->method('getWebsiteId')->willReturn($websiteId);
-
-        $product = $this->createStub(Product::class);
-        $product->method('getId')->willReturn($productId);
-
-        $pricingContext = $this->createStub(PricingContextInterface::class);
-        $pricingContext->method('getStore')->willReturn($store);
-        $pricingContext->method('getProduct')->willReturn($product);
-        $pricingContext->method('getSubProducts')->willReturn([]);
-
-        $localeDate = $this->createStub(TimezoneInterface::class);
-        $localeDate->method('scopeTimeStamp')->willReturn($timestamp);
-
-        $rulePricesStorage = $this->createMock(RulePricesStorage::class);
-        $rulePricesStorage->expects($this->once())
-            ->method('hasRulePrice')
-            ->with('100|1')
-            ->willReturn(true);
-        $rulePricesStorage->expects($this->once())
-            ->method('getRulePrice')
-            ->with('100|1')
-            ->willReturn($expectedRules);
-
-        $manager = $this->createObjectToTest(
-            rulePricesStorage: $rulePricesStorage,
-            localeDate: $localeDate
-        );
-
-        $result = $manager->getProductRules($pricingContext);
-
-        $this->assertSame($expectedRules, $result);
-    }
-
-    public function testGetProductRulesFetchesRulesWhenNotCached(): void
-    {
-        $productId = 200;
-        $websiteId = 2;
-        $timestamp = 1697241600;
-        $dbRules = [
-            ['product_id' => 200, 'customer_group_id' => 0, 'rule_price' => '79.99'],
-            ['product_id' => 200, 'customer_group_id' => 1, 'rule_price' => '69.99'],
-        ];
-        $expectedRules = [
-            0 => 79.99,
-            1 => 69.99,
         ];
 
         $store = $this->createStub(Store::class);
@@ -108,21 +62,7 @@ class CatalogRulesManagerTest extends TestCase
         $resourceRuleFactory = $this->createStub(RuleFactory::class);
         $resourceRuleFactory->method('create')->willReturn($rule);
 
-        $rulePricesStorage = $this->createMock(RulePricesStorage::class);
-        $rulePricesStorage->expects($this->once())
-            ->method('hasRulePrice')
-            ->with('200|2')
-            ->willReturn(false);
-        $rulePricesStorage->expects($this->once())
-            ->method('setRulePrice')
-            ->with('200|2', $this->anything());
-        $rulePricesStorage->expects($this->once())
-            ->method('getRulePrice')
-            ->with('200|2')
-            ->willReturn($expectedRules);
-
         $manager = $this->createObjectToTest(
-            rulePricesStorage: $rulePricesStorage,
             resourceRuleFactory: $resourceRuleFactory,
             localeDate: $localeDate
         );
@@ -130,6 +70,51 @@ class CatalogRulesManagerTest extends TestCase
         $result = $manager->getProductRules($pricingContext);
 
         $this->assertSame($expectedRules, $result);
+    }
+
+    public function testGetProductRulesCachesResultsAndDoesNotFetchTwice(): void
+    {
+        $productId = 100;
+        $websiteId = 1;
+        $timestamp = 1697241600;
+        $dbRules = [
+            ['product_id' => 100, 'customer_group_id' => 0, 'rule_price' => '99.99'],
+        ];
+
+        $store = $this->createStub(Store::class);
+        $store->method('getWebsiteId')->willReturn($websiteId);
+
+        $product = $this->createStub(Product::class);
+        $product->method('getId')->willReturn($productId);
+
+        $pricingContext = $this->createStub(PricingContextInterface::class);
+        $pricingContext->method('getStore')->willReturn($store);
+        $pricingContext->method('getProduct')->willReturn($product);
+        $pricingContext->method('getSubProducts')->willReturn([]);
+
+        $localeDate = $this->createStub(TimezoneInterface::class);
+        $localeDate->method('scopeTimeStamp')->willReturn($timestamp);
+
+        $rule = $this->createMock(Rule::class);
+        $rule->expects($this->once())
+            ->method('getAllRulePricesFromProduct')
+            ->willReturn($dbRules);
+
+        $resourceRuleFactory = $this->createMock(RuleFactory::class);
+        $resourceRuleFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($rule);
+
+        $manager = $this->createObjectToTest(
+            resourceRuleFactory: $resourceRuleFactory,
+            localeDate: $localeDate
+        );
+
+        $result1 = $manager->getProductRules($pricingContext);
+        $result2 = $manager->getProductRules($pricingContext);
+
+        $this->assertSame([0 => 99.99], $result1);
+        $this->assertSame([0 => 99.99], $result2);
     }
 
     public function testGetProductRulesHandlesSubProducts(): void
@@ -160,14 +145,6 @@ class CatalogRulesManagerTest extends TestCase
         $localeDate = $this->createStub(TimezoneInterface::class);
         $localeDate->method('scopeTimeStamp')->willReturn($timestamp);
 
-        $rulePricesStorage = $this->createMock(RulePricesStorage::class);
-        $rulePricesStorage->expects($this->atLeastOnce())
-            ->method('hasRulePrice')
-            ->willReturn(false);
-        $rulePricesStorage->expects($this->once())
-            ->method('getRulePrice')
-            ->willReturn([]);
-
         $rule = $this->createMock(Rule::class);
         $rule->expects($this->once())
             ->method('getAllRulePricesFromProduct')
@@ -184,7 +161,6 @@ class CatalogRulesManagerTest extends TestCase
             ->willReturn($rule);
 
         $manager = $this->createObjectToTest(
-            rulePricesStorage: $rulePricesStorage,
             resourceRuleFactory: $resourceRuleFactory,
             localeDate: $localeDate
         );
@@ -200,7 +176,10 @@ class CatalogRulesManagerTest extends TestCase
         $subProductId = 101;
         $websiteId = 1;
         $timestamp = 1697241600;
-        $subProductRules = [0 => 49.99];
+        $dbRules = [
+            ['product_id' => 100, 'customer_group_id' => 0, 'rule_price' => '99.99'],
+            ['product_id' => 101, 'customer_group_id' => 0, 'rule_price' => '49.99'],
+        ];
 
         $store = $this->createStub(Store::class);
         $store->method('getWebsiteId')->willReturn($websiteId);
@@ -219,85 +198,76 @@ class CatalogRulesManagerTest extends TestCase
         $localeDate = $this->createStub(TimezoneInterface::class);
         $localeDate->method('scopeTimeStamp')->willReturn($timestamp);
 
-        $rulePricesStorage = $this->createMock(RulePricesStorage::class);
-        $rulePricesStorage->expects($this->atLeastOnce())
-            ->method('hasRulePrice')
-            ->willReturn(true);
-        $rulePricesStorage->expects($this->once())
-            ->method('getRulePrice')
-            ->with('101|1')
-            ->willReturn($subProductRules);
+        $rule = $this->createStub(Rule::class);
+        $rule->method('getAllRulePricesFromProduct')->willReturn($dbRules);
+
+        $resourceRuleFactory = $this->createStub(RuleFactory::class);
+        $resourceRuleFactory->method('create')->willReturn($rule);
 
         $manager = $this->createObjectToTest(
-            rulePricesStorage: $rulePricesStorage,
+            resourceRuleFactory: $resourceRuleFactory,
             localeDate: $localeDate
         );
 
         $result = $manager->getProductRules($pricingContext, $subProduct);
 
-        $this->assertSame($subProductRules, $result);
+        $this->assertSame([0 => 49.99], $result);
     }
 
     public function testGetProductRulesOnlyFetchesMissingRules(): void
     {
-        $mainProductId = 100;
-        $cachedSubProductId = 101;
-        $uncachedSubProductId = 102;
+        $product1Id = 100;
+        $product2Id = 101;
         $websiteId = 1;
         $timestamp = 1697241600;
+        $dbRules1 = [
+            ['product_id' => 100, 'customer_group_id' => 0, 'rule_price' => '99.99'],
+        ];
+        $dbRules2 = [
+            ['product_id' => 101, 'customer_group_id' => 0, 'rule_price' => '49.99'],
+        ];
 
         $store = $this->createStub(Store::class);
         $store->method('getWebsiteId')->willReturn($websiteId);
 
-        $mainProduct = $this->createStub(Product::class);
-        $mainProduct->method('getId')->willReturn($mainProductId);
+        $product1 = $this->createStub(Product::class);
+        $product1->method('getId')->willReturn($product1Id);
 
-        $cachedSubProduct = $this->createStub(Product::class);
-        $cachedSubProduct->method('getId')->willReturn($cachedSubProductId);
+        $product2 = $this->createStub(Product::class);
+        $product2->method('getId')->willReturn($product2Id);
 
-        $uncachedSubProduct = $this->createStub(Product::class);
-        $uncachedSubProduct->method('getId')->willReturn($uncachedSubProductId);
+        $pricingContext1 = $this->createStub(PricingContextInterface::class);
+        $pricingContext1->method('getStore')->willReturn($store);
+        $pricingContext1->method('getProduct')->willReturn($product1);
+        $pricingContext1->method('getSubProducts')->willReturn([]);
 
-        $pricingContext = $this->createStub(PricingContextInterface::class);
-        $pricingContext->method('getStore')->willReturn($store);
-        $pricingContext->method('getProduct')->willReturn($mainProduct);
-        $pricingContext->method('getSubProducts')->willReturn([$cachedSubProduct, $uncachedSubProduct]);
+        $pricingContext2 = $this->createStub(PricingContextInterface::class);
+        $pricingContext2->method('getStore')->willReturn($store);
+        $pricingContext2->method('getProduct')->willReturn($product1);
+        $pricingContext2->method('getSubProducts')->willReturn([$product2]);
 
         $localeDate = $this->createStub(TimezoneInterface::class);
         $localeDate->method('scopeTimeStamp')->willReturn($timestamp);
 
-        $rulePricesStorage = $this->createMock(RulePricesStorage::class);
-        $rulePricesStorage->expects($this->atLeastOnce())
-            ->method('hasRulePrice')
-            ->willReturnCallback(function ($key) {
-                return $key === '101|1';
-            });
-        $rulePricesStorage->expects($this->once())
-            ->method('getRulePrice')
-            ->willReturn([]);
-
         $rule = $this->createMock(Rule::class);
-        $rule->expects($this->once())
+        $rule->expects($this->exactly(2))
             ->method('getAllRulePricesFromProduct')
-            ->with(
-                $this->anything(),
-                $websiteId,
-                [$mainProductId, $uncachedSubProductId]
-            )
-            ->willReturn([]);
+            ->willReturnOnConsecutiveCalls($dbRules1, $dbRules2);
 
         $resourceRuleFactory = $this->createMock(RuleFactory::class);
-        $resourceRuleFactory->expects($this->once())
+        $resourceRuleFactory->expects($this->exactly(2))
             ->method('create')
             ->willReturn($rule);
 
         $manager = $this->createObjectToTest(
-            rulePricesStorage: $rulePricesStorage,
             resourceRuleFactory: $resourceRuleFactory,
             localeDate: $localeDate
         );
 
-        $manager->getProductRules($pricingContext);
+        $manager->getProductRules($pricingContext1);
+        $result = $manager->getProductRules($pricingContext2);
+
+        $this->assertSame([0 => 99.99], $result);
     }
 
     public function testGetProductRulesConvertsRulePricesToFloats(): void
@@ -331,36 +301,19 @@ class CatalogRulesManagerTest extends TestCase
         $resourceRuleFactory = $this->createStub(RuleFactory::class);
         $resourceRuleFactory->method('create')->willReturn($rule);
 
-        $capturedPrices = null;
-        $rulePricesStorage = $this->createMock(RulePricesStorage::class);
-        $rulePricesStorage->expects($this->once())
-            ->method('hasRulePrice')
-            ->willReturn(false);
-        $rulePricesStorage->expects($this->once())
-            ->method('setRulePrice')
-            ->with('300|1', $this->anything())
-            ->willReturnCallback(function ($key, $prices) use (&$capturedPrices) {
-                $capturedPrices = $prices;
-            });
-        $rulePricesStorage->expects($this->once())
-            ->method('getRulePrice')
-            ->willReturn([]);
-
         $manager = $this->createObjectToTest(
-            rulePricesStorage: $rulePricesStorage,
             resourceRuleFactory: $resourceRuleFactory,
             localeDate: $localeDate
         );
 
-        $manager->getProductRules($pricingContext);
+        $result = $manager->getProductRules($pricingContext);
 
-        $this->assertIsArray($capturedPrices);
-        $this->assertSame(99.99, $capturedPrices[0]);
-        $this->assertSame(89.0, $capturedPrices[1]);
-        $this->assertSame(79.999, $capturedPrices[2]);
+        $this->assertSame(99.99, $result[0]);
+        $this->assertSame(89.0, $result[1]);
+        $this->assertSame(79.999, $result[2]);
     }
 
-    public function testGetProductRulesStoresEmptyArrayForProductsWithoutRules(): void
+    public function testGetProductRulesReturnsEmptyArrayForProductsWithoutRules(): void
     {
         $product1Id = 100;
         $product2Id = 200;
@@ -379,10 +332,15 @@ class CatalogRulesManagerTest extends TestCase
         $product2 = $this->createStub(Product::class);
         $product2->method('getId')->willReturn($product2Id);
 
-        $pricingContext = $this->createStub(PricingContextInterface::class);
-        $pricingContext->method('getStore')->willReturn($store);
-        $pricingContext->method('getProduct')->willReturn($product1);
-        $pricingContext->method('getSubProducts')->willReturn([$product2]);
+        $pricingContext1 = $this->createStub(PricingContextInterface::class);
+        $pricingContext1->method('getStore')->willReturn($store);
+        $pricingContext1->method('getProduct')->willReturn($product1);
+        $pricingContext1->method('getSubProducts')->willReturn([$product2]);
+
+        $pricingContext2 = $this->createStub(PricingContextInterface::class);
+        $pricingContext2->method('getStore')->willReturn($store);
+        $pricingContext2->method('getProduct')->willReturn($product2);
+        $pricingContext2->method('getSubProducts')->willReturn([]);
 
         $localeDate = $this->createStub(TimezoneInterface::class);
         $localeDate->method('scopeTimeStamp')->willReturn($timestamp);
@@ -393,31 +351,50 @@ class CatalogRulesManagerTest extends TestCase
         $resourceRuleFactory = $this->createStub(RuleFactory::class);
         $resourceRuleFactory->method('create')->willReturn($rule);
 
-        $capturedCalls = [];
-        $rulePricesStorage = $this->createMock(RulePricesStorage::class);
-        $rulePricesStorage->expects($this->exactly(2))
-            ->method('hasRulePrice')
-            ->willReturn(false);
-        $rulePricesStorage->expects($this->exactly(2))
-            ->method('setRulePrice')
-            ->willReturnCallback(function ($key, $prices) use (&$capturedCalls) {
-                $capturedCalls[$key] = $prices;
-            });
-        $rulePricesStorage->expects($this->once())
-            ->method('getRulePrice')
-            ->willReturn([]);
-
         $manager = $this->createObjectToTest(
-            rulePricesStorage: $rulePricesStorage,
             resourceRuleFactory: $resourceRuleFactory,
             localeDate: $localeDate
         );
 
-        $manager->getProductRules($pricingContext);
+        $manager->getProductRules($pricingContext1);
+        $result = $manager->getProductRules($pricingContext2);
 
-        $this->assertArrayHasKey('100|1', $capturedCalls);
-        $this->assertArrayHasKey('200|1', $capturedCalls);
-        $this->assertSame([0 => 99.99], $capturedCalls['100|1']);
-        $this->assertSame([], $capturedCalls['200|1']);
+        $this->assertSame([], $result);
+    }
+
+    public function testGetProductRulesReturnsEmptyArrayWhenDatabaseReturnsNoRules(): void
+    {
+        $productId = 999;
+        $websiteId = 1;
+        $timestamp = 1697241600;
+
+        $store = $this->createStub(Store::class);
+        $store->method('getWebsiteId')->willReturn($websiteId);
+
+        $product = $this->createStub(Product::class);
+        $product->method('getId')->willReturn($productId);
+
+        $pricingContext = $this->createStub(PricingContextInterface::class);
+        $pricingContext->method('getStore')->willReturn($store);
+        $pricingContext->method('getProduct')->willReturn($product);
+        $pricingContext->method('getSubProducts')->willReturn([]);
+
+        $localeDate = $this->createStub(TimezoneInterface::class);
+        $localeDate->method('scopeTimeStamp')->willReturn($timestamp);
+
+        $rule = $this->createStub(Rule::class);
+        $rule->method('getAllRulePricesFromProduct')->willReturn([]);
+
+        $resourceRuleFactory = $this->createStub(RuleFactory::class);
+        $resourceRuleFactory->method('create')->willReturn($rule);
+
+        $manager = $this->createObjectToTest(
+            resourceRuleFactory: $resourceRuleFactory,
+            localeDate: $localeDate
+        );
+
+        $result = $manager->getProductRules($pricingContext);
+
+        $this->assertSame([], $result);
     }
 }

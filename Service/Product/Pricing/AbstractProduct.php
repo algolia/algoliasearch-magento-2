@@ -59,14 +59,7 @@ abstract class AbstractProduct
         if ($this->configHelper->isFptEnabled($product->getStoreId())) {
             $price += $this->pricingHelper->getWeeeAmount($product);
         }
-        if ($pricingContext->isCurrencyDifferentFromBase()) {
-            $price = $this->pricingHelper->convertPrice(
-                $price,
-                $pricingContext->getStore(),
-                $pricingContext->getCurrencyCode()
-            );
-        }
-
+        $price = $this->pricingHelper->handleConversion($price, $pricingContext);
         $price = $this->pricingHelper->getTaxPrice($product, $price, $pricingContext->shouldIncludeTax());
         $priceData->setPrice($this->pricingHelper->round($price));
 
@@ -89,14 +82,8 @@ abstract class AbstractProduct
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
+            $discountedPrice = $this->pricingHelper->handleConversion($discountedPrice, $pricingContext);
 
-            if ($pricingContext->isCurrencyDifferentFromBase()) {
-                $discountedPrice = $this->pricingHelper->convertPrice(
-                    $discountedPrice,
-                    $pricingContext->getStore(),
-                    $pricingContext->getCurrencyCode()
-                );
-            }
             if ($discountedPrice) {
                 $priceData->setPrice(
                     $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->shouldIncludeTax()),
@@ -224,16 +211,10 @@ abstract class AbstractProduct
                 $specialPrice[$groupId] = min($specialPrices[$groupId]);
             }
             if ($specialPrice[$groupId]) {
-                if ($pricingContext->isCurrencyDifferentFromBase()) {
-                    $specialPrice[$groupId] =
-                        $this->pricingHelper->round(
-                            $this->pricingHelper->convertPrice(
-                                $specialPrice[$groupId],
-                                $pricingContext->getStore(),
-                                $pricingContext->getCurrencyCode()
-                            )
-                        );
-                }
+                $specialPrice[$groupId] = $this->pricingHelper->round(
+                    $this->pricingHelper->handleConversion($specialPrice[$groupId], $pricingContext)
+                );
+
                 $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice(
                     $product,
                     $specialPrice[$groupId],
@@ -290,16 +271,7 @@ abstract class AbstractProduct
                     min($currentTierPrice, $tierPrices[$groupId]);
             }
 
-            if ($pricingContext->isCurrencyDifferentFromBase()) {
-                $currentTierPrice =
-                    $this->pricingHelper->round(
-                        $this->pricingHelper->convertPrice(
-                            $currentTierPrice,
-                            $product->getStore(),
-                            $pricingContext->getCurrencyCode()
-                        )
-                    );
-            }
+            $currentTierPrice = $this->pricingHelper->handleConversion($currentTierPrice, $pricingContext);
             $tierPrice[$groupId] = $this->pricingHelper->getTaxPrice(
                 $product,
                 $currentTierPrice,

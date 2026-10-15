@@ -70,7 +70,7 @@ class CatalogRulesManager
 
         foreach ($productIds as $productId) {
             $key = $this->getStorageKey($productId, $websiteId);
-            $this->rulePricesStorage->setRulePrice($key, $prices ?? false);
+            $this->rulePricesStorage->setRulePrice($key, $prices[$key] ?? []);
         }
     }
 }

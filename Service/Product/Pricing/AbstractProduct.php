@@ -189,6 +189,11 @@ abstract class AbstractProduct
         }
     }
 
+    protected function getRulePrice(PricingContextInterface $pricingContext, array $catalogRules, int $groupId): float
+    {
+        return $catalogRules[$groupId];
+    }
+
     protected function getSpecialPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
     {
         $product = $subProduct ?? $pricingContext->getProduct();
@@ -198,7 +203,9 @@ abstract class AbstractProduct
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $specialPrices[$groupId] = [];
-            $specialPrices[$groupId][] = $catalogRules[$groupId] ?? false;
+            $specialPrices[$groupId][] = !empty($catalogRules[$groupId]) ?
+                $this->getRulePrice($pricingContext, $catalogRules, $groupId) :
+                false;
             // The price with applied catalog rules
             $finalPrice = $product->getFinalPrice(); // The product's special price
             if ($pricingContext->isFptEnabled()) {

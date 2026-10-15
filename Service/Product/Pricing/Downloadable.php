@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Customer\Model\Group;
@@ -18,13 +19,15 @@ class Downloadable extends AbstractProduct
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
-        protected PriceDataFormatter $priceDataFormatter
+        protected PriceDataFormatter $priceDataFormatter,
+        protected CatalogRulesManager $catalogRulesManager
     ) {
         parent::__construct(
             $configHelper,
             $pricingHelper,
             $logger,
-            $priceDataFormatter
+            $priceDataFormatter,
+            $catalogRulesManager
         );
     }
 
@@ -45,14 +48,7 @@ class Downloadable extends AbstractProduct
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
-
-            if ($pricingContext->isCurrencyDifferentFromBase()) {
-                $discountedPrice = $this->pricingHelper->convertPrice(
-                    $discountedPrice,
-                    $pricingContext->getStore(),
-                    $pricingContext->getCurrencyCode()
-                );
-            }
+            $discountedPrice = $this->pricingHelper->handleConversion($discountedPrice, $pricingContext);
 
             if ($discountedPrice !== false) {
                 $priceData->setPrice(

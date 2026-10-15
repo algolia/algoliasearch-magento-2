@@ -4,42 +4,27 @@ namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterfaceFactory;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle as PriceManagerBundle;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable as PriceManagerConfigurable;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable as PriceManagerDownloadable;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Grouped as PriceManagerGrouped;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Simple as PriceManagerSimple;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Virtual as PriceManagerVirtual;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\AbstractProduct as Pricing;
 use Magento\Catalog\Model\Product;
 use Magento\Tax\Helper\Data as TaxHelper;
 use Magento\Tax\Model\Config as TaxConfig;
 
 class PricingManagerV2
 {
+    public const string DEFAULT_PM = 'priceManager';
+
     public function __construct(
         protected TaxHelper $taxHelper,
-        protected PriceManagerSimple $priceManagerSimple,
-        protected PriceManagerVirtual $priceManagerVirtual,
-        protected PriceManagerDownloadable $priceManagerDownloadable,
-        protected PriceManagerConfigurable $priceManagerConfigurable,
-        protected PriceManagerBundle $priceManagerBundle,
-        protected PriceManagerGrouped $priceManagerGrouped,
+        protected ConfigHelper $configHelper,
         protected PriceDataInterfaceFactory $priceDataFactory,
-        protected PricingContextInterfaceFactory $pricingContextFactory
+        protected PricingContextInterfaceFactory $pricingContextFactory,
+        protected array $priceManagers = [],
     ) {}
 
-    /**
-     * @param $customData
-     * @param Product $product
-     * @param $subProducts
-     * @return mixed
-     */
-    public function addPriceDataByProductType($customData, Product $product, $subProducts)
+    public function addPriceDataByProductType(array $customData, Product $product, array $subProducts): array
     {
-        $priceManager = 'priceManager' . ucfirst($product->getTypeId());
-        if (!property_exists($this, $priceManager)) {
-            $priceManager = 'priceManagerSimple';
-        }
+        $priceManager = $this->resolvePriceManager($product);
 
         $priceFields = $this->getPriceFields($product);
         $currencies = $product->getStore()->getAvailableCurrencyCodes(true);
@@ -54,7 +39,7 @@ class PricingManagerV2
                 $pricingContext->setCurrencyCode($currencyCode);
                 $pricingContext->setShouldIncludeTax($shouldIncludeTax);
 
-                $priceArray = $this->{$priceManager}->calculatePriceData(
+                $priceArray = $priceManager->calculatePriceData(
                     $this->priceDataFactory->create(),
                     $pricingContext
                 )->toArray();
@@ -68,10 +53,17 @@ class PricingManagerV2
         return $customData;
     }
 
-    /**
-     * @param Product $product
-     * @return array
-     */
+    protected function resolvePriceManager(Product $product): Pricing
+    {
+        $priceManager = self::DEFAULT_PM . ucfirst($product->getTypeId());
+
+        if (isset($this->priceManagers[$priceManager])) {
+            return $this->priceManagers[$priceManager];
+        }
+
+        return $this->priceManagers[self::DEFAULT_PM . 'Simple'];
+    }
+
     protected function getPriceFields(Product $product): array
     {
         $priceDisplayType = $this->taxHelper->getPriceDisplayType($product->getStore());

@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
@@ -22,13 +23,15 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
-        protected PriceDataFormatter $priceDataFormatter
+        protected PriceDataFormatter $priceDataFormatter,
+        protected CatalogRulesManager $catalogRulesManager
     ) {
         parent::__construct(
             $configHelper,
             $pricingHelper,
             $logger,
-            $priceDataFormatter
+            $priceDataFormatter,
+            $catalogRulesManager
         );
     }
 
@@ -86,20 +89,9 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         }
 
         $finalPrice = $subProduct->getFinalPrice();
+        $finalPrice = $this->pricingHelper->handleConversion($finalPrice, $pricingContext);
         $basePrice  = $subProduct->getPrice();
-
-        if ($pricingContext->isCurrencyDifferentFromBase()) {
-            $finalPrice = $this->pricingHelper->convertPrice(
-                $finalPrice,
-                $pricingContext->getStore(),
-                $pricingContext->getCurrencyCode()
-            );
-            $basePrice  = $this->pricingHelper->convertPrice(
-                $basePrice,
-                $pricingContext->getStore(),
-                $pricingContext->getCurrencyCode()
-            );
-        }
+        $basePrice = $this->pricingHelper->handleConversion($basePrice, $pricingContext);
 
         $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax());
         $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax());

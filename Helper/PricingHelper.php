@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Helper;
 
-use DateTime;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Magento\Catalog\Helper\Data as CatalogHelper;
 use Magento\CatalogRule\Model\ResourceModel\Rule;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
@@ -51,6 +51,15 @@ class PricingHelper
     public function convertPrice($amount, $store, $currencyCode): float
     {
         return $this->priceCurrency->convert($amount, $store, $currencyCode);
+    }
+
+    public function handleConversion(?float $amount, PricingContextInterface $pricingContext): float|null
+    {
+        if ($amount === null || !$pricingContext->isCurrencyDifferentFromBase()) {
+            return $amount;
+        }
+
+        return $this->convertPrice($amount, $pricingContext->getStore(), $pricingContext->getCurrencyCode());
     }
 
     /**
@@ -124,21 +133,6 @@ class PricingHelper
         } else {
             return $this->formatPrice($min, $store, $currencyCode);
         }
-    }
-
-    /**
-     * @param $groupId
-     * @param $product
-     * @return float
-     */
-    public function getRulePrice($groupId, $product): float
-    {
-        return (float) $this->rule->getRulePrice(
-            new DateTime(),
-            $product->getStore()->getWebsiteId(),
-            $groupId,
-            $product->getId()
-        );
     }
 
     /**

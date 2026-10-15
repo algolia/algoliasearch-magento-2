@@ -8,13 +8,13 @@ use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\Collection as CustomerGroupResourceCollection;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Store\Model\Store;
 
 abstract class AbstractProduct
 {
@@ -24,7 +24,8 @@ abstract class AbstractProduct
         protected ConfigHelper $configHelper,
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
-        protected PriceDataFormatter $priceDataFormatter
+        protected PriceDataFormatter $priceDataFormatter,
+        protected CatalogRulesManager $catalogRulesManager
     ) {}
 
     /**
@@ -58,14 +59,7 @@ abstract class AbstractProduct
         if ($this->configHelper->isFptEnabled($product->getStoreId())) {
             $price += $this->pricingHelper->getWeeeAmount($product);
         }
-        if ($pricingContext->isCurrencyDifferentFromBase()) {
-            $price = $this->pricingHelper->convertPrice(
-                $price,
-                $pricingContext->getStore(),
-                $pricingContext->getCurrencyCode()
-            );
-        }
-
+        $price = $this->pricingHelper->handleConversion($price, $pricingContext);
         $price = $this->pricingHelper->getTaxPrice($product, $price, $pricingContext->shouldIncludeTax());
         $priceData->setPrice($this->pricingHelper->round($price));
 
@@ -88,14 +82,8 @@ abstract class AbstractProduct
             $product->setData('customer_group_id', $groupId);
             $product->setData('website_id', $product->getStore()->getWebsiteId());
             $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
+            $discountedPrice = $this->pricingHelper->handleConversion($discountedPrice, $pricingContext);
 
-            if ($pricingContext->isCurrencyDifferentFromBase()) {
-                $discountedPrice = $this->pricingHelper->convertPrice(
-                    $discountedPrice,
-                    $pricingContext->getStore(),
-                    $pricingContext->getCurrencyCode()
-                );
-            }
             if ($discountedPrice) {
                 $priceData->setPrice(
                     $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->shouldIncludeTax()),
@@ -201,15 +189,23 @@ abstract class AbstractProduct
         }
     }
 
+    protected function getRulePrice(PricingContextInterface $pricingContext, array $catalogRules, int $groupId): float
+    {
+        return $catalogRules[$groupId];
+    }
+
     protected function getSpecialPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
     {
         $product = $subProduct ?? $pricingContext->getProduct();
+        $catalogRules = $this->catalogRulesManager->getProductRules($pricingContext, $subProduct);
         $specialPrice = [];
         /** @var Group $group */
         foreach ($this->groups as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $specialPrices[$groupId] = [];
-            $specialPrices[$groupId][] = $this->pricingHelper->getRulePrice($groupId, $product);
+            $specialPrices[$groupId][] = !empty($catalogRules[$groupId]) ?
+                $this->getRulePrice($pricingContext, $catalogRules, $groupId) :
+                false;
             // The price with applied catalog rules
             $finalPrice = $product->getFinalPrice(); // The product's special price
             if ($pricingContext->isFptEnabled()) {
@@ -222,16 +218,10 @@ abstract class AbstractProduct
                 $specialPrice[$groupId] = min($specialPrices[$groupId]);
             }
             if ($specialPrice[$groupId]) {
-                if ($pricingContext->isCurrencyDifferentFromBase()) {
-                    $specialPrice[$groupId] =
-                        $this->pricingHelper->round(
-                            $this->pricingHelper->convertPrice(
-                                $specialPrice[$groupId],
-                                $pricingContext->getStore(),
-                                $pricingContext->getCurrencyCode()
-                            )
-                        );
-                }
+                $specialPrice[$groupId] = $this->pricingHelper->round(
+                    $this->pricingHelper->handleConversion($specialPrice[$groupId], $pricingContext)
+                );
+
                 $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice(
                     $product,
                     $specialPrice[$groupId],
@@ -241,11 +231,6 @@ abstract class AbstractProduct
         }
 
         return $specialPrice;
-    }
-
-    protected function getRulePrice($groupId, $product, $subProducts)
-    {
-        return $this->pricingHelper->getRulePrice($groupId, $product);
     }
 
     protected function getTierPrice(PricingContextInterface $pricingContext, ?Product $subProduct = null): array
@@ -293,16 +278,7 @@ abstract class AbstractProduct
                     min($currentTierPrice, $tierPrices[$groupId]);
             }
 
-            if ($pricingContext->isCurrencyDifferentFromBase()) {
-                $currentTierPrice =
-                    $this->pricingHelper->round(
-                        $this->pricingHelper->convertPrice(
-                            $currentTierPrice,
-                            $product->getStore(),
-                            $pricingContext->getCurrencyCode()
-                        )
-                    );
-            }
+            $currentTierPrice = $this->pricingHelper->handleConversion($currentTierPrice, $pricingContext);
             $tierPrice[$groupId] = $this->pricingHelper->getTaxPrice(
                 $product,
                 $currentTierPrice,

@@ -56,6 +56,19 @@
         </arguments>
     </type>
 
+    <type name="Algolia\AlgoliaSearch\Service\Product\PricingManagerV2">
+        <arguments>
+            <argument name="priceManagers" xsi:type="array">
+                <item name="priceManagerBundle" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle</item>
+                <item name="priceManagerConfigurable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable</item>
+                <item name="priceManagerDownloadable" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Downloadable</item>
+                <item name="priceManagerGrouped" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Grouped</item>
+                <item name="priceManagerSimple" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Simple</item>
+                <item name="priceManagerVirtual" xsi:type="object">Algolia\AlgoliaSearch\Service\Product\Pricing\Virtual</item>
+            </argument>
+        </arguments>
+    </type>
+
     <!-- Algolia services -->
     <preference for="Algolia\AlgoliaSearch\Api\Insights\EventProcessorInterface" type="Algolia\AlgoliaSearch\Service\Insights\EventProcessor"/>
     <preference for="Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface" type="Algolia\AlgoliaSearch\Service\Product\ReplicaManager"/>

@@ -15,7 +15,7 @@ define([], function () {
                             data-position="${item.position}"
                             data-index="${item.__autocomplete_indexName}"
                             data-queryId="${item.__autocomplete_queryID}">
-                ${this.safeHighlight(components, item, "path")} (${item.product_count})
+                ${this.safeHighlight(components, item, "path")} ${this.getItemCount(item)}
             </a>`;
         },
 
@@ -33,6 +33,13 @@ define([], function () {
             } catch (e) {
                 return '';
             }
+        },
+
+        getItemCount: function(hit) {
+            if (hit.hasOwnProperty('product_count')) {
+                return `(${hit.product_count})`;
+            }
+            return '';
         }
     };
 });

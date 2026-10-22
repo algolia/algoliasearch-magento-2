@@ -82,6 +82,12 @@ class Bundle extends AbstractProductWithChildren
                 $groupPriceList[$groupId]['min'] += min($optionsValues);
                 $groupPriceList[$groupId]['max'] += max($optionsValues);
             }
+
+            $groupPriceList[$groupId]['min'] =
+                $this->pricingHelper->handleConversion($groupPriceList[$groupId]['min'], $pricingContext);
+            $groupPriceList[$groupId]['max'] =
+                $this->pricingHelper->handleConversion($groupPriceList[$groupId]['max'], $pricingContext);
+
         }
 
         return $groupPriceList;

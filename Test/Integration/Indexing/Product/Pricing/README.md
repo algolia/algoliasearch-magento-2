@@ -7,8 +7,17 @@ Compares old pricing implementation (V1 - Helper-based) vs new implementation (V
 
 ## Test Coverage
 
+All test classes extend `AbstractPricingV1VsV2TestCase` which provides shared comparison utilities.
+
 ### DefaultPricingV1VsV2Test
 Tests **default/basic pricing scenarios** without customer groups, special prices, catalog rules, or tier prices. Validates core pricing logic across all product types.
+
+**Tests**: 6 product types (simple x2, configurable x2, bundle, grouped)
+
+### CustomerGroupPricingV1VsV2Test
+Tests **customer group pricing** with multiple customer groups enabled. Validates that group-specific prices are calculated identically by V1 and V2.
+
+**Tests**: 6 product types (simple x2, configurable x2, bundle, grouped) with customer groups enabled
 
 ## What's Tested
 
@@ -36,10 +45,22 @@ Each test compares V1 vs V2 output for all:
 ## Running Tests
 
 ```bash
-# Run all default pricing comparison tests
+# Run ALL pricing comparison tests (default + customer groups)
+vendor/bin/phpunit \
+  -c dev/tests/integration/phpunit.xml.dist \
+  --group algolia_pricing_comparison \
+  vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
+
+# Run only default pricing tests
 vendor/bin/phpunit \
   -c dev/tests/integration/phpunit.xml.dist \
   --filter DefaultPricingV1VsV2Test \
+  vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
+
+# Run only customer group pricing tests
+vendor/bin/phpunit \
+  -c dev/tests/integration/phpunit.xml.dist \
+  --filter CustomerGroupPricingV1VsV2Test \
   vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
 
 # Run specific test method
@@ -48,10 +69,15 @@ vendor/bin/phpunit \
   --filter DefaultPricingV1VsV2Test::testSimpleProduct \
   vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
 
-# Run by group
+# Run by group tag
 vendor/bin/phpunit \
   -c dev/tests/integration/phpunit.xml.dist \
   --group algolia_pricing_default \
+  vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
+
+vendor/bin/phpunit \
+  -c dev/tests/integration/phpunit.xml.dist \
+  --group algolia_pricing_customer_groups \
   vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
 ```
 

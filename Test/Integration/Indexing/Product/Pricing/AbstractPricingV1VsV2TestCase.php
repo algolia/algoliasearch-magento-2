@@ -17,7 +17,7 @@ use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Abstract base class for Pricing V1 vs V2 integration tests
+ * Abstract base test case for Pricing V1 vs V2 integration tests
  *
  * Provides shared utilities for:
  * - Config management (forcing V1 to use its actual implementation)
@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Child classes implement specific test scenarios (default, customer groups, catalog rules, etc.)
  */
-abstract class AbstractPricingV1VsV2Test extends TestCase
+abstract class AbstractPricingV1VsV2TestCase extends TestCase
 {
     protected const FLOAT_TOLERANCE = 0.001;
     protected const CONFIG_PATH_PRICING_ENGINE = 'algoliasearch_products/products/pricing_engine';

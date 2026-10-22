@@ -71,13 +71,7 @@ class PricingHelper
         return $this->priceCurrency->round($price);
     }
 
-    /**
-     * @param $product
-     * @param $amount
-     * @param $withTax
-     * @return float
-     */
-    public function getTaxPrice($product, $amount, $withTax): float
+    public function getTaxPrice($product, $amount, $withTax, $round = true): float
     {
         return (float) $this->catalogHelper->getTaxPrice(
             $product,
@@ -87,7 +81,8 @@ class PricingHelper
             null,
             null,
             $product->getStore(),
-            null
+            null,
+            $round
         );
     }
 

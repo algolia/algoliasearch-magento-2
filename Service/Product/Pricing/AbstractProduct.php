@@ -115,19 +115,27 @@ abstract class AbstractProduct
             /** @var Group $group */
             foreach ($this->groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
-                if ($specialPrice[$groupId]  && $specialPrice[$groupId] < $priceData->getPrice($groupId)) {
-                    $priceData->setPrice($specialPrice[$groupId], $groupId);
+                if ($specialPrice[$groupId]) {
+                    $roundedSpecialPrice = $this->pricingHelper->round($specialPrice[$groupId]);
 
-                    if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
-                        $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
+                    if ($roundedSpecialPrice < $priceData->getPrice($groupId)) {
+                        $priceData->setPrice($roundedSpecialPrice, $groupId);
+
+                        if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
+                            $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
+                        }
                     }
                 }
             }
         }
 
-        if ($specialPrice[0] && $specialPrice[0] < $priceData->getPrice()) {
-            $priceData->setOriginalPrice($priceData->getPrice());
-            $priceData->setPrice($this->pricingHelper->round($specialPrice[0]));
+        if ($specialPrice[0]) {
+            $roundedSpecialPrice = $this->pricingHelper->round($specialPrice[0]);
+
+            if ($roundedSpecialPrice < $priceData->getPrice()) {
+                $priceData->setOriginalPrice($priceData->getPrice());
+                $priceData->setPrice($roundedSpecialPrice);
+            }
         }
 
         $this->addSpecialPriceDates($priceData, $pricingContext);
@@ -217,15 +225,15 @@ abstract class AbstractProduct
             if ($specialPrices[$groupId] && $specialPrices[$groupId] !== []) {
                 $specialPrice[$groupId] = min($specialPrices[$groupId]);
             }
+
             if ($specialPrice[$groupId]) {
-                $specialPrice[$groupId] = $this->pricingHelper->round(
-                    $this->pricingHelper->handleConversion($specialPrice[$groupId], $pricingContext)
-                );
+                $specialPrice[$groupId] = $this->pricingHelper->handleConversion($specialPrice[$groupId], $pricingContext);
 
                 $specialPrice[$groupId] = $this->pricingHelper->getTaxPrice(
                     $product,
                     $specialPrice[$groupId],
-                    $pricingContext->shouldIncludeTax()
+                    $pricingContext->shouldIncludeTax(),
+                    false
                 );
             }
         }

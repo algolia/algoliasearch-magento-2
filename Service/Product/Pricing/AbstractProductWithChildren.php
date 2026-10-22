@@ -93,8 +93,8 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $basePrice  = $subProduct->getPrice();
         $basePrice = $this->pricingHelper->handleConversion($basePrice, $pricingContext);
 
-        $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax());
-        $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax());
+        $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax(), false);
+        $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax(), false);
 
         if ($pricingContext->isFptEnabled()) {
             $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);

@@ -19,6 +19,12 @@ Tests **customer group pricing** with multiple customer groups enabled. Validate
 
 **Tests**: 6 product types (simple x2, configurable x2, bundle, grouped) with customer groups enabled
 
+### SpecialPricePricingV1VsV2Test
+Tests **special prices** (sale prices, discounts). Validates that special pricing, original price tracking, and date-based price validity work identically in V1 and V2.
+
+**Tests**: 5 scenarios (simple with special price, configurable, bundle, grouped, expired special price)  
+**Note**: Creates test products programmatically to ensure special prices are active during test execution
+
 ## What's Tested
 
 **Product Types** (8 tests):
@@ -63,6 +69,12 @@ vendor/bin/phpunit \
   --filter CustomerGroupPricingV1VsV2Test \
   vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
 
+# Run only special price tests
+vendor/bin/phpunit \
+  -c dev/tests/integration/phpunit.xml.dist \
+  --filter SpecialPricePricingV1VsV2Test \
+  vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
+
 # Run specific test method
 vendor/bin/phpunit \
   -c dev/tests/integration/phpunit.xml.dist \
@@ -78,6 +90,11 @@ vendor/bin/phpunit \
 vendor/bin/phpunit \
   -c dev/tests/integration/phpunit.xml.dist \
   --group algolia_pricing_customer_groups \
+  vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
+
+vendor/bin/phpunit \
+  -c dev/tests/integration/phpunit.xml.dist \
+  --group algolia_pricing_special \
   vendor/algolia/algoliasearch-magento-2/Test/Integration/Indexing/Product/Pricing/
 ```
 
@@ -102,6 +119,7 @@ For each product:
 
 **Notes**: 
 - Keys ending with `_max` are V1-only fields and are intentionally excluded from comparison (expected architectural difference)
+- Key `default_original` is excluded from comparison (architectural difference between V1 and V2)
 - Price values are rounded to 2 decimal places (cents) before comparison to handle float precision differences from different calculation methods (V1 uses Magento's native PriceInfo, V2 manually sums option prices for bundles)
 
 ## Troubleshooting

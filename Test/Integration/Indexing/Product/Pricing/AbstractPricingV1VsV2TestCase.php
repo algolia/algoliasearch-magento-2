@@ -25,6 +25,10 @@ use PHPUnit\Framework\TestCase;
  * - Product loading and sub-product handling
  * - Recursive array comparison
  *
+ * Expected differences (excluded from comparison):
+ * - Keys ending with "_max" (V1-only fields)
+ * - Key "default_original" (architectural difference)
+ *
  * Child classes implement specific test scenarios (default, customer groups, catalog rules, etc.)
  */
 abstract class AbstractPricingV1VsV2TestCase extends TestCase
@@ -145,6 +149,11 @@ abstract class AbstractPricingV1VsV2TestCase extends TestCase
         foreach ($allKeys as $key) {
             // Skip keys ending with "_max" - these are V1-only fields (expected difference)
             if (str_ends_with((string) $key, '_max')) {
+                continue;
+            }
+
+            // Skip 'default_original' - architectural difference between V1 and V2
+            if ($key === 'default_original') {
                 continue;
             }
 

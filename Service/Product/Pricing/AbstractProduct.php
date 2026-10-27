@@ -4,12 +4,15 @@ namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
+use Algolia\AlgoliaSearch\Api\Product\PricingStrategyInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Group;
@@ -18,6 +21,7 @@ use Magento\Framework\Exception\LocalizedException;
 
 abstract class AbstractProduct
 {
+    protected PricingStrategyInterface $pricingStrategy;
     protected CustomerGroupResourceCollection $groups;
 
     public function __construct(
@@ -25,7 +29,9 @@ abstract class AbstractProduct
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
         protected PriceDataFormatter $priceDataFormatter,
-        protected CatalogRulesManager $catalogRulesManager
+        protected CatalogRulesManager $catalogRulesManager,
+        protected DefaultPricingStrategy $defaultPricingStrategy,
+        protected CustomerGroupPricingStrategy $customerGroupPricingStrategy
     ) {}
 
     /**
@@ -37,7 +43,14 @@ abstract class AbstractProduct
     {
         $this->logger->startProfiling(__METHOD__);
 
+        // Resolve pricing strategy based on customer groups configuration
+        $this->pricingStrategy = $pricingContext->areCustomerGroupsEnabled()
+            ? $this->customerGroupPricingStrategy
+            : $this->defaultPricingStrategy;
+
+        // Initialize groups collection for methods that still need it
         $this->groups = $this->pricingHelper->getCustomerGroupCollection();
+        $this->filterCustomerGroups($pricingContext);
 
         $priceData = $this->addDefaultPrice($priceData, $pricingContext);
         $priceData = $this->addCustomerGroupsPrices($priceData, $pricingContext);
@@ -69,39 +82,7 @@ abstract class AbstractProduct
     protected function addCustomerGroupsPrices(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
     : PriceDataInterface
     {
-        $product = $pricingContext->getProduct();
-        $this->filterCustomerGroups($pricingContext);
-
-        if (!$pricingContext->areCustomerGroupsEnabled()) {
-            return $priceData;
-        }
-
-        /** @var Group $group */
-        foreach ($this->groups as $group) {
-            $groupId = (int) $group->getData('customer_group_id');
-            $product->setData('customer_group_id', $groupId);
-            $product->setData('website_id', $product->getStore()->getWebsiteId());
-            $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
-            $discountedPrice = $this->pricingHelper->handleConversion($discountedPrice, $pricingContext);
-
-            if ($discountedPrice) {
-                $priceData->setPrice(
-                    $this->pricingHelper->getTaxPrice($product, $discountedPrice, $pricingContext->shouldIncludeTax()),
-                    $groupId
-                );
-
-                if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
-                    $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
-                }
-
-            } else {
-                $priceData->setPrice($priceData->getPrice(), $groupId);
-            }
-        }
-
-        $product->setData('customer_group_id', null);
-
-        return $priceData;
+        return $this->pricingStrategy->applyCustomerGroupPrices($priceData, $pricingContext);
     }
 
     protected function addSpecialPrices(
@@ -109,34 +90,9 @@ abstract class AbstractProduct
         PricingContextInterface $pricingContext
     ): PriceDataInterface
     {
-        $specialPrice = $this->getSpecialPrice($pricingContext);
+        $specialPricesByGroup = $this->getSpecialPrice($pricingContext);
 
-        if ($pricingContext->areCustomerGroupsEnabled()) {
-            /** @var Group $group */
-            foreach ($this->groups as $group) {
-                $groupId = (int) $group->getData('customer_group_id');
-                if ($specialPrice[$groupId]) {
-                    $roundedSpecialPrice = $this->pricingHelper->round($specialPrice[$groupId]);
-
-                    if ($roundedSpecialPrice < $priceData->getPrice($groupId)) {
-                        $priceData->setPrice($roundedSpecialPrice, $groupId);
-
-                        if ($priceData->getPrice() > $priceData->getPrice($groupId)) {
-                            $priceData->setOriginalPrice($priceData->getPrice(), $groupId);
-                        }
-                    }
-                }
-            }
-        }
-
-        if ($specialPrice[0]) {
-            $roundedSpecialPrice = $this->pricingHelper->round($specialPrice[0]);
-
-            if ($roundedSpecialPrice < $priceData->getPrice()) {
-                $priceData->setOriginalPrice($priceData->getPrice());
-                $priceData->setPrice($roundedSpecialPrice);
-            }
-        }
+        $priceData = $this->pricingStrategy->applySpecialPrices($priceData, $pricingContext, $specialPricesByGroup);
 
         $this->addSpecialPriceDates($priceData, $pricingContext);
 
@@ -148,24 +104,9 @@ abstract class AbstractProduct
         PricingContextInterface $pricingContext
     ) : PriceDataInterface
     {
-        $tierPrice = $this->getTierPrice($pricingContext);
+        $tierPricesByGroup = $this->getTierPrice($pricingContext);
 
-        if ($pricingContext->areCustomerGroupsEnabled()) {
-            /** @var Group $group */
-            foreach ($this->groups as $group) {
-                $groupId = (int) $group->getData('customer_group_id');
-
-                if ($tierPrice[$groupId]) {
-                    $priceData->setTierPrice($tierPrice[$groupId], $groupId);
-                }
-            }
-        }
-
-        if ($tierPrice[0]) {
-            $priceData->setTierPrice($this->pricingHelper->round($tierPrice[0]));
-        }
-
-        return $priceData;
+        return $this->pricingStrategy->applyTierPrices($priceData, $tierPricesByGroup);
     }
 
     protected function addComplexPricing(PriceDataInterface $priceData, PricingContextInterface $pricingContext)

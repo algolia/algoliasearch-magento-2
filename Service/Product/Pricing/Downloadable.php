@@ -9,7 +9,10 @@ use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
 class Downloadable extends AbstractProduct
@@ -20,14 +23,18 @@ class Downloadable extends AbstractProduct
         protected PricingHelper $pricingHelper,
         protected DiagnosticsLogger $logger,
         protected PriceDataFormatter $priceDataFormatter,
-        protected CatalogRulesManager $catalogRulesManager
+        protected CatalogRulesManager $catalogRulesManager,
+        protected DefaultPricingStrategy $defaultPricingStrategy,
+        protected CustomerGroupPricingStrategy $customerGroupPricingStrategy
     ) {
         parent::__construct(
             $configHelper,
             $pricingHelper,
             $logger,
             $priceDataFormatter,
-            $catalogRulesManager
+            $catalogRulesManager,
+            $defaultPricingStrategy,
+            $customerGroupPricingStrategy
         );
     }
 
@@ -35,7 +42,6 @@ class Downloadable extends AbstractProduct
     : PriceDataInterface
     {
         $product = $pricingContext->getProduct();
-        $this->filterCustomerGroups($pricingContext);
 
         if (!$pricingContext->areCustomerGroupsEnabled()) {
             return $priceData;
@@ -59,7 +65,6 @@ class Downloadable extends AbstractProduct
                     ),
                     $groupId
                 );
-
             } else {
                 $priceData->setPrice($priceData->getPrice(), $groupId);
             }

@@ -11,6 +11,7 @@ use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
 use Magento\Catalog\Model\Product;
@@ -24,6 +25,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         protected DiagnosticsLogger $logger,
         protected PriceDataFormatter $priceDataFormatter,
         protected CatalogRulesManager $catalogRulesManager,
+        protected CustomerGroupsManager $customerGroupsManager,
         protected DefaultPricingStrategy $defaultPricingStrategy,
         protected CustomerGroupPricingStrategy $customerGroupPricingStrategy
     ) {
@@ -33,6 +35,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $logger,
             $priceDataFormatter,
             $catalogRulesManager,
+            $customerGroupsManager,
             $defaultPricingStrategy,
             $customerGroupPricingStrategy
         );
@@ -44,7 +47,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $minMaxPrices = $this->getChildrenMinMaxPrices($pricingContext);
 
         $priceData = $this->addOriginalPrice($priceData, $minMaxPrices);
-        $priceData = $this->addPriceRange($priceData, $minMaxPrices);
+        $priceData = $this->addPriceRange($priceData, $pricingContext, $minMaxPrices);
         $priceData = $this->addChildrenCustomerGroupsPrices($priceData, $pricingContext, $minMaxPrices);
 
         return $priceData;
@@ -128,10 +131,11 @@ abstract class AbstractProductWithChildren extends AbstractProduct
 
     protected function addPriceRange(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         MinMaxPricesInterface $minMaxPrices
     ): PriceDataInterface
     {
-        return $this->pricingStrategy->applyPriceRange($priceData, $minMaxPrices);
+        return $this->pricingStrategy->applyPriceRange($priceData, $pricingContext, $minMaxPrices);
     }
 
     protected function addChildrenCustomerGroupsPrices(
@@ -144,7 +148,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             return $priceData;
         }
 
-        $priceData = $this->pricingStrategy->applyChildrenCustomerGroupPrices($priceData, $minMaxPrices);
+        $priceData = $this->pricingStrategy->applyChildrenCustomerGroupPrices($priceData, $pricingContext, $minMaxPrices);
         $min = $minMaxPrices->getMin();
         $priceData = $this->addCustomerGroupsFinalPrices($priceData, $pricingContext, $min);
 

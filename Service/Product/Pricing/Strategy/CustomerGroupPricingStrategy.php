@@ -7,6 +7,7 @@ use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Api\Product\PricingStrategyInterface;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
 
@@ -19,37 +20,16 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
     public const int PRICE_NOT_SET = -1;
 
     public function __construct(
-        protected PricingHelper $pricingHelper
+        protected PricingHelper $pricingHelper,
+        protected CustomerGroupsManager $customerGroupsManager
     ) {}
-
-    public function getCustomerGroupsForCalculation(PricingContextInterface $pricingContext): iterable
-    {
-        $groups = $this->pricingHelper->getCustomerGroupCollection();
-
-        // Filter out excluded groups
-        $excludedGroups = [];
-        foreach ($groups as $group) {
-            $groupId = (int) $group->getData('customer_group_id');
-            $excludedWebsites = $this->pricingHelper->getCustomerGroupExcludedWebsites($groupId);
-            if (in_array($pricingContext->getStore()->getWebsiteId(), $excludedWebsites)) {
-                $excludedGroups[] = $groupId;
-            }
-        }
-
-        if (count($excludedGroups) > 0) {
-            $groups->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
-            $groups->clear();
-        }
-
-        return $groups;
-    }
 
     public function applyCustomerGroupPrices(
         PriceDataInterface $priceData,
         PricingContextInterface $pricingContext
     ): PriceDataInterface {
         $product = $pricingContext->getProduct();
-        $groups = $this->getCustomerGroupsForCalculation($pricingContext);
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
 
         /** @var Group $group */
         foreach ($groups as $group) {
@@ -83,7 +63,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
         PricingContextInterface $pricingContext,
         array $specialPricesByGroup
     ): PriceDataInterface {
-        $groups = $this->getCustomerGroupsForCalculation($pricingContext);
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
 
         /** @var Group $group */
         foreach ($groups as $group) {
@@ -116,9 +96,10 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
 
     public function applyTierPrices(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         array $tierPricesByGroup
     ): PriceDataInterface {
-        $groups = $this->pricingHelper->getCustomerGroupCollection();
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
 
         /** @var Group $group */
         foreach ($groups as $group) {
@@ -139,6 +120,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
 
     public function applyPriceRange(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         MinMaxPricesInterface $minMaxPrices
     ): PriceDataInterface {
         $min = $minMaxPrices->getMin();
@@ -151,7 +133,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
         $priceData->setMinPrice($min);
         $priceData->setMaxPrice($max);
 
-        $groups = $this->pricingHelper->getCustomerGroupCollection();
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
 
         /** @var Group $group */
         foreach ($groups as $group) {
@@ -165,13 +147,14 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
 
     public function applyChildrenCustomerGroupPrices(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         MinMaxPricesInterface $minMaxPrices
     ): PriceDataInterface {
         $max = $minMaxPrices->getMax();
         $maxOriginal = $minMaxPrices->getMaxOriginal();
 
         if ($max < $maxOriginal) {
-            $groups = $this->pricingHelper->getCustomerGroupCollection();
+            $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
             foreach ($groups as $group) {
                 $groupId = (int) $group->getData('customer_group_id');
                 $priceData->setOriginalPrice($maxOriginal, $groupId);
@@ -187,7 +170,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
         float $min,
         bool $useBundleCalculation = false
     ): PriceDataInterface {
-        $groups = $this->pricingHelper->getCustomerGroupCollection();
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
         $subProducts = $pricingContext->getSubProducts();
         $groupPriceList = $useBundleCalculation ?
             $this->getBundleGroupPriceList($pricingContext, $min, $subProducts) :
@@ -231,7 +214,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
         float $min,
         array $subProducts
     ): array {
-        $groups = $this->pricingHelper->getCustomerGroupCollection();
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
         $groupPriceList = [];
 
         $subProductsMin = self::PRICE_NOT_SET;
@@ -274,7 +257,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
 
     protected function getBundleGroupPriceList(PricingContextInterface $pricingContext, $min): array
     {
-        $groups = $this->pricingHelper->getCustomerGroupCollection();
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
         $subProducts = $pricingContext->getSubProducts();
 
         $groupPriceList = [];

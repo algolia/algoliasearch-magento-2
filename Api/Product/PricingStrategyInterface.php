@@ -5,15 +5,9 @@ namespace Algolia\AlgoliaSearch\Api\Product;
 use Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterface;
 use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
-use Magento\Catalog\Model\Product;
 
 interface PricingStrategyInterface
 {
-    /**
-     * Get customer groups to iterate over for price calculations
-     */
-    public function getCustomerGroupsForCalculation(PricingContextInterface $pricingContext): iterable;
-
     /**
      * Apply customer group specific prices (discounts based on group)
      */
@@ -36,6 +30,7 @@ interface PricingStrategyInterface
      */
     public function applyTierPrices(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         array $tierPricesByGroup
     ): PriceDataInterface;
 
@@ -44,6 +39,7 @@ interface PricingStrategyInterface
      */
     public function applyPriceRange(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         MinMaxPricesInterface $minMaxPrices
     ): PriceDataInterface;
 
@@ -52,6 +48,7 @@ interface PricingStrategyInterface
      */
     public function applyChildrenCustomerGroupPrices(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         MinMaxPricesInterface $minMaxPrices
     ): PriceDataInterface;
 

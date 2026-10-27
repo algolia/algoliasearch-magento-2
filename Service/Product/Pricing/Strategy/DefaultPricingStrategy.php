@@ -19,12 +19,6 @@ class DefaultPricingStrategy implements PricingStrategyInterface
         protected PricingHelper $pricingHelper
     ) {}
 
-    public function getCustomerGroupsForCalculation(PricingContextInterface $pricingContext): iterable
-    {
-        // Return empty - no iteration needed for default strategy
-        return [];
-    }
-
     public function applyCustomerGroupPrices(
         PriceDataInterface $priceData,
         PricingContextInterface $pricingContext
@@ -54,6 +48,7 @@ class DefaultPricingStrategy implements PricingStrategyInterface
 
     public function applyTierPrices(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         array $tierPricesByGroup
     ): PriceDataInterface {
         // Only apply default group (ID 0) tier price
@@ -66,6 +61,7 @@ class DefaultPricingStrategy implements PricingStrategyInterface
 
     public function applyPriceRange(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         MinMaxPricesInterface $minMaxPrices
     ): PriceDataInterface {
         $min = $minMaxPrices->getMin();
@@ -84,6 +80,7 @@ class DefaultPricingStrategy implements PricingStrategyInterface
 
     public function applyChildrenCustomerGroupPrices(
         PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
         MinMaxPricesInterface $minMaxPrices
     ): PriceDataInterface {
         // No customer group-specific logic needed

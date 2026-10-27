@@ -6,12 +6,14 @@ use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
 
 class PriceDataFormatter
 {
     public function __construct(
         protected PricingHelper $pricingHelper,
-        protected ConfigHelper $configHelper
+        protected ConfigHelper $configHelper,
+        protected CustomerGroupsManager $customerGroupsManager
     ) {}
 
     public function formatPriceDataObject(
@@ -22,7 +24,7 @@ class PriceDataFormatter
         $priceData = $this->formatFields($priceData, $pricingContext);
 
         if ($this->configHelper->isCustomerGroupsEnabled($pricingContext->getStore())) {
-            foreach ($this->pricingHelper->getCustomerGroupCollection() as $customerGroup) {
+            foreach ($this->customerGroupsManager->getCustomerGroups($pricingContext) as $customerGroup) {
                 $priceData = $this->formatFields($priceData, $pricingContext, $customerGroup->getId());
             }
         }

@@ -3,6 +3,7 @@
 namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
 
 use Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterface;
+use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
 use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Model\Group;
@@ -45,51 +46,17 @@ class Bundle extends AbstractProductWithChildren
         ]);
     }
 
-    protected function getGroupPriceList(PricingContextInterface $pricingContext, $min): array
+    protected function addCustomerGroupsFinalPrices(
+        PriceDataInterface $priceData,
+        PricingContextInterface $pricingContext,
+        $min
+    ) : PriceDataInterface
     {
-        $subProducts = $pricingContext->getSubProducts();
-
-        $groupPriceList = [];
-
-        /** @var Group $group */
-        foreach ($this->groups as $group) {
-            $groupId = (int) $group->getData('customer_group_id');
-            $options = [];
-
-            foreach ($subProducts as $subProduct) {
-                $subProduct->setData('customer_group_id', $groupId);
-                $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
-
-                $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
-                $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
-                $price = $this->pricingHelper->getTaxPrice(
-                    $pricingContext->getProduct(),
-                    $subProduct->getPriceModel()->getFinalPrice(1, $subProduct),
-                    $pricingContext->shouldIncludeTax()
-                );
-
-                if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {
-                    $price = $tierPrice[$groupId];
-                }
-
-                $options[$subProduct->getOptionId()][] = $price;
-                $subProduct->setData('customer_group_id', null);
-            }
-
-            $groupPriceList[$groupId]['min'] = $groupPriceList[$groupId]['max'] = 0.00;
-
-            foreach ($options as $optionsValues) {
-                $groupPriceList[$groupId]['min'] += min($optionsValues);
-                $groupPriceList[$groupId]['max'] += max($optionsValues);
-            }
-
-            $groupPriceList[$groupId]['min'] =
-                $this->pricingHelper->handleConversion($groupPriceList[$groupId]['min'], $pricingContext);
-            $groupPriceList[$groupId]['max'] =
-                $this->pricingHelper->handleConversion($groupPriceList[$groupId]['max'], $pricingContext);
-
-        }
-
-        return $groupPriceList;
+        return $this->pricingStrategy->applyCustomerGroupsFinalPrices(
+            $priceData,
+            $pricingContext,
+            $min,
+            true
+        );
     }
 }

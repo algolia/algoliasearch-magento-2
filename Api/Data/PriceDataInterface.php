@@ -74,6 +74,23 @@ interface PriceDataInterface
     public function setSpecialToDate(int|string $date): void;
 
     /**
+     *  ********* HASDATA ********
+     */
+
+    public function hasPrice(?int $groupId = null): bool;
+
+    public function hasTierPrice(?int $groupId = null): bool;
+
+    public function hasMaxPrice(?int $groupId = null): bool;
+
+    public function hasMinPrice(?int $groupId = null): bool;
+
+    public function hasOriginalPrice(?int $groupId = null): bool;
+
+    public function hasMinOriginalPrice(?int $groupId = null): bool;
+
+
+    /**
      *  ********* GETTERS ********
      */
 

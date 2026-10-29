@@ -22,24 +22,46 @@ Tests **customer group pricing** with multiple customer groups enabled. Validate
 ### SpecialPricePricingV1VsV2Test
 Tests **special prices** (sale prices, discounts). Validates that special pricing, original price tracking, and date-based price validity work identically in V1 and V2.
 
-**Tests**: 5 scenarios (simple with special price, configurable, bundle, grouped, expired special price)  
-**Note**: Creates test products programmatically to ensure special prices are active during test execution
+**Tests**: 5 scenarios
+- Simple product with special price (programmatically created)
+- Configurable product with child variants having special prices
+- Bundle product with bundle selections having special prices
+- Grouped product with associated products having special prices (uses 24-WG085_Group)
+- Simple product with expired special price (date validation)
 
-## What's Tested
+**Key Features**:
+- Applies special prices to **child/associated products** for complex product types
+- Creates test products programmatically for simple products to ensure active special prices
+- Uses sample data for complex products (configurable, bundle, grouped) and modifies their children
+- Tests realistic scenarios: discounted variants, on-sale bundle items, grouped products with mixed discounts
 
-**Product Types** (8 tests):
+## Product SKUs Used
+
+**Sample Data Products**:
 - Simple: 24-MB01, 24-MB04
 - Configurable: MH01, WS03
 - Bundle: 24-WG080
-- Grouped: 24-WG085
-- Downloadable: 240-LV04
-- Virtual: 240-LV05
+- Grouped: 24-WG085 (default/customer group tests), 24-WG085_Group (special price tests)
 
-Each test compares V1 vs V2 output for all:
+**Programmatically Created** (SpecialPricePricingV1VsV2Test only):
+- test-simple-special-price (simple with active special price)
+- test-simple-expired-special (simple with expired special price)
+
+## What Each Test Validates
+
+**Default & Customer Group Tests**:
 - Price fields (price, price_with_tax)
-- Currencies
-- Customer group prices
+- Multiple currencies
+- Customer group-specific prices (when enabled)
 - Tax configurations
+- Base pricing logic without discounts
+
+**Special Price Tests**:
+- Special prices applied to child products (configurable variants, bundle selections, grouped associated products)
+- Multiple discount levels on different children (tests price aggregation)
+- Original price preservation
+- Date-based special price validity (expired vs active)
+- Min/max price calculations with mixed discounts
 
 **Important**: Tests force pricing engine config to V1 to prevent V1 from delegating to V2 (which would create false positives). This ensures genuine comparison between the two implementations.
 
@@ -107,6 +129,28 @@ bin/magento setup:upgrade
 ```
 
 Tests automatically skip when products are not found.
+
+## Special Price Test Methodology
+
+The special price tests apply discounts to **child/associated products** rather than parent products, testing realistic e-commerce scenarios:
+
+**Configurable Products**:
+- 20% discount on first child variant (e.g., size S in red)
+- 15% discount on second child variant (e.g., size M in blue)
+- Tests that V1 and V2 correctly aggregate variant pricing into parent min/max prices
+
+**Bundle Products**:
+- 25% discount on first bundle selection
+- 10% discount on second bundle selection
+- Tests that V1 and V2 correctly sum bundle options with mixed discounts
+
+**Grouped Products**:
+- 30% discount on first associated product
+- 15% discount on second associated product
+- 10% discount on third associated product
+- Tests that V1 and V2 correctly identify the lowest price among associated products
+
+This approach validates the most complex pricing scenarios where child products have different discount levels, ensuring V1→V2 migration handles real-world pricing complexity correctly.
 
 ## What's Compared
 

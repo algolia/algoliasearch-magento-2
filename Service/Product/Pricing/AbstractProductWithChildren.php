@@ -117,9 +117,11 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $min = $minMaxPrices->getMin();
         $max = $minMaxPrices->getMax();
         $maxOriginal = $minMaxPrices->getMaxOriginal();
+        $minOriginal = $minMaxPrices->getMinOriginal();
 
-        if ($max < $maxOriginal) {
+        if ($max < $maxOriginal || $min < $minOriginal) {
             $priceData->setOriginalPrice($maxOriginal);
+            $priceData->setMinOriginalPrice($minOriginal);
         }
 
         if ($priceData->getPrice() === 0.00) {

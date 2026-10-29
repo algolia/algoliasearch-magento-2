@@ -84,6 +84,25 @@ class PriceDataFormatter
                 ),
                 $groupId
             );
+
+            // Replace with original range in case min original is lower than min
+            if (is_float($priceData->getMinOriginalPrice($groupId)) &&
+                $priceData->getMinOriginalPrice($groupId) > $priceData->getMinPrice($groupId) &&
+                $priceData->getMinOriginalPrice($groupId) < $priceData->getOriginalPrice($groupId)) {
+                $priceData->setFormattedOriginalPrice(
+                    $this->pricingHelper->formatPrice(
+                        $priceData->getMinOriginalPrice($groupId),
+                        $store,
+                        $currencyCode
+                    ) . ' - ' .
+                    $this->pricingHelper->formatPrice(
+                        $priceData->getOriginalPrice($groupId),
+                        $store,
+                        $currencyCode
+                    ),
+                    $groupId
+                );
+            }
         }
 
         // Clean values to reduce the price object size

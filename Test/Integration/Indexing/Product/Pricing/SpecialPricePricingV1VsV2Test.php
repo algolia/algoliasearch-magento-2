@@ -44,39 +44,99 @@ class SpecialPricePricingV1VsV2Test extends AbstractPricingV1VsV2TestCase
     }
 
     /**
-     * Test configurable product with special price
+     * Test configurable product with special price on child products
      *
-     * Uses sample data configurable product, sets special price on parent
+     * Applies special prices to configurable child products (variants)
+     * to test that V1 and V2 correctly aggregate child special pricing
      */
     public function testConfigurableProductWithSpecialPrice(): void
     {
         $product = $this->loadProductOrSkip('MH01');
-        $this->setSpecialPrice($product, 49.99);
+        $subProducts = $this->getSubProducts($product);
+
+        if (empty($subProducts)) {
+            $this->markTestSkipped('Configurable product MH01 has no child products');
+        }
+
+        // Apply special price to first child variant
+        $firstChild = reset($subProducts);
+        $childPrice = (float) $firstChild->getPrice();
+        $this->setSpecialPrice($firstChild, $childPrice * 0.8); // 20% discount
+
+        // If there are multiple children, apply different special price to second child
+        if (count($subProducts) > 1) {
+            $secondChild = $subProducts[1];
+            $secondChildPrice = (float) $secondChild->getPrice();
+            $this->setSpecialPrice($secondChild, $secondChildPrice * 0.85); // 15% discount
+        }
+
         $this->assertPricingMatchesForProduct($product);
     }
 
     /**
-     * Test bundle product with special price
+     * Test bundle product with special price on bundle selections
      *
-     * Uses sample data bundle product with special price applied
+     * Applies special prices to bundle selection products (bundled items)
+     * to test that V1 and V2 correctly calculate bundle pricing with child specials
      */
     public function testBundleProductWithSpecialPrice(): void
     {
         $product = $this->loadProductOrSkip('24-WG080');
-        $this->setSpecialPrice($product, 35.00);
+        $subProducts = $this->getSubProducts($product);
+
+        if (empty($subProducts)) {
+            $this->markTestSkipped('Bundle product 24-WG080 has no selections');
+        }
+
+        // Apply special price to first bundle selection
+        $firstSelection = reset($subProducts);
+        $selectionPrice = (float) $firstSelection->getPrice();
+        $this->setSpecialPrice($firstSelection, $selectionPrice * 0.75); // 25% discount
+
+        // Apply special price to another selection if available
+        if (count($subProducts) > 1) {
+            $secondSelection = $subProducts[1];
+            $secondSelectionPrice = (float) $secondSelection->getPrice();
+            $this->setSpecialPrice($secondSelection, $secondSelectionPrice * 0.9); // 10% discount
+        }
+
         $this->assertPricingMatchesForProduct($product);
     }
 
     /**
-     * Test grouped product with special price
+     * Test grouped product with special price on associated products
      *
-     * Grouped products don't have their own price, but we test that
-     * V1 and V2 handle this edge case identically
+     * Applies special prices to associated products within the group
+     * to test that V1 and V2 correctly display the lowest price from associated products
      */
     public function testGroupedProductWithSpecialPrice(): void
     {
-        $product = $this->loadProductOrSkip('24-WG085');
-        // Grouped products don't have special prices on parent, but test the behavior
+        $product = $this->loadProductOrSkip('24-WG085_Group');
+        $subProducts = $this->getSubProducts($product);
+
+        if (empty($subProducts)) {
+            $this->markTestSkipped('Grouped product 24-WG085_Group has no associated products');
+        }
+
+        // Apply special price to first associated product
+        $firstAssociated = reset($subProducts);
+        $associatedPrice = (float) $firstAssociated->getPrice();
+        $this->setSpecialPrice($firstAssociated, $associatedPrice * 0.7); // 30% discount
+
+        // Apply different special price to second associated product if available
+        if (count($subProducts) > 1) {
+            $secondAssociated = $subProducts[1];
+            $secondAssociatedPrice = (float) $secondAssociated->getPrice();
+            $this->setSpecialPrice($secondAssociated, $secondAssociatedPrice * 0.85); // 15% discount
+        }
+
+        // Apply special price to third associated product if available
+        if (count($subProducts) > 2) {
+            $thirdAssociated = $subProducts[2];
+            $thirdAssociatedPrice = (float) $thirdAssociated->getPrice();
+            $this->setSpecialPrice($thirdAssociated, $thirdAssociatedPrice * 0.9); // 10% discount
+        }
+
         $this->assertPricingMatchesForProduct($product);
     }
 

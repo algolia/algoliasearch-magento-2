@@ -34,6 +34,11 @@ interface PriceDataInterface
     public function setOriginalPrice(float $price, ?int $groupId = null): void;
 
     /**
+     * set minimal original price (default if no customer group is specified)
+     */
+    public function setMinOriginalPrice(float $price, ?int $groupId = null): void;
+
+    /**
      * set max price (default if no customer group is specified)
      */
     public function setMaxPrice(float $price, ?int $groupId = null): void;
@@ -86,6 +91,11 @@ interface PriceDataInterface
      * get original price (default if no customer group is specified)
      */
     public function getOriginalPrice(?int $groupId = null): float;
+
+    /**
+     * get minimal original price (default if no customer group is specified)
+     */
+    public function getMinOriginalPrice(?int $groupId = null): float;
 
     /**
      * get max price (default if no customer group is specified)

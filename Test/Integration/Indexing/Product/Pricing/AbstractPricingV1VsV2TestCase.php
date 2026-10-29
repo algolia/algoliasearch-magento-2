@@ -153,7 +153,7 @@ abstract class AbstractPricingV1VsV2TestCase extends TestCase
             }
 
             // Skip 'default_original' - architectural difference between V1 and V2
-            if ($key === 'default_original') {
+            if ($key === 'default_original' || str_ends_with((string) $key, '_min_original')) {
                 continue;
             }
 

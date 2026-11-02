@@ -42,7 +42,7 @@ class PriceDataFormatter
         $currencyCode = $pricingContext->getCurrencyCode();
 
         // Basic price
-        if (is_float($priceData->getPrice($groupId))) {
+        if ($priceData->hasPrice($groupId)) {
             $priceData->setFormattedPrice(
                 $this->pricingHelper->formatPrice(
                     $priceData->getPrice($groupId),
@@ -54,8 +54,8 @@ class PriceDataFormatter
         }
 
         // Min/Max prices for configurable/bundle/grouped
-        if ((is_float($priceData->getMinPrice($groupId)) &&
-            is_float($priceData->getMaxPrice($groupId))) &&
+        if (($priceData->hasMinPrice($groupId) &&
+            $priceData->hasMaxPrice($groupId)) &&
             $priceData->getMinPrice($groupId) < $priceData->getMaxPrice($groupId))
         {
             $priceData->setFormattedPrice(
@@ -74,11 +74,42 @@ class PriceDataFormatter
         }
 
         // Original price for crossed-out price
-        if (is_float($priceData->getOriginalPrice($groupId)) &&
+        if ($priceData->hasOriginalPrice($groupId) &&
             $priceData->getOriginalPrice($groupId) > $priceData->getPrice($groupId)) {
             $priceData->setFormattedOriginalPrice(
                 $this->pricingHelper->formatPrice(
                     $priceData->getOriginalPrice($groupId),
+                    $store,
+                    $currencyCode
+                ),
+                $groupId
+            );
+
+            // Replace with original range in case min original is lower than min
+            if ($priceData->hasMinOriginalPrice($groupId) &&
+                $priceData->getMinOriginalPrice($groupId) > $priceData->getMinPrice($groupId) &&
+                $priceData->getMinOriginalPrice($groupId) < $priceData->getOriginalPrice($groupId)) {
+                $priceData->setFormattedOriginalPrice(
+                    $this->pricingHelper->formatPrice(
+                        $priceData->getMinOriginalPrice($groupId),
+                        $store,
+                        $currencyCode
+                    ) . ' - ' .
+                    $this->pricingHelper->formatPrice(
+                        $priceData->getOriginalPrice($groupId),
+                        $store,
+                        $currencyCode
+                    ),
+                    $groupId
+                );
+            }
+        }
+
+        // Tier price
+        if ($priceData->hasTierPrice($groupId)) {
+            $priceData->setFormattedTierPrice(
+                $this->pricingHelper->formatPrice(
+                    $priceData->getTierPrice($groupId),
                     $store,
                     $currencyCode
                 ),

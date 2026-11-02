@@ -87,20 +87,16 @@ abstract class AbstractProductWithChildren extends AbstractProduct
     {
         $product = $pricingContext->getProduct();
         $specialPrice = $this->getSpecialPrice($pricingContext, $subProduct);
-        $tierPrice = $this->getTierPrice($pricingContext, $subProduct);
-        if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
-            $minPrice = $tierPrice[0];
-        } else {
-            $minPrice = $specialPrice[0];
-        }
 
         $finalPrice = $subProduct->getFinalPrice();
         $finalPrice = $this->pricingHelper->handleConversion($finalPrice, $pricingContext);
         $basePrice  = $subProduct->getPrice();
         $basePrice = $this->pricingHelper->handleConversion($basePrice, $pricingContext);
 
-        $price = $minPrice ?? $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax(), false);
-        $basePrice = $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax(), false);
+        $price = $specialPrice[0] ? round($specialPrice[0], 4) :
+            $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax(), false);
+        $basePrice =
+            $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax(), false);
 
         if ($pricingContext->isFptEnabled()) {
             $basePrice += $this->pricingHelper->getWeeeAmount($subProduct);
@@ -117,9 +113,11 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $min = $minMaxPrices->getMin();
         $max = $minMaxPrices->getMax();
         $maxOriginal = $minMaxPrices->getMaxOriginal();
+        $minOriginal = $minMaxPrices->getMinOriginal();
 
-        if ($max < $maxOriginal) {
+        if ($max < $maxOriginal || $min < $minOriginal) {
             $priceData->setOriginalPrice($maxOriginal);
+            $priceData->setMinOriginalPrice($minOriginal);
         }
 
         if ($priceData->getPrice() === 0.00) {

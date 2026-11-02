@@ -54,7 +54,12 @@ class PricingHelper
     {
         $currency = $this->priceCurrency->getCurrency($store, $currencyCode);
         $options = ['locale' => $this->configHelper->getStoreLocale($store->getId())];
-        return $currency->formatPrecision($amount, PriceCurrencyInterface::DEFAULT_PRECISION, $options, false);
+        return $currency->formatPrecision(
+            round($amount, 2),
+            PriceCurrencyInterface::DEFAULT_PRECISION,
+            $options,
+            false
+        );
     }
 
     public function getWeeeAmount($product):float

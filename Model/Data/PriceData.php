@@ -29,6 +29,13 @@ class PriceData extends DataObject implements PDI
             PDI::PREFIX_GROUP.  $groupId . PDI::SUFFIX_ORIGINAL;
     }
 
+    protected function resolveMinOriginalPriceKey(?int $groupId = null): string
+    {
+        return $groupId === null ?
+            PDI::PREFIX_DEFAULT . PDI::SUFFIX_MIN. PDI::SUFFIX_ORIGINAL :
+            PDI::PREFIX_GROUP.  $groupId . PDI::SUFFIX_MIN. PDI::SUFFIX_ORIGINAL;
+    }
+
     protected function resolveMaxPriceKey(?int $groupId = null): string
     {
         return $groupId === null ?
@@ -82,6 +89,11 @@ class PriceData extends DataObject implements PDI
         $this->setData($this->resolveOriginalPriceKey($groupId), $price);
     }
 
+    public function setMinOriginalPrice(float $price, ?int $groupId = null): void
+    {
+        $this->setData($this->resolveMinOriginalPriceKey($groupId), $price);
+    }
+
     public function setMaxPrice(float $price, ?int $groupId = null): void
     {
         $this->setData($this->resolveMaxPriceKey($groupId), $price);
@@ -131,41 +143,94 @@ class PriceData extends DataObject implements PDI
     }
 
     /**
+     *  ********* HASDATA ********
+     */
+
+    public function hasPrice(?int $groupId = null): bool
+    {
+        $key = $this->resolvePriceKey($groupId);
+
+        return $this->hasData($key);
+    }
+
+    public function hasTierPrice(?int $groupId = null): bool
+    {
+        $key = $this->resolveTierPriceKey($groupId);
+
+        return $this->hasData($key);
+    }
+
+    public function hasMaxPrice(?int $groupId = null): bool
+    {
+        $key = $this->resolveMaxPriceKey($groupId);
+
+        return $this->hasData($key);
+    }
+
+    public function hasMinPrice(?int $groupId = null): bool
+    {
+        $key = $this->resolveMinPriceKey($groupId);
+
+        return $this->hasData($key);
+    }
+
+    public function hasOriginalPrice(?int $groupId = null): bool
+    {
+        $key = $this->resolveOriginalPriceKey($groupId);
+
+        return $this->hasData($key);
+    }
+
+    public function hasMinOriginalPrice(?int $groupId = null): bool
+    {
+        $key = $this->resolveMinOriginalPriceKey($groupId);
+
+        return $this->hasData($key);
+    }
+
+    /**
      *  ********* GETTERS ********
      */
     public function getPrice(?int $groupId = null): float
     {
         $key = $this->resolvePriceKey($groupId);
 
-        return $this->hasData($key) ? (float) $this->getData($key) : 0.00;
+        return $this->hasPrice($groupId) ? (float) $this->getData($key) : 0.00;
     }
 
     public function getTierPrice(?int $groupId = null): float
     {
         $key = $this->resolveTierPriceKey($groupId);
 
-        return $this->hasData($key) ? (float) $this->getData($key) : 0.00;
+        return $this->hasTierPrice($groupId) ? (float) $this->getData($key) : 0.00;
     }
 
     public function getMaxPrice(?int $groupId = null): float
     {
         $key = $this->resolveMaxPriceKey($groupId);
 
-        return $this->hasData($key) ? $this->getData($key) : 0.00;
+        return $this->hasMaxPrice($groupId) ? $this->getData($key) : 0.00;
     }
 
     public function getMinPrice(?int $groupId = null): float
     {
         $key = $this->resolveMinPriceKey($groupId);
 
-        return $this->hasData($key) ? $this->getData($key) : 0.00;
+        return $this->hasMinPrice($groupId) ? $this->getData($key) : 0.00;
     }
 
     public function getOriginalPrice(?int $groupId = null): float
     {
         $key = $this->resolveOriginalPriceKey($groupId);
 
-        return $this->hasData($key) ? $this->getData($key) : 0.00;
+        return $this->hasOriginalPrice($groupId) ? $this->getData($key) : 0.00;
+    }
+
+    public function getMinOriginalPrice(?int $groupId = null): float
+    {
+        $key = $this->resolveMinOriginalPriceKey($groupId);
+
+        return $this->hasMinOriginalPrice($groupId) ? $this->getData($key) : 0.00;
     }
 
     public function getFormattedPrice(?int $groupId = null): string

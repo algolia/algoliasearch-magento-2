@@ -34,6 +34,11 @@ interface PriceDataInterface
     public function setOriginalPrice(float $price, ?int $groupId = null): void;
 
     /**
+     * set minimal original price (default if no customer group is specified)
+     */
+    public function setMinOriginalPrice(float $price, ?int $groupId = null): void;
+
+    /**
      * set max price (default if no customer group is specified)
      */
     public function setMaxPrice(float $price, ?int $groupId = null): void;
@@ -69,6 +74,23 @@ interface PriceDataInterface
     public function setSpecialToDate(int|string $date): void;
 
     /**
+     *  ********* HASDATA ********
+     */
+
+    public function hasPrice(?int $groupId = null): bool;
+
+    public function hasTierPrice(?int $groupId = null): bool;
+
+    public function hasMaxPrice(?int $groupId = null): bool;
+
+    public function hasMinPrice(?int $groupId = null): bool;
+
+    public function hasOriginalPrice(?int $groupId = null): bool;
+
+    public function hasMinOriginalPrice(?int $groupId = null): bool;
+
+
+    /**
      *  ********* GETTERS ********
      */
 
@@ -86,6 +108,11 @@ interface PriceDataInterface
      * get original price (default if no customer group is specified)
      */
     public function getOriginalPrice(?int $groupId = null): float;
+
+    /**
+     * get minimal original price (default if no customer group is specified)
+     */
+    public function getMinOriginalPrice(?int $groupId = null): float;
 
     /**
      * get max price (default if no customer group is specified)

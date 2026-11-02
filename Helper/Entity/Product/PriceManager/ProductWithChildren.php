@@ -229,7 +229,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     public function handleOriginalPrice($field, $currencyCode, $min, $max, $minOriginal, $maxOriginal)
     {
         if ($min !== $max) {
-            if ($min !== $minOriginal || $max !== $maxOriginal) {
+            if ($min < $minOriginal || $max < $maxOriginal) {
                 if ($minOriginal !== $maxOriginal) {
                     $this->customData[$field][$currencyCode]['default_original_formated'] = $this->getDashedPriceFormat(
                         $minOriginal,

@@ -93,7 +93,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         $basePrice  = $subProduct->getPrice();
         $basePrice = $this->pricingHelper->handleConversion($basePrice, $pricingContext);
 
-        $price = $specialPrice[0] ??
+        $price = $specialPrice[0] ? round($specialPrice[0], 4) :
             $this->pricingHelper->getTaxPrice($product, $finalPrice, $pricingContext->shouldIncludeTax(), false);
         $basePrice =
             $this->pricingHelper->getTaxPrice($product, $basePrice, $pricingContext->shouldIncludeTax(), false);

@@ -2,15 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Ui\Component\Listing\Column;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Search\Ui\Component\Listing\Column\StoreView as NativeStoreView;
 
 class StoreView extends NativeStoreView
 {
     /**
      * Prepare Data Source
-     *
-     *
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      *
      * @return array
      */
@@ -24,5 +22,24 @@ class StoreView extends NativeStoreView
         }
 
         return $dataSource;
+    }
+
+    /**
+     * Get data
+     *
+     * @return string
+     */
+    protected function prepareItem(array $item)
+    {
+        // If a store-agnostic row is encountered do not label "All Store Views" (allow only for store ID = 0)
+        if (!isset($item['store_id']) || $item['store_id'] === null) {
+            return '';
+        }
+
+        try {
+            return parent::prepareItem($item);
+        } catch (NoSuchEntityException $e) {
+            return __('Store ID: %1 (deleted)', $item['store_id']);
+        }
     }
 }

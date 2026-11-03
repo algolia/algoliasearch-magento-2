@@ -180,7 +180,6 @@ class DownloadableTest extends TestCase
         $pricingContext->method('areCustomerGroupsEnabled')->willReturn(true);
         $pricingContext->method('getProduct')->willReturn($product);
 
-        // CHARACTERIZATION: 0.0 !== false, so setPrice is called with getTaxPrice result (0.0)
         $priceData->expects($this->once())
             ->method('setPrice')
             ->with(0.0, 1);

@@ -61,6 +61,17 @@
                     </item>
                 </item>
             </argument>
+            <filterSelect name="store_id" provider="${ $.parentName }">
+                <settings>
+                    <captionValue>0</captionValue>
+                    <options class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\Store\Options"/>
+                    <label translate="true">Store view</label>
+                    <dataScope>store_id</dataScope>
+                    <imports>
+                        <link name="visible">ns = ${ $.ns }, componentType = column, index = ${ $.index }:visible</link>
+                    </imports>
+                </settings>
+            </filterSelect>
         </filters>
         <paging name="listing_paging"/>
         <exportButton name="export_button"/>
@@ -87,10 +98,7 @@
         </column>
         <column name="store_id" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\StoreView">
             <argument name="data" xsi:type="array">
-                <item name="options" xsi:type="object">Magento\Store\Ui\Component\Listing\Column\Store\Options</item>
                 <item name="config" xsi:type="array">
-                    <item name="filter" xsi:type="string">select</item>
-                    <item name="dataType" xsi:type="string">select</item>
                     <item name="sortable" xsi:type="boolean">true</item>
                     <item name="label" xsi:type="string" translate="true">Store view</item>
                     <item name="bodyTmpl" xsi:type="string" translate="true">ui/grid/cells/html</item>

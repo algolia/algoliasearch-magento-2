@@ -16,6 +16,8 @@ class StoreView extends NativeStoreView
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as & $item) {
+                // Stash the raw numeric id before the rendered label replaces store_id below:
+                // LandingPageActions and QueryActions read store_id_num to scope their frontend URLs.
                 $item['store_id_num'] = $item['store_id'];
                 $item[$this->getData('name')] = $this->prepareItem($item);
             }

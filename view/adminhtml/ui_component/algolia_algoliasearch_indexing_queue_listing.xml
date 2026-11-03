@@ -85,6 +85,18 @@
                 </item>
             </argument>
         </column>
+        <column name="store_id" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\StoreView">
+            <argument name="data" xsi:type="array">
+                <item name="options" xsi:type="object">Magento\Store\Ui\Component\Listing\Column\Store\Options</item>
+                <item name="config" xsi:type="array">
+                    <item name="filter" xsi:type="string">select</item>
+                    <item name="dataType" xsi:type="string">select</item>
+                    <item name="sortable" xsi:type="boolean">true</item>
+                    <item name="label" xsi:type="string" translate="true">Store view</item>
+                    <item name="bodyTmpl" xsi:type="string" translate="true">ui/grid/cells/html</item>
+                </item>
+            </argument>
+        </column>
         <column name="created" class="Magento\Ui\Component\Listing\Columns\Date">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">

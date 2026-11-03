@@ -74,6 +74,14 @@ interface PriceDataInterface
     public function setSpecialToDate(int|string $date): void;
 
     /**
+     *  ********* UNSETTERS ********
+     */
+
+    public function unsetMaxPrice(?int $groupId = null): void;
+
+    public function unsetMinPrice(?int $groupId = null): void;
+
+    /**
      *  ********* HASDATA ********
      */
 

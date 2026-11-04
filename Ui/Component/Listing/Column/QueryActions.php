@@ -49,8 +49,8 @@ class QueryActions extends Column
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
                 $title = $this->escaper->escapeHtml($item['query_text']);
-                if (isset($item['store_id_num']) && $item['store_id_num'] != 0) {
-                    $this->frontendUrlBuilder->setScope($item['store_id_num']);
+                if (isset($item[StoreView::STORE_ID_NUM]) && $item[StoreView::STORE_ID_NUM] != 0) {
+                    $this->frontendUrlBuilder->setScope($item[StoreView::STORE_ID_NUM]);
                 }
                 $link = $this->frontendUrlBuilder->getUrl(static::URL_PATH_VIEW . $item['query_text']);
                 $link = mb_rtrim($link, '/');

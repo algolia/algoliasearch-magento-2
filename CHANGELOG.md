@@ -21,6 +21,9 @@
     - `JobDefinition::$storeId` is non-nullable and is the single source of truth for the job's store: it is persisted in the `store_id` column and injected into the handler by parameter name (`$storeId`) at execution time. It never enters the serialized payload, so new jobs carry storeless payloads and job merging cannot cross store boundaries.
     - When the queue is inactive, `addJob()` executes the handler directly with the store supplied by name, matching the queued path.
     - Jobs enqueued before this release keep draining unchanged: legacy rows with a `NULL` column promote their in-payload store, and the column wins whenever it is populated. All in-tree enqueuers (the `Service/*/BatchQueueProcessor` classes) now use `addJob()`.
+- Added a Store view column (sortable) and a Store view select filter to the Indexing Queue admin grid, alongside store-aware queue claiming, so ops teams can see what a specific store has pending, running, or failed. Filtering uses the core store options source (nested website > store group > store view) and flows through the existing collection as a plain `store_id` condition.
+    - The shared `StoreView` grid renderer now guards against rows whose store view was deleted after the job was enqueued: such rows render `Store ID: N (deleted)` instead of throwing, which also fixes the landing pages and search queries grids that share the renderer.
+    - Rows without a store (`store_id` is `NULL`) render an empty cell instead of being mislabeled "All Store Views".
 
 ### Updates
 - Added an indexed `store_id` column to the `algoliasearch_queue` table.

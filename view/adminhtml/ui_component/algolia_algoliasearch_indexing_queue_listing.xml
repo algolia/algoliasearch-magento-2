@@ -61,6 +61,23 @@
                     </item>
                 </item>
             </argument>
+            <filterSelect name="store_id" provider="${ $.parentName }">
+                <settings>
+                    <!-- captionValue is load bearing!
+                         Pairs with Options::ALL_STORE_VIEWS ('0'): the native select's parseOptions()
+                         removes the option matching captionValue and uses its label as the empty-state
+                         caption, making "All Store Views" a no-op (i.e. mui/index/render is not called). 
+                         Removing this element makes the '0' option selectable, sending filters[store_id]=0 
+                         and emptying the grid which is not the desired result. -->
+                    <captionValue>0</captionValue>
+                    <options class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\Store\Options"/>
+                    <label translate="true">Store view</label>
+                    <dataScope>store_id</dataScope>
+                    <imports>
+                        <link name="visible">ns = ${ $.ns }, index = ${ $.index }:visible</link>
+                    </imports>
+                </settings>
+            </filterSelect>
         </filters>
         <paging name="listing_paging"/>
         <exportButton name="export_button"/>
@@ -82,6 +99,15 @@
                     <item name="filter" xsi:type="string">textRange</item>
                     <item name="sorting" xsi:type="string">asc</item>
                     <item name="label" xsi:type="string" translate="true">Job Id</item>
+                </item>
+            </argument>
+        </column>
+        <column name="store_id" class="Algolia\AlgoliaSearch\Ui\Component\Listing\Column\StoreView">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="sortable" xsi:type="boolean">true</item>
+                    <item name="label" xsi:type="string" translate="true">Store view</item>
+                    <item name="bodyTmpl" xsi:type="string" translate="true">ui/grid/cells/html</item>
                 </item>
             </argument>
         </column>

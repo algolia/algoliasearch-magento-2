@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Console\Command\Queue;
 use Algolia\AlgoliaSearch\Console\Command\AbstractStoreCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
@@ -12,6 +13,7 @@ use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Lock\LockManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zend_Db_Exception;
 
@@ -26,6 +28,7 @@ use Zend_Db_Exception;
 class ProcessQueueCommand extends AbstractStoreCommand
 {
     protected const string LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
+    protected const string MAX_PROCESSES_OPTION = 'max-processes';
 
     public function __construct(
         protected State                     $state,
@@ -34,6 +37,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
         protected Queue                     $queue,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
         protected LockManagerInterface      $lockManager,
+        protected MaxProcessesResolver      $maxProcessesResolver,
         ?string                             $name = null
     ) {
         parent::__construct($state, $storeNameFetcher, $name);
@@ -67,7 +71,15 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
     protected function getAdditionalDefinition(): array
     {
-        return [];
+        return [
+            new InputOption(
+                self::MAX_PROCESSES_OPTION,
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Maximum number of parallel worker processes the orchestrator may spawn. '
+                . 'Takes precedence over the admin configuration.'
+            ),
+        ];
     }
 
     protected function configure(): void
@@ -82,6 +94,19 @@ class ProcessQueueCommand extends AbstractStoreCommand
         $this->input = $input;
         $this->output = $output;
         $this->setAreaCode();
+
+        try {
+            $maxProcessesOverride = $this->getMaxProcessesOverride($input);
+        } catch (\InvalidArgumentException $e) {
+            $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+
+            return Cli::RETURN_FAILURE;
+        }
+
+        if ($maxProcessesOverride !== null) {
+            $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride);
+            $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
+        }
 
         try {
             $storeIds = $this->getStoreIds($input);
@@ -174,5 +199,26 @@ class ProcessQueueCommand extends AbstractStoreCommand
     protected function getStoreLockName(int $storeId): string
     {
         return self::LOCK_NAME_PREFIX . $storeId;
+    }
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    protected function getMaxProcessesOverride(InputInterface $input): ?int
+    {
+        $value = $input->getOption(self::MAX_PROCESSES_OPTION);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!ctype_digit((string) $value) || (int) $value < 1) {
+            throw new \InvalidArgumentException(
+                'Option --' . self::MAX_PROCESSES_OPTION . ' must be an integer greater than or equal to 1 '
+                . '(e.g. --' . self::MAX_PROCESSES_OPTION . '=4), "' . $value . '" given.'
+            );
+        }
+
+        return (int) $value;
     }
 }

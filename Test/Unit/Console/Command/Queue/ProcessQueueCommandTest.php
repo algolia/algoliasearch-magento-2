@@ -7,6 +7,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Console\Command\Queue;
 use Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -27,6 +28,7 @@ class ProcessQueueCommandTest extends TestCase
         ?AlgoliaCredentialsManager $credentialsManager = null,
         ?LockManagerInterface $lockManager = null,
         ?StoreNameFetcher $storeNameFetcher = null,
+        ?MaxProcessesResolver $maxProcessesResolver = null,
     ): ProcessQueueCommand {
         $credentialsManager ??= $this->createStub(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
@@ -38,6 +40,7 @@ class ProcessQueueCommandTest extends TestCase
             $queue ?? $this->createStub(Queue::class),
             $credentialsManager,
             $lockManager ?? $this->createStub(LockManagerInterface::class),
+            $maxProcessesResolver ?? $this->createStub(MaxProcessesResolver::class),
         );
     }
 
@@ -412,16 +415,90 @@ class ProcessQueueCommandTest extends TestCase
         $argument = $cmd->getDefinition()->getArgument('store_id');
         $this->assertTrue($argument->isArray());
         $this->assertFalse($argument->isRequired());
+        $this->assertTrue($cmd->getDefinition()->hasOption('max-processes'));
+    }
+
+    public function testExecutePassesMaxProcessesOptionToResolverAndPrintsItsResult(): void
+    {
+        // The stub returns 7 intentionally (a value the command cannot derive itself) so the
+        // assertion proves the printed value came from the *resolver*, not any option passed.
+        $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
+        $maxProcessesResolver->expects($this->once())
+            ->method('resolve')
+            ->with(4)
+            ->willReturn(7);
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(maxProcessesResolver: $maxProcessesResolver),
+            [],
+            $output,
+            ['--max-processes' => '4']
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString(
+            'Maximum parallel queue processes: 7',
+            $output->fetch(),
+            'Output should show the resolver\'s return value (7), not the raw --max-processes option (4)'
+        );
+    }
+
+    /**
+     * This test expectation to be reworked once orchestrator is implemented.
+     * (Store count and admin config will impact the resolver behavior.)
+     * We are only validating the --max-processes flag at this time.
+     */
+    public function testExecuteDoesNotResolveMaxProcessesWhenOptionAbsent(): void
+    {
+        $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
+        $maxProcessesResolver->expects($this->never())->method('resolve');
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(maxProcessesResolver: $maxProcessesResolver),
+            []
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+    }
+
+    #[DataProvider('invalidMaxProcessesProvider')]
+    public function testExecuteFailsOnInvalidMaxProcessesOption(string $value): void
+    {
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->never())->method('runCron');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(queue: $queue),
+            [],
+            $output,
+            ['--max-processes' => $value]
+        );
+
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+        $this->assertStringContainsString('must be an integer greater than or equal to 1', $output->fetch());
+    }
+
+    public static function invalidMaxProcessesProvider(): array
+    {
+        return [
+            'zero' => ['0'],
+            'negative' => ['-2'],
+            'non numeric' => ['many'],
+            'decimal' => ['2.5'],
+        ];
     }
 
     private function executeCommand(
         ProcessQueueCommand $cmd,
         array $storeIds,
-        ?BufferedOutput $output = null
+        ?BufferedOutput $output = null,
+        array $options = []
     ): int {
         $this->invokeMethod($cmd, 'configure');
 
-        $input = new ArrayInput(['store_id' => $storeIds]);
+        $input = new ArrayInput(array_merge($options, ['store_id' => $storeIds]));
         $input->bind($cmd->getDefinition());
 
         return $this->invokeMethod($cmd, 'execute', [

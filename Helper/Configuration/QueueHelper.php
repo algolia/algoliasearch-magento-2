@@ -12,6 +12,8 @@ class QueueHelper
     public const NUMBER_OF_JOB_TO_RUN = 'algoliasearch_queue/queue/number_of_job_to_run';
     public const RETRY_LIMIT = 'algoliasearch_queue/queue/number_of_retries';
     public const USE_TMP_INDEX = 'algoliasearch_queue/queue/use_tmp_index';
+    public const MAX_PARALLEL_PROCESSES = 'algoliasearch_queue/queue/max_parallel_processes';
+    public const AUTO_PARALLEL_PROCESSES_CAP = 'algoliasearch_queue/queue/auto_parallel_processes_cap';
 
     public function __construct(
         protected ScopeConfigInterface $configInterface,
@@ -46,6 +48,16 @@ class QueueHelper
     public function getRetryLimit($storeId = null)
     {
         return (int) $this->configInterface->getValue(self::RETRY_LIMIT, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getMaxParallelProcesses($storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(self::MAX_PARALLEL_PROCESSES, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getAutoParallelProcessesCap($storeId = null): int
+    {
+        return (int) $this->configInterface->getValue(self::AUTO_PARALLEL_PROCESSES_CAP, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**

@@ -1092,7 +1092,7 @@
                     <label>Maximum parallel queue processes</label>
                     <comment>
                         <![CDATA[
-                            Number of parallel worker processes the queue orchestrator may spawn. When set to <code>1</code>, jobs run sequentially in a single process. Set to <code>0</code> to auto-detect: one less than the number of CPU cores, limited by the "Maximum auto-detected parallel processes" setting below.
+                            Number of parallel worker processes the queue orchestrator may spawn. When set to <code>1</code>, jobs run sequentially in a single process. Set to <code>0</code> to auto-detect the limit based on available CPU cores.
                         ]]>
                     </comment>
                     <depends>
@@ -1109,6 +1109,7 @@
                     </comment>
                     <depends>
                         <field id="active">1</field>
+                        <field id="max_parallel_processes">0</field>
                     </depends>
                 </field>
                 <field id="use_tmp_index" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">

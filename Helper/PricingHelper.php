@@ -50,18 +50,6 @@ class PricingHelper
         );
     }
 
-    public function formatPrice($amount, $store, $currencyCode): mixed
-    {
-        $currency = $this->priceCurrency->getCurrency($store, $currencyCode);
-        $options = ['locale' => $this->configHelper->getStoreLocale($store->getId())];
-        return $currency->formatPrecision(
-            round($amount, 2),
-            PriceCurrencyInterface::DEFAULT_PRECISION,
-            $options,
-            false
-        );
-    }
-
     public function getWeeeAmount($product):float
     {
         return $this->weeeTax->getWeeeAmount($product);

@@ -7,13 +7,15 @@ use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\PricingHelper;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 
 class PriceDataFormatter
 {
     public function __construct(
         protected PricingHelper $pricingHelper,
         protected ConfigHelper $configHelper,
-        protected CustomerGroupsManager $customerGroupsManager
+        protected CustomerGroupsManager $customerGroupsManager,
+        protected PriceCurrencyInterface $priceCurrency
     ) {}
 
     public function formatPriceDataObject(
@@ -44,7 +46,7 @@ class PriceDataFormatter
         // Basic price
         if ($priceData->hasPrice($groupId)) {
             $priceData->setFormattedPrice(
-                $this->pricingHelper->formatPrice(
+                $this->formatPrice(
                     $priceData->getPrice($groupId),
                     $store,
                     $currencyCode
@@ -59,12 +61,12 @@ class PriceDataFormatter
             $priceData->getMinPrice($groupId) < $priceData->getMaxPrice($groupId))
         {
             $priceData->setFormattedPrice(
-                $this->pricingHelper->formatPrice(
+                $this->formatPrice(
                     $priceData->getMinPrice($groupId),
                     $store,
                     $currencyCode
                 ) . ' - ' .
-                $this->pricingHelper->formatPrice(
+                $this->formatPrice(
                     $priceData->getMaxPrice($groupId),
                     $store,
                     $currencyCode
@@ -77,7 +79,7 @@ class PriceDataFormatter
         if ($priceData->hasOriginalPrice($groupId) &&
             $priceData->getOriginalPrice($groupId) > $priceData->getPrice($groupId)) {
             $priceData->setFormattedOriginalPrice(
-                $this->pricingHelper->formatPrice(
+                $this->formatPrice(
                     $priceData->getOriginalPrice($groupId),
                     $store,
                     $currencyCode
@@ -90,12 +92,12 @@ class PriceDataFormatter
                 $priceData->getMinOriginalPrice($groupId) > $priceData->getMinPrice($groupId) &&
                 $priceData->getMinOriginalPrice($groupId) < $priceData->getOriginalPrice($groupId)) {
                 $priceData->setFormattedOriginalPrice(
-                    $this->pricingHelper->formatPrice(
+                    $this->formatPrice(
                         $priceData->getMinOriginalPrice($groupId),
                         $store,
                         $currencyCode
                     ) . ' - ' .
-                    $this->pricingHelper->formatPrice(
+                    $this->formatPrice(
                         $priceData->getOriginalPrice($groupId),
                         $store,
                         $currencyCode
@@ -108,7 +110,7 @@ class PriceDataFormatter
         // Tier price
         if ($priceData->hasTierPrice($groupId)) {
             $priceData->setFormattedTierPrice(
-                $this->pricingHelper->formatPrice(
+                $this->formatPrice(
                     $priceData->getTierPrice($groupId),
                     $store,
                     $currencyCode
@@ -122,5 +124,17 @@ class PriceDataFormatter
         $priceData->unsetMaxPrice($groupId);
 
         return $priceData;
+    }
+
+    public function formatPrice($amount, $store, $currencyCode): mixed
+    {
+        $currency = $this->priceCurrency->getCurrency($store, $currencyCode);
+        $options = ['locale' => $this->configHelper->getStoreLocale($store->getId())];
+        return $currency->formatPrecision(
+            round($amount, 2),
+            PriceCurrencyInterface::DEFAULT_PRECISION,
+            $options,
+            false
+        );
     }
 }

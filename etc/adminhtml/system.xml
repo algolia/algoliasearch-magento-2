@@ -1087,6 +1087,30 @@
                         <field id="active">1</field>
                     </depends>
                 </field>
+                <field id="max_parallel_processes" translate="label comment" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Maximum parallel queue processes</label>
+                    <comment>
+                        <![CDATA[
+                            Number of parallel worker processes the queue orchestrator may spawn. When set to <code>1</code>, jobs run sequentially in a single process. Set to <code>0</code> to auto-detect: one less than the number of CPU cores, limited by the "Maximum auto-detected parallel processes" setting below.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
+                <field id="auto_parallel_processes_cap" translate="label comment" type="text" sortOrder="46" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <validate>validate-digits</validate>
+                    <label>Maximum auto-detected parallel processes</label>
+                    <comment>
+                        <![CDATA[
+                            Upper bound applied when "Maximum parallel queue processes" is <code>0</code> (auto). Only used in auto mode; an explicit value or the <code>--max-processes</code> CLI option bypasses this cap. Default is 4.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="active">1</field>
+                    </depends>
+                </field>
                 <field id="use_tmp_index" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Use a temporary index for full products reindex</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

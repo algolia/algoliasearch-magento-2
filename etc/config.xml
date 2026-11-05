@@ -127,6 +127,8 @@
                 <cron_expr>*/5 * * * *</cron_expr>
                 <number_of_job_to_run>5</number_of_job_to_run>
                 <number_of_retries>3</number_of_retries>
+                <max_parallel_processes>1</max_parallel_processes>
+                <auto_parallel_processes_cap>4</auto_parallel_processes_cap>
                 <use_tmp_index>1</use_tmp_index>
             </queue>
         </algoliasearch_queue>

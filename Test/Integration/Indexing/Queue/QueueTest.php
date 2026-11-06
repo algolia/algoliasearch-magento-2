@@ -1026,7 +1026,7 @@ class QueueTest extends QueueTestCase
      * actually claim: rows locked by another worker, rows that exhausted their retries,
      * and legacy store-agnostic rows (which store-scoped workers never claim) are hidden.
      */
-    public function testGetStoreIdsWithPendingJobsReturnsOnlyClaimableStores()
+    public function testDiscoverPendingStoreIdsReturnsOnlyClaimableStores()
     {
         $this->clearQueueTable();
 
@@ -1040,7 +1040,7 @@ class QueueTest extends QueueTestCase
         // Legacy store-agnostic row
         $this->seedJob(['store_id' => null, 'data' => '{"entityIds":["9","22"]}']);
 
-        $this->assertSame([1, 2, 3], $this->queue->getStoreIdsWithPendingJobs());
+        $this->assertSame([1, 2, 3], $this->queue->discoverPendingStoreIds());
     }
 
     /**

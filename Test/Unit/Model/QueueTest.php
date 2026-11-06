@@ -27,6 +27,7 @@ use Magento\Framework\Registry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\Stub;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Zend_Db_Expr;
 use Zend_Db_Statement_Interface;
 
 class QueueTest extends TestCase
@@ -409,7 +410,90 @@ class QueueTest extends TestCase
         $this->assertNotContains('store_id', $deletedCriteria);
     }
 
-    public function testGetStoreIdsWithPendingJobsReturnsDistinctStoreIds(): void
+    public function testGetStoreIdsWithPendingJobsReturnsStoreIdsFifoOrderedByOldestPendingJob(): void
+    {
+        $fromColumns = [];
+        $whereClauses = [];
+        $groupColumns = [];
+        $orderClauses = [];
+        $select = $this->createStub(Select::class);
+        $select->method('from')->willReturnCallback(
+            function (string $table, $columns) use (&$fromColumns, $select) {
+                $fromColumns[] = $columns;
+
+                return $select;
+            }
+        );
+        $select->method('where')->willReturnCallback(
+            function (string $where) use (&$whereClauses, $select) {
+                $whereClauses[] = $where;
+
+                return $select;
+            }
+        );
+        $select->method('group')->willReturnCallback(
+            function (string $column) use (&$groupColumns, $select) {
+                $groupColumns[] = $column;
+
+                return $select;
+            }
+        );
+        $select->method('order')->willReturnCallback(
+            function ($order) use (&$orderClauses, $select) {
+                $orderClauses[] = $order;
+
+                return $select;
+            }
+        );
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('select')->willReturn($select);
+        $dbAdapter->method('fetchCol')->willReturn(['2', '3', '1']);
+
+        $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
+
+        $this->assertSame([2, 3, 1], $this->invokeMethod($queue, 'getStoreIdsWithPendingJobs'));
+        $this->assertSame(['store_id'], $fromColumns);
+        $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NOT NULL'], $whereClauses);
+        $this->assertSame(['store_id'], $groupColumns);
+        $this->assertCount(1, $orderClauses);
+        $this->assertInstanceOf(Zend_Db_Expr::class, $orderClauses[0]);
+        $this->assertSame('MIN(job_id)', (string) $orderClauses[0]);
+    }
+
+    public function testDiscoverPendingStoreIdsUnlocksStackedJobsBeforeDiscovery(): void
+    {
+        $callSequence = [];
+        $select = $this->createStub(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnSelf();
+        $select->method('group')->willReturnSelf();
+        $select->method('order')->willReturnSelf();
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('select')->willReturnCallback(function () use (&$callSequence, $select) {
+            $callSequence[] = 'select';
+
+            return $select;
+        });
+        $dbAdapter->method('update')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'update';
+
+            return 1;
+        });
+        $dbAdapter->method('fetchCol')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'fetchCol';
+
+            return ['2', '3'];
+        });
+
+        $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
+
+        $this->assertSame([2, 3], $queue->discoverPendingStoreIds());
+        $this->assertSame(['update', 'select', 'fetchCol'], $callSequence);
+    }
+
+    public function testHasStorelessPendingJobsReturnsTrueWhenStorelessRowsArePending(): void
     {
         $whereClauses = [];
         $select = $this->createStub(Select::class);
@@ -421,16 +505,47 @@ class QueueTest extends TestCase
                 return $select;
             }
         );
-        $select->method('order')->willReturnSelf();
 
         $dbAdapter = $this->createStub(AdapterInterface::class);
         $dbAdapter->method('select')->willReturn($select);
-        $dbAdapter->method('fetchCol')->willReturn(['1', '2', '3']);
+        $dbAdapter->method('fetchOne')->willReturn('5');
 
         $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
 
-        $this->assertSame([1, 2, 3], $queue->getStoreIdsWithPendingJobs());
-        $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NOT NULL'], $whereClauses);
+        $this->assertTrue($queue->hasStorelessPendingJobs());
+        $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NULL'], $whereClauses);
+    }
+
+    public function testHasStorelessPendingJobsReturnsFalseWhenNoStorelessRowsArePending(): void
+    {
+        $select = $this->createStub(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnSelf();
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('select')->willReturn($select);
+        $dbAdapter->method('fetchOne')->willReturn('0');
+
+        $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
+
+        $this->assertFalse($queue->hasStorelessPendingJobs());
+    }
+
+    public function testGetNoOfFailedJobsReturnsZeroForUnknownStore(): void
+    {
+        $queue = $this->createObjectToTest();
+
+        $this->assertSame(0, $queue->getNoOfFailedJobs(7));
+        $this->assertSame(0, $queue->getNoOfFailedJobs());
+    }
+
+    public function testGetNoOfFailedJobsMapsNullStoreIdToStorelessBucket(): void
+    {
+        $queue = $this->createObjectToTest();
+        $this->setPrivateProperty($queue, 'noOfFailedJobsByStore', [0 => 4, 2 => 1]);
+
+        $this->assertSame(4, $queue->getNoOfFailedJobs());
+        $this->assertSame(1, $queue->getNoOfFailedJobs(2));
     }
 
     public function testFailedJobInOneStoreSkipsOnlyThatStoresMoveIndex(): void

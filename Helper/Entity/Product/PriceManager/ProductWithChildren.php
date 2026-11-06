@@ -42,12 +42,6 @@ abstract class ProductWithChildren extends ProductWithoutChildren
             /** @var Product $subProduct */
             foreach ($subProducts as $subProduct) {
                 $specialPrice = $this->getSpecialPrice($subProduct, $currencyCode, $withTax, $subProducts);
-                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
-                if (!empty($tierPrice[0]) && $specialPrice[0] > $tierPrice[0]){
-                    $minPrice = $tierPrice[0];
-                } else {
-                    $minPrice = $specialPrice[0];
-                }
 
                 $finalPrice = $subProduct->getFinalPrice();
                 $basePrice  = $subProduct->getPrice();
@@ -57,7 +51,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
                     $basePrice  = $this->convertPrice($basePrice, $currencyCode);
                 }
 
-                $price     = $minPrice ?? $this->getTaxPrice($product, $finalPrice, $withTax);
+                $price     = $specialPrice[0] ?? $this->getTaxPrice($product, $finalPrice, $withTax);
                 $basePrice = $this->getTaxPrice($product, $basePrice, $withTax);
 
                 if ($this->configHelper->isFptEnabled($subProduct->getStoreId())) {
@@ -235,7 +229,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     public function handleOriginalPrice($field, $currencyCode, $min, $max, $minOriginal, $maxOriginal)
     {
         if ($min !== $max) {
-            if ($min !== $minOriginal || $max !== $maxOriginal) {
+            if ($min < $minOriginal || $max < $maxOriginal) {
                 if ($minOriginal !== $maxOriginal) {
                     $this->customData[$field][$currencyCode]['default_original_formated'] = $this->getDashedPriceFormat(
                         $minOriginal,

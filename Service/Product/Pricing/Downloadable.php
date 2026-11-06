@@ -1,0 +1,82 @@
+<?php
+
+namespace Algolia\AlgoliaSearch\Service\Product\Pricing;
+
+use Algolia\AlgoliaSearch\Api\Data\PriceDataInterface;
+use Algolia\AlgoliaSearch\Api\Data\PricingContextInterface;
+use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\PricingHelper;
+use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
+use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
+use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product;
+use Magento\Customer\Model\Group;
+
+class Downloadable extends AbstractProduct
+{
+    public function __construct(
+        protected ProductRepositoryInterface $productRepository,
+        protected ConfigHelper $configHelper,
+        protected PricingHelper $pricingHelper,
+        protected DiagnosticsLogger $logger,
+        protected PriceDataFormatter $priceDataFormatter,
+        protected CatalogRulesManager $catalogRulesManager,
+        protected CustomerGroupsManager $customerGroupsManager,
+        protected DefaultPricingStrategy $defaultPricingStrategy,
+        protected CustomerGroupPricingStrategy $customerGroupPricingStrategy
+    ) {
+        parent::__construct(
+            $configHelper,
+            $pricingHelper,
+            $logger,
+            $priceDataFormatter,
+            $catalogRulesManager,
+            $customerGroupsManager,
+            $defaultPricingStrategy,
+            $customerGroupPricingStrategy
+        );
+    }
+
+    protected function addCustomerGroupsPrices(PriceDataInterface $priceData, PricingContextInterface $pricingContext)
+    : PriceDataInterface
+    {
+        $product = $pricingContext->getProduct();
+
+        if (!$pricingContext->areCustomerGroupsEnabled()) {
+            return $priceData;
+        }
+
+        $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
+
+        /** @var Group $group */
+        foreach ($groups as $group) {
+            $groupId = (int) $group->getData('customer_group_id');
+            $product = $this->productRepository->getById($product->getId(), false, $product->getStoreId(), true);
+            $product->setData('customer_group_id', $groupId);
+            $product->setData('website_id', $product->getStore()->getWebsiteId());
+            $discountedPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
+            $discountedPrice = $this->pricingHelper->handleConversion($discountedPrice, $pricingContext);
+
+            if ($discountedPrice !== false) {
+                $priceData->setPrice(
+                    $this->pricingHelper->getTaxPrice(
+                        $product,
+                        $discountedPrice,
+                        $pricingContext->shouldIncludeTax()
+                    ),
+                    $groupId
+                );
+            } else {
+                $priceData->setPrice($priceData->getPrice(), $groupId);
+            }
+        }
+
+        $product->setData('customer_group_id', null);
+
+        return $priceData;
+    }
+}

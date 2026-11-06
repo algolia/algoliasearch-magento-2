@@ -826,11 +826,13 @@ class Queue
 
     /**
      * Whether store-agnostic rows (store_id IS NULL) are pending. Sequential mode drains
-     * them while store-scoped workers never claim them. Call after the stale-lock cleanup
-     * (discoverPendingStoreIds()) so stale-locked rows are visible.
+     * them while store-scoped workers never claim them. Runs the stale-lock cleanup first,
+     * so stale locks do not hide pending work.
      */
     public function hasStorelessPendingJobs(): bool
     {
+        $this->unlockStackedJobs();
+
         $select = $this->db->select()
             ->from($this->table, new Zend_Db_Expr('COUNT(*)'))
             ->where('pid IS NULL')

@@ -493,8 +493,9 @@ class QueueTest extends TestCase
         $this->assertSame(['update', 'select', 'fetchCol'], $callSequence);
     }
 
-    public function testHasStorelessPendingJobsReturnsTrueWhenStorelessRowsArePending(): void
+    public function testHasStorelessPendingJobsUnlocksStackedJobsBeforeCounting(): void
     {
+        $callSequence = [];
         $whereClauses = [];
         $select = $this->createStub(Select::class);
         $select->method('from')->willReturnSelf();
@@ -507,12 +508,26 @@ class QueueTest extends TestCase
         );
 
         $dbAdapter = $this->createStub(AdapterInterface::class);
-        $dbAdapter->method('select')->willReturn($select);
-        $dbAdapter->method('fetchOne')->willReturn('5');
+        $dbAdapter->method('select')->willReturnCallback(function () use (&$callSequence, $select) {
+            $callSequence[] = 'select';
+
+            return $select;
+        });
+        $dbAdapter->method('update')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'update';
+
+            return 1;
+        });
+        $dbAdapter->method('fetchOne')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'fetchOne';
+
+            return '5';
+        });
 
         $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
 
         $this->assertTrue($queue->hasStorelessPendingJobs());
+        $this->assertSame(['update', 'select', 'fetchOne'], $callSequence);
         $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NULL'], $whereClauses);
     }
 

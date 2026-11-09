@@ -2,8 +2,10 @@
 
 namespace Algolia\AlgoliaSearch\Model\Queue;
 
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\ObjectManagerInterface;
 use Symfony\Component\Process\PhpExecutableFinder;
-use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessFactory;
 
 /**
  * Spawns a per-store queue worker as a child process and provides a structural recursion guard.
@@ -12,12 +14,25 @@ use Symfony\Component\Process\Process;
  */
 class WorkerProcessFactory
 {
+    public function __construct(
+        protected readonly ObjectManagerInterface $objectManager,
+        protected readonly ProcessFactory $processFactory,
+        protected readonly PhpExecutableFinder $phpFinder,
+        protected readonly DirectoryList $directoryList
+    ) {
+    }
+
     public function create(int $storeId): WorkerProcess
     {
-        return new WorkerProcess(
-            $storeId,
-            new Process($this->buildCommand($storeId), BP, null, null, null)
-        );
+        $process = $this->processFactory->create([
+            'command' => $this->buildCommand($storeId),
+            'cwd' => $this->directoryList->getRoot()
+        ]);
+        $process->setTimeout(null); // workers do not manage their lifespan, the orchestrator does
+        return $this->objectManager->create(WorkerProcess::class, [
+            'storeId' => $storeId,
+            'process' => $process,
+        ]);
     }
 
     protected function buildCommand(int $storeId): array
@@ -27,6 +42,6 @@ class WorkerProcessFactory
 
     protected function findPhpBinary(): string
     {
-        return (new PhpExecutableFinder())->find(false) ?: PHP_BINARY;
+        return $this->phpFinder->find(false) ?: PHP_BINARY;
     }
 }

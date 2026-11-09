@@ -689,8 +689,11 @@ class ProcessQueueCommandTest extends TestCase
 
     public function testExecuteRunsPoolWithDiscoveredStoresAndClampedCap(): void
     {
+        $storeIds = [2, 3, 4, 5, 6];
+        $storeNames = ['Second Store', 'Third Store', 'Fourth Store', 'Fifth Store', 'Sixth Store'];
+
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+        $storeNameFetcher->method('getStoreNames')->with($storeIds)->willReturn($storeNames);
 
         $lockManager = $this->createStub(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -700,7 +703,7 @@ class ProcessQueueCommandTest extends TestCase
         $credentialsManager->expects($this->never())->method('checkCredentialsWithSearchOnlyAPIKey');
 
         $queue = $this->createStub(Queue::class);
-        $queue->method('discoverPendingStoreIds')->willReturn([2, 3]);
+        $queue->method('discoverPendingStoreIds')->willReturn($storeIds);
 
         $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
         $maxProcessesResolver->method('resolve')->willReturnCallback(
@@ -711,8 +714,8 @@ class ProcessQueueCommandTest extends TestCase
         $workerProcessPool = $this->createMock(WorkerProcessPool::class);
         $workerProcessPool->expects($this->once())
             ->method('run')
-            ->with([2, 3], 2, $output)
-            ->willReturn([2 => 0, 3 => 0]);
+            ->with($storeIds, 2, $output)
+            ->willReturn(array_fill_keys($storeIds, 0));
 
         $code = $this->executeCommand(
             $this->createObjectToTest(
@@ -730,8 +733,12 @@ class ProcessQueueCommandTest extends TestCase
         $fetch = $output->fetch();
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('with up to 2 worker(s)', $fetch);
-        $this->assertStringContainsString('Store 2 (Second Store): completed', $fetch);
-        $this->assertStringContainsString('Store 3 (Third Store): completed', $fetch);
+        foreach ($storeIds as $i => $storeId) {
+            $this->assertStringContainsString(
+                sprintf('Store %d (%s): completed', $storeId, $storeNames[$i]),
+                $fetch
+            );
+        }
     }
 
     public function testExecuteSpawnsSingleWorkerForSinglePendingStore(): void

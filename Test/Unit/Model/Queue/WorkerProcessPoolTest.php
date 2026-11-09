@@ -103,6 +103,22 @@ class WorkerProcessPoolTest extends TestCase
         $this->assertSame([2 => 0, 3 => 0, 4 => 0], $exitCodes);
     }
 
+    public function testRunNeverCreatesMoreWorkersThanPendingStores(): void
+    {
+        $timeline = [];
+        $factory = $this->createScriptedFactory([
+            2 => [1, 0, [], []],
+            3 => [1, 0, [], []],
+        ], $timeline);
+
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 8, new BufferedOutput());
+
+        // The concurrency cap (8) far exceeds the pending store count: only one worker
+        // per store is ever created, and no refill happens once both are running
+        $this->assertSame(['create:2', 'create:3', 'exit:2', 'exit:3'], $timeline);
+        $this->assertSame([2 => 0, 3 => 0], $exitCodes);
+    }
+
     public function testRunReturnsExitCodesKeyedByStoreId(): void
     {
         $factory = $this->createScriptedFactory([

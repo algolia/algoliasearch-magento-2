@@ -12,8 +12,7 @@ use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Grouped;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\PricingStrategyResolver;
 use Algolia\AlgoliaSearch\Test\TestCase;
 
 /**
@@ -32,8 +31,7 @@ class GroupedTest extends TestCase
         ?PriceDataFormatter $priceDataFormatter = null,
         ?CatalogRulesManager $catalogRulesManager = null,
         ?CustomerGroupsManager $customerGroupsManager = null,
-        ?DefaultPricingStrategy $defaultPricingStrategy = null,
-        ?CustomerGroupPricingStrategy $customerGroupPricingStrategy = null
+        ?PricingStrategyResolver $pricingStrategyResolver = null
     ): Grouped {
         return new Grouped(
             $minMaxPricesFactory ?? $this->createStub(MinMaxPricesInterfaceFactory::class),
@@ -43,8 +41,7 @@ class GroupedTest extends TestCase
             $priceDataFormatter ?? $this->createStub(PriceDataFormatter::class),
             $catalogRulesManager ?? $this->createStub(CatalogRulesManager::class),
             $customerGroupsManager ?? $this->createStub(CustomerGroupsManager::class),
-            $defaultPricingStrategy ?? $this->createStub(DefaultPricingStrategy::class),
-            $customerGroupPricingStrategy ?? $this->createStub(CustomerGroupPricingStrategy::class)
+            $pricingStrategyResolver ?? $this->createStub(PricingStrategyResolver::class)
         );
     }
 

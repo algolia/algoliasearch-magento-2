@@ -17,7 +17,7 @@ use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Bundle;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\PricingStrategyResolver;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
 
@@ -37,8 +37,7 @@ class BundleTest extends TestCase
         ?PriceDataFormatter $priceDataFormatter = null,
         ?CatalogRulesManager $catalogRulesManager = null,
         ?CustomerGroupsManager $customerGroupsManager = null,
-        ?DefaultPricingStrategy $defaultPricingStrategy = null,
-        ?CustomerGroupPricingStrategy $customerGroupPricingStrategy = null
+        ?PricingStrategyResolver $pricingStrategyResolver = null
     ): Bundle {
         return new Bundle(
             $minMaxPricesFactory ?? $this->createStub(MinMaxPricesInterfaceFactory::class),
@@ -48,8 +47,7 @@ class BundleTest extends TestCase
             $priceDataFormatter ?? $this->createStub(PriceDataFormatter::class),
             $catalogRulesManager ?? $this->createStub(CatalogRulesManager::class),
             $customerGroupsManager ?? $this->createStub(CustomerGroupsManager::class),
-            $defaultPricingStrategy ?? $this->createStub(DefaultPricingStrategy::class),
-            $customerGroupPricingStrategy ?? $this->createStub(CustomerGroupPricingStrategy::class)
+            $pricingStrategyResolver ?? $this->createStub(PricingStrategyResolver::class)
         );
     }
 
@@ -130,9 +128,9 @@ class BundleTest extends TestCase
             ->with($priceData, $pricingContext, $min, true) // Bundle flag should be true
             ->willReturn($priceData);
 
-        $bundle = $this->createObjectToTest(customerGroupPricingStrategy: $customerGroupPricingStrategy);
+        $bundle = $this->createObjectToTest();
 
-        // Set the strategy (normally done by calculatePriceData)
+        // Set the strategy (normally done by calculatePriceData via PricingStrategyResolver)
         $this->setPrivateProperty($bundle, 'pricingStrategy', $customerGroupPricingStrategy);
 
         $result = $this->invokeMethod($bundle, 'addCustomerGroupsFinalPrices', [$priceData, $pricingContext, $min]);

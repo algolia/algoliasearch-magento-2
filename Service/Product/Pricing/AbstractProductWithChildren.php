@@ -12,8 +12,7 @@ use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\PricingStrategyResolver;
 use Magento\Catalog\Model\Product;
 
 abstract class AbstractProductWithChildren extends AbstractProduct
@@ -26,8 +25,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
         protected PriceDataFormatter $priceDataFormatter,
         protected CatalogRulesManager $catalogRulesManager,
         protected CustomerGroupsManager $customerGroupsManager,
-        protected DefaultPricingStrategy $defaultPricingStrategy,
-        protected CustomerGroupPricingStrategy $customerGroupPricingStrategy
+        protected PricingStrategyResolver $pricingStrategyResolver
     ) {
         parent::__construct(
             $configHelper,
@@ -36,8 +34,7 @@ abstract class AbstractProductWithChildren extends AbstractProduct
             $priceDataFormatter,
             $catalogRulesManager,
             $customerGroupsManager,
-            $defaultPricingStrategy,
-            $customerGroupPricingStrategy
+            $pricingStrategyResolver
         );
     }
 

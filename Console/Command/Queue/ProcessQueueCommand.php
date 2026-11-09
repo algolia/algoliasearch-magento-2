@@ -112,13 +112,6 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
         try {
             $maxProcessesOverride = $this->getMaxProcessesOverride($input);
-        } catch (\InvalidArgumentException $e) {
-            $this->output->writeln('<error>' . $e->getMessage() . '</error>');
-
-            return Cli::RETURN_FAILURE;
-        }
-
-        try {
             $storeIds = $this->getStoreIds($input);
         } catch (LocalizedException $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
@@ -169,7 +162,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
         if (!$this->maxProcessesResolver->isProcessSpawningSupported()) {
             $this->output->writeln(
-                '<comment>PHP proc_open is disabled, falling back to sequential processing.</comment>'
+                '<error>PHP proc_open is disabled, falling back to sequential processing.</error>'
             );
 
             return $this->processQueueForAllStores();
@@ -336,7 +329,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
     }
 
     /**
-     * @throws \InvalidArgumentException
+     * @throws LocalizedException
      */
     protected function getMaxProcessesOverride(InputInterface $input): ?int
     {
@@ -347,10 +340,18 @@ class ProcessQueueCommand extends AbstractStoreCommand
         }
 
         if (!ctype_digit((string) $value) || (int) $value < 1) {
-            throw new \InvalidArgumentException(
-                'Option --' . self::MAX_PROCESSES_OPTION . ' must be an integer greater than or equal to 1 '
-                . '(e.g. --' . self::MAX_PROCESSES_OPTION . '=4), "' . $value . '" given.'
-            );
+            throw new LocalizedException(__(
+                'Option --%1 must be an integer greater than or equal to 1 (e.g. --%1=4), "%2" given.',
+                self::MAX_PROCESSES_OPTION,
+                $value
+            ));
+        }
+
+        if ($this->getStoreIds($input)) {
+            throw new LocalizedException(__(
+                'Option --%1 cannot be used in store worker mode.',
+                self::MAX_PROCESSES_OPTION
+            ));
         }
 
         return (int) $value;

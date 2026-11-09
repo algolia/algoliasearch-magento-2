@@ -95,6 +95,33 @@ abstract class AbstractStoreCommand extends Command
         return array_map('intval', $storeIds);
     }
 
+    /**
+     * Fetches store names keyed by store ID.
+     *
+     * @param int[] $storeIds
+     * @param bool $failOnMissingStore When true, a store that cannot be resolved aborts with the
+     *                                 fetch error; when false, it falls back to a plain ID label
+     *
+     * @return array<int, string> Store names keyed by store ID
+     *
+     * @throws LocalizedException When $failOnMissingStore is true and a store name cannot be fetched
+     */
+    protected function resolveStoreNames(array $storeIds, bool $failOnMissingStore = false): array
+    {
+        try {
+            return array_combine($storeIds, $this->storeNameFetcher->getStoreNames($storeIds));
+        } catch (LocalizedException $e) {
+            if ($failOnMissingStore) {
+                throw $e;
+            }
+
+            return array_combine(
+                $storeIds,
+                array_map(static fn (int $storeId): string => 'Store ID ' . $storeId, $storeIds)
+            );
+        }
+    }
+
     protected function getStoreArgumentDefinition(): InputArgument {
         return new InputArgument(
             self::STORE_ARGUMENT,

@@ -29,11 +29,11 @@ class WorkerProcessTest extends TestCase
 
     public function testLifecycleReadsAreForwardedToTheUnderlyingProcess(): void
     {
-        $process = $this->createStub(Process::class);
-        $process->method('isRunning')->willReturn(true);
-        $process->method('getExitCode')->willReturn(3);
-        $process->method('getOutput')->willReturn('out');
-        $process->method('getErrorOutput')->willReturn('err');
+        $process = $this->createMock(Process::class);
+        $process->expects($this->once())->method('isRunning')->willReturn(true);
+        $process->expects($this->once())->method('getExitCode')->willReturn(3);
+        $process->expects($this->exactly(2))->method('getOutput')->willReturn('out');
+        $process->expects($this->exactly(2))->method('getErrorOutput')->willReturn('err');
 
         $worker = new WorkerProcess(2, $process);
 

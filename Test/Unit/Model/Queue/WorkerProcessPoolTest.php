@@ -12,11 +12,19 @@ use Symfony\Component\Process\Process;
 class WorkerProcessPoolTest extends TestCase
 {
     /**
-     * Factory stub mapping each store ID to a WorkerProcess over a scripted Process: the
-     * worker reports running for the given number of pool polls, then exits with the given
-     * code, shifting one output/error chunk off per read call. Creation and exit events are
-     * appended to $timeline as create:<id> / exit:<id> so tests can reason about concurrency
-     * and refill order.
+     * Factory stub mapping each store ID to a WorkerProcess over a scripted Process, with
+     * the following per-store lifecycle:
+     *
+     *  - 0: pollsBeforeExit - the number of pool polls for which the worker reports
+     *    isRunning() = true; it exits on the poll after that
+     *  - 1: exitCode - the value getExitCode() returns once exited; null simulates a
+     *    killed worker, which the pool records as a failure (effective exit code 1)
+     *  - 2: outputChunks - stdout chunks, shifted one per getOutput() call (empty string
+     *    once exhausted)
+     *  - 3: errorChunks - stderr chunks, same shifting behavior as outputChunks
+     *
+     * Creation and exit events are appended to $timeline as create:<id> / exit:<id> so
+     * tests can reason about concurrency and refill order.
      *
      * @param array<int, array{0: int, 1: int|null, 2: list<string>, 3: list<string>}> $lifecyclesByStore
      * @param string[] $timeline
@@ -67,9 +75,9 @@ class WorkerProcessPoolTest extends TestCase
     }
 
     /**
-     * The real pool sleeps 100ms per poll; polling is scripted here, so the wait is dropped.
+     * The real pool sleeps 100ms per poll; Test object drops the wait
      */
-    private function createPool(WorkerProcessFactory $factory): WorkerProcessPool
+    private function createObjectToTest(WorkerProcessFactory $factory): WorkerProcessPool
     {
         return new class ($factory) extends WorkerProcessPool {
             protected const int POLL_INTERVAL_MICROSECONDS = 0;
@@ -85,7 +93,7 @@ class WorkerProcessPoolTest extends TestCase
             4 => [1, 0, [], []],
         ], $timeline);
 
-        $exitCodes = $this->createPool($factory)->run([2, 3, 4], 2, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 2, new BufferedOutput());
 
         // Store 4 is only spawned after store 2 exited (refill), not alongside 2 and 3
         $this->assertSame(
@@ -103,7 +111,7 @@ class WorkerProcessPoolTest extends TestCase
             4 => [1, 7, [], []],
         ]);
 
-        $exitCodes = $this->createPool($factory)->run([2, 3, 4], 2, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 2, new BufferedOutput());
 
         $this->assertSame([2 => 0, 3 => 1, 4 => 7], $exitCodes);
     }
@@ -115,7 +123,7 @@ class WorkerProcessPoolTest extends TestCase
             3 => [2, 0, [], []],
         ]);
 
-        $exitCodes = $this->createPool($factory)->run([2, 3], 2, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new BufferedOutput());
 
         $this->assertSame([2 => 1, 3 => 0], $exitCodes);
     }
@@ -128,7 +136,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createPool($factory)->run([2, 3], 2, $output);
+        $this->createObjectToTest($factory)->run([2, 3], 2, $output);
 
         $written = $output->fetch();
         $this->assertStringContainsString('a', $written);
@@ -145,7 +153,7 @@ class WorkerProcessPoolTest extends TestCase
             4 => [1, 0, [], []],
         ], $timeline);
 
-        $exitCodes = $this->createPool($factory)->run([2, 3, 4], 3, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 3, new BufferedOutput());
 
         $this->assertSame(['create:2', 'create:3', 'create:4', 'exit:2', 'exit:3', 'exit:4'], $timeline);
         $this->assertSame([2 => 1, 3 => 0, 4 => 0], $exitCodes);
@@ -156,7 +164,7 @@ class WorkerProcessPoolTest extends TestCase
         $timeline = [];
         $factory = $this->createScriptedFactory([], $timeline);
 
-        $exitCodes = $this->createPool($factory)->run([], 4, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([], 4, new BufferedOutput());
 
         $this->assertSame([], $exitCodes);
         $this->assertSame([], $timeline);

@@ -30,11 +30,11 @@ class WorkerProcessPool
         $workers = [];
         $exitCodes = [];
 
-        while ($pendingStoreIds !== [] && count($workers) < $maxProcesses) {
+        while ($pendingStoreIds && count($workers) < $maxProcesses) {
             $workers[] = $this->startWorker(array_shift($pendingStoreIds));
         }
 
-        while ($workers !== []) {
+        while ($workers) {
             usleep(self::POLL_INTERVAL_MICROSECONDS);
 
             foreach ($workers as $index => $worker) {
@@ -48,7 +48,7 @@ class WorkerProcessPool
                 $exitCodes[$worker->getStoreId()] = $worker->getEffectiveExitCode();
                 unset($workers[$index]);
 
-                if ($pendingStoreIds !== []) {
+                if ($pendingStoreIds) { //keep filling as workers free up
                     $workers[] = $this->startWorker(array_shift($pendingStoreIds));
                 }
             }

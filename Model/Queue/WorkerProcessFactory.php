@@ -26,7 +26,7 @@ class WorkerProcessFactory
     {
         $process = $this->processFactory->create([
             'command' => $this->buildCommand($storeId),
-            'cwd' => $this->directoryList->getRoot()
+            'cwd'     => $this->directoryList->getRoot()
         ]);
         $process->setTimeout(null); // workers do not manage their lifespan, the orchestrator does
         return $this->objectManager->create(WorkerProcess::class, [

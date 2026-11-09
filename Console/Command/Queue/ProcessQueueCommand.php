@@ -127,10 +127,10 @@ class ProcessQueueCommand extends AbstractStoreCommand
         }
 
         // Explicit store IDs always mean worker mode: --sequential and --max-processes are ignored
-        if ($storeIds !== []) {
+        if ($storeIds) {
             try {
                 // Fails before any work when a store ID does not exist
-                $storeNames = array_combine($storeIds, $this->storeNameFetcher->getStoreNames($storeIds));
+                $storeNames = $this->resolveStoreNames($storeIds, true);
             } catch (LocalizedException $e) {
                 $this->output->writeln('<error>' . $e->getMessage() . '</error>');
 
@@ -273,6 +273,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
         }
 
         try {
+            // Sanity check for unexpected job shape - not supported for parallel indexing
             if ($this->queue->hasStorelessPendingJobs()) {
                 $this->output->writeln(
                     '<comment>Store-agnostic indexing jobs are pending, falling back to sequential '
@@ -284,12 +285,16 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
             $storeIds = $this->queue->discoverPendingStoreIds();
 
-            if ($storeIds === []) {
+            if (!$storeIds) {
                 $this->output->writeln('<info>No pending indexing queue jobs.</info>');
 
                 return Cli::RETURN_SUCCESS;
             }
 
+            // Deliberately softer retrieval than worker mode's fail-fast
+            // i.e. explicit store arguments fail hard when unknown, while store IDs 
+            // discovered from the queue must survive a store deleted 
+            // (fall back to plain ID labels instead).
             $storeNames = $this->resolveStoreNames($storeIds);
             $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride, count($storeIds));
             $this->output->writeln(
@@ -302,27 +307,6 @@ class ProcessQueueCommand extends AbstractStoreCommand
             return $this->printSummary($storeIds, $storeNames, $exitCodes);
         } finally {
             $this->lockManager->unlock(self::ORCHESTRATOR_LOCK_NAME);
-        }
-    }
-
-    /**
-     * Deliberately softer than worker mode's fail-fast: explicit store arguments fail hard
-     * when unknown, while store IDs discovered from the queue must survive a store deleted
-     * after enqueueing and fall back to plain ID labels instead.
-     *
-     * @param int[] $storeIds
-     *
-     * @return array<int, string> Store names keyed by store ID
-     */
-    protected function resolveStoreNames(array $storeIds): array
-    {
-        try {
-            return array_combine($storeIds, $this->storeNameFetcher->getStoreNames($storeIds));
-        } catch (LocalizedException) {
-            return array_combine(
-                $storeIds,
-                array_map(static fn (int $storeId): string => 'Store ID ' . $storeId, $storeIds)
-            );
         }
     }
 

@@ -76,7 +76,7 @@ class AbstractStoreCommandTest extends TestCase
 
     public function testResolveStoreNamesReturnsNamesKeyedByStoreId(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
 
         $cmd = $this->createObjectToTest(storeNameFetcher: $storeNameFetcher);

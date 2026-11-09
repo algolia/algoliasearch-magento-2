@@ -33,8 +33,8 @@ use Zend_Db_Exception;
  */
 class ProcessQueueCommand extends AbstractStoreCommand
 {
-    protected const string LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
-    protected const string ORCHESTRATOR_LOCK_NAME = 'algolia_queue_process';
+    public const string STORE_LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
+    public const string ORCHESTRATOR_LOCK_NAME = 'algolia_queue_process';
     protected const string MAX_PROCESSES_OPTION = 'max-processes';
     protected const string SEQUENTIAL_OPTION = 'sequential';
 
@@ -248,7 +248,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
     protected function getStoreLockName(int $storeId): string
     {
-        return self::LOCK_NAME_PREFIX . $storeId;
+        return self::STORE_LOCK_NAME_PREFIX . $storeId;
     }
 
     /**
@@ -285,9 +285,9 @@ class ProcessQueueCommand extends AbstractStoreCommand
             }
 
             // Deliberately softer retrieval than worker mode's fail-fast
-            // i.e. explicit store arguments fail hard when unknown, while store IDs 
-            // discovered from the queue must survive a store deleted 
-            // (fall back to plain ID labels instead).
+            // i.e. explicit store arguments fail hard when unknown, while store IDs
+            // discovered from the queue must survive a deleted store for useful reporting
+            // (falls back to plain ID labels when store is not found).
             $storeNames = $this->resolveStoreNames($storeIds);
             $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride, count($storeIds));
             $this->output->writeln(

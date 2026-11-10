@@ -10,6 +10,7 @@
 - The no-argument run of `algolia:queue:process` now exits with code 1 when Algolia credentials are missing, instead of the legacy 0.
 
 ### Features
+#### Parallel indexing
 - Added store-aware job claiming to the queue, groundwork for store-partitioned indexing where one worker process runs per store view.
     - `Queue::runCron()`, `run()`, `getJobs()` and `fetchJobs()` accept a trailing optional `?int $storeId`. When given, jobs are claimed with a SQL `store_id` filter and failed-job cleanup stays scoped to the same store.
     - `Queue::getStoreIdsWithPendingJobs(): int[]` returns, ascending, the stores that have claimable jobs.
@@ -27,6 +28,16 @@
 - Added a Store view column (sortable) and a Store view select filter to the Indexing Queue admin grid.
     - The shared `StoreView` grid renderer now guards against rows whose store view was deleted after the job was enqueued, rendering `Store ID: N (deleted)` instead of throwing. This also fixes the landing pages and search queries grids that share the renderer.
     - Rows without a store render an empty cell instead of being mislabeled "All Store Views".
+
+#### Pricing V2
+- Complete rewrite of the pricing calculation system introducing a service-oriented architecture with clear separation of concerns.
+- Uses dedicated pricing services per product type (`Service/Product/Pricing/*`),
+- Introduced strategy pattern for customer group handling,
+- Introduced typed interfaces replacing the legacy `Helper/Entity/Product/PriceManager` classes.
+- Introduced key components include `PricingStrategyResolver` for dynamic strategy resolution, `PriceDataFormatter` for centralized formatting,
+- Introduced `CatalogRulesManager` and `CustomerGroupsManager` for rule and group handling, and store-aware collection caching.
+- Opt-in via configuration (`Stores > Configuration > Algolia Search > Indexing Settings > Pricing Version`).
+
 
 ### Updates
 - Added an indexed `store_id` column to the `algoliasearch_queue` table, backfilled by a data patch for existing jobs (rows whose store cannot be determined remain `NULL`).

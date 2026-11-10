@@ -6,7 +6,7 @@ use Algolia\AlgoliaSearch\Api\ClientProviderInterface;
 use Algolia\AlgoliaSearch\Exception\DiagnosticsException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Exceptions\ExceededRetriesException;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
@@ -27,7 +27,7 @@ class Reindex extends Action
         protected StoreManagerInterface $storeManager,
         protected StoreNameFetcher $storeNameFetcher,
         protected IndexNameFetcher $indexNameFetcher,
-        protected ConfigHelper $configHelper,
+        protected QueueHelper $queueHelper,
         protected ProductBatchQueueProcessor $productBatchQueueProcessor,
         protected CategoryBatchQueueProcessor $categoryBatchQueueProcessor,
         protected PageBatchQueueProcessor $pageBatchQueueProcessor,
@@ -144,7 +144,7 @@ class Reindex extends Action
                     $message .= ' - full reindexing job';
                 }
 
-                if (!$this->configHelper->isQueueActive($storeId)) {
+                if (!$this->queueHelper->isQueueActive($storeId)) {
                     $message .= ' successfully processed)';
                 } else {
                     $message .= ' successfully added to the Algolia indexing queue)';

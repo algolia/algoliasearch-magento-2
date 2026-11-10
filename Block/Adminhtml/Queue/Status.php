@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Queue;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\View\Element\Template;
@@ -24,8 +24,8 @@ class Status extends Template
     /** @var DateTime */
     private $dateTime;
 
-    /** @var ConfigHelper */
-    private $configHelper;
+    /** @var QueueHelper */
+    private $queueHelper;
 
     /** @var Queue */
     private $queue;
@@ -37,7 +37,7 @@ class Status extends Template
         Context $context,
         IndexerFactory $indexerFactory,
         DateTime $dateTime,
-        ConfigHelper $configHelper,
+        QueueHelper $queueHelper,
         Queue $queue,
         array $data = []
     ) {
@@ -45,7 +45,7 @@ class Status extends Template
 
         $this->indexerFactory = $indexerFactory;
         $this->dateTime = $dateTime;
-        $this->configHelper = $configHelper;
+        $this->queueHelper = $queueHelper;
         $this->queue = $queue;
 
         if ($this->isQueueActive()) {
@@ -56,7 +56,7 @@ class Status extends Template
 
     public function isQueueActive()
     {
-        return $this->configHelper->isQueueActive();
+        return $this->queueHelper->isQueueActive();
     }
 
     public function getQueueRunnerStatus()

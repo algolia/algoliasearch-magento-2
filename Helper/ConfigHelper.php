@@ -1114,7 +1114,6 @@ class ConfigHelper
     }
 
     /**
-     * @return bool
      *
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::isEnhancedQueueArchiveEnabled()

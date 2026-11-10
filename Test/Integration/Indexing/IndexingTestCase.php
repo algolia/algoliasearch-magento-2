@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Data\SearchQueryInterfaceFactory;
 use Algolia\AlgoliaSearch\Api\Processor\BatchQueueProcessorInterface;
 use Algolia\AlgoliaSearch\Console\Command\Indexer\AbstractIndexerCommand;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
+use Algolia\AlgoliaSearch\Model\Source\Pricing;
 use Algolia\AlgoliaSearch\Test\Integration\TestCase;
 use Magento\Framework\Indexer\ActionInterface;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,6 +21,7 @@ abstract class IndexingTestCase extends TestCase
         parent::setUp();
 
         $this->setConfig('algoliasearch_queue/queue/active', '0');
+        $this->setConfig('algoliasearch_products/products/pricing_engine', Pricing::PRICING_V2);
 
         $this->searchQueryFactory = $this->objectManager->get(SearchQueryInterfaceFactory::class);
     }

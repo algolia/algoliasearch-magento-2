@@ -67,6 +67,9 @@ class Bundle extends ProductWithChildren
             foreach ($minPriceArray as $groupId => $price) {
                 $minPriceArray[$groupId] = $this->convertPrice($price, $currencyCode);
             }
+            foreach ($maxPriceArray as $groupId => $price) {
+                $maxPriceArray[$groupId] = $this->convertPrice($price, $currencyCode);
+            }
             if ($minPrice !== $max) {
                 $max = $this->convertPrice($max, $currencyCode);
             }

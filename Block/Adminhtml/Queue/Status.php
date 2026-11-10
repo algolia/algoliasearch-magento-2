@@ -18,35 +18,17 @@ class Status extends Template
 
     public const QUEUE_FAST_LIMIT = 220;
 
-    /** @var IndexerFactory */
-    private $indexerFactory;
-
-    /** @var DateTime */
-    private $dateTime;
-
-    /** @var QueueHelper */
-    private $queueHelper;
-
-    /** @var Queue */
-    private $queue;
-
-    /** @var Indexer */
-    private $queueRunnerIndexer;
+    private Indexer $queueRunnerIndexer;
 
     public function __construct(
         Context $context,
-        IndexerFactory $indexerFactory,
-        DateTime $dateTime,
-        QueueHelper $queueHelper,
-        Queue $queue,
+        private IndexerFactory $indexerFactory,
+        private DateTime $dateTime,
+        private QueueHelper $queueHelper,
+        private Queue $queue,
         array $data = []
     ) {
         parent::__construct($context, $data);
-
-        $this->indexerFactory = $indexerFactory;
-        $this->dateTime = $dateTime;
-        $this->queueHelper = $queueHelper;
-        $this->queue = $queue;
 
         if ($this->isQueueActive()) {
             $this->queueRunnerIndexer = $this->indexerFactory->create();

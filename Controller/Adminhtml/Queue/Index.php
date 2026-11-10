@@ -8,15 +8,11 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Index extends \Magento\Backend\App\Action
 {
-    /** @var Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper */
-    protected $queueHelper;
-
     public function __construct(
         Context $context,
-        QueueHelper $queueHelper
+        protected QueueHelper $queueHelper
     ) {
         parent::__construct($context);
-        $this->queueHelper = $queueHelper;
     }
 
     /**

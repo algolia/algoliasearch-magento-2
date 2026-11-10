@@ -10,7 +10,6 @@ use Magento\Weee\Model\Tax as WeeeTax;
 class PricingHelper
 {
     public function __construct(
-        protected ConfigHelper $configHelper,
         protected CatalogHelper $catalogHelper,
         protected PriceCurrencyInterface $priceCurrency,
         protected WeeeTax $weeeTax

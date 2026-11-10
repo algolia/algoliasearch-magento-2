@@ -10,36 +10,41 @@ use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 
 class CustomerGroupsManager
 {
-    protected ?CustomerGroupResourceCollection $customerGroups;
-    protected bool $hasBeenFiltered = false;
+    /**
+     * @var array<int, CustomerGroupResourceCollection>
+     */
+    protected array $customerGroupsByStore = [];
 
     public function __construct(
         protected ConfigHelper $configHelper,
         protected CollectionFactory $customerGroupCollectionFactory,
         protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
-    ) {
-        $this->customerGroups = $this->getCustomerGroupCollection();
-    }
+    ) {}
 
     public function getCustomerGroups(PricingContextInterface $pricingContext): CustomerGroupResourceCollection
     {
-        if (!$this->hasBeenFiltered) {
-            $this->filterCustomerGroups($pricingContext);
-            $this->hasBeenFiltered = true;
+        $storeId = $pricingContext->getStore()->getId();
+
+        if (!isset($this->customerGroupsByStore[$storeId])) {
+            $this->customerGroupsByStore[$storeId] = $this->getCustomerGroupCollection();
+            $this->filterCustomerGroups($pricingContext, $this->customerGroupsByStore[$storeId]);
         }
 
-        return $this->customerGroups;
+        return $this->customerGroupsByStore[$storeId];
     }
 
-    protected function filterCustomerGroups(PricingContextInterface $pricingContext): void
+    protected function filterCustomerGroups(
+        PricingContextInterface $pricingContext,
+        CustomerGroupResourceCollection $collection
+    ): void
     {
         if (!$pricingContext->areCustomerGroupsEnabled()) {
-            $this->customerGroups->addFieldToFilter('main_table.customer_group_id', 0);
+            $collection->addFieldToFilter('main_table.customer_group_id', 0);
             return;
         }
 
         $excludedGroups = [];
-        foreach ($this->customerGroups as $group) {
+        foreach ($collection as $group) {
             $groupId = (int) $group->getData('customer_group_id');
             $excludedWebsites = $this->getCustomerGroupExcludedWebsites($groupId);
             if (in_array($pricingContext->getStore()->getWebsiteId(), $excludedWebsites)) {
@@ -48,8 +53,8 @@ class CustomerGroupsManager
         }
 
         if (count($excludedGroups) > 0) {
-            $this->customerGroups->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
-            $this->customerGroups->clear();
+            $collection->addFieldToFilter('main_table.customer_group_id', ['nin' => $excludedGroups]);
+            $collection->clear();
         }
     }
 

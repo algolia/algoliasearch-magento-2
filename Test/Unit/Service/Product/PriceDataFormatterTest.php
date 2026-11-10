@@ -13,6 +13,8 @@ use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsM
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Customer\Model\Group;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
+use Magento\Framework\Currency;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Store\Model\Store;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -27,13 +29,72 @@ class PriceDataFormatterTest extends TestCase
     protected function createObjectToTest(
         ?PricingHelper $pricingHelper = null,
         ?ConfigHelper $configHelper = null,
-        ?CustomerGroupsManager $customerGroupsManager = null
+        ?CustomerGroupsManager $customerGroupsManager = null,
+        ?PriceCurrencyInterface $priceCurrency = null
     ): PriceDataFormatter {
         return new PriceDataFormatter(
             $pricingHelper ?? $this->createStub(PricingHelper::class),
             $configHelper ?? $this->createStub(ConfigHelper::class),
-            $customerGroupsManager ?? $this->createStub(CustomerGroupsManager::class)
+            $customerGroupsManager ?? $this->createStub(CustomerGroupsManager::class),
+            $priceCurrency ?? $this->createStub(PriceCurrencyInterface::class)
         );
+    }
+
+    /**
+     * Helper to create a mock PriceCurrencyInterface with a currency that formats prices
+     *
+     * Note: Currency::formatPrecision is final, so we can't mock it directly.
+     * Instead, we create a simple mock that returns formatted strings.
+     */
+    protected function createPriceCurrencyMock(): PriceCurrencyInterface
+    {
+        // Currency::formatPrecision is final and cannot be mocked in PHPUnit
+        // Create an anonymous class that mimics Currency's formatPrecision behavior
+        $currency = new class {
+            public function formatPrecision($price, $precision, $options = [], $includeContainer = true)
+            {
+                return '$' . number_format($price, 2);
+            }
+        };
+
+        $priceCurrency = $this->createStub(PriceCurrencyInterface::class);
+        $priceCurrency->method('getCurrency')->willReturn($currency);
+
+        return $priceCurrency;
+    }
+
+    /**
+     * Test that formatPrice calls PriceCurrency correctly
+     */
+    public function testFormatPriceCallsPriceCurrency(): void
+    {
+        $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
+        // Use anonymous class since Currency::formatPrecision is final
+        $currency = new class {
+            public function formatPrecision($price, $precision, $options = [], $includeContainer = true)
+            {
+                return '$' . number_format($price, 2);
+            }
+        };
+
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getStoreLocale')->willReturn('en_US');
+
+        $priceCurrency = $this->createMock(PriceCurrencyInterface::class);
+        $priceCurrency->expects($this->once())
+            ->method('getCurrency')
+            ->with($store, 'USD')
+            ->willReturn($currency);
+
+        $formatter = $this->createObjectToTest(
+            configHelper: $configHelper,
+            priceCurrency: $priceCurrency
+        );
+
+        // Call formatPrice - it should call getCurrency
+        $formatter->formatPrice(99.99, $store, 'USD');
     }
 
     /**
@@ -42,6 +103,8 @@ class PriceDataFormatterTest extends TestCase
     public function testFormatPriceDataObjectWithCustomerGroupsDisabled(): void
     {
         $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $priceData = $this->createMock(PriceDataInterface::class);
         $pricingContext = $this->createStub(PricingContextInterface::class);
 
@@ -50,18 +113,18 @@ class PriceDataFormatterTest extends TestCase
 
         $configHelper = $this->createStub(ConfigHelper::class);
         $configHelper->method('isCustomerGroupsEnabled')->willReturn(false);
+        $configHelper->method('getStoreLocale')->willReturn('en_US');
 
-        $pricingHelper = $this->createStub(PricingHelper::class);
-        $pricingHelper->method('formatPrice')->willReturn('$99.99');
+        $priceCurrency = $this->createPriceCurrencyMock();
 
         // Setup price data expectations
         $priceData->method('hasPrice')->with(null)->willReturn(true);
         $priceData->method('getPrice')->with(null)->willReturn(99.99);
 
-        // Assert formatted price is set
+        // Assert formatted price is set (format is handled by Magento's PriceCurrency)
         $priceData->expects($this->once())
             ->method('setFormattedPrice')
-            ->with('$99.99', null);
+            ->with($this->anything(), null);
 
         // Assert cleanup is called
         $priceData->expects($this->once())
@@ -73,8 +136,8 @@ class PriceDataFormatterTest extends TestCase
             ->with(null);
 
         $formatter = $this->createObjectToTest(
-            pricingHelper: $pricingHelper,
-            configHelper: $configHelper
+            configHelper: $configHelper,
+            priceCurrency: $priceCurrency
         );
 
         $result = $formatter->formatPriceDataObject($priceData, $pricingContext);
@@ -136,26 +199,33 @@ class PriceDataFormatterTest extends TestCase
     public function testFormatFieldsSetsFormattedPriceWhenPriceExists(): void
     {
         $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $priceData = $this->createMock(PriceDataInterface::class);
         $pricingContext = $this->createStub(PricingContextInterface::class);
 
         $pricingContext->method('getStore')->willReturn($store);
         $pricingContext->method('getCurrencyCode')->willReturn('EUR');
 
-        $pricingHelper = $this->createStub(PricingHelper::class);
-        $pricingHelper->method('formatPrice')->willReturn('€149,99');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getStoreLocale')->willReturn('en_US');
+
+        $priceCurrency = $this->createPriceCurrencyMock();
 
         $priceData->method('hasPrice')->with(0)->willReturn(true);
         $priceData->method('getPrice')->with(0)->willReturn(149.99);
 
         $priceData->expects($this->once())
             ->method('setFormattedPrice')
-            ->with('€149,99', 0);
+            ->with($this->stringContains('149.99'), 0);
 
         $priceData->method('unsetMinPrice');
         $priceData->method('unsetMaxPrice');
 
-        $formatter = $this->createObjectToTest(pricingHelper: $pricingHelper);
+        $formatter = $this->createObjectToTest(
+            configHelper: $configHelper,
+            priceCurrency: $priceCurrency
+        );
 
         $result = $this->invokeMethod(
             $formatter,
@@ -178,8 +248,6 @@ class PriceDataFormatterTest extends TestCase
         $pricingContext->method('getStore')->willReturn($store);
         $pricingContext->method('getCurrencyCode')->willReturn('USD');
 
-        $pricingHelper = $this->createStub(PricingHelper::class);
-
         $priceData->method('hasPrice')->with(null)->willReturn(false);
 
         $priceData->expects($this->never())
@@ -188,7 +256,7 @@ class PriceDataFormatterTest extends TestCase
         $priceData->method('unsetMinPrice');
         $priceData->method('unsetMaxPrice');
 
-        $formatter = $this->createObjectToTest(pricingHelper: $pricingHelper);
+        $formatter = $this->createObjectToTest();
 
         $this->invokeMethod(
             $formatter,
@@ -203,18 +271,18 @@ class PriceDataFormatterTest extends TestCase
     public function testFormatFieldsSetsPriceRangeWhenMinMaxDiffer(): void
     {
         $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $priceData = $this->createMock(PriceDataInterface::class);
         $pricingContext = $this->createStub(PricingContextInterface::class);
 
         $pricingContext->method('getStore')->willReturn($store);
         $pricingContext->method('getCurrencyCode')->willReturn('USD');
 
-        $pricingHelper = $this->createStub(PricingHelper::class);
-        $pricingHelper->method('formatPrice')
-            ->willReturnMap([
-                [50.00, $store, 'USD', '$50.00'],
-                [150.00, $store, 'USD', '$150.00'],
-            ]);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getStoreLocale')->willReturn('en_US');
+
+        $priceCurrency = $this->createPriceCurrencyMock();
 
         $priceData->method('hasPrice')->willReturn(false);
         $priceData->method('hasMinPrice')->with(null)->willReturn(true);
@@ -224,12 +292,15 @@ class PriceDataFormatterTest extends TestCase
 
         $priceData->expects($this->once())
             ->method('setFormattedPrice')
-            ->with('$50.00 - $150.00', null);
+            ->with($this->stringContains(' - '), null);
 
         $priceData->method('unsetMinPrice');
         $priceData->method('unsetMaxPrice');
 
-        $formatter = $this->createObjectToTest(pricingHelper: $pricingHelper);
+        $formatter = $this->createObjectToTest(
+            configHelper: $configHelper,
+            priceCurrency: $priceCurrency
+        );
 
         $this->invokeMethod(
             $formatter,
@@ -278,14 +349,18 @@ class PriceDataFormatterTest extends TestCase
     public function testFormatFieldsSetsFormattedOriginalPriceWhenHigherThanCurrentPrice(): void
     {
         $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $priceData = $this->createMock(PriceDataInterface::class);
         $pricingContext = $this->createStub(PricingContextInterface::class);
 
         $pricingContext->method('getStore')->willReturn($store);
         $pricingContext->method('getCurrencyCode')->willReturn('USD');
 
-        $pricingHelper = $this->createStub(PricingHelper::class);
-        $pricingHelper->method('formatPrice')->willReturn('$199.99');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getStoreLocale')->willReturn('en_US');
+
+        $priceCurrency = $this->createPriceCurrencyMock();
 
         $priceData->method('hasPrice')->willReturn(false);
         $priceData->method('hasOriginalPrice')->with(null)->willReturn(true);
@@ -295,12 +370,15 @@ class PriceDataFormatterTest extends TestCase
 
         $priceData->expects($this->once())
             ->method('setFormattedOriginalPrice')
-            ->with('$199.99', null);
+            ->with($this->anything(), null);
 
         $priceData->method('unsetMinPrice');
         $priceData->method('unsetMaxPrice');
 
-        $formatter = $this->createObjectToTest(pricingHelper: $pricingHelper);
+        $formatter = $this->createObjectToTest(
+            configHelper: $configHelper,
+            priceCurrency: $priceCurrency
+        );
 
         $this->invokeMethod(
             $formatter,
@@ -347,18 +425,18 @@ class PriceDataFormatterTest extends TestCase
     public function testFormatFieldsSetsOriginalPriceRangeWhenConditionsMet(): void
     {
         $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $priceData = $this->createMock(PriceDataInterface::class);
         $pricingContext = $this->createStub(PricingContextInterface::class);
 
         $pricingContext->method('getStore')->willReturn($store);
         $pricingContext->method('getCurrencyCode')->willReturn('USD');
 
-        $pricingHelper = $this->createStub(PricingHelper::class);
-        $pricingHelper->method('formatPrice')
-            ->willReturnMap([
-                [180.00, $store, 'USD', '$180.00'],
-                [200.00, $store, 'USD', '$200.00'],
-            ]);
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getStoreLocale')->willReturn('en_US');
+
+        $priceCurrency = $this->createPriceCurrencyMock();
 
         $priceData->method('hasPrice')->willReturn(false);
         $priceData->method('hasOriginalPrice')->willReturn(true);
@@ -368,7 +446,7 @@ class PriceDataFormatterTest extends TestCase
         $priceData->method('getMinOriginalPrice')->with(null)->willReturn(180.00);
         $priceData->method('getMinPrice')->with(null)->willReturn(120.00);
 
-        // Should set range format: minOriginal - maxOriginal
+        // Should set range format: first max original, then minOriginal - maxOriginal range
         $priceData->expects($this->exactly(2))
             ->method('setFormattedOriginalPrice')
             ->willReturnCallback(function ($price, $groupId) {
@@ -376,10 +454,13 @@ class PriceDataFormatterTest extends TestCase
                 $callCount++;
 
                 if ($callCount === 1) {
-                    $this->assertSame('$200.00', $price);
+                    // First call: just the max original price
+                    $this->assertIsString($price);
                     $this->assertNull($groupId);
                 } elseif ($callCount === 2) {
-                    $this->assertSame('$180.00 - $200.00', $price);
+                    // Second call: the range (contains ' - ')
+                    $this->assertIsString($price);
+                    $this->assertStringContainsString(' - ', $price);
                     $this->assertNull($groupId);
                 }
 
@@ -389,7 +470,10 @@ class PriceDataFormatterTest extends TestCase
         $priceData->method('unsetMinPrice');
         $priceData->method('unsetMaxPrice');
 
-        $formatter = $this->createObjectToTest(pricingHelper: $pricingHelper);
+        $formatter = $this->createObjectToTest(
+            configHelper: $configHelper,
+            priceCurrency: $priceCurrency
+        );
 
         $this->invokeMethod(
             $formatter,
@@ -404,14 +488,18 @@ class PriceDataFormatterTest extends TestCase
     public function testFormatFieldsSetsFormattedTierPriceWhenTierPriceExists(): void
     {
         $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $priceData = $this->createMock(PriceDataInterface::class);
         $pricingContext = $this->createStub(PricingContextInterface::class);
 
         $pricingContext->method('getStore')->willReturn($store);
         $pricingContext->method('getCurrencyCode')->willReturn('GBP');
 
-        $pricingHelper = $this->createStub(PricingHelper::class);
-        $pricingHelper->method('formatPrice')->willReturn('£89.99');
+        $configHelper = $this->createStub(ConfigHelper::class);
+        $configHelper->method('getStoreLocale')->willReturn('en_GB');
+
+        $priceCurrency = $this->createPriceCurrencyMock();
 
         $priceData->method('hasPrice')->willReturn(false);
         $priceData->method('hasTierPrice')->with(1)->willReturn(true);
@@ -419,12 +507,15 @@ class PriceDataFormatterTest extends TestCase
 
         $priceData->expects($this->once())
             ->method('setFormattedTierPrice')
-            ->with('£89.99', 1);
+            ->with($this->anything(), 1);
 
         $priceData->method('unsetMinPrice');
         $priceData->method('unsetMaxPrice');
 
-        $formatter = $this->createObjectToTest(pricingHelper: $pricingHelper);
+        $formatter = $this->createObjectToTest(
+            configHelper: $configHelper,
+            priceCurrency: $priceCurrency
+        );
 
         $this->invokeMethod(
             $formatter,

@@ -156,7 +156,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
     protected function formatMinArray($product, $subproducts, $min, $currencyCode, $withTax): array
     {
         $minArray = [];
-        $groupPriceList = $this->getGroupPriceList($product, $subproducts, $min, $currencyCode, $withTax);
+        $groupPriceList = $this->getGroupPriceList($product, $subproducts, $min, $withTax);
 
         foreach ($groupPriceList as $key => $value) {
             $minArray[$key]['price'] = $value['min'];
@@ -170,7 +170,7 @@ abstract class ProductWithChildren extends ProductWithoutChildren
         return $minArray;
     }
 
-    protected function getGroupPriceList($product, $subproducts, $min, $currencyCode, $withTax): array
+    protected function getGroupPriceList($product, $subproducts, $min, $withTax): array
     {
         $groupPriceList = [];
         $subProductsMin = self::PRICE_NOT_SET;
@@ -183,13 +183,12 @@ abstract class ProductWithChildren extends ProductWithoutChildren
             foreach ($subproducts as $subProduct) {
                 $subProduct->setData('customer_group_id', $groupId);
                 $subProduct->setData('website_id', $subProduct->getStore()->getWebsiteId());
-                $specialPrice = $this->getSpecialPrice($subProduct, $currencyCode, $withTax, []);
-                $tierPrice = $this->getTierPrice($subProduct, $currencyCode, $withTax);
-                $price     = $this->getTaxPrice($product, $subProduct->getPriceModel()->getFinalPrice(1, $subProduct), $withTax);
 
-                if (!empty($tierPrice[$groupId]) && $specialPrice[$groupId] > $tierPrice[$groupId]) {
-                    $minPrice = $tierPrice[$groupId];
-                }
+                $price = $this->getTaxPrice(
+                    $product,
+                    $subProduct->getPriceModel()->getFinalPrice(1, $subProduct),
+                    $withTax
+                );
 
                 if ($subProductsMin === self::PRICE_NOT_SET || $price < $subProductsMin) {
                     $subProductsMin = $price;

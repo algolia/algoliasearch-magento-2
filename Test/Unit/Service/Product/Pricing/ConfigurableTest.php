@@ -17,6 +17,7 @@ use Algolia\AlgoliaSearch\Service\Product\Pricing\Configurable;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\PricingStrategyResolver;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableType;
@@ -37,8 +38,7 @@ class ConfigurableTest extends TestCase
         ?PriceDataFormatter $priceDataFormatter = null,
         ?CatalogRulesManager $catalogRulesManager = null,
         ?CustomerGroupsManager $customerGroupsManager = null,
-        ?DefaultPricingStrategy $defaultPricingStrategy = null,
-        ?CustomerGroupPricingStrategy $customerGroupPricingStrategy = null
+        ?PricingStrategyResolver $pricingStrategyResolver = null
     ): Configurable {
         return new Configurable(
             $minMaxPricesFactory ?? $this->createStub(MinMaxPricesInterfaceFactory::class),
@@ -48,8 +48,7 @@ class ConfigurableTest extends TestCase
             $priceDataFormatter ?? $this->createStub(PriceDataFormatter::class),
             $catalogRulesManager ?? $this->createStub(CatalogRulesManager::class),
             $customerGroupsManager ?? $this->createStub(CustomerGroupsManager::class),
-            $defaultPricingStrategy ?? $this->createStub(DefaultPricingStrategy::class),
-            $customerGroupPricingStrategy ?? $this->createStub(CustomerGroupPricingStrategy::class)
+            $pricingStrategyResolver ?? $this->createStub(PricingStrategyResolver::class)
         );
     }
 
@@ -282,9 +281,9 @@ class ConfigurableTest extends TestCase
             ->with($priceData, $pricingContext, $minMaxPrices)
             ->willReturn($priceData);
 
-        $configurable = $this->createObjectToTest(defaultPricingStrategy: $defaultPricingStrategy);
+        $configurable = $this->createObjectToTest();
 
-        // Set the strategy (normally done by calculatePriceData)
+        // Set the strategy (normally done by calculatePriceData via PricingStrategyResolver)
         $this->setPrivateProperty($configurable, 'pricingStrategy', $defaultPricingStrategy);
 
         $result = $this->invokeMethod($configurable, 'addPriceRange', [$priceData, $pricingContext, $minMaxPrices]);
@@ -337,9 +336,9 @@ class ConfigurableTest extends TestCase
             ->with($priceData, $pricingContext, 50.00)
             ->willReturn($priceData);
 
-        $configurable = $this->createObjectToTest(customerGroupPricingStrategy: $customerGroupPricingStrategy);
+        $configurable = $this->createObjectToTest();
 
-        // Set the strategy (normally done by calculatePriceData)
+        // Set the strategy (normally done by calculatePriceData via PricingStrategyResolver)
         $this->setPrivateProperty($configurable, 'pricingStrategy', $customerGroupPricingStrategy);
 
         $result = $this->invokeMethod($configurable, 'addChildrenCustomerGroupsPrices', [

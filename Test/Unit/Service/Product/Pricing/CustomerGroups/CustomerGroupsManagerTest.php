@@ -41,12 +41,16 @@ class CustomerGroupsManagerTest extends TestCase
     }
 
     /**
-     * Test that getCustomerGroups filters on first call
+     * Test that getCustomerGroups filters on first call for a store
      */
     public function testGetCustomerGroupsFiltersOnFirstCall(): void
     {
+        $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $pricingContext = $this->createStub(PricingContextInterface::class);
         $pricingContext->method('areCustomerGroupsEnabled')->willReturn(false);
+        $pricingContext->method('getStore')->willReturn($store);
 
         $collection = $this->createMock(CustomerGroupResourceCollection::class);
 
@@ -68,19 +72,23 @@ class CustomerGroupsManagerTest extends TestCase
     }
 
     /**
-     * Test that getCustomerGroups does not filter on subsequent calls
+     * Test that getCustomerGroups caches per store and does not filter on subsequent calls for same store
      */
-    public function testGetCustomerGroupsDoesNotFilterOnSubsequentCalls(): void
+    public function testGetCustomerGroupsCachesPerStoreAndDoesNotFilterOnSubsequentCalls(): void
     {
+        $store = $this->createStub(Store::class);
+        $store->method('getId')->willReturn(1);
+
         $pricingContext = $this->createStub(PricingContextInterface::class);
         $pricingContext->method('areCustomerGroupsEnabled')->willReturn(false);
+        $pricingContext->method('getStore')->willReturn($store);
 
         $collection = $this->createMock(CustomerGroupResourceCollection::class);
 
         $factory = $this->createStub(CollectionFactory::class);
         $factory->method('create')->willReturn($collection);
 
-        // Expect filtering to be called only once (not on second call)
+        // Expect filtering to be called only once (not on second call for same store)
         $collection->expects($this->once())
             ->method('addFieldToFilter')
             ->with('main_table.customer_group_id', 0);
@@ -92,7 +100,7 @@ class CustomerGroupsManagerTest extends TestCase
         // First call - should filter
         $result1 = $manager->getCustomerGroups($pricingContext);
 
-        // Second call - should NOT filter again
+        // Second call with same store - should return cached collection
         $result2 = $manager->getCustomerGroups($pricingContext);
 
         $this->assertSame($collection, $result1);
@@ -109,19 +117,14 @@ class CustomerGroupsManagerTest extends TestCase
 
         $collection = $this->createMock(CustomerGroupResourceCollection::class);
 
-        $factory = $this->createStub(CollectionFactory::class);
-        $factory->method('create')->willReturn($collection);
-
         // Expect filter to group 0 (default group)
         $collection->expects($this->once())
             ->method('addFieldToFilter')
             ->with('main_table.customer_group_id', 0);
 
-        $manager = $this->createObjectToTest(
-            customerGroupCollectionFactory: $factory
-        );
+        $manager = $this->createObjectToTest();
 
-        $this->invokeMethod($manager, 'filterCustomerGroups', [$pricingContext]);
+        $this->invokeMethod($manager, 'filterCustomerGroups', [$pricingContext, $collection]);
     }
 
     /**
@@ -145,9 +148,6 @@ class CustomerGroupsManagerTest extends TestCase
         $collection = $this->createMock(CustomerGroupResourceCollection::class);
         $collection->method('getIterator')->willReturn(new \ArrayIterator([$group1, $group2]));
 
-        $factory = $this->createStub(CollectionFactory::class);
-        $factory->method('create')->willReturn($collection);
-
         $repository = $this->createStub(GroupExcludedWebsiteRepositoryInterface::class);
         $repository->method('getCustomerGroupExcludedWebsites')->willReturn([]); // No exclusions
 
@@ -156,11 +156,10 @@ class CustomerGroupsManagerTest extends TestCase
             ->method('addFieldToFilter');
 
         $manager = $this->createObjectToTest(
-            customerGroupCollectionFactory: $factory,
             groupExcludedWebsiteRepository: $repository
         );
 
-        $this->invokeMethod($manager, 'filterCustomerGroups', [$pricingContext]);
+        $this->invokeMethod($manager, 'filterCustomerGroups', [$pricingContext, $collection]);
     }
 
     /**
@@ -189,9 +188,6 @@ class CustomerGroupsManagerTest extends TestCase
         $collection = $this->createMock(CustomerGroupResourceCollection::class);
         $collection->method('getIterator')->willReturn(new \ArrayIterator([$group1, $group2, $group3]));
 
-        $factory = $this->createStub(CollectionFactory::class);
-        $factory->method('create')->willReturn($collection);
-
         // Group 1 and 3 are excluded from website 1
         $repository = $this->createStub(GroupExcludedWebsiteRepositoryInterface::class);
         $repository->method('getCustomerGroupExcludedWebsites')
@@ -211,11 +207,10 @@ class CustomerGroupsManagerTest extends TestCase
             ->method('clear');
 
         $manager = $this->createObjectToTest(
-            customerGroupCollectionFactory: $factory,
             groupExcludedWebsiteRepository: $repository
         );
 
-        $this->invokeMethod($manager, 'filterCustomerGroups', [$pricingContext]);
+        $this->invokeMethod($manager, 'filterCustomerGroups', [$pricingContext, $collection]);
     }
 
     /**
@@ -226,7 +221,7 @@ class CustomerGroupsManagerTest extends TestCase
         $expectedCollection = $this->createStub(CustomerGroupResourceCollection::class);
 
         $factory = $this->createMock(CollectionFactory::class);
-        $factory->expects($this->exactly(2)) // Once in constructor, once in test
+        $factory->expects($this->once())
             ->method('create')
             ->willReturn($expectedCollection);
 
@@ -253,13 +248,7 @@ class CustomerGroupsManagerTest extends TestCase
             ->with($groupId)
             ->willReturn($expectedWebsites);
 
-        // Need a working factory for constructor
-        $collection = $this->createStub(CustomerGroupResourceCollection::class);
-        $factory = $this->createStub(CollectionFactory::class);
-        $factory->method('create')->willReturn($collection);
-
         $manager = $this->createObjectToTest(
-            customerGroupCollectionFactory: $factory,
             groupExcludedWebsiteRepository: $repository
         );
 
@@ -269,35 +258,54 @@ class CustomerGroupsManagerTest extends TestCase
     }
 
     /**
-     * Test that hasBeenFiltered flag prevents multiple filtering operations
+     * Test that different stores get separate cached collections
      */
-    public function testHasBeenFilteredFlagPreventsMultipleFiltering(): void
+    public function testDifferentStoresGetSeparateCachedCollections(): void
     {
-        $pricingContext = $this->createStub(PricingContextInterface::class);
-        $pricingContext->method('areCustomerGroupsEnabled')->willReturn(false);
+        $store1 = $this->createStub(Store::class);
+        $store1->method('getId')->willReturn(1);
 
-        $collection = $this->createMock(CustomerGroupResourceCollection::class);
+        $store2 = $this->createStub(Store::class);
+        $store2->method('getId')->willReturn(2);
+
+        $pricingContext1 = $this->createStub(PricingContextInterface::class);
+        $pricingContext1->method('areCustomerGroupsEnabled')->willReturn(false);
+        $pricingContext1->method('getStore')->willReturn($store1);
+
+        $pricingContext2 = $this->createStub(PricingContextInterface::class);
+        $pricingContext2->method('areCustomerGroupsEnabled')->willReturn(false);
+        $pricingContext2->method('getStore')->willReturn($store2);
+
+        $collection1 = $this->createMock(CustomerGroupResourceCollection::class);
+        $collection2 = $this->createMock(CustomerGroupResourceCollection::class);
 
         $factory = $this->createStub(CollectionFactory::class);
-        $factory->method('create')->willReturn($collection);
+        $factory->method('create')
+            ->willReturnOnConsecutiveCalls($collection1, $collection2);
 
-        // Filter should only be called once despite multiple getCustomerGroups calls
-        $collection->expects($this->once())
-            ->method('addFieldToFilter');
+        // Each collection should be filtered once
+        $collection1->expects($this->once())
+            ->method('addFieldToFilter')
+            ->with('main_table.customer_group_id', 0);
+
+        $collection2->expects($this->once())
+            ->method('addFieldToFilter')
+            ->with('main_table.customer_group_id', 0);
 
         $manager = $this->createObjectToTest(
             customerGroupCollectionFactory: $factory
         );
 
-        // Verify hasBeenFiltered is false initially
-        $this->assertFalse($this->getPrivateProperty($manager, 'hasBeenFiltered'));
+        // First store - should create and filter collection1
+        $result1 = $manager->getCustomerGroups($pricingContext1);
+        $this->assertSame($collection1, $result1);
 
-        // First call sets hasBeenFiltered to true
-        $manager->getCustomerGroups($pricingContext);
-        $this->assertTrue($this->getPrivateProperty($manager, 'hasBeenFiltered'));
+        // Second store - should create and filter collection2
+        $result2 = $manager->getCustomerGroups($pricingContext2);
+        $this->assertSame($collection2, $result2);
 
-        // Second call - hasBeenFiltered is true, no filtering happens
-        $manager->getCustomerGroups($pricingContext);
-        $this->assertTrue($this->getPrivateProperty($manager, 'hasBeenFiltered'));
+        // First store again - should return cached collection1
+        $result3 = $manager->getCustomerGroups($pricingContext1);
+        $this->assertSame($collection1, $result3);
     }
 }

@@ -10,7 +10,6 @@ use Magento\Weee\Model\Tax as WeeeTax;
 class PricingHelper
 {
     public function __construct(
-        protected ConfigHelper $configHelper,
         protected CatalogHelper $catalogHelper,
         protected PriceCurrencyInterface $priceCurrency,
         protected WeeeTax $weeeTax
@@ -47,18 +46,6 @@ class PricingHelper
             $product->getStore(),
             null,
             $round
-        );
-    }
-
-    public function formatPrice($amount, $store, $currencyCode): mixed
-    {
-        $currency = $this->priceCurrency->getCurrency($store, $currencyCode);
-        $options = ['locale' => $this->configHelper->getStoreLocale($store->getId())];
-        return $currency->formatPrecision(
-            round($amount, 2),
-            PriceCurrencyInterface::DEFAULT_PRECISION,
-            $options,
-            false
         );
     }
 

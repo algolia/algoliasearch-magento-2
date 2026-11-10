@@ -12,8 +12,7 @@ use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\PricingStrategyResolver;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Customer\Model\Group;
@@ -30,8 +29,7 @@ abstract class AbstractProduct
         protected PriceDataFormatter $priceDataFormatter,
         protected CatalogRulesManager $catalogRulesManager,
         protected CustomerGroupsManager $customerGroupsManager,
-        protected DefaultPricingStrategy $defaultPricingStrategy,
-        protected CustomerGroupPricingStrategy $customerGroupPricingStrategy
+        protected PricingStrategyResolver $pricingStrategyResolver
     ) {}
 
     /**
@@ -43,10 +41,7 @@ abstract class AbstractProduct
     {
         $this->logger->startProfiling(__METHOD__);
 
-        // Resolve pricing strategy based on customer groups configuration
-        $this->pricingStrategy = $pricingContext->areCustomerGroupsEnabled()
-            ? $this->customerGroupPricingStrategy
-            : $this->defaultPricingStrategy;
+        $this->pricingStrategy = $this->pricingStrategyResolver->resolve($pricingContext);
 
         $priceData = $this->addDefaultPrice($priceData, $pricingContext);
         $priceData = $this->addCustomerGroupsPrices($priceData, $pricingContext);

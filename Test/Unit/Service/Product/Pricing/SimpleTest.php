@@ -13,8 +13,7 @@ use Algolia\AlgoliaSearch\Service\Product\CatalogRulesManager;
 use Algolia\AlgoliaSearch\Service\Product\PriceDataFormatter;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\CustomerGroups\CustomerGroupsManager;
 use Algolia\AlgoliaSearch\Service\Product\Pricing\Simple;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\CustomerGroupPricingStrategy;
-use Algolia\AlgoliaSearch\Service\Product\Pricing\Strategy\DefaultPricingStrategy;
+use Algolia\AlgoliaSearch\Service\Product\PricingStrategyResolver;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Catalog\Model\Product;
 use Magento\Customer\Api\Data\GroupInterface;
@@ -37,8 +36,7 @@ class SimpleTest extends TestCase
         ?PriceDataFormatter $priceDataFormatter = null,
         ?CatalogRulesManager $catalogRulesManager = null,
         ?CustomerGroupsManager $customerGroupsManager = null,
-        ?DefaultPricingStrategy $defaultPricingStrategy = null,
-        ?CustomerGroupPricingStrategy $customerGroupPricingStrategy = null
+        ?PricingStrategyResolver $pricingStrategyResolver = null
     ): Simple {
         return new Simple(
             $configHelper ?? $this->createStub(ConfigHelper::class),
@@ -47,8 +45,7 @@ class SimpleTest extends TestCase
             $priceDataFormatter ?? $this->createStub(PriceDataFormatter::class),
             $catalogRulesManager ?? $this->createStub(CatalogRulesManager::class),
             $customerGroupsManager ?? $this->createStub(CustomerGroupsManager::class),
-            $defaultPricingStrategy ?? $this->createStub(DefaultPricingStrategy::class),
-            $customerGroupPricingStrategy ?? $this->createStub(CustomerGroupPricingStrategy::class)
+            $pricingStrategyResolver ?? $this->createStub(PricingStrategyResolver::class)
         );
     }
 
@@ -67,8 +64,7 @@ class SimpleTest extends TestCase
         $priceDataFormatter = $this->createStub(PriceDataFormatter::class);
         $catalogRulesManager = $this->createStub(CatalogRulesManager::class);
         $customerGroupsManager = $this->createStub(CustomerGroupsManager::class);
-        $defaultPricingStrategy = $this->createStub(DefaultPricingStrategy::class);
-        $customerGroupPricingStrategy = $this->createStub(CustomerGroupPricingStrategy::class);
+        $pricingStrategyResolver = $this->createStub(PricingStrategyResolver::class);
 
         $simple = new Simple(
             $configHelper,
@@ -77,8 +73,7 @@ class SimpleTest extends TestCase
             $priceDataFormatter,
             $catalogRulesManager,
             $customerGroupsManager,
-            $defaultPricingStrategy,
-            $customerGroupPricingStrategy
+            $pricingStrategyResolver
         );
 
         $this->assertInstanceOf(Simple::class, $simple);

@@ -173,11 +173,11 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
         $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
         $subProducts = $pricingContext->getSubProducts();
         $groupPriceList = $useBundleCalculation ?
-            $this->getBundleGroupPriceList($pricingContext, $min, $subProducts) :
+            $this->getBundleGroupPriceList($pricingContext) :
             $this->getGroupPriceList($pricingContext, $min, $subProducts);
 
         $subProductsMinArray = count($subProducts) > 0 ?
-            $this->formatMinArray($pricingContext, $groupPriceList) :
+            $this->formatMinArray($groupPriceList) :
             [];
 
         foreach ($groups as $group) {
@@ -197,7 +197,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
         return $priceData;
     }
 
-    protected function formatMinArray(PricingContextInterface $pricingContext, array $groupPriceList): array
+    protected function formatMinArray(array $groupPriceList): array
     {
         $minArray = [];
 
@@ -255,7 +255,7 @@ class CustomerGroupPricingStrategy implements PricingStrategyInterface
         return $groupPriceList;
     }
 
-    protected function getBundleGroupPriceList(PricingContextInterface $pricingContext, $min): array
+    protected function getBundleGroupPriceList(PricingContextInterface $pricingContext): array
     {
         $groups = $this->customerGroupsManager->getCustomerGroups($pricingContext);
         $subProducts = $pricingContext->getSubProducts();

@@ -15,6 +15,10 @@ class QueueHelper
     public const MAX_PARALLEL_PROCESSES = 'algoliasearch_queue/queue/max_parallel_processes';
     public const AUTO_PARALLEL_PROCESSES_CAP = 'algoliasearch_queue/queue/auto_parallel_processes_cap';
 
+    // Indexing Queue advanced settings
+    public const ENHANCED_QUEUE_ARCHIVE = 'algoliasearch_advanced/queue/enhanced_archive';
+    public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
+
     public function __construct(
         protected ScopeConfigInterface $configInterface,
     ) {}
@@ -67,5 +71,22 @@ class QueueHelper
     {
         return $this->isQueueActive($storeId) &&
             $this->configInterface->isSetFlag(self::USE_TMP_INDEX, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function isEnhancedQueueArchiveEnabled($storeId = null): bool
+    {
+        return $this->configInterface->isSetFlag(self::ENHANCED_QUEUE_ARCHIVE, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    /**
+     * @return int
+     */
+    public function getArchiveLogClearLimit($storeId = null)
+    {
+        return (int) $this->configInterface->getValue(
+            self::ARCHIVE_LOG_CLEAR_LIMIT,
+            ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
     }
 }

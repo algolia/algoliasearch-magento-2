@@ -2,25 +2,22 @@
 
 ## 3.20.0
 
-### Breaking changes
-- Changed the signature of the `protected` methods `Queue::getJobs()` and `Queue::fetchJobs()` to accept a trailing optional `?int $storeId` parameter. Third-party subclasses overriding these methods must update their signatures.
-- Changed the signature of the `protected` method `Queue::getStoreMaxBatchSize()` from a required `int $storeId` to a nullable trailing optional `?int $storeId = null`.
-- Replaced the `protected` property `Queue::$noOfFailedJobs` (int counter) with the per-store failure map `Queue::$noOfFailedJobsByStore` (keyed by store ID, with jobs without a store tracked under `Queue::NO_STORE`).
-- Added constructor dependencies to `ProcessQueueCommand` (`StoreNameFetcher`, `LockManagerInterface`, `MaxProcessesResolver`), `Queue` (`JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). Only code instantiating these classes directly is affected.
-- The no-argument run of `algolia:queue:process` now exits with code 1 when Algolia credentials are missing, instead of the legacy 0.
-
 ### Features
 - Added store-aware job claiming to the queue, groundwork for store-partitioned indexing where one worker process runs per store view.
     - `Queue::runCron()`, `run()`, `getJobs()` and `fetchJobs()` accept a trailing optional `?int $storeId`. When given, jobs are claimed with a SQL `store_id` filter and failed-job cleanup stays scoped to the same store.
-    - `Queue::getStoreIdsWithPendingJobs(): int[]` returns, ascending, the stores that have claimable jobs.
+    - `Queue::discoverPendingStoreIds(): int[]` returns, ascending, the stores that have claimable jobs.
     - Store-scoped workers never claim `store_id IS NULL` rows; sequential (unfiltered) processing still drains them.
     - There is no behavior change when no store ID is passed.
-- Added worker mode to `algolia:queue:process`: passing store ID(s) processes only those stores' jobs under a non-blocking per-store lock, so cron and one worker per store view can run concurrently without double-processing. A store already being drained is skipped, and a failure on one store does not abort the remaining stores. The no-argument sequential run is unchanged.
+- Added worker mode to `algolia:queue:process`: passing store ID(s) processes only those stores' jobs under a non-blocking per-store lock, so cron and one worker per store view can run concurrently without double-processing. A store already being drained is skipped, and a failure on one store does not abort the remaining stores. 
 - Added queue concurrency configuration (Stores > Configuration > Algolia Search > Indexing Queue / Cron):
     - "Maximum parallel queue processes" sets how many parallel worker processes the queue orchestrator may spawn. The default `1` applies no parallelization; `0` means auto, resolving to one less than the detected CPU core count.
     - "Maximum auto-detected parallel processes" bounds the auto-resolved value (default 4). Explicit admin values and the CLI option bypass this cap.
     - `algolia:queue:process` gains a `--max-processes=N` option that takes precedence over the admin configuration and prints the effective value. Values below 1 are rejected.
     - Resolution is centralized in the new `Model\Queue\MaxProcessesResolver` service with precedence CLI override > admin configuration > auto-detection.
+- Added orchestrator mode to `algolia:queue:process`: a no-argument run with an effective maximum of more than one parallel process discovers the stores that have pending jobs, spawns one child worker process per store
+    - Falls back to the legacy sequential run when the effective maximum is 1, when process spawning is unsupported, or when store-agnostic (`store_id` NULL) rows are pending, since only the sequential path drains them.
+    - Applies a non-blocking orchestrator lock (`algolia_queue_process`); when it is already held, the run warns and exits 0.
+    - New `--sequential` option forces the legacy sequential run
 - Added `Queue::addJob(JobDefinition, ?JobContext)` as the canonical enqueue entry point, backed by the readonly DTOs `Model\Data\Queue\JobDefinition` and `Model\Data\Queue\JobContext`.
     - `JobDefinition::$storeId` is non-nullable and is the single source of truth for the job's store: it is persisted in the `store_id` column instead of the serialized payload, so job merging cannot cross store boundaries.
     - Jobs enqueued before this release keep draining unchanged. All in-tree enqueuers now use `addJob()`.
@@ -36,6 +33,14 @@
 ### Bug fixes
 - Scoped queue failure tracking to the store of the failing job. Previously a failure in one store made `Queue::run()` skip `moveIndexWithSetSettings` for every subsequent store of the same pass, leaving their index settings silently stale.
 - Fixed a potential fatal error when claiming legacy queue rows whose `store_id` is `NULL` while resolving the batch size.
+
+### Breaking changes
+- Changed the signature of the `protected` methods `Queue::getJobs()` and `Queue::fetchJobs()` to accept a trailing optional `?int $storeId` parameter. Third-party subclasses overriding these methods must update their signatures.
+- Changed the signature of the `protected` method `Queue::getStoreMaxBatchSize()` from a required `int $storeId` to a nullable trailing optional `?int $storeId = null`.
+- Replaced the `protected` property `Queue::$noOfFailedJobs` (int counter) with the per-store failure map `Queue::$noOfFailedJobsByStore` (keyed by store ID, with jobs without a store tracked under `Queue::NO_STORE`).
+- Added constructor dependencies to `ProcessQueueCommand` (`StoreNameFetcher`, `LockManagerInterface`, `MaxProcessesResolver`), `Queue` (`JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). Only code instantiating these classes directly is affected.
+- The no-argument run of `algolia:queue:process` now exits with code 1 when Algolia credentials are missing, instead of the legacy 0.
+- A store-scoped run of `algolia:queue:process <storeId>` now exits with code 1 when that store had failed jobs (previously 0). Scripts keying on the exit code are affected.
 
 ## 3.19.2
 

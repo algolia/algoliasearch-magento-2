@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class AbstractStoreCommandTest extends TestCase
@@ -71,5 +72,45 @@ class AbstractStoreCommandTest extends TestCase
         $written = $output->fetch();
         $this->assertStringContainsString('Unable to set area code', $written);
         $this->assertStringContainsString('already set', $written);
+    }
+
+    public function testResolveStoreNamesReturnsNamesKeyedByStoreId(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+
+        $cmd = $this->createObjectToTest(storeNameFetcher: $storeNameFetcher);
+
+        $this->assertSame(
+            [2 => 'Second Store', 3 => 'Third Store'],
+            $this->invokeMethod($cmd, 'resolveStoreNames', [[2, 3]])
+        );
+    }
+
+    public function testResolveStoreNamesFallsBackToIdLabelsByDefault(): void
+    {
+        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')
+            ->willThrowException(NoSuchEntityException::singleField('storeId', 42));
+
+        $cmd = $this->createObjectToTest(storeNameFetcher: $storeNameFetcher);
+
+        $this->assertSame(
+            [42 => 'Store ID 42'],
+            $this->invokeMethod($cmd, 'resolveStoreNames', [[42]])
+        );
+    }
+
+    public function testResolveStoreNamesThrowsWhenFailOnMissingStoreIsSet(): void
+    {
+        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')
+            ->willThrowException(NoSuchEntityException::singleField('storeId', 42));
+
+        $cmd = $this->createObjectToTest(storeNameFetcher: $storeNameFetcher);
+
+        $this->expectException(NoSuchEntityException::class);
+
+        $this->invokeMethod($cmd, 'resolveStoreNames', [[42], true]);
     }
 }

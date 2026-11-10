@@ -75,9 +75,18 @@ class MaxProcessesResolver
         return min(max(1, $cores - 1), $cap);
     }
 
+    /**
+     * Covers both a missing proc_open and one disabled via disable_functions
+     * (PHP removes disabled functions from the function table).
+     */
+    public function isProcessSpawningSupported(): bool
+    {
+        return function_exists('proc_open') && '\\' !== \DIRECTORY_SEPARATOR;
+    }
+
     protected function detectCpuCores(): int
     {
-        if (!function_exists('proc_open')) {
+        if (!$this->isProcessSpawningSupported()) {
             return self::FALLBACK_CORE_COUNT;
         }
 

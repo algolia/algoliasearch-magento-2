@@ -235,9 +235,12 @@ empty-queue run. `clearOldFailingJobs()` is scoped the same way so two workers c
 different stores cannot both archive the same failed rows. `unlockStackedJobs()` stays
 global (time-based and idempotent).
 
-`Queue::getStoreIdsWithPendingJobs(): int[]` returns the stores that have claimable jobs.
-It excludes locked rows, rows that exhausted their retries, and NULL-store rows. The caller
-must run `unlockStackedJobs()` first so stale locks do not hide pending work.
+`Queue::discoverPendingStoreIds(): int[]` is the discovery entry point: it runs the
+stale-lock cleanup itself and returns the stores that have claimable jobs, FIFO ordered by
+the oldest pending job per store, so the most backlogged stores are served first. 
+
+`Queue::hasStorelessPendingJobs(): bool` reports whether store-agnostic rows are pending 
+(after applying the same cleanup first). Not intended as an in-tree use case.
 
 **Enqueue contract.** The canonical enqueue entry point is
 `Queue::addJob(JobDefinition, ?JobContext)` with the DTOs in `Model/Data/Queue/`.
@@ -280,7 +283,36 @@ Two invariants hold by convention:
   structural recursion guard.
 - **Failure isolation.** One store's failure does not abort the other stores' workers.
 
-Without store IDs the command remains the legacy sequential run over the whole queue.
+Without store IDs the command runs sequentially or as the orchestrator, depending on the
+resolved concurrency (see Orchestrator Mode below).
+
+### Orchestrator Mode
+
+A no-argument `algolia:queue:process` run acts as the orchestrator when the effective maximum
+parallel processes (CLI `--max-processes` override, else the admin configuration, resolved by
+`Model\Queue\MaxProcessesResolver`) is greater than 1. It discovers the pending stores via
+`Queue::discoverPendingStoreIds()`, spawns one child `algolia:queue:process <storeId>` worker
+per store up to the resolved cap, refills the pool as workers exit, streams each child's
+output, and prints a per-store summary. The command exits 1 if any worker failed.
+
+- **Fallbacks to sequential.** `--sequential` forces the legacy sequential run and takes
+  precedence over `--max-processes` and the admin configuration. The command also falls back
+  when the effective maximum is 1, when process spawning is unsupported
+  (`MaxProcessesResolver::isProcessSpawningSupported()`), or when store-agnostic
+  (NULL store_id) rows are pending, since only the sequential path drains them.
+- **Orchestrator lock.** The orchestrator takes a non-blocking lock named
+  `algolia_queue_process` (no collision with the per-store names
+  `algolia_queue_process_store_<id>`). If it is already held, the run warns and exits 0.
+- **Discovery ordering.** `discoverPendingStoreIds()` runs `unlockStackedJobs()` itself and
+  returns store IDs FIFO ordered by the oldest pending job per store. The storeless-row check
+  runs after that cleanup, so stale-locked NULL rows are visible.
+- **Structural recursion guard.** Children receive only a store ID, never `--max-processes`
+  or `--sequential`, so a worker can never reach the spawn logic.
+- **Failure signal.** A worker exits 1 when its store had failed jobs
+  (`Queue::getNoOfFailedJobs(?int)`), and a killed child (null exit code) is recorded as a
+  failure. The summary reports each store and the command exits 1 if any failed.
+- **Accepted race.** Storeless rows enqueued after discovery are not seen by the running
+  orchestrator; the next invocation's storeless check catches them.
 
 ## Index Architecture
 

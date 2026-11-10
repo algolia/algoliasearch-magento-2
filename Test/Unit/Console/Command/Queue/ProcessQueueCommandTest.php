@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
+use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -21,17 +22,21 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class ProcessQueueCommandTest extends TestCase
 {
-    private const LOCK_PREFIX = 'algolia_queue_process_store_';
-
     protected function createObjectToTest(
         ?Queue $queue = null,
         ?AlgoliaCredentialsManager $credentialsManager = null,
         ?LockManagerInterface $lockManager = null,
         ?StoreNameFetcher $storeNameFetcher = null,
         ?MaxProcessesResolver $maxProcessesResolver = null,
+        ?WorkerProcessPool $workerProcessPool = null,
+        bool $spawningSupported = true,
     ): ProcessQueueCommand {
         $credentialsManager ??= $this->createStub(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
+        $workerProcessPool ??= $this->createStub(WorkerProcessPool::class);
+
+        $maxProcessesResolver ??= $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('isProcessSpawningSupported')->willReturn($spawningSupported);
 
         return new ProcessQueueCommand(
             $this->createStub(State::class),
@@ -40,20 +45,36 @@ class ProcessQueueCommandTest extends TestCase
             $queue ?? $this->createStub(Queue::class),
             $credentialsManager,
             $lockManager ?? $this->createStub(LockManagerInterface::class),
-            $maxProcessesResolver ?? $this->createStub(MaxProcessesResolver::class),
+            $maxProcessesResolver,
+            $workerProcessPool,
         );
     }
 
     public function testExecuteWithoutStoreIdsRunsLegacyPath(): void
     {
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(1);
+
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->once())->method('runCron')->withAnyParameters();
+        $queue->expects($this->never())->method('discoverPendingStoreIds');
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->expects($this->never())->method('lock');
         $lockManager->expects($this->never())->method('unlock');
 
-        $code = $this->executeCommand($this->createObjectToTest(queue: $queue, lockManager: $lockManager), []);
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            []
+        );
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
     }
@@ -85,11 +106,11 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->expects($this->once())
             ->method('lock')
-            ->with(self::LOCK_PREFIX . '2', 0)
+            ->with(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '2', 0)
             ->willReturn(true);
         $lockManager->expects($this->once())
             ->method('unlock')
-            ->with(self::LOCK_PREFIX . '2');
+            ->with(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '2');
 
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->once())->method('runCron')->with(null, false, 2);
@@ -150,7 +171,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager->expects($this->exactly(2))
             ->method('lock')
             ->willReturnCallback(function (string $name) use (&$lockIndex) {
-                $this->assertSame(self::LOCK_PREFIX . [2, 3][$lockIndex++], $name);
+                $this->assertSame(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . [2, 3][$lockIndex++], $name);
 
                 return true;
             });
@@ -158,7 +179,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager->expects($this->exactly(2))
             ->method('unlock')
             ->willReturnCallback(function (string $name) use (&$unlockIndex) {
-                $this->assertSame(self::LOCK_PREFIX . [2, 3][$unlockIndex++], $name);
+                $this->assertSame(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . [2, 3][$unlockIndex++], $name);
 
                 return true;
             });
@@ -188,13 +209,13 @@ class ProcessQueueCommandTest extends TestCase
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturnCallback(
-            fn(string $name) => $name === self::LOCK_PREFIX . '2' ? false : true
+            fn(string $name) => $name === ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '2' ? false : true
         );
         // Only the acquired store gets unlocked; the skipped store never touches unlock()
         $lockManager->expects($this->once())
             ->method('unlock')
             ->willReturnCallback(function (string $name) {
-                $this->assertSame(self::LOCK_PREFIX . '3', $name);
+                $this->assertSame(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '3', $name);
 
                 return true;
             });
@@ -222,7 +243,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager->method('lock')->willReturn(true);
         $lockManager->expects($this->once())
             ->method('unlock')
-            ->with(self::LOCK_PREFIX . '2');
+            ->with(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '2');
 
         $queue = $this->createStub(Queue::class);
         $queue->method('runCron')->willThrowException(new \Exception('run failed'));
@@ -260,7 +281,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager->expects($this->exactly(2))
             ->method('unlock')
             ->willReturnCallback(function (string $name) use (&$unlockIndex) {
-                $this->assertSame(self::LOCK_PREFIX . [2, 3][$unlockIndex++], $name);
+                $this->assertSame(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . [2, 3][$unlockIndex++], $name);
 
                 return true;
             });
@@ -388,7 +409,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->expects($this->once())
             ->method('lock')
-            ->with(self::LOCK_PREFIX . '3')
+            ->with(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '3')
             ->willReturn(true);
         $lockManager->method('unlock')->willReturn(true);
 
@@ -416,21 +437,497 @@ class ProcessQueueCommandTest extends TestCase
         $this->assertTrue($argument->isArray());
         $this->assertFalse($argument->isRequired());
         $this->assertTrue($cmd->getDefinition()->hasOption('max-processes'));
+        $this->assertTrue($cmd->getDefinition()->hasOption('sequential'));
+    }
+
+    public function testSequentialOptionForcesLegacyPathEvenWithMaxProcesses(): void
+    {
+        $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
+        $maxProcessesResolver->expects($this->never())->method('resolve');
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->withAnyParameters();
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output,
+            ['--sequential' => true, '--max-processes' => '4']
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('takes precedence', $output->fetch());
+    }
+
+    public function testExecuteFallsBackToSequentialWhenResolvedMaxProcessesIsOne(): void
+    {
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(1);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->withAnyParameters();
+        $queue->expects($this->never())->method('discoverPendingStoreIds');
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            []
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+    }
+
+    public function testExecuteFallsBackToSequentialWhenMaxProcessesOptionIsOne(): void
+    {
+        $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
+        $maxProcessesResolver->expects($this->once())->method('resolve')->with(1)->willReturn(1);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->withAnyParameters();
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output,
+            ['--max-processes' => '1']
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('Maximum parallel queue processes: 1', $output->fetch());
+    }
+
+    public function testExecuteFallsBackToSequentialWhenProcessSpawningIsUnsupported(): void
+    {
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(4);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->withAnyParameters();
+        $queue->expects($this->never())->method('discoverPendingStoreIds');
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool,
+                spawningSupported: false
+            ),
+            [],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('proc_open is disabled', $output->fetch());
+    }
+
+    public function testExecuteSkipsOrchestrationWhenOrchestratorLockIsHeld(): void
+    {
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(4);
+
+        $lockManager = $this->createMock(LockManagerInterface::class);
+        $lockManager->expects($this->once())
+            ->method('lock')
+            ->with(ProcessQueueCommand::ORCHESTRATOR_LOCK_NAME, 0)
+            ->willReturn(false);
+        // Never acquired, so never unlocked
+        $lockManager->expects($this->never())->method('unlock');
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->never())->method('discoverPendingStoreIds');
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('already running', $output->fetch());
+    }
+
+    public function testExecuteReleasesOrchestratorLockWhenPoolThrows(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+
+        $lockManager = $this->createMock(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+        $lockManager->expects($this->once())->method('unlock')
+            ->with(ProcessQueueCommand::ORCHESTRATOR_LOCK_NAME);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('discoverPendingStoreIds')->willReturn([2, 3]);
+
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(2);
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->once())
+            ->method('run')
+            ->willThrowException(new \RuntimeException('spawn failed'));
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('spawn failed');
+
+        $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            []
+        );
+    }
+
+    public function testExecuteFallsBackToSequentialWhenStorelessJobsArePending(): void
+    {
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(4);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->method('discoverPendingStoreIds')->willReturn([2, 3]);
+        $queue->method('hasStorelessPendingJobs')->willReturn(true);
+        $queue->expects($this->once())->method('runCron')->withAnyParameters();
+
+        $lockManager = $this->createStub(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('Store-agnostic indexing jobs are pending', $output->fetch());
+    }
+
+    public function testExecuteReportsNoPendingJobsAndSucceeds(): void
+    {
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(4);
+
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->expects($this->never())->method('getStoreNames');
+
+        $lockManager = $this->createMock(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+        $lockManager->expects($this->once())->method('unlock')
+            ->with(ProcessQueueCommand::ORCHESTRATOR_LOCK_NAME);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->method('discoverPendingStoreIds')->willReturn([]);
+        $queue->method('hasStorelessPendingJobs')->willReturn(false);
+        $queue->expects($this->never())->method('runCron');
+
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->never())->method('run');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('No pending indexing queue jobs.', $output->fetch());
+    }
+
+    public function testExecuteRunsPoolWithDiscoveredStoresAndClampedCap(): void
+    {
+        $storeIds = [2, 3, 4, 5, 6];
+        $storeNames = ['Second Store', 'Third Store', 'Fourth Store', 'Fifth Store', 'Sixth Store'];
+
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with($storeIds)->willReturn($storeNames);
+
+        $lockManager = $this->createStub(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+
+        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        // The orchestrator gates per store in the children: no global credentials check here
+        $credentialsManager->expects($this->never())->method('checkCredentialsWithSearchOnlyAPIKey');
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('discoverPendingStoreIds')->willReturn($storeIds);
+
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturnCallback(
+            static fn (?int $cliOverride, ?int $pendingStores) => $pendingStores === null ? 4 : 2
+        );
+
+        $output = new BufferedOutput();
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->once())
+            ->method('run')
+            ->with($storeIds, 2, $output)
+            ->willReturn(array_fill_keys($storeIds, 0));
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                credentialsManager: $credentialsManager,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output
+        );
+
+        $fetch = $output->fetch();
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('with up to 2 worker(s)', $fetch);
+        foreach ($storeIds as $i => $storeId) {
+            $this->assertStringContainsString(
+                sprintf('Store %d (%s): completed', $storeId, $storeNames[$i]),
+                $fetch
+            );
+        }
+    }
+
+    public function testExecuteSpawnsSingleWorkerForSinglePendingStore(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([5])->willReturn(['Fifth Store']);
+
+        $lockManager = $this->createStub(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('discoverPendingStoreIds')->willReturn([5]);
+
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturnCallback(
+            static fn (?int $cliOverride, ?int $pendingStores) => $pendingStores === null ? 4 : 1
+        );
+
+        $output = new BufferedOutput();
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->once())
+            ->method('run')
+            ->with([5], 1, $output)
+            ->willReturn([5 => 0]);
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+        $this->assertStringContainsString('Store 5 (Fifth Store): completed', $output->fetch());
+    }
+
+    public function testExecutePrintsSummaryAndFailsWhenAWorkerExitsNonZero(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+
+        $lockManager = $this->createMock(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+        $lockManager->expects($this->once())->method('unlock')
+            ->with(ProcessQueueCommand::ORCHESTRATOR_LOCK_NAME);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('discoverPendingStoreIds')->willReturn([2, 3]);
+
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturn(2);
+
+        $output = new BufferedOutput();
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->once())
+            ->method('run')
+            ->with([2, 3], 2, $output)
+            ->willReturn([2 => 0, 3 => 1]);
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output
+        );
+
+        $fetch = $output->fetch();
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+        $this->assertStringContainsString('Store 2 (Second Store): completed', $fetch);
+        $this->assertStringContainsString('Store 3 (Third Store): failed (exit code 1)', $fetch);
+    }
+
+    public function testExecuteUsesStoreIdLabelsWhenDiscoveredStoreNameFetchFails(): void
+    {
+        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')
+            ->willThrowException(NoSuchEntityException::singleField('storeId', 2));
+
+        $lockManager = $this->createStub(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+
+        $queue = $this->createStub(Queue::class);
+        $queue->method('discoverPendingStoreIds')->willReturn([2]);
+
+        $maxProcessesResolver = $this->createStub(MaxProcessesResolver::class);
+        $maxProcessesResolver->method('resolve')->willReturnCallback(
+            static fn (?int $cliOverride, ?int $pendingStores) => $pendingStores === null ? 4 : 1
+        );
+
+        $output = new BufferedOutput();
+        $workerProcessPool = $this->createMock(WorkerProcessPool::class);
+        $workerProcessPool->expects($this->once())
+            ->method('run')
+            ->with([2], 1, $output)
+            ->willReturn([2 => 1]);
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher,
+                maxProcessesResolver: $maxProcessesResolver,
+                workerProcessPool: $workerProcessPool
+            ),
+            [],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+        $this->assertStringContainsString('Store 2 (Store ID 2): failed', $output->fetch());
+    }
+
+    public function testWorkerModeExitsFailureWhenStoreHadFailedJobs(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+
+        $lockManager = $this->createMock(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+        // The per-store lock is still released even though the store reports failed jobs
+        $lockManager->expects($this->once())->method('unlock')
+            ->with(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '2');
+
+        $queue = $this->createMock(Queue::class);
+        $queue->method('runCron')->with(null, false, 2);
+        $queue->method('getNoOfFailedJobs')->with(2)->willReturn(3);
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(queue: $queue, lockManager: $lockManager, storeNameFetcher: $storeNameFetcher),
+            [2],
+            $output
+        );
+
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+        $this->assertStringContainsString('3 indexing job(s) failed for Second Store (ID 2)', $output->fetch());
+    }
+
+    public function testWorkerModeSucceedsWhenStoreHadNoFailedJobs(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+
+        $lockManager = $this->createStub(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->with(null, false, 2);
+        $queue->method('getNoOfFailedJobs')->with(2)->willReturn(0);
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(queue: $queue, lockManager: $lockManager, storeNameFetcher: $storeNameFetcher),
+            [2]
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
     }
 
     public function testExecutePassesMaxProcessesOptionToResolverAndPrintsItsResult(): void
     {
         // The stub returns 7 intentionally (a value the command cannot derive itself) so the
         // assertion proves the printed value came from the *resolver*, not any option passed.
+        // Spawning is disabled for simplicity (resolver still consulted for mode decision).
         $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
         $maxProcessesResolver->expects($this->once())
             ->method('resolve')
             ->with(4)
             ->willReturn(7);
 
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->withAnyParameters();
+
         $output = new BufferedOutput();
         $code = $this->executeCommand(
-            $this->createObjectToTest(maxProcessesResolver: $maxProcessesResolver),
+            $this->createObjectToTest(
+                queue: $queue,
+                maxProcessesResolver: $maxProcessesResolver,
+                spawningSupported: false
+            ),
             [],
             $output,
             ['--max-processes' => '4']
@@ -445,14 +942,16 @@ class ProcessQueueCommandTest extends TestCase
     }
 
     /**
-     * This test expectation to be reworked once orchestrator is implemented.
-     * (Store count and admin config will impact the resolver behavior.)
-     * We are only validating the --max-processes flag at this time.
+     * The resolver is what decides the mode in the no-arg branch: even without the
+     * --max-processes option it must be consulted (admin config / auto-detection).
      */
-    public function testExecuteDoesNotResolveMaxProcessesWhenOptionAbsent(): void
+    public function testExecuteResolvesMaxProcessesWithoutOptionInNoArgMode(): void
     {
         $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
-        $maxProcessesResolver->expects($this->never())->method('resolve');
+        $maxProcessesResolver->expects($this->once())
+            ->method('resolve')
+            ->with(null)
+            ->willReturn(1);
 
         $code = $this->executeCommand(
             $this->createObjectToTest(maxProcessesResolver: $maxProcessesResolver),

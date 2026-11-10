@@ -64,7 +64,8 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return 'Process the Algolia indexing queue for specified store(s) or all stores.';
+        return 'Process the Algolia indexing queue for specified store(s) or all stores. '
+        . 'Operates in sequential, orchestrator or worker mode.';
     }
 
     protected function getStoreArgumentDescription(): string
@@ -74,7 +75,8 @@ class ProcessQueueCommand extends AbstractStoreCommand
             if not specified, the whole indexing queue is processed.
             When store ID(s) are given, the command acts as a worker: it takes a per-store lock
             and skips any store whose queue is already being processed. Run one worker per store
-            (e.g.: <info>bin/magento algolia:queue:process 2</info>)
+            (e.g.: <info>bin/magento algolia:queue:process 2</info>). If multiple store IDs are
+            passed to a single worker, those stores will be processed sequentially FIFO.
             DESCRIPTION;
     }
 

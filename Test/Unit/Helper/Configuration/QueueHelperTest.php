@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
+namespace Algolia\AlgoliaSearch\Test\Unit\Helper\Configuration;
 
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Magento\Framework\App\Config\ScopeConfigInterface;

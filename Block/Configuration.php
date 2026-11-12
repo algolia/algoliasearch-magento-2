@@ -90,6 +90,8 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
 
         $persoHelper = $this->getPersonalizationHelper();
 
+        $queueConfig = $this->getQueueHelper();
+
         $baseUrl = mb_rtrim($this->getBaseUrl(), '/');
 
         $priceFormat = $this->getPriceFormat();
@@ -291,9 +293,9 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'analytics' => $config->getAnalyticsConfig(),
             'now' => $this->getTimestamp(),
             'queue' => [
-                'isEnabled' => $config->isQueueActive($this->getStoreId()),
-                'nbOfJobsToRun' => $config->getNumberOfJobToRun($this->getStoreId()),
-                'retryLimit' => $config->getRetryLimit($this->getStoreId()),
+                'isEnabled' => $queueConfig->isQueueActive($this->getStoreId()),
+                'nbOfJobsToRun' => $queueConfig->getNumberOfJobToRun($this->getStoreId()),
+                'retryLimit' => $queueConfig->getRetryLimit($this->getStoreId()),
                 'nbOfElementsPerIndexingJob' => $config->getNumberOfElementByPage($this->getStoreId()),
             ],
             'translations' => [

@@ -43,7 +43,7 @@
 - Replaced the `protected` property `Queue::$noOfFailedJobs` (int counter) with the per-store failure map `Queue::$noOfFailedJobsByStore` (keyed by store ID, with jobs without a store tracked under `Queue::NO_STORE`).
 - Added new constructor dependencies:
     - `ProcessQueueCommand` (`StoreNameFetcher`, `LockManagerInterface`, `MaxProcessesResolver`), `Queue` (`QueueHelper`, `JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). 
-    - `Block\Adminhtml\Queue\Status`, `Controller\Adminhtml\Queue\Index`, `Block\Adminhtml\Reindex\AbstractReindexAllButton`, `Controller\Adminhtml\IndexingManager\Reindex`, `Helper\Configuration\NoticeHelper` and `ViewModel\Adminhtml\IndexingManager\Form` now require `Helper\Configuration\QueueHelper`.
+    - `Block\Algolia`, `Block\Adminhtml\Queue\Status`, `Controller\Adminhtml\Queue\Index`, `Block\Adminhtml\Reindex\AbstractReindexAllButton`, `Controller\Adminhtml\IndexingManager\Reindex`, `Helper\Configuration\NoticeHelper` and `ViewModel\Adminhtml\IndexingManager\Form` now require `Helper\Configuration\QueueHelper`. `Block\Configuration` inherits the dependency from `Block\Algolia`.
 - Only code instantiating these classes directly is affected.
 
 ## 3.19.2

@@ -12,7 +12,6 @@ use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Console\Cli;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Lock\LockManagerInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -159,7 +158,7 @@ class QueueOrchestratorTest extends TestCase
     public function testOrchestrateReportsNoPendingJobsAndSucceeds(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->expects($this->never())->method('getStoreNames');
+        $storeNameFetcher->expects($this->never())->method('resolveStoreNames');
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -192,7 +191,9 @@ class QueueOrchestratorTest extends TestCase
         $storeNames = ['Second Store', 'Third Store', 'Fourth Store', 'Fifth Store', 'Sixth Store'];
 
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with($storeIds)->willReturn($storeNames);
+        $storeNameFetcher->method('resolveStoreNames')
+            ->with($storeIds)
+            ->willReturn(array_combine($storeIds, $storeNames));
 
         $lockManager = $this->createStub(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -241,9 +242,9 @@ class QueueOrchestratorTest extends TestCase
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->expects($this->once())
-            ->method('getStoreNames')
+            ->method('resolveStoreNames')
             ->with([2])
-            ->willReturn(['Second Store']);
+            ->willReturn([2 => 'Second Store']);
 
         $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
         $maxProcessesResolver->expects($this->once())
@@ -275,7 +276,7 @@ class QueueOrchestratorTest extends TestCase
     public function testOrchestrateSpawnsSingleWorkerForSinglePendingStore(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([5])->willReturn(['Fifth Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([5])->willReturn([5 => 'Fifth Store']);
 
         $lockManager = $this->createStub(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -310,7 +311,8 @@ class QueueOrchestratorTest extends TestCase
     public function testOrchestratePrintsSummaryAndFailsWhenAWorkerExitsNonZero(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2, 3])
+            ->willReturn([2 => 'Second Store', 3 => 'Third Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -344,11 +346,10 @@ class QueueOrchestratorTest extends TestCase
         $this->assertStringContainsString('Store 3 (Third Store): failed (exit code 1)', $fetch);
     }
 
-    public function testOrchestrateUsesStoreIdLabelsWhenDiscoveredStoreNameFetchFails(): void
+    public function testOrchestrateUsesResolvedStoreNameLabelsInSummary(): void
     {
-        $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')
-            ->willThrowException(NoSuchEntityException::singleField('storeId', 2));
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('resolveStoreNames')->with([2])->willReturn([2 => 'Store ID 2']);
 
         $lockManager = $this->createStub(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -383,7 +384,8 @@ class QueueOrchestratorTest extends TestCase
     public function testOrchestrateReleasesLockWhenPoolThrows(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2, 3])
+            ->willReturn([2 => 'Second Store', 3 => 'Third Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);

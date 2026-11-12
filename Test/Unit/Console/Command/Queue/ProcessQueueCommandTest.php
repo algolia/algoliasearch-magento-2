@@ -101,7 +101,7 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteProcessesSingleStoreAsWorker(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2], true)->willReturn([2 => 'Second Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->expects($this->once())
@@ -134,7 +134,7 @@ class ProcessQueueCommandTest extends TestCase
     public function testWorkerPathOnlyLocksAndRunsCron(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2], true)->willReturn([2 => 'Second Store']);
 
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
         $credentialsManager->expects($this->once())
@@ -164,7 +164,8 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteProcessesEachStoreWithItsOwnLockInOrder(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2, 3], true)
+            ->willReturn([2 => 'Second Store', 3 => 'Third Store']);
 
         $lockIndex = 0;
         $lockManager = $this->createMock(LockManagerInterface::class);
@@ -205,7 +206,8 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteSkipsStoreWhenLockIsHeldAndProcessesTheRest(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2, 3], true)
+            ->willReturn([2 => 'Second Store', 3 => 'Third Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturnCallback(
@@ -237,7 +239,7 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteUnlocksAndPropagatesNonDatabaseExceptions(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2], true)->willReturn([2 => 'Second Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -260,7 +262,8 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteContinuesRemainingStoresAndReturnsFailureWhenDatabaseExceptionThrown(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2, 3], true)
+            ->willReturn([2 => 'Second Store', 3 => 'Third Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -331,7 +334,7 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteFailsOnUnknownStoreBeforeAnyWork(): void
     {
         $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')
+        $storeNameFetcher->method('resolveStoreNames')
             ->willThrowException(NoSuchEntityException::singleField('storeId', 42));
 
         $queue = $this->createMock(Queue::class);
@@ -351,7 +354,7 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteReportsMissingCredentialsPerStoreAndReturnsFailure(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2], true)->willReturn([2 => 'Second Store']);
 
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
@@ -381,7 +384,8 @@ class ProcessQueueCommandTest extends TestCase
     public function testExecuteContinuesRemainingStoresWhenOneStoreMissesCredentials(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2, 3])->willReturn(['Second Store', 'Third Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2, 3], true)
+            ->willReturn([2 => 'Second Store', 3 => 'Third Store']);
 
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')
@@ -576,7 +580,7 @@ class ProcessQueueCommandTest extends TestCase
     public function testWorkerModeExitsFailureWhenStoreHadFailedJobs(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2], true)->willReturn([2 => 'Second Store']);
 
         $lockManager = $this->createMock(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
@@ -602,7 +606,7 @@ class ProcessQueueCommandTest extends TestCase
     public function testWorkerModeSucceedsWhenStoreHadNoFailedJobs(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreNames')->with([2])->willReturn(['Second Store']);
+        $storeNameFetcher->method('resolveStoreNames')->with([2], true)->willReturn([2 => 'Second Store']);
 
         $lockManager = $this->createStub(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);

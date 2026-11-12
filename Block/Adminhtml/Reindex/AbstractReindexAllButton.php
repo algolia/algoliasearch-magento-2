@@ -2,7 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Block\Adminhtml\Reindex;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Magento\Backend\Block\Widget\Context;
 use Magento\Framework\View\Element\UiComponent\Control\ButtonProviderInterface;
 
@@ -14,7 +14,7 @@ abstract class AbstractReindexAllButton implements ButtonProviderInterface
 
     public function __construct(
         protected Context $context,
-        protected ConfigHelper $configHelper
+        protected QueueHelper $queueHelper
     ) {}
 
     protected function getEntity(): string
@@ -34,7 +34,7 @@ abstract class AbstractReindexAllButton implements ButtonProviderInterface
 
         $message = "Are you sure you want to reindex all $entity to Algolia ?";
 
-        if (!$this->configHelper->isQueueActive() && $entity === 'products') {
+        if (!$this->queueHelper->isQueueActive() && $entity === 'products') {
             $message .= ' Warning : Your Indexing Queue is not activated. Depending on the size of the data you want to index, it may takes a lot of time and resources.';
             $message .= 'We highly suggest to turn it on if you\'re performing a full product reindexing with a large catalog.';
         }

@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -41,6 +42,7 @@ class ConfigurationTest extends TestCase
         ?AutocompleteHelper $autocompleteConfig = null,
         ?InstantSearchHelper $instantSearchConfig = null,
         ?PersonalizationHelper $personalizationHelper = null,
+        ?QueueHelper $queueHelper = null,
         ?CatalogSearchHelper $catalogSearchHelper = null,
         ?ProductHelper $productHelper = null,
         ?Currency $currency = null,
@@ -70,6 +72,7 @@ class ConfigurationTest extends TestCase
             $autocompleteConfig ?? $this->createStub(AutocompleteHelper::class),
             $instantSearchConfig ?? $this->createStub(InstantSearchHelper::class),
             $personalizationHelper ?? $this->createStub(PersonalizationHelper::class),
+            $queueHelper ?? $this->createStub(QueueHelper::class),
             $catalogSearchHelper ?? $this->createStub(CatalogSearchHelper::class),
             $productHelper ?? $this->createStub(ProductHelper::class),
             $currency ?? $this->createStub(Currency::class),

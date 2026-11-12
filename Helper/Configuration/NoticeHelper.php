@@ -41,6 +41,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
     public function __construct(
         protected \Magento\Framework\App\Helper\Context $context,
         protected ConfigHelper $configHelper,
+        protected QueueHelper $queueHelper,
         protected PersonalizationHelper $personalizationHelper,
         protected ModuleManager $moduleManager,
         protected ObjectManagerInterface $objectManager,
@@ -71,7 +72,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
 
         $jobCollection = $this->jobCollectionFactory->create();
         $size = $jobCollection->getSize();
-        $maxJobsPerSingleRun = $this->configHelper->getNumberOfJobToRun();
+        $maxJobsPerSingleRun = $this->queueHelper->getNumberOfJobToRun();
 
         $etaMinutes = ceil($size / $maxJobsPerSingleRun) * 5;
 
@@ -86,7 +87,7 @@ class NoticeHelper extends \Magento\Framework\App\Helper\AbstractHelper
         $indexingQueueConfigUrl = $this->urlBuilder->getUrl('adminhtml/system_config/edit/section/algoliasearch_queue');
         $indexingQueuePageUrl = $this->urlBuilder->getUrl('algolia_algoliasearch/queue/index');
 
-        if (!$this->configHelper->isQueueActive()) {
+        if (!$this->queueHelper->isQueueActive()) {
             $icon = 'icon-warning';
             $noticeTitle = '<a href="' . $indexingQueueConfigUrl . '">Indexing Queue</a> is not enabled';
             $noticeContent = 'It is highly recommended that you enable it, especially if you are on a production environment.

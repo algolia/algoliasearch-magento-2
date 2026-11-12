@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
+namespace Algolia\AlgoliaSearch\Test\Unit\Helper\Configuration;
 
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Model\Source\PaginationMode;

@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContext;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
@@ -61,6 +62,7 @@ class Queue
 
     public function __construct(
         protected ConfigHelper           $configHelper,
+        protected QueueHelper            $queueHelper,
         protected DiagnosticsLogger      $logger,
         protected JobCollectionFactory   $jobCollectionFactory,
         protected ResourceConnection     $resourceConnection,
@@ -87,7 +89,7 @@ class Queue
 
         $context ??= $this->jobContextFactory->create();
 
-        if ($this->configHelper->isQueueActive()) {
+        if ($this->queueHelper->isQueueActive()) {
             $this->enqueueRow(
                 $job->className,
                 $job->method,
@@ -129,7 +131,7 @@ class Queue
             'Queue::addToQueue() is deprecated, use Queue::addJob() with a JobDefinition instead.'
         );
 
-        if ($this->configHelper->isQueueActive()) {
+        if ($this->queueHelper->isQueueActive()) {
             $storeId = isset($data['storeId']) ? (int) $data['storeId'] : null;
             unset($data['storeId']);
 
@@ -170,9 +172,9 @@ class Queue
             'data'      => json_encode($data),
             'data_size' => $dataSize,
             'pid'       => null,
-            'max_retries' => $this->configHelper->getRetryLimit(),
+            'max_retries' => $this->queueHelper->getRetryLimit(),
             'is_full_reindex' => $isFullReindex ? 1 : 0,
-            'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled()
+            'debug' => $this->queueHelper->isEnhancedQueueArchiveEnabled()
                 ? (new Exception)->getTraceAsString()
                 : null,
             'store_id' => $storeId,
@@ -205,7 +207,7 @@ class Queue
      */
     public function runCron(?int $nbJobs = null, bool $force = false, ?int $storeId = null): void
     {
-        if (!$this->configHelper->isQueueActive() && $force === false) {
+        if (!$this->queueHelper->isQueueActive() && $force === false) {
             return;
         }
 
@@ -222,7 +224,7 @@ class Queue
         $started = time();
 
         if ($nbJobs === null) {
-            $nbJobs = $this->configHelper->getNumberOfJobToRun();
+            $nbJobs = $this->queueHelper->getNumberOfJobToRun();
             if ($this->shouldEmptyQueue() === true) {
                 $nbJobs = -1;
 
@@ -265,7 +267,7 @@ class Queue
 
         $where = $this->jobToWhereClause($job);
 
-        if ($this->configHelper->isEnhancedQueueArchiveEnabled()) {
+        if ($this->queueHelper->isEnhancedQueueArchiveEnabled()) {
             $this->archiveSuccessfulJobs($where);
         }
 
@@ -304,7 +306,7 @@ class Queue
             'error_log' => $logMessage,
         ], $where);
 
-        if ($this->configHelper->isEnhancedQueueArchiveEnabled()) {
+        if ($this->queueHelper->isEnhancedQueueArchiveEnabled()) {
             // Record *every* instance of a failed job in context of successful jobs for debugging
             $this->archiveFailedJobs($where);
         }
@@ -441,7 +443,7 @@ class Queue
      */
     protected function getJobs(int $maxJobs, ?int $storeId = null): array
     {
-        $maxJobs = ($maxJobs === -1) ? $this->configHelper->getNumberOfJobToRun() : $maxJobs;
+        $maxJobs = ($maxJobs === -1) ? $this->queueHelper->getNumberOfJobToRun() : $maxJobs;
 
         $fullReindexJobsLimit = (int) ceil(self::FULL_REINDEX_TO_REALTIME_JOBS_RATIO * $maxJobs);
 
@@ -780,7 +782,7 @@ class Queue
         }
 
         // Enhanced archive will have already logged this failure
-        if (!$this->configHelper->isEnhancedQueueArchiveEnabled()) {
+        if (!$this->queueHelper->isEnhancedQueueArchiveEnabled()) {
             $this->archiveFailedJobs($criteria);
         }
         // DEBUG:
@@ -861,7 +863,7 @@ class Queue
 
     protected function clearOldArchiveRecords(): void
     {
-        $archiveLogClearLimit = $this->configHelper->getArchiveLogClearLimit();
+        $archiveLogClearLimit = $this->queueHelper->getArchiveLogClearLimit();
         // Adding a fallback in case this configuration was not set in a consistent way
         if ($archiveLogClearLimit < 1) {
             $archiveLogClearLimit = self::CLEAR_ARCHIVE_LOGS_AFTER_DAYS;

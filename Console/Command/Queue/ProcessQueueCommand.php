@@ -124,7 +124,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
         if ($storeIds) {
             try {
                 // Fails before any work when a store ID does not exist
-                $storeNames = $this->resolveStoreNames($storeIds, true);
+                $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds, true);
             } catch (LocalizedException $e) {
                 $this->output->writeln('<error>' . $e->getMessage() . '</error>');
 

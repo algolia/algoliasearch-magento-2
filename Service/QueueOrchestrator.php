@@ -6,7 +6,6 @@ use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
 use Magento\Framework\Console\Cli;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Lock\LockManagerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zend_Db_Exception;
@@ -94,7 +93,7 @@ class QueueOrchestrator
             // i.e. explicit store arguments fail hard when unknown, while store IDs
             // discovered from the queue must survive a deleted store for useful reporting
             // (falls back to plain ID labels when store is not found).
-            $storeNames = $this->resolveStoreNames($storeIds);
+            $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds);
             $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride, count($storeIds));
             $output->writeln(
                 '<info>Processing the indexing queue in parallel for ' . count($storeIds) . ' store(s) '
@@ -106,26 +105,6 @@ class QueueOrchestrator
             return $this->printSummary($storeIds, $storeNames, $exitCodes, $output);
         } finally {
             $this->lockManager->unlock(self::ORCHESTRATOR_LOCK_NAME);
-        }
-    }
-
-    /**
-     * Fetches store names keyed by store ID, falling back to a plain ID label
-     * when a store cannot be resolved.
-     *
-     * @param int[] $storeIds
-     *
-     * @return array<int, string>
-     */
-    protected function resolveStoreNames(array $storeIds): array
-    {
-        try {
-            return array_combine($storeIds, $this->storeNameFetcher->getStoreNames($storeIds));
-        } catch (LocalizedException) {
-            return array_combine(
-                $storeIds,
-                array_map(static fn (int $storeId): string => 'Store ID ' . $storeId, $storeIds)
-            );
         }
     }
 

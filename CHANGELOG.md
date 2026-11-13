@@ -14,10 +14,12 @@
     - "Maximum auto-detected parallel processes" bounds the auto-resolved value (default 4). Explicit admin values and the CLI option bypass this cap.
     - `algolia:queue:process` gains a `--max-processes=N` option that takes precedence over the admin configuration and prints the effective value. Values below 1 are rejected.
     - Resolution is centralized in the new `Model\Queue\MaxProcessesResolver` service with precedence CLI override > admin configuration > auto-detection.
-- Added orchestrator mode to `algolia:queue:process`: a no-argument run with an effective maximum of more than one parallel process discovers the stores that have pending jobs, spawns one child worker process per store
+- Added orchestrator mode to `algolia:queue:process` and the built-in cron job: a no-argument run with an effective maximum of more than one parallel process discovers the stores that have pending jobs, spawns one child worker process per store
     - Falls back to the legacy sequential run when the effective maximum is 1, when process spawning is unsupported, or when store-agnostic (`store_id` NULL) rows are pending, since only the sequential path drains them.
     - Applies a non-blocking orchestrator lock (`algolia_queue_process`); when it is already held, the run warns and exits 0.
     - New `--sequential` option forces the legacy sequential run
+    - The cron job (`algolia_queue_process` in the `algolia` group) dispatches through the same shared orchestrator service when parallel processing is enabled ("Maximum parallel queue processes" other than `1`); with the default configuration it runs the legacy sequential queue unchanged. Orchestrator lines go to `var/log/algolia.log` and the job never throws for per-store failures.
+    - Queue progress reporting moved behind the new `Api\QueueReporterInterface`
 - Added `Queue::addJob(JobDefinition, ?JobContext)` as the canonical enqueue entry point, backed by the readonly DTOs `Model\Data\Queue\JobDefinition` and `Model\Data\Queue\JobContext`.
     - `JobDefinition::$storeId` is non-nullable and is the single source of truth for the job's store: it is persisted in the `store_id` column instead of the serialized payload, so job merging cannot cross store boundaries.
     - Jobs enqueued before this release keep draining unchanged. All in-tree enqueuers now use `addJob()`.

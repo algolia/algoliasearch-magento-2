@@ -2,16 +2,22 @@
 
 namespace Algolia\AlgoliaSearch\Cron;
 
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Symfony\Component\Console\Output\NullOutput;
 
 class ProcessQueue
 {
     public function __construct(
         protected QueueHelper $queueHelper,
         protected Queue $queue,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager
+        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected QueueOrchestrator $queueOrchestrator,
+        protected QueueReporterInterface $queueReporter,
+        protected NullOutput $nullOutput,
     ) {}
 
     public function execute()
@@ -20,12 +26,19 @@ class ProcessQueue
             return;
         }
 
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
-            $this->algoliaCredentialsManager->displayErrorMessage(self::class);
+        if (!$this->queueHelper->isParallelProcessingEnabled()) {
+            // Legacy sequential path, unchanged behavior
+            if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
+                $this->algoliaCredentialsManager->displayErrorMessage(self::class);
+
+                return;
+            }
+
+            $this->queue->runCron();
 
             return;
         }
 
-        $this->queue->runCron();
+        $this->queueOrchestrator->orchestrate(null, $this->queueReporter, $this->nullOutput);
     }
 }

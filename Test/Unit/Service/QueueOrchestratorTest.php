@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporter;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Console\Cli;
@@ -38,6 +39,11 @@ class QueueOrchestratorTest extends TestCase
         );
     }
 
+    protected function createReporter(BufferedOutput $output): ConsoleQueueReporter
+    {
+        return new ConsoleQueueReporter($output);
+    }
+
     public function testRunSequentialRunsCronAndSucceeds(): void
     {
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
@@ -48,7 +54,7 @@ class QueueOrchestratorTest extends TestCase
         $queue->expects($this->once())->method('runCron')->with();
 
         $code = $this->createObjectToTest(queue: $queue, credentialsManager: $credentialsManager)
-            ->runSequential(new BufferedOutput());
+            ->runSequential($this->createReporter(new BufferedOutput()));
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
     }
@@ -65,21 +71,22 @@ class QueueOrchestratorTest extends TestCase
         $queue->expects($this->never())->method('runCron');
 
         $code = $this->createObjectToTest(queue: $queue, credentialsManager: $credentialsManager)
-            ->runSequential(new BufferedOutput());
+            ->runSequential($this->createReporter(new BufferedOutput()));
 
         $this->assertSame(Cli::RETURN_FAILURE, $code);
     }
 
-    public function testRunSequentialReturnsFailureOnDatabaseException(): void
+    public function testRunSequentialReportsErrorOnDatabaseException(): void
     {
         $queue = $this->createStub(Queue::class);
         $queue->method('runCron')->willThrowException(new \Zend_Db_Exception('database unavailable'));
 
-        $output = new BufferedOutput();
-        $code = $this->createObjectToTest(queue: $queue)->runSequential($output);
+        $reporter = $this->createMock(ConsoleQueueReporter::class);
+        $reporter->expects($this->once())->method('error')->with('database unavailable');
+
+        $code = $this->createObjectToTest(queue: $queue)->runSequential($reporter);
 
         $this->assertSame(Cli::RETURN_FAILURE, $code);
-        $this->assertStringContainsString('database unavailable', $output->fetch());
     }
 
     public function testOrchestrateSkipsWhenLockIsHeld(): void
@@ -104,7 +111,7 @@ class QueueOrchestratorTest extends TestCase
             queue: $queue,
             lockManager: $lockManager,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $output, new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('already running', $output->fetch());
@@ -128,7 +135,7 @@ class QueueOrchestratorTest extends TestCase
             queue: $queue,
             lockManager: $lockManager,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $output, new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('Store-agnostic indexing jobs are pending', $output->fetch());
@@ -150,7 +157,7 @@ class QueueOrchestratorTest extends TestCase
         $lockManager->method('lock')->willReturn(true);
 
         $code = $this->createObjectToTest(queue: $queue, credentialsManager: $credentialsManager, lockManager: $lockManager)
-            ->orchestrate(null, new BufferedOutput(), new BufferedOutput());
+            ->orchestrate(null, $this->createReporter(new BufferedOutput()), new BufferedOutput());
 
         $this->assertSame(Cli::RETURN_FAILURE, $code);
     }
@@ -179,7 +186,7 @@ class QueueOrchestratorTest extends TestCase
             lockManager: $lockManager,
             storeNameFetcher: $storeNameFetcher,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $output, new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('No pending indexing queue jobs.', $output->fetch());
@@ -225,7 +232,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $output, $workerOutput);
+        )->orchestrate(null, $this->createReporter($output), $workerOutput);
 
         $fetch = $output->fetch();
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
@@ -270,7 +277,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(7, new BufferedOutput(), new BufferedOutput());
+        )->orchestrate(7, $this->createReporter(new BufferedOutput()), new BufferedOutput());
     }
 
     public function testOrchestrateSpawnsSingleWorkerForSinglePendingStore(): void
@@ -302,7 +309,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $output, new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('Store 5 (Fifth Store): completed', $output->fetch());
@@ -338,7 +345,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $output, new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
 
         $fetch = $output->fetch();
         $this->assertSame(Cli::RETURN_FAILURE, $code);
@@ -375,7 +382,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $output, new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
 
         $this->assertSame(Cli::RETURN_FAILURE, $code);
         $this->assertStringContainsString('Store 2 (Store ID 2): failed', $output->fetch());
@@ -412,6 +419,6 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, new BufferedOutput(), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter(new BufferedOutput()), new BufferedOutput());
     }
 }

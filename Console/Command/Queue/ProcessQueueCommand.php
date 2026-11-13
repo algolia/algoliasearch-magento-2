@@ -2,13 +2,14 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command\Queue;
 
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Console\Command\AbstractStoreCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
-use Algolia\AlgoliaSearch\Service\Queue\Output\ConsoleQueueReporter;
+use Algolia\AlgoliaSearch\Service\Queue\Output\ConsoleQueueReporterFactory;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -39,17 +40,23 @@ class ProcessQueueCommand extends AbstractStoreCommand
     protected const string SEQUENTIAL_OPTION = 'sequential';
 
     public function __construct(
-        protected State                     $state,
-        protected StoreNameFetcher          $storeNameFetcher,
-        protected ConfigHelper              $configHelper,
-        protected Queue                     $queue,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected LockManagerInterface      $lockManager,
-        protected MaxProcessesResolver      $maxProcessesResolver,
-        protected QueueOrchestrator         $queueOrchestrator,
-        ?string                             $name = null
+        protected State                       $state,
+        protected StoreNameFetcher            $storeNameFetcher,
+        protected ConfigHelper                $configHelper,
+        protected Queue                       $queue,
+        protected AlgoliaCredentialsManager   $algoliaCredentialsManager,
+        protected LockManagerInterface        $lockManager,
+        protected MaxProcessesResolver        $maxProcessesResolver,
+        protected QueueOrchestrator           $queueOrchestrator,
+        protected ConsoleQueueReporterFactory $consoleQueueReporterFactory,
+        ?string                               $name = null
     ) {
         parent::__construct($state, $storeNameFetcher, $name);
+    }
+
+    protected function createConsoleReporter(?OutputInterface $output = null): QueueReporterInterface
+    {
+        return $this->consoleQueueReporterFactory->create(['output' => $output ?? $this->output]);
     }
 
     protected function getCommandPrefix(): string
@@ -152,14 +159,14 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 );
             }
 
-            return $this->queueOrchestrator->runSequential(new ConsoleQueueReporter($this->output));
+            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
         }
 
         $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride);
         $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
 
         if ($maxProcesses <= 1) {
-            return $this->queueOrchestrator->runSequential(new ConsoleQueueReporter($this->output));
+            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
         }
 
         if (!$this->maxProcessesResolver->isProcessSpawningSupported()) {
@@ -167,12 +174,12 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 '<error>PHP proc_open is disabled, falling back to sequential processing.</error>'
             );
 
-            return $this->queueOrchestrator->runSequential(new ConsoleQueueReporter($this->output));
+            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
         }
 
         return $this->queueOrchestrator->orchestrate(
             $maxProcessesOverride,
-            new ConsoleQueueReporter($this->output),
+            $this->createConsoleReporter(),
             $this->output
         );
     }

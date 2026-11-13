@@ -333,7 +333,7 @@
 
     <!-- Queue progress reporting: cron consumers log to algolia.log; the CLI command
          overrides this locally with the console adapter wrapping its output -->
-    <preference for="Algolia\AlgoliaSearch\Api\QueueReporterInterface" type="Algolia\AlgoliaSearch\Service\Queue\Output\LoggerQueueReporter"/>
+    <preference for="Algolia\AlgoliaSearch\Api\QueueReporterInterface" type="Algolia\AlgoliaSearch\Model\Queue\Output\LoggerQueueReporter"/>
 
     <!-- url model management for indexing -->
     <virtualType name="Algolia\AlgoliaSearch\Factory\Product\FrontendUrlFactory" type="Magento\Framework\UrlFactory">

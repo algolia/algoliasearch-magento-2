@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Cron;
 
-use Algolia\AlgoliaSearch\Api\LoggerInterface;
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Cron\ProcessQueue;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
-use Algolia\AlgoliaSearch\Logger\CronLoggerOutput;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
@@ -21,7 +20,7 @@ class ProcessQueueTest extends TestCase
         ?Queue $queue = null,
         ?AlgoliaCredentialsManager $credentialsManager = null,
         ?QueueOrchestrator $queueOrchestrator = null,
-        ?CronLoggerOutput $cronLoggerOutput = null,
+        ?QueueReporterInterface $queueReporter = null,
         ?NullOutput $nullOutput = null,
     ): ProcessQueue {
         return new ProcessQueue(
@@ -29,8 +28,8 @@ class ProcessQueueTest extends TestCase
             $queue ?? $this->createStub(Queue::class),
             $credentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
             $queueOrchestrator ?? $this->createStub(QueueOrchestrator::class),
-            $cronLoggerOutput ?? $this->createStub(CronLoggerOutput::class),
-            $nullOutput ?? new NullOutput(),
+            $queueReporter ?? $this->createStub(QueueReporterInterface::class),
+            $nullOutput ?? $this->createStub(NullOutput::class),
         );
     }
 
@@ -72,6 +71,7 @@ class ProcessQueueTest extends TestCase
             ->execute();
     }
 
+    /** TODO: Revisit this logic - is this check necessary since creds are handled per store? */
     public function testLegacyPathDisplaysErrorAndDoesNotRunCronWhenCredentialsAreInvalid(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: false);
@@ -117,7 +117,7 @@ class ProcessQueueTest extends TestCase
         )->execute();
     }
 
-    public function testParallelPathOrchestratesWithTheInjectedOutputsAndNeverRunsCronGlobally(): void
+    public function testParallelPathOrchestratesWithTheInjectedReporterAndNeverRunsCronGlobally(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: true);
 
@@ -128,41 +128,39 @@ class ProcessQueueTest extends TestCase
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->never())->method('runCron');
 
-        $cronLoggerOutput = new CronLoggerOutput($this->createStub(LoggerInterface::class));
-        $nullOutput = new NullOutput();
+        $queueReporter = $this->createStub(QueueReporterInterface::class);
+        $nullOutput = $this->createStub(NullOutput::class);
 
         $queueOrchestrator = $this->createMock(QueueOrchestrator::class);
         $queueOrchestrator->expects($this->once())
             ->method('orchestrate')
-            ->with(null, $cronLoggerOutput, $nullOutput);
+            ->with(null, $queueReporter, $nullOutput);
 
         $this->createObjectToTest(
             queueHelper: $queueHelper,
             queue: $queue,
             credentialsManager: $credentialsManager,
             queueOrchestrator: $queueOrchestrator,
-            cronLoggerOutput: $cronLoggerOutput,
+            queueReporter: $queueReporter,
             nullOutput: $nullOutput,
         )->execute();
     }
 
-    public function testParallelPathFeedsOrchestratorOutputFromTheAlgoliaLogger(): void
+    public function testParallelPathFeedsOrchestratorReportingThroughTheInjectedReporter(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: true);
 
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects($this->once())
+        $queueReporter = $this->createMock(QueueReporterInterface::class);
+        $queueReporter->expects($this->once())
             ->method('info')
             ->with('Processing the indexing queue in parallel for 2 store(s) with up to 2 worker(s).');
 
-        $cronLoggerOutput = new CronLoggerOutput($logger);
-
         $queueOrchestrator = $this->createStub(QueueOrchestrator::class);
         $queueOrchestrator->method('orchestrate')->willReturnCallback(
-            function ($override, $output): int {
-                $output->writeln(
-                    '<info>Processing the indexing queue in parallel for 2 store(s) '
-                    . 'with up to 2 worker(s).</info>'
+            function ($override, QueueReporterInterface $reporter): int {
+                $reporter->info(
+                    'Processing the indexing queue in parallel for 2 store(s) '
+                    . 'with up to 2 worker(s).'
                 );
 
                 return 0;
@@ -172,7 +170,7 @@ class ProcessQueueTest extends TestCase
         $this->createObjectToTest(
             queueHelper: $queueHelper,
             queueOrchestrator: $queueOrchestrator,
-            cronLoggerOutput: $cronLoggerOutput,
+            queueReporter: $queueReporter,
         )->execute();
     }
 }

@@ -10,6 +10,8 @@ use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporter;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporterFactory;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\State;
@@ -29,6 +31,7 @@ class ProcessQueueCommandTest extends TestCase
         ?StoreNameFetcher $storeNameFetcher = null,
         ?MaxProcessesResolver $maxProcessesResolver = null,
         ?QueueOrchestrator $queueOrchestrator = null,
+        ?ConsoleQueueReporterFactory $consoleQueueReporterFactory = null,
         bool $spawningSupported = true,
     ): ProcessQueueCommand {
         $credentialsManager ??= $this->createStub(AlgoliaCredentialsManager::class);
@@ -41,6 +44,8 @@ class ProcessQueueCommandTest extends TestCase
         $queueOrchestrator->method('runSequential')->willReturn(Cli::RETURN_SUCCESS);
         $queueOrchestrator->method('orchestrate')->willReturn(Cli::RETURN_SUCCESS);
 
+        $consoleQueueReporterFactory ??= $this->createConsoleQueueReporterFactory();
+
         return new ProcessQueueCommand(
             $this->createStub(State::class),
             $storeNameFetcher ?? $this->createStub(StoreNameFetcher::class),
@@ -50,7 +55,18 @@ class ProcessQueueCommandTest extends TestCase
             $lockManager ?? $this->createStub(LockManagerInterface::class),
             $maxProcessesResolver,
             $queueOrchestrator,
+            $consoleQueueReporterFactory,
         );
+    }
+
+    private function createConsoleQueueReporterFactory(): ConsoleQueueReporterFactory
+    {
+        $factory = $this->createStub(ConsoleQueueReporterFactory::class);
+        $factory->method('create')->willReturnCallback(
+            fn (array $data = []) => new ConsoleQueueReporter($data['output'])
+        );
+
+        return $factory;
     }
 
     public function testExecuteWithoutStoreIdsRunsSequentialPath(): void
@@ -551,7 +567,10 @@ class ProcessQueueCommandTest extends TestCase
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertSame(4, $capturedArgs[0]);
-        $this->assertSame($output, $capturedArgs[1], 'Orchestrator own-line output must be the command output');
+        $this->assertInstanceOf(ConsoleQueueReporter::class, $capturedArgs[1]);
+        // The orchestrator's own lines must flow back to the command's output through the reporter
+        $capturedArgs[1]->log('reporter marker');
+        $this->assertStringContainsString('reporter marker', $output->fetch());
         $this->assertSame($output, $capturedArgs[2], 'Worker output must be the command output');
     }
 

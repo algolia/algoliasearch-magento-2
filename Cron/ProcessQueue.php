@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Cron;
 
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
-use Algolia\AlgoliaSearch\Logger\CronLoggerOutput;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
@@ -16,7 +16,7 @@ class ProcessQueue
         protected Queue $queue,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
         protected QueueOrchestrator $queueOrchestrator,
-        protected CronLoggerOutput $cronLoggerOutput,
+        protected QueueReporterInterface $queueReporter,
         protected NullOutput $nullOutput,
     ) {}
 
@@ -39,6 +39,6 @@ class ProcessQueue
             return;
         }
 
-        $this->queueOrchestrator->orchestrate(null, $this->cronLoggerOutput, $this->nullOutput);
+        $this->queueOrchestrator->orchestrate(null, $this->queueReporter, $this->nullOutput);
     }
 }

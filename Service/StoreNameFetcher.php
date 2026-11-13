@@ -48,7 +48,8 @@ class StoreNameFetcher
      *
      * @param int[] $storeIds
      * @param bool $failOnMissingStore When true, a store that cannot be resolved aborts with the
-     *                                 fetch error; when false, it falls back to a plain ID label
+     *                                 fetch error; when false, that store falls back to a plain ID
+     *                                 label while the rest keep their resolved names
      *
      * @throws LocalizedException When $failOnMissingStore is true and a store name cannot be fetched
      *
@@ -56,17 +57,19 @@ class StoreNameFetcher
      */
     public function resolveStoreNames(array $storeIds, bool $failOnMissingStore = false): array
     {
-        try {
-            return array_combine($storeIds, $this->getStoreNames($storeIds));
-        } catch (LocalizedException $e) {
-            if ($failOnMissingStore) {
-                throw $e;
-            }
+        $storeNames = [];
+        foreach ($storeIds as $storeId) {
+            try {
+                $storeNames[$storeId] = $this->getStoreName($storeId);
+            } catch (LocalizedException $e) {
+                if ($failOnMissingStore) {
+                    throw $e;
+                }
 
-            return array_combine(
-                $storeIds,
-                array_map(static fn (int $storeId): string => 'Store ID ' . $storeId, $storeIds)
-            );
+                $storeNames[$storeId] = 'Store ID ' . $storeId;
+            }
         }
+
+        return $storeNames;
     }
 }

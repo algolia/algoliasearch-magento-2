@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
@@ -34,7 +35,7 @@ class QueueOrchestrator
     /**
      * Sequential path: whole-queue processing with a global credentials check.
      */
-    public function runSequential(OutputInterface $output): int
+    public function runSequential(QueueReporterInterface $reporter): int
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class);
@@ -45,7 +46,7 @@ class QueueOrchestrator
         try {
             $this->queue->runCron();
         } catch (Zend_Db_Exception $e) {
-            $output->writeln('<error>' . $e->getMessage() . '</error>');
+            $reporter->error($e->getMessage());
 
             return Cli::RETURN_FAILURE;
         }
@@ -59,13 +60,13 @@ class QueueOrchestrator
      * per store (credentials, per-store lock), so no global credentials check happens here:
      * a default-scope check would false-positive when stores are configured individually.
      *
-     * $output receives the orchestrator's own lines; $workerOutput receives the streamed
+     * $reporter receives the orchestrator's own lines; $workerOutput receives the streamed
      * stdout/stderr of the spawned worker processes.
      */
-    public function orchestrate(?int $maxProcessesOverride, OutputInterface $output, OutputInterface $workerOutput): int
+    public function orchestrate(?int $maxProcessesOverride, QueueReporterInterface $reporter, OutputInterface $workerOutput): int
     {
         if (!$this->lockManager->lock(self::ORCHESTRATOR_LOCK_NAME, 0)) {
-            $output->writeln('<comment>Indexing queue orchestration is already running, skipping.</comment>');
+            $reporter->warning('Indexing queue orchestration is already running, skipping.');
 
             return Cli::RETURN_SUCCESS;
         }
@@ -73,18 +74,18 @@ class QueueOrchestrator
         try {
             // Sanity check for unexpected job shape - not supported for parallel indexing
             if ($this->queue->hasStorelessPendingJobs()) {
-                $output->writeln(
-                    '<comment>Store-agnostic indexing jobs are pending, falling back to sequential '
-                    . 'processing to drain them.</comment>'
+                $reporter->warning(
+                    'Store-agnostic indexing jobs are pending, falling back to sequential '
+                    . 'processing to drain them.'
                 );
 
-                return $this->runSequential($output);
+                return $this->runSequential($reporter);
             }
 
             $storeIds = $this->queue->discoverPendingStoreIds();
 
             if (!$storeIds) {
-                $output->writeln('<info>No pending indexing queue jobs.</info>');
+                $reporter->info('No pending indexing queue jobs.');
 
                 return Cli::RETURN_SUCCESS;
             }
@@ -95,14 +96,14 @@ class QueueOrchestrator
             // (falls back to plain ID labels when store is not found).
             $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds);
             $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride, count($storeIds));
-            $output->writeln(
-                '<info>Processing the indexing queue in parallel for ' . count($storeIds) . ' store(s) '
-                . 'with up to ' . $maxProcesses . ' worker(s).</info>'
+            $reporter->info(
+                'Processing the indexing queue in parallel for ' . count($storeIds) . ' store(s) '
+                . 'with up to ' . $maxProcesses . ' worker(s).'
             );
 
             $exitCodes = $this->workerProcessPool->run($storeIds, $maxProcesses, $workerOutput);
 
-            return $this->printSummary($storeIds, $storeNames, $exitCodes, $output);
+            return $this->printSummary($storeIds, $storeNames, $exitCodes, $reporter);
         } finally {
             $this->lockManager->unlock(self::ORCHESTRATOR_LOCK_NAME);
         }
@@ -113,7 +114,7 @@ class QueueOrchestrator
      * @param array<int, string> $storeNames
      * @param array<int, int> $exitCodes
      */
-    protected function printSummary(array $storeIds, array $storeNames, array $exitCodes, OutputInterface $output): int
+    protected function printSummary(array $storeIds, array $storeNames, array $exitCodes, QueueReporterInterface $reporter): int
     {
         $hasFailure = false;
         sort($storeIds);
@@ -124,9 +125,9 @@ class QueueOrchestrator
 
             if ($exitCode !== 0) {
                 $hasFailure = true;
-                $output->writeln('<error>' . $label . ': failed (exit code ' . $exitCode . ')</error>');
+                $reporter->error($label . ': failed (exit code ' . $exitCode . ')');
             } else {
-                $output->writeln('<info>' . $label . ': completed</info>');
+                $reporter->info($label . ': completed');
             }
         }
 

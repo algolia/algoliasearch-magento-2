@@ -8,6 +8,7 @@ use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Service\Queue\Output\ConsoleQueueReporter;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -151,14 +152,14 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 );
             }
 
-            return $this->queueOrchestrator->runSequential($this->output);
+            return $this->queueOrchestrator->runSequential(new ConsoleQueueReporter($this->output));
         }
 
         $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride);
         $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
 
         if ($maxProcesses <= 1) {
-            return $this->queueOrchestrator->runSequential($this->output);
+            return $this->queueOrchestrator->runSequential(new ConsoleQueueReporter($this->output));
         }
 
         if (!$this->maxProcessesResolver->isProcessSpawningSupported()) {
@@ -166,10 +167,14 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 '<error>PHP proc_open is disabled, falling back to sequential processing.</error>'
             );
 
-            return $this->queueOrchestrator->runSequential($this->output);
+            return $this->queueOrchestrator->runSequential(new ConsoleQueueReporter($this->output));
         }
 
-        return $this->queueOrchestrator->orchestrate($maxProcessesOverride, $this->output, $this->output);
+        return $this->queueOrchestrator->orchestrate(
+            $maxProcessesOverride,
+            new ConsoleQueueReporter($this->output),
+            $this->output
+        );
     }
 
     /**

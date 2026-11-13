@@ -9,7 +9,7 @@ use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
-use Algolia\AlgoliaSearch\Service\Queue\Output\ConsoleQueueReporterFactory;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporterFactory;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;

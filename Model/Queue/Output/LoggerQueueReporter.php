@@ -1,6 +1,6 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service\Queue\Output;
+namespace Algolia\AlgoliaSearch\Model\Queue\Output;
 
 use Algolia\AlgoliaSearch\Api\LoggerInterface;
 use Algolia\AlgoliaSearch\Api\QueueReporterInterface;

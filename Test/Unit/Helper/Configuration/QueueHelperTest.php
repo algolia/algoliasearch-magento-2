@@ -83,6 +83,32 @@ class QueueHelperTest extends TestCase
         ];
     }
 
+    #[DataProvider('maxParallelProcessesProvider')]
+    public function testIsParallelProcessingEnabledReflectsTheConcurrencySetting($configValue, bool $expected): void
+    {
+        $configInterface = $this->createMock(ScopeConfigInterface::class);
+        $configInterface->method('getValue')->with(
+            QueueHelper::MAX_PARALLEL_PROCESSES,
+            ScopeInterface::SCOPE_STORE,
+            null
+        )->willReturn($configValue);
+
+        $queueHelper = $this->createObjectToTest(configInterface: $configInterface);
+
+        $this->assertSame($expected, $queueHelper->isParallelProcessingEnabled());
+    }
+
+    public static function maxParallelProcessesProvider(): array
+    {
+        return [
+            'exactly one is sequential' => [1, false],
+            'numeric string one is sequential' => ['1', false],
+            'zero is auto-resolved parallel' => [0, true],
+            'two is explicit parallel' => [2, true],
+            'unset config casts to zero, auto-resolved parallel' => [null, true],
+        ];
+    }
+
     public function testUseTmpIndexRequiresBothQueueActiveAndTmpIndexFlags(): void
     {
         $configInterface = $this->createMock(ScopeConfigInterface::class);

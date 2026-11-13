@@ -77,6 +77,21 @@ class StoreNameFetcherTest extends TestCase
         );
     }
 
+    public function testResolveStoreNamesKeepsResolvedNamesWhenSomeStoresAreMissing(): void
+    {
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturnCallback(
+            fn(int $storeId): StoreInterface => $storeId === 3
+                ? throw NoSuchEntityException::singleField('storeId', 3)
+                : $this->createStoreStub('Store ' . $storeId)
+        );
+
+        $this->assertSame(
+            [2 => 'Store 2', 3 => 'Store ID 3', 4 => 'Store 4'],
+            $this->createObjectToTest($storeManager)->resolveStoreNames([2, 3, 4])
+        );
+    }
+
     public function testResolveStoreNamesThrowsWhenFailOnMissingStoreIsSet(): void
     {
         $storeManager = $this->createStub(StoreManagerInterface::class);

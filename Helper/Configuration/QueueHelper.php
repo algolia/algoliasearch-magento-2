@@ -59,6 +59,15 @@ class QueueHelper
         return (int) $this->configInterface->getValue(self::MAX_PARALLEL_PROCESSES, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
+    /**
+     * The concurrency setting is itself the gate: 0 resolves the cap automatically and >= 2 is
+     * an explicit cap, while exactly 1 means sequential processing.
+     */
+    public function isParallelProcessingEnabled($storeId = null): bool
+    {
+        return $this->getMaxParallelProcesses($storeId) !== 1;
+    }
+
     public function getAutoParallelProcessesCap($storeId = null): int
     {
         return (int) $this->configInterface->getValue(self::AUTO_PARALLEL_PROCESSES_CAP, ScopeInterface::SCOPE_STORE, $storeId);

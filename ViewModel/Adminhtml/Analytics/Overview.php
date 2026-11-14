@@ -269,6 +269,10 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
+                    if ($item === null) {
+                        continue;
+                    }
+
                     $hit['name'] = $item->getName();
                     $hit['url'] = $item->getProductUrl(false);
                 }
@@ -279,6 +283,10 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemById($hit['hit']);
+                    if ($item === null) {
+                        continue;
+                    }
+
                     $hit['name'] = $item->getName();
                     $hit['url'] = $item->getUrl();
                 }
@@ -289,6 +297,10 @@ class Overview implements \Magento\Framework\View\Element\Block\ArgumentInterfac
 
                 foreach ($hits as &$hit) {
                     $item = $collection->getItemByColumnValue('page_id', $hit['hit']);
+                    if ($item === null) {
+                        continue;
+                    }
+
                     $hit['name'] = $item->getTitle();
                     $hit['url'] = $this->getBackendView()->getUrlInterface()
                         ->getUrl(null, ['_direct' => $item->getIdentifier()]);

@@ -1107,7 +1107,6 @@ class ConfigHelper
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getArchiveLogClearLimit()
      */
-    #[\Deprecated]
     public function getArchiveLogClearLimit($storeId = null)
     {
         return $this->queueHelper->getArchiveLogClearLimit($storeId);
@@ -1118,7 +1117,6 @@ class ConfigHelper
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::isEnhancedQueueArchiveEnabled()
      */
-    #[\Deprecated]
     public function isEnhancedQueueArchiveEnabled($storeId = null): bool
     {
         return $this->queueHelper->isEnhancedQueueArchiveEnabled($storeId);
@@ -1426,42 +1424,36 @@ class ConfigHelper
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::IS_ACTIVE
      */
-    #[\Deprecated]
     public const IS_ACTIVE = QueueHelper::IS_ACTIVE;
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::USE_BUILT_IN_CRON
      */
-    #[\Deprecated]
     public const USE_BUILT_IN_CRON =  QueueHelper::USE_BUILT_IN_CRON;
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::NUMBER_OF_JOB_TO_RUN
      */
-    #[\Deprecated]
     public const NUMBER_OF_JOB_TO_RUN =  QueueHelper::NUMBER_OF_JOB_TO_RUN;
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::RETRY_LIMIT
      */
-    #[\Deprecated]
     public const RETRY_LIMIT =  QueueHelper::RETRY_LIMIT;
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::ENHANCED_QUEUE_ARCHIVE
      */
-    #[\Deprecated]
     public const ENHANCED_QUEUE_ARCHIVE = QueueHelper::ENHANCED_QUEUE_ARCHIVE;
 
     /**
      * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::ARCHIVE_LOG_CLEAR_LIMIT
      */
-    #[\Deprecated]
     public const ARCHIVE_LOG_CLEAR_LIMIT = QueueHelper::ARCHIVE_LOG_CLEAR_LIMIT;
 
     // --- Indexing Manager --- //
@@ -1820,7 +1812,6 @@ class ConfigHelper
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::isQueueActive()
      */
-    #[\Deprecated]
     public function isQueueActive($storeId = null)
     {
         return $this->queueHelper->isQueueActive($storeId);
@@ -1832,7 +1823,6 @@ class ConfigHelper
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::useBuiltInCron()
      */
-    #[\Deprecated]
     public function useBuiltInCron($storeId = null)
     {
         return $this->queueHelper->useBuiltInCron($storeId);
@@ -1844,7 +1834,6 @@ class ConfigHelper
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getNumberOfJobToRun()
      */
-    #[\Deprecated]
     public function getNumberOfJobToRun($storeId = null)
     {
         return $this->queueHelper->getNumberOfJobToRun($storeId);
@@ -1856,7 +1845,6 @@ class ConfigHelper
      * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getRetryLimit()
      */
-    #[\Deprecated]
     public function getRetryLimit($storeId = null)
     {
         return $this->queueHelper->getRetryLimit($storeId);

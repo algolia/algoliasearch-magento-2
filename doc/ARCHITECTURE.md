@@ -58,7 +58,8 @@ the implementations for Product, Category, Page, Suggestion, and AdditionalSecti
 `AlgoliaConnector` is the single gateway to the Algolia PHP API client. All API calls
 flow through it. `IndexSettingsHandler` pushes index configuration and handles replica
 setting forwarding. `AbstractIndexBuilder` provides store emulation so records reflect
-the correct store context during indexing.
+the correct store context during indexing. `QueueOrchestrator` is the shared sequential/parallel
+queue processing entry point used by both the CLI command and the cron job.
 
 ### `Model/`
 
@@ -132,10 +133,13 @@ CLI commands organized by concern: `Indexer/` (reindex per entity or all), `Queu
 Interface contracts. `Builder/` defines IndexBuilderInterface, RecordBuilderInterface,
 and BatchQueueProcessorInterface - the consistent per-entity pattern. `Data/` holds data
 transfer object interfaces. `Insights/` and `Product/` define service contracts.
+`QueueReporterInterface` is the semantic output channel for queue progress reporting.
 
 ### `Cron/`
 
-`ProcessQueue.php` - the cron entry point that calls `Queue.runCron()`.
+`ProcessQueue.php` - the flag-gated cron dispatcher: the legacy `Queue.runCron()` sequential
+path when parallel processing is disabled, `Service\QueueOrchestrator` when it is enabled
+(see [Orchestrator Mode](#orchestrator-mode)).
 
 ### `Exception/`
 
@@ -235,9 +239,12 @@ empty-queue run. `clearOldFailingJobs()` is scoped the same way so two workers c
 different stores cannot both archive the same failed rows. `unlockStackedJobs()` stays
 global (time-based and idempotent).
 
-`Queue::getStoreIdsWithPendingJobs(): int[]` returns the stores that have claimable jobs.
-It excludes locked rows, rows that exhausted their retries, and NULL-store rows. The caller
-must run `unlockStackedJobs()` first so stale locks do not hide pending work.
+`Queue::discoverPendingStoreIds(): int[]` is the discovery entry point: it runs the
+stale-lock cleanup itself and returns the stores that have claimable jobs, FIFO ordered by
+the oldest pending job per store, so the most backlogged stores are served first. 
+
+`Queue::hasStorelessPendingJobs(): bool` reports whether store-agnostic rows are pending 
+(after applying the same cleanup first). Not intended as an in-tree use case.
 
 **Enqueue contract.** The canonical enqueue entry point is
 `Queue::addJob(JobDefinition, ?JobContext)` with the DTOs in `Model/Data/Queue/`.
@@ -280,7 +287,56 @@ Two invariants hold by convention:
   structural recursion guard.
 - **Failure isolation.** One store's failure does not abort the other stores' workers.
 
-Without store IDs the command remains the legacy sequential run over the whole queue.
+Without store IDs the command runs sequentially or as the orchestrator, depending on the
+resolved concurrency (see Orchestrator Mode below).
+
+### Orchestrator Mode
+
+A no-argument `algolia:queue:process` run acts as the orchestrator when the effective maximum
+parallel processes (CLI `--max-processes` override, else the admin configuration, resolved by
+`Model\Queue\MaxProcessesResolver`) is greater than 1. It discovers the pending stores via
+`Queue::discoverPendingStoreIds()`, spawns one child `algolia:queue:process <storeId>` worker
+per store up to the resolved cap, refills the pool as workers exit, streams each child's
+output, and prints a per-store summary. The command exits 1 if any worker failed.
+
+- **Fallbacks to sequential.** `--sequential` forces the legacy sequential run and takes
+  precedence over `--max-processes` and the admin configuration. The command also falls back
+  when the effective maximum is 1, when process spawning is unsupported
+  (`MaxProcessesResolver::isProcessSpawningSupported()`), or when store-agnostic
+  (NULL store_id) rows are pending, since only the sequential path drains them.
+- **Orchestrator lock.** The orchestrator takes a non-blocking lock named
+  `algolia_queue_process` (no collision with the per-store names
+  `algolia_queue_process_store_<id>`). If it is already held, the run warns and exits 0.
+- **Discovery ordering.** `discoverPendingStoreIds()` runs `unlockStackedJobs()` itself and
+  returns store IDs FIFO ordered by the oldest pending job per store. The storeless-row check
+  runs after that cleanup, so stale-locked NULL rows are visible.
+- **Structural recursion guard.** Children receive only a store ID, never `--max-processes`
+  or `--sequential`, so a worker can never reach the spawn logic.
+- **Failure signal.** A worker exits 1 when its store had failed jobs
+  (`Queue::getNoOfFailedJobs(?int)`), and a killed child (null exit code) is recorded as a
+  failure. The summary reports each store and the command exits 1 if any failed.
+- **Accepted race.** Storeless rows enqueued after discovery are not seen by the running
+  orchestrator; the next invocation's storeless check catches them.
+
+#### Cron Dispatcher
+
+The built-in cron job (`Cron\ProcessQueue`, job `algolia_queue_process` in the `algolia` group)
+dispatches over the same `Service\QueueOrchestrator`. The gate is the concurrency configuration
+itself (`QueueHelper::isParallelProcessingEnabled()`, i.e. the configured maximum is not `1`), so
+the `config.xml` default keeps the legacy sequential run unchanged. The cron reads default scope
+only, so store-scoped configuration values do not affect it. It reports through `LoggerQueueReporter`
+and passes `NullOutput` for the child-worker stdout, and never throws for store failures or the
+summary: only unexpected exceptions mark `cron_schedule` failed.
+
+**Overlap protection (Magento_Cron audit):** Magento's group lock 
+(`ProcessCronQueueObserver::lockGroup()`,  name `CRON_<groupId>`) wraps only `cleanupJobs()` 
+and `generateSchedules()`, not `processPendingJobs()`. With `use_separate_process=0` for the 
+`algolia` group (`etc/cron_groups.xml`), the job runs in-process on every `cron:run` tick, and 
+two overlapping ticks can both enter `processPendingJobs()`, so the same job can run twice 
+concurrently via two different pending schedule rows. The extension's own `algolia_queue_process` 
+lock inside the orchestrator is therefore the real overlap guard for parallel mode: a second 
+overlapping tick logs "already running" and returns success. The legacy sequential path keeps 
+its pre-existing exposure, unchanged by this work.
 
 ## Index Architecture
 

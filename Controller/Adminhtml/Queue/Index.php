@@ -2,21 +2,17 @@
 
 namespace Algolia\AlgoliaSearch\Controller\Adminhtml\Queue;
 
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\ResultFactory;
 
 class Index extends \Magento\Backend\App\Action
 {
-    /** @var Algolia\AlgoliaSearch\Helper\ConfigHelper */
-    protected $configHelper;
-
     public function __construct(
         Context $context,
-        ConfigHelper $configHelper
+        protected QueueHelper $queueHelper
     ) {
         parent::__construct($context);
-        $this->configHelper = $configHelper;
     }
 
     /**
@@ -38,7 +34,7 @@ class Index extends \Magento\Backend\App\Action
 
     protected function checkQueueIsActivated()
     {
-        if (! $this->configHelper->isQueueActive()) {
+        if (! $this->queueHelper->isQueueActive()) {
             $msg = __(
                 'The indexing queue is not activated. Please activate it in the <a href="%1">Algolia configuration</a>.',
                 $this->getUrl('adminhtml/system_config/edit/section/algoliasearch_queue')

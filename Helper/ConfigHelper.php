@@ -135,10 +135,6 @@ class ConfigHelper
     public const ASYNC_CONFIG_SAVE = 'algoliasearch_advanced/advanced/async_config_save';
     public const PROFILER_ENABLED = 'algoliasearch_advanced/advanced/enable_profiler';
 
-    // Indexing Queue advanced settings
-    public const ENHANCED_QUEUE_ARCHIVE = 'algoliasearch_advanced/queue/enhanced_archive';
-    public const ARCHIVE_LOG_CLEAR_LIMIT = 'algoliasearch_advanced/queue/archive_clear_limit';
-
     // --- Extra index settings --- //
 
     public const EXTRA_SETTINGS_PRODUCTS = 'algoliasearch_extra_settings/extra_settings/products_extra_settings';
@@ -1113,22 +1109,27 @@ class ConfigHelper
         return $this->configInterface->isSetFlag(self::PROFILER_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    // Indexing Queue advanced settingg
+    // --- Indexing Queue / Cron --- //
+
     /**
      * @return int
+     *
+     * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::getArchiveLogClearLimit()
      */
     public function getArchiveLogClearLimit($storeId = null)
     {
-        return (int) $this->configInterface->getValue(
-            self::ARCHIVE_LOG_CLEAR_LIMIT,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
+        return $this->queueHelper->getArchiveLogClearLimit($storeId);
     }
 
+    /**
+     *
+     * @deprecated This method has been moved to the Queue config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::isEnhancedQueueArchiveEnabled()
+     */
     public function isEnhancedQueueArchiveEnabled($storeId = null): bool
     {
-        return $this->configInterface->isSetFlag(self::ENHANCED_QUEUE_ARCHIVE, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->queueHelper->isEnhancedQueueArchiveEnabled($storeId);
     }
 
     // --- Extra index settings --- //
@@ -1452,6 +1453,18 @@ class ConfigHelper
      * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::RETRY_LIMIT
      */
     public const RETRY_LIMIT =  QueueHelper::RETRY_LIMIT;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::ENHANCED_QUEUE_ARCHIVE
+     */
+    public const ENHANCED_QUEUE_ARCHIVE = QueueHelper::ENHANCED_QUEUE_ARCHIVE;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper::ARCHIVE_LOG_CLEAR_LIMIT
+     */
+    public const ARCHIVE_LOG_CLEAR_LIMIT = QueueHelper::ARCHIVE_LOG_CLEAR_LIMIT;
 
     // --- Indexing Manager --- //
 

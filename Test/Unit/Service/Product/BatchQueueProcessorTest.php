@@ -184,7 +184,6 @@ class BatchQueueProcessorTest extends TestCase
     public function testProcessBatchHandlesFullIndexing()
     {
         [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig(10);
-        $configHelper->method('isQueueActive')->willReturn(false);
 
         $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
         $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(10);
@@ -245,7 +244,6 @@ class BatchQueueProcessorTest extends TestCase
     public function testProcessBatchFullIndexingWithNoCache()
     {
         [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig(10);
-        $configHelper->method('isQueueActive')->willReturn(false);
 
         $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
         $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(IndexCollectionSize::NOT_FOUND);
@@ -280,7 +278,6 @@ class BatchQueueProcessorTest extends TestCase
     {
         $pageSize = 10;
         [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig($pageSize);
-        $configHelper->method('isQueueActive')->willReturn(false);
 
         $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
         $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(50);
@@ -341,7 +338,6 @@ class BatchQueueProcessorTest extends TestCase
     public function testProcessBatchMovesTempIndexIfQueueActive()
     {
         [$dataHelper, $algoliaCredentialsManager, $configHelper] = $this->createBasicIndexingConfig(10);
-        $configHelper->method('isQueueActive')->willReturn(true);
 
         $indexCollectionSizeCache = $this->createMock(IndexCollectionSize::class);
         $indexCollectionSizeCache->expects($this->once())->method('get')->willReturn(10);

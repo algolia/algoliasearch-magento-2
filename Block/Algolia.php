@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\ProductHelper;
@@ -45,6 +46,7 @@ class Algolia extends Template implements CollectionDataSourceInterface
         protected AutocompleteHelper    $autocompleteConfig,
         protected InstantSearchHelper   $instantSearchConfig,
         protected PersonalizationHelper $personalizationHelper,
+        protected QueueHelper           $queueHelper,
         protected CatalogSearchHelper   $catalogSearchHelper,
         protected ProductHelper         $productHelper,
         protected Currency              $currency,
@@ -112,6 +114,11 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getPersonalizationHelper(): PersonalizationHelper
     {
         return $this->personalizationHelper;
+    }
+
+    public function getQueueHelper(): QueueHelper
+    {
+        return $this->queueHelper;
     }
 
     /**

@@ -2,11 +2,14 @@
 
 namespace Algolia\AlgoliaSearch\Console\Command\Queue;
 
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Console\Command\AbstractStoreCommand;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporterFactory;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -18,29 +21,42 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Zend_Db_Exception;
 
 /**
- * Queue processing worker.
+ * Queue processing command with two modes.
  *
- * When given store ID(s), the command drains only those stores' jobs under a per-store
- * lock and never spawns child processes. The parallel indexing orchestrator (MAGE-1731)
- * runs one worker per store and must preserve this invariant: workers are always given
- * a store ID and never spawn - this is the structural recursion guard.
+ * WORKER MODE
+ * With explicit store ID(s) the command runs in worker mode: it drains only those stores'
+ * jobs under a per-store lock and never spawns child processes.
+ * (Workers are always given a store ID and never spawn.)
+ *
+ * ORCHESTRATOR MODE
+ * Without store IDs, the command runs in orchestrator mode when the effective maximum
+ * parallel processes is greater than 1. It discovers the stores with pending jobs and
+ * spawns one worker per store, up to the concurrency cap.
  */
 class ProcessQueueCommand extends AbstractStoreCommand
 {
-    protected const string LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
+    public const string STORE_LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
     protected const string MAX_PROCESSES_OPTION = 'max-processes';
+    protected const string SEQUENTIAL_OPTION = 'sequential';
 
     public function __construct(
-        protected State                     $state,
-        protected StoreNameFetcher          $storeNameFetcher,
-        protected ConfigHelper              $configHelper,
-        protected Queue                     $queue,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
-        protected LockManagerInterface      $lockManager,
-        protected MaxProcessesResolver      $maxProcessesResolver,
-        ?string                             $name = null
+        protected State                       $state,
+        protected StoreNameFetcher            $storeNameFetcher,
+        protected ConfigHelper                $configHelper,
+        protected Queue                       $queue,
+        protected AlgoliaCredentialsManager   $algoliaCredentialsManager,
+        protected LockManagerInterface        $lockManager,
+        protected MaxProcessesResolver        $maxProcessesResolver,
+        protected QueueOrchestrator           $queueOrchestrator,
+        protected ConsoleQueueReporterFactory $consoleQueueReporterFactory,
+        ?string                               $name = null
     ) {
         parent::__construct($state, $storeNameFetcher, $name);
+    }
+
+    protected function createConsoleReporter(?OutputInterface $output = null): QueueReporterInterface
+    {
+        return $this->consoleQueueReporterFactory->create(['output' => $output ?? $this->output]);
     }
 
     protected function getCommandPrefix(): string
@@ -55,17 +71,20 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
     protected function getCommandDescription(): string
     {
-        return 'Process the Algolia indexing queue for specified store(s) or all stores.';
+        return 'Process the Algolia indexing queue for specified store(s) or all stores. '
+        . 'Operates in sequential, orchestrator or worker mode.';
     }
 
     protected function getStoreArgumentDescription(): string
     {
         return <<<'DESCRIPTION'
             ID(s) for store(s) to process the indexing queue for (optional),
-            if not specified, the whole indexing queue is processed as a single sequential run.
+            if not specified, the whole indexing queue is processed.
             When store ID(s) are given, the command acts as a worker: it takes a per-store lock
             and skips any store whose queue is already being processed. Run one worker per store
-            (e.g.: <info>bin/magento algolia:queue:process 2</info>)
+            (e.g.: <info>bin/magento algolia:queue:process 2</info>). If multiple store IDs are
+            passed to a single worker, those stores will be processed sequentially in First In,
+            First Out (FIFO) order.
             DESCRIPTION;
     }
 
@@ -78,6 +97,12 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 InputOption::VALUE_REQUIRED,
                 'Maximum number of parallel worker processes the orchestrator may spawn. '
                 . 'Takes precedence over the admin configuration.'
+            ),
+            new InputOption(
+                self::SEQUENTIAL_OPTION,
+                null,
+                InputOption::VALUE_NONE,
+                'Safety override: Process the whole queue sequentially, bypassing parallel orchestration.'
             ),
         ];
     }
@@ -97,29 +122,28 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
         try {
             $maxProcessesOverride = $this->getMaxProcessesOverride($input);
-        } catch (\InvalidArgumentException $e) {
-            $this->output->writeln('<error>' . $e->getMessage() . '</error>');
-
-            return Cli::RETURN_FAILURE;
-        }
-
-        if ($maxProcessesOverride !== null) {
-            $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride);
-            $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
-        }
-
-        try {
             $storeIds = $this->getStoreIds($input);
-            // Fails before any work when a store ID does not exist
-            $storeNames = array_combine($storeIds, $this->storeNameFetcher->getStoreNames($storeIds));
         } catch (LocalizedException $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
 
             return Cli::RETURN_FAILURE;
         }
 
-        if ($storeIds === []) {
-            return $this->processQueueForAllStores();
+        // Explicit store IDs always mean worker mode: --sequential and --max-processes are ignored
+        return $storeIds
+            ? $this->runWorkerMode($storeIds)
+            : $this->runBatchMode($input, $maxProcessesOverride);
+    }
+
+    protected function runWorkerMode(array $storeIds): int
+    {
+        try {
+            // Fails before any work when a store ID does not exist
+            $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds, true);
+        } catch (LocalizedException $e) {
+            $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+
+            return Cli::RETURN_FAILURE;
         }
 
         $hasFailure = false;
@@ -132,27 +156,49 @@ class ProcessQueueCommand extends AbstractStoreCommand
         return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
     }
 
-    /**
-     * Sequential (no store ID) path - unchanged processing, but missing credentials
-     * now report failure instead of the legacy success exit
-     */
-    protected function processQueueForAllStores(): int
+    protected function runBatchMode(InputInterface $input, ?int $maxProcessesOverride): int
     {
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
-            $this->algoliaCredentialsManager->displayErrorMessage(self::class);
-
-            return Cli::RETURN_FAILURE;
+        if ($input->getOption(self::SEQUENTIAL_OPTION)) {
+            return $this->runSequentialMode($maxProcessesOverride);
         }
 
-        try {
-            $this->queue->runCron();
-        } catch (Zend_Db_Exception $e) {
-            $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+        return $this->runOrchestratorMode($maxProcessesOverride);
+    }
 
-            return Cli::RETURN_FAILURE;
+    protected function runSequentialMode(?int $maxProcessesOverride): int
+    {
+        if ($maxProcessesOverride !== null) {
+            $this->output->writeln(
+                '<comment>Option --' . self::SEQUENTIAL_OPTION . ' takes precedence over --'
+                . self::MAX_PROCESSES_OPTION . ', processing the queue sequentially.</comment>'
+            );
         }
 
-        return Cli::RETURN_SUCCESS;
+        return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+    }
+
+    protected function runOrchestratorMode(?int $maxProcessesOverride): int
+    {
+        $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride);
+        $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
+
+        if ($maxProcesses <= 1) {
+            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+        }
+
+        if (!$this->maxProcessesResolver->isProcessSpawningSupported()) {
+            $this->output->writeln(
+                '<error>PHP proc_open is disabled, falling back to sequential processing.</error>'
+            );
+
+            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+        }
+
+        return $this->queueOrchestrator->orchestrate(
+            $maxProcessesOverride,
+            $this->createConsoleReporter(),
+            $this->output
+        );
     }
 
     /**
@@ -193,16 +239,27 @@ class ProcessQueueCommand extends AbstractStoreCommand
             $this->lockManager->unlock($lockName);
         }
 
+        // The orchestrator keys on this exit code to report the store as failed in its summary
+        $failedJobs = $this->queue->getNoOfFailedJobs($storeId);
+        if ($failedJobs > 0) {
+            $this->output->writeln(
+                '<error>' . $failedJobs . ' indexing job(s) failed for ' . $storeName
+                . ' (ID ' . $storeId . ').</error>'
+            );
+
+            return false;
+        }
+
         return true;
     }
 
     protected function getStoreLockName(int $storeId): string
     {
-        return self::LOCK_NAME_PREFIX . $storeId;
+        return self::STORE_LOCK_NAME_PREFIX . $storeId;
     }
 
     /**
-     * @throws \InvalidArgumentException
+     * @throws LocalizedException
      */
     protected function getMaxProcessesOverride(InputInterface $input): ?int
     {
@@ -213,10 +270,18 @@ class ProcessQueueCommand extends AbstractStoreCommand
         }
 
         if (!ctype_digit((string) $value) || (int) $value < 1) {
-            throw new \InvalidArgumentException(
-                'Option --' . self::MAX_PROCESSES_OPTION . ' must be an integer greater than or equal to 1 '
-                . '(e.g. --' . self::MAX_PROCESSES_OPTION . '=4), "' . $value . '" given.'
-            );
+            throw new LocalizedException(__(
+                'Option --%1 must be an integer greater than or equal to 1 (e.g. --%1=4), "%2" given.',
+                self::MAX_PROCESSES_OPTION,
+                $value
+            ));
+        }
+
+        if ($this->getStoreIds($input)) {
+            throw new LocalizedException(__(
+                'Option --%1 cannot be used in store worker mode.',
+                self::MAX_PROCESSES_OPTION
+            ));
         }
 
         return (int) $value;

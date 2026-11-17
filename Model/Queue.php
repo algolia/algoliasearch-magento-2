@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Model;
 use Algolia\AlgoliaSearch\Api\Data\JobInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContext;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
@@ -61,6 +62,7 @@ class Queue
 
     public function __construct(
         protected ConfigHelper           $configHelper,
+        protected QueueHelper            $queueHelper,
         protected DiagnosticsLogger      $logger,
         protected JobCollectionFactory   $jobCollectionFactory,
         protected ResourceConnection     $resourceConnection,
@@ -87,7 +89,7 @@ class Queue
 
         $context ??= $this->jobContextFactory->create();
 
-        if ($this->configHelper->isQueueActive()) {
+        if ($this->queueHelper->isQueueActive()) {
             $this->enqueueRow(
                 $job->className,
                 $job->method,
@@ -129,7 +131,7 @@ class Queue
             'Queue::addToQueue() is deprecated, use Queue::addJob() with a JobDefinition instead.'
         );
 
-        if ($this->configHelper->isQueueActive()) {
+        if ($this->queueHelper->isQueueActive()) {
             $storeId = isset($data['storeId']) ? (int) $data['storeId'] : null;
             unset($data['storeId']);
 
@@ -170,9 +172,9 @@ class Queue
             'data'      => json_encode($data),
             'data_size' => $dataSize,
             'pid'       => null,
-            'max_retries' => $this->configHelper->getRetryLimit(),
+            'max_retries' => $this->queueHelper->getRetryLimit(),
             'is_full_reindex' => $isFullReindex ? 1 : 0,
-            'debug' => $this->configHelper->isEnhancedQueueArchiveEnabled()
+            'debug' => $this->queueHelper->isEnhancedQueueArchiveEnabled()
                 ? (new Exception)->getTraceAsString()
                 : null,
             'store_id' => $storeId,
@@ -205,7 +207,7 @@ class Queue
      */
     public function runCron(?int $nbJobs = null, bool $force = false, ?int $storeId = null): void
     {
-        if (!$this->configHelper->isQueueActive() && $force === false) {
+        if (!$this->queueHelper->isQueueActive() && $force === false) {
             return;
         }
 
@@ -222,7 +224,7 @@ class Queue
         $started = time();
 
         if ($nbJobs === null) {
-            $nbJobs = $this->configHelper->getNumberOfJobToRun();
+            $nbJobs = $this->queueHelper->getNumberOfJobToRun();
             if ($this->shouldEmptyQueue() === true) {
                 $nbJobs = -1;
 
@@ -265,7 +267,7 @@ class Queue
 
         $where = $this->jobToWhereClause($job);
 
-        if ($this->configHelper->isEnhancedQueueArchiveEnabled()) {
+        if ($this->queueHelper->isEnhancedQueueArchiveEnabled()) {
             $this->archiveSuccessfulJobs($where);
         }
 
@@ -304,7 +306,7 @@ class Queue
             'error_log' => $logMessage,
         ], $where);
 
-        if ($this->configHelper->isEnhancedQueueArchiveEnabled()) {
+        if ($this->queueHelper->isEnhancedQueueArchiveEnabled()) {
             // Record *every* instance of a failed job in context of successful jobs for debugging
             $this->archiveFailedJobs($where);
         }
@@ -316,6 +318,16 @@ class Queue
         if (php_sapi_name() === 'cli') {
             $this->output->writeln($logMessage);
         }
+    }
+
+    /**
+     * Number of jobs that failed during the current processing run, for the given store
+     * (or for storeless jobs when no store ID is given). Only meaningful while the run
+     * that produced the failures is still in memory.
+     */
+    public function getNoOfFailedJobs(?int $storeId = null): int
+    {
+        return $this->noOfFailedJobsByStore[$storeId ?? self::NO_STORE] ?? 0;
     }
 
     /**
@@ -431,7 +443,7 @@ class Queue
      */
     protected function getJobs(int $maxJobs, ?int $storeId = null): array
     {
-        $maxJobs = ($maxJobs === -1) ? $this->configHelper->getNumberOfJobToRun() : $maxJobs;
+        $maxJobs = ($maxJobs === -1) ? $this->queueHelper->getNumberOfJobToRun() : $maxJobs;
 
         $fullReindexJobsLimit = (int) ceil(self::FULL_REINDEX_TO_REALTIME_JOBS_RATIO * $maxJobs);
 
@@ -770,7 +782,7 @@ class Queue
         }
 
         // Enhanced archive will have already logged this failure
-        if (!$this->configHelper->isEnhancedQueueArchiveEnabled()) {
+        if (!$this->queueHelper->isEnhancedQueueArchiveEnabled()) {
             $this->archiveFailedJobs($criteria);
         }
         // DEBUG:
@@ -779,24 +791,57 @@ class Queue
     }
 
     /**
-     * Returns the store IDs that currently have claimable jobs, ascending.
-     *
-     * Excludes locked rows (pid set), rows that exhausted their retries and store-agnostic
-     * rows (store_id IS NULL), which store-scoped workers never claim. The caller must run
-     * unlockStackedJobs() first so stale locks do not hide pending work.
+     * Returns the store IDs that currently have claimable jobs, FIFO ordered by the oldest
+     * pending job per store. Runs the stale-lock cleanup first, so stale locks do not hide
+     * pending work.
      *
      * @return int[]
      */
-    public function getStoreIdsWithPendingJobs(): array
+    public function discoverPendingStoreIds(): array
+    {
+        $this->unlockStackedJobs();
+
+        return $this->getStoreIdsWithPendingJobs();
+    }
+
+    /**
+     * Returns the store IDs that currently have claimable jobs, FIFO ordered by the oldest
+     * pending job per store.
+     *
+     * Excludes locked rows (pid set), rows that exhausted their retries and store-agnostic
+     * rows (store_id IS NULL), which store-scoped workers never claim.
+     *
+     * @return int[]
+     */
+    protected function getStoreIdsWithPendingJobs(): array
     {
         $select = $this->db->select()
-            ->from($this->table, new Zend_Db_Expr('DISTINCT store_id'))
+            ->from($this->table, 'store_id')
             ->where('pid IS NULL')
             ->where('retries < max_retries')
             ->where('store_id IS NOT NULL')
-            ->order('store_id');
+            ->group('store_id')
+            ->order(new Zend_Db_Expr('MIN(job_id)'));
 
         return array_map('intval', $this->db->fetchCol($select));
+    }
+
+    /**
+     * Whether store-agnostic rows (store_id IS NULL) are pending. Sequential mode drains
+     * them while store-scoped workers never claim them. Runs the stale-lock cleanup first,
+     * so stale locks do not hide pending work.
+     */
+    public function hasStorelessPendingJobs(): bool
+    {
+        $this->unlockStackedJobs();
+
+        $select = $this->db->select()
+            ->from($this->table, new Zend_Db_Expr('COUNT(*)'))
+            ->where('pid IS NULL')
+            ->where('retries < max_retries')
+            ->where('store_id IS NULL');
+
+        return (int) $this->db->fetchOne($select) > 0;
     }
 
     /**
@@ -818,7 +863,7 @@ class Queue
 
     protected function clearOldArchiveRecords(): void
     {
-        $archiveLogClearLimit = $this->configHelper->getArchiveLogClearLimit();
+        $archiveLogClearLimit = $this->queueHelper->getArchiveLogClearLimit();
         // Adding a fallback in case this configuration was not set in a consistent way
         if ($archiveLogClearLimit < 1) {
             $archiveLogClearLimit = self::CLEAR_ARCHIVE_LOGS_AFTER_DAYS;

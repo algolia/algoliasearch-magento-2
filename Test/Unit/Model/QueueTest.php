@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Model;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContext;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
@@ -27,6 +28,7 @@ use Magento\Framework\Registry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\Stub;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Zend_Db_Expr;
 use Zend_Db_Statement_Interface;
 
 class QueueTest extends TestCase
@@ -53,6 +55,7 @@ class QueueTest extends TestCase
      */
     protected function createObjectToTest(
         ?ConfigHelper $configHelper = null,
+        ?QueueHelper $queueHelper = null,
         ?DiagnosticsLogger $logger = null,
         ?ObjectManagerInterface $objectManager = null,
         ?AdapterInterface $dbAdapter = null,
@@ -73,6 +76,7 @@ class QueueTest extends TestCase
 
         return new Queue(
             $configHelper ?? $this->createStub(ConfigHelper::class),
+            $queueHelper ?? $this->createStub(QueueHelper::class),
             $logger ?? $this->createStub(DiagnosticsLogger::class),
             $jobCollectionFactory ?? $this->createStub(JobCollectionFactory::class),
             $resourceConnection,
@@ -88,8 +92,8 @@ class QueueTest extends TestCase
         string $method,
         array $data
     ): void {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(false);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(false);
 
         $mockHandler = $this->getMockBuilder($class)
             ->disableOriginalConstructor()
@@ -104,7 +108,7 @@ class QueueTest extends TestCase
             ->with($class)
             ->willReturn($mockHandler);
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, objectManager: $objectManager);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, objectManager: $objectManager);
 
         $this->callDeprecated(fn () => $queue->addToQueue($class, $method, $data));
     }
@@ -115,13 +119,13 @@ class QueueTest extends TestCase
         string $method,
         array $data
     ): void {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $dbAdapter = $this->createMock(AdapterInterface::class);
         $dbAdapter->expects($this->once())->method('insert');
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, dbAdapter: $dbAdapter);
 
         $this->callDeprecated(fn () => $queue->addToQueue($class, $method, $data));
     }
@@ -129,10 +133,10 @@ class QueueTest extends TestCase
     #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueInactive(string $class, string $method): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(false);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(false);
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
@@ -143,13 +147,13 @@ class QueueTest extends TestCase
     #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueActive(string $class, string $method): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $dbAdapter = $this->createMock(AdapterInterface::class);
         $dbAdapter->expects($this->never())->method('insert');
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, dbAdapter: $dbAdapter);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
@@ -169,8 +173,8 @@ class QueueTest extends TestCase
 
     public function testAddToQueueExtractsStoreIdColumnFromPayloadAndStripsTheKey(): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $insertedRows = [];
         $dbAdapter = $this->createMock(AdapterInterface::class);
@@ -187,7 +191,7 @@ class QueueTest extends TestCase
             ->method('log')
             ->with($this->stringContains('Queue::addToQueue() is deprecated'));
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, logger: $logger, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, logger: $logger, dbAdapter: $dbAdapter);
 
         $this->callDeprecated(fn () => $queue->addToQueue(
             ProductIndexBuilder::class,
@@ -211,8 +215,8 @@ class QueueTest extends TestCase
 
     public function testAddJobWritesStoreIdColumnFromJobDefinition(): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $insertedRows = [];
         $dbAdapter = $this->createMock(AdapterInterface::class);
@@ -224,7 +228,7 @@ class QueueTest extends TestCase
                 return 1;
             });
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, dbAdapter: $dbAdapter);
 
         $queue->addJob(new JobDefinition(
             ProductIndexBuilder::class,
@@ -241,8 +245,8 @@ class QueueTest extends TestCase
 
     public function testAddJobBoltsStoreOnByHandlerNameWhenQueueInactive(): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(false);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(false);
 
         $receivedArgs = [];
         $mockHandler = $this->getMockBuilder(ProductIndexBuilder::class)
@@ -258,7 +262,7 @@ class QueueTest extends TestCase
         $objectManager = $this->createStub(ObjectManagerInterface::class);
         $objectManager->method('get')->willReturn($mockHandler);
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, objectManager: $objectManager);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, objectManager: $objectManager);
 
         $queue->addJob(new JobDefinition(
             ProductIndexBuilder::class,
@@ -409,8 +413,92 @@ class QueueTest extends TestCase
         $this->assertNotContains('store_id', $deletedCriteria);
     }
 
-    public function testGetStoreIdsWithPendingJobsReturnsDistinctStoreIds(): void
+    public function testGetStoreIdsWithPendingJobsReturnsStoreIdsFifoOrderedByOldestPendingJob(): void
     {
+        $fromColumns = [];
+        $whereClauses = [];
+        $groupColumns = [];
+        $orderClauses = [];
+        $select = $this->createStub(Select::class);
+        $select->method('from')->willReturnCallback(
+            function (string $table, $columns) use (&$fromColumns, $select) {
+                $fromColumns[] = $columns;
+
+                return $select;
+            }
+        );
+        $select->method('where')->willReturnCallback(
+            function (string $where) use (&$whereClauses, $select) {
+                $whereClauses[] = $where;
+
+                return $select;
+            }
+        );
+        $select->method('group')->willReturnCallback(
+            function (string $column) use (&$groupColumns, $select) {
+                $groupColumns[] = $column;
+
+                return $select;
+            }
+        );
+        $select->method('order')->willReturnCallback(
+            function ($order) use (&$orderClauses, $select) {
+                $orderClauses[] = $order;
+
+                return $select;
+            }
+        );
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('select')->willReturn($select);
+        $dbAdapter->method('fetchCol')->willReturn(['2', '3', '1']);
+
+        $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
+
+        $this->assertSame([2, 3, 1], $this->invokeMethod($queue, 'getStoreIdsWithPendingJobs'));
+        $this->assertSame(['store_id'], $fromColumns);
+        $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NOT NULL'], $whereClauses);
+        $this->assertSame(['store_id'], $groupColumns);
+        $this->assertCount(1, $orderClauses);
+        $this->assertInstanceOf(Zend_Db_Expr::class, $orderClauses[0]);
+        $this->assertSame('MIN(job_id)', (string) $orderClauses[0]);
+    }
+
+    public function testDiscoverPendingStoreIdsUnlocksStackedJobsBeforeDiscovery(): void
+    {
+        $callSequence = [];
+        $select = $this->createStub(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnSelf();
+        $select->method('group')->willReturnSelf();
+        $select->method('order')->willReturnSelf();
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('select')->willReturnCallback(function () use (&$callSequence, $select) {
+            $callSequence[] = 'select';
+
+            return $select;
+        });
+        $dbAdapter->method('update')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'update';
+
+            return 1;
+        });
+        $dbAdapter->method('fetchCol')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'fetchCol';
+
+            return ['2', '3'];
+        });
+
+        $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
+
+        $this->assertSame([2, 3], $queue->discoverPendingStoreIds());
+        $this->assertSame(['update', 'select', 'fetchCol'], $callSequence);
+    }
+
+    public function testHasStorelessPendingJobsUnlocksStackedJobsBeforeCounting(): void
+    {
+        $callSequence = [];
         $whereClauses = [];
         $select = $this->createStub(Select::class);
         $select->method('from')->willReturnSelf();
@@ -421,16 +509,61 @@ class QueueTest extends TestCase
                 return $select;
             }
         );
-        $select->method('order')->willReturnSelf();
 
         $dbAdapter = $this->createStub(AdapterInterface::class);
-        $dbAdapter->method('select')->willReturn($select);
-        $dbAdapter->method('fetchCol')->willReturn(['1', '2', '3']);
+        $dbAdapter->method('select')->willReturnCallback(function () use (&$callSequence, $select) {
+            $callSequence[] = 'select';
+
+            return $select;
+        });
+        $dbAdapter->method('update')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'update';
+
+            return 1;
+        });
+        $dbAdapter->method('fetchOne')->willReturnCallback(function () use (&$callSequence) {
+            $callSequence[] = 'fetchOne';
+
+            return '5';
+        });
 
         $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
 
-        $this->assertSame([1, 2, 3], $queue->getStoreIdsWithPendingJobs());
-        $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NOT NULL'], $whereClauses);
+        $this->assertTrue($queue->hasStorelessPendingJobs());
+        $this->assertSame(['update', 'select', 'fetchOne'], $callSequence);
+        $this->assertSame(['pid IS NULL', 'retries < max_retries', 'store_id IS NULL'], $whereClauses);
+    }
+
+    public function testHasStorelessPendingJobsReturnsFalseWhenNoStorelessRowsArePending(): void
+    {
+        $select = $this->createStub(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnSelf();
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('select')->willReturn($select);
+        $dbAdapter->method('fetchOne')->willReturn('0');
+
+        $queue = $this->createObjectToTest(dbAdapter: $dbAdapter);
+
+        $this->assertFalse($queue->hasStorelessPendingJobs());
+    }
+
+    public function testGetNoOfFailedJobsReturnsZeroForUnknownStore(): void
+    {
+        $queue = $this->createObjectToTest();
+
+        $this->assertSame(0, $queue->getNoOfFailedJobs(7));
+        $this->assertSame(0, $queue->getNoOfFailedJobs());
+    }
+
+    public function testGetNoOfFailedJobsMapsNullStoreIdToStorelessBucket(): void
+    {
+        $queue = $this->createObjectToTest();
+        $this->setPrivateProperty($queue, 'noOfFailedJobsByStore', [0 => 4, 2 => 1]);
+
+        $this->assertSame(4, $queue->getNoOfFailedJobs());
+        $this->assertSame(1, $queue->getNoOfFailedJobs(2));
     }
 
     public function testFailedJobInOneStoreSkipsOnlyThatStoresMoveIndex(): void
@@ -578,8 +711,8 @@ class QueueTest extends TestCase
         array &$updateCalls,
         array $jobs,
     ): Queue {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $itemsPerCall = [[], $jobs]; // [full reindex, realtime]
         $callIndex = 0;
@@ -620,7 +753,7 @@ class QueueTest extends TestCase
         );
 
         return $this->createObjectToTest(
-            configHelper: $configHelper,
+            queueHelper: $queueHelper,
             objectManager: $objectManager,
             dbAdapter: $dbAdapter,
             jobCollectionFactory: $collectionFactory,

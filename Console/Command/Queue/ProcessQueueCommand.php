@@ -129,39 +129,55 @@ class ProcessQueueCommand extends AbstractStoreCommand
         }
 
         // Explicit store IDs always mean worker mode: --sequential and --max-processes are ignored
-        if ($storeIds) {
-            try {
-                // Fails before any work when a store ID does not exist
-                $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds, true);
-            } catch (LocalizedException $e) {
-                $this->output->writeln('<error>' . $e->getMessage() . '</error>');
+        return $storeIds
+            ? $this->runWorkerMode($storeIds)
+            : $this->runBatchMode($input, $maxProcessesOverride);
+    }
 
-                return Cli::RETURN_FAILURE;
-            }
+    protected function runWorkerMode(array $storeIds): int
+    {
+        try {
+            // Fails before any work when a store ID does not exist
+            $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds, true);
+        } catch (LocalizedException $e) {
+            $this->output->writeln('<error>' . $e->getMessage() . '</error>');
 
-            $hasFailure = false;
-            foreach ($storeIds as $storeId) {
-                if (!$this->processQueueForStore($storeId, $storeNames[$storeId])) {
-                    $hasFailure = true;
-                }
-            }
-
-            return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
+            return Cli::RETURN_FAILURE;
         }
 
-        $sequential = $input->getOption(self::SEQUENTIAL_OPTION);
-
-        if ($sequential) {
-            if ($maxProcessesOverride !== null) {
-                $this->output->writeln(
-                    '<comment>Option --' . self::SEQUENTIAL_OPTION . ' takes precedence over --'
-                    . self::MAX_PROCESSES_OPTION . ', processing the queue sequentially.</comment>'
-                );
+        $hasFailure = false;
+        foreach ($storeIds as $storeId) {
+            if (!$this->processQueueForStore($storeId, $storeNames[$storeId])) {
+                $hasFailure = true;
             }
-
-            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
         }
 
+        return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
+    }
+
+    protected function runBatchMode(InputInterface $input, ?int $maxProcessesOverride): int
+    {
+        if ($input->getOption(self::SEQUENTIAL_OPTION)) {
+            return $this->runSequentialMode($maxProcessesOverride);
+        }
+
+        return $this->runOrchestratorMode($maxProcessesOverride);
+    }
+
+    protected function runSequentialMode(?int $maxProcessesOverride): int
+    {
+        if ($maxProcessesOverride !== null) {
+            $this->output->writeln(
+                '<comment>Option --' . self::SEQUENTIAL_OPTION . ' takes precedence over --'
+                . self::MAX_PROCESSES_OPTION . ', processing the queue sequentially.</comment>'
+            );
+        }
+
+        return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+    }
+
+    protected function runOrchestratorMode(?int $maxProcessesOverride): int
+    {
         $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride);
         $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
 

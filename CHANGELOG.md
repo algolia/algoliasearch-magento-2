@@ -43,6 +43,7 @@
 - Added an indexed `store_id` column to the `algoliasearch_queue` table, backfilled by a data patch for existing jobs (rows whose store cannot be determined remain `NULL`).
 - Deprecated `Queue::addToQueue()`. Third-party callers should migrate to `Queue::addJob()` with a `JobDefinition`.
 - Simplified store-scoped runs of `algolia:queue:clear`: pending jobs are now deleted by the `store_id` column instead of JSON filtering on the serialized payload. Legacy rows whose store is only inside the payload are no longer matched by a store-scoped clear, but a run without store arguments still removes them.
+- Refactor item count display in categories autocomplete template (thanks @joe-vortex)
 
 ### Bug fixes
 - Scoped queue failure tracking to the store of the failing job. Previously a failure in one store made `Queue::run()` skip `moveIndexWithSetSettings` for every subsequent store of the same pass, leaving their index settings silently stale.

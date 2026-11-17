@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Algolia\AlgoliaSearch\Test\Unit\Block\Adminhtml\Queue;
 
 use Algolia\AlgoliaSearch\Block\Adminhtml\Queue\Status;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Indexer\StateInterface;
@@ -23,8 +23,8 @@ class StatusTest extends TestCase
         ?Queue $queue = null,
         ?DateTime $dateTime = null,
     ): Status {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $indexerFactory = $this->createStub(IndexerFactory::class);
         $indexerFactory->method('create')->willReturn(
@@ -41,7 +41,7 @@ class StatusTest extends TestCase
             $context,
             $indexerFactory,
             $dateTime ?? $this->createStub(DateTime::class),
-            $configHelper,
+            $queueHelper,
             $queue ?? $this->createStub(Queue::class),
         );
     }

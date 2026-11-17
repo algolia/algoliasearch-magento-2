@@ -14,10 +14,12 @@
     - "Maximum auto-detected parallel processes" bounds the auto-resolved value (default 4). Explicit admin values and the CLI option bypass this cap.
     - `algolia:queue:process` gains a `--max-processes=N` option that takes precedence over the admin configuration and prints the effective value. Values below 1 are rejected.
     - Resolution is centralized in the new `Model\Queue\MaxProcessesResolver` service with precedence CLI override > admin configuration > auto-detection.
-- Added orchestrator mode to `algolia:queue:process`: a no-argument run with an effective maximum of more than one parallel process discovers the stores that have pending jobs, spawns one child worker process per store
+- Added orchestrator mode to `algolia:queue:process` and the built-in cron job: a no-argument run with an effective maximum of more than one parallel process discovers the stores that have pending jobs, spawns one child worker process per store
     - Falls back to the legacy sequential run when the effective maximum is 1, when process spawning is unsupported, or when store-agnostic (`store_id` NULL) rows are pending, since only the sequential path drains them.
     - Applies a non-blocking orchestrator lock (`algolia_queue_process`); when it is already held, the run warns and exits 0.
     - New `--sequential` option forces the legacy sequential run
+    - The cron job (`algolia_queue_process` in the `algolia` group) dispatches through the same shared orchestrator service when parallel processing is enabled ("Maximum parallel queue processes" other than `1`); with the default configuration it runs the legacy sequential queue unchanged. Orchestrator lines go to `var/log/algolia.log` and the job never throws for per-store failures.
+    - Queue progress reporting moved behind the new `Api\QueueReporterInterface`
 - Added `Queue::addJob(JobDefinition, ?JobContext)` as the canonical enqueue entry point, backed by the readonly DTOs `Model\Data\Queue\JobDefinition` and `Model\Data\Queue\JobContext`.
     - `JobDefinition::$storeId` is non-nullable and is the single source of truth for the job's store: it is persisted in the `store_id` column instead of the serialized payload, so job merging cannot cross store boundaries.
     - Jobs enqueued before this release keep draining unchanged. All in-tree enqueuers now use `addJob()`.
@@ -28,6 +30,7 @@
 ### Updates
 - Added an indexed `store_id` column to the `algoliasearch_queue` table, backfilled by a data patch for existing jobs (rows whose store cannot be determined remain `NULL`).
 - Deprecated `Queue::addToQueue()`. Third-party callers should migrate to `Queue::addJob()` with a `JobDefinition`.
+- Migrated queue related configuration from `ConfigHelper` to `QueueHelper` equivalents, which read the same configuration paths. 
 - Simplified store-scoped runs of `algolia:queue:clear`: pending jobs are now deleted by the `store_id` column instead of JSON filtering on the serialized payload. Legacy rows whose store is only inside the payload are no longer matched by a store-scoped clear, but a run without store arguments still removes them.
 
 ### Bug fixes
@@ -35,12 +38,15 @@
 - Fixed a potential fatal error when claiming legacy queue rows whose `store_id` is `NULL` while resolving the batch size.
 
 ### Breaking changes
+- The no-argument run of `algolia:queue:process` now exits with code 1 when Algolia credentials are missing, instead of the legacy 0.
+- A store-scoped run of `algolia:queue:process <storeId>` now exits with code 1 when that store had failed jobs (previously 0). Scripts keying on the exit code are affected.
 - Changed the signature of the `protected` methods `Queue::getJobs()` and `Queue::fetchJobs()` to accept a trailing optional `?int $storeId` parameter. Third-party subclasses overriding these methods must update their signatures.
 - Changed the signature of the `protected` method `Queue::getStoreMaxBatchSize()` from a required `int $storeId` to a nullable trailing optional `?int $storeId = null`.
 - Replaced the `protected` property `Queue::$noOfFailedJobs` (int counter) with the per-store failure map `Queue::$noOfFailedJobsByStore` (keyed by store ID, with jobs without a store tracked under `Queue::NO_STORE`).
-- Added constructor dependencies to `ProcessQueueCommand` (`StoreNameFetcher`, `LockManagerInterface`, `MaxProcessesResolver`), `Queue` (`JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). Only code instantiating these classes directly is affected.
-- The no-argument run of `algolia:queue:process` now exits with code 1 when Algolia credentials are missing, instead of the legacy 0.
-- A store-scoped run of `algolia:queue:process <storeId>` now exits with code 1 when that store had failed jobs (previously 0). Scripts keying on the exit code are affected.
+- Added new constructor dependencies:
+    - `ProcessQueueCommand` (`StoreNameFetcher`, `LockManagerInterface`, `MaxProcessesResolver`), `Queue` (`QueueHelper`, `JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). 
+    - `Block\Algolia`, `Block\Adminhtml\Queue\Status`, `Controller\Adminhtml\Queue\Index`, `Block\Adminhtml\Reindex\AbstractReindexAllButton`, `Controller\Adminhtml\IndexingManager\Reindex`, `Helper\Configuration\NoticeHelper` and `ViewModel\Adminhtml\IndexingManager\Form` now require `Helper\Configuration\QueueHelper`. `Block\Configuration` inherits the dependency from `Block\Algolia`.
+- Only code instantiating these classes directly is affected.
 
 ## 3.19.2
 

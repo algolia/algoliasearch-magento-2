@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Model;
 
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Logger\DiagnosticsLogger;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContext;
 use Algolia\AlgoliaSearch\Model\Data\Queue\JobContextFactory;
@@ -54,6 +55,7 @@ class QueueTest extends TestCase
      */
     protected function createObjectToTest(
         ?ConfigHelper $configHelper = null,
+        ?QueueHelper $queueHelper = null,
         ?DiagnosticsLogger $logger = null,
         ?ObjectManagerInterface $objectManager = null,
         ?AdapterInterface $dbAdapter = null,
@@ -74,6 +76,7 @@ class QueueTest extends TestCase
 
         return new Queue(
             $configHelper ?? $this->createStub(ConfigHelper::class),
+            $queueHelper ?? $this->createStub(QueueHelper::class),
             $logger ?? $this->createStub(DiagnosticsLogger::class),
             $jobCollectionFactory ?? $this->createStub(JobCollectionFactory::class),
             $resourceConnection,
@@ -89,8 +92,8 @@ class QueueTest extends TestCase
         string $method,
         array $data
     ): void {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(false);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(false);
 
         $mockHandler = $this->getMockBuilder($class)
             ->disableOriginalConstructor()
@@ -105,7 +108,7 @@ class QueueTest extends TestCase
             ->with($class)
             ->willReturn($mockHandler);
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, objectManager: $objectManager);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, objectManager: $objectManager);
 
         $this->callDeprecated(fn () => $queue->addToQueue($class, $method, $data));
     }
@@ -116,13 +119,13 @@ class QueueTest extends TestCase
         string $method,
         array $data
     ): void {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $dbAdapter = $this->createMock(AdapterInterface::class);
         $dbAdapter->expects($this->once())->method('insert');
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, dbAdapter: $dbAdapter);
 
         $this->callDeprecated(fn () => $queue->addToQueue($class, $method, $data));
     }
@@ -130,10 +133,10 @@ class QueueTest extends TestCase
     #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueInactive(string $class, string $method): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(false);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(false);
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
@@ -144,13 +147,13 @@ class QueueTest extends TestCase
     #[DataProvider('unauthorizedHandlersProvider')]
     public function testAddToQueueThrowsForUnauthorizedHandlersWhenQueueActive(string $class, string $method): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $dbAdapter = $this->createMock(AdapterInterface::class);
         $dbAdapter->expects($this->never())->method('insert');
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, dbAdapter: $dbAdapter);
 
         $this->expectException(AlgoliaException::class);
         $this->expectExceptionMessage('Unauthorized job handler');
@@ -170,8 +173,8 @@ class QueueTest extends TestCase
 
     public function testAddToQueueExtractsStoreIdColumnFromPayloadAndStripsTheKey(): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $insertedRows = [];
         $dbAdapter = $this->createMock(AdapterInterface::class);
@@ -188,7 +191,7 @@ class QueueTest extends TestCase
             ->method('log')
             ->with($this->stringContains('Queue::addToQueue() is deprecated'));
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, logger: $logger, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, logger: $logger, dbAdapter: $dbAdapter);
 
         $this->callDeprecated(fn () => $queue->addToQueue(
             ProductIndexBuilder::class,
@@ -212,8 +215,8 @@ class QueueTest extends TestCase
 
     public function testAddJobWritesStoreIdColumnFromJobDefinition(): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $insertedRows = [];
         $dbAdapter = $this->createMock(AdapterInterface::class);
@@ -225,7 +228,7 @@ class QueueTest extends TestCase
                 return 1;
             });
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, dbAdapter: $dbAdapter);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, dbAdapter: $dbAdapter);
 
         $queue->addJob(new JobDefinition(
             ProductIndexBuilder::class,
@@ -242,8 +245,8 @@ class QueueTest extends TestCase
 
     public function testAddJobBoltsStoreOnByHandlerNameWhenQueueInactive(): void
     {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(false);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(false);
 
         $receivedArgs = [];
         $mockHandler = $this->getMockBuilder(ProductIndexBuilder::class)
@@ -259,7 +262,7 @@ class QueueTest extends TestCase
         $objectManager = $this->createStub(ObjectManagerInterface::class);
         $objectManager->method('get')->willReturn($mockHandler);
 
-        $queue = $this->createObjectToTest(configHelper: $configHelper, objectManager: $objectManager);
+        $queue = $this->createObjectToTest(queueHelper: $queueHelper, objectManager: $objectManager);
 
         $queue->addJob(new JobDefinition(
             ProductIndexBuilder::class,
@@ -708,8 +711,8 @@ class QueueTest extends TestCase
         array &$updateCalls,
         array $jobs,
     ): Queue {
-        $configHelper = $this->createStub(ConfigHelper::class);
-        $configHelper->method('isQueueActive')->willReturn(true);
+        $queueHelper = $this->createStub(QueueHelper::class);
+        $queueHelper->method('isQueueActive')->willReturn(true);
 
         $itemsPerCall = [[], $jobs]; // [full reindex, realtime]
         $callIndex = 0;
@@ -750,7 +753,7 @@ class QueueTest extends TestCase
         );
 
         return $this->createObjectToTest(
-            configHelper: $configHelper,
+            queueHelper: $queueHelper,
             objectManager: $objectManager,
             dbAdapter: $dbAdapter,
             jobCollectionFactory: $collectionFactory,

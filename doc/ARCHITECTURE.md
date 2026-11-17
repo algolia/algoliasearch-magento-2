@@ -58,7 +58,8 @@ the implementations for Product, Category, Page, Suggestion, and AdditionalSecti
 `AlgoliaConnector` is the single gateway to the Algolia PHP API client. All API calls
 flow through it. `IndexSettingsHandler` pushes index configuration and handles replica
 setting forwarding. `AbstractIndexBuilder` provides store emulation so records reflect
-the correct store context during indexing.
+the correct store context during indexing. `QueueOrchestrator` is the shared sequential/parallel
+queue processing entry point used by both the CLI command and the cron job.
 
 ### `Model/`
 
@@ -132,10 +133,13 @@ CLI commands organized by concern: `Indexer/` (reindex per entity or all), `Queu
 Interface contracts. `Builder/` defines IndexBuilderInterface, RecordBuilderInterface,
 and BatchQueueProcessorInterface - the consistent per-entity pattern. `Data/` holds data
 transfer object interfaces. `Insights/` and `Product/` define service contracts.
+`QueueReporterInterface` is the semantic output channel for queue progress reporting.
 
 ### `Cron/`
 
-`ProcessQueue.php` - the cron entry point that calls `Queue.runCron()`.
+`ProcessQueue.php` - the flag-gated cron dispatcher: the legacy `Queue.runCron()` sequential
+path when parallel processing is disabled, `Service\QueueOrchestrator` when it is enabled
+(see [Orchestrator Mode](#orchestrator-mode)).
 
 ### `Exception/`
 
@@ -313,6 +317,26 @@ output, and prints a per-store summary. The command exits 1 if any worker failed
   failure. The summary reports each store and the command exits 1 if any failed.
 - **Accepted race.** Storeless rows enqueued after discovery are not seen by the running
   orchestrator; the next invocation's storeless check catches them.
+
+#### Cron Dispatcher
+
+The built-in cron job (`Cron\ProcessQueue`, job `algolia_queue_process` in the `algolia` group)
+dispatches over the same `Service\QueueOrchestrator`. The gate is the concurrency configuration
+itself (`QueueHelper::isParallelProcessingEnabled()`, i.e. the configured maximum is not `1`), so
+the `config.xml` default keeps the legacy sequential run unchanged. The cron reads default scope
+only, so store-scoped configuration values do not affect it. It reports through `LoggerQueueReporter`
+and passes `NullOutput` for the child-worker stdout, and never throws for store failures or the
+summary: only unexpected exceptions mark `cron_schedule` failed.
+
+**Overlap protection (Magento_Cron audit):** Magento's group lock 
+(`ProcessCronQueueObserver::lockGroup()`,  name `CRON_<groupId>`) wraps only `cleanupJobs()` 
+and `generateSchedules()`, not `processPendingJobs()`. With `use_separate_process=0` for the 
+`algolia` group (`etc/cron_groups.xml`), the job runs in-process on every `cron:run` tick, and 
+two overlapping ticks can both enter `processPendingJobs()`, so the same job can run twice 
+concurrently via two different pending schedule rows. The extension's own `algolia_queue_process` 
+lock inside the orchestrator is therefore the real overlap guard for parallel mode: a second 
+overlapping tick logs "already running" and returns success. The legacy sequential path keeps 
+its pre-existing exposure, unchanged by this work.
 
 ## Index Architecture
 

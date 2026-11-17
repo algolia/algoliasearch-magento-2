@@ -3,7 +3,7 @@
 namespace Algolia\AlgoliaSearch\Test\Unit\Controller\Adminhtml\IndexingManager;
 
 use Algolia\AlgoliaSearch\Controller\Adminhtml\IndexingManager\Reindex;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Service\Category\BatchQueueProcessor as CategoryBatchQueueProcessor;
 use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 use Algolia\AlgoliaSearch\Service\Page\BatchQueueProcessor as PageBatchQueueProcessor;
@@ -27,7 +27,7 @@ class ReindexTest extends TestCase
         ?StoreManagerInterface $storeManager = null,
         ?StoreNameFetcher $storeNameFetcher = null,
         ?IndexNameFetcher $indexNameFetcher = null,
-        ?ConfigHelper $configHelper = null,
+        ?QueueHelper $queueHelper = null,
         ?ProductBatchQueueProcessor $productBatchQueueProcessor = null,
         ?CategoryBatchQueueProcessor $categoryBatchQueueProcessor = null,
         ?PageBatchQueueProcessor $pageBatchQueueProcessor = null,
@@ -50,7 +50,7 @@ class ReindexTest extends TestCase
             $storeManager ?? $this->createStub(StoreManagerInterface::class),
             $storeNameFetcher ?? $this->createStub(StoreNameFetcher::class),
             $indexNameFetcher ?? $this->createStub(IndexNameFetcher::class),
-            $configHelper ?? $this->createStub(ConfigHelper::class),
+            $queueHelper ?? $this->createStub(QueueHelper::class),
             $productBatchQueueProcessor ?? $this->createStub(ProductBatchQueueProcessor::class),
             $categoryBatchQueueProcessor ?? $this->createStub(CategoryBatchQueueProcessor::class),
             $pageBatchQueueProcessor ?? $this->createStub(PageBatchQueueProcessor::class),

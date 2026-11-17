@@ -36,7 +36,7 @@ define([], function () {
         },
 
         getItemCount: function(hit) {
-            if (hit.hasOwnProperty('product_count')) {
+            if (Object.hasOwn(hit, 'product_count')) {
                 return `(${hit.product_count})`;
             }
             return '';

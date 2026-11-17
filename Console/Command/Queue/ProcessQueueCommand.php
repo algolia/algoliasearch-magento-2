@@ -83,7 +83,8 @@ class ProcessQueueCommand extends AbstractStoreCommand
             When store ID(s) are given, the command acts as a worker: it takes a per-store lock
             and skips any store whose queue is already being processed. Run one worker per store
             (e.g.: <info>bin/magento algolia:queue:process 2</info>). If multiple store IDs are
-            passed to a single worker, those stores will be processed sequentially FIFO.
+            passed to a single worker, those stores will be processed sequentially in First In,
+            First Out (FIFO) order.
             DESCRIPTION;
     }
 

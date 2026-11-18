@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Helper;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Service\Serializer;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -42,6 +43,7 @@ class ConfigHelperTest extends TestCase
         ?AutocompleteHelper $autocompleteHelper = null,
         ?InstantSearchHelper $instantSearchHelper = null,
         ?QueueHelper $queueHelper = null,
+        ?MerchandisingStudioHelper $merchandisingStudioHelper = null,
         ?WeeeHelper $weeeHelper = null,
     ): ConfigHelper {
         return new ConfigHelper(
@@ -61,6 +63,7 @@ class ConfigHelperTest extends TestCase
             $autocompleteHelper ?? $this->createStub(AutocompleteHelper::class),
             $instantSearchHelper ?? $this->createStub(InstantSearchHelper::class),
             $queueHelper ?? $this->createStub(QueueHelper::class),
+            $merchandisingStudioHelper ?? $this->createStub(MerchandisingStudioHelper::class),
             $weeeHelper ?? $this->createStub(WeeeHelper::class),
         );
     }

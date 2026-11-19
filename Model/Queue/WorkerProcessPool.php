@@ -21,17 +21,18 @@ class WorkerProcessPool
 
     /**
      * @param int[] $storeIds
+     * @param string|null $runId Correlation ID forwarded to every spawned worker's --run-id option
      *
      * @return array<int, int> Exit codes keyed by store ID (killed workers count as failures)
      */
-    public function run(array $storeIds, int $maxProcesses, OutputInterface $output): array
+    public function run(array $storeIds, int $maxProcesses, OutputInterface $output, ?string $runId = null): array
     {
         $pendingStoreIds = array_values($storeIds);
         $workers = [];
         $exitCodes = [];
 
         while ($pendingStoreIds && count($workers) < $maxProcesses) {
-            $workers[] = $this->startWorker(array_shift($pendingStoreIds));
+            $workers[] = $this->startWorker(array_shift($pendingStoreIds), $runId);
         }
 
         while ($workers) {
@@ -49,7 +50,7 @@ class WorkerProcessPool
                 unset($workers[$index]);
 
                 if ($pendingStoreIds) { //keep filling as workers free up
-                    $workers[] = $this->startWorker(array_shift($pendingStoreIds));
+                    $workers[] = $this->startWorker(array_shift($pendingStoreIds), $runId);
                 }
             }
         }
@@ -57,9 +58,9 @@ class WorkerProcessPool
         return $exitCodes;
     }
 
-    protected function startWorker(int $storeId): WorkerProcess
+    protected function startWorker(int $storeId, ?string $runId = null): WorkerProcess
     {
-        $worker = $this->workerProcessFactory->create($storeId);
+        $worker = $this->workerProcessFactory->create($storeId, $runId);
         $worker->start();
 
         return $worker;

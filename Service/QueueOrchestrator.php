@@ -101,12 +101,28 @@ class QueueOrchestrator
                 . 'with up to ' . $maxProcesses . ' worker(s).'
             );
 
-            $exitCodes = $this->workerProcessPool->run($storeIds, $maxProcesses, $workerOutput);
+            $runId = $this->generateRunId();
+
+            $exitCodes = $this->workerProcessPool->run(
+                storeIds: $storeIds,
+                maxProcesses: $maxProcesses,
+                output: $workerOutput,
+                runId: $runId
+            );
 
             return $this->printSummary($storeIds, $storeNames, $exitCodes, $reporter);
         } finally {
             $this->lockManager->unlock(self::ORCHESTRATOR_LOCK_NAME);
         }
+    }
+
+    /**
+     * One run ID per orchestration tick: every worker's queue log row carries it,
+     * so the tick's rows correlate across stores.
+     */
+    protected function generateRunId(): string
+    {
+        return bin2hex(random_bytes(16));
     }
 
     /**

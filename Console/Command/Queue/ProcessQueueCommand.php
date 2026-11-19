@@ -38,6 +38,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
     public const string STORE_LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
     protected const string MAX_PROCESSES_OPTION = 'max-processes';
     protected const string SEQUENTIAL_OPTION = 'sequential';
+    protected const string RUN_ID_OPTION = 'run-id';
 
     public function __construct(
         protected State                       $state,
@@ -104,6 +105,13 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 InputOption::VALUE_NONE,
                 'Safety override: Process the whole queue sequentially, bypassing parallel orchestration.'
             ),
+            new InputOption(
+                self::RUN_ID_OPTION,
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Internal: run correlation ID set by the orchestrator on its worker invocations. '
+                . 'Recorded on the queue log rows this process writes.'
+            ),
         ];
     }
 
@@ -131,11 +139,18 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
         // Explicit store IDs always mean worker mode: --sequential and --max-processes are ignored
         return $storeIds
-            ? $this->runWorkerMode($storeIds)
+            ? $this->runWorkerMode($storeIds, $this->getRunId($input))
             : $this->runBatchMode($input, $maxProcessesOverride);
     }
 
-    protected function runWorkerMode(array $storeIds): int
+    protected function getRunId(InputInterface $input): ?string
+    {
+        $runId = $input->getOption(self::RUN_ID_OPTION);
+
+        return $runId !== null ? (string) $runId : null;
+    }
+
+    protected function runWorkerMode(array $storeIds, ?string $runId = null): int
     {
         try {
             // Fails before any work when a store ID does not exist
@@ -148,7 +163,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
         $hasFailure = false;
         foreach ($storeIds as $storeId) {
-            if (!$this->processQueueForStore($storeId, $storeNames[$storeId])) {
+            if (!$this->processQueueForStore($storeId, $storeNames[$storeId], $runId)) {
                 $hasFailure = true;
             }
         }
@@ -207,7 +222,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
      * Missing credentials and database failures report the error and count as failures;
      * a store that fails processing does not abort the remaining stores.
      */
-    protected function processQueueForStore(int $storeId, string $storeName): bool
+    protected function processQueueForStore(int $storeId, string $storeName, ?string $runId = null): bool
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
@@ -227,7 +242,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
         }
 
         try {
-            $this->queue->runCron(null, false, $storeId);
+            $this->queue->runCron(nbJobs: null, force: false, storeId: $storeId, runId: $runId);
         } catch (Zend_Db_Exception $e) {
             $this->output->writeln(
                 '<error>Failed to process indexing queue for ' . $storeName . ' (ID ' . $storeId . '): '

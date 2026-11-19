@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Block;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\PersonalizationHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Helper\Data as CoreHelper;
@@ -42,32 +43,33 @@ use Magento\Store\Api\Data\StoreInterface;
 class Algolia extends Template implements CollectionDataSourceInterface
 {
     public function __construct(
-        protected ConfigHelper          $config,
-        protected AutocompleteHelper    $autocompleteConfig,
-        protected InstantSearchHelper   $instantSearchConfig,
-        protected PersonalizationHelper $personalizationHelper,
-        protected QueueHelper           $queueHelper,
-        protected CatalogSearchHelper   $catalogSearchHelper,
-        protected ProductHelper         $productHelper,
-        protected Currency              $currency,
-        protected Format                $format,
-        protected CurrentProduct        $currentProduct,
-        protected AlgoliaConnector      $algoliaConnector,
-        protected UrlHelper             $urlHelper,
-        protected FormKey               $formKey,
-        protected HttpContext           $httpContext,
-        protected CoreHelper            $coreHelper,
-        protected CategoryHelper        $categoryHelper,
-        protected SuggestionHelper      $suggestionHelper,
-        protected LandingPageHelper     $landingPageHelper,
-        protected CheckoutSession       $checkoutSession,
-        protected DateTime              $date,
-        protected CurrentCategory       $currentCategory,
-        protected SortingTransformer    $sortingTransformer,
-        protected PriceKeyResolver      $priceKeyResolver,
-        protected CategoryPathProvider  $categoryPathProvider,
-        Template\Context                $context,
-        array                           $data = []
+        protected ConfigHelper              $config,
+        protected AutocompleteHelper        $autocompleteConfig,
+        protected InstantSearchHelper       $instantSearchConfig,
+        protected PersonalizationHelper     $personalizationHelper,
+        protected QueueHelper               $queueHelper,
+        protected MerchandisingStudioHelper $merchandisingStudioHelper,
+        protected CatalogSearchHelper       $catalogSearchHelper,
+        protected ProductHelper             $productHelper,
+        protected Currency                  $currency,
+        protected Format                    $format,
+        protected CurrentProduct            $currentProduct,
+        protected AlgoliaConnector          $algoliaConnector,
+        protected UrlHelper                 $urlHelper,
+        protected FormKey                   $formKey,
+        protected HttpContext               $httpContext,
+        protected CoreHelper                $coreHelper,
+        protected CategoryHelper            $categoryHelper,
+        protected SuggestionHelper          $suggestionHelper,
+        protected LandingPageHelper         $landingPageHelper,
+        protected CheckoutSession           $checkoutSession,
+        protected DateTime                  $date,
+        protected CurrentCategory           $currentCategory,
+        protected SortingTransformer        $sortingTransformer,
+        protected PriceKeyResolver          $priceKeyResolver,
+        protected CategoryPathProvider      $categoryPathProvider,
+        Template\Context                    $context,
+        array                               $data = []
     )
     {
         parent::__construct($context, $data);
@@ -119,6 +121,11 @@ class Algolia extends Template implements CollectionDataSourceInterface
     public function getQueueHelper(): QueueHelper
     {
         return $this->queueHelper;
+    }
+
+    public function getMerchandisingStudioHelper(): MerchandisingStudioHelper
+    {
+        return $this->merchandisingStudioHelper;
     }
 
     /**

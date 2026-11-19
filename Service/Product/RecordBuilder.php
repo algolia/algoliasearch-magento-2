@@ -12,6 +12,7 @@ use Algolia\AlgoliaSearch\Exception\ProductOutOfStockException;
 use Algolia\AlgoliaSearch\Exception\ProductReindexingException;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\CategoryHelper;
 use Algolia\AlgoliaSearch\Helper\Entity\Product\PriceManager;
 use Algolia\AlgoliaSearch\Helper\Image as ImageHelper;
@@ -45,20 +46,21 @@ class RecordBuilder implements RecordBuilderInterface
     ];
 
     public function __construct(
-        protected ManagerInterface       $eventManager,
-        protected DiagnosticsLogger      $logger,
-        protected Visibility             $visibility,
-        protected StoreManagerInterface  $storeManager,
-        protected ConfigHelper           $configHelper,
-        protected CategoryHelper         $categoryHelper,
-        protected CategoryRecordBuilder  $categoryRecordBuilder,
-        protected AlgoliaConnector       $algoliaConnector,
-        protected ImageHelper            $imageHelper,
-        protected StockRegistryInterface $stockRegistry,
-        protected PriceManager           $priceManager,
-        protected ProductUrl             $productUrl,
-        protected ProductResource        $productResource,
-        protected GalleryReadHandler     $galleryReadHandler,
+        protected ManagerInterface          $eventManager,
+        protected DiagnosticsLogger         $logger,
+        protected Visibility                $visibility,
+        protected StoreManagerInterface     $storeManager,
+        protected ConfigHelper              $configHelper,
+        protected CategoryHelper            $categoryHelper,
+        protected MerchandisingStudioHelper $merchandisingStudioHelper,
+        protected CategoryRecordBuilder     $categoryRecordBuilder,
+        protected AlgoliaConnector          $algoliaConnector,
+        protected ImageHelper               $imageHelper,
+        protected StockRegistryInterface    $stockRegistry,
+        protected PriceManager              $priceManager,
+        protected ProductUrl                $productUrl,
+        protected ProductResource           $productResource,
+        protected GalleryReadHandler        $galleryReadHandler,
     ){}
 
     /**
@@ -208,9 +210,9 @@ class RecordBuilder implements RecordBuilderInterface
         $algoliaData['categories_without_path'] = $categoryData['categoryNames'];
         $algoliaData['categoryIds'] = array_values(array_unique($categoryData['categoryIds']));
 
-        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
+        if ($this->merchandisingStudioHelper->isVisualMerchEnabled($storeId)) {
             $autoAnchorPaths = $this->autoAnchorParentCategories($categoryData['categoriesWithPath']);
-            $algoliaData[$this->configHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($autoAnchorPaths, $storeId);
+            $algoliaData[$this->merchandisingStudioHelper->getCategoryPageIdAttributeName($storeId)] = $this->flattenCategoryPaths($autoAnchorPaths, $storeId);
         }
 
         $this->logger->stopProfiling(__METHOD__);

@@ -11,7 +11,7 @@ use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\Output\ReporterWorkerOutput;
 use Algolia\AlgoliaSearch\Model\Queue\Output\ReporterWorkerOutputFactory;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Test\TestCase;
 
 class ProcessQueueTest extends TestCase

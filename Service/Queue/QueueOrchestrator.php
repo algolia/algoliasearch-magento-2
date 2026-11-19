@@ -1,11 +1,13 @@
 <?php
 
-namespace Algolia\AlgoliaSearch\Service;
+namespace Algolia\AlgoliaSearch\Service\Queue;
 
 use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
+use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Lock\LockManagerInterface;
 use Symfony\Component\Console\Output\OutputInterface;

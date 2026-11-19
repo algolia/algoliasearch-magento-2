@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Algolia\AlgoliaSearch\Test\Unit\Service;
+namespace Algolia\AlgoliaSearch\Test\Unit\Service\Queue;
 
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporter;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;

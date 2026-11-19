@@ -58,7 +58,7 @@ the implementations for Product, Category, Page, Suggestion, and AdditionalSecti
 `AlgoliaConnector` is the single gateway to the Algolia PHP API client. All API calls
 flow through it. `IndexSettingsHandler` pushes index configuration and handles replica
 setting forwarding. `AbstractIndexBuilder` provides store emulation so records reflect
-the correct store context during indexing. `QueueOrchestrator` is the shared sequential/parallel
+the correct store context during indexing. `Service\Queue\QueueOrchestrator` is the shared sequential/parallel
 queue processing entry point used by both the CLI command and the cron job.
 
 ### `Model/`
@@ -138,7 +138,7 @@ transfer object interfaces. `Insights/` and `Product/` define service contracts.
 ### `Cron/`
 
 `ProcessQueue.php` - the flag-gated cron dispatcher: the legacy `Queue.runCron()` sequential
-path when parallel processing is disabled, `Service\QueueOrchestrator` when it is enabled
+path when parallel processing is disabled, `Service\Queue\QueueOrchestrator` when it is enabled
 (see [Orchestrator Mode](#orchestrator-mode)).
 
 ### `Exception/`
@@ -321,7 +321,7 @@ output, and prints a per-store summary. The command exits 1 if any worker failed
 #### Cron Dispatcher
 
 The built-in cron job (`Cron\ProcessQueue`, job `algolia_queue_process` in the `algolia` group)
-dispatches over the same `Service\QueueOrchestrator`. The gate is the concurrency configuration
+dispatches over the same `Service\Queue\QueueOrchestrator`. The gate is the concurrency configuration
 itself (`QueueHelper::isParallelProcessingEnabled()`, i.e. the configured maximum is not `1`), so
 the `config.xml` default keeps the legacy sequential run unchanged. The cron reads default scope
 only, so store-scoped configuration values do not affect it. It reports through `LoggerQueueReporter`

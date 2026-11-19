@@ -4,6 +4,7 @@ namespace Algolia\AlgoliaSearch\Service\Product;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper;
 use Magento\Customer\Api\GroupExcludedWebsiteRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\Collection as GroupCollection;
 use Magento\Framework\Exception\LocalizedException;
@@ -29,6 +30,7 @@ class FacetBuilder
     public function __construct(
         protected ConfigHelper                            $configHelper,
         protected InstantSearchHelper                     $instantSearchHelper,
+        protected MerchandisingStudioHelper               $merchandisingStudioHelper,
         protected StoreManagerInterface                   $storeManager,
         protected GroupCollection                         $groupCollection,
         protected GroupExcludedWebsiteRepositoryInterface $groupExcludedWebsiteRepository,
@@ -233,9 +235,12 @@ class FacetBuilder
         // Used for legacy merchandising features - always required!
         $facets[] = $this->getRawFacet(self::FACET_ATTRIBUTES_CATEGORY_ID);
 
-        if ($this->configHelper->isVisualMerchEnabled($storeId)) {
+        if ($this->merchandisingStudioHelper->isVisualMerchEnabled($storeId)) {
             // Must be searchable per https://www.algolia.com/doc/guides/solutions/ecommerce/browse/tutorials/category-pages/#configure-your-index
-            $facets[] = $this->getRawFacet($this->configHelper->getCategoryPageIdAttributeName($storeId), true);
+            $facets[] = $this->getRawFacet(
+                $this->merchandisingStudioHelper->getCategoryPageIdAttributeName($storeId),
+                true
+            );
         }
 
         return $facets;

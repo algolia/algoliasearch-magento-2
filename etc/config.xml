@@ -75,7 +75,6 @@
                 <product_additional_attributes><![CDATA[{"_1581608784535_535":{"attribute":"name","searchable":"1","order":"unordered","retrievable":"1"},"_1581608793630_630":{"attribute":"sku","searchable":"1","order":"unordered","retrievable":"1"},"_1582212731087_87":{"attribute":"manufacturer","searchable":"1","order":"unordered","retrievable":"1"},"_1582212739021_21":{"attribute":"categories","searchable":"1","order":"unordered","retrievable":"1"},"_1582212749587_587":{"attribute":"color","searchable":"1","order":"unordered","retrievable":"1"},"_1582212776086_86":{"attribute":"price","searchable":"2","order":"unordered","retrievable":"1"},"_1582212790407_407":{"attribute":"rating_summary","searchable":"2","order":"unordered","retrievable":"1"}}]]></product_additional_attributes>
                 <custom_ranking_product_attributes><![CDATA[{"_1600352070901_901":{"attribute":"in_stock","order":"desc"},"_1600352075148_148":{"attribute":"ordered_qty","order":"desc"},"_1600352080300_300":{"attribute":"created_at","order":"desc"}}]]></custom_ranking_product_attributes>
                 <use_adaptive_image>0</use_adaptive_image>
-                <enable_visual_merchandising>0</enable_visual_merchandising>
                 <category_page_id_attribute_name>categoryPageId</category_page_id_attribute_name>
                 <include_non_visible_products_in_index>0</include_non_visible_products_in_index>
                 <pricing_engine>2</pricing_engine>
@@ -150,6 +149,15 @@
                 <queue>0</queue>
             </full_indexing>
         </algoliasearch_indexing_manager>
+        <!-- Merchandising Studio -->
+        <algoliasearch_merchandising_studio>
+            <visual_merchandising>
+                <enable_visual_merchandising>0</enable_visual_merchandising>
+            </visual_merchandising>
+            <smart_groups>
+                <enable_smart_groups>0</enable_smart_groups>
+            </smart_groups>
+        </algoliasearch_merchandising_studio>
         <!-- Click & Conversion Analytics -->
         <algoliasearch_cc_analytics>
             <cc_analytics_group>

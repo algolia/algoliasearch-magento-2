@@ -640,31 +640,6 @@
                         ]]>
                     </comment>
                 </field>
-                <field id="enable_visual_merchandising" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable visual merchandising support</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>
-                        <![CDATA[
-                            If enabled, products will be indexed into Algolia with a compatible category data format that supports advanced merchandising features
-                            such as visual rules and the new Merchandising Studio.
-                            <br><br>
-                            <strong>NOTE:</strong> After enabling, you must run a full product reindex to ensure that the attribute data is properly applied to your storefront catalog.
-                            Merchandising Studio is only available on Premium plans.
-                        ]]>
-                    </comment>
-                </field>
-                <field id="category_page_id_attribute_name" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Category page ID attribute</label>
-                    <comment>
-                        <![CDATA[
-                            Specify the name of the attribute that will contain your <a href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/#configure-the-visual-editor-for-category-merchandising" target="_blank">category page ID</a>. Default is <code>categoryPageId</code>.
-                        ]]>
-                    </comment>
-                    <validate>required-entry validate-data</validate>
-                    <depends>
-                        <field id="enable_visual_merchandising">1</field>
-                    </depends>
-                </field>
                 <field id="include_non_visible_products_in_index" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Include non visible products in index</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -1026,7 +1001,7 @@
                 </field>
             </group>
         </section>
-        <section id="algoliasearch_queue" translate="label" type="text" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_queue" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Indexing Queue / Cron</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
@@ -1135,7 +1110,7 @@
                 </field>
             </group>
         </section>
-        <section id="algoliasearch_indexing_manager" translate="label" type="text" sortOrder="66" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_indexing_manager" translate="label" type="text" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Indexing Manager</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
@@ -1258,7 +1233,52 @@
                 </field>
             </group>
         </section>
-        <section id="algoliasearch_cc_analytics" translate="label" type="text" sortOrder="67" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_merchandising_studio" translate="label" type="text" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label><![CDATA[Merchandising Studio]]></label>
+            <tab>algolia</tab>
+            <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
+            <group id="visual_merchandising" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label><![CDATA[Visual Merchandising support]]></label>
+                <field id="enable_visual_merchandising" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable visual merchandising support</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If enabled, products will be indexed into Algolia with a compatible category data format that supports advanced merchandising features
+                            such as visual rules and the new Merchandising Studio.
+                            <br><br>
+                            <strong>NOTE:</strong> After enabling, you must run a full product reindex to ensure that the attribute data is properly applied to your storefront catalog.
+                            Merchandising Studio is only available on Premium plans.
+                        ]]>
+                    </comment>
+                </field>
+                <field id="category_page_id_attribute_name" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Category page ID attribute</label>
+                    <comment>
+                        <![CDATA[
+                            Specify the name of the attribute that will contain your <a href="https://www.algolia.com/doc/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/#configure-the-visual-editor-for-category-merchandising" target="_blank">category page ID</a>. Default is <code>categoryPageId</code>.
+                        ]]>
+                    </comment>
+                    <validate>required-entry validate-data</validate>
+                    <depends>
+                        <field id="enable_visual_merchandising">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="smart_groups" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label><![CDATA[Smart Groups]]></label>
+                <field id="enable_smart_groups" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Smart Groups support</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>
+                        <![CDATA[
+                            If enabled, you will be able to select a composition previously created in the Merchandising Studio located in your Algolia Dashboard.
+                        ]]>
+                    </comment>
+                </field>
+            </group>
+        </section>
+        <section id="algoliasearch_cc_analytics" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
             <label><![CDATA[Click & Conversion Analytics]]></label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
@@ -1319,7 +1339,7 @@
             </group>
         </section>
 
-        <section id="algoliasearch_personalization" translate="label" type="text" sortOrder="68" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_personalization" translate="label" type="text" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Personalization</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
@@ -1428,7 +1448,7 @@
             </group>
         </section>
 
-        <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="69" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_analytics" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Google Analytics</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>
@@ -1487,7 +1507,7 @@
             </group>
         </section>
 
-        <section id="algoliasearch_advanced" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+        <section id="algoliasearch_advanced" translate="label" type="text" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Advanced</label>
             <tab>algolia</tab>
             <resource>Algolia_AlgoliaSearch::algolia_algoliasearch</resource>

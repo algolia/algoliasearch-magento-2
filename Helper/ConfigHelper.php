@@ -6,6 +6,7 @@ use Algolia\AlgoliaSearch\Api\Product\ProductRecordFieldsInterface;
 use Algolia\AlgoliaSearch\Api\Product\ReplicaManagerInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\AutocompleteHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\InstantSearchHelper;
+use Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaConnector;
 use Algolia\AlgoliaSearch\Service\Serializer;
@@ -38,8 +39,6 @@ class ConfigHelper
     public const PRODUCT_ATTRIBUTES = 'algoliasearch_products/products/product_additional_attributes';
     public const PRODUCT_CUSTOM_RANKING = 'algoliasearch_products/products/custom_ranking_product_attributes';
     public const USE_ADAPTIVE_IMAGE = 'algoliasearch_products/products/use_adaptive_image';
-    public const ENABLE_VISUAL_MERCHANDISING = 'algoliasearch_products/products/enable_visual_merchandising';
-    public const CATEGORY_PAGE_ID_ATTRIBUTE_NAME = 'algoliasearch_products/products/category_page_id_attribute_name';
     public const INCLUDE_NON_VISIBLE_PRODUCTS_IN_INDEX = 'algoliasearch_products/products/include_non_visible_products_in_index';
     public const PRICING_ENGINE = 'algoliasearch_products/products/pricing_engine';
 
@@ -168,6 +167,7 @@ class ConfigHelper
         protected AutocompleteHelper                                    $autocompleteConfig,
         protected InstantSearchHelper                                   $instantSearchConfig,
         protected QueueHelper                                           $queueHelper,
+        protected MerchandisingStudioHelper                             $merchandisingStudioHelper,
         protected WeeeHelper                                            $weeeHelper
     )
     {}
@@ -352,16 +352,6 @@ class ConfigHelper
     public function useAdaptiveImage($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::USE_ADAPTIVE_IMAGE, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function isVisualMerchEnabled($storeId = null): bool
-    {
-        return $this->configInterface->isSetFlag(self::ENABLE_VISUAL_MERCHANDISING, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getCategoryPageIdAttributeName($storeId = null): string
-    {
-        return (string) $this->configInterface->getValue(self::CATEGORY_PAGE_ID_ATTRIBUTE_NAME, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -1494,6 +1484,20 @@ class ConfigHelper
     /** @deprecated This configuration is no longer being used and will be removed in a future release */
     public const ENABLE_FRONTEND = 'algoliasearch_credentials/credentials/enable_frontend';
 
+    // --- Merchandising Studio --- //
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper::ENABLE_VISUAL_MERCHANDISING
+     */
+    public const ENABLE_VISUAL_MERCHANDISING = MerchandisingStudioHelper::ENABLE_VISUAL_MERCHANDISING;
+
+    /**
+     * @deprecated This constant has been moved to a domain specific config helper and will be removed in a future release
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper::CATEGORY_PAGE_ID_ATTRIBUTE_NAME
+     */
+    public const CATEGORY_PAGE_ID_ATTRIBUTE_NAME = MerchandisingStudioHelper::CATEGORY_PAGE_ID_ATTRIBUTE_NAME;
+
     /*** METHODS ***/
 
     // --- Autocomplete --- //
@@ -1872,6 +1876,31 @@ class ConfigHelper
     {
         return $this->isIndexingEnabled($storeId);
     }
+
+    // --- Merchandising Studio --- //
+
+    /**
+     * @return bool
+     *
+     * @deprecated This method has been moved to the MerchandisingStudioHelper config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper::isVisualMerchEnabled()
+     */
+    public function isVisualMerchEnabled($storeId = null): bool
+    {
+        return $this->merchandisingStudioHelper->isVisualMerchEnabled($storeId);
+    }
+
+    /**
+     * @return string
+     *
+     * @deprecated This method has been moved to the MerchandisingStudioHelper config helper and will be removed in a future version
+     * @see \Algolia\AlgoliaSearch\Helper\Configuration\MerchandisingStudioHelper::getCategoryPageIdAttributeName()
+     */
+    public function getCategoryPageIdAttributeName($storeId = null): string
+    {
+        return $this->merchandisingStudioHelper->getCategoryPageIdAttributeName($storeId);
+    }
+
 
     // --- Advanced --- //
     /**

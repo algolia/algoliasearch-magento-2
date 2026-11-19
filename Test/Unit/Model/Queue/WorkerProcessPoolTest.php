@@ -203,9 +203,97 @@ class WorkerProcessPoolTest extends TestCase
             }
         );
 
-        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new BufferedOutput(), 'run-abc123');
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new BufferedOutput(), [], 'run-abc123');
 
         $this->assertSame([[2, 'run-abc123'], [3, 'run-abc123']], $createArgs);
         $this->assertSame([2 => 0, 3 => 0], $exitCodes);
+    }
+
+    public function testRunPrefixesWorkerLinesWithTheStoreLabel(): void
+    {
+        $factory = $this->createScriptedFactory([
+            2 => [1, 0, ["line one\nline two\n"], ["error\n"]],
+        ]);
+        $output = new BufferedOutput();
+
+        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+
+        $written = $output->fetch();
+        $this->assertStringContainsString('[Store 2 (English)] line one', $written);
+        $this->assertStringContainsString('[Store 2 (English)] line two', $written);
+        $this->assertStringContainsString('[Store 2 (English)] error', $written);
+    }
+
+    public function testRunFallsBackToAPlainStoreIdLabelWhenNoLabelIsProvided(): void
+    {
+        $factory = $this->createScriptedFactory([
+            7 => [1, 0, ["store line\n"], []],
+        ]);
+        $output = new BufferedOutput();
+
+        $this->createObjectToTest($factory)->run([7], 1, $output);
+
+        $this->assertStringContainsString('[Store 7] store line', $output->fetch());
+    }
+
+    public function testRunPrefixesEachStoreWithItsOwnLabel(): void
+    {
+        $factory = $this->createScriptedFactory([
+            2 => [2, 0, ["from store 2\n"], []],
+            3 => [1, 0, ["from store 3\n"], []],
+        ]);
+        $output = new BufferedOutput();
+
+        $this->createObjectToTest($factory)->run([2, 3], 2, $output, [2 => 'Store 2 (Second)', 3 => 'Store 3 (Third)']);
+
+        $written = $output->fetch();
+        $this->assertStringContainsString('[Store 2 (Second)] from store 2', $written);
+        $this->assertStringContainsString('[Store 3 (Third)] from store 3', $written);
+        $this->assertStringNotContainsString('[Store 2 (Second)] from store 3', $written);
+        $this->assertStringNotContainsString('[Store 3 (Third)] from store 2', $written);
+    }
+
+    public function testRunFlushesThePartialTailWhenAWorkerExitsWithoutATrailingNewline(): void
+    {
+        $factory = $this->createScriptedFactory([
+            2 => [1, 0, ['a line with no newline'], []],
+        ]);
+        $output = new BufferedOutput();
+
+        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+
+        $this->assertStringContainsString(
+            '[Store 2 (English)] a line with no newline',
+            $output->fetch()
+        );
+    }
+
+    public function testRunKeepsThePartialLineBufferOfAWorkerAcrossPolls(): void
+    {
+        // The partial line spans two polls; poll 1 buffers it, poll 2 completes it
+        $factory = $this->createScriptedFactory([
+            2 => [2, 0, ['par', "tial\n"], []],
+        ]);
+        $output = new BufferedOutput();
+
+        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+
+        $this->assertStringContainsString('[Store 2 (English)] partial', $output->fetch());
+    }
+
+    public function testRunDrainsTheFinalChunkBeforeFlushingTheTail(): void
+    {
+        $factory = $this->createScriptedFactory([
+            2 => [1, 0, ["complete line\nfinal partial"], []],
+        ]);
+        $output = new BufferedOutput();
+
+        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+
+        $written = $output->fetch();
+        $this->assertStringContainsString('[Store 2 (English)] complete line', $written);
+        $this->assertStringContainsString('[Store 2 (English)] final partial', $written);
+        // The tail must be a prefixed line of its own, not glued to the drained chunk
+        $this->assertStringNotContainsString('final partial[Store 2', $written);
     }
 }

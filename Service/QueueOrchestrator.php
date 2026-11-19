@@ -108,6 +108,7 @@ class QueueOrchestrator
                 storeIds: $storeIds,
                 maxProcesses: $maxProcesses,
                 output: $workerOutput,
+                storeLabels: $this->getStoreLabels($storeIds, $storeNames),
                 runId: $this->generateRunId()
             );
 
@@ -127,6 +128,33 @@ class QueueOrchestrator
     }
 
     /**
+     * Per-store display label ("Store 2 (English)"), shared by worker output prefixing
+     * and the run summary.
+     *
+     * @param array<int, string> $storeNames
+     */
+    protected function getStoreLabel(int $storeId, array $storeNames): string
+    {
+        return 'Store ' . $storeId . ' (' . ($storeNames[$storeId] ?? 'Store ID ' . $storeId) . ')';
+    }
+
+    /**
+     * @param int[] $storeIds
+     * @param array<int, string> $storeNames
+     *
+     * @return array<int, string> Labels keyed by store ID
+     */
+    protected function getStoreLabels(array $storeIds, array $storeNames): array
+    {
+        $labels = [];
+        foreach ($storeIds as $storeId) {
+            $labels[$storeId] = $this->getStoreLabel($storeId, $storeNames);
+        }
+
+        return $labels;
+    }
+
+    /**
      * @param int[] $storeIds
      * @param array<int, string> $storeNames
      * @param array<int, int> $exitCodes
@@ -142,7 +170,7 @@ class QueueOrchestrator
 
         foreach ($storeIds as $storeId) {
             $exitCode = $exitCodes[$storeId] ?? 1;
-            $label = 'Store ' . $storeId . ' (' . ($storeNames[$storeId] ?? 'Store ID ' . $storeId) . ')';
+            $label = $this->getStoreLabel($storeId, $storeNames);
 
             if ($exitCode !== 0) {
                 $hasFailure = true;

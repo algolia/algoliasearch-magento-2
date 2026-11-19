@@ -8,10 +8,11 @@ use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Cron\ProcessQueue;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ReporterWorkerOutput;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ReporterWorkerOutputFactory;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use Symfony\Component\Console\Output\NullOutput;
 
 class ProcessQueueTest extends TestCase
 {
@@ -21,7 +22,7 @@ class ProcessQueueTest extends TestCase
         ?AlgoliaCredentialsManager $credentialsManager = null,
         ?QueueOrchestrator $queueOrchestrator = null,
         ?QueueReporterInterface $queueReporter = null,
-        ?NullOutput $nullOutput = null,
+        ?ReporterWorkerOutputFactory $reporterWorkerOutputFactory = null,
     ): ProcessQueue {
         return new ProcessQueue(
             $queueHelper ?? $this->createStub(QueueHelper::class),
@@ -29,8 +30,25 @@ class ProcessQueueTest extends TestCase
             $credentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
             $queueOrchestrator ?? $this->createStub(QueueOrchestrator::class),
             $queueReporter ?? $this->createStub(QueueReporterInterface::class),
-            $nullOutput ?? $this->createStub(NullOutput::class),
+            $reporterWorkerOutputFactory ?? $this->createReporterWorkerOutputFactory(
+                $queueReporter ?? $this->createStub(QueueReporterInterface::class)
+            ),
         );
+    }
+
+    /**
+     * Mirrors the Magento-generated factory: create() injects the passed reporter,
+     * so the adapter wraps the cron's own injected reporter instance
+     */
+    private function createReporterWorkerOutputFactory(
+        QueueReporterInterface $reporter
+    ): ReporterWorkerOutputFactory {
+        $factory = $this->createStub(ReporterWorkerOutputFactory::class);
+        $factory->method('create')->willReturnCallback(
+            fn (array $data = []) => new ReporterWorkerOutput($data['reporter'] ?? $reporter)
+        );
+
+        return $factory;
     }
 
     protected function createQueueHelper(bool $isActive, bool $useBuiltInCron, bool $parallel): QueueHelper
@@ -71,7 +89,9 @@ class ProcessQueueTest extends TestCase
             ->execute();
     }
 
-    /** TODO: Revisit this logic - is this check necessary since creds are handled per store? */
+    /**
+     * TODO: Revisit this logic - is this check necessary since creds are handled per store?
+     */
     public function testLegacyPathDisplaysErrorAndDoesNotRunCronWhenCredentialsAreInvalid(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: false);
@@ -117,7 +137,7 @@ class ProcessQueueTest extends TestCase
         )->execute();
     }
 
-    public function testParallelPathOrchestratesWithTheInjectedReporterAndNeverRunsCronGlobally(): void
+    public function testParallelPathOrchestratesWithAnAdapterWrappingTheInjectedReporter(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: true);
 
@@ -128,13 +148,24 @@ class ProcessQueueTest extends TestCase
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->never())->method('runCron');
 
-        $queueReporter = $this->createStub(QueueReporterInterface::class);
-        $nullOutput = $this->createStub(NullOutput::class);
+        $queueReporter = $this->createMock(QueueReporterInterface::class);
+        $queueReporter->expects($this->once())->method('log')->with('[Store 2 (English)] worker line');
+
+        $reporterWorkerOutputFactory = $this->createReporterWorkerOutputFactory($queueReporter);
 
         $queueOrchestrator = $this->createMock(QueueOrchestrator::class);
         $queueOrchestrator->expects($this->once())
             ->method('orchestrate')
-            ->with(null, $queueReporter, $nullOutput);
+            ->with(
+                null,
+                $this->identicalTo($queueReporter),
+                $this->isInstanceOf(ReporterWorkerOutput::class)
+            )
+            ->willReturnCallback(function ($override, QueueReporterInterface $reporter, $workerOutput): int {
+                $workerOutput->writeln('[Store 2 (English)] worker line');
+
+                return 0;
+            });
 
         $this->createObjectToTest(
             queueHelper: $queueHelper,
@@ -142,7 +173,7 @@ class ProcessQueueTest extends TestCase
             credentialsManager: $credentialsManager,
             queueOrchestrator: $queueOrchestrator,
             queueReporter: $queueReporter,
-            nullOutput: $nullOutput,
+            reporterWorkerOutputFactory: $reporterWorkerOutputFactory,
         )->execute();
     }
 

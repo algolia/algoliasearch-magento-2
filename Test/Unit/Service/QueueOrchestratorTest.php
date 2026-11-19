@@ -221,10 +221,20 @@ class QueueOrchestratorTest extends TestCase
 
         $output = new BufferedOutput();
         $workerOutput = new BufferedOutput();
+        $storeLabels = [];
+        foreach ($storeIds as $i => $storeId) {
+            $storeLabels[$storeId] = sprintf('Store %d (%s)', $storeId, $storeNames[$i]);
+        }
         $workerProcessPool = $this->createMock(WorkerProcessPool::class);
         $workerProcessPool->expects($this->once())
             ->method('run')
-            ->with($storeIds, 2, $workerOutput, $this->matchesRegularExpression(self::RUN_ID_PATTERN))
+            ->with(
+                $storeIds,
+                2,
+                $workerOutput,
+                $storeLabels,
+                $this->matchesRegularExpression(self::RUN_ID_PATTERN)
+            )
             ->willReturn(array_fill_keys($storeIds, 0));
 
         $code = $this->createObjectToTest(
@@ -274,6 +284,7 @@ class QueueOrchestratorTest extends TestCase
                 [2],
                 1,
                 $this->isInstanceOf(BufferedOutput::class),
+                [2 => 'Store 2 (Second Store)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
             ->willReturn([2 => 0]);
@@ -311,6 +322,7 @@ class QueueOrchestratorTest extends TestCase
                 [5],
                 1,
                 $this->isInstanceOf(BufferedOutput::class),
+                [5 => 'Store 5 (Fifth Store)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
             ->willReturn([5 => 0]);
@@ -352,6 +364,7 @@ class QueueOrchestratorTest extends TestCase
                 [2, 3],
                 2,
                 $this->isInstanceOf(BufferedOutput::class),
+                [2 => 'Store 2 (Second Store)', 3 => 'Store 3 (Third Store)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
             ->willReturn([2 => 0, 3 => 1]);
@@ -394,6 +407,7 @@ class QueueOrchestratorTest extends TestCase
                 [2],
                 1,
                 $this->isInstanceOf(BufferedOutput::class),
+                [2 => 'Store 2 (Store ID 2)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
             ->willReturn([2 => 1]);

@@ -2,8 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Model\Queue;
 
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Model\Queue\Output\StorePrefixedOutput;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Runs one worker per store ID, up to a concurrency cap, refilling the pool as workers
@@ -30,7 +30,7 @@ class WorkerProcessPool
     public function run(
         array $storeIds,
         int $maxProcesses,
-        OutputInterface $output,
+        QueueReporterInterface $reporter,
         array $storeLabels = [],
         ?string $runId = null
     ): array {
@@ -42,7 +42,7 @@ class WorkerProcessPool
         while ($pendingStoreIds && count($workers) < $maxProcesses) {
             $storeId = array_shift($pendingStoreIds);
             $workers[] = $this->startWorker($storeId, $runId);
-            $storeOutputs[$storeId] = $this->createStoreOutput($storeId, $output, $storeLabels);
+            $storeOutputs[$storeId] = $this->createStoreOutput($storeId, $reporter, $storeLabels);
         }
 
         while ($workers) {
@@ -64,7 +64,7 @@ class WorkerProcessPool
                 if ($pendingStoreIds) { //keep filling as workers free up
                     $storeId = array_shift($pendingStoreIds);
                     $workers[] = $this->startWorker($storeId, $runId);
-                    $storeOutputs[$storeId] = $this->createStoreOutput($storeId, $output, $storeLabels);
+                    $storeOutputs[$storeId] = $this->createStoreOutput($storeId, $reporter, $storeLabels);
                 }
             }
         }
@@ -82,20 +82,23 @@ class WorkerProcessPool
 
     /**
      * One decorator per worker for the worker's whole lifespan: it holds the partial-line
-     * buffer between polls.
+     * buffer between polls and relays complete, label-prefixed lines to the reporter.
      */
-    protected function createStoreOutput(int $storeId, OutputInterface $output, array $storeLabels): StorePrefixedOutput
-    {
-        return new StorePrefixedOutput($output, $storeLabels[$storeId] ?? 'Store ' . $storeId);
+    protected function createStoreOutput(
+        int $storeId,
+        QueueReporterInterface $reporter,
+        array $storeLabels
+    ): StorePrefixedOutput {
+        return new StorePrefixedOutput($reporter, $storeLabels[$storeId] ?? 'Store ' . $storeId);
     }
 
-    protected function forwardOutput(WorkerProcess $worker, OutputInterface $output): void
+    protected function forwardOutput(WorkerProcess $worker, StorePrefixedOutput $output): void
     {
         $this->writeChunk($worker->getIncrementalOutput(), $output);
         $this->writeChunk($worker->getIncrementalErrorOutput(), $output);
     }
 
-    protected function writeChunk(string $chunk, OutputInterface $output): void
+    protected function writeChunk(string $chunk, StorePrefixedOutput $output): void
     {
         if ($chunk !== '') {
             $output->write($chunk);

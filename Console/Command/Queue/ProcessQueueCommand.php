@@ -211,8 +211,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
 
         return $this->queueOrchestrator->orchestrate(
             $maxProcessesOverride,
-            $this->createConsoleReporter(),
-            $this->output
+            $this->createConsoleReporter()
         );
     }
 

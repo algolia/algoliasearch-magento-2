@@ -10,7 +10,6 @@ use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Lock\LockManagerInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Zend_Db_Exception;
 
 /**
@@ -62,13 +61,13 @@ class QueueOrchestrator
      * per store (credentials, per-store lock), so no global credentials check happens here:
      * a default-scope check would false-positive when stores are configured individually.
      *
-     * $reporter receives the orchestrator's own lines; $workerOutput receives the streamed
-     * stdout/stderr of the spawned worker processes.
+     * $reporter is the single output funnel: it receives both the orchestrator's own lines
+     * (info/warning/error) and the streamed stdout/stderr of the spawned worker processes
+     * (relayed through log()).
      */
     public function orchestrate(
         ?int $maxProcessesOverride,
-        QueueReporterInterface $reporter,
-        OutputInterface $workerOutput
+        QueueReporterInterface $reporter
     ): int {
         if (!$this->lockManager->lock(self::ORCHESTRATOR_LOCK_NAME, 0)) {
             $reporter->warning('Indexing queue orchestration is already running, skipping.');
@@ -109,7 +108,7 @@ class QueueOrchestrator
             $exitCodes = $this->workerProcessPool->run(
                 storeIds: $storeIds,
                 maxProcesses: $maxProcesses,
-                output: $workerOutput,
+                reporter: $reporter,
                 storeLabels: $this->getStoreLabels($storeIds, $storeNames),
                 runId: $this->generateRunId()
             );

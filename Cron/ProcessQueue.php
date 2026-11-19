@@ -5,7 +5,6 @@ namespace Algolia\AlgoliaSearch\Cron;
 use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Model\Queue\Output\ReporterWorkerOutputFactory;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
 
@@ -17,7 +16,6 @@ class ProcessQueue
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
         protected QueueOrchestrator $queueOrchestrator,
         protected QueueReporterInterface $queueReporter,
-        protected ReporterWorkerOutputFactory $reporterWorkerOutputFactory,
     ) {}
 
     public function execute()
@@ -39,10 +37,8 @@ class ProcessQueue
             return;
         }
 
-        // Worker output is funneled through the cron's own reporter via the adapter,
-        // so prefixed child lines land in algolia.log like the orchestrator's own lines
-        $workerOutput = $this->reporterWorkerOutputFactory->create(['reporter' => $this->queueReporter]);
-
-        $this->queueOrchestrator->orchestrate(null, $this->queueReporter, $workerOutput);
+        // Worker output is funneled through the cron's own reporter, so prefixed child
+        // lines land in algolia.log like the orchestrator's own lines
+        $this->queueOrchestrator->orchestrate(null, $this->queueReporter);
     }
 }

@@ -129,7 +129,7 @@ class ProcessQueueCommandTest extends TestCase
             ->with(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '2');
 
         $queue = $this->createMock(Queue::class);
-        $queue->expects($this->once())->method('runCron')->with(null, false, 2);
+        $queue->expects($this->once())->method('runCron')->with(null, false, 2, null);
 
         $code = $this->executeCommand(
             $this->createObjectToTest(
@@ -138,6 +138,31 @@ class ProcessQueueCommandTest extends TestCase
                 storeNameFetcher: $storeNameFetcher
             ),
             [2]
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+    }
+
+    public function testExecuteThreadsRunIdOptionToRunCronInWorkerMode(): void
+    {
+        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
+        $storeNameFetcher->method('resolveStoreNames')->with([2], true)->willReturn([2 => 'Second Store']);
+
+        $lockManager = $this->createStub(LockManagerInterface::class);
+        $lockManager->method('lock')->willReturn(true);
+
+        $queue = $this->createMock(Queue::class);
+        $queue->expects($this->once())->method('runCron')->with(null, false, 2, 'abc123run');
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                queue: $queue,
+                lockManager: $lockManager,
+                storeNameFetcher: $storeNameFetcher
+            ),
+            [2],
+            null,
+            ['--run-id' => 'abc123run']
         );
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
@@ -164,7 +189,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager->expects($this->exactly(1))->method('unlock')->willReturn(true);
 
         $queue = $this->createMock(Queue::class);
-        $queue->expects($this->exactly(1))->method('runCron')->with(null, false, 2);
+        $queue->expects($this->exactly(1))->method('runCron')->with(null, false, 2, null);
 
         $this->executeCommand(
             $this->createObjectToTest(
@@ -205,10 +230,11 @@ class ProcessQueueCommandTest extends TestCase
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->exactly(2))
             ->method('runCron')
-            ->willReturnCallback(function ($nbJobs, $force, $storeId) use (&$runIndex) {
+            ->willReturnCallback(function ($nbJobs, $force, $storeId, $runId) use (&$runIndex) {
                 $this->assertNull($nbJobs);
                 $this->assertFalse($force);
                 $this->assertSame([2, 3][$runIndex++], $storeId);
+                $this->assertNull($runId);
             });
 
         $code = $this->executeCommand(
@@ -239,7 +265,7 @@ class ProcessQueueCommandTest extends TestCase
             });
 
         $queue = $this->createMock(Queue::class);
-        $queue->expects($this->once())->method('runCron')->with(null, false, 3);
+        $queue->expects($this->once())->method('runCron')->with(null, false, 3, null);
 
         $output = new BufferedOutput();
         $code = $this->executeCommand(
@@ -297,8 +323,9 @@ class ProcessQueueCommandTest extends TestCase
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->exactly(2))
             ->method('runCron')
-            ->willReturnCallback(function ($nbJobs, $force, $storeId) use (&$runIndex) {
+            ->willReturnCallback(function ($nbJobs, $force, $storeId, $runId) use (&$runIndex) {
                 $this->assertSame([2, 3][$runIndex++], $storeId);
+                $this->assertNull($runId);
 
                 if ($storeId === 2) {
                     throw new \Zend_Db_Statement_Exception('lock wait timeout exceeded');
@@ -411,7 +438,7 @@ class ProcessQueueCommandTest extends TestCase
             ->with(ProcessQueueCommand::class, 2);
 
         $queue = $this->createMock(Queue::class);
-        $queue->expects($this->once())->method('runCron')->with(null, false, 3);
+        $queue->expects($this->once())->method('runCron')->with(null, false, 3, null);
 
         // Only the store with valid credentials is locked
         $lockManager = $this->createMock(LockManagerInterface::class);
@@ -446,6 +473,7 @@ class ProcessQueueCommandTest extends TestCase
         $this->assertFalse($argument->isRequired());
         $this->assertTrue($cmd->getDefinition()->hasOption('max-processes'));
         $this->assertTrue($cmd->getDefinition()->hasOption('sequential'));
+        $this->assertTrue($cmd->getDefinition()->hasOption('run-id'));
     }
 
     public function testSequentialOptionForcesSequentialPathEvenWithMaxProcesses(): void
@@ -608,7 +636,7 @@ class ProcessQueueCommandTest extends TestCase
             ->with(ProcessQueueCommand::STORE_LOCK_NAME_PREFIX . '2');
 
         $queue = $this->createMock(Queue::class);
-        $queue->method('runCron')->with(null, false, 2);
+        $queue->method('runCron')->with(null, false, 2, null);
         $queue->method('getNoOfFailedJobs')->with(2)->willReturn(3);
 
         $output = new BufferedOutput();
@@ -631,7 +659,7 @@ class ProcessQueueCommandTest extends TestCase
         $lockManager->method('lock')->willReturn(true);
 
         $queue = $this->createMock(Queue::class);
-        $queue->expects($this->once())->method('runCron')->with(null, false, 2);
+        $queue->expects($this->once())->method('runCron')->with(null, false, 2, null);
         $queue->method('getNoOfFailedJobs')->with(2)->willReturn(0);
 
         $code = $this->executeCommand(

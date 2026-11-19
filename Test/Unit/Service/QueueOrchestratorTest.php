@@ -18,6 +18,8 @@ use Symfony\Component\Console\Output\BufferedOutput;
 
 class QueueOrchestratorTest extends TestCase
 {
+    private const string RUN_ID_PATTERN = '/^[0-9a-f]{32}$/';
+
     protected function createObjectToTest(
         ?Queue $queue = null,
         ?AlgoliaCredentialsManager $credentialsManager = null,
@@ -222,7 +224,7 @@ class QueueOrchestratorTest extends TestCase
         $workerProcessPool = $this->createMock(WorkerProcessPool::class);
         $workerProcessPool->expects($this->once())
             ->method('run')
-            ->with($storeIds, 2, $workerOutput)
+            ->with($storeIds, 2, $workerOutput, $this->matchesRegularExpression(self::RUN_ID_PATTERN))
             ->willReturn(array_fill_keys($storeIds, 0));
 
         $code = $this->createObjectToTest(
@@ -268,7 +270,12 @@ class QueueOrchestratorTest extends TestCase
         $workerProcessPool = $this->createMock(WorkerProcessPool::class);
         $workerProcessPool->expects($this->once())
             ->method('run')
-            ->with([2], 1, $this->isInstanceOf(BufferedOutput::class))
+            ->with(
+                [2],
+                1,
+                $this->isInstanceOf(BufferedOutput::class),
+                $this->matchesRegularExpression(self::RUN_ID_PATTERN)
+            )
             ->willReturn([2 => 0]);
 
         $this->createObjectToTest(
@@ -300,7 +307,12 @@ class QueueOrchestratorTest extends TestCase
         $workerProcessPool = $this->createMock(WorkerProcessPool::class);
         $workerProcessPool->expects($this->once())
             ->method('run')
-            ->with([5], 1, $this->isInstanceOf(BufferedOutput::class))
+            ->with(
+                [5],
+                1,
+                $this->isInstanceOf(BufferedOutput::class),
+                $this->matchesRegularExpression(self::RUN_ID_PATTERN)
+            )
             ->willReturn([5 => 0]);
 
         $code = $this->createObjectToTest(
@@ -336,7 +348,12 @@ class QueueOrchestratorTest extends TestCase
         $workerProcessPool = $this->createMock(WorkerProcessPool::class);
         $workerProcessPool->expects($this->once())
             ->method('run')
-            ->with([2, 3], 2, $this->isInstanceOf(BufferedOutput::class))
+            ->with(
+                [2, 3],
+                2,
+                $this->isInstanceOf(BufferedOutput::class),
+                $this->matchesRegularExpression(self::RUN_ID_PATTERN)
+            )
             ->willReturn([2 => 0, 3 => 1]);
 
         $code = $this->createObjectToTest(
@@ -373,7 +390,12 @@ class QueueOrchestratorTest extends TestCase
         $workerProcessPool = $this->createMock(WorkerProcessPool::class);
         $workerProcessPool->expects($this->once())
             ->method('run')
-            ->with([2], 1, $this->isInstanceOf(BufferedOutput::class))
+            ->with(
+                [2],
+                1,
+                $this->isInstanceOf(BufferedOutput::class),
+                $this->matchesRegularExpression(self::RUN_ID_PATTERN)
+            )
             ->willReturn([2 => 1]);
 
         $code = $this->createObjectToTest(

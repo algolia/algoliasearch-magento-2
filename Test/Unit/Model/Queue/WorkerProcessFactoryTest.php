@@ -99,6 +99,32 @@ class WorkerProcessFactoryTest extends TestCase
         $this->assertSame(['/fake/php', 'bin/magento', 'algolia:queue:process', '2'], $command);
     }
 
+    public function testBuildCommandWithRunIdAppendsTheRunIdOption(): void
+    {
+        $command = $this->invokeMethod($this->createObjectToTest(), 'buildCommand', [2, 'abc123']);
+
+        $this->assertSame(
+            ['/fake/php', 'bin/magento', 'algolia:queue:process', '2', '--run-id=abc123'],
+            $command
+        );
+    }
+
+    public function testCreateWithoutRunIdBuildsACommandWithoutTheRunIdOption(): void
+    {
+        $worker = $this->createObjectToTest()->create(2);
+        $process = $this->getPrivateProperty($worker, 'process');
+
+        $this->assertStringNotContainsString('--run-id', $process->getCommandLine());
+    }
+
+    public function testCreateWithRunIdAppendsTheRunIdOptionToTheCommand(): void
+    {
+        $worker = $this->createObjectToTest()->create(2, 'abc123');
+        $process = $this->getPrivateProperty($worker, 'process');
+
+        $this->assertStringContainsString('--run-id=abc123', $process->getCommandLine());
+    }
+
     public function testFindPhpBinaryReturnsTheInjectedFinderResult(): void
     {
         $this->assertSame('/fake/php', $this->invokeMethod($this->createObjectToTest(), 'findPhpBinary'));

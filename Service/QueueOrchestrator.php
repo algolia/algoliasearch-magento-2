@@ -63,8 +63,11 @@ class QueueOrchestrator
      * $reporter receives the orchestrator's own lines; $workerOutput receives the streamed
      * stdout/stderr of the spawned worker processes.
      */
-    public function orchestrate(?int $maxProcessesOverride, QueueReporterInterface $reporter, OutputInterface $workerOutput): int
-    {
+    public function orchestrate(
+        ?int $maxProcessesOverride,
+        QueueReporterInterface $reporter,
+        OutputInterface $workerOutput
+    ): int {
         if (!$this->lockManager->lock(self::ORCHESTRATOR_LOCK_NAME, 0)) {
             $reporter->warning('Indexing queue orchestration is already running, skipping.');
 
@@ -101,13 +104,11 @@ class QueueOrchestrator
                 . 'with up to ' . $maxProcesses . ' worker(s).'
             );
 
-            $runId = $this->generateRunId();
-
             $exitCodes = $this->workerProcessPool->run(
                 storeIds: $storeIds,
                 maxProcesses: $maxProcesses,
                 output: $workerOutput,
-                runId: $runId
+                runId: $this->generateRunId()
             );
 
             return $this->printSummary($storeIds, $storeNames, $exitCodes, $reporter);
@@ -130,8 +131,12 @@ class QueueOrchestrator
      * @param array<int, string> $storeNames
      * @param array<int, int> $exitCodes
      */
-    protected function printSummary(array $storeIds, array $storeNames, array $exitCodes, QueueReporterInterface $reporter): int
-    {
+    protected function printSummary(
+        array $storeIds,
+        array $storeNames,
+        array $exitCodes,
+        QueueReporterInterface $reporter
+    ): int {
         $hasFailure = false;
         sort($storeIds);
 

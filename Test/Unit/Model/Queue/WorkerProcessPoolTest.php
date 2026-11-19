@@ -33,7 +33,7 @@ class WorkerProcessPoolTest extends TestCase
     {
         $factory = $this->createStub(WorkerProcessFactory::class);
         $factory->method('create')->willReturnCallback(
-            function (int $storeId) use ($lifecyclesByStore, &$timeline) {
+            function (int $storeId, ?string $runId = null) use ($lifecyclesByStore, &$timeline) {
                 [$pollsBeforeExit, $exitCode, $outputChunks, $errorChunks] = $lifecyclesByStore[$storeId];
                 $timeline[] = 'create:' . $storeId;
 
@@ -184,5 +184,28 @@ class WorkerProcessPoolTest extends TestCase
 
         $this->assertSame([], $exitCodes);
         $this->assertSame([], $timeline);
+    }
+
+    public function testRunForwardsRunIdToTheFactoryForEverySpawnedWorker(): void
+    {
+        $createArgs = [];
+        $factory = $this->createStub(WorkerProcessFactory::class);
+        $factory->method('create')->willReturnCallback(
+            function (int $storeId, ?string $runId = null) use (&$createArgs) {
+                $createArgs[] = [$storeId, $runId];
+
+                $process = $this->createStub(Process::class);
+                $process->method('start');
+                $process->method('isRunning')->willReturn(false);
+                $process->method('getExitCode')->willReturn(0);
+
+                return new WorkerProcess($storeId, $process);
+            }
+        );
+
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new BufferedOutput(), 'run-abc123');
+
+        $this->assertSame([[2, 'run-abc123'], [3, 'run-abc123']], $createArgs);
+        $this->assertSame([2 => 0, 3 => 0], $exitCodes);
     }
 }

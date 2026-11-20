@@ -3,7 +3,8 @@
 namespace Algolia\AlgoliaSearch\Model\Queue;
 
 use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
-use Algolia\AlgoliaSearch\Model\Queue\Output\StorePrefixedOutput;
+use Algolia\AlgoliaSearch\Model\Queue\Output\WorkerLineBuffer;
+use Algolia\AlgoliaSearch\Model\Queue\Output\WorkerLineBufferFactory;
 
 /**
  * Runs one worker per store ID, up to a concurrency cap, refilling the pool as workers
@@ -17,6 +18,7 @@ class WorkerProcessPool
 
     public function __construct(
         protected WorkerProcessFactory $workerProcessFactory,
+        protected WorkerLineBufferFactory $workerLineBufferFactory,
     ) {
     }
 
@@ -36,35 +38,40 @@ class WorkerProcessPool
     ): array {
         $pendingStoreIds = array_values($storeIds);
         $workers = [];
-        $storeOutputs = [];
+        $storeBuffers = [];
         $exitCodes = [];
 
         while ($pendingStoreIds && count($workers) < $maxProcesses) {
             $storeId = array_shift($pendingStoreIds);
             $workers[] = $this->startWorker($storeId, $runId);
-            $storeOutputs[$storeId] = $this->createStoreOutput($storeId, $reporter, $storeLabels);
+            $storeBuffers[$storeId] = $this->createStoreBuffer();
         }
 
         while ($workers) {
             usleep(self::POLL_INTERVAL_MICROSECONDS);
 
+            /**
+             * @var WorkerProcess $worker
+             */
             foreach ($workers as $index => $worker) {
-                $storeOutput = $storeOutputs[$worker->getStoreId()];
-                $this->forwardOutput($worker, $storeOutput);
+                $buffer = $storeBuffers[$worker->getStoreId()];
+                $label = $storeLabels[$worker->getStoreId()] ?? 'Store ' . $worker->getStoreId();
+
+                $this->forwardOutput($worker, $buffer, $reporter, $label);
 
                 if ($worker->isRunning()) {
                     continue;
                 }
 
-                $this->writeChunk($worker->drainOutput(), $storeOutput);
-                $storeOutput->flushTail();
+                $this->writeChunk($worker->drainOutput(), $buffer, $reporter, $label);
+                $this->flushBuffer($buffer, $reporter, $label);
                 $exitCodes[$worker->getStoreId()] = $worker->getEffectiveExitCode();
                 unset($workers[$index]);
 
                 if ($pendingStoreIds) { //keep filling as workers free up
                     $storeId = array_shift($pendingStoreIds);
                     $workers[] = $this->startWorker($storeId, $runId);
-                    $storeOutputs[$storeId] = $this->createStoreOutput($storeId, $reporter, $storeLabels);
+                    $storeBuffers[$storeId] = $this->createStoreBuffer();
                 }
             }
         }
@@ -81,27 +88,42 @@ class WorkerProcessPool
     }
 
     /**
-     * One decorator per worker for the worker's whole lifespan: it holds the partial-line
-     * buffer between polls and relays complete, label-prefixed lines to the reporter.
+     * One buffer per worker for the worker's whole lifespan: it holds the partial-line
+     * buffer between polls.
      */
-    protected function createStoreOutput(
-        int $storeId,
+    protected function createStoreBuffer(): WorkerLineBuffer
+    {
+        return $this->workerLineBufferFactory->create();
+    }
+
+    protected function forwardOutput(
+        WorkerProcess $worker,
+        WorkerLineBuffer $buffer,
         QueueReporterInterface $reporter,
-        array $storeLabels
-    ): StorePrefixedOutput {
-        return new StorePrefixedOutput($reporter, $storeLabels[$storeId] ?? 'Store ' . $storeId);
+        string $label
+    ): void {
+        $this->writeChunk($worker->getIncrementalOutput(), $buffer, $reporter, $label);
+        $this->writeChunk($worker->getIncrementalErrorOutput(), $buffer, $reporter, $label);
     }
 
-    protected function forwardOutput(WorkerProcess $worker, StorePrefixedOutput $output): void
+    protected function writeChunk(string $chunk, WorkerLineBuffer $buffer, QueueReporterInterface $reporter, string $label): void
     {
-        $this->writeChunk($worker->getIncrementalOutput(), $output);
-        $this->writeChunk($worker->getIncrementalErrorOutput(), $output);
-    }
-
-    protected function writeChunk(string $chunk, StorePrefixedOutput $output): void
-    {
-        if ($chunk !== '') {
-            $output->write($chunk);
+        foreach ($buffer->push($chunk) as $line) {
+            $reporter->log($this->prefixLine($label, $line));
         }
+    }
+
+    protected function flushBuffer(WorkerLineBuffer $buffer, QueueReporterInterface $reporter, string $label): void
+    {
+        $tail = $buffer->flush();
+
+        if ($tail !== null) {
+            $reporter->log($this->prefixLine($label, $tail));
+        }
+    }
+
+    protected function prefixLine(string $label, string $line): string
+    {
+        return '[' . $label . '] ' . $line;
     }
 }

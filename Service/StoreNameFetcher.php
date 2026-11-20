@@ -66,10 +66,30 @@ class StoreNameFetcher
                     throw $e;
                 }
 
-                $storeNames[$storeId] = 'Store ID ' . $storeId;
+                $storeNames[$storeId] = $this->getGenericStoreLabel($storeId);
             }
         }
 
         return $storeNames;
+    }
+
+    /**
+     * Per-store display label ("Store 2 (English)"), shared by worker output prefixing
+     * and the run summary. Falls back to a plain ID label when the store cannot be
+     * resolved (e.g. it was deleted while its jobs were still pending).
+     */
+    public function getStoreLabel(int $storeId): string
+    {
+        $label = $this->getGenericStoreLabel($storeId);
+        try {
+            return $label . ' (' . $this->getStoreName($storeId) . ')';
+        } catch (LocalizedException $e) {
+            return $label;
+        }
+    }
+
+    protected function getGenericStoreLabel(int $storeId): string
+    {
+        return 'Store ' . $storeId;
     }
 }

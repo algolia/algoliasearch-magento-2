@@ -7,7 +7,7 @@ namespace Algolia\AlgoliaSearch\Model\Queue\Output;
  * returns the complete lines they contain, buffering the partial tail between polls
  * (workers are long-lived, so one instance must serve a worker for its whole lifespan).
  * flush() returns whatever is left when the worker exits without a trailing newline.
- * Purely mechanical: no labels, no output side effects; the pool prefixes and relays.
+ * Purely mechanical: no labels, no output side effects; WorkerProcess prefixes and relays.
  */
 class WorkerLineBuffer
 {
@@ -34,8 +34,6 @@ class WorkerLineBuffer
 
     /**
      * Get any remaining output buffer contents once the process completes.
-     *
-     * @return string|null
      */
     public function flush(): ?string
     {

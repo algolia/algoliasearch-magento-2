@@ -94,11 +94,6 @@ class QueueOrchestrator
                 return Cli::RETURN_SUCCESS;
             }
 
-            // Deliberately softer retrieval than worker mode's fail-fast
-            // i.e. explicit store arguments fail hard when unknown, while store IDs
-            // discovered from the queue must survive a deleted store for useful reporting
-            // (falls back to plain ID labels when store is not found).
-            $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds);
             $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride, count($storeIds));
             $reporter->info(
                 'Processing the indexing queue in parallel for ' . count($storeIds) . ' store(s) '
@@ -109,11 +104,10 @@ class QueueOrchestrator
                 storeIds: $storeIds,
                 maxProcesses: $maxProcesses,
                 reporter: $reporter,
-                storeLabels: $this->getStoreLabels($storeIds, $storeNames),
                 runId: $this->generateRunId()
             );
 
-            return $this->printSummary($storeIds, $storeNames, $exitCodes, $reporter);
+            return $this->printSummary($storeIds, $exitCodes, $reporter);
         } finally {
             $this->lockManager->unlock(self::ORCHESTRATOR_LOCK_NAME);
         }
@@ -129,40 +123,11 @@ class QueueOrchestrator
     }
 
     /**
-     * Per-store display label ("Store 2 (English)"), shared by worker output prefixing
-     * and the run summary.
-     *
-     * @param array<int, string> $storeNames
-     */
-    protected function getStoreLabel(int $storeId, array $storeNames): string
-    {
-        return 'Store ' . $storeId . ' (' . ($storeNames[$storeId] ?? 'Store ID ' . $storeId) . ')';
-    }
-
-    /**
      * @param int[] $storeIds
-     * @param array<int, string> $storeNames
-     *
-     * @return array<int, string> Labels keyed by store ID
-     */
-    protected function getStoreLabels(array $storeIds, array $storeNames): array
-    {
-        $labels = [];
-        foreach ($storeIds as $storeId) {
-            $labels[$storeId] = $this->getStoreLabel($storeId, $storeNames);
-        }
-
-        return $labels;
-    }
-
-    /**
-     * @param int[] $storeIds
-     * @param array<int, string> $storeNames
      * @param array<int, int> $exitCodes
      */
     protected function printSummary(
         array $storeIds,
-        array $storeNames,
         array $exitCodes,
         QueueReporterInterface $reporter
     ): int {
@@ -171,7 +136,7 @@ class QueueOrchestrator
 
         foreach ($storeIds as $storeId) {
             $exitCode = $exitCodes[$storeId] ?? 1;
-            $label = $this->getStoreLabel($storeId, $storeNames);
+            $label = $this->storeNameFetcher->getStoreLabel($storeId);
 
             if ($exitCode !== 0) {
                 $hasFailure = true;

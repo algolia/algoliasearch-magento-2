@@ -599,7 +599,6 @@ class ProcessQueueCommandTest extends TestCase
         // The orchestrator's own lines must flow back to the command's output through the reporter
         $capturedArgs[1]->log('reporter marker');
         $this->assertStringContainsString('reporter marker', $output->fetch());
-        $this->assertSame($output, $capturedArgs[2], 'Worker output must be the command output');
     }
 
     public function testExecutePropagatesOrchestratorExceptions(): void

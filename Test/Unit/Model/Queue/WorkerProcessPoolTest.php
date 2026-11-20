@@ -2,6 +2,7 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Model\Queue;
 
+use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporter;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcess;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessFactory;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
@@ -84,6 +85,11 @@ class WorkerProcessPoolTest extends TestCase
         };
     }
 
+    private function createReporter(BufferedOutput $output): ConsoleQueueReporter
+    {
+        return new ConsoleQueueReporter($output);
+    }
+
     public function testRunStartsUpToMaxProcessesWorkersAndRefillsAsTheyExit(): void
     {
         $timeline = [];
@@ -93,7 +99,7 @@ class WorkerProcessPoolTest extends TestCase
             4 => [1, 0, [], []],
         ], $timeline);
 
-        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 2, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 2, new ConsoleQueueReporter(new BufferedOutput()));
 
         // Store 4 is only spawned after store 2 exited (refill), not alongside 2 and 3
         $this->assertSame(
@@ -111,7 +117,7 @@ class WorkerProcessPoolTest extends TestCase
             3 => [1, 0, [], []],
         ], $timeline);
 
-        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 8, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 8, new ConsoleQueueReporter(new BufferedOutput()));
 
         // The concurrency cap (8) far exceeds the pending store count: only one worker
         // per store is ever created, and no refill happens once both are running
@@ -127,7 +133,7 @@ class WorkerProcessPoolTest extends TestCase
             4 => [1, 7, [], []],
         ]);
 
-        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 2, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 2, new ConsoleQueueReporter(new BufferedOutput()));
 
         $this->assertSame([2 => 0, 3 => 1, 4 => 7], $exitCodes);
     }
@@ -139,12 +145,12 @@ class WorkerProcessPoolTest extends TestCase
             3 => [2, 0, [], []],
         ]);
 
-        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new ConsoleQueueReporter(new BufferedOutput()));
 
         $this->assertSame([2 => 1, 3 => 0], $exitCodes);
     }
 
-    public function testRunForwardsWorkerOutputToTheOutputInterface(): void
+    public function testRunForwardsWorkerOutputToTheReporter(): void
     {
         $factory = $this->createScriptedFactory([
             2 => [1, 0, ['a', 'b'], ['e1']],
@@ -152,7 +158,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createObjectToTest($factory)->run([2, 3], 2, $output);
+        $this->createObjectToTest($factory)->run([2, 3], 2, $this->createReporter($output));
 
         $written = $output->fetch();
         $this->assertStringContainsString('a', $written);
@@ -169,7 +175,7 @@ class WorkerProcessPoolTest extends TestCase
             4 => [1, 0, [], []],
         ], $timeline);
 
-        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 3, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3, 4], 3, new ConsoleQueueReporter(new BufferedOutput()));
 
         $this->assertSame(['create:2', 'create:3', 'create:4', 'exit:2', 'exit:3', 'exit:4'], $timeline);
         $this->assertSame([2 => 1, 3 => 0, 4 => 0], $exitCodes);
@@ -180,7 +186,7 @@ class WorkerProcessPoolTest extends TestCase
         $timeline = [];
         $factory = $this->createScriptedFactory([], $timeline);
 
-        $exitCodes = $this->createObjectToTest($factory)->run([], 4, new BufferedOutput());
+        $exitCodes = $this->createObjectToTest($factory)->run([], 4, new ConsoleQueueReporter(new BufferedOutput()));
 
         $this->assertSame([], $exitCodes);
         $this->assertSame([], $timeline);
@@ -203,7 +209,7 @@ class WorkerProcessPoolTest extends TestCase
             }
         );
 
-        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new BufferedOutput(), [], 'run-abc123');
+        $exitCodes = $this->createObjectToTest($factory)->run([2, 3], 2, new ConsoleQueueReporter(new BufferedOutput()), [], 'run-abc123');
 
         $this->assertSame([[2, 'run-abc123'], [3, 'run-abc123']], $createArgs);
         $this->assertSame([2 => 0, 3 => 0], $exitCodes);
@@ -216,7 +222,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+        $this->createObjectToTest($factory)->run([2], 1, $this->createReporter($output), [2 => 'Store 2 (English)']);
 
         $written = $output->fetch();
         $this->assertStringContainsString('[Store 2 (English)] line one', $written);
@@ -231,7 +237,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createObjectToTest($factory)->run([7], 1, $output);
+        $this->createObjectToTest($factory)->run([7], 1, $this->createReporter($output));
 
         $this->assertStringContainsString('[Store 7] store line', $output->fetch());
     }
@@ -244,7 +250,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createObjectToTest($factory)->run([2, 3], 2, $output, [2 => 'Store 2 (Second)', 3 => 'Store 3 (Third)']);
+        $this->createObjectToTest($factory)->run([2, 3], 2, $this->createReporter($output), [2 => 'Store 2 (Second)', 3 => 'Store 3 (Third)']);
 
         $written = $output->fetch();
         $this->assertStringContainsString('[Store 2 (Second)] from store 2', $written);
@@ -260,7 +266,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+        $this->createObjectToTest($factory)->run([2], 1, $this->createReporter($output), [2 => 'Store 2 (English)']);
 
         $this->assertStringContainsString(
             '[Store 2 (English)] a line with no newline',
@@ -276,7 +282,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+        $this->createObjectToTest($factory)->run([2], 1, $this->createReporter($output), [2 => 'Store 2 (English)']);
 
         $this->assertStringContainsString('[Store 2 (English)] partial', $output->fetch());
     }
@@ -288,7 +294,7 @@ class WorkerProcessPoolTest extends TestCase
         ]);
         $output = new BufferedOutput();
 
-        $this->createObjectToTest($factory)->run([2], 1, $output, [2 => 'Store 2 (English)']);
+        $this->createObjectToTest($factory)->run([2], 1, $this->createReporter($output), [2 => 'Store 2 (English)']);
 
         $written = $output->fetch();
         $this->assertStringContainsString('[Store 2 (English)] complete line', $written);

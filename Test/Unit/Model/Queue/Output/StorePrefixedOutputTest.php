@@ -2,206 +2,168 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Model\Queue\Output;
 
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
+use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporter;
 use Algolia\AlgoliaSearch\Model\Queue\Output\StorePrefixedOutput;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class StorePrefixedOutputTest extends TestCase
 {
     private const string LABEL = 'Store 2 (English)';
 
-    private function createObjectToTest(OutputInterface $inner, string $label = self::LABEL): StorePrefixedOutput
+    private function createObjectToTest(QueueReporterInterface $reporter, string $label = self::LABEL): StorePrefixedOutput
     {
-        return new StorePrefixedOutput($inner, $label);
+        return new StorePrefixedOutput($reporter, $label);
     }
 
-    private function createInnerOutput(): BufferedOutput
+    private function createReporter(BufferedOutput $output): ConsoleQueueReporter
     {
-        return new BufferedOutput();
+        return new ConsoleQueueReporter($output);
     }
 
     public function testPrefixesCompleteLinesAndKeepsTheNewlineFraming(): void
     {
-        $inner = $this->createInnerOutput();
+        $output = new BufferedOutput();
 
-        $this->createObjectToTest($inner)->write("first line\nsecond line\n");
+        $this->createObjectToTest($this->createReporter($output))->write("first line\nsecond line\n");
 
         $this->assertSame(
             '[Store 2 (English)] first line' . "\n" . '[Store 2 (English)] second line' . "\n",
-            $inner->fetch()
+            $output->fetch()
         );
     }
 
     public function testBuffersPartialChunksUntilTheLineCompletes(): void
     {
-        $inner = $this->createInnerOutput();
-        $output = $this->createObjectToTest($inner);
+        $output = new BufferedOutput();
+        $prefixed = $this->createObjectToTest($this->createReporter($output));
 
-        $output->write('hel');
-        $output->write('lo wor');
-        $this->assertSame('', $inner->fetch());
+        $prefixed->write('hel');
+        $prefixed->write('lo wor');
+        $this->assertSame('', $output->fetch());
 
-        $output->write("ld\n");
+        $prefixed->write("ld\n");
 
-        $this->assertSame('[Store 2 (English)] hello world' . "\n", $inner->fetch());
+        $this->assertSame('[Store 2 (English)] hello world' . "\n", $output->fetch());
     }
 
     public function testKeepsTheBufferAcrossManyPartialChunks(): void
     {
-        $inner = $this->createInnerOutput();
-        $output = $this->createObjectToTest($inner);
+        $output = new BufferedOutput();
+        $prefixed = $this->createObjectToTest($this->createReporter($output));
 
         foreach (str_split('a progressive line without a break yet') as $chunk) {
-            $output->write($chunk);
+            $prefixed->write($chunk);
         }
 
-        $this->assertSame('', $inner->fetch());
+        $this->assertSame('', $output->fetch());
 
-        $output->write("\n");
+        $prefixed->write("\n");
 
         $this->assertSame(
             '[Store 2 (English)] a progressive line without a break yet' . "\n",
-            $inner->fetch()
+            $output->fetch()
         );
     }
 
     public function testStripsCarriageReturnsFromCrlfLineEndings(): void
     {
-        $inner = $this->createInnerOutput();
+        $output = new BufferedOutput();
 
-        $this->createObjectToTest($inner)->write("first\r\nsecond\r\n");
+        $this->createObjectToTest($this->createReporter($output))->write("first\r\nsecond\r\n");
 
         $this->assertSame(
             '[Store 2 (English)] first' . "\n" . '[Store 2 (English)] second' . "\n",
-            $inner->fetch()
+            $output->fetch()
         );
     }
 
     public function testHandlesCrlfSplitAcrossChunks(): void
     {
-        $inner = $this->createInnerOutput();
-        $output = $this->createObjectToTest($inner);
+        $output = new BufferedOutput();
+        $prefixed = $this->createObjectToTest($this->createReporter($output));
 
-        $output->write("first\r");
-        $output->write("\nsecond");
+        $prefixed->write("first\r");
+        $prefixed->write("\nsecond");
 
-        $this->assertSame('[Store 2 (English)] first' . "\n", $inner->fetch());
+        $this->assertSame('[Store 2 (English)] first' . "\n", $output->fetch());
 
-        $output->flushTail();
+        $prefixed->flushTail();
 
-        $this->assertSame('[Store 2 (English)] second' . "\n", $inner->fetch());
+        $this->assertSame('[Store 2 (English)] second' . "\n", $output->fetch());
     }
 
     public function testEmitsMultipleLinesFromASingleChunk(): void
     {
-        $inner = $this->createInnerOutput();
+        $output = new BufferedOutput();
 
-        $this->createObjectToTest($inner)->write("one\ntwo\nthree\n");
+        $this->createObjectToTest($this->createReporter($output))->write("one\ntwo\nthree\n");
 
         $this->assertSame(
             '[Store 2 (English)] one' . "\n"
             . '[Store 2 (English)] two' . "\n"
             . '[Store 2 (English)] three' . "\n",
-            $inner->fetch()
+            $output->fetch()
         );
     }
 
     public function testFlushTailEmitsAPartialLineWithoutATrailingNewline(): void
     {
-        $inner = $this->createInnerOutput();
-        $output = $this->createObjectToTest($inner);
+        $output = new BufferedOutput();
+        $prefixed = $this->createObjectToTest($this->createReporter($output));
 
-        $output->write('dying words');
+        $prefixed->write('dying words');
 
-        $this->assertSame('', $inner->fetch());
+        $this->assertSame('', $output->fetch());
 
-        $output->flushTail();
+        $prefixed->flushTail();
 
-        $this->assertSame('[Store 2 (English)] dying words' . "\n", $inner->fetch());
+        $this->assertSame('[Store 2 (English)] dying words' . "\n", $output->fetch());
     }
 
     public function testFlushTailWritesNothingWhenTheBufferIsEmpty(): void
     {
-        $inner = $this->createInnerOutput();
-        $output = $this->createObjectToTest($inner);
+        $output = new BufferedOutput();
+        $prefixed = $this->createObjectToTest($this->createReporter($output));
 
-        $output->write("complete line\n");
-        $inner->fetch();
+        $prefixed->write("complete line\n");
+        $output->fetch();
 
-        $output->flushTail();
+        $prefixed->flushTail();
 
-        $this->assertSame('', $inner->fetch());
+        $this->assertSame('', $output->fetch());
     }
 
     public function testFlushTailEmitsOnlyTheRemainingTail(): void
     {
-        $inner = $this->createInnerOutput();
-        $output = $this->createObjectToTest($inner);
+        $output = new BufferedOutput();
+        $prefixed = $this->createObjectToTest($this->createReporter($output));
 
-        $output->write("complete\npart");
-        $output->flushTail();
+        $prefixed->write("complete\npart");
+        $prefixed->flushTail();
 
         $this->assertSame(
             '[Store 2 (English)] complete' . "\n" . '[Store 2 (English)] part' . "\n",
-            $inner->fetch()
+            $output->fetch()
         );
     }
 
     public function testWritelnPrefixesAndTerminatesTheLine(): void
     {
-        $inner = $this->createInnerOutput();
+        $output = new BufferedOutput();
 
-        $this->createObjectToTest($inner)->writeln('a whole line');
+        $this->createObjectToTest($this->createReporter($output))->writeln('a whole line');
 
-        $this->assertSame('[Store 2 (English)] a whole line' . "\n", $inner->fetch());
+        $this->assertSame('[Store 2 (English)] a whole line' . "\n", $output->fetch());
     }
 
     public function testWriteWithNewlineFlagTerminatesTheLine(): void
     {
-        $inner = $this->createInnerOutput();
+        $output = new BufferedOutput();
 
-        $this->createObjectToTest($inner)->write('a whole line', true);
+        $this->createObjectToTest($this->createReporter($output))->write('a whole line', true);
 
-        $this->assertSame('[Store 2 (English)] a whole line' . "\n", $inner->fetch());
-    }
-
-    public function testWriteAcceptsIterablesOfMessages(): void
-    {
-        $inner = $this->createInnerOutput();
-
-        $this->createObjectToTest($inner)->write(['first' . "\n", 'second' . "\n"]);
-
-        $this->assertSame(
-            '[Store 2 (English)] first' . "\n" . '[Store 2 (English)] second' . "\n",
-            $inner->fetch()
-        );
-    }
-
-    public function testVerbosityAndDecorationFallBackToDefaults(): void
-    {
-        $output = $this->createObjectToTest($this->createInnerOutput());
-
-        $this->assertSame(OutputInterface::VERBOSITY_NORMAL, $output->getVerbosity());
-        $this->assertFalse($output->isDecorated());
-
-        $output->setVerbosity(OutputInterface::VERBOSITY_DEBUG);
-        $output->setDecorated(true);
-
-        $this->assertSame(OutputInterface::VERBOSITY_NORMAL, $output->getVerbosity());
-        $this->assertFalse($output->isDecorated());
-    }
-
-    public function testFormatterCallsAreForwardedToTheInnerOutput(): void
-    {
-        $formatter = $this->createStub(OutputFormatterInterface::class);
-        $inner = $this->createStub(OutputInterface::class);
-        $inner->method('getFormatter')->willReturn($formatter);
-
-        $output = $this->createObjectToTest($inner);
-        $output->setFormatter($formatter);
-
-        $this->assertSame($formatter, $output->getFormatter());
+        $this->assertSame('[Store 2 (English)] a whole line' . "\n", $output->fetch());
     }
 }

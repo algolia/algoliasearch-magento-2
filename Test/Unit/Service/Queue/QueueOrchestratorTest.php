@@ -9,6 +9,7 @@ use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporter;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -113,7 +114,7 @@ class QueueOrchestratorTest extends TestCase
             queue: $queue,
             lockManager: $lockManager,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output));
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('already running', $output->fetch());
@@ -137,7 +138,7 @@ class QueueOrchestratorTest extends TestCase
             queue: $queue,
             lockManager: $lockManager,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output));
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('Store-agnostic indexing jobs are pending', $output->fetch());
@@ -159,7 +160,7 @@ class QueueOrchestratorTest extends TestCase
         $lockManager->method('lock')->willReturn(true);
 
         $code = $this->createObjectToTest(queue: $queue, credentialsManager: $credentialsManager, lockManager: $lockManager)
-            ->orchestrate(null, $this->createReporter(new BufferedOutput()), new BufferedOutput());
+            ->orchestrate(null, $this->createReporter(new BufferedOutput()));
 
         $this->assertSame(Cli::RETURN_FAILURE, $code);
     }
@@ -188,7 +189,7 @@ class QueueOrchestratorTest extends TestCase
             lockManager: $lockManager,
             storeNameFetcher: $storeNameFetcher,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output));
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('No pending indexing queue jobs.', $output->fetch());
@@ -220,7 +221,6 @@ class QueueOrchestratorTest extends TestCase
         );
 
         $output = new BufferedOutput();
-        $workerOutput = new BufferedOutput();
         $storeLabels = [];
         foreach ($storeIds as $i => $storeId) {
             $storeLabels[$storeId] = sprintf('Store %d (%s)', $storeId, $storeNames[$i]);
@@ -231,7 +231,7 @@ class QueueOrchestratorTest extends TestCase
             ->with(
                 $storeIds,
                 2,
-                $workerOutput,
+                $this->isInstanceOf(QueueReporterInterface::class),
                 $storeLabels,
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
@@ -244,7 +244,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter($output), $workerOutput);
+        )->orchestrate(null, $this->createReporter($output));
 
         $fetch = $output->fetch();
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
@@ -283,7 +283,7 @@ class QueueOrchestratorTest extends TestCase
             ->with(
                 [2],
                 1,
-                $this->isInstanceOf(BufferedOutput::class),
+                $this->isInstanceOf(QueueReporterInterface::class),
                 [2 => 'Store 2 (Second Store)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
@@ -295,7 +295,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(7, $this->createReporter(new BufferedOutput()), new BufferedOutput());
+        )->orchestrate(7, $this->createReporter(new BufferedOutput()));
     }
 
     public function testOrchestrateSpawnsSingleWorkerForSinglePendingStore(): void
@@ -321,7 +321,7 @@ class QueueOrchestratorTest extends TestCase
             ->with(
                 [5],
                 1,
-                $this->isInstanceOf(BufferedOutput::class),
+                $this->isInstanceOf(QueueReporterInterface::class),
                 [5 => 'Store 5 (Fifth Store)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
@@ -333,7 +333,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output));
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertStringContainsString('Store 5 (Fifth Store): completed', $output->fetch());
@@ -363,7 +363,7 @@ class QueueOrchestratorTest extends TestCase
             ->with(
                 [2, 3],
                 2,
-                $this->isInstanceOf(BufferedOutput::class),
+                $this->isInstanceOf(QueueReporterInterface::class),
                 [2 => 'Store 2 (Second Store)', 3 => 'Store 3 (Third Store)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
@@ -375,7 +375,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output));
 
         $fetch = $output->fetch();
         $this->assertSame(Cli::RETURN_FAILURE, $code);
@@ -406,7 +406,7 @@ class QueueOrchestratorTest extends TestCase
             ->with(
                 [2],
                 1,
-                $this->isInstanceOf(BufferedOutput::class),
+                $this->isInstanceOf(QueueReporterInterface::class),
                 [2 => 'Store 2 (Store ID 2)'],
                 $this->matchesRegularExpression(self::RUN_ID_PATTERN)
             )
@@ -418,7 +418,7 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter($output), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter($output));
 
         $this->assertSame(Cli::RETURN_FAILURE, $code);
         $this->assertStringContainsString('Store 2 (Store ID 2): failed', $output->fetch());
@@ -455,6 +455,6 @@ class QueueOrchestratorTest extends TestCase
             storeNameFetcher: $storeNameFetcher,
             maxProcessesResolver: $maxProcessesResolver,
             workerProcessPool: $workerProcessPool
-        )->orchestrate(null, $this->createReporter(new BufferedOutput()), new BufferedOutput());
+        )->orchestrate(null, $this->createReporter(new BufferedOutput()));
     }
 }

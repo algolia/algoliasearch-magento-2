@@ -8,8 +8,6 @@ use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Cron\ProcessQueue;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
-use Algolia\AlgoliaSearch\Model\Queue\Output\ReporterWorkerOutput;
-use Algolia\AlgoliaSearch\Model\Queue\Output\ReporterWorkerOutputFactory;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -22,7 +20,6 @@ class ProcessQueueTest extends TestCase
         ?AlgoliaCredentialsManager $credentialsManager = null,
         ?QueueOrchestrator $queueOrchestrator = null,
         ?QueueReporterInterface $queueReporter = null,
-        ?ReporterWorkerOutputFactory $reporterWorkerOutputFactory = null,
     ): ProcessQueue {
         return new ProcessQueue(
             $queueHelper ?? $this->createStub(QueueHelper::class),
@@ -30,25 +27,7 @@ class ProcessQueueTest extends TestCase
             $credentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
             $queueOrchestrator ?? $this->createStub(QueueOrchestrator::class),
             $queueReporter ?? $this->createStub(QueueReporterInterface::class),
-            $reporterWorkerOutputFactory ?? $this->createReporterWorkerOutputFactory(
-                $queueReporter ?? $this->createStub(QueueReporterInterface::class)
-            ),
         );
-    }
-
-    /**
-     * Mirrors the Magento-generated factory: create() injects the passed reporter,
-     * so the adapter wraps the cron's own injected reporter instance
-     */
-    private function createReporterWorkerOutputFactory(
-        QueueReporterInterface $reporter
-    ): ReporterWorkerOutputFactory {
-        $factory = $this->createStub(ReporterWorkerOutputFactory::class);
-        $factory->method('create')->willReturnCallback(
-            fn (array $data = []) => new ReporterWorkerOutput($data['reporter'] ?? $reporter)
-        );
-
-        return $factory;
     }
 
     protected function createQueueHelper(bool $isActive, bool $useBuiltInCron, bool $parallel): QueueHelper
@@ -137,7 +116,7 @@ class ProcessQueueTest extends TestCase
         )->execute();
     }
 
-    public function testParallelPathOrchestratesWithAnAdapterWrappingTheInjectedReporter(): void
+    public function testParallelPathOrchestratesWithTheInjectedReporter(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: true);
 
@@ -151,18 +130,15 @@ class ProcessQueueTest extends TestCase
         $queueReporter = $this->createMock(QueueReporterInterface::class);
         $queueReporter->expects($this->once())->method('log')->with('[Store 2 (English)] worker line');
 
-        $reporterWorkerOutputFactory = $this->createReporterWorkerOutputFactory($queueReporter);
-
         $queueOrchestrator = $this->createMock(QueueOrchestrator::class);
         $queueOrchestrator->expects($this->once())
             ->method('orchestrate')
             ->with(
                 null,
-                $this->identicalTo($queueReporter),
-                $this->isInstanceOf(ReporterWorkerOutput::class)
+                $this->identicalTo($queueReporter)
             )
-            ->willReturnCallback(function ($override, QueueReporterInterface $reporter, $workerOutput): int {
-                $workerOutput->writeln('[Store 2 (English)] worker line');
+            ->willReturnCallback(function ($override, QueueReporterInterface $reporter): int {
+                $reporter->log('[Store 2 (English)] worker line');
 
                 return 0;
             });
@@ -173,7 +149,6 @@ class ProcessQueueTest extends TestCase
             credentialsManager: $credentialsManager,
             queueOrchestrator: $queueOrchestrator,
             queueReporter: $queueReporter,
-            reporterWorkerOutputFactory: $reporterWorkerOutputFactory,
         )->execute();
     }
 

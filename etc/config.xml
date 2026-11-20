@@ -155,7 +155,7 @@
                 <enable_visual_merchandising>0</enable_visual_merchandising>
             </visual_merchandising>
             <smart_groups>
-                <enable_smart_groups>0</enable_smart_groups>
+                <is_smart_groups_enabled>0</is_smart_groups_enabled>
             </smart_groups>
         </algoliasearch_merchandising_studio>
         <!-- Click & Conversion Analytics -->

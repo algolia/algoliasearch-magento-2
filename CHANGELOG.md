@@ -58,6 +58,7 @@
 - Added new constructor dependencies:
     - `ProcessQueueCommand` (`StoreNameFetcher`, `LockManagerInterface`, `MaxProcessesResolver`), `Queue` (`QueueHelper`, `JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). 
     - `Block\Algolia`, `Block\Adminhtml\Queue\Status`, `Controller\Adminhtml\Queue\Index`, `Block\Adminhtml\Reindex\AbstractReindexAllButton`, `Controller\Adminhtml\IndexingManager\Reindex`, `Helper\Configuration\NoticeHelper` and `ViewModel\Adminhtml\IndexingManager\Form` now require `Helper\Configuration\QueueHelper`. `Block\Configuration` inherits the dependency from `Block\Algolia`.
+    - `Block\Algolia`, `Helper\ConfigHelper`, `Service\Product\FacetBuilder` and `Service\Product\RecordBuilder`  now require `Helper\Configuration\MerchandisingStudioHelper`
 - Only code instantiating these classes directly is affected.
 
 ## 3.19.2

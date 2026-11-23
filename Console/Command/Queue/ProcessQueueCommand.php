@@ -153,7 +153,9 @@ class ProcessQueueCommand extends AbstractStoreCommand
             return Cli::RETURN_FAILURE;
         }
 
-        return $this->queueWorker->processStores($storeIds, $this->createConsoleReporter(), $runId);
+        return $this->toExitCode(
+            $this->queueWorker->processStores($storeIds, $this->createConsoleReporter(), $runId)
+        );
     }
 
     protected function runBatchMode(InputInterface $input, ?int $maxProcessesOverride): int
@@ -174,7 +176,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
             );
         }
 
-        return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+        return $this->toExitCode($this->queueOrchestrator->runSequential($this->createConsoleReporter()));
     }
 
     protected function runOrchestratorMode(?int $maxProcessesOverride): int
@@ -183,7 +185,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
         $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
 
         if ($maxProcesses <= 1) {
-            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+            return $this->toExitCode($this->queueOrchestrator->runSequential($this->createConsoleReporter()));
         }
 
         if (!$this->maxProcessesResolver->isProcessSpawningSupported()) {
@@ -191,13 +193,17 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 '<error>PHP proc_open is disabled, falling back to sequential processing.</error>'
             );
 
-            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+            return $this->toExitCode($this->queueOrchestrator->runSequential($this->createConsoleReporter()));
         }
 
-        return $this->queueOrchestrator->orchestrate(
-            $maxProcessesOverride,
-            $this->createConsoleReporter()
+        return $this->toExitCode(
+            $this->queueOrchestrator->orchestrate($maxProcessesOverride, $this->createConsoleReporter())
         );
+    }
+
+    protected function toExitCode(bool $success): int
+    {
+        return $success ? Cli::RETURN_SUCCESS : Cli::RETURN_FAILURE;
     }
 
     /**

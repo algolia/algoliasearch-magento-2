@@ -8,7 +8,6 @@ use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
-use Magento\Framework\Console\Cli;
 use Magento\Framework\Lock\LockManagerInterface;
 use Zend_Db_Exception;
 
@@ -35,13 +34,16 @@ class QueueOrchestrator
 
     /**
      * Sequential path: whole-queue processing with a global credentials check.
+     *
+     * @return bool Reports success of operation
+     *              False when the credentials check failed or the queue run threw
      */
-    public function runSequential(QueueReporterInterface $reporter): int
+    public function runSequential(QueueReporterInterface $reporter): bool
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
             $this->algoliaCredentialsManager->displayErrorMessage(self::class);
 
-            return Cli::RETURN_FAILURE;
+            return false;
         }
 
         try {
@@ -49,10 +51,10 @@ class QueueOrchestrator
         } catch (Zend_Db_Exception $e) {
             $reporter->error($e->getMessage());
 
-            return Cli::RETURN_FAILURE;
+            return false;
         }
 
-        return Cli::RETURN_SUCCESS;
+        return true;
     }
 
     /**
@@ -64,15 +66,20 @@ class QueueOrchestrator
      * $reporter is the single output funnel: it receives both the orchestrator's own lines
      * (info/warning/error) and the streamed stdout/stderr of the spawned worker processes
      * (relayed through log()).
+     *
+     * @return bool Reports success of operation
+     *              False when any store's worker failed.
+     *              A run that found nothing to do, or that found the orchestration lock
+     *              already held, is a success.
      */
     public function orchestrate(
         ?int $maxProcessesOverride,
         QueueReporterInterface $reporter
-    ): int {
+    ): bool {
         if (!$this->lockManager->lock(self::ORCHESTRATOR_LOCK_NAME, 0)) {
             $reporter->warning('Indexing queue orchestration is already running, skipping.');
 
-            return Cli::RETURN_SUCCESS;
+            return true;
         }
 
         try {
@@ -91,7 +98,7 @@ class QueueOrchestrator
             if (!$storeIds) {
                 $reporter->info('No pending indexing queue jobs.');
 
-                return Cli::RETURN_SUCCESS;
+                return true;
             }
 
             $maxProcesses = $this->maxProcessesResolver->resolve($maxProcessesOverride, count($storeIds));
@@ -123,14 +130,20 @@ class QueueOrchestrator
     }
 
     /**
+     * The one place the worker process exit codes become a run-level verdict. A store with no
+     * recorded exit code (a worker that never reported one) counts as a failure.
+     *
      * @param int[] $storeIds
      * @param array<int, int> $exitCodes
+     *
+     * @return bool Reports success of operation
+     *              False when any store's worker exited non-zero
      */
     protected function printSummary(
         array $storeIds,
         array $exitCodes,
         QueueReporterInterface $reporter
-    ): int {
+    ): bool {
         $hasFailure = false;
         sort($storeIds);
 
@@ -146,6 +159,6 @@ class QueueOrchestrator
             }
         }
 
-        return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
+        return !$hasFailure;
     }
 }

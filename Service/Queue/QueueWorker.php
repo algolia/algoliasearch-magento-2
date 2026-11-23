@@ -6,7 +6,6 @@ use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
-use Magento\Framework\Console\Cli;
 use Magento\Framework\Lock\LockManagerInterface;
 use Zend_Db_Exception;
 
@@ -34,12 +33,16 @@ class QueueWorker
      * Drains the given stores sequentially, in the order given.
      *
      * @param int[] $storeIds
+     *
+     * @return bool Reports success of operation
+     *              False when any store reported a failure. A store skipped because its lock was
+     *              already held is a success: another process is draining it.
      */
     public function processStores(
         array $storeIds,
         QueueReporterInterface $reporter,
         ?string $runId = null
-    ): int {
+    ): bool {
         $hasFailure = false;
         foreach ($storeIds as $storeId) {
             if (!$this->processStore($storeId, $reporter, $runId)) {
@@ -47,7 +50,7 @@ class QueueWorker
             }
         }
 
-        return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
+        return !$hasFailure;
     }
 
     /**

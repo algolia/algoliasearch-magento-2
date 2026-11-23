@@ -137,10 +137,10 @@ class ProcessQueueTest extends TestCase
                 null,
                 $this->identicalTo($queueReporter)
             )
-            ->willReturnCallback(function ($override, QueueReporterInterface $reporter): int {
+            ->willReturnCallback(function ($override, QueueReporterInterface $reporter): bool {
                 $reporter->log('[Store 2 (English)] worker line');
 
-                return 0;
+                return true;
             });
 
         $this->createObjectToTest(
@@ -163,13 +163,13 @@ class ProcessQueueTest extends TestCase
 
         $queueOrchestrator = $this->createStub(QueueOrchestrator::class);
         $queueOrchestrator->method('orchestrate')->willReturnCallback(
-            function ($override, QueueReporterInterface $reporter): int {
+            function ($override, QueueReporterInterface $reporter): bool {
                 $reporter->info(
                     'Processing the indexing queue in parallel for 2 store(s) '
                     . 'with up to 2 worker(s).'
                 );
 
-                return 0;
+                return true;
             }
         );
 

@@ -66,56 +66,20 @@ class ProcessQueueCommandTest extends TestCase
         return $factory;
     }
 
-    public function testExecuteDelegatesWorkerModeToQueueWorker(): void
+    public function testWorkerModeDelegatesToWorkerWithRunId(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->expects($this->once())->method('resolveStoreNames')->with([2, 3], true);
 
-        $capturedArgs = [];
         $queueWorker = $this->createMock(QueueWorker::class);
         $queueWorker->expects($this->once())
             ->method('processStores')
-            ->willReturnCallback(function (...$args) use (&$capturedArgs) {
-                $capturedArgs = $args;
-
-                return false;
-            });
-
-        $output = new BufferedOutput();
-        $code = $this->executeCommand(
-            $this->createObjectToTest(storeNameFetcher: $storeNameFetcher, queueWorker: $queueWorker),
-            [2, 3],
-            $output,
-            ['--run-id' => 'abc123run']
-        );
-
-        $this->assertSame(
-            Cli::RETURN_FAILURE,
-            $code,
-            'A worker run reporting failure must surface as a failing exit code'
-        );
-        $this->assertSame([2, 3], $capturedArgs[0]);
-        $this->assertInstanceOf(ConsoleQueueReporter::class, $capturedArgs[1]);
-        $this->assertSame('abc123run', $capturedArgs[2]);
-        // The worker's own lines must flow back to the command's output through the reporter
-        $capturedArgs[1]->log('reporter marker');
-        $this->assertStringContainsString('reporter marker', $output->fetch());
-    }
-
-    public function testExecuteThreadsRunIdOptionInWorkerMode(): void
-    {
-        $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
-        $storeNameFetcher->method('resolveStoreNames')->with([2], true);
-
-        $queueWorker = $this->createMock(QueueWorker::class);
-        $queueWorker->expects($this->once())
-            ->method('processStores')
-            ->with([2], $this->isInstanceOf(QueueReporterInterface::class), 'abc123run')
+            ->with([2, 3], $this->isInstanceOf(QueueReporterInterface::class), 'abc123run')
             ->willReturn(true);
 
         $code = $this->executeCommand(
             $this->createObjectToTest(storeNameFetcher: $storeNameFetcher, queueWorker: $queueWorker),
-            [2],
+            [2, 3],
             null,
             ['--run-id' => 'abc123run']
         );
@@ -123,7 +87,7 @@ class ProcessQueueCommandTest extends TestCase
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
     }
 
-    public function testExecuteDelegatesNullRunIdWhenOptionIsAbsent(): void
+    public function testWorkerModeDelegatesNullRunIdWhenOptionIsAbsent(): void
     {
         $storeNameFetcher = $this->createMock(StoreNameFetcher::class);
         $storeNameFetcher->method('resolveStoreNames')->with([2], true);
@@ -145,6 +109,41 @@ class ProcessQueueCommandTest extends TestCase
 
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
         $this->assertNull($capturedArgs[2]); //only care about null for this test
+    }
+
+    public function testExecutePropagatesWorkerFailure(): void
+    {
+        $queueWorker = $this->createMock(QueueWorker::class);
+        $queueWorker->expects($this->once())->method('processStores')->willReturn(false);
+
+        $code = $this->executeCommand($this->createObjectToTest(queueWorker: $queueWorker), [2]);
+
+        $this->assertSame(
+            Cli::RETURN_FAILURE,
+            $code,
+            'A worker run reporting failure must surface as a failing exit code'
+        );
+    }
+
+    public function testWorkerModeReporterWritesToCommandOutput(): void
+    {
+        $capturedArgs = [];
+        $queueWorker = $this->createMock(QueueWorker::class);
+        $queueWorker->expects($this->once())
+            ->method('processStores')
+            ->willReturnCallback(function (...$args) use (&$capturedArgs) {
+                $capturedArgs = $args;
+
+                return true;
+            });
+
+        $output = new BufferedOutput();
+        $this->executeCommand($this->createObjectToTest(queueWorker: $queueWorker), [2], $output);
+
+        $this->assertInstanceOf(ConsoleQueueReporter::class, $capturedArgs[1]);
+        // The worker's own lines must flow back to the command's output through the reporter
+        $capturedArgs[1]->log('reporter marker');
+        $this->assertStringContainsString('reporter marker', $output->fetch());
     }
 
     public function testExecuteRunsWorkerModeEvenWithSequentialOption(): void

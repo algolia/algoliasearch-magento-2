@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace Algolia\AlgoliaSearch\Test\Unit\Service\Queue;
 
 use Algolia\AlgoliaSearch\Model\Queue;
+use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
 use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporter;
+use Algolia\AlgoliaSearch\Model\Queue\WorkerProcess;
+use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessFactory;
+use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessPool;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Service\Queue\QueueWorker;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
@@ -45,6 +50,30 @@ class QueueWorkerTest extends TestCase
     protected function createReporter(BufferedOutput $output): ConsoleQueueReporter
     {
         return new ConsoleQueueReporter($output);
+    }
+
+    /**
+     * Recursion guard: workers never spawn because they are never given anything that can.
+     * If this fails, a spawn-capable dependency was injected into QueueWorker.
+     */
+    public function testConstructorHasNoSpawnCapableDependencies(): void
+    {
+        $forbidden = [
+            QueueOrchestrator::class,
+            WorkerProcessPool::class,
+            WorkerProcessFactory::class,
+            WorkerProcess::class,
+            MaxProcessesResolver::class,
+        ];
+
+        $dependencies = array_map(
+            fn(\ReflectionParameter $p) => $p->getType() instanceof \ReflectionNamedType
+                ? $p->getType()->getName()
+                : null,
+            (new \ReflectionClass(QueueWorker::class))->getConstructor()->getParameters()
+        );
+
+        $this->assertSame([], array_values(array_intersect($dependencies, $forbidden)));
     }
 
     public function testProcessStoresDrainsStoreUnderItsOwnLock(): void

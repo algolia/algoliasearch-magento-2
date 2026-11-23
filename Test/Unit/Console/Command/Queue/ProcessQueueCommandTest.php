@@ -172,6 +172,70 @@ class ProcessQueueCommandTest extends TestCase
         $this->assertSame(Cli::RETURN_SUCCESS, $code);
     }
 
+    /**
+     * Recursion guard: a worker invocation (explicit store IDs) must never reach any path
+     * that can spawn processes or consult the concurrency settings, whatever other options
+     * accompany it.
+     */
+    #[DataProvider('workerModeOptionsProvider')]
+    public function testWorkerModeNeverTouchesOrchestratorOrMaxProcessesResolver(array $options): void
+    {
+        $queueOrchestrator = $this->createMock(QueueOrchestrator::class);
+        $queueOrchestrator->expects($this->never())->method('orchestrate');
+        $queueOrchestrator->expects($this->never())->method('runSequential');
+
+        $maxProcessesResolver = $this->createMock(MaxProcessesResolver::class);
+        $maxProcessesResolver->expects($this->never())->method('resolve');
+        $maxProcessesResolver->expects($this->never())->method('isProcessSpawningSupported');
+
+        $queueWorker = $this->createMock(QueueWorker::class);
+        $queueWorker->expects($this->once())->method('processStores')->willReturn(true);
+
+        $code = $this->executeCommand(
+            $this->createObjectToTest(
+                maxProcessesResolver: $maxProcessesResolver,
+                queueOrchestrator: $queueOrchestrator,
+                queueWorker: $queueWorker
+            ),
+            [2],
+            new BufferedOutput(),
+            $options
+        );
+
+        $this->assertSame(Cli::RETURN_SUCCESS, $code);
+    }
+
+    public static function workerModeOptionsProvider(): array
+    {
+        return [
+            'no options' => [[]],
+            'sequential' => [['--sequential' => true]],
+            'run id' => [['--run-id' => 'abc123run']],
+            'sequential and run id' => [['--sequential' => true, '--run-id' => 'abc123run']],
+        ];
+    }
+
+    public function testWorkerModeRejectsMaxProcessesOptionWithoutRunningAnything(): void
+    {
+        $queueOrchestrator = $this->createMock(QueueOrchestrator::class);
+        $queueOrchestrator->expects($this->never())->method('orchestrate');
+        $queueOrchestrator->expects($this->never())->method('runSequential');
+
+        $queueWorker = $this->createMock(QueueWorker::class);
+        $queueWorker->expects($this->never())->method('processStores');
+
+        $output = new BufferedOutput();
+        $code = $this->executeCommand(
+            $this->createObjectToTest(queueOrchestrator: $queueOrchestrator, queueWorker: $queueWorker),
+            [2],
+            $output,
+            ['--max-processes' => '4']
+        );
+
+        $this->assertSame(Cli::RETURN_FAILURE, $code);
+        $this->assertStringContainsString('cannot be used in store worker mode', $output->fetch());
+    }
+
     #[DataProvider('invalidStoreIdsProvider')]
     public function testExecuteFailsOnInvalidStoreId(string|int $storeId): void
     {

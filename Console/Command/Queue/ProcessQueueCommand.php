@@ -129,7 +129,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
             return Cli::RETURN_FAILURE;
         }
 
-        // Explicit store IDs always mean worker mode: --sequential and --max-processes are ignored
+        // Explicit store IDs always mean worker mode even if --sequential and --max-processes are specified
         return $storeIds
             ? $this->runWorkerMode($storeIds, $this->getRunId($input))
             : $this->runBatchMode($input, $maxProcessesOverride);

@@ -6,6 +6,13 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * Resolves store display names and labels for admin, CLI and log output.
+ *
+ * Names are memoized per store ID for the lifetime of the instance, so a caller can resolve at
+ * the point of use instead of threading names through its call signatures. Because the cache is
+ * never invalidated, a store renamed during a run keeps the name of its first lookup.
+ */
 class StoreNameFetcher
 {
     /** @var array<int, string> */

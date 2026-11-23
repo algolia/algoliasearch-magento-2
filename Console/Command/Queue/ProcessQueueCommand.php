@@ -146,14 +146,14 @@ class ProcessQueueCommand extends AbstractStoreCommand
     {
         try {
             // Fails before any work when a store ID does not exist
-            $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds, true);
+            $this->storeNameFetcher->resolveStoreNames($storeIds, true);
         } catch (LocalizedException $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
 
             return Cli::RETURN_FAILURE;
         }
 
-        return $this->queueWorker->processStores($storeIds, $storeNames, $this->createConsoleReporter(), $runId);
+        return $this->queueWorker->processStores($storeIds, $this->createConsoleReporter(), $runId);
     }
 
     protected function runBatchMode(InputInterface $input, ?int $maxProcessesOverride): int

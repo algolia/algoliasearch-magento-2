@@ -5,6 +5,7 @@ namespace Algolia\AlgoliaSearch\Service\Queue;
 use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Lock\LockManagerInterface;
 use Zend_Db_Exception;
@@ -26,24 +27,22 @@ class QueueWorker
         protected Queue                     $queue,
         protected LockManagerInterface      $lockManager,
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected StoreNameFetcher          $storeNameFetcher,
     ) {}
 
     /**
      * Drains the given stores sequentially, in the order given.
      *
      * @param int[] $storeIds
-     * @param array<int, string> $storeNames Store names keyed by store ID, resolved by the caller
-     *                                       before any work starts
      */
     public function processStores(
         array $storeIds,
-        array $storeNames,
         QueueReporterInterface $reporter,
         ?string $runId = null
     ): int {
         $hasFailure = false;
         foreach ($storeIds as $storeId) {
-            if (!$this->processStore($storeId, $storeNames[$storeId], $reporter, $runId)) {
+            if (!$this->processStore($storeId, $reporter, $runId)) {
                 $hasFailure = true;
             }
         }
@@ -59,10 +58,11 @@ class QueueWorker
      */
     protected function processStore(
         int $storeId,
-        string $storeName,
         QueueReporterInterface $reporter,
         ?string $runId = null
     ): bool {
+        $storeName = $this->storeNameFetcher->getStoreName($storeId);
+
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             // Not AlgoliaCredentialsManager::displayErrorMessage(): it writes to its own console
             // output, which would bypass the reporter funnel.

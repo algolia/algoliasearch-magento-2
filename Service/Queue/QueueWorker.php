@@ -69,10 +69,7 @@ class QueueWorker
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             // Not AlgoliaCredentialsManager::displayErrorMessage(): it writes to its own console
             // output, which would bypass the reporter funnel.
-            $reporter->error(
-                self::class . ': Algolia credentials missing for store ' . $storeName
-                . "\n  => You need to configure your credentials in Stores > Configuration > Algolia Search."
-            );
+            $reporter->error($this->algoliaCredentialsManager->getErrorMessage(self::class, $storeName));
 
             return false;
         }

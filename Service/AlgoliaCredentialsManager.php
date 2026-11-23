@@ -37,16 +37,28 @@ class AlgoliaCredentialsManager
     }
 
     /**
+     * The credentials-missing message, shared by every transport that reports it: this class
+     * displays it, callers that funnel output through their own reporter show it verbatim.
+     *
+     * @param string|null $storeName Store display name
+     */
+    public function getErrorMessage(string $class, ?string $storeName = null): string
+    {
+        return $class . ': Algolia credentials missing' . ($storeName !== null ? ' for store ' . $storeName : '') . '
+  => You need to configure your credentials in Stores > Configuration > Algolia Search.';
+    }
+
+    /**
      * Displays an error message in the console or in the admin
      *
      */
     public function displayErrorMessage(string $class, ?int $storeId = null): void
     {
         try {
-            $storeInfo = $storeId ? ' for store '. $this->storeManager->getStore($storeId)->getName() : '';
-            $errorMessage = '
-' . $class . ': Algolia credentials missing' . $storeInfo . '
-  => You need to configure your credentials in Stores > Configuration > Algolia Search.';
+            $errorMessage = $this->getErrorMessage(
+                $class,
+                $storeId ? $this->storeManager->getStore($storeId)->getName() : null
+            );
 
             if (php_sapi_name() === 'cli') {
                 $this->output->writeln($errorMessage);

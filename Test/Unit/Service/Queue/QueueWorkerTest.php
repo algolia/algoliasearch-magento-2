@@ -260,8 +260,13 @@ class QueueWorkerTest extends TestCase
     {
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
-        // Reported through the reporter: displayErrorMessage() would bypass it
+        // Reported through the reporter: displayErrorMessage() would bypass it. The wording is the
+        // manager's to own, pinned in AlgoliaCredentialsManagerTest, so it is stubbed out here.
         $credentialsManager->expects($this->never())->method('displayErrorMessage');
+        $credentialsManager->expects($this->once())
+            ->method('getErrorMessage')
+            ->with(QueueWorker::class, 'Second Store')
+            ->willReturn('credentials message from the manager');
 
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->never())->method('runCron');
@@ -277,10 +282,7 @@ class QueueWorkerTest extends TestCase
         )->processStores([2], $this->createReporter($output));
 
         $this->assertFalse($success);
-        $this->assertStringContainsString(
-            QueueWorker::class . ': Algolia credentials missing for store Second Store',
-            $output->fetch()
-        );
+        $this->assertStringContainsString('credentials message from the manager', $output->fetch());
     }
 
     public function testProcessStoresContinuesRemainingStoresWhenOneStoreMissesCredentials(): void
@@ -288,6 +290,7 @@ class QueueWorkerTest extends TestCase
         $credentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')
             ->willReturnCallback(fn(?int $storeId) => $storeId !== 2); // fail creds on 2
+        $credentialsManager->method('getErrorMessage')->willReturn('credentials message from the manager');
 
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->once())->method('runCron')->with(null, false, 3, null);
@@ -311,7 +314,7 @@ class QueueWorkerTest extends TestCase
         );
 
         $this->assertFalse($success);
-        $this->assertStringContainsString('Algolia credentials missing for store Second Store', $output->fetch());
+        $this->assertStringContainsString('credentials message from the manager', $output->fetch());
     }
 
     public function testProcessStoresFailsWhenStoreHadFailedJobs(): void

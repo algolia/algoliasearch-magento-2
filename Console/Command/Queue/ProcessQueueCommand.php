@@ -4,21 +4,17 @@ namespace Algolia\AlgoliaSearch\Console\Command\Queue;
 
 use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Console\Command\AbstractStoreCommand;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
 use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Service\Queue\QueueWorker;
 use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporterFactory;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Lock\LockManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Zend_Db_Exception;
 
 /**
  * Queue processing command with two modes.
@@ -35,7 +31,6 @@ use Zend_Db_Exception;
  */
 class ProcessQueueCommand extends AbstractStoreCommand
 {
-    public const string STORE_LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
     protected const string MAX_PROCESSES_OPTION = 'max-processes';
     protected const string SEQUENTIAL_OPTION = 'sequential';
     protected const string RUN_ID_OPTION = 'run-id';
@@ -43,12 +38,9 @@ class ProcessQueueCommand extends AbstractStoreCommand
     public function __construct(
         protected State                       $state,
         protected StoreNameFetcher            $storeNameFetcher,
-        protected ConfigHelper                $configHelper,
-        protected Queue                       $queue,
-        protected AlgoliaCredentialsManager   $algoliaCredentialsManager,
-        protected LockManagerInterface        $lockManager,
         protected MaxProcessesResolver        $maxProcessesResolver,
         protected QueueOrchestrator           $queueOrchestrator,
+        protected QueueWorker                 $queueWorker,
         protected ConsoleQueueReporterFactory $consoleQueueReporterFactory,
         ?string                               $name = null
     ) {
@@ -161,14 +153,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
             return Cli::RETURN_FAILURE;
         }
 
-        $hasFailure = false;
-        foreach ($storeIds as $storeId) {
-            if (!$this->processQueueForStore($storeId, $storeNames[$storeId], $runId)) {
-                $hasFailure = true;
-            }
-        }
-
-        return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
+        return $this->queueWorker->processStores($storeIds, $storeNames, $this->createConsoleReporter(), $runId);
     }
 
     protected function runBatchMode(InputInterface $input, ?int $maxProcessesOverride): int
@@ -213,63 +198,6 @@ class ProcessQueueCommand extends AbstractStoreCommand
             $maxProcessesOverride,
             $this->createConsoleReporter()
         );
-    }
-
-    /**
-     * Worker path for a single store. A held lock means another process (cron or worker)
-     * is already draining that store: skip it with a warning and let the remaining stores run.
-     * Missing credentials and database failures report the error and count as failures;
-     * a store that fails processing does not abort the remaining stores.
-     */
-    protected function processQueueForStore(int $storeId, string $storeName, ?string $runId = null): bool
-    {
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-            $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-            return false;
-        }
-
-        $lockName = $this->getStoreLockName($storeId);
-
-        if (!$this->lockManager->lock($lockName, 0)) {
-            $this->output->writeln(
-                '<comment>Indexing queue is already being processed for ' . $storeName
-                . ' (ID ' . $storeId . '), skipping.</comment>'
-            );
-
-            return true;
-        }
-
-        try {
-            $this->queue->runCron(nbJobs: null, force: false, storeId: $storeId, runId: $runId);
-        } catch (Zend_Db_Exception $e) {
-            $this->output->writeln(
-                '<error>Failed to process indexing queue for ' . $storeName . ' (ID ' . $storeId . '): '
-                . $e->getMessage() . '</error>'
-            );
-
-            return false;
-        } finally {
-            $this->lockManager->unlock($lockName);
-        }
-
-        // The orchestrator keys on this exit code to report the store as failed in its summary
-        $failedJobs = $this->queue->getNoOfFailedJobs($storeId);
-        if ($failedJobs > 0) {
-            $this->output->writeln(
-                '<error>' . $failedJobs . ' indexing job(s) failed for ' . $storeName
-                . ' (ID ' . $storeId . ').</error>'
-            );
-
-            return false;
-        }
-
-        return true;
-    }
-
-    protected function getStoreLockName(int $storeId): string
-    {
-        return self::STORE_LOCK_NAME_PREFIX . $storeId;
     }
 
     /**

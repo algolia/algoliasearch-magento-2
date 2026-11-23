@@ -16,7 +16,7 @@ class Compositions extends Field
             $optionValues[] = $value['value'];
         }
 
-        if (in_array($element->getEscapedValue(), $optionValues)) {
+        if ($currentValue === '' || $currentValue === null || in_array($currentValue, $optionValues)) {
             return parent::_getElementHtml($element);
         }
 

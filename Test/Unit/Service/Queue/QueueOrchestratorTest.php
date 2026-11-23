@@ -63,7 +63,7 @@ class QueueOrchestratorTest extends TestCase
     {
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(true);
-        $credentialsManager->expects($this->never())->method('displayErrorMessage');
+        $credentialsManager->expects($this->never())->method('getErrorMessage');
 
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->once())->method('runCron')->with();
@@ -78,15 +78,21 @@ class QueueOrchestratorTest extends TestCase
     {
         $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
+        // Funneled through the reporter: displayErrorMessage() would write to the manager's own output
+        $credentialsManager->expects($this->never())->method('displayErrorMessage');
         $credentialsManager->expects($this->once())
-            ->method('displayErrorMessage')
-            ->with(QueueOrchestrator::class);
+            ->method('getErrorMessage')
+            ->with(QueueOrchestrator::class)
+            ->willReturn('credentials message from the manager');
 
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->never())->method('runCron');
 
+        $reporter = $this->createMock(ConsoleQueueReporter::class);
+        $reporter->expects($this->once())->method('error')->with('credentials message from the manager');
+
         $success = $this->createObjectToTest(queue: $queue, credentialsManager: $credentialsManager)
-            ->runSequential($this->createStub(ConsoleQueueReporter::class));
+            ->runSequential($reporter);
 
         $this->assertFalse($success);
     }
@@ -158,11 +164,9 @@ class QueueOrchestratorTest extends TestCase
 
     public function testOrchestrateStorelessFallbackReportsMissingCredentialsAndFails(): void
     {
-        $credentialsManager = $this->createMock(AlgoliaCredentialsManager::class);
+        $credentialsManager = $this->createStub(AlgoliaCredentialsManager::class);
         $credentialsManager->method('checkCredentialsWithSearchOnlyAPIKey')->willReturn(false);
-        $credentialsManager->expects($this->once())
-            ->method('displayErrorMessage')
-            ->with(QueueOrchestrator::class);
+        $credentialsManager->method('getErrorMessage')->willReturn('credentials message from the manager');
 
         $queue = $this->createMock(Queue::class);
         $queue->method('hasStorelessPendingJobs')->willReturn(true);
@@ -171,8 +175,11 @@ class QueueOrchestratorTest extends TestCase
         $lockManager = $this->createStub(LockManagerInterface::class);
         $lockManager->method('lock')->willReturn(true);
 
+        $reporter = $this->createMock(ConsoleQueueReporter::class);
+        $reporter->expects($this->once())->method('error')->with('credentials message from the manager');
+
         $success = $this->createObjectToTest(queue: $queue, credentialsManager: $credentialsManager, lockManager: $lockManager)
-            ->orchestrate(null, $this->createStub(ConsoleQueueReporter::class));
+            ->orchestrate(null, $reporter);
 
         $this->assertFalse($success);
     }

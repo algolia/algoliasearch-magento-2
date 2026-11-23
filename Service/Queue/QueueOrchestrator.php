@@ -41,7 +41,9 @@ class QueueOrchestrator
     public function runSequential(QueueReporterInterface $reporter): bool
     {
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey()) {
-            $this->algoliaCredentialsManager->displayErrorMessage(self::class);
+            // Not AlgoliaCredentialsManager::displayErrorMessage(): it writes to its own console
+            // output, which would bypass the reporter funnel.
+            $reporter->error($this->algoliaCredentialsManager->getErrorMessage(self::class));
 
             return false;
         }

@@ -15,9 +15,9 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class AlgoliaCredentialsManagerTest extends TestCase
 {
-    protected const CALLER = 'Algolia\AlgoliaSearch\Some\Queue\Caller';
+    protected const string CALLER = 'Algolia\AlgoliaSearch\Some\Queue\Caller';
 
-    protected const CONFIG_HINT = '  => You need to configure your credentials'
+    protected const string CONFIG_HINT = ' => You need to configure your credentials'
         . ' in Stores > Configuration > Algolia Search.';
 
     protected function createObjectToTest(
@@ -48,7 +48,7 @@ class AlgoliaCredentialsManagerTest extends TestCase
     public function testGetErrorMessageNamesTheClassAndTheGivenStoreName(): void
     {
         $this->assertSame(
-            self::CALLER . ': Algolia credentials missing for store Second Store' . "\n" . self::CONFIG_HINT,
+            self::CALLER . ': Algolia credentials missing for store Second Store' . self::CONFIG_HINT,
             $this->createObjectToTest()->getErrorMessage(self::CALLER, 'Second Store')
         );
     }
@@ -56,7 +56,7 @@ class AlgoliaCredentialsManagerTest extends TestCase
     public function testGetErrorMessageOmitsTheStoreWhenUnscoped(): void
     {
         $this->assertSame(
-            self::CALLER . ': Algolia credentials missing' . "\n" . self::CONFIG_HINT,
+            self::CALLER . ': Algolia credentials missing' . self::CONFIG_HINT,
             $this->createObjectToTest()->getErrorMessage(self::CALLER)
         );
     }
@@ -79,7 +79,7 @@ class AlgoliaCredentialsManagerTest extends TestCase
         $output = $this->createMock(ConsoleOutput::class);
         $output->expects($this->once())
             ->method('writeln')
-            ->with(self::CALLER . ': Algolia credentials missing' . "\n" . self::CONFIG_HINT);
+            ->with(self::CALLER . ': Algolia credentials missing' . self::CONFIG_HINT);
 
         $this->createObjectToTest(output: $output)->displayErrorMessage(self::CALLER);
     }
@@ -90,7 +90,7 @@ class AlgoliaCredentialsManagerTest extends TestCase
         $output->expects($this->once())
             ->method('writeln')
             ->with(
-                self::CALLER . ': Algolia credentials missing for store Second Store' . "\n" . self::CONFIG_HINT
+                self::CALLER . ': Algolia credentials missing for store Second Store' . self::CONFIG_HINT
             );
 
         $this->createObjectToTest(output: $output)->displayErrorMessage(self::CALLER, 2);

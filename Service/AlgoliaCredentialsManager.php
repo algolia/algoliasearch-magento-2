@@ -44,8 +44,10 @@ class AlgoliaCredentialsManager
      */
     public function getErrorMessage(string $class, ?string $storeName = null): string
     {
-        return $class . ': Algolia credentials missing' . ($storeName !== null ? ' for store ' . $storeName : '') . '
-  => You need to configure your credentials in Stores > Configuration > Algolia Search.';
+        return $class
+            . ': Algolia credentials missing'
+            . ($storeName !== null ? ' for store ' . $storeName : '')
+            . ' => You need to configure your credentials in Stores > Configuration > Algolia Search.';
     }
 
     /**

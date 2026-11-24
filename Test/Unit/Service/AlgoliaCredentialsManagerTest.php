@@ -6,6 +6,7 @@ namespace Algolia\AlgoliaSearch\Test\Unit\Service;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
@@ -24,13 +25,18 @@ class AlgoliaCredentialsManagerTest extends TestCase
         ?ConfigHelper $configHelper = null,
         ?ManagerInterface $messageManager = null,
         ?ConsoleOutput $output = null,
-        ?StoreManagerInterface $storeManager = null
+        ?StoreManagerInterface $storeManager = null,
+        ?StoreNameFetcher $storeNameFetcher = null
     ): AlgoliaCredentialsManager {
+        $storeManager ??= $this->createStoreManager('Second Store');
+
         return new AlgoliaCredentialsManager(
             $configHelper ?? $this->createStub(ConfigHelper::class),
             $messageManager ?? $this->createStub(ManagerInterface::class),
             $output ?? $this->createStub(ConsoleOutput::class),
-            $storeManager ?? $this->createStoreManager('Second Store')
+            $storeManager,
+            // A real fetcher - not stubbed so the manager can feed it
+            $storeNameFetcher ?? new StoreNameFetcher($storeManager)
         );
     }
 
@@ -45,11 +51,11 @@ class AlgoliaCredentialsManagerTest extends TestCase
         return $storeManager;
     }
 
-    public function testGetErrorMessageNamesTheClassAndTheGivenStoreName(): void
+    public function testGetErrorMessageNamesTheClassAndTheStoreLabel(): void
     {
         $this->assertSame(
-            self::CALLER . ': Algolia credentials missing for store Second Store' . self::CONFIG_HINT,
-            $this->createObjectToTest()->getErrorMessage(self::CALLER, 'Second Store')
+            self::CALLER . ': Algolia credentials missing for Store 2 (Second Store)' . self::CONFIG_HINT,
+            $this->createObjectToTest()->getErrorMessage(self::CALLER, 2)
         );
     }
 
@@ -61,16 +67,13 @@ class AlgoliaCredentialsManagerTest extends TestCase
         );
     }
 
-    /**
-     * The builder never resolves store names: callers hand it what they already fetched, so a
-     * worker that resolved the name for its other output does not look the store up twice.
-     */
-    public function testGetErrorMessageDoesNotResolveStores(): void
+    public function testGetErrorMessageDegradesToThePlainLabelWhenTheStoreIsUnknown(): void
     {
-        $storeManager = $this->createMock(StoreManagerInterface::class);
-        $storeManager->expects($this->never())->method('getStore');
-
-        $this->createObjectToTest(storeManager: $storeManager)->getErrorMessage(self::CALLER, 'Second Store');
+        $this->assertSame(
+            self::CALLER . ': Algolia credentials missing for Store 42' . self::CONFIG_HINT,
+            $this->createObjectToTest(storeManager: $this->createUnknownStoreManager())
+                ->getErrorMessage(self::CALLER, 42)
+        );
     }
 
     public function testDisplayErrorMessageWritesTheMessageToTheConsole(): void
@@ -84,31 +87,39 @@ class AlgoliaCredentialsManagerTest extends TestCase
         $this->createObjectToTest(output: $output)->displayErrorMessage(self::CALLER);
     }
 
-    public function testDisplayErrorMessageResolvesTheStoreNameForItsOwnMessage(): void
+    public function testDisplayErrorMessageResolvesTheStoreLabelForItsOwnMessage(): void
     {
         $output = $this->createMock(ConsoleOutput::class);
         $output->expects($this->once())
             ->method('writeln')
             ->with(
-                self::CALLER . ': Algolia credentials missing for store Second Store' . self::CONFIG_HINT
+                self::CALLER
+                    . ': Algolia credentials missing for Store 2 (Second Store)'
+                    . self::CONFIG_HINT
             );
 
         $this->createObjectToTest(output: $output)->displayErrorMessage(self::CALLER, 2);
     }
 
-    public function testDisplayErrorMessageFallsBackToTheRawErrorWhenTheStoreIsUnknown(): void
+    public function testDisplayErrorMessageWritesThePlainLabelWhenTheStoreIsUnknown(): void
     {
-        $messageManager = $this->createMock(ManagerInterface::class);
-        $messageManager->expects($this->once())
-            ->method('addErrorMessage')
-            // The manager adds a Phrase, so the assertion stringifies it
-            ->with($this->callback(fn($message) => str_contains((string) $message, 'Unable to locate store details')));
+        $output = $this->createMock(ConsoleOutput::class);
+        $output->expects($this->once())
+            ->method('writeln')
+            ->with(self::CALLER . ': Algolia credentials missing for Store 42' . self::CONFIG_HINT);
 
+        $this->createObjectToTest(
+            output: $output,
+            storeManager: $this->createUnknownStoreManager()
+        )->displayErrorMessage(self::CALLER, 42);
+    }
+
+    protected function createUnknownStoreManager(): StoreManagerInterface
+    {
         $storeManager = $this->createStub(StoreManagerInterface::class);
         $storeManager->method('getStore')
             ->willThrowException(NoSuchEntityException::singleField('storeId', 42));
 
-        $this->createObjectToTest(messageManager: $messageManager, storeManager: $storeManager)
-            ->displayErrorMessage(self::CALLER, 42);
+        return $storeManager;
     }
 }

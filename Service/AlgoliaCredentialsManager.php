@@ -3,7 +3,6 @@
 namespace Algolia\AlgoliaSearch\Service;
 
 use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -14,7 +13,8 @@ class AlgoliaCredentialsManager
         protected ConfigHelper $configHelper,
         protected ManagerInterface $messageManager,
         protected ConsoleOutput $output,
-        protected StoreManagerInterface $storeManager
+        protected StoreManagerInterface $storeManager,
+        protected StoreNameFetcher $storeNameFetcher
     )
     {}
 
@@ -40,13 +40,13 @@ class AlgoliaCredentialsManager
      * The credentials-missing message, shared by every transport that reports it: this class
      * displays it, callers that funnel output through their own reporter show it verbatim.
      *
-     * @param string|null $storeName Store display name
+     * @param int|null $storeId Store ID, or null for a general message
      */
-    public function getErrorMessage(string $class, ?string $storeName = null): string
+    public function getErrorMessage(string $class, ?int $storeId = null): string
     {
         return $class
             . ': Algolia credentials missing'
-            . ($storeName !== null ? ' for store ' . $storeName : '')
+            . ($storeId ? ' for ' . $this->storeNameFetcher->getStoreLabel($storeId) : '')
             . ' => You need to configure your credentials in Stores > Configuration > Algolia Search.';
     }
 
@@ -56,22 +56,15 @@ class AlgoliaCredentialsManager
      */
     public function displayErrorMessage(string $class, ?int $storeId = null): void
     {
-        try {
-            $errorMessage = $this->getErrorMessage(
-                $class,
-                $storeId ? $this->storeManager->getStore($storeId)->getName() : null
-            );
+        $errorMessage = $this->getErrorMessage($class, $storeId);
 
-            if (php_sapi_name() === 'cli') {
-                $this->output->writeln($errorMessage);
+        if (php_sapi_name() === 'cli') {
+            $this->output->writeln($errorMessage);
 
-                return;
-            }
-
-            $this->messageManager->addErrorMessage($errorMessage);
-        } catch (NoSuchEntityException $exception) {
-            $this->messageManager->addErrorMessage(__('Unable to locate store details: %1', $exception->getMessage()));
+            return;
         }
+
+        $this->messageManager->addErrorMessage($errorMessage);
     }
 
     /**

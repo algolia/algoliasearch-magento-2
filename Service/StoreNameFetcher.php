@@ -81,9 +81,9 @@ class StoreNameFetcher
     }
 
     /**
-     * Per-store display label ("Store 2 (English)"), shared by worker output prefixing
-     * and the run summary. Falls back to a plain ID label when the store cannot be
-     * resolved (e.g. it was deleted while its jobs were still pending).
+     * Provides a consistent per-store display label: "Store 2 (English)"
+     * Falls back to a plain ID label when the store cannot be resolved
+     * (e.g. it was deleted while its jobs were still pending).
      */
     public function getStoreLabel(int $storeId): string
     {

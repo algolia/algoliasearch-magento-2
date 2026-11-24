@@ -39,9 +39,10 @@ class QueueWorkerTest extends TestCase
 
     protected function createStoreNameFetcher(): StoreNameFetcher
     {
+        $names = [2 => 'Second Store', 3 => 'Third Store'];
         $storeNameFetcher = $this->createStub(StoreNameFetcher::class);
-        $storeNameFetcher->method('getStoreName')->willReturnCallback(
-            fn(int $storeId) => [2 => 'Second Store', 3 => 'Third Store'][$storeId] ?? 'Store ' . $storeId
+        $storeNameFetcher->method('getStoreLabel')->willReturnCallback(
+            fn(int $storeId) => 'Store ' . $storeId . ' (' . ($names[$storeId] ?? 'Store ' . $storeId) . ')'
         );
 
         return $storeNameFetcher;
@@ -194,7 +195,7 @@ class QueueWorkerTest extends TestCase
 
         $this->assertTrue($success);
         $this->assertStringContainsString(
-            'Indexing queue is already being processed for Second Store (ID 2), skipping.',
+            'Indexing queue is already being processed for Store 2 (Second Store), skipping.',
             $output->fetch()
         );
     }
@@ -265,7 +266,7 @@ class QueueWorkerTest extends TestCase
         $credentialsManager->expects($this->never())->method('displayErrorMessage');
         $credentialsManager->expects($this->once())
             ->method('getErrorMessage')
-            ->with(QueueWorker::class, 'Second Store')
+            ->with(QueueWorker::class, 2)
             ->willReturn('credentials message from the manager');
 
         $queue = $this->createMock(Queue::class);
@@ -337,7 +338,7 @@ class QueueWorkerTest extends TestCase
         );
 
         $this->assertFalse($success);
-        $this->assertStringContainsString('3 indexing job(s) failed for Second Store (ID 2)', $output->fetch());
+        $this->assertStringContainsString('3 indexing job(s) failed for Store 2 (Second Store)', $output->fetch());
     }
 
     public function testProcessStoresSucceedsWhenStoreHadNoFailedJobs(): void

@@ -64,12 +64,14 @@ class QueueWorker
         QueueReporterInterface $reporter,
         ?string $runId = null
     ): bool {
-        $storeName = $this->storeNameFetcher->getStoreName($storeId);
+        // If a store cannot be resolved, the label degrades to a plain ID label rather than throwing an exception
+        // (e.g. it was deleted while its jobs were still pending)
+        $label = $this->storeNameFetcher->getStoreLabel($storeId);
 
         if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
             // Not AlgoliaCredentialsManager::displayErrorMessage(): it writes to its own console
             // output, which would bypass the reporter funnel.
-            $reporter->error($this->algoliaCredentialsManager->getErrorMessage(self::class, $storeName));
+            $reporter->error($this->algoliaCredentialsManager->getErrorMessage(self::class, $storeId));
 
             return false;
         }
@@ -78,8 +80,7 @@ class QueueWorker
 
         if (!$this->lockManager->lock($lockName, 0)) {
             $reporter->warning(
-                'Indexing queue is already being processed for ' . $storeName
-                . ' (ID ' . $storeId . '), skipping.'
+                'Indexing queue is already being processed for ' . $label . ', skipping.'
             );
 
             return true;
@@ -89,8 +90,7 @@ class QueueWorker
             $this->queue->runCron(nbJobs: null, force: false, storeId: $storeId, runId: $runId);
         } catch (Zend_Db_Exception $e) {
             $reporter->error(
-                'Failed to process indexing queue for ' . $storeName . ' (ID ' . $storeId . '): '
-                . $e->getMessage()
+                'Failed to process indexing queue for ' . $label . ': ' . $e->getMessage()
             );
 
             return false;
@@ -100,9 +100,7 @@ class QueueWorker
 
         $failedJobs = $this->queue->getNoOfFailedJobs($storeId);
         if ($failedJobs > 0) {
-            $reporter->error(
-                $failedJobs . ' indexing job(s) failed for ' . $storeName . ' (ID ' . $storeId . ').'
-            );
+            $reporter->error($failedJobs . ' indexing job(s) failed for ' . $label . '.');
 
             return false;
         }

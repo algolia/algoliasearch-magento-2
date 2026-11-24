@@ -20,8 +20,7 @@ class StoreNameFetcher
 
     public function __construct(
         protected StoreManagerInterface $storeManager
-    )
-    {}
+    ) {}
 
     /**
      * @throws NoSuchEntityException
@@ -45,7 +44,7 @@ class StoreNameFetcher
     public function getStoreNames(array $storeIds): array
     {
         return array_map(
-            fn($storeId) => $this->getStoreName($storeId),
+            fn ($storeId) => $this->getStoreName($storeId),
             $storeIds
         );
     }

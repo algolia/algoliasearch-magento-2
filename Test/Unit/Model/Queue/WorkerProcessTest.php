@@ -133,6 +133,59 @@ class WorkerProcessTest extends TestCase
         $this->assertSame([], $worker->readLines());
     }
 
+    public function testReadLinesDrainsOutputWrittenJustBeforeExitBeforeFlushing(): void
+    {
+        // Symfony's isRunning() pulls the last pipe data in, but only the incremental
+        // getters hand it out. Here the rest of the line ("lo\n") only becomes readable
+        // once isRunning() has been called, so the tail must be re-read after termination
+        // and before flushing, otherwise "hello" is emitted as "hel" and "lo"
+        $terminated = false;
+        $stdoutChunks = [
+            'before' => 'hel',
+            'after'  => "lo\n",
+        ];
+        $stderrChunks = [
+            'before' => 'er',
+            'after'  => "r\n",
+        ];
+
+        $process = $this->createStub(Process::class);
+        $process->method('isRunning')->willReturnCallback(function () use (&$terminated) {
+            $terminated = true;
+
+            return false;
+        });
+        $process->method('getIncrementalOutput')->willReturnCallback(
+            function () use (&$terminated, &$stdoutChunks) {
+                $key = $terminated ? 'after' : 'before';
+                $chunk = $stdoutChunks[$key];
+                $stdoutChunks[$key] = '';
+
+                return $chunk;
+            }
+        );
+        $process->method('getIncrementalErrorOutput')->willReturnCallback(
+            function () use (&$terminated, &$stderrChunks) {
+                $key = $terminated ? 'after' : 'before';
+                $chunk = $stderrChunks[$key];
+                $stderrChunks[$key] = '';
+
+                return $chunk;
+            }
+        );
+
+        $worker = $this->createObjectToTest(2, $process);
+
+        $this->assertSame(
+            [
+                '[Store 2 (English)] hello',
+                '[Store 2 (English)] err',
+            ],
+            $worker->readLines()
+        );
+        $this->assertSame([], $worker->readLines());
+    }
+
     public function testReadLinesFlushesOnlyTheRemainingTailAfterCompleteLines(): void
     {
         $process = $this->createScriptedProcess(false, ["complete line\nfinal partial"]);

@@ -77,6 +77,15 @@ class WorkerProcess
 
         if (!$this->process->isRunning()) {
             foreach ([$this->stdoutBuffer, $this->stderrBuffer] as $buffer) {
+                // Pick up any unfinished incremental output before flushing the tail
+                $lines = [
+                    ...$lines,
+                    ...$this->prefixLines([
+                        ...$this->stdoutBuffer->push($this->process->getIncrementalOutput()),
+                        ...$this->stderrBuffer->push($this->process->getIncrementalErrorOutput()),
+                    ]),
+                ];
+
                 $tail = $buffer->flush();
 
                 if ($tail !== null) {

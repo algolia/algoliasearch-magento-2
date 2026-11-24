@@ -68,12 +68,12 @@ class WorkerProcessPoolTest extends TestCase
                         return $exitCode;
                     }
                 );
-                $process->method('getOutput')->willReturnCallback(
+                $process->method('getIncrementalOutput')->willReturnCallback(
                     function () use (&$outputChunks) {
                         return array_shift($outputChunks) ?? '';
                     }
                 );
-                $process->method('getErrorOutput')->willReturnCallback(
+                $process->method('getIncrementalErrorOutput')->willReturnCallback(
                     function () use (&$errorChunks) {
                         return array_shift($errorChunks) ?? '';
                     }

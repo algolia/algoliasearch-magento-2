@@ -71,8 +71,8 @@ class WorkerProcess
     public function readLines(): array
     {
         $lines = $this->prefixLines([
-            ...$this->stdoutBuffer->push($this->process->getOutput()),
-            ...$this->stderrBuffer->push($this->process->getErrorOutput()),
+            ...$this->stdoutBuffer->push($this->process->getIncrementalOutput()),
+            ...$this->stderrBuffer->push($this->process->getIncrementalErrorOutput()),
         ]);
 
         if (!$this->process->isRunning()) {

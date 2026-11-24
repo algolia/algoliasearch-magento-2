@@ -49,12 +49,12 @@ class WorkerProcessTest extends TestCase
     {
         $process = $this->createStub(Process::class);
         $process->method('isRunning')->willReturn($running);
-        $process->method('getOutput')->willReturnCallback(
+        $process->method('getIncrementalOutput')->willReturnCallback(
             function () use (&$outputChunks) {
                 return array_shift($outputChunks) ?? '';
             }
         );
-        $process->method('getErrorOutput')->willReturnCallback(
+        $process->method('getIncrementalErrorOutput')->willReturnCallback(
             function () use (&$errorChunks) {
                 return array_shift($errorChunks) ?? '';
             }

@@ -174,11 +174,9 @@ class FacetBuilderTest extends TestCase
         $storeId = 1;
         $instantSearchHelper = $this->createFacetsStub(asMock: true);
         $instantSearchHelper = $this->withCategoryConfig($instantSearchHelper, $storeId);
-        $configHelper = $this->createVisualMerchEnablementStub($storeId);
         $merchandisingStudioHelper = $this->createVisualMerchHelperStub($storeId);
 
         $facetBuilder = $this->createObjectToTest(
-            configHelper: $configHelper,
             instantSearchHelper: $instantSearchHelper,
             merchandisingStudioHelper: $merchandisingStudioHelper,
         );
@@ -277,9 +275,12 @@ class FacetBuilderTest extends TestCase
         $storeId = 1;
         $instantSearchHelper = $this->createFacetsStub(asMock: true);
         $instantSearchHelper = $this->withCategoryConfig($instantSearchHelper, $storeId);
-        $configHelper = $this->createVisualMerchEnablementStub($storeId);
+        $merchandisingStudioHelper = $this->createVisualMerchHelperStub($storeId);
 
-        $facetBuilder = $this->createObjectToTest($configHelper, $instantSearchHelper);
+        $facetBuilder = $this->createObjectToTest(
+            instantSearchHelper: $instantSearchHelper,
+            merchandisingStudioHelper: $merchandisingStudioHelper
+        );
 
         $result = $facetBuilder->getRenderingContent($storeId);
 
@@ -409,15 +410,6 @@ class FacetBuilderTest extends TestCase
         $groupCollection->method('getIterator')->willReturn(new \ArrayIterator([$group1, $group2]));
 
         return $groupCollection;
-    }
-
-    private function createVisualMerchEnablementStub(int $storeId): ConfigHelper
-    {
-        $configHelper = $this->createMock(ConfigHelper::class);
-        $configHelper->method('isVisualMerchEnabled')->with($storeId)->willReturn(true);
-        $configHelper->method('getCategoryPageIdAttributeName')->with($storeId)->willReturn('categoryPageId');
-
-        return $configHelper;
     }
 
     private function createVisualMerchHelperStub(int $storeId): MerchandisingStudioHelper

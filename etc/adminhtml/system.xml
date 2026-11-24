@@ -1267,7 +1267,7 @@
             </group>
             <group id="smart_groups" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label><![CDATA[Smart Groups]]></label>
-                <field id="enable_smart_groups" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="is_smart_groups_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable Smart Groups support</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>
@@ -1275,6 +1275,19 @@
                             If enabled, you will be able to select a composition previously created in the Merchandising Studio located in your Algolia Dashboard.
                         ]]>
                     </comment>
+                </field>
+                <field id="composition" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Composition</label>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\Compositions</source_model>
+                    <frontend_model>Algolia\AlgoliaSearch\Block\Adminhtml\System\Config\Form\Field\Compositions</frontend_model>
+                    <comment>
+                        <![CDATA[
+                            Once you have created a composition related to your store in the Algolia dashboard, you can select it so your Smart Groups can appear on your frontend.
+                        ]]>
+                    </comment>
+                    <depends>
+                        <field id="is_smart_groups_enabled">1</field>
+                    </depends>
                 </field>
             </group>
         </section>

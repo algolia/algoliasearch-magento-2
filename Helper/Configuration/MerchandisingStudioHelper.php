@@ -13,8 +13,8 @@ class MerchandisingStudioHelper
     public const string CATEGORY_PAGE_ID_ATTRIBUTE_NAME =
         'algoliasearch_merchandising_studio/visual_merchandising/category_page_id_attribute_name';
 
-    public const string ENABLE_SMART_GROUPS =
-        'algoliasearch_merchandising_studio/smart_groups/enable_visual_merchandising';
+    public const string IS_SMART_GROUPS_ENABLED =
+        'algoliasearch_merchandising_studio/smart_groups/is_smart_groups_enabled';
 
     public function __construct(
         protected ScopeConfigInterface $configInterface
@@ -32,6 +32,6 @@ class MerchandisingStudioHelper
 
     public function isSmartGroupsEnabled($storeId = null): bool
     {
-        return $this->configInterface->isSetFlag(self::ENABLE_SMART_GROUPS, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->isSetFlag(self::IS_SMART_GROUPS_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

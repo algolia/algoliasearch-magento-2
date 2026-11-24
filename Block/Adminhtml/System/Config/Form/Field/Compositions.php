@@ -10,7 +10,7 @@ class Compositions extends Field
     protected function _getElementHtml(AbstractElement $element)
     {
         $optionValues = [];
-        $currentValue = $element->getEscapedValue();
+        $currentValue = $element->getValue();
 
         foreach($element->getValues() as $value) {
             $optionValues[] = $value['value'];
@@ -20,11 +20,13 @@ class Compositions extends Field
             return parent::_getElementHtml($element);
         }
 
-        $html = "<p class='note' style='color:red;'>
-<span><strong>WARNING</strong>: The composition previously configured ($currentValue),
-does not seem to be available anymore, please check your compositions in your Algolia Merchandising Studio.
-</span>
-</p>";
+        $html = "<p class='note'><span><strong class='colorRed'>WARNING</strong>: ";
+        $html .= __(
+            'The composition previously configured (<strong>%1</strong>),
+        does not seem to be available anymore, please check your compositions in your Algolia Merchandising Studio.',
+             $currentValue
+        );
+        $html .="</p>";
 
         return parent::_getElementHtml($element) . $html;
     }

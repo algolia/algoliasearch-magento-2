@@ -1278,7 +1278,7 @@
                 </field>
                 <field id="composition" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Composition</label>
-                    <source_model>Algolia\AlgoliaSearch\Model\Source\Composition</source_model>
+                    <source_model>Algolia\AlgoliaSearch\Model\Source\Compositions</source_model>
                     <frontend_model>Algolia\AlgoliaSearch\Block\Adminhtml\System\Config\Form\Field\Compositions</frontend_model>
                     <comment>
                         <![CDATA[

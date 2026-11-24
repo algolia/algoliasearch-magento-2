@@ -290,6 +290,8 @@
     <type name="Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand">
         <arguments>
             <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+            <argument name="queueOrchestrator" xsi:type="object">Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator\Proxy</argument>
+            <argument name="queueWorker" xsi:type="object">Algolia\AlgoliaSearch\Service\Queue\QueueWorker\Proxy</argument>
         </arguments>
     </type>
     <type name="Algolia\AlgoliaSearch\Console\Command\Queue\ClearQueueCommand">

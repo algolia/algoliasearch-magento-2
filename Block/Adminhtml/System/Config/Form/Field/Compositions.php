@@ -22,8 +22,8 @@ class Compositions extends Field
 
         $html = "<p class='note'><span><strong class='colorRed'>WARNING</strong>: ";
         $html .= __(
-            'The composition previously configured (<strong>%1</strong>),
-        does not seem to be available anymore, please check your compositions in your Algolia Merchandising Studio.',
+            'The composition configured (<strong>%1</strong>)
+        does not seem to be available for this store, please check your compositions in your Algolia Merchandising Studio.',
              $currentValue
         );
         $html .="</p>";

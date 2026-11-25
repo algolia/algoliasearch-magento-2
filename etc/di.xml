@@ -42,9 +42,11 @@
     <preference for="Algolia\AlgoliaSearch\Api\Data\PricingContextInterface" type="Algolia\AlgoliaSearch\Model\Data\PricingContext" />
     <preference for="Algolia\AlgoliaSearch\Api\Data\MinMaxPricesInterface" type="Algolia\AlgoliaSearch\Model\Data\MinMaxPrices" />
 
-    <!-- Client provider -->
+    <!-- Client providers -->
     <preference for="Algolia\AlgoliaSearch\Api\SearchClientProviderInterface"
                 type="Algolia\AlgoliaSearch\Service\SearchClientProvider"/>
+    <preference for="Algolia\AlgoliaSearch\Api\CompositionClientProviderInterface"
+                type="Algolia\AlgoliaSearch\Service\CompositionClientProvider"/>
 
     <!-- Send strategy -->
     <preference for="Algolia\AlgoliaSearch\Api\SendStrategyInterface"

@@ -2,9 +2,8 @@
 
 namespace Algolia\AlgoliaSearch\Service;
 
-use Algolia\AlgoliaSearch\Api\CompositionClient;
+use Algolia\AlgoliaSearch\Api\CompositionClientProviderInterface;
 use Algolia\AlgoliaSearch\Exceptions\AlgoliaException;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
 use Algolia\AlgoliaSearch\Service\Index\IndexNameFetcher;
 
 class CompositionsFetcher
@@ -12,13 +11,8 @@ class CompositionsFetcher
     // Default separator for the composition ID format : comp<TIMESTAMP>___<INDEX_NAME>
     public const string COMPOSITION_ID_SEPARATOR = '___';
 
-    /** @var CompositionClient[] */
-    protected array $clients = [];
-
     public function __construct(
-        protected ConfigHelper $config,
-        protected CompositionClientProvider $compositionClientProvider,
-        protected AlgoliaCredentialsManager $algoliaCredentialsManager,
+        protected CompositionClientProviderInterface $compositionClientProvider,
         protected IndexNameFetcher $indexNameFetcher
     ) {}
 
@@ -49,6 +43,8 @@ class CompositionsFetcher
                 unset($compositions['items'][$key]);
             }
         }
+
+        $compositions['nbHits'] = count($compositions['items']);
     }
 
     public static function extractIndexName(string $compositionId): string

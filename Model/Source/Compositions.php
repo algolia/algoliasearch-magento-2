@@ -14,20 +14,20 @@ class Compositions implements OptionSourceInterface
         protected RequestInterface $request
     ){}
 
-    /**
-     * @throws AlgoliaException
-     */
     public function toOptionArray()
     {
-        $storeId = $this->request->getParam('store') !== null ?
-            $this->request->getParam('store') :
-            null;
+        $store = $this->request->getParam('store');
+        $storeId = $store !== null ? (int) $store : null;
 
         $compositionOptions = [
             ['value' => '', 'label' => '---']
         ];
 
-        $fetchedCompositions = $this->compositionsFetcher->fetchCompositions($storeId);
+        try {
+            $fetchedCompositions = $this->compositionsFetcher->fetchCompositions($storeId);
+        } catch (AlgoliaException) {
+            return $compositionOptions;
+        }
 
         if ($fetchedCompositions['nbHits'] === 0) {
             return $compositionOptions;

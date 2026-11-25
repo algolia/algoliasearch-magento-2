@@ -35,6 +35,9 @@ class CompositionClientProvider extends AbstractClientProvider implements Compos
             $this->config->getApplicationID($storeId),
             $this->config->getAPIKey($storeId)
         );
+        $config->setConnectTimeout($this->getConnectionTimeout($storeId));
+        $config->setReadTimeout($this->getReadTimeout($storeId));
+        $config->setWriteTimeout($this->config->getWriteTimeout($storeId));
 
         $this->clients[$storeId] = CompositionClient::createWithConfig($config);
     }

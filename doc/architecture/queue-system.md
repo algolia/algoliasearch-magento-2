@@ -12,6 +12,49 @@ The queue processes full reindex and delta jobs in a mixed ratio
 (`FULL_REINDEX_TO_REALTIME_JOBS_RATIO = 0.33`), ensuring delta updates get at least 67%
 of each processing cycle.
 
+```mermaid
+flowchart LR
+    subgraph entry["Entry points"]
+        CLI["ProcessQueueCommand"]
+        CRON["ProcessQueue (cron)"]
+    end
+
+    subgraph service["Service/Queue"]
+        ORCH["QueueOrchestrator"]
+        WORKER["QueueWorker"]
+    end
+
+    subgraph process["Model/Queue (process management)"]
+        RESOLVER["MaxProcessesResolver"]
+        POOL["WorkerProcessPool"]
+        FACTORY["WorkerProcessFactory"]
+        WP["WorkerProcess"]
+        BUF["WorkerLineBuffer"]
+    end
+
+    QUEUE[("Queue<br/>algoliasearch_queue")]
+    %% REPORTER{{"QueueReporterInterface"}}
+
+    CLI --> ORCH
+    CLI --> WORKER
+    CLI --> RESOLVER
+    CRON --> ORCH
+    CRON -. "legacy sequential path" .-> QUEUE
+
+    ORCH --> RESOLVER
+    ORCH --> POOL
+    ORCH --> QUEUE
+    WORKER --> QUEUE
+
+    POOL --> FACTORY
+    FACTORY -- creates --> WP
+    WP -- "1 per stream" --> BUF
+
+    %% ORCH -. reports to .-> REPORTER
+    %% WORKER -. reports to .-> REPORTER
+    %% POOL -. relays to .-> REPORTER
+```
+
 ## Store-Scoped Job Claiming
 
 `Queue::runCron()`, `run()`, `getJobs()` and `fetchJobs()` accept a trailing optional
@@ -114,6 +157,39 @@ transport.
 - `log()` is reserved for relaying pre-formatted lines produced elsewhere (child worker output).
   It is passed through uninterpreted, formatter tags included. 
 - Command-level exit codes stay in `Console\Command\Queue\*`; services return `bool` success.
+
+```mermaid
+flowchart LR
+    subgraph entry["Entry points"]
+        CLI["CLI<br/>ProcessQueueCommand"]
+        CRON["Cron<br/>ProcessQueue"]
+    end
+
+    subgraph producers["Producers (call the reporter)"]
+        ORCH["QueueOrchestrator<br/>QueueWorker"]
+        POOL["WorkerProcessPool<br/>(relays child output)"]
+    end
+
+    IFACE{{"QueueReporterInterface"}}
+
+    CONSOLE["ConsoleQueueReporter"]
+    LOGGER["LoggerQueueReporter"]
+
+    TERM[/"Terminal"/]
+    LOG[/"var/log/algolia.log"/]
+
+    CLI -. creates .-> CONSOLE
+    CRON -. injected .-> LOGGER
+
+    ORCH -- "info / warning / error" --> IFACE
+    POOL -- "log (raw lines)" --> IFACE
+
+    IFACE --> CONSOLE
+    IFACE --> LOGGER
+
+    CONSOLE --> TERM
+    LOGGER --> LOG
+```
 
 ### Worker Output Relay
 

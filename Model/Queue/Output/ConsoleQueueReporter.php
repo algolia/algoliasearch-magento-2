@@ -28,6 +28,7 @@ class ConsoleQueueReporter implements QueueReporterInterface
 
     public function log(string $message): void
     {
-        $this->output->writeln($message);
+        // Raw: relayed worker text may contain characters that look like formatter tags
+        $this->output->writeln($message, OutputInterface::OUTPUT_RAW);
     }
 }

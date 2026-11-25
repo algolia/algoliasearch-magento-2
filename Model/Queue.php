@@ -205,7 +205,7 @@ class Queue
      *
      * @throws Zend_Db_Exception
      */
-    public function runCron(?int $nbJobs = null, bool $force = false, ?int $storeId = null): void
+    public function runCron(?int $nbJobs = null, bool $force = false, ?int $storeId = null, ?string $runId = null): void
     {
         if (!$this->queueHelper->isQueueActive() && $force === false) {
             return;
@@ -219,6 +219,8 @@ class Queue
             'started' => date('Y-m-d H:i:s'),
             'processed_jobs' => 0,
             'with_empty_queue' => 0,
+            'store_id' => $storeId,
+            'run_id' => $runId,
         ];
 
         $started = time();

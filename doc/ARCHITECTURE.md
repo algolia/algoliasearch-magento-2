@@ -58,7 +58,7 @@ the implementations for Product, Category, Page, Suggestion, and AdditionalSecti
 `AlgoliaConnector` is the single gateway to the Algolia PHP API client. All API calls
 flow through it. `IndexSettingsHandler` pushes index configuration and handles replica
 setting forwarding. `AbstractIndexBuilder` provides store emulation so records reflect
-the correct store context during indexing. `QueueOrchestrator` is the shared sequential/parallel
+the correct store context during indexing. `Service\Queue\QueueOrchestrator` is the shared sequential/parallel
 queue processing entry point used by both the CLI command and the cron job.
 
 ### `Model/`
@@ -138,7 +138,7 @@ transfer object interfaces. `Insights/` and `Product/` define service contracts.
 ### `Cron/`
 
 `ProcessQueue.php` - the flag-gated cron dispatcher: the legacy `Queue.runCron()` sequential
-path when parallel processing is disabled, `Service\QueueOrchestrator` when it is enabled
+path when parallel processing is disabled, `Service\Queue\QueueOrchestrator` when it is enabled
 (see [Orchestrator Mode](#orchestrator-mode)).
 
 ### `Exception/`
@@ -208,7 +208,7 @@ Defined in `etc/db_schema.xml`:
 | Table | Purpose |
 |-------|---------|
 | `algoliasearch_queue` | Pending indexing jobs (store-scoped via `store_id`) |
-| `algoliasearch_queue_log` | Per-run execution logs |
+| `algoliasearch_queue_log` | Per-run execution logs (`store_id` and `run_id` correlate worker runs, see [Run ID Lifecycle](#run-id-lifecycle)) |
 | `algoliasearch_queue_archive` | Completed/failed job archive |
 | `algoliasearch_landing_page` | Built-in merchandising landing pages (see Cross-Cutting Concerns) |
 | `algoliasearch_query` | Search query data for suggestions |
@@ -287,6 +287,9 @@ Two invariants hold by convention:
   structural recursion guard.
 - **Failure isolation.** One store's failure does not abort the other stores' workers.
 
+Workers check credentials per store, never globally, because stores can be 
+configured individually. 
+
 Without store IDs the command runs sequentially or as the orchestrator, depending on the
 resolved concurrency (see Orchestrator Mode below).
 
@@ -318,14 +321,54 @@ output, and prints a per-store summary. The command exits 1 if any worker failed
 - **Accepted race.** Storeless rows enqueued after discovery are not seen by the running
   orchestrator; the next invocation's storeless check catches them.
 
+#### Output Funnel
+
+Every line the orchestrator, worker and pool produce goes through a single
+`QueueReporterInterface` instance, so the CLI (`ConsoleQueueReporter`) and cron
+(`LoggerQueueReporter`, `var/log/algolia.log`) share identical code paths and differ only in
+transport. 
+- `info()`, `warning()`, `error()` are for the caller's own severity-classified messages.
+- `log()` is reserved for relaying pre-formatted lines produced elsewhere (child worker output).
+  It is passed through uninterpreted, formatter tags included. 
+- Command-level exit codes stay in `Console\Command\Queue\*`; services return `bool` success.
+
+#### Worker Output Relay
+
+`WorkerProcess` owns output structuring; the pool only spawns, polls, relays and collects exit
+codes.
+
+- Stdout and stderr each get their own `WorkerLineBuffer` (one instance per worker for its whole
+  lifetime, since chunks split mid-line between polls). Complete lines are prefixed with the
+  store label (`[Store 2 (English)] `) and relayed via `QueueReporterInterface::log()`.
+- Ordering is guaranteed within a stream, but across stdout and stderr only at poll granularity
+  (stdout lines are emitted before stderr lines for each poll).
+- Prefixing applies only to orchestrator relay. A worker invoked directly from the CLI prints raw,
+  unprefixed output, which is what the orchestrator then prefixes.
+- Labels come from `StoreNameFetcher` (memoized, degrades to `Store N` for a
+  deleted store), resolved at the point of use rather than threaded through signatures.
+
+#### Run ID Lifecycle
+
+A run ID correlates the `algoliasearch_queue_log` rows written by all workers of a single
+orchestration tick.
+
+1. **Generated** once per tick by `QueueOrchestrator::orchestrate()`, after the lock and discovery 
+  checks pass. Ticks that exit early (lock held, nothing pending, storeless fallback) generate none.
+2. **Transported** to each child as the internal `--run-id=<id>` CLI option appended by
+   `WorkerProcessFactory`.
+3. **Recorded** by `Queue::runCron(..., $storeId, $runId)` on the log row, together with `store_id`.
+4. **Rows without a run.** Sequential runs and direct worker invocations without `--run-id` leave
+   both columns `NULL`, so `run_id IS NOT NULL` identifies orchestrator-tick rows. There is no
+   parent row for the orchestrator itself; the shared `run_id` is the only link.
+
 #### Cron Dispatcher
 
 The built-in cron job (`Cron\ProcessQueue`, job `algolia_queue_process` in the `algolia` group)
-dispatches over the same `Service\QueueOrchestrator`. The gate is the concurrency configuration
+dispatches over the same `Service\Queue\QueueOrchestrator`. The gate is the concurrency configuration
 itself (`QueueHelper::isParallelProcessingEnabled()`, i.e. the configured maximum is not `1`), so
 the `config.xml` default keeps the legacy sequential run unchanged. The cron reads default scope
-only, so store-scoped configuration values do not affect it. It reports through `LoggerQueueReporter`
-and passes `NullOutput` for the child-worker stdout, and never throws for store failures or the
+only, so store-scoped configuration values do not affect it. It reports through `LoggerQueueReporter`,
+which also receives the prefixed child-worker lines, and never throws for store failures or the
 summary: only unexpected exceptions mark `cron_schedule` failed.
 
 **Overlap protection (Magento_Cron audit):** Magento's group lock 

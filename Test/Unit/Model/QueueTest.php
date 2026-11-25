@@ -677,6 +677,48 @@ class QueueTest extends TestCase
         $this->assertSame([5 => 1], $this->getPrivateProperty($queue, 'noOfFailedJobsByStore'));
     }
 
+    public function testRunCronWritesStoreIdAndRunIdToTheQueueLogRow(): void
+    {
+        $insertedRows = [];
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('insert')->willReturnCallback(
+            function (string $table, array $bind) use (&$insertedRows) {
+                $insertedRows[$table] = $bind;
+
+                return 1;
+            }
+        );
+
+        $queue = $this->createProcessingQueue(dbAdapter: $dbAdapter);
+        $queue->runCron(10, false, 2, 'abc123');
+
+        $logRow = $insertedRows['algoliasearch_queue_log'];
+        $this->assertSame(2, $logRow['store_id']);
+        $this->assertSame('abc123', $logRow['run_id']);
+    }
+
+    public function testRunCronSequentialPathWritesNullStoreIdAndRunIdToTheQueueLogRow(): void
+    {
+        $insertedRows = [];
+
+        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter->method('insert')->willReturnCallback(
+            function (string $table, array $bind) use (&$insertedRows) {
+                $insertedRows[$table] = $bind;
+
+                return 1;
+            }
+        );
+
+        $queue = $this->createProcessingQueue(dbAdapter: $dbAdapter);
+        $queue->runCron(10);
+
+        $logRow = $insertedRows['algoliasearch_queue_log'];
+        $this->assertNull($logRow['store_id']);
+        $this->assertNull($logRow['run_id']);
+    }
+
     /**
      * ObjectManager mock returning a moveIndexWithSetSettings() mock handler for IndexMover,
      * with the given expectation on how often a handler is resolved.
@@ -707,10 +749,14 @@ class QueueTest extends TestCase
      * @param array[] $updateCalls Bucket to receive [bind, where] recorded from AdapterInterface::update() calls
      */
     private function createProcessingQueue(
-        ObjectManagerInterface $objectManager,
-        array &$updateCalls,
-        array $jobs,
+        ?ObjectManagerInterface $objectManager = null,
+        ?array &$updateCalls = null,
+        array $jobs = [],
+        ?AdapterInterface $dbAdapter = null,
     ): Queue {
+        $objectManager ??= $this->createStub(ObjectManagerInterface::class);
+        $updateCalls ??= [];
+
         $queueHelper = $this->createStub(QueueHelper::class);
         $queueHelper->method('isQueueActive')->willReturn(true);
 
@@ -741,7 +787,7 @@ class QueueTest extends TestCase
         $select->method('order')->willReturnSelf();
         $select->method('limit')->willReturnSelf();
 
-        $dbAdapter = $this->createStub(AdapterInterface::class);
+        $dbAdapter ??= $this->createStub(AdapterInterface::class);
         $dbAdapter->method('select')->willReturn($select);
         $dbAdapter->method('query')->willReturn($this->createStub(Zend_Db_Statement_Interface::class));
         $dbAdapter->method('update')->willReturnCallback(

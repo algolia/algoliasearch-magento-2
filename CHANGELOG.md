@@ -20,7 +20,9 @@
     - Applies a non-blocking orchestrator lock (`algolia_queue_process`); when it is already held, the run warns and exits 0.
     - New `--sequential` option forces the legacy sequential run
     - The cron job (`algolia_queue_process` in the `algolia` group) dispatches through the same shared orchestrator service when parallel processing is enabled ("Maximum parallel queue processes" other than `1`); with the default configuration it runs the legacy sequential queue unchanged. Orchestrator lines go to `var/log/algolia.log` and the job never throws for per-store failures.
-    - Queue progress reporting moved behind the new `Api\QueueReporterInterface`
+    - Queue progress reporting moved behind the new `Api\QueueReporterInterface`, the single output funnel for the orchestrator and its workers
+    - Run-log correlation: each orchestrator tick now generates a run ID, passed to workers via the internal `--run-id` option and recorded with the store ID in the new `store_id` and `run_id` columns of `algoliasearch_queue_log`. Sequential runs leave both `NULL`.
+    - Worker output is relayed line by line with a `[Store 2 (English)]` prefix
 - Added `Queue::addJob(JobDefinition, ?JobContext)` as the canonical enqueue entry point, backed by the readonly DTOs `Model\Data\Queue\JobDefinition` and `Model\Data\Queue\JobContext`.
     - `JobDefinition::$storeId` is non-nullable and is the single source of truth for the job's store: it is persisted in the `store_id` column instead of the serialized payload, so job merging cannot cross store boundaries.
     - Jobs enqueued before this release keep draining unchanged. All in-tree enqueuers now use `addJob()`.
@@ -56,7 +58,7 @@
 - Changed the signature of the `protected` method `Queue::getStoreMaxBatchSize()` from a required `int $storeId` to a nullable trailing optional `?int $storeId = null`.
 - Replaced the `protected` property `Queue::$noOfFailedJobs` (int counter) with the per-store failure map `Queue::$noOfFailedJobsByStore` (keyed by store ID, with jobs without a store tracked under `Queue::NO_STORE`).
 - Added new constructor dependencies:
-    - `ProcessQueueCommand` (`StoreNameFetcher`, `LockManagerInterface`, `MaxProcessesResolver`), `Queue` (`QueueHelper`, `JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). 
+    - `ProcessQueueCommand` (`StoreNameFetcher`, `QueueOrchestrator`, `QueueWorker`, `MaxProcessesResolver`), `Queue` (`QueueHelper`, `JobContextFactory`) and the five `Service/*/BatchQueueProcessor` classes (`JobDefinitionFactory`, `JobContextFactory`). 
     - `Block\Algolia`, `Block\Adminhtml\Queue\Status`, `Controller\Adminhtml\Queue\Index`, `Block\Adminhtml\Reindex\AbstractReindexAllButton`, `Controller\Adminhtml\IndexingManager\Reindex`, `Helper\Configuration\NoticeHelper` and `ViewModel\Adminhtml\IndexingManager\Form` now require `Helper\Configuration\QueueHelper`. `Block\Configuration` inherits the dependency from `Block\Algolia`.
 - Only code instantiating these classes directly is affected.
 

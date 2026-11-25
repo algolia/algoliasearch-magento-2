@@ -34,6 +34,8 @@
         <column xsi:type="int" name="duration" unsigned="true" padding="20" nullable="false" identity="false" comment="Duration"/>
         <column xsi:type="int" name="processed_jobs" unsigned="true" nullable="false" identity="false" comment="Processed Jobs"/>
         <column xsi:type="int" name="with_empty_queue" unsigned="true" nullable="false" identity="false" comment="With Empty Queue"/>
+        <column xsi:type="int" name="store_id" unsigned="true" nullable="true" identity="false" comment="Store Id"/>
+        <column xsi:type="varchar" name="run_id" nullable="true" length="32" comment="Orchestrator Run Id"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>

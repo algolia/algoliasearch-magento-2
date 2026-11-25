@@ -72,7 +72,7 @@ class StoreNameFetcherTest extends TestCase
             ->willThrowException(NoSuchEntityException::singleField('storeId', 42));
 
         $this->assertSame(
-            [42 => 'Store ID 42'],
+            [42 => 'Store 42'],
             $this->createObjectToTest($storeManager)->resolveStoreNames([42])
         );
     }
@@ -83,11 +83,11 @@ class StoreNameFetcherTest extends TestCase
         $storeManager->method('getStore')->willReturnCallback(
             fn(int $storeId): StoreInterface => $storeId === 3
                 ? throw NoSuchEntityException::singleField('storeId', 3)
-                : $this->createStoreStub('Store ' . $storeId)
+                : $this->createStoreStub('Store ' . $storeId . ' (Known)')
         );
 
         $this->assertSame(
-            [2 => 'Store 2', 3 => 'Store ID 3', 4 => 'Store 4'],
+            [2 => 'Store 2 (Known)', 3 => 'Store 3', 4 => 'Store 4 (Known)'],
             $this->createObjectToTest($storeManager)->resolveStoreNames([2, 3, 4])
         );
     }
@@ -101,5 +101,28 @@ class StoreNameFetcherTest extends TestCase
         $this->expectException(NoSuchEntityException::class);
 
         $this->createObjectToTest($storeManager)->resolveStoreNames([42], true);
+    }
+
+    public function testGetStoreLabelReturnsIdAndName(): void
+    {
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($this->createStoreStub('English'));
+
+        $this->assertSame(
+            'Store 2 (English)',
+            $this->createObjectToTest($storeManager)->getStoreLabel(2)
+        );
+    }
+
+    public function testGetStoreLabelFallsBackToIdLabelWhenStoreIsMissing(): void
+    {
+        $storeManager = $this->createStub(StoreManagerInterface::class);
+        $storeManager->method('getStore')
+            ->willThrowException(NoSuchEntityException::singleField('storeId', 42));
+
+        $this->assertSame(
+            'Store 42',
+            $this->createObjectToTest($storeManager)->getStoreLabel(42)
+        );
     }
 }

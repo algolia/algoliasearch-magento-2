@@ -2,8 +2,11 @@
 
 namespace Algolia\AlgoliaSearch\Test\Unit\Model\Queue;
 
+use Algolia\AlgoliaSearch\Model\Queue\Output\WorkerLineBuffer;
+use Algolia\AlgoliaSearch\Model\Queue\Output\WorkerLineBufferFactory;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcess;
 use Algolia\AlgoliaSearch\Model\Queue\WorkerProcessFactory;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Algolia\AlgoliaSearch\Test\TestCase;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\ObjectManagerInterface;
@@ -27,7 +30,15 @@ class WorkerProcessFactoryTest extends TestCase
         $objectManager ??= $this->createStub(ObjectManagerInterface::class);
         $objectManager->method('create')->willReturnCallback(
             function (string $className, array $arguments = []) {
-                return new $className($arguments['storeId'], $arguments['process']);
+                $workerLineBufferFactory = $this->createStub(WorkerLineBufferFactory::class);
+                $workerLineBufferFactory->method('create')->willReturnCallback(fn () => new WorkerLineBuffer());
+
+                return new $className(
+                    $arguments['storeId'],
+                    $arguments['process'],
+                    $workerLineBufferFactory,
+                    $this->createStub(StoreNameFetcher::class)
+                );
             }
         );
 
@@ -97,6 +108,32 @@ class WorkerProcessFactoryTest extends TestCase
         $command = $this->invokeMethod($this->createObjectToTest(), 'buildCommand', [2]);
 
         $this->assertSame(['/fake/php', 'bin/magento', 'algolia:queue:process', '2'], $command);
+    }
+
+    public function testBuildCommandWithRunIdAppendsTheRunIdOption(): void
+    {
+        $command = $this->invokeMethod($this->createObjectToTest(), 'buildCommand', [2, 'abc123']);
+
+        $this->assertSame(
+            ['/fake/php', 'bin/magento', 'algolia:queue:process', '2', '--run-id=abc123'],
+            $command
+        );
+    }
+
+    public function testCreateWithoutRunIdBuildsACommandWithoutTheRunIdOption(): void
+    {
+        $worker = $this->createObjectToTest()->create(2);
+        $process = $this->getPrivateProperty($worker, 'process');
+
+        $this->assertStringNotContainsString('--run-id', $process->getCommandLine());
+    }
+
+    public function testCreateWithRunIdAppendsTheRunIdOptionToTheCommand(): void
+    {
+        $worker = $this->createObjectToTest()->create(2, 'abc123');
+        $process = $this->getPrivateProperty($worker, 'process');
+
+        $this->assertStringContainsString('--run-id=abc123', $process->getCommandLine());
     }
 
     public function testFindPhpBinaryReturnsTheInjectedFinderResult(): void

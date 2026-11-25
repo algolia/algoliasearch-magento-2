@@ -6,8 +6,7 @@ use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
-use Symfony\Component\Console\Output\NullOutput;
+use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
 
 class ProcessQueue
 {
@@ -17,7 +16,6 @@ class ProcessQueue
         protected AlgoliaCredentialsManager $algoliaCredentialsManager,
         protected QueueOrchestrator $queueOrchestrator,
         protected QueueReporterInterface $queueReporter,
-        protected NullOutput $nullOutput,
     ) {}
 
     public function execute()
@@ -39,6 +37,8 @@ class ProcessQueue
             return;
         }
 
-        $this->queueOrchestrator->orchestrate(null, $this->queueReporter, $this->nullOutput);
+        // Worker output is funneled through the cron's own reporter, so prefixed child
+        // lines land in algolia.log like the orchestrator's own lines
+        $this->queueOrchestrator->orchestrate(null, $this->queueReporter);
     }
 }

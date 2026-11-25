@@ -4,21 +4,17 @@ namespace Algolia\AlgoliaSearch\Console\Command\Queue;
 
 use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 use Algolia\AlgoliaSearch\Console\Command\AbstractStoreCommand;
-use Algolia\AlgoliaSearch\Helper\ConfigHelper;
-use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Model\Queue\MaxProcessesResolver;
-use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Model\Queue\Output\ConsoleQueueReporterFactory;
+use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Service\Queue\QueueWorker;
 use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Lock\LockManagerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Zend_Db_Exception;
 
 /**
  * Queue processing command with two modes.
@@ -35,19 +31,16 @@ use Zend_Db_Exception;
  */
 class ProcessQueueCommand extends AbstractStoreCommand
 {
-    public const string STORE_LOCK_NAME_PREFIX = 'algolia_queue_process_store_';
     protected const string MAX_PROCESSES_OPTION = 'max-processes';
     protected const string SEQUENTIAL_OPTION = 'sequential';
+    protected const string RUN_ID_OPTION = 'run-id';
 
     public function __construct(
         protected State                       $state,
         protected StoreNameFetcher            $storeNameFetcher,
-        protected ConfigHelper                $configHelper,
-        protected Queue                       $queue,
-        protected AlgoliaCredentialsManager   $algoliaCredentialsManager,
-        protected LockManagerInterface        $lockManager,
         protected MaxProcessesResolver        $maxProcessesResolver,
         protected QueueOrchestrator           $queueOrchestrator,
+        protected QueueWorker                 $queueWorker,
         protected ConsoleQueueReporterFactory $consoleQueueReporterFactory,
         ?string                               $name = null
     ) {
@@ -104,6 +97,13 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 InputOption::VALUE_NONE,
                 'Safety override: Process the whole queue sequentially, bypassing parallel orchestration.'
             ),
+            new InputOption(
+                self::RUN_ID_OPTION,
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Internal: run correlation ID set by the orchestrator on its worker invocations. '
+                . 'Recorded on the queue log rows this process writes.'
+            ),
         ];
     }
 
@@ -129,31 +129,33 @@ class ProcessQueueCommand extends AbstractStoreCommand
             return Cli::RETURN_FAILURE;
         }
 
-        // Explicit store IDs always mean worker mode: --sequential and --max-processes are ignored
+        // Explicit store IDs always mean worker mode even if --sequential and --max-processes are specified
         return $storeIds
-            ? $this->runWorkerMode($storeIds)
+            ? $this->runWorkerMode($storeIds, $this->getRunId($input))
             : $this->runBatchMode($input, $maxProcessesOverride);
     }
 
-    protected function runWorkerMode(array $storeIds): int
+    protected function getRunId(InputInterface $input): ?string
+    {
+        $runId = $input->getOption(self::RUN_ID_OPTION);
+
+        return $runId !== null ? (string) $runId : null;
+    }
+
+    protected function runWorkerMode(array $storeIds, ?string $runId = null): int
     {
         try {
             // Fails before any work when a store ID does not exist
-            $storeNames = $this->storeNameFetcher->resolveStoreNames($storeIds, true);
+            $this->storeNameFetcher->resolveStoreNames($storeIds, true);
         } catch (LocalizedException $e) {
             $this->output->writeln('<error>' . $e->getMessage() . '</error>');
 
             return Cli::RETURN_FAILURE;
         }
 
-        $hasFailure = false;
-        foreach ($storeIds as $storeId) {
-            if (!$this->processQueueForStore($storeId, $storeNames[$storeId])) {
-                $hasFailure = true;
-            }
-        }
-
-        return $hasFailure ? Cli::RETURN_FAILURE : Cli::RETURN_SUCCESS;
+        return $this->toExitCode(
+            $this->queueWorker->processStores($storeIds, $this->createConsoleReporter(), $runId)
+        );
     }
 
     protected function runBatchMode(InputInterface $input, ?int $maxProcessesOverride): int
@@ -174,7 +176,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
             );
         }
 
-        return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+        return $this->toExitCode($this->queueOrchestrator->runSequential($this->createConsoleReporter()));
     }
 
     protected function runOrchestratorMode(?int $maxProcessesOverride): int
@@ -183,7 +185,7 @@ class ProcessQueueCommand extends AbstractStoreCommand
         $this->output->writeln('<info>Maximum parallel queue processes: ' . $maxProcesses . '</info>');
 
         if ($maxProcesses <= 1) {
-            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+            return $this->toExitCode($this->queueOrchestrator->runSequential($this->createConsoleReporter()));
         }
 
         if (!$this->maxProcessesResolver->isProcessSpawningSupported()) {
@@ -191,71 +193,17 @@ class ProcessQueueCommand extends AbstractStoreCommand
                 '<error>PHP proc_open is disabled, falling back to sequential processing.</error>'
             );
 
-            return $this->queueOrchestrator->runSequential($this->createConsoleReporter());
+            return $this->toExitCode($this->queueOrchestrator->runSequential($this->createConsoleReporter()));
         }
 
-        return $this->queueOrchestrator->orchestrate(
-            $maxProcessesOverride,
-            $this->createConsoleReporter(),
-            $this->output
+        return $this->toExitCode(
+            $this->queueOrchestrator->orchestrate($maxProcessesOverride, $this->createConsoleReporter())
         );
     }
 
-    /**
-     * Worker path for a single store. A held lock means another process (cron or worker)
-     * is already draining that store: skip it with a warning and let the remaining stores run.
-     * Missing credentials and database failures report the error and count as failures;
-     * a store that fails processing does not abort the remaining stores.
-     */
-    protected function processQueueForStore(int $storeId, string $storeName): bool
+    protected function toExitCode(bool $success): int
     {
-        if (!$this->algoliaCredentialsManager->checkCredentialsWithSearchOnlyAPIKey($storeId)) {
-            $this->algoliaCredentialsManager->displayErrorMessage(self::class, $storeId);
-
-            return false;
-        }
-
-        $lockName = $this->getStoreLockName($storeId);
-
-        if (!$this->lockManager->lock($lockName, 0)) {
-            $this->output->writeln(
-                '<comment>Indexing queue is already being processed for ' . $storeName
-                . ' (ID ' . $storeId . '), skipping.</comment>'
-            );
-
-            return true;
-        }
-
-        try {
-            $this->queue->runCron(null, false, $storeId);
-        } catch (Zend_Db_Exception $e) {
-            $this->output->writeln(
-                '<error>Failed to process indexing queue for ' . $storeName . ' (ID ' . $storeId . '): '
-                . $e->getMessage() . '</error>'
-            );
-
-            return false;
-        } finally {
-            $this->lockManager->unlock($lockName);
-        }
-
-        // The orchestrator keys on this exit code to report the store as failed in its summary
-        $failedJobs = $this->queue->getNoOfFailedJobs($storeId);
-        if ($failedJobs > 0) {
-            $this->output->writeln(
-                '<error>' . $failedJobs . ' indexing job(s) failed for ' . $storeName
-                . ' (ID ' . $storeId . ').</error>'
-            );
-
-            return false;
-        }
-
-        return true;
-    }
-
-    protected function getStoreLockName(int $storeId): string
-    {
-        return self::STORE_LOCK_NAME_PREFIX . $storeId;
+        return $success ? Cli::RETURN_SUCCESS : Cli::RETURN_FAILURE;
     }
 
     /**

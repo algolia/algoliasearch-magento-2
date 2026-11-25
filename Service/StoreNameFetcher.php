@@ -6,6 +6,13 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
+/**
+ * Resolves store display names and labels for admin, CLI and log output.
+ *
+ * Names are memoized per store ID for the lifetime of the instance, so a caller can resolve at
+ * the point of use instead of threading names through its call signatures. Because the cache is
+ * never invalidated, a store renamed during a run keeps the name of its first lookup.
+ */
 class StoreNameFetcher
 {
     /** @var array<int, string> */
@@ -13,8 +20,7 @@ class StoreNameFetcher
 
     public function __construct(
         protected StoreManagerInterface $storeManager
-    )
-    {}
+    ) {}
 
     /**
      * @throws NoSuchEntityException
@@ -38,7 +44,7 @@ class StoreNameFetcher
     public function getStoreNames(array $storeIds): array
     {
         return array_map(
-            fn($storeId) => $this->getStoreName($storeId),
+            fn ($storeId) => $this->getStoreName($storeId),
             $storeIds
         );
     }
@@ -66,10 +72,30 @@ class StoreNameFetcher
                     throw $e;
                 }
 
-                $storeNames[$storeId] = 'Store ID ' . $storeId;
+                $storeNames[$storeId] = $this->getGenericStoreLabel($storeId);
             }
         }
 
         return $storeNames;
+    }
+
+    /**
+     * Provides a consistent per-store display label: "Store 2 (English)"
+     * Falls back to a plain ID label when the store cannot be resolved
+     * (e.g. it was deleted while its jobs were still pending).
+     */
+    public function getStoreLabel(int $storeId): string
+    {
+        $label = $this->getGenericStoreLabel($storeId);
+        try {
+            return $label . ' (' . $this->getStoreName($storeId) . ')';
+        } catch (LocalizedException $e) {
+            return $label;
+        }
+    }
+
+    protected function getGenericStoreLabel(int $storeId): string
+    {
+        return 'Store ' . $storeId;
     }
 }

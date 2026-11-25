@@ -289,9 +289,9 @@
     <!-- queue handling -->
     <type name="Algolia\AlgoliaSearch\Console\Command\Queue\ProcessQueueCommand">
         <arguments>
-            <argument name="configHelper" xsi:type="object">Algolia\AlgoliaSearch\Helper\ConfigHelper\Proxy</argument>
-            <argument name="queue" xsi:type="object">Algolia\AlgoliaSearch\Model\Queue\Proxy</argument>
-            <argument name="algoliaCredentialsManager" xsi:type="object">Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager\Proxy</argument>
+            <argument name="storeNameFetcher" xsi:type="object">Algolia\AlgoliaSearch\Service\StoreNameFetcher\Proxy</argument>
+            <argument name="queueOrchestrator" xsi:type="object">Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator\Proxy</argument>
+            <argument name="queueWorker" xsi:type="object">Algolia\AlgoliaSearch\Service\Queue\QueueWorker\Proxy</argument>
         </arguments>
     </type>
     <type name="Algolia\AlgoliaSearch\Console\Command\Queue\ClearQueueCommand">

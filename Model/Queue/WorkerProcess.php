@@ -2,18 +2,33 @@
 
 namespace Algolia\AlgoliaSearch\Model\Queue;
 
+use Algolia\AlgoliaSearch\Model\Queue\Output\WorkerLineBuffer;
+use Algolia\AlgoliaSearch\Model\Queue\Output\WorkerLineBufferFactory;
+use Algolia\AlgoliaSearch\Service\StoreNameFetcher;
 use Symfony\Component\Process\Process;
 
 /**
- * A spawned per-store queue worker. Wraps the underlying Symfony process so the pool
- * never touches Symfony directly - intended for per-store stdout structuring layering.
+ * A spawned per-store queue worker. Wraps the underlying Symfony process so the pool never
+ * touches Symfony directly, and owns the worker's output structuring: stdout and stderr
+ * are kept in separate line buffers and surfaced as complete lines prefixed with the
+ * store label.
  */
 class WorkerProcess
 {
+    protected WorkerLineBuffer $stdoutBuffer;
+
+    protected WorkerLineBuffer $stderrBuffer;
+
+    protected ?string $label = null;
+
     public function __construct(
-        protected readonly int $storeId,
-        protected readonly Process $process,
+        protected readonly int                     $storeId,
+        protected readonly Process                 $process,
+        protected readonly WorkerLineBufferFactory $workerLineBufferFactory,
+        protected readonly StoreNameFetcher        $storeNameFetcher,
     ) {
+        $this->stdoutBuffer = $this->workerLineBufferFactory->create();
+        $this->stderrBuffer = $this->workerLineBufferFactory->create();
     }
 
     public function getStoreId(): int
@@ -46,28 +61,59 @@ class WorkerProcess
     }
 
     /**
-     * Reads and clears the underlying stdout buffer
-     * @return string output produced since the previous read
+     * Complete lines produced since the previous call, each prefixed with the store
+     * label; stdout lines come before stderr lines, and ordering across the two streams
+     * is only guaranteed at poll granularity. Once the worker has terminated, the
+     * remaining partial lines are flushed as well, so later calls return nothing.
+     *
+     * @return string[]
      */
-    public function getIncrementalOutput(): string
+    public function readLines(): array
     {
-        return $this->process->getOutput();
+        $lines = $this->prefixLines([
+            ...$this->stdoutBuffer->push($this->process->getIncrementalOutput()),
+            ...$this->stderrBuffer->push($this->process->getIncrementalErrorOutput()),
+        ]);
+
+        if (!$this->process->isRunning()) {
+            foreach ([$this->stdoutBuffer, $this->stderrBuffer] as $buffer) {
+                // Pick up any unfinished incremental output before flushing the tail
+                $lines = [
+                    ...$lines,
+                    ...$this->prefixLines([
+                        ...$this->stdoutBuffer->push($this->process->getIncrementalOutput()),
+                        ...$this->stderrBuffer->push($this->process->getIncrementalErrorOutput()),
+                    ]),
+                ];
+
+                $tail = $buffer->flush();
+
+                if ($tail !== null) {
+                    $lines[] = $this->prefixLine($tail);
+                }
+            }
+        }
+
+        return $lines;
     }
 
     /**
-     * Reads and clears the underlying stderr buffer
-     * @return string error output since previous read
+     * @param string[] $lines
+     *
+     * @return string[]
      */
-    public function getIncrementalErrorOutput(): string
+    protected function prefixLines(array $lines): array
     {
-        return $this->process->getErrorOutput();
+        return array_map(fn (string $line) => $this->prefixLine($line), $lines);
     }
 
-    /**
-     * @return string Remaining buffered output of a finished worker.
-     */
-    public function drainOutput(): string
+    protected function prefixLine(string $line): string
     {
-        return $this->process->getOutput() . $this->process->getErrorOutput();
+        return '[' . $this->getLabel() . '] ' . $line;
+    }
+
+    protected function getLabel(): string
+    {
+        return $this->label ??= $this->storeNameFetcher->getStoreLabel($this->storeId);
     }
 }

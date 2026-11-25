@@ -2,13 +2,13 @@
 
 namespace Algolia\AlgoliaSearch\Model\Queue;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Algolia\AlgoliaSearch\Api\QueueReporterInterface;
 
 /**
  * Runs one worker per store ID, up to a concurrency cap, refilling the pool as workers
  * exit. Symfony Process has no "wait for any" API, so the pool polls and refills;
- * Owns spawning, streaming and exit code collection only - no locks, no discovery,
- * no mode decisions, etc.
+ * owns spawning, output relay and exit code collection only - the workers surface their
+ * own structured, prefixed lines. No locks, no discovery, no mode decisions, etc.
  */
 class WorkerProcessPool
 {
@@ -21,35 +21,46 @@ class WorkerProcessPool
 
     /**
      * @param int[] $storeIds
+     * @param string|null $runId Correlation ID forwarded to every spawned worker's --run-id option
      *
      * @return array<int, int> Exit codes keyed by store ID (killed workers count as failures)
      */
-    public function run(array $storeIds, int $maxProcesses, OutputInterface $output): array
-    {
+    public function run(
+        array $storeIds,
+        int $maxProcesses,
+        QueueReporterInterface $reporter,
+        ?string $runId = null
+    ): array {
         $pendingStoreIds = array_values($storeIds);
         $workers = [];
         $exitCodes = [];
 
         while ($pendingStoreIds && count($workers) < $maxProcesses) {
-            $workers[] = $this->startWorker(array_shift($pendingStoreIds));
+            $workers[] = $this->startWorker(array_shift($pendingStoreIds), $runId);
         }
 
         while ($workers) {
             usleep(self::POLL_INTERVAL_MICROSECONDS);
 
+            /**
+             * @var WorkerProcess $worker
+             */
             foreach ($workers as $index => $worker) {
-                $this->forwardOutput($worker, $output);
+                $this->relayLines($worker, $reporter);
 
                 if ($worker->isRunning()) {
                     continue;
                 }
 
-                $this->writeChunk($worker->drainOutput(), $output);
+                // The worker may have terminated just after readLines() saw it running:
+                // one more pass flushes any partial line it produced on the way out
+                $this->relayLines($worker, $reporter);
+
                 $exitCodes[$worker->getStoreId()] = $worker->getEffectiveExitCode();
                 unset($workers[$index]);
 
                 if ($pendingStoreIds) { //keep filling as workers free up
-                    $workers[] = $this->startWorker(array_shift($pendingStoreIds));
+                    $workers[] = $this->startWorker(array_shift($pendingStoreIds), $runId);
                 }
             }
         }
@@ -57,24 +68,18 @@ class WorkerProcessPool
         return $exitCodes;
     }
 
-    protected function startWorker(int $storeId): WorkerProcess
+    protected function startWorker(int $storeId, ?string $runId = null): WorkerProcess
     {
-        $worker = $this->workerProcessFactory->create($storeId);
+        $worker = $this->workerProcessFactory->create($storeId, $runId);
         $worker->start();
 
         return $worker;
     }
 
-    protected function forwardOutput(WorkerProcess $worker, OutputInterface $output): void
+    protected function relayLines(WorkerProcess $worker, QueueReporterInterface $reporter): void
     {
-        $this->writeChunk($worker->getIncrementalOutput(), $output);
-        $this->writeChunk($worker->getIncrementalErrorOutput(), $output);
-    }
-
-    protected function writeChunk(string $chunk, OutputInterface $output): void
-    {
-        if ($chunk !== '') {
-            $output->write($chunk);
+        foreach ($worker->readLines() as $line) {
+            $reporter->log($line);
         }
     }
 }

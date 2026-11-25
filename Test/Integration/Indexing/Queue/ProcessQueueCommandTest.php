@@ -57,14 +57,14 @@ class ProcessQueueCommandTest extends QueueTestCase
             'store_id' => $defaultStoreId,
             'class' => IndicesConfigurator::class,
             'method' => 'saveConfigurationToAlgolia',
-            'data' => json_encode([$defaultStoreId]),
+            'data' => json_encode([]),
             'data_size' => 1,
         ]);
         $this->seedJob([
             'store_id' => $secondStoreId,
             'class' => IndicesConfigurator::class,
             'method' => 'saveConfigurationToAlgolia',
-            'data' => json_encode([$secondStoreId]),
+            'data' => json_encode([]),
             'data_size' => 1,
         ]);
 

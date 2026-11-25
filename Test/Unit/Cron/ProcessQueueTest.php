@@ -9,9 +9,8 @@ use Algolia\AlgoliaSearch\Cron\ProcessQueue;
 use Algolia\AlgoliaSearch\Helper\Configuration\QueueHelper;
 use Algolia\AlgoliaSearch\Model\Queue;
 use Algolia\AlgoliaSearch\Service\AlgoliaCredentialsManager;
-use Algolia\AlgoliaSearch\Service\QueueOrchestrator;
+use Algolia\AlgoliaSearch\Service\Queue\QueueOrchestrator;
 use Algolia\AlgoliaSearch\Test\TestCase;
-use Symfony\Component\Console\Output\NullOutput;
 
 class ProcessQueueTest extends TestCase
 {
@@ -21,7 +20,6 @@ class ProcessQueueTest extends TestCase
         ?AlgoliaCredentialsManager $credentialsManager = null,
         ?QueueOrchestrator $queueOrchestrator = null,
         ?QueueReporterInterface $queueReporter = null,
-        ?NullOutput $nullOutput = null,
     ): ProcessQueue {
         return new ProcessQueue(
             $queueHelper ?? $this->createStub(QueueHelper::class),
@@ -29,7 +27,6 @@ class ProcessQueueTest extends TestCase
             $credentialsManager ?? $this->createStub(AlgoliaCredentialsManager::class),
             $queueOrchestrator ?? $this->createStub(QueueOrchestrator::class),
             $queueReporter ?? $this->createStub(QueueReporterInterface::class),
-            $nullOutput ?? $this->createStub(NullOutput::class),
         );
     }
 
@@ -71,7 +68,9 @@ class ProcessQueueTest extends TestCase
             ->execute();
     }
 
-    /** TODO: Revisit this logic - is this check necessary since creds are handled per store? */
+    /**
+     * TODO: Revisit this logic - is this check necessary since creds are handled per store?
+     */
     public function testLegacyPathDisplaysErrorAndDoesNotRunCronWhenCredentialsAreInvalid(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: false);
@@ -117,7 +116,7 @@ class ProcessQueueTest extends TestCase
         )->execute();
     }
 
-    public function testParallelPathOrchestratesWithTheInjectedReporterAndNeverRunsCronGlobally(): void
+    public function testParallelPathOrchestratesWithTheInjectedReporter(): void
     {
         $queueHelper = $this->createQueueHelper(isActive: true, useBuiltInCron: true, parallel: true);
 
@@ -128,13 +127,21 @@ class ProcessQueueTest extends TestCase
         $queue = $this->createMock(Queue::class);
         $queue->expects($this->never())->method('runCron');
 
-        $queueReporter = $this->createStub(QueueReporterInterface::class);
-        $nullOutput = $this->createStub(NullOutput::class);
+        $queueReporter = $this->createMock(QueueReporterInterface::class);
+        $queueReporter->expects($this->once())->method('log')->with('[Store 2 (English)] worker line');
 
         $queueOrchestrator = $this->createMock(QueueOrchestrator::class);
         $queueOrchestrator->expects($this->once())
             ->method('orchestrate')
-            ->with(null, $queueReporter, $nullOutput);
+            ->with(
+                null,
+                $this->identicalTo($queueReporter)
+            )
+            ->willReturnCallback(function ($override, QueueReporterInterface $reporter): bool {
+                $reporter->log('[Store 2 (English)] worker line');
+
+                return true;
+            });
 
         $this->createObjectToTest(
             queueHelper: $queueHelper,
@@ -142,7 +149,6 @@ class ProcessQueueTest extends TestCase
             credentialsManager: $credentialsManager,
             queueOrchestrator: $queueOrchestrator,
             queueReporter: $queueReporter,
-            nullOutput: $nullOutput,
         )->execute();
     }
 
@@ -157,13 +163,13 @@ class ProcessQueueTest extends TestCase
 
         $queueOrchestrator = $this->createStub(QueueOrchestrator::class);
         $queueOrchestrator->method('orchestrate')->willReturnCallback(
-            function ($override, QueueReporterInterface $reporter): int {
+            function ($override, QueueReporterInterface $reporter): bool {
                 $reporter->info(
                     'Processing the indexing queue in parallel for 2 store(s) '
                     . 'with up to 2 worker(s).'
                 );
 
-                return 0;
+                return true;
             }
         );
 

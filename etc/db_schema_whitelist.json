@@ -29,7 +29,9 @@
             "started": true,
             "duration": true,
             "processed_jobs": true,
-            "with_empty_queue": true
+            "with_empty_queue": true,
+            "store_id": true,
+            "run_id": true
         },
         "constraint": {
             "PRIMARY": true

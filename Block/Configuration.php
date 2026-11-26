@@ -156,6 +156,10 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
             'instant' => $this->getInstantSearchConfig($addToCartParams),
             'autocomplete' => $this->getAutocompleteConfiguration(),
             'routing' => $this->getRoutingConfig(),
+            'smartGroups' => [
+                'enabled' => $this->isSmartGroupsEnabled(),
+                'compositionId' => $this->getCompositionId(),
+            ],
             'landingPage' => [
                 'query' => $this->getLandingPageQuery(),
                 'configuration' => $this->getLandingPageConfiguration(),
@@ -526,5 +530,15 @@ class Configuration extends Algolia implements CollectionDataSourceInterface
     protected function isProductListingPage(): bool
     {
         return $this->isSearchPage() || $this->isLandingPage();
+    }
+
+    protected function isSmartGroupsEnabled(): bool
+    {
+        return $this->merchandisingStudioHelper->isSmartGroupsEnabled();
+    }
+
+    protected function getCompositionId(): string
+    {
+        return $this->merchandisingStudioHelper->getCompositionId();
     }
 }

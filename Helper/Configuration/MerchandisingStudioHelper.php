@@ -16,6 +16,9 @@ class MerchandisingStudioHelper
     public const string IS_SMART_GROUPS_ENABLED =
         'algoliasearch_merchandising_studio/smart_groups/is_smart_groups_enabled';
 
+    public const string COMPOSITION_ID =
+        'algoliasearch_merchandising_studio/smart_groups/composition';
+
     public function __construct(
         protected ScopeConfigInterface $configInterface
     ){}
@@ -33,5 +36,10 @@ class MerchandisingStudioHelper
     public function isSmartGroupsEnabled($storeId = null): bool
     {
         return $this->configInterface->isSetFlag(self::IS_SMART_GROUPS_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getCompositionId($storeId = null): string
+    {
+        return $this->configInterface->getValue(self::COMPOSITION_ID, ScopeInterface::SCOPE_STORE, $storeId);
     }
 }

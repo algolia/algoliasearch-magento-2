@@ -1285,6 +1285,7 @@
                             Once you have created a composition related to your store in the Algolia dashboard, you can select it so your Smart Groups can appear on your frontend.
                         ]]>
                     </comment>
+                    <validate>required-entry no-whitespace</validate>
                     <depends>
                         <field id="is_smart_groups_enabled">1</field>
                     </depends>

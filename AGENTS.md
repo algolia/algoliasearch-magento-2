@@ -2,21 +2,21 @@
 
 ## Project Overview
 
-Algolia Search & Discovery extension for Magento 2 (`Algolia_AlgoliaSearch`). Indexes Magento entities (products, categories, pages, suggestions, additional sections) into Algolia, manages sorting replicas, captures analytics events (clicks, conversions) and personalization signals, and provides frontend search via autocomplete, InstantSearch, faceted navigation, and Recommend widgets. Includes built-in merchandising (landing pages) — likely to be deprecated or reworked. Uses the Algolia PHP API Client v4.
+Algolia Search & Discovery extension for Magento 2 (`Algolia_AlgoliaSearch`). Indexes Magento entities (products, categories, pages, suggestions, additional sections) into Algolia, manages sorting replicas, captures analytics events (clicks, conversions) and personalization signals, and provides frontend search via autocomplete, InstantSearch, faceted navigation, and Recommend widgets. Includes built-in merchandising (landing pages) - likely to be deprecated or reworked. Uses the Algolia PHP API Client v4.
 
 **Requirements:** PHP, Magento, and client-library constraints live in `composer.json` and the README compatibility matrix.
 
-## Verification (local — no Magento environment needed)
+## Verification (local - no Magento environment needed)
 
-- **`php -l <file>`** — Syntax-check modified PHP files
-- **`composer validate`** — Verify `composer.json` correctness
-- **`magento2-lint <path>`** — PHP-CS-Fixer (requires `composer global require algolia/magento2-tools`)
-- **`magento2-analyse <path>`** — PHPStan level 1 (same global install)
-- **`magento2-test <path>`** — Run all quality checks in dry-run mode
+- **`php -l <file>`** - Syntax-check modified PHP files
+- **`composer validate`** - Verify `composer.json` correctness
+- **`magento2-lint <path>`** - PHP-CS-Fixer (requires `composer global require algolia/magento2-tools`)
+- **`magento2-analyse <path>`** - PHPStan level 1 (same global install)
+- **`magento2-test <path>`** - Run all quality checks in dry-run mode
 
 ### Validating Changes Without Tests
 
-This repo is a Magento 2 extension — unit/integration tests require a full Magento environment (Docker or otherwise) and cannot be run from this checkout alone. When tests are unavailable:
+This repo is a Magento 2 extension - unit/integration tests require a full Magento environment (Docker or otherwise) and cannot be run from this checkout alone. When tests are unavailable:
 
 - Follow existing patterns in the same directory for new/modified classes
 - Verify DI wiring in `etc/di.xml` when adding new classes or interfaces
@@ -44,15 +44,20 @@ cd <magento_root>/dev/tests/integration
 
 Read these sections in [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) before writing or modifying any code:
 
-- **[Architectural Invariants](doc/ARCHITECTURE.md#architectural-invariants)** — hard rules that must not be violated
-- **[For Contributors](doc/ARCHITECTURE.md#for-contributors)** — required patterns for new entities, config, and queue handlers
-- **[Key Decisions](doc/ARCHITECTURE.md#key-decisions)** — design rationale that must be preserved
+- **[Architectural Invariants](doc/ARCHITECTURE.md#architectural-invariants)** - hard rules that must not be violated
+- **[For Contributors](doc/ARCHITECTURE.md#for-contributors)** - required patterns for new entities, config, and queue handlers
+- **[Key Decisions](doc/ARCHITECTURE.md#key-decisions)** - design rationale that must be preserved
 
 These apply equally to human contributors and agents. Non-compliance blocks merge.
 
 ## Architecture
 
-See [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) for the full architectural overview: topology, data flows, indexing pipeline, queue system, key decisions, invariants, and contributor guidelines.
+See [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) for the full architectural overview: topology, data flows, indexing pipeline, key decisions, invariants, and contributor guidelines.
+
+**Subsystem docs.** Read the one that covers the code you are touching. Each is authoritative for its own area, and [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) links it from the matching section:
+
+- [Queue System](doc/architecture/queue-system.md) - store-scoped job claiming, worker mode, orchestrator mode, output funnel, run ID lifecycle, cron dispatch
+- [Index Architecture](doc/architecture/index-architecture.md) - multi-store scoping, index naming, sorting replicas
 
 **Namespace:** PSR-4 root `Algolia\AlgoliaSearch` (registered in `registration.php`). Module name: `Algolia_AlgoliaSearch`.
 
@@ -63,7 +68,7 @@ CircleCI runs on branches matching `^(feat|fix|chore)/MAGE.*`. The tested PHP an
 ## Code Style
 
 - PSR-2 base with additional rules in `.php-cs-fixer.php`
-- Comments should be rare and only when logic isn't self-descriptive — prefer renaming classes/methods over adding comments
+- Comments should be rare and only when logic isn't self-descriptive - prefer renaming classes/methods over adding comments
 - Do not add PHPDoc blocks that merely restate PHP type declarations. Only add PHPDoc when it provides information beyond what the type signature already conveys (e.g., `@throws`, descriptions of non-obvious behavior, or types that cannot be expressed natively such as `array<string, int>`). The `no_superfluous_phpdoc_tags` fixer rule enforces this automatically.
 - PHPStan level 1 compliance required
-- MEQP2 marketplace standard — ERRORs block merge, WARNINGs should be avoided
+- MEQP2 marketplace standard - ERRORs block merge, WARNINGs should be avoided

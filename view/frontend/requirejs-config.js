@@ -28,6 +28,7 @@ const config = {
         'algoliaInstantSearchLib': 'Algolia_AlgoliaSearch/js/lib/algolia-instantsearch.min',
         'algoliaAutocompleteLib' : 'Algolia_AlgoliaSearch/js/lib/autocomplete/algolia-autocomplete.min',
         'algoliaAnalyticsLib'    : 'Algolia_AlgoliaSearch/js/lib/search-insights.min',
+        'algoliaCompositionLib'  : 'Algolia_AlgoliaSearch/js/lib/algolia-composition.min',
 
         // Autocomplete plugins
         'algoliaQuerySuggestionsPluginLib': 'Algolia_AlgoliaSearch/js/lib/autocomplete/query-suggestions-plugin.min',

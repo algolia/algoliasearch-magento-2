@@ -5,6 +5,7 @@ define([
     // Algolia core UI libs
     'algoliaSearchLib',
     'algoliaInstantSearchLib',
+    'algoliaCompositionLib',
 
     // Algolia integration dependencies
     'algoliaCommon',
@@ -16,7 +17,7 @@ define([
 
     'algoliaInsights',
     'algoliaHooks',
-], function (Component, $,  {liteClient: algoliasearch}, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
+], function (Component, $,  {liteClient: algoliasearch}, instantsearch, { compositionClient }, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
 
     return Component.extend({
 
@@ -64,13 +65,11 @@ define([
 
             const templateProcessor = await templateEngine.getSelectedEngineAdapter();
 
-            const mockAlgoliaBundle = this.mockAlgoliaBundle();
-
             this.invokeLegacyHooks();
 
             this.setupWrapper(templateProcessor);
 
-            const search = instantsearch(this.getInstantSearchOptions(mockAlgoliaBundle));
+            const search = instantsearch(this.getInstantSearchOptions());
 
             search.client.addAlgoliaAgent(this.getAlgoliaAgent());
 
@@ -78,15 +77,14 @@ define([
 
             this.initializeWidgets(
                 search,
-                this.getAllWidgetConfiguration(search, templateProcessor),
-                mockAlgoliaBundle
+                this.getAllWidgetConfiguration(search, templateProcessor)
             );
 
             if (algoliaConfig.instant.isAddToCartEnabled) {
                 this.handleAddToCart(search);
             }
 
-            this.startInstantSearch(search, mockAlgoliaBundle);
+            this.startInstantSearch(search);
 
             this.addMobileRefinementsToggle();
         },
@@ -127,13 +125,11 @@ define([
          *
          * @param search
          * @param allWidgetConfiguration
-         * @param mockAlgoliaBundle
          */
-        initializeWidgets(search, allWidgetConfiguration, mockAlgoliaBundle) {
+        initializeWidgets(search, allWidgetConfiguration) {
             allWidgetConfiguration = algoliaCommon.triggerHooks(
                 'beforeWidgetInitialization',
-                allWidgetConfiguration,
-                mockAlgoliaBundle
+                allWidgetConfiguration
             );
 
             Object.entries(allWidgetConfiguration).forEach(([widgetType, widgetConfig]) => {
@@ -281,22 +277,19 @@ define([
          *  - afterInstantsearchStart
          *
          * @param search
-         * @param mockAlgoliaBundle
          */
-        startInstantSearch(search, mockAlgoliaBundle) {
+        startInstantSearch(search) {
             if (this.isStarted) {
                 return;
             }
             search = algoliaCommon.triggerHooks(
                 'beforeInstantsearchStart',
-                search,
-                mockAlgoliaBundle
+                search
             );
             search.start();
             search = algoliaCommon.triggerHooks(
                 'afterInstantsearchStart',
-                search,
-                mockAlgoliaBundle
+                search
             );
             this.isStarted = true;
         },
@@ -1135,18 +1128,16 @@ define([
          *
          * Triggers the hook: beforeInstantsearchInit
          *
-         * @param mockAlgoliaBundle to be removed in a future release
          * @returns {*}
          */
-        getInstantSearchOptions(mockAlgoliaBundle = {}) {
+        getInstantSearchOptions() {
             return algoliaCommon.triggerHooks(
                 'beforeInstantsearchInit',
                 {
                     searchClient: this.getSearchClient(),
                     indexName   : this.getProductIndexName(),
                     routing     : algoliaCommon.routing,
-                },
-                mockAlgoliaBundle
+                }
             );
         },
 
@@ -1349,29 +1340,6 @@ define([
          */
         getFacetWidget(facet, _templates) {
             return this.getFacetConfig(facet);
-        },
-
-        /**
-         * @deprecated algoliaBundle is going away!
-         * This mock only includes libraries available to this module
-         * The following have been removed:
-         *  - Hogan
-         *  - algoliasearchHelper
-         *  - autocomplete
-         *  - createAlgoliaInsightsPlugin
-         *  - createLocalStorageRecentSearchesPlugin
-         *  - createQuerySuggestionsPlugin
-         *  - getAlgoliaResults
-         * However if you've used or require any of these additional libs in your customizations,
-         * you can either augment this mock as you need or include the global dependency in your module
-         * and make it available to your hook.
-         */
-        mockAlgoliaBundle() {
-            return {
-                $,
-                algoliasearch,
-                instantsearch
-            }
         },
 
         /**

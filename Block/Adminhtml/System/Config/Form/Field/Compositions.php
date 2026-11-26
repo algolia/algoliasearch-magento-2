@@ -16,18 +16,39 @@ class Compositions extends Field
             $optionValues[] = $value['value'];
         }
 
+        if (empty($optionValues)) {
+            return parent::_getElementHtml($element) . $this->getNoAvailableCompositionsNotice();
+        }
+
         if ($currentValue === '' || $currentValue === null || in_array($currentValue, $optionValues)) {
             return parent::_getElementHtml($element);
         }
 
+        return parent::_getElementHtml($element) . $this->getUnavailableCompositionNotice($currentValue);
+    }
+
+    protected function getUnavailableCompositionNotice(string $currentValue): string
+    {
         $html = "<p class='note'><span><strong class='colorRed'>WARNING</strong>: ";
         $html .= __(
             'The composition configured (<strong>%1</strong>)
         does not seem to be available for this store, please check your compositions in your Algolia Merchandising Studio.',
-             $currentValue
+            $currentValue
         );
         $html .="</p>";
 
-        return parent::_getElementHtml($element) . $html;
+        return $html;
+    }
+
+    protected function getNoAvailableCompositionsNotice(): string
+    {
+        $html = "<p class='note'><span><strong class='colorRed'>WARNING</strong>: ";
+        $html .= __(
+            'There are no compositions available to select
+            , please check your compositions in your Algolia Merchandising Studio.'
+        );
+        $html .="</p>";
+
+        return $html;
     }
 }

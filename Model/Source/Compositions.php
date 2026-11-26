@@ -20,7 +20,7 @@ class Compositions implements OptionSourceInterface
         $storeId = $store !== null ? (int) $store : null;
 
         $compositionOptions = [
-            ['value' => '', 'label' => '---']
+            ['value' => '', 'label' => '-- Please Select --']
         ];
 
         try {

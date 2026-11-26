@@ -126,7 +126,9 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
         }),
         stateMapping: {
             stateToRoute: function (uiState) {
-                var productIndexName = algoliaConfig.indexName + '_products';
+                var productIndexName = algoliaConfig.smartGroups.enabled === true && algoliaConfig.smartGroups.compositionId !== '' ?
+                    algoliaConfig.smartGroups.compositionId :
+                    algoliaConfig.indexName + '_products';
                 var uiStateProductIndex = uiState[productIndexName] || {};
                 var routeParameters = {};
                 if (algoliaConfig.isCategoryPage) {
@@ -164,7 +166,9 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
                 return routeParameters;
             },
             routeToState: function (routeParameters) {
-                var productIndexName = algoliaConfig.indexName + '_products';
+                var productIndexName = algoliaConfig.smartGroups.enabled === true && algoliaConfig.smartGroups.compositionId !== '' ?
+                    algoliaConfig.smartGroups.compositionId :
+                    algoliaConfig.indexName + '_products';
                 var uiStateProductIndex = {}
 
                 uiStateProductIndex['query'] = routeParameters.q == '__empty__' ? '' : routeParameters.q;

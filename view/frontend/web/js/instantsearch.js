@@ -69,7 +69,7 @@ define([
 
             this.setupWrapper(templateProcessor);
 
-            const search = instantsearch(this.getInstantSearchOptions());
+            const search = instantsearch(this.getClientInitialization());
 
             search.client.addAlgoliaAgent(this.getAlgoliaAgent());
 
@@ -1123,6 +1123,35 @@ define([
         ////////////////////////////
 
         /**
+         * Initialize search experience either with search or composition client depending on the smart groups config
+         */
+        getClientInitialization() {
+            if (algoliaConfig.smartGroups.enabled === true && algoliaConfig.smartGroups.compositionId !== '') {
+                return this.getCompositionOptions();
+            }
+
+            return this.getInstantSearchOptions();
+        },
+
+        /**
+         * Get the configuration options for creating the InstantSearch object (composition version)
+         *
+         * Triggers the hook: beforeInstantsearchInit
+         *
+         * @returns {*}
+         */
+        getCompositionOptions() {
+            return algoliaCommon.triggerHooks(
+                'beforeInstantsearchInit',
+                {
+                    searchClient  : this.getCompositionClient(),
+                    compositionID : algoliaConfig.smartGroups.compositionId,
+                    routing       : algoliaCommon.routing,
+                }
+            );
+        },
+
+        /**
          * Get the configuration options for creating the InstantSearch object
          * Docs: https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/#options
          *
@@ -1146,6 +1175,13 @@ define([
          */
         getSearchClient() {
             return algoliasearch(algoliaConfig.applicationId, algoliaConfig.apiKey);
+        },
+
+        /**
+         * Initialize composition client
+         */
+        getCompositionClient() {
+            return compositionClient(algoliaConfig.applicationId, algoliaConfig.apiKey);
         },
 
         /**

@@ -5,6 +5,7 @@ define([
     // Algolia core UI libs
     'algoliaSearchLib',
     'algoliaInstantSearchLib',
+    'algoliaCompositionLib',
 
     // Algolia integration dependencies
     'algoliaCommon',
@@ -16,7 +17,7 @@ define([
 
     'algoliaInsights',
     'algoliaHooks',
-], function (Component, $,  {liteClient: algoliasearch}, instantsearch, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
+], function (Component, $,  {liteClient: algoliasearch}, instantsearch, { compositionClient }, algoliaCommon, algoliaBase64, templateEngine, priceUtils) {
 
     return Component.extend({
 

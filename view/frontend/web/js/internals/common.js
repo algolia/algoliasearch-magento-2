@@ -66,16 +66,13 @@ define(['jquery', 'algoliaInstantSearchLib', 'algoliaBase64', 'Algolia_AlgoliaSe
         },
         triggerHooks: function () {
             var hookName = arguments[0],
-                originalData = arguments[1],
-                hookArguments = Array.prototype.slice.call(arguments, 2);
-
-            // console.log("Invoking hook", hookName);
+                originalData = arguments[1];
 
             var data = this.getRegisteredHooks(hookName).reduce(function (currentData, hook) {
                 if (Array.isArray(currentData)) {
                     currentData = [currentData];
                 }
-                var allParameters = [].concat(currentData).concat(hookArguments);
+                var allParameters = [].concat(currentData);
                 return hook.apply(null, allParameters);
             }, originalData);
 
